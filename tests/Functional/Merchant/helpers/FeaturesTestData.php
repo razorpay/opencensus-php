@@ -162,9 +162,9 @@ return [
                     "aggregator",
                     "tokens",
                     "s2swallet",
+                    "s2supi",
                     "setl_report",
-                    "cardsaving",
-                    "nocardsaving",
+                    "noflashcheckout",
                     "recurring",
                     "s2s"
                 ]
@@ -218,4 +218,24 @@ return [
             ],
         ],
     ],
+
+    'testDeleteNonExistentFeatureFromMerchant' => [
+        'request' => [
+            'url'       => '/features/10000000000000/xxxxx',
+            'method'    => 'delete'
+        ],
+        'response' => [
+            'content' => [
+                "error" => [
+                    "code" => PublicErrorCode::BAD_REQUEST_ERROR,
+                    "description" => PublicErrorDescription::BAD_REQUEST_NO_RECORDS_FOUND
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
+        ]
+    ]
 ];

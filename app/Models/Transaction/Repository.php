@@ -55,6 +55,10 @@ class Repository extends Base\Repository
 
         $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
 
+        // TODO: Need to fix this.
+        // If there are too many merchants, the sql query string length
+        // can become too long and get truncated.
+
         $txns = $this->newQuery()
                      ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -113,6 +117,70 @@ class Repository extends Base\Repository
         $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
+    }
+
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    {
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->betweenTime($from, $to)
+                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
+                     ->with('merchant', 'feesBreakup')
+                     ->latest()
+                     ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source');
+
+        return $txns;
+    }
+
+    public function fetchAssociatedRelationsWithLoadedEntities(
+        $entities,
+        $relation,
+        $idCol = 'entity_id',
+        $typeCol = 'type')
+    {
+        $relationships = array();
+        $objects = array();
+
+        foreach ($entities as $entity)
+        {
+            $relationships[$entity->$typeCol][] = $entity->$idCol;
+        }
+
+        foreach ($relationships as $type => $ids)
+        {
+            $eagerLoadRelations = [];
+
+            if ($type === 'payment')
+            {
+                $eagerLoadRelations = ['netbanking', 'billdesk', 'order'];
+            }
+            else if ($type === 'refund')
+            {
+                $eagerLoadRelations = ['payment', 'payment.netbanking', 'payment.billdesk'];
+            }
+
+            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
+        }
+
+        foreach ($entities as $entity)
+        {
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
+        }
+
+        return $entities;
     }
 
     public function fetchDataForInvoice($merchantId, $from, $to)
@@ -227,10 +295,11 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function findByEntityId($entityId, $fail = false)
+    public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
                     ->first();
 
         if (($txn === null) and
@@ -255,13 +324,13 @@ class Repository extends Base\Repository
         $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
         $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
 
-        $paymentId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ID);
-        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
+        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
 
-        $transactionEntityId = Entity::getAttributeWithTableName(Entity::ENTITY_ID);
-        $transactionReconciledAt = Entity::getAttributeWithTableName(Entity::RECONCILED_AT);
+        $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);
 
-        $transactionData = Entity::getAttributeWithTableName('*');
+        $transactionData = $this->getAttributeWithTableName('*');
 
         return $this->newQuery()
                     ->select($transactionData)
@@ -298,8 +367,6 @@ class Repository extends Base\Repository
 
     public function getTransactionsToBeMigrated()
     {
-        // $latestFeeBreakup = (new FeeBreakup\Repository)->fetchLatestMigratedTransaction();
-
         $query = $this->newQuery()
                     ->select('transactions.*')
                     ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
@@ -312,13 +379,6 @@ class Repository extends Base\Repository
                             $query->select(FeeBreakup\Entity::TRANSACTION_ID)
                                   ->from(TABLE::FEE_BREAKUP);
                         });
-
-        // if ($latestFeeBreakup !== null)
-        // {
-        //     $txnId = $latestFeeBreakup->getTransactionId();
-
-        //     $query->where('transactions.id', '>', $txnId);
-        // }
 
         return $query->limit(1000)->get();
     }

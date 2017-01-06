@@ -6,7 +6,7 @@ use RZP\Exception;
 use RZP\Http\RequestHeader;
 use RZP\Models\Base;
 use RZP\Models\Order;
-use RZP\Models\Payment\Analytics;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
 class Parser extends Base\Core
@@ -68,23 +68,23 @@ class Parser extends Base\Core
         parent::__construct();
 
         $this->request = $this->app['request'];
+
+        $this->uAgent = $this->app['agent'];
     }
 
-    public function recordPaymentRequestData(array & $input, $payment)
+    public function recordPaymentRequestData(Entity $pa, Payment\Entity $payment)
     {
-        $input[Entity::PAYMENT_ID] = $payment->getId();
+        $pa->payment()->associate($payment);
 
-        $input[Entity::MERCHANT_ID] = $payment->getMerchantId();
+        $pa->setMerchantId($payment->getMerchantId());
 
-        $this->setHttpRequestData($input);
+        $this->setHttpRequestData($pa);
 
-        $this->setAttempts($input, $payment);
+        $this->setAttempts($pa, $payment);
 
-        $this->setMetadataFromPayment($input, $payment);
+        $this->setMetadataFromPayment($pa, $payment);
 
-        $this->updateMetadataFromPayment($input, $payment);
-
-        $this->checkDataBeforeSave($input);
+        $this->updateMetadataFromPayment($pa, $payment);
 
         return;
     }
@@ -92,18 +92,21 @@ class Parser extends Base\Core
     /**
      * Traces if column values aren't consistent with each other
      */
-    public function checkDataBeforeSave(array $paymentAnalytics)
+    public function traceInconsistentData(array $pa)
     {
-        // If library is Checkoutjs, then referer should always be present
-        if ((isset($paymentAnalytics[Entity::LIBRARY]) === true) and
-            ($paymentAnalytics[Entity::LIBRARY] === Metadata::CHECKOUTJS) and
-            (isset($paymentAnalytics[Entity::REFERER]) === false))
+        $library = $pa[Entity::LIBRARY] ?? null;
+
+        $referer = $pa[Entity::REFERER] ?? null;
+
+        if (($library !== null) and
+            ($library === Metadata::CHECKOUTJS) and
+            ($referer === null))
         {
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_INCORRECT_DATA,
                 [
-                    Entity::LIBRARY => $paymentAnalytics[Entity::LIBRARY],
-                    Entity::REFERER => ($paymentAnalytics[Entity::REFERER] ?? null),
+                    Entity::LIBRARY => $library,
+                    Entity::REFERER => $referer,
                 ]);
         }
     }
@@ -111,15 +114,13 @@ class Parser extends Base\Core
     /**
      * Traces any Metadata value sent by front-end, that is not recognized by API
      */
-    public function traceUnrecognizedData($paymentAnalytics)
+    public function traceUnrecognizedData(array $pa)
     {
-        $pa = $paymentAnalytics->toArrayPublic();
-
         $invalidData = [];
 
         foreach ($pa as $key => $value)
         {
-            if (Analytics\Metadata::isInvalid($value))
+            if (Metadata::isInvalid($value))
             {
                 $invalidData[$key] = $value;
             }
@@ -130,38 +131,55 @@ class Parser extends Base\Core
             $this->trace->error(
                 TraceCode::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA,
                 ['invalid_data' => $invalidData,
-                 'payment_id'   => $paymentAnalytics->getPaymentId()]);
+                 'payment_id'   => $pa[Entity::PAYMENT_ID]]);
         }
     }
 
     /**
      * Sets analytics data using the HTTP request
      */
-    protected function setHttpRequestData(array & $log)
+    protected function setHttpRequestData(Entity $pa)
     {
-        // get user-agent service
-        $uAgent = $this->app['agent'];
+        $pa->setBrowser($this->uAgent->browser());
 
-        $log[Entity::BROWSER] = $uAgent->browser();
-
-        if (isset($log[Entity::BROWSER]))
+        if ($pa->getBrowser() !== null)
         {
-            $log[Entity::PLATFORM_VERSION] = $uAgent->version($uAgent->browser());
+            $pa->setPlatform($this->uAgent->version($this->uAgent->browser()));
         }
 
-        $log[Entity::OS] = $uAgent->platform();
+        $pa->setOs($this->getOs());
 
-        $log[Entity::OS_VERSION] = $uAgent->version($uAgent->platform());
+        $pa->setOsVersion($this->uAgent->version($this->uAgent->platform()));
 
-        $log[Entity::DEVICE] = $this->getDeviceValue($uAgent);
+        $pa->setDevice($this->getDeviceValue());
 
-        $log[Entity::IP] = $this->request->getRealClientIp();
+        $pa->setIp($this->request->getRealClientIp());
 
-        $log[Entity::REFERER] = $this->getRefererUrl();
+        $pa->setReferer($this->getRefererUrl());
 
         if ($this->request->header(RequestHeader::USER_AGENT) !== null)
         {
-            $log[Entity::USER_AGENT] = $this->request->header(RequestHeader::USER_AGENT);
+            $pa->setUserAgent($this->request->header(RequestHeader::USER_AGENT));
+        }
+    }
+
+    protected function getOs()
+    {
+        $osFromUa = $this->uAgent->platform();
+
+        if (isset($osFromUa) === true)
+        {
+            switch (strtolower($osFromUa))
+            {
+                case 'os x':
+                    return Metadata::MACOS;
+
+                case 'androidos':
+                    return Metadata::ANDROID;
+
+                default:
+                    return null;
+            }
         }
     }
 
@@ -169,37 +187,39 @@ class Parser extends Base\Core
     {
         $reqReferer = $this->request->header(RequestHeader::REFERER);
 
-        if ($reqReferer !== null)
+        if ($reqReferer === null)
         {
-            // blacklist razorpay referer URLs
-            $parsedUrl = parse_url($reqReferer);
-
-            $domain = (isset($parsedUrl['host']) === true) ? $parsedUrl['host'] : null;
-
-            if ($domain !== null)
-            {
-                $substrings = explode('.', $domain);
-
-                $substringsCount = count($substrings);
-
-                // Extract domain from a url containing subdomain
-                if ($substringsCount >= 2)
-                {
-                    // This doesn't handle cases when referer is, let's say, amazon.co.uk
-                    $domain = $substrings[$substringsCount - 2] . '.' . $substrings[$substringsCount - 1];
-                }
-            }
-
-            return (strtolower($domain) !== 'razorpay.com') ? $reqReferer : null;
+            return null;
         }
 
-        return null;
+        // blacklist razorpay referer URLs
+        $parsedUrl = parse_url($reqReferer);
+
+        $domain = $parsedUrl['host'] ?? null;
+
+        if ($domain === null)
+        {
+            return null;
+        }
+
+        $substrs = explode('.', $domain);
+
+        $substrCount = count($substrs);
+
+        // Extract domain from a url containing subdomain
+        if ($substrCount >= 2)
+        {
+            // This doesn't handle cases when referer is, let's say, amazon.co.uk
+            $domain = $substrs[$substrCount - 2] . '.' . $substrs[$substrCount - 1];
+        }
+
+        return ((strtolower($domain) !== 'razorpay.com') ? $reqReferer : null);
     }
 
     /**
      * Set analytics data from metadata sent by frontend
      */
-    protected function setMetadataFromPayment(array & $log, $payment)
+    protected function setMetadataFromPayment(Entity $log, $payment)
     {
         $metadata = $payment->getMetadata();
 
@@ -211,7 +231,8 @@ class Parser extends Base\Core
 
                 if (empty($metadata[$metadataKey]) === false)
                 {
-                    $log[$key] = $metadata[$key];
+                    $functionName = 'set' . studly_case($key);
+                    $log->$functionName($metadata[$key]);
                 }
             }
         }
@@ -223,59 +244,76 @@ class Parser extends Base\Core
      * - Get older payments for the reference id
      * - Increment count by 1
      */
-    protected function setAttempts(array & $log, $payment)
+    protected function setAttempts(Entity $log, $payment)
     {
         $orderId = $payment->getApiOrderId();
 
         if ($orderId !== null)
         {
-            // $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($orderId);
+            $order = $payment->order;
 
-            $payments = $this->repo->payment->fetchPaymentsForOrderId($orderId);
-
-            $attempts = $payments->count();
+            // No need to increment count here as it's already done
+            // during payment creation for an order.
+            $attempts = $order->getAttempts();
         }
         else
         {
             $metadata = $payment->getMetadata();
 
-            $checkoutId = ((isset($metadata) and isset($metadata['checkout_id']))) ? $metadata['checkout_id'] : null;
+            $checkoutId = null;
 
-            if ($checkoutId !== null)
+            if ((isset($metadata) and isset($metadata['checkout_id'])))
             {
-                // get from checkout id
-                $oldPayments = $this->repo->payment_analytics->getRecentMerchantPaymentsForCheckoutId($checkoutId);
-
-                $count = $oldPayments->count();
-
-                if (($count > 0) and
-                    ($count !== $oldPayments->first()->getAttempts()))
-                {
-                    $this->trace->warning(
-                        TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
-                        ['checkout_id' => $checkoutId]);
-
-                    return;
-                }
-
-                $attempts = $count + 1;
+                $checkoutId = $metadata['checkout_id'];
             }
-            else
-            {
-                $attempts = 1;
-            }
+
+            $attempts = $this->getAttemptsFromCheckoutId($checkoutId);
         }
 
-        $log[Entity::ATTEMPTS] = $attempts;
+        $log->setAttempts($attempts);
+    }
 
-        return;
+    protected function getAttemptsFromCheckoutId($checkoutId)
+    {
+        if ($checkoutId === null)
+        {
+            return 1;
+        }
+
+        $oldPaymentAnalytics = $this->repo
+                            ->payment_analytics
+                            ->getRecentMerchantPaymentsForCheckoutId($checkoutId);
+
+        $count = $oldPaymentAnalytics->count();
+
+        $latestEntity = $oldPaymentAnalytics->first();
+
+        if (($count > 0) and
+            ($count !== $latestEntity->getAttempts()))
+        {
+            $this->trace->warning(
+                TraceCode::PAYMENT_CHECKOUT_INVALID_ID,
+                [
+                     'checkout_id' => $checkoutId,
+                     'count' => $count,
+                     'last_entity' => [
+                                        'id' => $latestEntity->getId(),
+                                        'attempts' => $latestEntity->getAttempts()
+                                      ]
+                ]
+            );
+
+            return;
+        }
+
+        return ($count + 1);
     }
 
     /**
      * Overrides analytics column values by giving preference to value passed
      * from front-end over that parsed from user-agent
      */
-    protected function updateMetadataFromPayment(array & $log, $payment)
+    protected function updateMetadataFromPayment(Entity $log, $payment)
     {
         $metadata = $payment->getMetadata();
 
@@ -290,18 +328,30 @@ class Parser extends Base\Core
         {
             $metadataKey = self::$map[$key];
 
-            if (isset($metadata[$metadataKey]) === true)
+            if (isset($metadata[$metadataKey]) === false)
             {
-                $logValueForKey = $log[$key] ?? null;
-
-                if ($logValueForKey !== $metadata[$metadataKey])
-                {
-                    // collect anomalies
-                    $this->collectMismatch($logValueForKey, $metadata[$metadataKey], $key, $anomalies);
-
-                    $log[$key] = $metadata[$metadataKey];
-                }
+                continue;
             }
+
+            $logValueForKey = $log[$key] ?? null;
+
+            if ($logValueForKey === $metadata[$metadataKey])
+            {
+                continue;
+            }
+
+            // collect anomalies
+            if ($logValueForKey !== null)
+            {
+                $this->collectMismatch($logValueForKey,
+                    $metadata[$metadataKey],
+                    $key,
+                    $anomalies);
+            }
+
+            $functionName = 'set' . studly_case($key);
+
+            $log->$functionName($metadata[$metadataKey]);
         }
 
         // log anomalies
@@ -328,19 +378,19 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getDeviceValue($uAgent)
+    protected function getDeviceValue()
     {
         $device = null;
 
-        if ($uAgent->isMobile())
+        if ($this->uAgent->isMobile())
         {
             $device = Metadata::MOBILE;
         }
-        else if($uAgent->isDesktop())
+        else if($this->uAgent->isDesktop())
         {
             $device = Metadata::DESKTOP;
         }
-        else if ($uAgent->isTablet())
+        else if ($this->uAgent->isTablet())
         {
             $device = Metadata::TABLET;
         }

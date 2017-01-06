@@ -16,6 +16,10 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
+
     protected $fillable = array(
         self::ID,
         self::CAMPAIGN,

@@ -3,7 +3,6 @@
 namespace RZP\Models\Feature;
 
 use RZP\Models\Base;
-use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -13,7 +12,8 @@ class Service extends Base\Service
     {
         $featureParams = $this->buildFeatureParams($input);
 
-        $features = $featureParams->map(function ($item) {
+        $features = $featureParams->map(function ($item)
+        {
             return (new Core)->create($item);
         });
 
@@ -27,14 +27,14 @@ class Service extends Base\Service
         $response['assigned_features'] = $this->repo->feature->findByEntityId($entityId);
 
         // all_features is a list of currently available features in the system
-        $response['all_features'] = Constants::$allFeatures;
+        $response['all_features'] = array_keys(Constants::$featureValueMap);
 
         return $response;
     }
 
     public function deleteFeature(string $entityId, string $featureName)
     {
-        $feature = $this->repo->feature->findByEntityIdAndName($entityId, $featureName);
+        $feature = $this->repo->feature->findByEntityIdAndNameOrFail($entityId, $featureName);
 
         $this->trace->info(TraceCode::FEATURE_DELETE_REQUEST, $feature->toArrayPublic());
 
@@ -88,7 +88,7 @@ class Service extends Base\Service
 
         foreach ($entityIds as $entityId)
         {
-            $feature = $this->repo->feature->findByEntityIdAndName(
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
                         $entityId,
                         $featureName);
 
@@ -101,6 +101,30 @@ class Service extends Base\Service
         }
 
         return $response->toArray();
+    }
+
+    public function getFeaturesForEntity($entity)
+    {
+        $entityId = $entity->getId();
+
+        $data['features'] = [];
+
+        $enabledFeatures = $entity->features();
+
+        foreach (Constants::$visibleFeaturesMap as $visibleFeature => $featureDetails)
+        {
+            $feature = $featureDetails['feature'];
+
+            $isEnabled = in_array($feature, $enabledFeatures, true);
+
+            $data['features'][] = [
+                'feature'      => $visibleFeature,
+                'value'        => $isEnabled,
+                'display_name' => $featureDetails['display_name']
+            ];
+        }
+
+        return $data;
     }
 
     private function buildFeatureParams($input)

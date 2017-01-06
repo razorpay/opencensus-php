@@ -6,11 +6,11 @@ use RZP\Base;
 use RZP\Gateway\FirstData\ConnectRequestFields;
 use RZP\Gateway\FirstData\PaymentMode;
 use RZP\Gateway\FirstData\PaymentMethod;
-use RZP\Gateway\FirstData\Currency;
 use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
 use RZP\Constants\HashAlgo;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -42,23 +42,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $authValidators = [
-        ConnectRequestFields::TXN_TYPE,
         ConnectRequestFields::MODE,
         ConnectRequestFields::PAYMENT_METHOD,
         ConnectRequestFields::HASH_ALGORITHM,
         ConnectRequestFields::CURRENCY,
         ConnectRequestFields::LANGUAGE,
     ];
-
-    protected function validateTxntype($input)
-    {
-        if ((isset($input['txntype']) === false) or
-            (in_array($input['txntype'], TxnType::$typeList, true) === false))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid txntype');
-        }
-    }
 
     protected function validateMode($input)
     {

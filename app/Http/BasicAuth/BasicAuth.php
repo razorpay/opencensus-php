@@ -30,6 +30,12 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Device -
+     * rzp_mode_keyId:device_token
+     *
+     * Admin Auth
+     * rzp_mode_admin:auth_token
+     *
      */
 
     const HMAC_ALGO = 'sha256';
@@ -67,6 +73,12 @@ class BasicAuth
     private $merchant = null;
 
     /**
+     * Admin who is authenticating himself
+     * through adminAuth
+     */
+    private $isAdmin = null;
+
+    /**
      * During app authentication, the app
      * which has been authenticated.
      *
@@ -85,6 +97,13 @@ class BasicAuth
      * @var string
      */
     private $type;
+
+    /**
+     * Device being used in device auth routes
+     *
+     * @var  Device\Entity
+     */
+    private $device;
 
     /**
      * Whether an internal app is doing an authentication
@@ -140,13 +159,15 @@ class BasicAuth
 
     /**
      * Contains valid lengths of key.
-     * rzp_mode - 3 + 1 + 4
-     * 3 + 1 + 4 + 1 + 24
-     * 3 + 1 + 4 + 1 + 14
+     * rzp_mode            = 3 + 1 + 4
+     * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
+     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
+     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
      * @var array
      */
-    protected static $validKeyLengths = array(
-        8, 23, 33);
+    protected static $validKeyLengths = [
+        8, 14, 23, 33
+    ];
 
     public function __construct($app)
     {
@@ -165,6 +186,7 @@ class BasicAuth
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
         $this->merchant = null;
+        $this->device = null;
     }
 
     public function setCredentials()
@@ -232,6 +254,39 @@ class BasicAuth
         else if ($this->verifyInternalAppAsProxy() === true)
         {
             $this->setProxyTrue();
+
+            return;
+        }
+
+        return $this->invalidApiKey();
+    }
+
+    public function adminAuth()
+    {
+        $this->setType(Type::ADMIN_AUTH);
+
+        $res = $this->setCredentials();
+
+        // null is the good value here
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->getKey() !== 'admin')
+        {
+            return $this->invalidApiKey();
+        }
+
+        $this->setAdminTrue();
+
+        $token = $this->getSecret();
+
+        $adminToken = $this->fetchAdminToken($token);
+
+        if ($adminToken->getAdminId() !== null)
+        {
+            $this->admin = $adminToken->admin;
 
             return;
         }
@@ -349,6 +404,34 @@ class BasicAuth
         }
 
         return ApiResponse::routeNotFound();
+    }
+
+    public function deviceAuth()
+    {
+        $this->setType(Type::DEVICE_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->verifyKeyExistence() === true)
+        {
+            $this->fetchMerchantOfKey($this->key);
+
+            $response = $this->verifyDeviceToken();
+
+            if ($response === true)
+            {
+                return;
+            }
+
+            return $response;
+        }
+
+        return $this->invalidApiKey();
     }
 
     /**
@@ -527,6 +610,43 @@ class BasicAuth
     }
 
     /**
+     * Used for device verification. Checks
+     * that the device exists and belongs
+     * to the calling merchant
+     * @return boolean/Response
+     */
+    protected function verifyDeviceToken()
+    {
+        $keyEntity = $this->key;
+
+        $deviceToken = $this->getSecret();
+
+        if ($deviceToken === '')
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+        }
+
+        $device = $this->repo->device->findByAuthToken($deviceToken);
+
+        $this->device = $device;
+
+
+        if (($device === null) or
+            ($keyEntity->merchant->getId() !== $device->merchant->getId()))
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+        }
+    }
+
+    /**
      * Matches the secret provided against the list of
      * applications secrets with us. If any matches, then
      * that  particular app is allowed to continue
@@ -692,6 +812,21 @@ class BasicAuth
         return $this->merchant;
     }
 
+    public function getDevice()
+    {
+        return $this->device;
+    }
+
+    public function getAdminToken()
+    {
+        return $this->adminToken;
+    }
+
+    public function getAdmin()
+    {
+        return $this->admin;
+    }
+
     public function getMerchantId()
     {
         return $this->merchant->getKey();
@@ -749,6 +884,11 @@ class BasicAuth
         $this->type = $type;
     }
 
+    protected function setAdminTrue()
+    {
+        $this->isAdmin = true;
+    }
+
     protected function setProxyTrue()
     {
         $this->proxy = true;
@@ -773,6 +913,11 @@ class BasicAuth
         return $this->appAuth;
     }
 
+    public function isAdminAuth()
+    {
+        return ($this->type === Type::ADMIN_AUTH);
+    }
+
     public function isPublicAuth()
     {
         return ($this->type === Type::PUBLIC_AUTH);
@@ -786,6 +931,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isDeviceAuth()
+    {
+        return ($this->type === Type::DEVICE_AUTH);
     }
 
     public function isProxyOrPrivilegeAuth()
@@ -837,6 +987,13 @@ class BasicAuth
         $this->checkMerchantActivatedForLive();
 
         return $this->merchant;
+    }
+
+    protected function fetchAdminToken($token)
+    {
+        $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
+
+        return $this->adminToken;
     }
 
     protected function checkMerchantActivatedForLive()

@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Cache;
 use Closure;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
@@ -98,13 +99,29 @@ EOT;
         return $paymentId;
     }
 
+    public function testPaymentS2S()
+    {
+        $this->fixtures->merchant->addFeatures(['s2supi']);
+
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doS2SUpiPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        return $paymentId;
+    }
+
     public function testPaymentWithRandomResponseCode()
     {
         $this->payment['vpa'] = 'unknownresponse@icici';
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() {
+        $this->runRequestResponseFlow($data, function()
+        {
             $this->testPayment('failed');
         });
     }
@@ -123,6 +140,22 @@ EOT;
         });
     }
 
+    public function testUpiVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'nemo@upi';
+
+        Cache::forever('excluded_psps', '["upi"]');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testInvalidVPA()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -136,6 +169,29 @@ EOT;
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
         });
+    }
+
+    public function testInvalidVPAError()
+    {
+        $vpas = [
+            'user@invalidbank',
+            'invalidvpa@icici'
+        ];
+
+        foreach ($vpas as $vpa)
+        {
+            $payment = $this->getDefaultUpiPaymentArray();
+
+            $payment['vpa'] = $vpa;
+
+            $data = $this->testData['testInvalidVPAError'];
+
+            $this->runRequestResponseFlow($data, function() use ($payment)
+            {
+                $this->doAuthPaymentViaAjaxRoute($payment);
+            });
+
+        }
     }
 
     public function testSingleWordVPA()
@@ -199,13 +255,15 @@ EOT;
 
         $content = $server->getAsyncCallbackContent($upiEntity, $payment);
 
-        $this->runRequestResponseFlow($data, function () use ($content) {
+        $this->runRequestResponseFlow($data, function () use ($content)
+        {
             $this->makeS2SCallbackAndGetContent($content);
         });
 
         $data = $this->testData['testStatusRejectPayment'];
 
-        $this->runRequestResponseFlow($data, function () use ($payment) {
+        $this->runRequestResponseFlow($data, function () use ($payment)
+        {
             $this->getPaymentStatus($payment['id']);
         });
     }
@@ -361,6 +419,8 @@ EOT;
 
         $this->assertEquals(3, $data['upi_icici']['count']);
         $this->assertTrue(file_exists($data['upi_icici']['file']));
+
+        unlink($data['upi_icici']['file']);
     }
 
     protected function generateRefundsExcelForIciciUpi($date = false)

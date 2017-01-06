@@ -32,6 +32,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Models\Card;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Action as BaseAction;
 use App;
@@ -57,8 +58,6 @@ class Gateway extends Base\Gateway
      */
     protected $model = null;
 
-    const INR_CODE = 356;
-
     /**
      * If during the payment flow, we detect an
      * error, or the payment fails for any reason,
@@ -74,7 +73,7 @@ class Gateway extends Base\Gateway
      */
     protected $terminal;
 
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     const VERIFY_TIMEOUT = 60;
 
@@ -97,7 +96,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $enrollResponse = array(
-        'fields' => array(
+       'fields' => array(
             'result', 'eci', 'paymentid', 'trackid', 'PAReq', 'url', 'error_text'),
         'fieldsEnrolled' => array('result', 'url', 'PAReq', 'paymentid', 'trackid',
             'udf1', 'udf2', 'udf3', 'udf4', 'udf5'),
@@ -114,21 +113,21 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $authEnrolledRequest = array(
-        'url' => Hdfc\Urls::AUTH_ENROLLED_URL,
-        'type' => 'auth_enrolled',
-        'fields' => array('paymentid', 'PaRes'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::AUTH_ENROLLED_URL,
+        'type'      => 'auth_enrolled',
+        'fields'    => array('paymentid', 'PaRes'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $authEnrolledResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'paymentid', 'tranid', 'trackid',
-            'udf1', 'udf2', 'udf3', 'udf4', 'udf5', 'error_text'),
-        'type' => 'auth_enrolled',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate',
+                        'paymentid', 'tranid', 'trackid', 'udf1', 'udf2', 'udf3',
+                        'udf4', 'udf5', 'error_text'),
+        'type'      => 'auth_enrolled',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     /**
      * The assoc array is used to constructing
@@ -163,29 +162,28 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $supportPaymentRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'type' => '',
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'headers' => array('Content-Type:text/xml'),
-        'xml' => '',
-        'data' => array());
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'type'      => '',
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'headers'   => array('Content-Type:text/xml'),
+        'xml'       => '',
+        'data'      => array());
 
     protected $supportPaymentResponse = array(
-        'fields' => array(
-            'result', 'auth', 'ref', 'avr', 'postdate', 'tranid', 'trackid', 'payid',
-            'udf2', 'udf5', 'amt', 'error_text'),
-        'type' => '',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'fields'    => array('result', 'auth', 'ref', 'avr', 'postdate', 'tranid',
+                        'trackid', 'payid', 'udf2', 'udf5', 'amt', 'error_text'),
+        'type'      => '',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryRequest = array(
-        'url' => Hdfc\Urls::SUPPORT_PAYMENT_URL,
-        'fields' => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
-        'type' => 'inquiry',
-        'xml' => '',
-        'data' => array(),
-        'error' => null);
+        'url'       => Hdfc\Urls::SUPPORT_PAYMENT_URL,
+        'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
+        'type'      => 'inquiry',
+        'xml'       => '',
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryResponse = array(
         'type' => 'inquiry',
@@ -325,7 +323,7 @@ class Gateway extends Base\Gateway
 
             $this->verifyAuthResponse($authResponse);
 
-            return;
+            return $this->getCallbackResponseData($input);
         }
 
         $this->validateCallbackGatewayFields($input, $network);
@@ -344,6 +342,8 @@ class Gateway extends Base\Gateway
         }
 
         $this->postAuthEnrolledRequest($input);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -394,6 +394,41 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) $refundEntity->getAmount() * 100;
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function manualGatewayRefund(array $input)
     {
         $canManualRefund = $this->canForceRefund($input);
@@ -416,7 +451,16 @@ class Gateway extends Base\Gateway
     {
         $paymentId = $input['payment']['id'];
 
-        return $this->isCapturedSuccessfully($paymentId);
+        $gatewayCaptured = $this->isCapturedSuccessfully($paymentId);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_HDFC_CAPTURED,
+            [
+                'input'     => $input,
+                'captured'  => $gatewayCaptured
+            ]);
+
+        return $gatewayCaptured;
     }
 
 // ----------------------Gateway operations end --------------------------------
@@ -485,7 +529,9 @@ class Gateway extends Base\Gateway
 
             $response['content'] = '';
 
-            Hdfc\ErrorHandler::setTimeoutError($response);
+            $curlErrorMessage = strtolower($e->getData()['message']);
+
+            Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
 
             return;
         }
@@ -689,7 +735,8 @@ class Gateway extends Base\Gateway
         $gatewayErrorCode = $error['code'];
 
         if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
-            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004))
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004) or
+            ($gatewayErrorCode === Hdfc\ErrorCode::RP00013))
         {
             $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
         }

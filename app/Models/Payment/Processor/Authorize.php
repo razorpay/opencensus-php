@@ -12,11 +12,14 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Currency;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
 use RZP\Models\Order;
@@ -25,9 +28,12 @@ use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Status;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
+use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -46,6 +52,8 @@ trait Authorize
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
+        $this->processCurrencyConversions($payment);
+
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
@@ -190,7 +198,7 @@ trait Authorize
     {
         // try calculating the fees, throws exception if fees is more than amount
 
-        list($fee, $serviceTax, $ruleKey, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
     protected function processAuthResponse($request, $payment)
@@ -206,12 +214,34 @@ trait Authorize
 
         $this->updateAndNotifyPaymentAuthorized();
 
+        $this->updateTwoFactorAuthForOneStepPayment();
+
         $payment = $this->payment;
 
         return $this->postPaymentAuthorizeProcessing($payment);
     }
 
-    protected function autoCapturePaymentIfApplicable($payment)
+    protected function updateTwoFactorAuthForOneStepPayment()
+    {
+        $payment = $this->payment;
+
+        // In one step payment, we always set the 2FA as unavailable. Basically, no 2FA done.
+        // Except in the cases of recurring, because, here we know that
+        // we have manually skipped/by-passed the 2FA.
+
+        if ($payment->terminal->getRecurring() === Terminal\Recurring::RECURRING_N3DS)
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::SKIPPED);
+        }
+        else
+        {
+            $payment->setTwoFactorAuth(TwoFactorAuth::NOT_APPLICABLE);
+        }
+
+        $this->repo->saveOrFail($payment);
+    }
+
+    protected function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
@@ -372,13 +402,24 @@ trait Authorize
             return;
         }
 
-        if ($payment->isWallet())
+        if ($merchant->isFeatureEnabled(Feature\Constants::S2S) === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+            return;
+        }
+
+        if ($payment->isWallet() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
+        }
+        else if ($payment->isUpi() === true)
+        {
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SUPI);
         }
         else
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 
@@ -394,7 +435,7 @@ trait Authorize
         $merchant = $payment->merchant;
 
         // Ensure that the merchant is allowed to do recurring payments.
-        $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+        $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
 
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
@@ -441,7 +482,7 @@ trait Authorize
         //
         // Call gateway input
         //
-        $gatewayInput['payment'] = $payment->toArray();
+        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -469,6 +510,8 @@ trait Authorize
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
         $gatewayInput = [];
+
+        $this->processCurrencyConversions($payment);
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
@@ -571,6 +614,8 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
+            $this->autoCapturePaymentIfApplicable($payment);
+
             $this->repo->saveOrFail($payment);
 
             $this->setPayment($payment);
@@ -583,7 +628,7 @@ trait Authorize
 
         if ($payment->isRecurring() === true)
         {
-            $this->verifyFeatureForMerchant($merchant, Merchant\Features::RECURRING);
+            $this->verifyFeatureForMerchant($merchant, Feature\Constants::RECURRING);
         }
 
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
@@ -595,11 +640,11 @@ trait Authorize
         {
             if ($payment->isWallet())
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2SWALLET);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2SWALLET);
             }
             else
             {
-                $this->verifyFeatureForMerchant($merchant, Merchant\Features::S2S);
+                $this->verifyFeatureForMerchant($merchant, Feature\Constants::S2S);
             }
         }
     }
@@ -610,6 +655,44 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_RECURRING_AUTH_NOT_SUPPORTED);
+        }
+    }
+
+    protected function processCurrencyConversions(Payment\Entity $payment)
+    {
+        $currency = $payment->getCurrency();
+
+        $merchant = $payment->merchant;
+
+        if ($currency !== Currency\Currency::INR)
+        {
+            // mcc is supported only for merchants where this flag is set to true or false
+            // or merchant is not fee bearer
+            if (($merchant->convertOnApi() === null) or
+                ($merchant->isFeeBearerCustomer() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            }
+
+            // mcc is supported only for card payments
+            if ($payment->isCard() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+
+            }
+        }
+
+        $amount = $payment->getAmount();
+
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
+
+        $payment->setBaseAmount($baseAmount);
+
+        if ($payment->isCard() === true)
+        {
+            $payment->setConvertCurrency($payment->merchant->convertOnApi());
         }
     }
 
@@ -652,6 +735,11 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isUpi())
+        {
+            $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
@@ -1325,7 +1413,7 @@ trait Authorize
     {
         try
         {
-            $analyticsEntity = (new Analytics\Core)->create($payment);
+            (new Analytics\Service)->createLog($payment);
         }
         catch (\Exception $e)
         {
@@ -1419,7 +1507,7 @@ trait Authorize
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount()/100), 2),
+                'amount'  => number_format(($payment->getAmount() / 100), 2),
                 'wallet'  => $payment->getWallet()
             ];
 
@@ -1626,8 +1714,9 @@ trait Authorize
     {
         if ($merchant->isFeatureEnabled($feature) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    "$feature is not supported");
+            // If feature is not present, simply throw invalid url error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
         }
     }
 
@@ -1640,6 +1729,16 @@ trait Authorize
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }
+    }
+
+    protected function validateUpiPspIsAllowed($payment)
+    {
+        $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
+
+        $disallowedPsps = json_decode($disallowedPspJson, true);
+
+        $payment->getValidator()->validateUpiVpaPsp(
+            $payment->getVpa(), $disallowedPsps);
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)
@@ -1665,6 +1764,8 @@ trait Authorize
 
             $status = $this->payment->getStatus();
 
+            // We do not want the payments which failed captured
+            // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
                 return;
@@ -1697,6 +1798,8 @@ trait Authorize
             //
             if ($this->isGatewayActuallyAuthorizingPayment($payment) === false)
             {
+                $payment->setGatewayCaptured(true);
+
                 // Also sets the transaction association with the payment.
 
                 list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
@@ -1736,12 +1839,7 @@ trait Authorize
             $networkCode = $paymentCard->getNetworkCode();
         }
 
-        if (Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode) === false)
-        {
-            return false;
-        }
-
-        return true;
+        return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
     }
 
     protected function getEncryptedGatewayText($gateway)

@@ -6,9 +6,11 @@ use ApiResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal;
 
 class MerchantController extends Controller
@@ -467,6 +469,13 @@ class MerchantController extends Controller
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
+    public function getBrokerTransactionReport()
+    {
+        $input = Request::all();
+
+        return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, E::TRANSACTION);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
@@ -519,6 +528,29 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getOffers(string $mid)
+    {
+        $data = (new Merchant\Service)->getOffers($mid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateMerchantFeatures($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->addOrRemoveMerchantFeatures($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures();
+
+        return ApiResponse::json($data);
+    }
+
     // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
@@ -563,4 +595,41 @@ class MerchantController extends Controller
     }
 
 // --------------------- End Credits API Handlers -----------------------------------------
+
+
+    // Activation Form Handlers
+    public function getActivationDetails()
+    {
+        $response = (new Detail\Service)->fetchMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function postUploadActivationFile()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->uploadActivationFile($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postSaveActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->saveMerchantDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function putEditMerchantDetailsAfterLock($id)
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->editMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
+    // == / Activation Form Handlers ==
 }

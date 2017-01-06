@@ -39,6 +39,8 @@ class Handler extends ExceptionHandler
         $this->trace = $this->app['trace'];
 
         $this->throwExceptionInTesting = $this->app['config']->get('app.throw_exception_in_testing');
+
+        $this->route = $this->app['api.route'];
     }
 
     /**
@@ -89,10 +91,13 @@ class Handler extends ExceptionHandler
         return $this->genericExceptionHandler($e);
     }
 
-    public function traceException($exception, $level = null, $code = null)
+    public function traceException(
+        $exception,
+        $level = null,
+        $code = null,
+        array $extraData = [])
     {
-        $traceData = $this->getExceptionDetails($exception);
-
+        $traceData = $this->getExceptionDetails($exception, 0, $extraData);
         if (($level === null) and
             ($code === null))
         {
@@ -105,6 +110,11 @@ class Handler extends ExceptionHandler
             {
                 $level = Trace::ERROR;
                 $code = TraceCode::ERROR_EXCEPTION;
+
+                if ($this->route->isCriticalRoute())
+                {
+                    $level = Trace::CRITICAL;
+                }
             }
         }
 
@@ -142,7 +152,10 @@ class Handler extends ExceptionHandler
         return $this->recoverableErrorResponse($this->isDebug(), $exception);
     }
 
-    protected function getExceptionDetails($exception, $level = 0)
+    protected function getExceptionDetails(
+        $exception,
+        $level = 0,
+        array $extraData = [])
     {
         $previousException = $exception->getPrevious();
 
@@ -153,8 +166,14 @@ class Handler extends ExceptionHandler
             $previous = $this->getExceptionDetails($previousException, $level + 1);
         }
 
-        $data = $this->getDataArrayPropertyFromException($exception);
+        $data = $this->getDataArrayPropertyFromException($exception, $extraData);
 
+        /**
+         * @note getTraceAsString logs function arguments, contrary to the older comment here
+         * TODO: Write a wrapper over getTrace that drops function arguments instead
+         *
+         * Ideally: we should use reflection to drop sensitive arguments only.
+         */
         $stack = explode("\n", $exception->getTraceAsString());
 
         if ($level === 0)
@@ -169,14 +188,6 @@ class Handler extends ExceptionHandler
             $stack = array_slice($stack, 0, 5);
         }
 
-        //
-        // @note: Always call function 'getTraceAsSring' to get stack trace
-        //        since it doesn't include function arguments.
-        //        Function arguments can contain sensitive data so should
-        //        never be logged. Never call 'getTrace' directly.
-        //
-        // @note: Don't remove this comment.
-        //
         $traceData = array(
             'class'     => get_class($exception),
             'code'      => $exception->getCode(),
@@ -271,7 +282,9 @@ class Handler extends ExceptionHandler
         return $data;
     }
 
-    protected function getDataArrayPropertyFromException($e)
+    protected function getDataArrayPropertyFromException(
+        $e,
+        array $extraData = [])
     {
         $data = null;
 
@@ -289,6 +302,15 @@ class Handler extends ExceptionHandler
             {
                 $data = null;
             }
+        }
+
+        if ($data !== null)
+        {
+            $data = array_merge($data, $extraData);
+        }
+        else
+        {
+            $data = $extraData;
         }
 
         return $data;

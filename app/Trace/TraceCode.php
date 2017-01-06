@@ -15,6 +15,7 @@ class TraceCode
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
+    const PAYMENT_AUTHORIZED_NULL                   = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
     const PAYMENT_REFUND_REQUEST                    = 'PAYMENT_REFUND_REQUEST';
     const PAYMENT_REFUND_SUCCESS                    = 'PAYMENT_REFUND_SUCCESS';
@@ -32,6 +33,8 @@ class TraceCode
     const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
+    const PAYMENT_AUTO_REFUND                       = 'PAYMENT_AUTO_REFUND';
+    const PAYMENT_AUTO_REFUND_CRON                  = 'PAYMENT_AUTO_REFUND_CRON';
     const PAYMENT_QUEUE_CAPTURE_REQUEST             = 'PAYMENT_QUEUE_CAPTURE_REQUEST';
     const PAYMENT_QUEUE_CAPTURE_SUCCESS             = 'PAYMENT_QUEUE_CAPTURE_SUCCESS';
     const PAYMENT_QUEUE_CAPTURE_FAILURE             = 'PAYMENT_QUEUE_CAPTURE_FAILURE';
@@ -65,7 +68,7 @@ class TraceCode
     const PAYMENT_USER_AGENT_ANOMALY                = 'PAYMENT_USER_AGENT_ANOMALY';
     const PAYMENT_CARD_IIN_MISSING                  = 'PAYMENT_CARD_IIN_MISSING';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
-    const TRANSACTION_FREE_CREDITS                  = 'TRANSACTION_FREE_CREDITS';
+    const TRANSACTION_AMOUNT_CREDITS                = 'TRANSACTION_AMOUNT_CREDITS';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
     const VERIFY_CAPTURE_RESPONSE                   = 'VERIFY_CAPTURE_RESPONSE';
     const PAYMENT_ANALYTICS_SAVE_FAILED             = 'PAYMENT_ANALYTICS_SAVE_FAILED';
@@ -77,11 +80,17 @@ class TraceCode
     const MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE       = 'MANUAL_GATEWAY_ALL_REFUNDS_RESPONSE';
     const PAYMENT_CAPTURE_INVOICE_UPDATE            = 'PAYMENT_CAPTURE_INVOICE_UPDATE';
     const MANUAL_GATEWAY_REFUND_FAILURE             = 'MANUAL_GATEWAY_REFUND_FAILURE';
+    const PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       = 'PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED';
+    const INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  = 'INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED';
     const MANUAL_GATEWAY_REFUND_INITIATED           = 'MANUAL_GATEWAY_REFUND_INITIATED';
     const REFUND_GATEWAY_REQUIRED                   = 'REFUND_GATEWAY_REQUIRED';
+    const PAYMENT_REFUND_TIMEOUT_SKIP               = 'PAYMENT_REFUND_TIMEOUT_SKIP';
     const PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND     = 'PAYMENT_REQUEST_CHECKOUT_ID_NOT_FOUND';
     const CHECKOUT_PREFERENCES_RESPONSE             = 'CHECKOUT_PREFERENCES_RESPONSE';
     const PAYMENT_AUTO_REFUND_FAILURE               = 'PAYMENT_AUTO_REFUND_FAILURE';
+    const CREATE_GATEWAY_REFUND_RECORD_FAILED       = 'CREATE_GATEWAY_REFUND_RECORD_FAILED';
+    const GATEWAY_REFUND_RECORD_CREATED             = 'GATEWAY_REFUND_RECORD_CREATED';
+    const GATEWAY_REFUND_ABSENT                     = 'GATEWAY_REFUND_ABSENT';
     const FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE = 'FORCE_AUTHORIZE_TIMEOUT_PAYMENTS_RESPONSE';
     const REFUND_FILE_GENERATE_REQUEST              = 'REFUND_FILE_GENERATE_REQUEST';
     const RECONCILE_CANCELLED_TRANSACTIONS          = 'RECONCILE_CANCELLED_TRANSACTIONS';
@@ -96,12 +105,19 @@ class TraceCode
     const ORDER_STATUS_ATTEMPTED                    = 'ORDER_STATUS_ATTEMPTED';
     const PAYMENT_AUTHORIZE_CREATE_TRANSACTION      = 'PAYMENT_AUTHORIZE_CREATE_TRANSACTION';
     const TRANSACTION_CREATED                       = 'TRANSACTION_CREATED';
+    const INVOICE_RAVEN_REQUEST_FAILED              = 'INVOICE_RAVEN_REQUEST_FAILED';
+    const INVOICE_NOTIFICATION_FAILED               = 'INVOICE_NOTIFICATION_FAILED';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
 
     const ORDER_CREATE_REQUEST                      = 'ORDER_CREATE_REQUEST';
     const REFUND_TRANSACTION_CREATED                = 'REFUND_TRANSACTION_CREATED';
+    const CREATE_GATEWAY_REFUND_RECORD_SUMMARY      = 'CREATE_GATEWAY_REFUND_RECORD_SUMMARY';
+    const MULTIPLE_GATEWAY_ENTITIES_FOUND           = 'MULTIPLE_GATEWAY_ENTITIES_FOUND';
+    const BILLDESK_REFUND_UNEXPECTED_STATE          = 'BILLDESK_REFUND_UNEXPECTED_STATE';
+    const BILLDESK_CAN_MANUAL_REFUND                = 'BILLDESK_CAN_MANUAL_REFUND';
+    const LATE_AUTHORIZE_AUTO_CAPTURE               = 'LATE_AUTHORIZE_AUTO_CAPTURE';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
@@ -110,6 +126,8 @@ class TraceCode
     const TERMINAL_ENABLE                           = 'TERMINAL_ENABLE';
     const TERMINAL_DISABLE                          = 'TERMINAL_DISABLE';
     const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
+    const TERMINAL_BOOST_INVALID                    = 'TERMINAL_BOOST_INVALID';
+    const TERMINAL_USED_BEFORE                      = 'TERMINAL_USED_BEFORE';
 
     const CARD_NETWORK_INVALID                      = 'CARD_NETWORK_INVALID';
 
@@ -136,7 +154,9 @@ class TraceCode
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
+    const FEES_BREAKUP_CREATION_FAILED              = 'FEES_BREAKUP_CREATION_FAILED';
     const FEES_BREAKUP_CREATED                      = 'FEES_BREAKUP_CREATED';
+    const GATEWAY_UPI_REQUEST_CALLBACK              = 'GATEWAY_UPI_REQUEST_CALLBACK';
 
     const BAD_REQUEST_INVALID_API_KEY               = 'BAD_REQUEST_INVALID_API_KEY';
     const BAD_REQUEST_INVALID_API_SECRET            = 'BAD_REQUEST_INVALID_API_SECRET';
@@ -146,6 +166,7 @@ class TraceCode
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
     const SMS_SENDING_FAILED                        = 'SMS_SENDING_FAILED';
+    const GATEWAY_ALREADY_REFUNDED_INPUT            = 'GATEWAY_ALREADY_REFUNDED_INPUT';
 
     const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
     const CHECKOUT_PREFERENCES_COOKIE_CHECK         = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
@@ -159,6 +180,7 @@ class TraceCode
     const PAYMENT_PROCESS_FROM_SAVED_LOCAL          = 'PAYMENT_PROCESS_FROM_SAVED_LOCAL';
     const PAYMENT_PROCESS_FROM_SAVED_GLOBAL         = 'PAYMENT_PROCESS_FROM_SAVED_GLOBAL';
     const PAYMENT_SAVE_METHOD                       = 'PAYMENT_SAVE_METHOD';
+    const TRACE_MISC_CODE                           = 'TRACE_MISC_CODE';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
 
@@ -197,12 +219,21 @@ class TraceCode
     const GATEWAY_ENROLLED_AUTH_REQUEST             = 'GATEWAY_ENROLLED_AUTH_REQUEST';
     const GATEWAY_ENROLLED_AUTH_RESPONSE            = 'GATEWAY_ENROLLED_AUTH_RESPONSE';
     const GATEWAY_ENROLLED_AUTH_ERROR               = 'GATEWAY_ENROLLED_AUTH_ERROR';
+    const GATEWAY_RECURRING_AUTH_REQUEST            = 'GATEWAY_RECURRING_AUTH_REQUEST';
+    const GATEWAY_RECURRING_AUTH_RESPONSE           = 'GATEWAY_RECURRING_AUTH_RESPONSE';
+    const GATEWAY_RECURRING_AUTH_ERROR              = 'GATEWAY_RECURRING_AUTH_ERROR';
+    const GATEWAY_VALIDATE_AUTH_REQUEST             = 'GATEWAY_VALIDATE_AUTH_REQUEST';
+    const GATEWAY_VALIDATE_AUTH_RESPONSE            = 'GATEWAY_VALIDATE_AUTH_RESPONSE';
+    const GATEWAY_VALIDATE_AUTH_ERROR               = 'GATEWAY_VALIDATE_AUTH_ERROR';
     const GATEWAY_VALIDATE_RESPONSE                 = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                  = 'GATEWAY_VALIDATE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                    = 'GATEWAY_VALIDATE_ERROR';
     const GATEWAY_AUTHORIZE_RESPONSE                = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                 = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_AUTHORIZE_ERROR                   = 'GATEWAY_AUTHORIZE_ERROR';
+    const GATEWAY_VOID_RESPONSE                     = 'GATEWAY_VOID_RESPONSE';
+    const GATEWAY_VOID_REQUEST                      = 'GATEWAY_VOID_REQUEST';
+    const GATEWAY_VOID_ERROR                        = 'GATEWAY_VOID_ERROR';
     const GATEWAY_AUTH_REQUEST                      = 'GATEWAY_AUTH_REQUEST';
     const GATEWAY_SUPPORT_REQUEST                   = 'GATEWAY_SUPPORT_REQUEST';
     const GATEWAY_SUPPORT_RESPONSE                  = 'GATEWAY_SUPPORT_RESPONSE';
@@ -215,6 +246,7 @@ class TraceCode
     const GATEWAY_PAYMENT_DATA_PICKUP               = 'GATEWAY_PAYMENT_DATA_PICKUP';
     const GATEWAY_PAYMENT_STATUS_CHANGED            = 'GATEWAY_PAYMENT_STATUS_CHANGED';
     const GATEWAY_PAYMENT_CALLBACK                  = 'GATEWAY_PAYMENT_CALLBACK';
+    const GATEWAY_PAYMENT_S2S_CALLBACK              = 'GATEWAY_PAYMENT_S2S_CALLBACK';
     const GATEWAY_PAYMENT_TOPUP_CALLBACK            = 'GATEWAY_PAYMENT_TOPUP_CALLBACK';
     const GATEWAY_PAYMENT_REFUND                    = 'GATEWAY_PAYMENT_REFUND';
     const GATEWAY_PAYMENT_REQUEST                   = 'GATEWAY_PAYMENT_REQUEST';
@@ -223,6 +255,7 @@ class TraceCode
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
+    const GATEWAY_PAYMENT_MISSING_FIELD             = 'GATEWAY_PAYMENT_MISSING_FIELD';
     const GATEWAY_REVERSE_RESPONSE                  = 'GATEWAY_REVERSE_RESPONSE';
     const GATEWAY_REVERSE_REQUEST                   = 'GATEWAY_REVERSE_REQUEST';
     const GATEWAY_REVERSE_ERROR                     = 'GATEWAY_REVERSE_ERROR';
@@ -233,12 +266,17 @@ class TraceCode
     const GATEWAY_REQUEST_TIMEOUT                   = 'GATEWAY_REQUEST_TIMEOUT';
     const GATEWAY_RUPAY_CALLBACK                    = 'GATEWAY_RUPAY_CALLBACK';
     const GATEWAY_HDFC_CALLBACK_EMPTY               = 'GATEWAY_HDFC_CALLBACK_EMPTY';
+    const GATEWAY_CALLBACK_EMPTY                    = 'GATEWAY_CALLBACK_EMPTY';
+    const GATEWAY_CALLBACK_PARES                    = 'GATEWAY_CALLBACK_PARES';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK          = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED         = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
     const GATEWAY_ABSENCE_CREATE                    = 'GATEWAY_ABSENCE_CREATE';
     const GATEWAY_ABSENCE_EDIT                      = 'GATEWAY_ABSENCE_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER             = 'GATEWAY_VERIFY_INVALID_HEADER';
     const GATEWAY_ABSENCE_DELETE                    = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_ALREADY_REFUNDED                  = 'GATEWAY_ALREADY_REFUNDED';
+    const GATEWAY_TERMINAL_TPV                      = 'GATEWAY_TERMINAL_TPV';
+    const GATEWAY_HDFC_CAPTURED                     = 'GATEWAY_HDFC_CAPTURED';
 
     const SETTLEMENT_INITIATING                     = 'SETTLEMENT_INITIATING';
     const SETTLEMENT_INITIATED                      = 'SETTLEMENT_INITIATED';
@@ -259,6 +297,11 @@ class TraceCode
     const SETTLEMENT_DAILY_REPORT_FAILURE           = 'SETTLEMENT_DAILY_REPORT_FAILURE';
     const CLIENT_CERTIFICATE_FILE_GENERATED         = 'CLIENT_CERTIFICATE_FILE_GENERATED';
     const EMI_FILE_SENT                             = 'EMI_FILE_SENT';
+
+    const VPA_CREATE_REQUEST                        = 'VPA_CREATE_REQUEST';
+    const VPA_CREATED                               = 'VPA_CREATED';
+    const VPA_DELETE_REQUEST                        = 'VPA_DELETE_REQUEST';
+    const VPA_DELETED                               = 'VPA_DELETED';
 
     const SCHEDULE_RESOLUTION_INITIATED             = 'SCHEDULE_RESOLUTION_INITIATED';
     const SCHEDULE_ANCHORED_RESOLUTION              = 'SCHEDULE_ANCHORED_RESOLUTION';
@@ -321,6 +364,9 @@ class TraceCode
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
+
+    const EXCHANGE_REQUEST                          = 'EXCHANGE_REQUEST';
+    const EXCHANGE_RESPONSE                         = 'EXCHANGE_RESPONSE';
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
@@ -393,12 +439,29 @@ class TraceCode
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
     const MERCHANT_FEATURE_EDIT                     = 'MERCHANT_FEATURE_EDIT';
+    const MERCHANT_FEATURE_UPDATE                   = 'MERCHANT_FEATURE_UPDATE';
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
+
+    /* Additional Tracecode for HeimDall */
+    const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
+    const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
+    const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
+    const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
 
     // Trace code for item/line_items
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
+
+    // Trace code for Merchant Details
+    const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
+    const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
+    const CREATE_MERCHANT_DETAIL_FAILED             = 'CREATE_MERCHANT_DETAIL_FAILED';
+
+    // Trace codes for offers
+    const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
+    const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -427,9 +490,11 @@ class TraceCode
         self::PAYMENT_CAPTURE_UPDATE_TRANSACTION        => 'Update existing transaction on payment capture',
         self::PAYMENT_CAPTURE_ORDER_UPDATE              => 'Update corresponding order on payment capture',
         self::PAYMENT_TRANSACTION_OLD                   => 'Updating/Creating transaction of an old payment',
-        self::TRANSACTION_FREE_CREDITS                  => 'Using free credits for the payment',
+        self::TRANSACTION_AMOUNT_CREDITS                => 'Using amount credits for the payment',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
+        self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       => 'Payment cannot be auto captured since it is not in authorized state',
+        self::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED  => 'Invoice payment cannot be auto captured since it is either past due date or is not in issued state',
         self::PAYMENT_ANALYTICS_UNRECOGNIZED_DATA       => 'Unrecognized data found in payment analytics log',
         self::PAYMENT_ANALYTICS_INCORRECT_DATA          => 'Incorrect data found in payment analytics log',
         self::VERIFY_REFUND_TRANSACTION_CREATED         => 'Refund transaction created in verify refund',
@@ -440,6 +505,7 @@ class TraceCode
         self::REFUND_GATEWAY_REQUIRED                   => 'Traces whether the gateway refund is required or not',
         self::ORDER_MULTIPLE_CAPTURED_PAYMENTS          => 'Found more than one captured payment for an order.',
         self::PAYMENT_AUTO_REFUND_FAILURE               => 'Refund failed while trying to auto-refund',
+        self::GATEWAY_REFUND_ABSENT                     => 'Refund not done on the gateway side.',
 
         self::ADDRESS_PRIMARY_SWITCH                    => 'Switching primary address of an entity and address type',
 
@@ -514,6 +580,10 @@ class TraceCode
         self::FEATURE_MIGRATION_EXCEPTION               => 'Exception while creating features for merchant',
         self::FEATURE_ASSIGNMENT_EXCEPTION              => 'Exception assigning feature to merchant',
         self::MERCHANT_FEATURE_EDIT                     => 'Edit merchant features',
+
+        self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
+        self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
+        self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
     );
 
     /**

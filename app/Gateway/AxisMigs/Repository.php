@@ -40,12 +40,22 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByPaymentIdAndCommand($paymentId, $command)
+    public function findByPaymentIdAndCommandOrFail($paymentId, $command)
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
                     ->where('vpc_Command', '=', $command)
                     ->firstOrFail();
+    }
+
+    public function getSuccessfullyRefundedEntities($paymentId, $refundAmount)
+    {
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('vpc_Command', '=', Command::REFUND)
+                    ->where('vpc_TxnResponseCode', '=', '0')
+                    ->where('vpc_Amount', '=', $refundAmount)
+                    ->get();
     }
 
     public function findCapturedPaymentByIdOrFail($paymentId)
@@ -54,11 +64,6 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
                     ->firstOrFail();
-    }
-
-    public function findByPaymentId($paymentId)
-    {
-        return $this->findByPaymentIdAndCommand($paymentId, 'pay');
     }
 
     public function countPaymentsNearTransactionNo($txnNo, $terminalId)

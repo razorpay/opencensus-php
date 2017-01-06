@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class DailyReport extends Base\Core
 {
@@ -35,23 +36,16 @@ class DailyReport extends Base\Core
     {
         parent::__construct();
 
-        // date format = 6th July 2015
-        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
-
-        // 00:00 Yesterday
-        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
-
-        // 00:00 Today
-        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
-
         $this->increaseAllowedSystemLimits();
     }
 
     public function sendReportForAllMerchants($input)
     {
-        $from = Carbon::yesterday("Asia/Kolkata")->timestamp;
+        $this->setTimestamps($input);
 
-        $to = Carbon::today("Asia/Kolkata")->timestamp;
+        $from = $this->timeLowerLimit;
+
+        $to = $this->timeUpperLimit;
 
         // Trace to indicate start of mailing
         $this->trace->info(
@@ -75,20 +69,15 @@ class DailyReport extends Base\Core
                                 ->fetchSettlementSummaryBetweenTimestamp($from, $to)
                                 ->getStringAttributesByKey('merchant_id');
 
-        if (isset($input[Entity::ID]) === true)
+        // To allow manual report generation for specific merchants
+        if (isset($input['ids']) === true)
         {
-            $merchantIds = $input[Entity::ID];
+            $merchantIds = $input['ids'];
         }
         else
         {
-            $merchantIds = array_unique(
-                array_merge(
-                    array_keys($captureMerchants),
-                    array_keys($authMerchants),
-                    array_keys($refundMerchants),
-                    array_keys($setlMerchants)
-                )
-            );
+            $merchantIds = array_keys($captureMerchants + $authMerchants
+                                    + $refundMerchants + $setlMerchants);
         }
 
         // Summary of merchants mailed
@@ -184,7 +173,7 @@ class DailyReport extends Base\Core
                     )
         );
 
-        Mail::queue($view, $data, function($message) use ($data)
+        Mail::queue($view, $data, function($message) use ($data, $merchant)
         {
             $to = $data['email'];
 
@@ -210,6 +199,10 @@ class DailyReport extends Base\Core
             $message->cc('notifications@razorpay.com');
 
             $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', $merchant->getPublicId());
         });
     }
 
@@ -229,6 +222,25 @@ class DailyReport extends Base\Core
                 ($data['authorized']['count'] === 0) and
                 ($data['refunds']['count'] === 0) and
                 ($data['settlements']['count'] === 0));
+    }
+
+    protected function setTimestamps($input)
+    {
+        if (isset($input['on']) === true)
+        {
+            $on = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+        }
+        else
+        {
+            $on = Carbon::yesterday('Asia/Kolkata');
+        }
+
+        // date format = 6th July 2015
+        $this->date = $on->format('jS F Y');
+
+        $this->timeLowerLimit = $on->timestamp;
+
+        $this->timeUpperLimit = $on->addDay()->timestamp;
     }
 
     protected function increaseAllowedSystemLimits()

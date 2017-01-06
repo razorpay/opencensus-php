@@ -66,14 +66,17 @@ class Core extends Base\Core
 
     /**
      * This takes the oldBank Account as it's last parameter
-     * @param  Array $input Input Array with new bank account details
-     * @param  Merchant\Entity $merchant
+     *
+     * @param  array              $input Input Array with new bank account details
+     * @param  Merchant\Entity    $merchant
      * @param  BankAccount\Entity $oldBankAccount
+     *
+     * @return mixed
      */
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {
         return $this->repo->transaction(
-            function() use($merchant, $oldBankAccount, $input)
+            function() use ($merchant, $oldBankAccount, $input)
             {
                 $this->repo->delete($oldBankAccount);
 
@@ -89,7 +92,7 @@ class Core extends Base\Core
     {
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
-            'beneficiary_name'      => $merchant->getAttribute('name'),
+            'beneficiary_name'      => substr($merchant->getAttribute('name'), 0, 40),
             'beneficiary_email'     => $merchant->getAttribute('email'),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => 'Bengaluru Palace',

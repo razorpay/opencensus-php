@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal;
 use Crypt;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 
@@ -33,16 +34,20 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
-
+    const TPV                           = 'tpv';
+    const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
-
+    const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
-
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
+    const DEFAULT_CURRENCY              = 'INR';
 
-    const ENABLED                       = 'enabled';
+    /**
+     * Used for column name in merchant terminal pivot table
+     */
+    const TERMINAL_ID                   = 'terminal_id';
 
     //const PRIORITY                      = 'priority';
 
@@ -57,6 +62,8 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::SHARED,
         self::RECURRING,
+        self::TPV,
+        self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -82,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::EMI_DURATION,
         self::RECURRING,
         self::SHARED,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -104,9 +112,9 @@ class Entity extends Base\PublicEntity
 
     protected $entity = 'terminal';
 
-    protected static $generators = array('method');
+    protected static $generators = ['method'];
 
-    protected static $modifiers = array('inputRemoveBlanks');
+    protected static $modifiers = ['inputRemoveBlanks'];
 
     protected $defaults = [
         self::CATEGORY                  => null,
@@ -119,6 +127,8 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
+        self::TPV                       => false,
+        self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
@@ -133,6 +143,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
         self::ENABLED                   => 'boolean',
+        self::TPV                       => 'boolean',
     ];
 
     // ---------------------- GETTERS ----------------------
@@ -222,6 +233,11 @@ class Entity extends Base\PublicEntity
     public function isShared()
     {
         return (bool) $this->getAttribute(self::SHARED);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     // ---------------------- END GETTERS ----------------------
@@ -350,7 +366,10 @@ class Entity extends Base\PublicEntity
     public function generateMethod($input)
     {
         $gateway = $input[self::GATEWAY];
-        $methods = array(self::CARD, self::NETBANKING);
+        $methods = [
+            self::CARD,
+            self::NETBANKING
+        ];
 
         foreach ($methods as $method)
         {
@@ -365,7 +384,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function edit(array $input = array(), $operation = 'edit')
+    public function edit(array $input = [], $operation = 'edit')
     {
         if ($this->getUsedCount() === 0)
         {
@@ -384,7 +403,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    protected function editUsedTerminal($input)
+    protected function editUsedTerminal(array $input)
     {
         assert ($this->getUsedCount() !== 0);
 
@@ -403,6 +422,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function merchants()
+    {
+        return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
     }
 
     public function toArrayWithPassword()
@@ -441,16 +465,14 @@ class Entity extends Base\PublicEntity
         return ($value === $actualValue);
     }
 
-    public function isTPVTerminal()
+    public function isTpv()
     {
-        if (is_null($this->getCategory()) === false)
-        {
-            $tpvCategories = ['6211', '9999'];
+        return $this->getAttribute(self::TPV);
+    }
 
-            return in_array($this->getCategory(), $tpvCategories);
-        }
-
-        return false;
+    public function isNotTpv()
+    {
+        return ($this->isTpv() === false);
     }
 
     public function isRecurringAuthTerminal()
@@ -483,5 +505,10 @@ class Entity extends Base\PublicEntity
         }
 
         return false;
+    }
+
+    public function isNon3DSRecurring()
+    {
+        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
 }

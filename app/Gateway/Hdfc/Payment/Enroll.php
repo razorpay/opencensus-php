@@ -8,6 +8,7 @@ use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 
 trait Enroll
 {
@@ -67,7 +68,6 @@ trait Enroll
         $this->runRequestResponseFlow(
             $this->enrollRequest,
             $this->enrollResponse);
-
 
         //
         // If there is an error then just return
@@ -143,17 +143,13 @@ trait Enroll
 
         $this->udfRemoveHackCharacters($data);
 
-        //
         // Collect fields related to the card
-        //
         $this->mapKeys($card, $this->cardKeyMappings, $data);
 
-        //
-        // Write currency code manually.
-        // Later change it to something better
-        // when we support multiple currencies
-        //
-        $data['currencycode'] = self::INR_CODE;
+        // set the iso numeric currency code
+        $currency = $payment['currency'];
+
+        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
 
         $network = $input['card']['network_code'];
 

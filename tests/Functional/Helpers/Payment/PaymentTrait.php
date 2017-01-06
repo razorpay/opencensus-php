@@ -53,7 +53,7 @@ trait PaymentTrait
      */
     protected $failPaymentOnBankPage = false;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0)
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency='INR')
     {
         if ($payment === null)
         {
@@ -66,13 +66,13 @@ trait PaymentTrait
         {
             $payment = $this->capturePayment(
                 $paymentAuth['razorpay_payment_id'],
-                $amount, $payment['amount']);
+                $amount, $currency, $payment['amount']);
         }
         else
         {
             $payment = $this->capturePayment(
                 $paymentAuth['razorpay_payment_id'],
-                $payment['amount']);
+                $payment['amount'], $currency);
         }
 
         return $payment;
@@ -308,6 +308,30 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doS2SUpiPayment($payment = null)
+    {
+        if ($payment === null)
+        {
+            $payment = $this->getDefaultPaymentArray();
+        }
+
+        $request = array(
+            'method' => 'POST',
+            'url' => '/payments/create/upi',
+            'content' => $payment);
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SPrivateAuthAndCapturePayment($payment = null)
     {
         $paymentAuth = $this->doS2SPrivateAuthPayment($payment);
@@ -489,12 +513,17 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency='INR', $verifyAmount = 0)
     {
         $request = array(
             'method' => 'POST',
             'url' => "/payments/".$id.'/capture',
             'content' => array('amount' => $amount));
+
+        if ($currency !== 'INR')
+        {
+            $request['content']['currency'] = $currency;
+        }
 
         $this->ba->privateAuth();
         $content = $this->makeRequestAndGetContent($request);
@@ -510,7 +539,6 @@ trait PaymentTrait
         {
             $this->assertEquals($content['amount'], $amount);
         }
-
 
         $this->assertEquals($content['status'], 'captured');
 
@@ -1079,10 +1107,10 @@ trait PaymentTrait
     /**
      * Get Otp resend Url
      */
-    public function getOtpResendUrl($payment)
+    public function getOtpResendUrl($paymentId)
     {
         $params = [
-            'id' => $payment->getPublicId(),
+            'id' => $paymentId,
             'key_id' => $this->ba->getKey()
         ];
 

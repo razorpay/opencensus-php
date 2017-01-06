@@ -41,7 +41,7 @@ class Server extends Base\Mock\Server
             'MerchantID'        => $input['MerchantID'],
             'CustomerID'        => $input['CustomerID'],
             'TxnReferenceNo'    => random_alpha_string(10),
-            'BankReferenceNo'   => 'NA',
+            'BankReferenceNo'   => strtoupper(random_alphanum_string(10)),
             'TxnAmount'         => $input['TxnAmount'],
             'BankID'            => $input['BankID'],
             'BankMerchantID'    => $input['BankID'],
@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
                     // ->setInput($gatewayInput)
                     ->getMessageStringWithHash($content);
 
-        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment->merchant);
+        $gatewayTpv = $this->getGatewayInstance()->isPaymentTpvEnabled($gatewayPayment, $payment);
 
         assertTrue($gatewayTpv === $requestTpv);
 

@@ -54,6 +54,7 @@ class ErrorCode
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                         = 'GATEWAY_ERROR_COMMUNICATION_ERROR';
     const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                         = 'GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY';
     const GATEWAY_ERROR_USER_INACTIVE                                               = 'GATEWAY_ERROR_USER_INACTIVE';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                           = 'GATEWAY_ERROR_CARD_NOT_ENROLLED';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
@@ -72,6 +73,7 @@ class ErrorCode
     const GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND                              = 'GATEWAY_ERROR_PAYMENT_SUPPORT_AUTH_NOT_FOUND';
     const GATEWAY_ERROR_PAYMENT_INVALID_MOBILE                                      = 'GATEWAY_ERROR_PAYMENT_INVALID_MOBILE';
     const GATEWAY_ERROR_PAYMENT_INVALID_EMAIL                                       = 'GATEWAY_ERROR_PAYMENT_INVALID_EMAIL';
+    const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                                = 'GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR';
 
     const GATEWAY_ERROR_CARD_INVALID_NAME                                           = 'GATEWAY_ERROR_CARD_INVALID_NAME';
     const GATEWAY_ERROR_CARD_INVALID_NUMBER                                         = 'GATEWAY_ERROR_CARD_INVALID_NUMBER';
@@ -94,16 +96,25 @@ class ErrorCode
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
     const BAD_REQUEST_VALIDATION_FAILURE                                            = 'BAD_REQUEST_VALIDATION_FAILURE';
+    const BAD_REQUEST_PERMISSION_ERROR                                              = 'BAD_REQUEST_PERMISSION_ERROR';
+
+    const BAD_REQUEST_CUSTOMER_ID_MISSING                                           = 'BAD_REQUEST_CUSTOMER_ID_MISSING';
+    const BAD_REQUEST_BANK_ACCOUNT_ID_MISSING                                       = 'BAD_REQUEST_BANK_ACCOUNT_ID_MISSING';
+    const BAD_REQUEST_DUPLICATE_VPA                                                 = 'BAD_REQUEST_DUPLICATE_VPA';
+    const BAD_REQUEST_UNMAPPED_VPA                                                  = 'BAD_REQUEST_UNMAPPED_VPA';
+    const BAD_REQUEST_INVALID_P2P                                                   = 'BAD_REQUEST_INVALID_P2P';
+    const BAD_REQUEST_VPA_DOESNT_EXIST                                              = 'BAD_REQUEST_VPA_DOESNT_EXIST';
 
 // Unauthorized bad requests
     const BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED                               = 'BAD_REQUEST_UNAUTHORIZED_BASICAUTH_EXPECTED';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY                                  = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET                               = 'BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET';
     const BAD_REQUEST_UNAUTHORIZED_INVALID_HASH                                     = 'BAD_REQUEST_UNAUTHORIZED_INVALID_HASH';
-    const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE                               = 'BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_ATHORIZE';
+    const BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE                              = 'BAD_REQUEST_UNAUTHORIZED_UNABLE_TO_AUTHORIZE';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                              = 'BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                      = 'BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                             = 'BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED';
+    const BAD_REQUEST_UNAUTHORIZED                                                  = 'BAD_REQUEST_UNAUTHORIZED';
 
 // Payment bad requests
     const BAD_REQUEST_PAYMENT_FAILED                                                = 'BAD_REQUEST_PAYMENT_FAILED';
@@ -111,7 +122,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID                 = 'BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN                             = 'BAD_REQUEST_PAYMENT_CANCELLED_AT_LOGIN_SCREEN';
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                      = 'BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE';
-    const BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED                                    = 'BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED';
+    const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                     = 'BAD_REQUEST_PAYMENT_ALREADY_PROCESSED';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_CAPTURED';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUNDED                                      = 'BAD_REQUEST_PAYMENT_ALREADY_REFUNDED';
     const BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED                              = 'BAD_REQUEST_PAYMENT_ALREADY_REFUND_INITIATED';
@@ -121,6 +132,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                    = 'BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY                            = 'BAD_REQUEST_PAYMENT_INVALID_AMOUNT_OR_CURRENCY';
     const BAD_REQUEST_PAYMENT_INVALID_FORMAT                                        = 'BAD_REQUEST_PAYMENT_INVALID_FORMAT';
+    const BAD_REQUEST_PAYMENT_INVALID_STATUS                                        = 'BAD_REQUEST_PAYMENT_INVALID_STATUS';
     const BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY                                     = 'BAD_REQUEST_PAYMENT_CARD_IS_NOT_ARRAY';
     const BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED                               = 'BAD_REQUEST_PAYMENT_CAPTURE_ONLY_AUTHORIZED';
     const BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED                                   = 'BAD_REQUEST_PAYMENT_CANCEL_ONLY_CREATED';
@@ -136,6 +148,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED                 = 'BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED';
     const BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_REFUNDED                          = 'BAD_REQUEST_PAYMENT_AMOUNT_GREATER_THAN_REFUNDED';
     const BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH                      = 'BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH';
+    const BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH                             = 'BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH';
     const BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED                               = 'BAD_REQUEST_PAYMENT_NET_BANKING_NOT_ENABLED';
     const BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING                         = 'BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING';
     const BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING                         = 'BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING';
@@ -230,6 +243,7 @@ class ErrorCode
     const BAD_REQUEST_ORDER_EXISTS                                                  = 'BAD_REQUEST_ORDER_EXISTS';
     const BAD_REQUEST_ORDER_DOES_NOT_EXIST                                          = 'BAD_REQUEST_ORDER_DOES_NOT_EXIST';
     const BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH                                 = 'BAD_REQUEST_PAYMENT_ORDER_AMOUNT_MISMATCH';
+    const BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH                               = 'BAD_REQUEST_PAYMENT_ORDER_CURRENCY_MISMATCH';
     const BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID                                    = 'BAD_REQUEST_PAYMENT_ORDER_ALREADY_PAID';
     const BAD_REQUEST_PAYMENT_ABORTED                                               = 'BAD_REQUEST_PAYMENT_ABORTED';
     const BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED                          = 'BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED';
@@ -238,6 +252,7 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING                                   = 'BAD_REQUEST_PAYMENT_PROBLEM_IN_UPDATING';
     const BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT                              = 'BAD_REQUEST_PAYMENT_FEES_GREATER_THAN_AMOUNT';
     const BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED                                   = 'BAD_REQUEST_PAYMENT_CANNOT_BE_CANCELLED';
+    const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                        = 'BAD_REQUEST_PAYMENT_NOT_AUTHORIZED';
 
@@ -254,6 +269,8 @@ class ErrorCode
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                    = 'BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE';
     const BAD_REQUEST_BITLY_LONG_URL_EMPTY                                          = 'BAD_REQUEST_BITLY_LONG_URL_EMPTY';
     const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                                 = 'BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT';
+    const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                       = 'BAD_REQUEST_INVALID_MESSAGE_KEYWORD';
+    const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                        = 'BAD_REQUEST_MISSING_FIELDS_MESSAGE';
 
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
 
@@ -324,6 +341,8 @@ class ErrorCode
     const BAD_REQUEST_LOGO_NOT_PRESENT                                              = 'BAD_REQUEST_LOGO_NOT_PRESENT';
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                       = 'BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL';
     const BAD_REQUEST_MERCHANT_INVALID                                              = 'BAD_REQUEST_MERCHANT_INVALID';
+    const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                                   = 'BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE';
+    const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                              = 'BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED';
 
@@ -359,6 +378,9 @@ class ErrorCode
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
     const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
+    const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
+    const SERVER_ERROR_MULTIPLE_REFUNDS_FOUND                                       = 'SERVER_ERROR_MULTIPLE_REFUNDS_FOUND';
+    const SERVER_ERROR_GATEWAY_NOT_REFUNDED                                         = 'SERVER_ERROR_GATEWAY_NOT_REFUNDED';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -374,6 +396,11 @@ class ErrorCode
     const BAD_REQUEST_SMS_FAILED                                                    = 'BAD_REQUEST_SMS_FAILED';
     const BAD_REQUEST_INVALID_COUNTRY                                               = 'BAD_REQUEST_INVALID_COUNTRY';
 
+    // Heimdall Error Codes
+    const BAD_REQUEST_ROLE_NOT_ASSIGNED                                             = 'BAD_REQUEST_ROLE_NOT_ASSIGNED';
+    const BAD_REQUEST_MERCHANT_NOT_ASSIGNED                                         = 'BAD_REQUEST_MERCHANT_NOT_ASSIGNED';
+    const BAD_REQUEST_PASSWORD_EXPIRED                                              = 'BAD_REQUEST_PASSWORD_EXPIRED';
+
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                         = 'BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS';
 
@@ -383,4 +410,22 @@ class ErrorCode
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
+
+    const BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID                                      = 'BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID';
+    const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
+    const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
+
+    const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
+    const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';
+    const BAD_REQUEST_ORG_ID_REQUIRED                                               = 'BAD_REQUEST_ORG_ID_REQUIRED';
+    const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                     = 'BAD_REQUEST_INVALID_PERMISSIONS_USAGE';
+
+    const BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING                           = 'BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING';
+    const BAD_REQUEST_INVALID_OFFER_DURATION                                        = 'BAD_REQUEST_INVALID_OFFER_DURATION';
+    const BAD_REQUEST_OFFER_ALREADY_EXISTS                                          = 'BAD_REQUEST_OFFER_ALREADY_EXISTS';
+    const BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK               = 'BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK';
+
+    const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
+
+    const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 }

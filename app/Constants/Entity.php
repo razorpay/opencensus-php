@@ -16,6 +16,8 @@ class Entity
     // Core entities
     //
 
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
@@ -23,6 +25,7 @@ class Entity
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
+    const DEVICE                = 'device';
     const REFUND                = 'refund';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
@@ -49,10 +52,21 @@ class Entity
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
+    const MERCHANT_DETAIL       = 'merchant_detail';
     const DAILY_SETTLEMENT      = 'daily_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
+    const ORG                   = 'org';
+    const ORG_HOSTNAME          = 'org_hostname';
+    const ROLE                  = 'role';
+    const PERMISSION            = 'permission';
+    const GROUP                 = 'group';
+    const ADMIN                 = 'admin';
+    const ADMIN_TOKEN           = 'admin_token';
+
     const SETTLEMENT_DETAILS    = 'settlement_details';
+    const OFFER                 = 'offer';
+    const COUPON                = 'coupon';
 
     //
     // Gateway entities
@@ -68,12 +82,14 @@ class Entity
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
+    const UPI_NPCI              = 'upi_npci';
     const AXIS_MIGS             = 'axis_migs';
     const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
+    const UPI_IDFC              = 'upi_idfc';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
@@ -84,6 +100,8 @@ class Entity
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
+        self::P2P                   => \RZP\Models\P2p::class,
+        self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
@@ -106,8 +124,12 @@ class Entity
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
+        self::OFFER                 => \RZP\Models\Offer::class,
+        self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
@@ -131,13 +153,23 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::ORG                   => \RZP\Models\Admin\Org::class,
+        self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ROLE                  => \RZP\Models\Admin\Role::class,
+        self::PERMISSION            => \RZP\Models\Admin\Permission::class,
+        self::GROUP                 => \RZP\Models\Admin\Group::class,
+        self::ADMIN                 => \RZP\Models\Admin\Admin::class,
+        self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
+        self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 
     protected static $repository = array(
+        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
@@ -146,6 +178,13 @@ class Entity
     );
 
     protected static $syncedInLiveAndTest = array(
+        self::ORG,
+        self::ORG_HOSTNAME,
+        self::ROLE,
+        self::PERMISSION,
+        self::GROUP,
+        self::ADMIN,
+        self::ADMIN_TOKEN,
         self::IIN,
         self::FEATURE,
         self::METHODS,

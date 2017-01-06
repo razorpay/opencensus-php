@@ -69,6 +69,8 @@ class Server extends Base\Mock\Server
     {
         parent::capture($input);
 
+        $this->validateActionInput($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -98,6 +100,8 @@ class Server extends Base\Mock\Server
     {
         parent::refund($input);
 
+        $this->validateActionInput($input);
+
         $payment = $this->getGatewayPaymentEntity($input);
 
         $content = array(
@@ -123,9 +127,43 @@ class Server extends Base\Mock\Server
         return $this->prepareResponse($content);
     }
 
+    public function reverse($input)
+    {
+        parent::reverse($input);
+
+        $this->validateActionInput($input);
+
+        $payment = $this->getGatewayPaymentEntity($input);
+
+        $content = array(
+            'vpc_AcqResponseCode'   => '00',
+            'vpc_Amount'            => $payment['vpc_Amount'],
+            'vpc_AuthorisedAmount'  => 0,
+            'vpc_BatchNo'           => '20150503',
+            'vpc_CapturedAmount'    => 0,
+            'vpc_Card'              => 'MC',
+            'vpc_Command'           => 'voidAuthorisation',
+            'vpc_Currency'          => 'INR',
+            'vpc_Locale'            => 'en_US',
+            'vpc_MerchTxnRef'       => $input['vpc_MerchTxnRef'],
+            'vpc_Merchant'          => $input['vpc_Merchant'],
+            'vpc_Message'           => 'Approved',
+            'vpc_ReceiptNo'         => $payment['vpc_ReceiptNo'],
+            'vpc_RefundedAmount'    => '0',
+            'vpc_ShopTransactionNo' => $input['vpc_TransNo'],
+            'vpc_TransactionNo'     => $this->generateTransactionNo(),
+            'vpc_TxnResponseCode'   => '0',
+            'vpc_Version'           => '1',
+        );
+
+        return $this->prepareResponse($content);
+    }
+
     public function verify($input)
     {
         parent::verify($input);
+
+        $this->validateActionInput($input);
 
         $payment = $this->getGatewayPaymentEntity($input);
 
@@ -190,7 +228,7 @@ class Server extends Base\Mock\Server
         switch ($input['vpc_CardNum'])
         {
             case '55553555655655':
-                $content['vpc_3DSstatus'] = 'A';
+                $content['vpc_3DSstatus'] = 'N';
                 break;
             default:
                 $content['vpc_3DSstatus'] = 'Y';

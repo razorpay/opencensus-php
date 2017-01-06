@@ -73,7 +73,7 @@ class AdminController extends Controller
 
         return ApiResponse::json($data);
     }
-    
+
     public function postMailgunCallback($type)
     {
         $input = Request::all();

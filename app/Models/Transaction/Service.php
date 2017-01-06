@@ -2,7 +2,11 @@
 
 namespace RZP\Models\Transaction;
 
+use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 
 class Service extends Base\Service
@@ -34,19 +38,29 @@ class Service extends Base\Service
         return $report->getReport($input, 'transaction');
     }
 
-    public function migrateOlderTransactions()
+    public function createFeeBreakupForTransaction($input)
     {
-        return (new Transaction\DataMigration())->migrateOlderTransactions();
+        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
     }
 
-    public function settleOlderTransactions($input)
+    public function getEntityTransaction($entity, $id)
     {
-        return (new Transaction\DataMigration())->settleOlderTransactions($input);
-    }
+        if ($entity === Constants\Entity::PAYMENT)
+        {
+            Payment\Entity::verifyIdAndStripSign($id);
+        }
+        else if ($entity === Constants\Entity::REFUND)
+        {
+            Refund\Entity::verifyIdAndStripSign($id);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "invalid entity, entity should be either payment or refund");
+        }
 
-    public function addPricingRuleForeOlderTransactions()
-    {
-        return (new Transaction\DataMigration())->addPricingRuleForeOlderTransactions();
-    }
+        $txn = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
 
+        return $txn->toArrayPublic();
+    }
 }

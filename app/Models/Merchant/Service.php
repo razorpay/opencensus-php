@@ -5,6 +5,7 @@ namespace RZP\Models\Merchant;
 use Carbon\Carbon;
 use Config;
 use Mail;
+use DB;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -15,12 +16,16 @@ use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Webhook;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Schedule;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Terminal;
+use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Admin;
+use RZP\Models\Admin\Group;
 
 class Service extends Base\Service
 {
@@ -32,9 +37,64 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
+        if (isset($input['admin_id']))
+        {
+            $adminId = $input['admin_id'];
+
+            $adminId = Admin\Admin\Entity::verifyIdAndStripSign($adminId);
+
+            unset($input['admin_id']);
+        }
+
+        if (isset($input['org_id']))
+        {
+            $orgId = $input['org_id'];
+
+            $orgId = Admin\Org\Entity::verifyIdAndStripSign($orgId);
+
+            unset($input['org_id']);
+        }
+
         $merchant = (new Merchant\Core)->create($input);
 
+        // Once the merchant is created we must tag him to
+        // the admin referral
+        if (isset($adminId) === true)
+        {
+            // Check if $adminId is valid
+            $admin = $this->repo->admin->findOrFailPublic($adminId);
+
+            if ($admin)
+            {
+                // Attach merchant to admin
+                $this->attachAdmin($merchant->getKey(), $adminId);
+            }
+        }
+
+        if (isset($orgId) === true)
+        {
+            $org = $this->repo->org->findOrFailPublic($orgId);
+
+            // Update merchant org
+            $merchant->org()->associate($org);
+
+            $this->repo->saveOrFail($merchant);
+        }
+
         return $merchant->toArrayPublic();
+    }
+
+    protected function attachAdmin($merchantId, $adminId)
+    {
+        DB::table('merchant_map')->insert(
+            [
+                'merchant_id' => $merchantId,
+                'entity_id'   => $adminId,
+                'entity_type' => 'admin'
+            ]
+        );
+
+        return null;
     }
 
     public function createSubMerchant(array $input)
@@ -52,6 +112,18 @@ class Service extends Base\Service
     public function edit($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        if (isset($input['groups']) === true)
+        {
+            $groupIds = [];
+
+            foreach ($input['groups'] as $id)
+            {
+                $groupIds[] = Group\Entity::verifyIdAndStripSign($id);
+            }
+
+            $input['groups'] = $groupIds;
+        }
 
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
@@ -722,4 +794,123 @@ class Service extends Base\Service
         return $response;
     }
 
+    public function getOffers(string $mid)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $offers = (new Offer\Core)->fetchOffers($merchant);
+
+        return $offers->toArrayAdmin();
+    }
+
+    public function getMerchantFeatures()
+    {
+        $merchant = $this->merchant;
+
+        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+
+        return $data;
+    }
+
+    public function addOrRemoveMerchantFeatures($input)
+    {
+        $this->trace->info(
+            TraceCode::MERCHANT_FEATURE_UPDATE,
+            $input);
+
+        $merchant = $this->merchant;
+
+        $merchant->validateInput('feature', $input);
+
+        $featuresToAdd = $this->getFeatureNamesToAdd($input['features']);
+
+        $featuresToRemove = $this->getFeatureNamesToRemove($input['features']);
+
+        $this->addFeatures($featuresToAdd);
+
+        $this->removeFeatures($featuresToRemove);
+
+        $data = (new Feature\Service)->getFeaturesForEntity($merchant);
+
+        return $data;
+    }
+
+    /**
+     * Gets the feature names to be added. A feature needs to be added to merchant
+     * only if the value in input is equal to the default value of the feature
+     */
+    private function getFeatureNamesToAdd($features)
+    {
+        $featureNames = [];
+
+        foreach ($features as $name => $value)
+        {
+            $value = (bool) $value;
+
+            $defaultValue = Feature\Constants::getFeatureValue(
+                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+
+            if ($value === $defaultValue)
+            {
+                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            }
+        }
+
+        return $featureNames;
+    }
+
+    /**
+     * Gets the feature names to be removed. A feature needs to be removed from a
+     * merchant only if the value in input is opposite of the default value of the feature
+     */
+    private function getFeatureNamesToRemove($features)
+    {
+        $featureNames = [];
+
+        foreach ($features as $name => $value)
+        {
+            $value = (bool) $value;
+
+            $defaultValue = Feature\Constants::getFeatureValue(
+                    Feature\Constants::$visibleFeaturesMap[$name]['feature']);
+
+            if ($value !== $defaultValue)
+            {
+                $featureNames[] = Feature\Constants::$visibleFeaturesMap[$name]['feature'];
+            }
+        }
+
+        return $featureNames;
+    }
+
+    private function addFeatures($featureNames)
+    {
+        $merchant = $this->merchant;
+
+        if (count($featureNames) > 0)
+        {
+            $featureParams = [
+                Feature\Entity::ENTITY_ID => $merchant->getId(),
+                Feature\Entity::ENTITY_TYPE => 'merchant',
+                'names' => $featureNames
+            ];
+
+            (new Feature\Service)->addFeatures($featureParams);
+        }
+    }
+
+    private function removeFeatures($featureNames)
+    {
+        $merchant = $this->merchant;
+
+        foreach ($featureNames as $featureName)
+        {
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail($merchant->getId(),
+                            $featureName);
+            if ($feature !== null)
+            {
+                $this->repo->feature->delete($feature);
+            }
+        }
+    }
 }

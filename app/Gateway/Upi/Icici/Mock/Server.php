@@ -125,8 +125,14 @@ class Server extends Base\Mock\Server
         {
             // Just make sure that this doesn't return 92
             case 'unknownresponse@icici':
-                return mt_rand(93, 500);
-                break;
+                // Always return 93 error code
+                return 93;
+            case 'invalidvpa@icici':
+                return 5007;
+            case 'user@invalidbank':
+                return 5008;
+            case 'serverdown@icici':
+                return 5009;
             default:
                 return 92;
         }
@@ -165,6 +171,7 @@ class Server extends Base\Mock\Server
     protected function parseInput($input)
     {
         $input = base64_decode($input);
+
         $input = $this->decrypt($input);
 
         return json_decode($input, true);
@@ -173,7 +180,8 @@ class Server extends Base\Mock\Server
     protected function decrypt($ciphertext)
     {
         $rsa = $this->getRSAInstance('request');
-        return  $rsa->decrypt($ciphertext);
+
+        return $rsa->decrypt($ciphertext);
     }
 
     protected function encrypt($plaintext)
@@ -232,7 +240,7 @@ class Server extends Base\Mock\Server
             'PayerName'         => 'payer name not available',
             'PayerMobile'       => $payment['contact'],
             'PayerVA'           => $upiEntity['vpa'],
-            'PayerAmount'       => number_format($payment['amount']/100, 2, '.', ''),
+            'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
             'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),

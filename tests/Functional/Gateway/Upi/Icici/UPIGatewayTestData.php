@@ -30,7 +30,7 @@ return [
         'entity' => 'payment',
     ],
 
-    'testLongVPA'   =>  [
+    'testLongVPA'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -46,7 +46,7 @@ return [
         ],
     ],
 
-    'testInvalidVPA'   =>  [
+    'testInvalidVPA'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -58,6 +58,38 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
+        ],
+    ],
+
+    'testUpiVPA'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED
+        ],
+    ],
+
+    'testInvalidVPAError'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
         ],
     ],
@@ -176,7 +208,7 @@ return [
     'testUpiEntityMigrationUnknownProviderCode' => [
         'action'                => 'authorize',
         'amount'                => 50000,
-        'bank'                  => NULL,
+        'bank'                  => null,
         'acquirer'              => 'icici',
         'received'              => true,
         'email'                 => null,

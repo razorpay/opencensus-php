@@ -50,7 +50,7 @@
                           <td class="center">
                             <center>
                             <h2 class="center" style="text-align: center;">
-                              <a href="" style="color:white; text-decoration:none;">{{{$merchant['billing_label']}}}</a>
+                              <a href="" style="color:white; text-decoration:none;">{{{$billing_label}}}</a>
                             </h2>
                             </center>
                           </td>
@@ -72,7 +72,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Captured: {{{$captured['payments']['count']}}}<br>
+                            Captured: {{{$captured['count']}}}<br>
                             INR {{{number_format($captured['sum']/100, 2)}}}
                           </center></td>
                         </tr>
@@ -82,7 +82,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Authorized: {{{$authorized['payments']['count']}}}<br>
+                            Authorized: {{{$authorized['count']}}}<br>
                             INR {{{number_format($authorized['sum']/100, 2)}}}
                           </center></td>
                         </tr>
@@ -92,7 +92,7 @@
                       <table class="four columns">
                         <tr>
                           <td class="center"><center>
-                            Refunds: {{{$refunds['refunds']['count']}}}<br>
+                            Refunds: {{{$refunds['count']}}}<br>
                             INR {{{number_format($refunds['sum']/100, 2)}}}
                           </center></td>
                         </tr>
@@ -130,6 +130,64 @@
               </td>
             </tr>
           </table>
+          @if($settlements)
+          <!-- Settlement Section -->
+          <table class="white container">
+            <tr>
+              <td>
+                <table class="row">
+                  <tr>
+                    <td class="wrapper">
+                      <table class="ten columns">
+                        <tr>
+                          <td class="white left-text-pad right-text-pad">
+                            <a href="https://dashboard.razorpay.com/#/app/settlements/list"><h3>Settlements</h3></a>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+                <table class="row">
+                  <tr>
+                    <td class="wrapper">
+                      <table class="four columns">
+                        <tr>
+                          <td>
+                            <p class="left-text-pad">
+                              Settled Amount
+                            </p>
+                            <p class="left-text-pad">
+                              Account Number
+                            </p>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                    <td class="wrapper last">
+                      <table class="eight columns">
+                        <tr>
+                          <td class="lighttext">
+                            <p class="right-text-pad">
+                              INR {{{number_format($settlements['sum']/100, 2)}}}
+                            </p>
+                            <p class="right-text-pad">
+                              {{{$account_number}}}
+                            </p>
+                          </td>
+                          <td class="expander"></td>
+                        </tr>
+                      </table>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+          </table>
+          <!-- There is no separator after settlements -->
+          @endif
           @include('emails.partials.footer', ['message' => $message])
         </td>
       </tr>

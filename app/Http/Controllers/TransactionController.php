@@ -33,25 +33,18 @@ class TransactionController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postMigrateOlderTransactions()
-    {
-        $data = (new Transaction\Service)->migrateOlderTransactions();
-
-        return ApiResponse::json($data);
-    }
-
-    public function postSettleOlderTransactions()
+    public function postCreateFeeBreakup()
     {
         $input = Request::all();
 
-        $data = (new Transaction\Service)->settleOlderTransactions($input);
+        $data = (new Transaction\Service)->createFeeBreakupForTransaction($input);
 
         return ApiResponse::json($data);
     }
 
-    public function postAddPricingRuleForOlderTransactions()
+    public function getEntityTransaction($entity, $id)
     {
-        $data = (new Transaction\Service)->addPricingRuleForeOlderTransactions();
+        $data = (new Transaction\Service)->getEntityTransaction($entity, $id);
 
         return ApiResponse::json($data);
     }

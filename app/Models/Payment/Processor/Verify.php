@@ -29,8 +29,8 @@ trait Verify
         $refunds = $payment->refunds;
 
         $data = [
-            'payment' => $payment->toArray(),
-            'refunds' => $refunds->toArray(),
+            'payment' => $payment->toArrayGateway(),
+            'refunds' => $refunds->toArrayGateway(),
             'merchant' => $this->merchant,
         ];
 
@@ -109,9 +109,9 @@ trait Verify
             $message,
             $data,
             [
-                'color' => 'bad',
-                'icon' => ':boom:',
-                'channel' => Config::get('slack.channels.tech_logs')
+                'color'   => 'bad',
+                'icon'    => ':boom:',
+                'channel' => Config::get('slack.channels.tech_logs_verify')
             ]);
     }
 }

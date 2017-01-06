@@ -116,6 +116,8 @@ class TokenEx
 
         $options = [];
 
+        $options['timeout'] = 20;
+
         if ($this->proxyEnabled === true)
         {
             $options['proxy'] = $this->proxy;

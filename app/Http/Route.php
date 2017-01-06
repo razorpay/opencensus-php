@@ -27,6 +27,7 @@ final class Route
         'payment_create_ajax'                     => ['post',     'payments/create/ajax',                           'PaymentCreateController@postAJAX'                                  ],
         'payment_create_fees'                     => ['post',     'payments/create/fees',                           'PaymentCreateController@postCreatePaymentFees'                     ],
         'payment_create_wallet'                   => ['post',     'payments/create/wallet',                         'PaymentCreateController@postCreateWalletPayment'                   ],
+        'payment_create_upi'                      => ['post',     'payments/create/upi',                            'PaymentCreateController@postCreateUpiPayment'                      ],
         'payment_callback_post'                   => ['post',     'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_get'                    => ['get',      'payments/{id}/callback/{hash}',                  'PaymentCreateController@postCallback'                              ],
         'payment_callback_with_key_post'          => ['post',     'payments/{id}/callback/{hash}/{key}',            'PaymentCreateController@postCallback'                              ],
@@ -49,6 +50,7 @@ final class Route
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
         'payment_authorize_failed'                => ['post',     'payments/{id}/authorize_failed',                 'PaymentController@postAuthorizeFailedPayment'                      ],
+        'payment_fix_authorize_at'                => ['post',     'payments/{id}/fix_authorized_at',                'PaymentController@postFixAuthorizedAt'                             ],
         'payment_authorize_refund'                => ['post',     'payments/{id}/authorize_refund',                 'PaymentController@postRefundAuthorized'                            ],
         'payments_multiple_authorize_refund'      => ['post',     'payments/authorize_refund/bulk',                 'PaymentController@postRefundAuthorizedInBulk'                      ],
         'payment_add_metadata'                    => ['post',     'payments/{id}/metadata',                         'PaymentController@postPaymentMetadata'                             ],
@@ -57,6 +59,7 @@ final class Route
         'payment_fetch_card_details'              => ['get',      'payments/{id}/card',                             'PaymentController@getCardForPayment'                               ],
         'payment_fetch_refunds'                   => ['get',      'payments/{id}/refunds',                          'PaymentController@getRefundsForPayment'                            ],
         'payment_fetch_refund_by_id'              => ['get',      'payments/{paymentId}/refunds/{rfndId}',          'PaymentController@getRefundByRefundAndPaymentId'                   ],
+        'payment_fetch_transaction'               => ['get',      'payments/{id}/transaction',                      'PaymentController@getTransactionForPayment'                        ],
         'payment_auth_notify'                     => ['get',      'payments/auth/notify',                           'PaymentController@getAuthNotify',                                  ],
         'payment_timeout'                         => ['post',     'payments/timeout',                               'PaymentController@postTimeout'                                     ],
         'payment_auto_capture'                    => ['post',     'payments/autocapture',                           'PaymentController@postAutoCapture'                                 ],
@@ -117,6 +120,7 @@ final class Route
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
+        'merchant_get_offers'                     => ['get',      'merchants/{mid}/offers',                         'MerchantController@getOffers'                                      ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
@@ -125,6 +129,8 @@ final class Route
         'credits_fetch_by_id'                     => ['get',      'merchants/{mid}/credits/{id}',                   'MerchantController@getCreditsLog'                                  ],
         'credits_edit'                            => ['put',      'merchants/{mid}/credits/{id}',                   'MerchantController@putCreditsLog'                                  ],
         'credits_delete'                          => ['delete',   'merchants/{mid}/credits/{id}',                   'MerchantController@deleteCreditsLog'                               ],
+        'merchant_get_features'                   => ['get',      'merchants/{id}/features',                        'MerchantController@getMerchantFeatures'                            ],
+        'merchant_update_features'                => ['post',     'merchants/{id}/features',                        'MerchantController@updateMerchantFeatures'                         ],
         'credits_fetch_multiple'                  => ['get',      'credits',                                        'MerchantController@getCreditsLogs'                                 ],
         'methods_update_merchants'                => ['put',      'methods/bulkupdate',                             'MerchantController@updateMethodsForMultipleMerchants'              ],
         'key_fetch_by_id'                         => ['get',      'keys/{id}',                                      'KeyController@getKey'                                              ],
@@ -133,11 +139,17 @@ final class Route
         'terminal_edit'                           => ['put',      'terminals/{id}',                                 'TerminalController@putTerminal'                                    ],
         'terminal_restore'                        => ['put',      'terminals/{id}/restore',                         'TerminalController@restoreTerminal',                               ],
         'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
+        'terminal_add_merchant'                   => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
+        'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
         'webhook_fetch_multiple'                  => ['get',      'webhooks',                                       'MerchantController@getWebhooks'                                    ],
+        'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
+        'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
+        'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -159,9 +171,7 @@ final class Route
         'transaction_fetch_by_id'                 => ['get',      'transactions/{id}',                              'TransactionController@getTransaction'                              ],
         'transaction_fetch_multiple'              => ['get',      'transactions',                                   'TransactionController@getTransactions'                             ],
         'transaction_monthly_report'              => ['get',      'transactions/report',                            'TransactionController@getMonthlyReport'                            ],
-        'migrate_transactions'                    => ['post',     'transactions/migrate',                           'TransactionController@postMigrateOlderTransactions'                ],
-        'setl_transactions'                       => ['post',     'transactions/settle',                            'TransactionController@postSettleOlderTransactions'                 ],
-        'pricing_update_transactions'             => ['post',     'transactions/pricing_rule',                      'TransactionController@postAddPricingRuleForOlderTransactions'      ],
+        'transaction_create_fees_breakup'         => ['post',     'transactions/fees_breakup',                      'TransactionController@postCreateFeeBreakup'                        ],
         'setl_fetch_by_id'                        => ['get',      'settlements/{id}',                               'SettlementController@getSettlement'                                ],
         'setl_fetch_multiple'                     => ['get',      'settlements',                                    'SettlementController@getSettlements'                               ],
         'setl_fetch_transactions'                 => ['get',      'settlements/{id}/transactions',                  'SettlementController@getSettlementTransactions'                    ],
@@ -191,7 +201,7 @@ final class Route
         'mock_hdfc_payment'                       => ['post',     'gateway/mock_hdfc/payment',                      'MockGatewayController@payment'                                     ],
         'mock_hdfc_auth_enrolled'                 => ['post',     'gateway/mock_hdfc/auth_enrolled',                'MockGatewayController@authEnrolled'                                ],
         'mock_hdfc_3dsecure'                      => ['post',     'gateway/3dsecure',                               'MockGatewayController@post3dSecure'                                ],
-        'mock_cybersource_acs'                    => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
+        'mock_acs'                                => ['post',     'gateway/acs/{gateway}',                          'MockGatewayController@postAcs'                                     ],
         'mock_atom_init_payment'                  => ['post',     'gateway/mockanb',                                'MockGatewayController@postAtomInitPayment'                         ],
         'mock_atom_choose_org'                    => ['get',      'gateway/mockanb',                                'MockGatewayController@getAtomChooseOrg'                            ],
         'mock_atom_rzp_payment'                   => ['post',     'gateway/mockanb/payment',                        'MockGatewayController@postAtomRzpPayment'                          ],
@@ -240,6 +250,7 @@ final class Route
         'order_fetch_by_id'                       => ['get',      'orders/{id}',                                    'OrderController@fetchOrderById'                                    ],
         'order_payments'                          => ['get',      'orders/{id}/payments',                           'OrderController@fetchPayments'                                     ],
         'order_refund_multiple_authorized'        => ['post',     'orders/payments/refund',                         'PaymentController@postRefundMultipleAuthorizedPaymentsForOrders'   ],
+        'reports_transaction_broking'             => ['get',      'reports/transaction/broking',                    'MerchantController@getBrokerTransactionReport'                     ],
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
@@ -298,6 +309,91 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
+        'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
+        'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
+        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
+
+        // Routes for the admin roles project
+        'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
+        'admin_get_by_attr'                       => ['get',      'admins/get-multiple-app-auth',                   'OrganizationController@getAdminMultipleOnAppAuth'                  ],
+        'org_get'                                 => ['get',      'orgs/{orgId}',                                   'OrganizationController@getOrganization'                            ],
+        'org_get_self'                            => ['get',      'orgs/{id}/self',                                 'OrganizationController@getOrganization'                            ],
+        'org_get_by_hostname'                     => ['get',      'orgs/hostname/{hostname}',                       'OrganizationController@getOrganizationByHostname'                  ],
+        'org_get_multiple'                        => ['get',      'orgs',                                           'OrganizationController@getOrganizations'                           ],
+        'org_edit'                                => ['put',      'orgs/{orgId}',                                   'OrganizationController@putOrganization'                            ],
+        'org_delete'                              => ['delete',   'orgs/{orgId}',                                   'OrganizationController@deleteOrganization'                         ],
+        'role_create'                             => ['post',     'orgs/{orgId}/roles',                             'OrganizationController@createRole'                                 ],
+        'role_get_multiple'                       => ['get',      'orgs/{orgId}/roles',                             'OrganizationController@getMultipleRoles'                           ],
+        'role_get'                                => ['get',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@getRole'                                    ],
+        'role_edit'                               => ['put',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@putRole'                                    ],
+        'role_delete'                             => ['delete',   'orgs/{orgId}/roles/{id}',                        'OrganizationController@deleteRole'                                 ],
+        'admin_create'                            => ['post',     'orgs/{orgId}/admins',                            'OrganizationController@createAdmin'                                ],
+        'admin_get_multiple'                      => ['get',      'orgs/{orgId}/admins',                            'OrganizationController@fetchAdminMultiple'                         ],
+        'admin_get_app_auth'                      => ['post',     'orgs/{orgId}/current_admin',                     'OrganizationController@getAdminByAppAuth'                          ],
+        'admin_get'                               => ['get',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@getAdmin'                                   ],
+        'admin_edit'                              => ['put',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@editAdmin'                                  ],
+        'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
+        'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
+        'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
+        'group_create'                            => ['post',     'orgs/{orgId}/groups',                            'OrganizationController@createGroup'                                ],
+        'group_get_multiple'                      => ['get',      'orgs/{orgId}/groups',                            'OrganizationController@getGroupsMultiple'                          ],
+        'group_get_allowed_groups'                => ['get',      'orgs/{orgId}/groups/{id}/allowed_groups',        'OrganizationController@getAllowedGroups'                           ],
+        'group_get'                               => ['get',      'orgs/{orgId}/groups/{id}',                       'OrganizationController@getGroup'                                   ],
+        'group_edit'                              => ['put',      'orgs/{orgId}/groups/{id}',                       'OrganizationController@putGroup'                                   ],
+        'group_delete'                            => ['delete',   'orgs/{orgId}/groups/{id}',                       'OrganizationController@deleteGroup'                                ],
+        'admin_lock_old_accounts'                 => ['post',     'admins/lock_accounts',                           'OrganizationController@postLockBulkAccounts'                       ],
+
+        // Permission can only be created by certain organisations.
+        'permission_create'                       => ['post',     'permissions',                                    'OrganizationController@createPermission'                           ],
+        'permission_get'                          => ['get',      'permissions/{id}',                               'OrganizationController@getPermission'                              ],
+        'permission_get_multiple'                 => ['get',      'permissions',                                    'OrganizationController@getMultiplePermissions'                     ],
+        'permission_delete'                       => ['delete',   'permissions/{id}',                               'OrganizationController@deletePermission'                           ],
+        'permission_edit'                         => ['put',      'permissions/{id}',                               'OrganizationController@putPermission',                             ],
+        'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
+        'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
+        'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
+        'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'OrganizationController@postPasswordReset'                          ],
+        'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
+
+        // UPI
+        'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
+        'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],
+        'customer_collect_request_fetch_private'  => ['get',      'customers/{customer_id}/requests/collect',       'P2pController@fetchCollectRequestsPrivate'                         ],
+        'device_create'                           => ['post',     'upi/devices',                                    'DeviceController@createDevice'                                     ],
+        'device_refresh_token'                    => ['put',      'upi/device/upi_token',                           'DeviceController@refreshUpiToken'                                  ],
+        'device_verify'                           => ['post',     'upi/devices/verify',                             'DeviceController@verifyDevice'                                     ],
+        'device_fetch'                            => ['get',      'upi/devices/{id}',                               'DeviceController@getDevice'                                        ],
+        'upi_customer_bank_accounts_fetch'        => ['get',      'upi/bank_accounts/ifsc/{ifsc}',                  'CustomerController@fetchUpiBankAccounts'                           ],
+        'customer_balance_fetch'                  => ['get',      'upi/bank_accounts/{id}/balance',                 'CustomerController@fetchBalance'                                   ],
+        'customer_bank_account_fetch'             => ['get',      'upi/bank_accounts/{id}',                         'CustomerController@fetchBankAccount'                               ],
+        'reset_mpin'                              => ['put',      'upi/bank_accounts/{id}/mpin',                    'CustomerController@resetMpin'                                      ],
+        'set_mpin'                                => ['post',     'upi/bank_accounts/{id}/mpin',                    'CustomerController@setMpin'                                        ],
+        'upi_customer_razor_accounts_fetch'       => ['get',      'upi/bank_accounts',                              'CustomerController@fetchUpiBankAccounts'                           ],
+        'vpa_fetch_multiple'                      => ['get',      'upi/vpa/',                                       'UpiController@getVpas'                                             ],
+        'vpa_available'                           => ['get',      'upi/vpa/available/{vpa}',                        'UpiController@isAvailableVpa'                                      ],
+        'vpa_valid'                               => ['get',      'upi/vpa/valid/{vpa}',                            'UpiController@isValidVpa'                                          ],
+        'vpa_create'                              => ['post',     'upi/vpa/',                                       'CustomerController@createVpa'                                      ],
+        'vpa_delete'                              => ['delete',   'upi/vpa/{id}',                                   'UpiController@deleteVpa'                                           ],
+        'vpa_edit'                                => ['put',      'upi/vpa/{id}',                                   'UpiController@editVpa'                                             ],
+        'vpa_fetch'                               => ['get',      'upi/vpa/{id}',                                   'UpiController@getVpa'                                              ],
+        'customer_collect_request_fetch'          => ['get',      'upi/customers/requests/collect',                 'P2pController@fetchCollectRequests'                                ],
+        'upi_get_key_list'                        => ['get',      'upi/keyList',                                    'UpiController@getPublicKeyList'                                    ],
+        'upi_npci_request'                        => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                           ],
+        'upi_get_bank_list'                       => ['get',      'upi/banks',                                      'UpiController@getBankList'                                         ],
+        'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
+        'upi_read_async'                          => ['get',      'upi/status/{msgId}',                             'UpiController@getStatus'                                           ],
+        'p2p_create'                              => ['post',     'upi/p2p',                                        'P2pController@createP2p'                                           ],
+        'p2p_fetch'                               => ['get',      'upi/p2p/{id}',                                   'P2pController@getP2p'                                              ],
+        'p2p_fetch_multiple'                      => ['get',      'upi/p2p',                                        'P2pController@getP2ps'                                             ],
+        'p2p_reject'                              => ['put',      'upi/p2p/{id}/reject',                            'P2pController@rejectP2p'                                           ],
+        'p2p_authorize'                           => ['post',     'upi/p2p/{id}/authorize',                         'P2pController@postAuthorize'                                       ],
+        'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
+        'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
+        'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
     );
 
     public static $public = array(
@@ -322,6 +418,7 @@ final class Route
         'merchant_methods',
         'merchant_checkout_preferences',
         'mock_atom_init_payment',
+        'mock_acs',
         'mock_atom_choose_org',
         'mock_atom_rzp_payment',
         'mock_atom_rzp_payment_submit',
@@ -349,6 +446,32 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
+        'device_create',
+    );
+
+    public static $device = array(
+        'set_mpin',
+        'reset_mpin',
+        'vpa_create',
+        'vpa_delete',
+        'vpa_edit',
+        'customer_balance_fetch',
+        'customer_bank_account_fetch',
+        'vpa_available',
+        'vpa_valid',
+        'vpa_fetch_multiple',
+        'upi_customer_bank_accounts_fetch',
+        'upi_customer_razor_accounts_fetch',
+        'device_fetch',
+        'device_refresh_token',
+        'vpa_fetch',
+        'p2p_create',
+        'p2p_fetch_multiple',
+        'p2p_fetch',
+        'p2p_authorize',
+        'p2p_reject',
+        'customer_collect_request_fetch',
+        'device_customer_fetch',
     );
 
     public static $publicCallback = array(
@@ -361,12 +484,14 @@ final class Route
         'payment_create_private_old',
         'payment_create_recurring',
         'payment_create_wallet',
+        'payment_create_upi',
         'payment_refund',
         'payment_capture',
         'payment_fetch_by_id',
         'payment_fetch_multiple',
         'payment_fetch_refunds',
         'payment_fetch_refund_by_id',
+        'payment_fetch_transaction',
         'refund_fetch_by_id',
         'refund_fetch_multiple',
         'card_fetch_by_id',
@@ -397,6 +522,9 @@ final class Route
         'customer_delete_address',
         'customer_fetch_addresses',
         'customer_set_primary_address',
+        'p2p_fetch_private',
+        'vpa_fetch_private',
+        'customer_collect_request_fetch_private',
     );
 
     public static $internal = array(
@@ -427,6 +555,7 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
+        'merchant_get_offers',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_fetch_webhooks',
@@ -436,6 +565,8 @@ final class Route
         'terminal_edit',
         'terminal_restore',
         'terminal_toggle',
+        'terminal_add_merchant',
+        'terminal_remove_merchant',
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
@@ -468,6 +599,7 @@ final class Route
         'daily_setl_calc_previous_fees',
         'payment_verify',
         'payment_authorize_failed',
+        'payment_fix_authorize_at',
         'payment_timeout',
         'payment_auth_notify',
         'payment_auto_capture',
@@ -514,11 +646,9 @@ final class Route
         'gateway_delete_absence',
         'gateway_fetch_absence',
         'order_refund_multiple_authorized',
+        'refund_create_gateway_record',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'migrate_transactions',
-        'setl_transactions',
-        'pricing_update_transactions',
         'schedule_create',
         'schedule_fetch',
         'schedule_fetch_multiple',
@@ -535,6 +665,24 @@ final class Route
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
         'adj_add_reverse',
+        'admin_get_app_auth',
+        'admin_authentication',
+        'admin_oauth_authenticate',
+        'admin_get_by_attr',
+        'org_get_self',
+        'org_get_by_hostname',
+        'admin_lock_old_accounts',
+        'merchant_activation_update',
+        'admin_password_reset',
+        'admin_edit_app_auth',
+        'offers_update_merchants',
+        'offer_create',
+        'offer_update',
+        'offer_delete',
+        'currency_update_rates',
+        'currency_fetch_rates',
+        'upi_psp_disallow',
+        'upi_psp_allow',
     );
 
     public static $proxy = array(
@@ -556,6 +704,7 @@ final class Route
         'webhook_fetch',
         'webhook_fetch_multiple',
         'balance_fetch',
+        'reports_transaction_broking',
         'reports_monthly_invoice',
         'reports_monthly_invoice_v2',
         'reports_public_entity',
@@ -578,9 +727,106 @@ final class Route
         'batch_fetch_by_id',
         'batch_retry',
         'batch_download_file',
+        'merchant_get_features',
+        'merchant_update_features',
+        'merchant_activation_details',
+        'merchant_activation_upload_file',
+        'merchant_activation_save',
     );
 
+    public static $admin = [
+        'org_get',
+        'org_get_multiple',
+        'admin_fetch_merchant_ids',
+        'admin_create',
+        'group_get',
+        'group_get_multiple',
+        'group_get_allowed_groups',
+        'org_create',
+        'org_edit',
+        'org_delete',
+        'role_create',
+        'role_get_multiple',
+        'role_get',
+        'role_edit',
+        'role_delete',
+        'admin_get_multiple',
+        'admin_get',
+        'admin_edit',
+        'admin_delete',
+        'group_create',
+        'group_edit',
+        'group_delete',
+        'permission_get_multiple',
+        'permission_get',
+        'permission_create',
+        'permission_edit',
+        'permission_delete',
+        'auditlog_search',
+        'admin_logout',
+    ];
+
+    public static $adminPermission = [
+        'group_create'               => ['create_group'],
+        'admin_create'               => ['create_admin'],
+        'group_get'                  => ['view_group'],
+        'group_get_multiple'         => ['view_all_group'],
+        'org_create'                 => ['create_org'],
+        'org_get_multiple'           => ['view_all_org'],
+        'org_edit'                   => ['edit_org'],
+        'org_delete'                 => ['delete_org'],
+        'org_get'                    => ['view_org'],
+        'role_create'                => ['create_role'],
+        'role_get_multiple'          => ['view_all_role'],
+        'role_get'                   => ['view_role'],
+        'role_edit'                  => ['edit_role'],
+        'role_delete'                => ['delete_role'],
+        'admin_get_multiple'         => ['view_all_admin'],
+        'admin_get'                  => ['view_admin'],
+        'admin_edit'                 => ['edit_admin'],
+        'admin_delete'               => ['delete_admin'],
+        'admin_roles_create'         => ['create_admin', 'create_role'],
+        'admin_roles_revoke'         => ['create_admin', 'create_role'],
+        'admin_merchants_create'     => ['create_admin', 'create_merchant'],
+        'admin_merchants_delete'     => ['delete_admin', 'delete_merchant'],
+        'group_create'               => ['create_group'],
+        'group_edit'                 => ['edit_group'],
+        'group_delete'               => ['delete_group'],
+        'group_merchants_create'     => ['create_group', 'create_merchants'],
+        'group_admins_get'           => ['view_group', 'view_admins'],
+        'group_admins_create'        => ['create_group', 'create_admins'],
+        'group_roles_create'         => ['create_group', 'create_role'],
+        'group_admins_delete'        => ['delete_group', 'delete_admins'],
+        'permission_get_multiple'    => ['view_all_permission'],
+        'edit_activate_merchant'     => ['merchant_activate'],
+        'edit_merchant_enable_live'  => ['merchant_live_enable'],
+        'edit_merchant_disable_live' => ['merchant_live_disable'],
+        'edit_merchant_methods'      => ['merchant_put_payment_methods'],
+        'edit_merchant_pricing'      => ['merchant_assign_pricing'],
+        'add_merchant_adjustment'    => ['adj_add'],
+        'edit_merchant_email'        => ['merchant_edit_email'],
+        'group_get_allowed_groups'   => ['group_get_allowed_groups'],
+        'schedule_create'            => ['schedule_create'],
+        'schedule_fetch'             => ['schedule_fetch'],
+        'schedule_fetch_multiple'    => ['schedule_fetch_multiple'],
+        'schedule_delete'            => ['schedule_delete'],
+        'schedule_update'            => ['schedule_update'],
+        'schedule_assign'            => ['schedule_assign'],
+        'schedule_migration'         => ['schedule_migration'],
+        'admin_fetch_merchant_ids'   => ['view_all_merchants'],
+        'permission_create'          => ['create_permission'],
+        'permission_edit'            => ['edit_permission'],
+        'permission_get'             => ['get_permission'],
+        'permission_delete'          => ['delete_permission'],
+        'auditlog_search'            => ['view_auditlog'],
+        'admin_logout'               => ['*'],
+    ];
+
     public static $direct = array(
+        'device_verify',
+        'upi_get_bank_list',
+        'upi_read_async',
+        'upi_get_key_list',
         'account',
         'dummy_route',
         'invoice_view_live',
@@ -589,14 +835,16 @@ final class Route
         'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
-        'mock_cybersource_acs',
         'transparent_redirect_get',
+        'upi_npci_request',
+        'zero_upi_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
-        'mailgun_webhook'
+        'mailgun_webhook',
+        'auditlog_search'
     );
 
     public static $internalApps = array(
@@ -632,8 +880,10 @@ final class Route
             'invoice_expire',
             'batch_process_file',
             'order_refund_multiple_authorized',
+            'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
+            'currency_update_rates',
         ),
 
         'mailgun' => array(
@@ -668,26 +918,21 @@ final class Route
         'customer_delete_token'         => 'tokens',
         'customer_fetch_tokens'         => 'tokens',
         'payment_create_wallet'         => 's2swallet',
+        'payment_create_upi'            => 's2supi',
         'payment_create_recurring'      => 'recurring',
         'payment_create_private_old'    => 's2s',
         'setl_combined_report'          => 'setl_report',
-        'customer_get_saved_status'     => 'cardsaving',
-        'customer_logout_global'        => 'cardsaving',
-        'app_delete_token'              => 'cardsaving',
-        'otp_post'                      => 'cardsaving',
-        'otp_verify'                    => 'cardsaving',
-        // 'invoice_create'                => 'invoice',
-        // 'invoice_fetch'                 => 'invoice',
-        // 'invoice_fetch_multiple'        => 'invoice',
-        // 'invoice_send_notification'     => 'invoice',
-        // 'invoice_notification_update'   => 'invoice',
-        // 'invoice_get_status'            => 'invoice',
-        // 'item_create'                   => 'invoice',
-        // 'item_fetch'                    => 'invoice',
-        // 'item_fetch_multiple'           => 'invoice',
-        // 'item_update'                   => 'invoice',
-        // 'item_delete'                   => 'invoice',
+        'reports_transaction_broking'   => 'broking_report'
     );
+
+    /*
+     * Routes that can be accessed by other org admins.
+     * primarily razorpay org
+     */
+    public static $crossOrgRoutes = [
+        'org_edit',
+        'org_get',
+    ];
 
     const RAZORPAYJS_ROUTES = array(
         'payment_cancel',
@@ -695,6 +940,29 @@ final class Route
         'payment_otp_submit',
         'payment_otp_resend',
         'payment_topup_ajax');
+
+    const CRITICAL_ROUTES = array(
+        'payment_create',
+        'payment_create_private',
+        'payment_create_recurring',
+        'payment_create_private_old',
+        'payment_create_checkout',
+        'payment_create_jsonp',
+        'payment_create_ajax',
+        'payment_create_fees',
+        'payment_create_wallet',
+        'payment_create_upi',
+        'payment_callback_post',
+        'payment_callback_get',
+        'payment_callback_with_key_post',
+        'payment_callback_with_key_get',
+        'payment_get_status',
+        'payment_otp_submit',
+        'payment_otp_resend',
+        'payment_topup_ajax',
+        'payment_topup_post',
+        'payment_redirect_callback',
+    );
 
     public function __construct($app)
     {
@@ -708,6 +976,23 @@ final class Route
     public function getCurrentRouteName()
     {
         return $this->router->currentRouteName();
+    }
+
+    /**
+     * Check if provided route is critical route.
+     * If null then check for current route
+     *
+     * @param  string  $route
+     * @return boolean
+     */
+    public function isCriticalRoute($route = null)
+    {
+        if ($route === null)
+        {
+            $route = $this->getCurrentRouteName();
+        }
+
+        return in_array($route, self::CRITICAL_ROUTES, true);
     }
 
     public static function getSlaveRoutes()
@@ -765,7 +1050,7 @@ final class Route
         return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
     }
 
-    public function getPublicCallbackUrlWithHash($pid , $key = '')
+    public function getPublicCallbackUrlWithHash($pid, $key = '')
     {
         if ($key === '')
         {
@@ -831,7 +1116,8 @@ final class Route
             'v1/payments/create/jsonp',
             'v1/payments/create/ajax',
             'v1/payments/create/fees',
-            'v1/payments/create/wallet'
+            'v1/payments/create/wallet',
+            'v1/payments/create/upi'
         );
 
         return $doNotLogUrls;

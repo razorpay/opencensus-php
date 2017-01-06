@@ -80,6 +80,16 @@ class Entity extends Base\Entity
 
     protected $appends = array('status', 'refund_status');
 
+    public function getRefundAmount()
+    {
+        return $this->getAttribute('RefAmount');
+    }
+
+    public function getAuthStatus()
+    {
+        return $this->getAttribute('AuthStatus');
+    }
+
     protected function getStatusAttribute()
     {
         $code = $this->attributes['AuthStatus'];
@@ -108,11 +118,16 @@ class Entity extends Base\Entity
     {
         $accountNumber = $this->getAttribute('AccountNumber');
 
-        if (($accountNumber === null) or (empty($accountNumber) === true) or ($accountNumber === 'NA'))
+        if ((empty($accountNumber) === true) or ($accountNumber === 'NA'))
         {
             return false;
         }
 
         return true;
+    }
+
+    public function getBankReferenceNo()
+    {
+        return $this->getAttribute('BankReferenceNo');
     }
 }

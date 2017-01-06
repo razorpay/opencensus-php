@@ -10,8 +10,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Offer;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
@@ -36,6 +38,8 @@ class Checkout
         $data = $this->getMerchantPreferencesData($merchant, $mode, $input);
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
+
+        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
@@ -167,7 +171,7 @@ class Checkout
             return;
         }
 
-        if ($merchant->isFeatureEnabled('cardsaving') === false)
+        if ($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === true)
         {
             return;
         }
@@ -267,7 +271,7 @@ class Checkout
 
     protected function shouldEnableCardSaving(Entity $merchant, $mode)
     {
-        $rememberCustomer = $merchant->isFeatureEnabled(Features::CARD_SAVING);
+        $rememberCustomer = ($merchant->isFeatureEnabled(Feature\Constants::NOFLASHCHECKOUT) === false);
 
         // if card saving is enabled, create a session and set a key
         if ($rememberCustomer === true)

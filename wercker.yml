@@ -49,6 +49,10 @@ build:
               export COMPOSER_CACHE_DIR="$WERCKER_CACHE_DIR/composer" && mkdir -p $COMPOSER_CACHE_DIR
               composer install --no-interaction
       - script:
+          name: Create certificate directories
+          code: |
+              mkdir -p /opt/razorpay/certs/first_data
+      - script:
           name: Run unit tests
           code: php -d memory_limit=2G vendor/phpunit/phpunit/phpunit --debug --verbose
       - script:
