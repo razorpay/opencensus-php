@@ -15,4 +15,22 @@ class Repository extends Base\Repository
     {
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
+
+    public function getMerchantDetailsToBeMigrated($count = 1000, $skip = 0)
+    {
+        return $this->newQuery()
+                    ->select(
+                        Entity::MERCHANT_ID,
+                        Entity::BUSINESS_PROOF_URL,
+                        Entity::BUSINESS_OPERATION_PROOF_URL,
+                        Entity::BUSINESS_PAN_URL,
+                        Entity::ADDRESS_PROOF_URL,
+                        Entity::PROMOTER_PROOF_URL,
+                        Entity::PROMOTER_PAN_URL,
+                        Entity::PROMOTER_ADDRESS_URL)
+                    ->orderBy(Entity::MERCHANT_ID)
+                    ->skip($skip)
+                    ->take($count)
+                    ->get();
+    }
 }
