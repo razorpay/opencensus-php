@@ -44,6 +44,8 @@ class FileMigration extends Base\Service
             }
             catch(\Exception $ex)
             {
+                $this->trace->traceException($ex);
+
                 $response[$merchantDetail->getMerchantId()] = $ex->getMessage();
 
                 $this->trace->info(
@@ -136,6 +138,8 @@ class FileMigration extends Base\Service
         }
         catch (\Exception $ex)
         {
+            $this->trace->traceException($ex);
+
             $this->trace->info(
                 TraceCode::MERCHANT_DETAIL_MIGRATE_FAILED,
                 [
@@ -145,6 +149,8 @@ class FileMigration extends Base\Service
 
             throw $ex;
         }
+
+        $this->trace->info(TraceCode::MERCHANT_DETAIL_MIGRATE_INFO, $fileInfo);
 
         return $fileInfo;
     }

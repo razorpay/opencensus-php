@@ -458,6 +458,7 @@ class TraceCode
     const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
     const CREATE_MERCHANT_DETAIL_FAILED             = 'CREATE_MERCHANT_DETAIL_FAILED';
     const MERCHANT_DETAIL_MIGRATE_FAILED            = 'MERCHANT_DETAIL_MIGRATE_FAILED';
+    const MERCHANT_DETAIL_MIGRATE_INFO              = 'MERCHANT_DETAIL_MIGRATE_INFO';
 
     // Trace codes for offers
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
