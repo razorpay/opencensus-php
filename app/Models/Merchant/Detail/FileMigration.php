@@ -120,7 +120,7 @@ class FileMigration extends Base\Service
                 {
                     $s3url = $merchantDetail[$key];
 
-                    $awsKey = substr(explode($bucket, $s3url)[1], 1);
+                    $awsKey = $merchantId . explode($merchantId, $s3url)[1];
 
                     $result = $s3->headObject([
                         'Bucket' => $bucket,
@@ -149,8 +149,6 @@ class FileMigration extends Base\Service
 
             throw $ex;
         }
-
-        $this->trace->info(TraceCode::MERCHANT_DETAIL_MIGRATE_INFO, $fileInfo);
 
         return $fileInfo;
     }
