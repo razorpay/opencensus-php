@@ -243,6 +243,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_AIRTEL,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
