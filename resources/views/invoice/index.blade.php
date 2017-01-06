@@ -81,6 +81,13 @@
     </div>
     @if ($data['view_less'] === true)
       @if ($data['status'] !== 'paid')
+        @if (isset($_POST['error']))
+          <div id='failure'>
+            <h2>Error</h2>
+            <p>{{ $POST['error']['description'] }}</p>
+            <button>Retry</button>
+          </div>
+        @endif
         <script>
           var data = {!!utf8_json_encode($data)!!};
           var merchant_details = data.merchant_details;
@@ -131,7 +138,9 @@
               options.image = merchant_details.image;
             }
           }
-          Razorpay.open(options);
+          @if (!isset($_POST['error']))
+            Razorpay.open(options);
+          @endif
         </script>
       @endif
     @else
