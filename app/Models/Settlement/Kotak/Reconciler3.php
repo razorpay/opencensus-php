@@ -356,12 +356,8 @@ class Reconciler3
         return $reconcileFile;
     }
 
-    protected function parseTextRow($row)
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
     {
-        $headings = $this->getHeadings();
-
-        $values = explode('~', $row);
-
         $count = count($values);
 
         assert(($count === 54) or ($count === 55));
