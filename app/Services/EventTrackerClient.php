@@ -88,8 +88,6 @@ class EventTrackerClient extends Base\Core
 
         $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
 
-        // s($url);
-
         $headers = [
             'content-type' => 'application/json',
         ];
@@ -106,20 +104,19 @@ class EventTrackerClient extends Base\Core
             $this->defaults['events'] = $this->events;
 
             $options = ['json' => $this->defaults];
-            // if (($this->mock) or
-            //     ($this->mode === Mode::TEST))
-            // {
-            //     return;
-            // }
+
+            if (($this->mock) or
+                ($this->mode === Mode::TEST))
+            {
+                return;
+            }
 
             $response = $client->request('POST', $url, $options);
-
-            s($response);
         }
 
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
         }
 
         $this->events = [];
@@ -150,7 +147,7 @@ class EventTrackerClient extends Base\Core
 
         catch (Exception $e)
         {
-            //$this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
         }
     }
 
@@ -158,10 +155,7 @@ class EventTrackerClient extends Base\Core
     {
         $properties = $this->fillEventProperties($payment);
 
-        $eventId = $this->generateEventId($payment, $properties);
-
         $event = array(
-            'id'            => $eventId,
             'event'         => $eventName,
             'timestamp'     => UniqueIdEntity::getNanotimeInteger(),
         );
@@ -178,11 +172,6 @@ class EventTrackerClient extends Base\Core
         $event['properties'] = $properties;
 
         array_push($this->events, $event);
-    }
-
-    protected function generateEventId(Payment\Entity $payment, array $properties)
-    {
-        return 0;
     }
 
     protected function removeCommonProperties($customProperties)
@@ -241,7 +230,6 @@ class EventTrackerClient extends Base\Core
 
         $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
 
-        // $properties = flatten_array($properties, self::SEPERATOR);
         return $properties;
     }
 
@@ -376,10 +364,10 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        // if ($this->mock === true)
-        // {
-        //     return;
-        // }
+        if ($this->mock === true)
+        {
+            return;
+        }
         try
         {
             $this->appendEvent($payment, $eventName, $customProperties);
@@ -389,7 +377,7 @@ class EventTrackerClient extends Base\Core
 
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::SEGMENT_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
         }
     }
 }

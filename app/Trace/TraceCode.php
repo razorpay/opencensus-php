@@ -431,7 +431,7 @@ class TraceCode
     const FORCE_AUTH_FAILED_PAYMENT                 = 'FORCE_AUTH_FAILED_PAYMENT';
     const PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS   = 'PAYMENT_FAILED_EXPECTED_GATEWAY_SUCCESS';
     const PAYMENT_ALREADY_AUTHORIZED                = 'PAYMENT_ALREADY_AUTHORIZED';
-    const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
+    const LUMBERJACK_POST_FAILED                    = 'LUMBERJACK_POST_FAILED';
 
     // Trace code for features
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
