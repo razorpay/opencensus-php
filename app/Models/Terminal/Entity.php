@@ -111,10 +111,6 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_CLIENT_CERTIFICATE,
     ];
 
-    protected $appends = [
-        self::SUB_MERCHANTS,
-    ];
-
     protected $generateIdOnCreate = true;
 
     protected $entity = 'terminal';
@@ -212,7 +208,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    protected function getSubMerchantsAttribute()
+    public function getSubMerchants()
     {
         return $this->merchants()->pluck(self::ID);
     }
@@ -527,5 +523,17 @@ class Entity extends Base\PublicEntity
     public function isNon3DSRecurring()
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
+
+    public function toArrayPublic($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
     }
 }

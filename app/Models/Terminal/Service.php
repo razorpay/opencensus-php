@@ -27,13 +27,20 @@ class Service extends Base\Service
         return $terminals;
     }
 
-    public function getTerminals($mid)
+    public function getTerminals(string $mid, array $input)
     {
+        $subMerchantFlag = false;
+
+        if (isset($input['sub_merchant']) === true)
+        {
+            $subMerchantFlag = (bool) $input['sub_merchant'];
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        return $terminals->toArrayPublic();
+        return $terminals->toArrayPublic($subMerchantFlag);
     }
 
     public function getTerminal($mid, $tid)
