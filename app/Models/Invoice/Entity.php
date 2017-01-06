@@ -94,7 +94,7 @@ class Entity extends Base\PublicEntity
         'update',
         'delete',
         'sendNotification',
-        'addLineItem',
+        'addLineItems',
         'addManyLineItems',
         'updateLineItem',
         'removeLineItem',

@@ -78,12 +78,12 @@ class Service extends Base\Service
         return $invoice->toArrayPublic();
     }
 
-    public function addLineItem(string $id, array $input)
+    public function addLineItems(string $id, array $input)
     {
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $invoice = $this->core->addLineItem($invoice, $input, $this->merchant);
+        $invoice = $this->core->addLineItems($invoice, $input, $this->merchant);
 
         return $invoice->toArrayPublic();
     }

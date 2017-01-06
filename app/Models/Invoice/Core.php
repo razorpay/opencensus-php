@@ -117,7 +117,7 @@ class Core extends Base\Core
         return $this->repo->invoice->deleteOrFail($invoice);
     }
 
-    public function addLineItem(
+    public function addLineItems(
         Entity $invoice,
         array $input,
         Merchant\Entity $merchant)

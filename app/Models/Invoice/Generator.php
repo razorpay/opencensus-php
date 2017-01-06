@@ -71,8 +71,7 @@ class Generator extends Base\Core
                     }
 
                     $this->repo->saveOrFail($this->invoice);
-                }
-            );
+                });
         }
         catch (\Exception $e)
         {

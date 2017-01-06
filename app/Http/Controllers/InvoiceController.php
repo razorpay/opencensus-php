@@ -68,11 +68,11 @@ class InvoiceController extends Controller
 
     // -------------------------- Line Items --------------------------
 
-    public function addLineItem($id)
+    public function addLineItems($id)
     {
         $input = Request::all();
 
-        $invoice = $this->service->addLineItem($id, $input);
+        $invoice = $this->service->addLineItems($id, $input);
 
         return ApiResponse::json($invoice);
     }

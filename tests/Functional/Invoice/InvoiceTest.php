@@ -455,7 +455,7 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice);
     }
 
-    public function testAddLineItemToInvoice()
+    public function testAddLineItemsToInvoice()
     {
         $this->createDraftInvoice();
 
@@ -501,7 +501,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddLineItemToInvoiceWithBadData()
+    public function testAddLineItemsToInvoiceWithBadData()
     {
         $this->createDraftInvoice();
 
@@ -518,7 +518,7 @@ class InvoiceTest extends TestCase
         $this->assertEquals(0, $lineItems['count']);
     }
 
-    public function testAddLineItemToIssuedInvoice()
+    public function testAddLineItemsToIssuedInvoice()
     {
         $this->createOrder();
 
@@ -536,7 +536,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testAddLineItemToInvoiceAndIssueAndPay()
+    public function testAddLineItemsToInvoiceAndIssueAndPay()
     {
         // Steps:
         // - Creates a draft invoice
@@ -548,7 +548,7 @@ class InvoiceTest extends TestCase
 
         $this->createDraftInvoice();
 
-        $testData = $this->testData['testAddLineItemToInvoice'];
+        $testData = $this->testData['testAddLineItemsToInvoice'];
 
         $response = $this->startTest($testData);
 

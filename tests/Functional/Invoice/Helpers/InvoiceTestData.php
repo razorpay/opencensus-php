@@ -1351,7 +1351,7 @@ return [
         ],
     ],
 
-    'testAddLineItemToInvoice' => [
+    'testAddLineItemsToInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -1499,7 +1499,7 @@ return [
         ],
     ],
 
-    'testAddLineItemToInvoiceWithBadData' => [
+    'testAddLineItemsToInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -1748,7 +1748,7 @@ return [
         ],
     ],
 
-    'testAddLineItemToIssuedInvoice' => [
+    'testAddLineItemsToIssuedInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
