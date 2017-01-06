@@ -10,11 +10,6 @@ use RZP\Models\Base;
 class Processor extends Base\Core
 {
     protected $uniqueCheckerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD];
-
-    public function __construct()
-    {
-        parent::__construct();
-    }
     
     public function createAction(array $input)
     {

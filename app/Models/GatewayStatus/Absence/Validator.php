@@ -47,7 +47,7 @@ class Validator extends Base\Validator
     // debit/credit card of a particular bank is down(typically when the ACS page is down for the issuer bank)
     // visa card of a particular bank is down - not commonly observed, but still keeping it here.
 
-    public function validateGateway($attribute, $gateway)
+    public function validateGateway(string $attribute, string $gateway)
     {
         $valid = Gateway::isValidGateway($gateway);
 
@@ -58,7 +58,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateReasonCode($attribute, $reasonCode)
+    public function validateReasonCode(string $attribute, string $reasonCode)
     {
         if (ReasonCode::isValidReasonCode($reasonCode) === false)
         {
@@ -68,7 +68,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateSource($attribute, $source)
+    public function validateSource(string $attribute, string $source)
     {
         if (ReasonCode::isValidSource($source) === false)
         {
@@ -78,7 +78,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTo($input)
+    public function validateTo(array $input)
     {
         if (empty($input[Entity::TO]) === true)
         {
@@ -111,7 +111,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIssuer($input)
+    public function validateIssuer(array $input)
     {
         $issuer = $input[Entity::ISSUER] ?? null;
 
@@ -119,6 +119,18 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY];
 
+        $this->validateIssuerNetbanking($gateway, $method, $issuer);
+
+        if ($issuer === null)
+        {
+            return ;
+        }
+
+        $this->validateIssuerWallet($method, $issuer);
+    }
+
+    protected function validateIssuerNetbanking(string $gateway, string $method, string $issuer = null)
+    {
         // we need the name of the bank for netbanking and it cannot be empty
         if ($method === Method::NETBANKING)
         {
@@ -138,12 +150,10 @@ class Validator extends Base\Validator
                 );
             }
         }
+    }
 
-        if ($issuer === null)
-        {
-            return ;
-        }
-
+    protected function validateIssuerWallet(string $method, string $issuer = null)
+    {
         if (($method !== Method::WALLET) and (IFSC::exists(strtoupper($issuer)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -159,7 +169,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCardType($input)
+    public function validateCardType(array $input)
     {
         $cardType = $input[Entity::CARD_TYPE] ?? null;
 
@@ -179,7 +189,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateNetwork($input)
+    public function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? null;
 
@@ -211,7 +221,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMethod($input)
+    public function validateMethod(array $input)
     {
         $methods = Method::getAllPaymentMethods();
 
