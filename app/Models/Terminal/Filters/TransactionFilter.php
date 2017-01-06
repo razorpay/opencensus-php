@@ -21,7 +21,7 @@ class TransactionFilter extends Terminal\Filter
         'international',
         'bank',
         'maestro',
-        'icici_billdesk',
+        'netbanking_billdesk',
         'recurring',
     ];
 
@@ -156,8 +156,19 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function iciciBilldeskFilter($terminal, $input)
+    public function netBankingBilldeskFilter($terminal, $input)
     {
+        $bankIfsc = [
+            IFSC::ICIC,
+            IFSC::SBBJ,
+            IFSC::SBHY,
+            IFSC::SBIN,
+            IFSC::SBMY,
+            IFSC::SBTR,
+            IFSC::STBP,
+            IFSC::STCB,
+        ];
+
         $bank = $input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
@@ -167,7 +178,7 @@ class TransactionFilter extends Terminal\Filter
         $networkCategory = $terminal->getNetworkCategory();
 
         if (($input['payment']->isNetbanking()) and
-            ($bank === IFSC::ICIC) and
+            (in_array($bank, $bankIfsc, true) === true) and
             ($gateway === Gateway::BILLDESK))
         {
             // Two rules to be checked
