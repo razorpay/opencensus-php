@@ -11,9 +11,27 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const CORPORATE_IFSC = [
+        IFSC::ICIC
+    ];
+
+    const MUTUAL_FUNDS_IFSC = [
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::SBTR,
+        IFSC::STBP,
+        IFSC::STCB,
+        Netbanking::PUNB_C,
+        Netbanking::PUNB_R,
+        IFSC::CNRB,
+    ];
+
     protected $properties = [
         'method',
         'network',
@@ -158,16 +176,7 @@ class TransactionFilter extends Terminal\Filter
 
     public function netbankingBilldeskFilter($terminal, $input)
     {
-        $bankIfsc = [
-            IFSC::ICIC,
-            IFSC::SBBJ,
-            IFSC::SBHY,
-            IFSC::SBIN,
-            IFSC::SBMY,
-            IFSC::SBTR,
-            IFSC::STBP,
-            IFSC::STCB,
-        ];
+        $bankIfsc = array_merge(self::CORPORATE_IFSC, self::MUTUAL_FUNDS_IFSC);
 
         $bank = $input['payment']->getBank();
 
@@ -196,7 +205,20 @@ class TransactionFilter extends Terminal\Filter
                 // terminal should not be used, as ICIC is not being allowed
                 // on that terminal
                 case 'corporate':
+                    if (in_array($bank, self::CORPORATE_IFSC, true) === false)
+                    {
+                        return true;
+                    }
+
+                    return ($networkCategory !== $category2);
+                    break;
+
                 case 'mutual_funds':
+                    if (in_array($bank, self::MUTUAL_FUNDS_IFSC, true) === false)
+                    {
+                        return true;
+                    }
+
                     return ($networkCategory !== $category2);
                     break;
             }
