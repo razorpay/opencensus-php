@@ -168,7 +168,7 @@ class Service extends Base\Service
                 return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
             }
 
-            if ($currentUser->ownsMerchant($submerchant) !== true)
+            if ($currentUser->ownsMerchant($submerchant) !== true) //checks if the main merchant's user owns the sub-merchant being given user access
             {
                 return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
             }

@@ -136,7 +136,7 @@ class Service extends Base\Service
     {
         $user = $this->buildUserEntity($input);
 
-        if ($user->confirm_token != NULL)
+        if ($user->confirm_token != null)
         {
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }

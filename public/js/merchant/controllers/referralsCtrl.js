@@ -100,10 +100,14 @@ app.controller('ReferralsCtrl', [
       modalInstance.result.then($scope.createMerchant, $.noop);
     };
 
-    $scope.openPasswordModal = function (merchant) {
+    $scope.openCreateUserModal = function (merchant) {
       var modalInstance = $modal.open({
         templateUrl: 'createUserModal.html',
         controller: 'createUserModalCtrl',
+        resolve: {
+          'password': '',
+          'password_confirmation': ''
+        }
       });
       modalInstance.result.then(function (password) {
         merchant.password = password.password;
@@ -129,16 +133,14 @@ app.controller('ReferralsCtrl', [
       $modalInstance.dismiss('cancel');
     };
   }
-]).controller('PasswordModalCtrl', [
+]).controller('createUserModalCtrl', [
   '$scope',
   '$modalInstance',
   'password',
   'password_confirmation',
-  function ($scope, $modalInstance, password, password_confirmation) {
-    $scope.password = password;
-    $scope.password_confirmation = password_confirmation;
+  function ($scope, $modalInstance) {
     $scope.ok = function (password, password_confirmation) {
-      $modalInstance.close({password, password_confirmation});
+      $modalInstance.close({'password': password, 'password_confirmation': password_confirmation});
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');

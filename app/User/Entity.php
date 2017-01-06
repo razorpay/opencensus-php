@@ -209,7 +209,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      */
     public function ownsMerchant($merchant)
     {
-        $merchants = $this->merchants()->where('email',$merchant['email'])
+        $merchant = $this->merchants()->where('email',$merchant['email'])
                                        ->where('role','owner')
                                        ->first();
 
