@@ -136,8 +136,6 @@ app.controller('ReferralsCtrl', [
 ]).controller('createUserModalCtrl', [
   '$scope',
   '$modalInstance',
-  'password',
-  'password_confirmation',
   function ($scope, $modalInstance) {
     $scope.ok = function (password, password_confirmation) {
       $modalInstance.close({'password': password, 'password_confirmation': password_confirmation});
