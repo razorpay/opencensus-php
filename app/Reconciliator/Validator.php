@@ -29,10 +29,10 @@ class Validator
 
         if (Orchestrator::getKeyFromSubArrayMatch($from, $validEmailIds) === null)
         {
-            throw new Exception\ReconciliationException(
-                'The sender email ID is not whitelisted.', ['email_details' => $emailDetails]
-            );
+            return false;
         }
+
+        return true;
     }
 
     public function validateAttachments(& $input)

@@ -112,6 +112,11 @@ class Orchestrator
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
             $this->allFilesDetails = $this->mailGunEntry($input);
+
+            if ($this->allFilesDetails === null)
+            {
+                return [];
+            }
         }
 
         // There must be at least one file. Otherwise, error.
@@ -188,7 +193,23 @@ class Orchestrator
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
-        $this->validator->filterEmails($this->emailDetails);
+        $valid = $this->validator->filterEmails($this->emailDetails);
+
+        if ($valid === false)
+        {
+            // Mailgun is attempting to forward a mail from the wrong recipient.
+            // We still need to return a 200 response, or else Mailgun will
+            // keep retrying.
+            $this->app['trace']->error(
+                TraceCode::RECON_ALERT,
+                [
+                    'error_message' => 'The sender email ID is not whitelisted.',
+                    'email_details' => $this->emailDetails,
+                ]
+            );
+
+            return;
+        }
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
