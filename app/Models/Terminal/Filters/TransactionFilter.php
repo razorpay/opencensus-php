@@ -158,7 +158,11 @@ class TransactionFilter extends Terminal\Filter
 
     public function netbankingBilldeskFilter($terminal, $input)
     {
-        $bankIfsc = [
+        $corporateIfsc = [
+            IFSC::ICIC
+        ];
+
+        $mutualFundsIfsc = [
             IFSC::ICIC,
             IFSC::SBBJ,
             IFSC::SBHY,
@@ -167,7 +171,12 @@ class TransactionFilter extends Terminal\Filter
             IFSC::SBTR,
             IFSC::STBP,
             IFSC::STCB,
+            IFSC::PUNB,
+            IFSC::PUCB,
+            IFSC::CNRB,
         ];
+
+        $bankIfsc = array_merge($corporateIfsc, $mutualFundsIfsc);
 
         $bank = $input['payment']->getBank();
 
@@ -189,6 +198,11 @@ class TransactionFilter extends Terminal\Filter
                 // false.
                 case 'securities' :
                 case 'commodities' :
+                    if ($bank !== IFSC::ICIC)
+                    {
+                        return true;
+                    }
+
                     return ($terminal->isShared() === false);
                     break;
 
@@ -196,7 +210,20 @@ class TransactionFilter extends Terminal\Filter
                 // terminal should not be used, as ICIC is not being allowed
                 // on that terminal
                 case 'corporate':
+                    if ($bank !== IFSC::ICIC)
+                    {
+                        return true;
+                    }
+
+                    return ($networkCategory !== $category2);
+                    break;
+
                 case 'mutual_funds':
+                    if (in_array($bank, $mutualFundsIfsc, true) === false)
+                    {
+                        return true;
+                    }
+
                     return ($networkCategory !== $category2);
                     break;
             }
