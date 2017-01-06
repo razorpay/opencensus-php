@@ -32,7 +32,16 @@ class Repository extends Base\Repository
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
+
+        //
+        // Es specific query params
+        //
+        Base\EsRepository::QUERY => 'sometimes|string|min:1|max:100',
     );
+
+    protected $esWhitelistedParams = [
+        Base\EsRepository::QUERY,
+    ];
 
     public function getSharedAccount()
     {

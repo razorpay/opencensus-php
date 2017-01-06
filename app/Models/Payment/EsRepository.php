@@ -15,6 +15,10 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES,
     ];
 
+    protected $hideFields = [
+        Entity::CAPTURED,
+    ];
+
     protected $searchFields = [
         Entity::NOTES . '.*',
     ];

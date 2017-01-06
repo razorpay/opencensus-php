@@ -39,6 +39,11 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected $fieldsMappings = [];
 
     //
+    // TODO: Need to do something about this hack.
+    //
+    protected $hideFields     = [];
+
+    //
     // These fields will be searched on 'q' (the query string).
     // These can be different from all the fields(above) indexed.
     //
@@ -206,8 +211,8 @@ class EsRepository extends \Razorpay\Spine\Repository
      * @return null
      */
     public function buildSearchQuery(
-        array   $params,
-        string  $merchantId,
+        array   $params = [],
+        string  $merchantId = null,
         array & $clauses,
         array & $filters)
     {
@@ -332,13 +337,15 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         if ($ids !== null)
         {
-            return $query->findMany($ids, $fields);
+            return $query->findMany($ids, $fields)
+                         ->makeHidden($this->hideFields);
         }
 
         return $query->skip($skip)
                      ->take($take)
                      ->select($fields)
-                     ->get();
+                     ->get()
+                     ->makeHidden($this->hideFields);
     }
 
     /**
