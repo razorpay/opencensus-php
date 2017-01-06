@@ -63,9 +63,11 @@ class TerminalController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function reassignMerchant(string $id, string $mid)
+    public function reassignMerchant(string $id)
     {
-        $data = (new Terminal\Service)->reassignMerchantForTerminal($id, $mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->reassignMerchantForTerminal($id, $input);
 
         return ApiResponse::json($data);
     }

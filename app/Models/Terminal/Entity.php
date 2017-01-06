@@ -208,7 +208,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
-    public function getSubMerchants()
+    protected function getSubMerchants()
     {
         return $this->merchants()->pluck(self::ID);
     }
