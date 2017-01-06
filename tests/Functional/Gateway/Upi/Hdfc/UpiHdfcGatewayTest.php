@@ -7,14 +7,14 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
-class UPIHDFCGatewayTest extends TestCase
+class HdfcGatewayTest extends TestCase
 {
     use PaymentTrait;
 
     public function setUp()
     {
         // $this->markTestSkipped();
-        $this->testDataFilePath = __DIR__.'/UPIHDFCGatewayTestData.php';
+        $this->testDataFilePath = __DIR__.'/HdfcGatewayTestData.php';
 
         parent::setUp();
 
