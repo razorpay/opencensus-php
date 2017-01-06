@@ -181,4 +181,40 @@ class Service extends Base\Service
 
         return ['match' => $flag];
     }
+
+    public function addGatewayPrioritiesForMethod(string $method, array $data)
+    {
+        $priorities = (new GatewayPriorities)->build($method, $data);
+
+        if ($priorities->save() === true)
+        {
+            return $priorities->toArray();
+        }
+    }
+
+    public function fetchGatewayPriorities()
+    {
+        $methods = ['card', 'netbanking'];
+
+        $priorities = new Base\PublicCollection;
+
+        foreach ($methods as $method)
+        {
+            $priorities->push((new GatewayPriorities)->fetchPrioritiesForMethod($method)->toArray());
+        }
+
+        return $priorities->flatMap(function ($value)
+        {
+            return $value;
+        })->toArray();
+    }
+
+    public function removeGatewayPrioritiesForMethod(string $method, array $gateways)
+    {
+        $gatewayPriorities = new GatewayPriorities;
+
+        $gatewayPriorities->removePrioritiesForMethod($method, $gateways);
+
+        return $gatewayPriorities->fetchPrioritiesForMethod($method)->toArray();
+    }
 }
