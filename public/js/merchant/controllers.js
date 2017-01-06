@@ -27,7 +27,7 @@ angular.module('app.controllers', [
 
     organization.fetchCurrentOrg().then(function (data) {
       if (data.custom_code) {
-        switch (orgTheme) {
+        switch (data.custom_code) {
           case 'hdfc':
             theme.apply(angular.extend(baseTheme, {
               primary : '#084c8d',

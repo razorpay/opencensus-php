@@ -273,11 +273,17 @@ class Service extends Base\Service
     public function confirm($token)
     {
         $user = User\Entity::getUserForConfirmation($token);
+
+        if (is_null($user))
+        {
+            return [static::INVALID_CONFIRMATION_TOKEN];
+        }
+
         $merchant = $user->getOwnerMerchant();
 
         if (is_null($merchant))
         {
-            return array(static::INVALID_CONFIRMATION_TOKEN);
+            return [static::NO_OWNED_MERCHANT];
         }
 
         return $this->confirmMerchantById($merchant->id);
