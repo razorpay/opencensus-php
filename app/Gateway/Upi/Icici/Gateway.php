@@ -250,7 +250,9 @@ class Gateway extends Base\Gateway
 
         $type = "{$this->mode}_{$type}";
 
-        return parent::getUrl($type);
+        $url = parent::getUrl($type);
+
+        return str_replace('{merchantId}', $this->getMerchantId(), $url);
     }
 
     /**
