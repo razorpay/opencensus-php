@@ -17,6 +17,8 @@ class EventTrackerClient extends Base\Core
 {
     protected $key;
 
+    protected $mock;
+
     protected $events;
 
     protected $defaults;
@@ -66,9 +68,13 @@ class EventTrackerClient extends Base\Core
     {
         parent::__construct();
 
+        $this->request = $app['request'];
+
         $this->ljConfig = $app['config']->get('applications.lumberjack');
 
         $this->key = $this->ljConfig['key'];
+
+        $this->mock = $this->ljConfig['is_mock'];
 
         $this->events = array();
 
@@ -76,7 +82,6 @@ class EventTrackerClient extends Base\Core
 
         $this->paymentContext = array();
 
-        $this->request = $app['request'];
     }
 
     public function buildRequestAndSend()
@@ -368,6 +373,7 @@ class EventTrackerClient extends Base\Core
         {
             return;
         }
+
         try
         {
             $this->appendEvent($payment, $eventName, $customProperties);

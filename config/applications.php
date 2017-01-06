@@ -72,6 +72,7 @@ return array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET'),
         'key'       => env('LUMBERJACK_KEY'),
+        'is_mock'   => env('LUMBERJACK_MOCK', false)
     ),
 
     'exchange'  => [
