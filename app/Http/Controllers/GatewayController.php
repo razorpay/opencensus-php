@@ -8,7 +8,7 @@ use Request;
 use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Payment;
-use RZP\Models\Terminal;
+use RZP\Models\Terminal\GatewayPriorities;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
@@ -322,14 +322,14 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->addGatewayPrioritiesForMethod($method, $input);
+        $data = (new GatewayPriorities\Service)->addGatewayPrioritiesForMethod($method, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getGatewayPriorities()
     {
-        $data = (new Terminal\Service)->fetchGatewayPriorities();
+        $data = (new GatewayPriorities\Service)->fetchGatewayPriorities();
 
         return ApiResponse::json($data);
     }
@@ -338,7 +338,7 @@ class GatewayController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Terminal\Service)->removeGatewayPrioritiesForMethod($method, $input);
+        $data = (new GatewayPriorities\Service)->removeGatewayPrioritiesForMethod($method, $input);
 
         return ApiResponse::json($data);
     }
