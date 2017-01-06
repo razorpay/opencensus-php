@@ -74,6 +74,10 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
     ];
 
+    protected static $generators = array(
+        self::DATE
+    );
+
     protected $dates = [
         self::DATE,
         self::INITIATED_AT,
@@ -90,6 +94,13 @@ class Entity extends Base\PublicEntity
         self::SETTLEMENT_COUNT  => 'int',
         self::TRANSACTION_COUNT => 'int',
     ];
+
+    protected function generateDate($input)
+    {
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $this->setAttribute(self::DATE, $timestamp);
+    }
 
     public function getSettlementCount()
     {
@@ -139,12 +150,5 @@ class Entity extends Base\PublicEntity
         $urls = json_encode($urls);
 
         $this->attributes[self::URLS] = $urls;
-    }
-
-    protected function setDateAttribute()
-    {
-        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
-
-        $this->attributes[self::DATE] = $timestamp;
     }
 }

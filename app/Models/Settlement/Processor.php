@@ -119,6 +119,8 @@ class Processor extends Base\Core
     {
         try
         {
+            $this->dailySettlement = $this->createDailySettlementEntity($channel);
+
             list($settlements, $txnCount) = $this->createSettlements($channel, $schedule);
 
             $data = [
@@ -129,11 +131,9 @@ class Processor extends Base\Core
 
             if ($settlements->count() > 0)
             {
-                $this->dailySettlement = $this->createDailySetlEntity($settlements, $txnCount, $channel);
-
                 list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
 
-                $this->updateDailySettlementEntity($urlText, $urlExcel);
+                $this->updateDailySettlementEntityUrls($urlText, $urlExcel);
 
                 $data['settlement_text_file']  = $urlText;
                 $data['settlement_excel_file'] = $urlExcel;
@@ -276,6 +276,14 @@ class Processor extends Base\Core
                                             $setlApiFee,
                                             $serviceTax);
 
+                    $this->updateDailySettlementForSettlement($setl, $settledTxns->count());
+
+                    $setl->dailySettlement()->associate($this->dailySettlement);
+
+                    $this->saveOrFail($this->dailySettlement);
+
+                    $this->saveOrFail($setl);
+
                     $this->repo->transaction->settled($setlTxns, $this->setlTime);
 
                     return $setl;
@@ -289,42 +297,38 @@ class Processor extends Base\Core
         return [$settlements, $txnsSettled];
     }
 
-    protected function createDailySetlEntity($settlements, $txnsCount, $channel)
+    protected function createDailySettlementEntity($channel)
     {
-        $dailySettlement = DailySettlement::newForToday();
-
-        $totalAmount = $totalFees = $totalServiceTax = 0;
-
-        foreach ($settlements as $settlement)
-        {
-            $totalAmount += $settlement->getAmount();
-
-            $totalFees += $settlement->getFees();
-
-            $totalServiceTax += $settlement->getServiceTax();
-        }
-
-        $input = array(
-            DailySettlement::FEES              => $totalFees,
-            DailySettlement::AMOUNT            => $totalAmount,
+        $input = [
             DailySettlement::CHANNEL           => $channel,
-            DailySettlement::SERVICE_TAX       => $totalServiceTax,
-            DailySettlement::SETTLEMENT_COUNT  => $settlements->count(),
-            DailySettlement::TRANSACTION_COUNT => $txnsCount,
+            DailySettlement::AMOUNT            => 0,
+            DailySettlement::FEES              => 0,
+            DailySettlement::SERVICE_TAX       => 0,
+            DailySettlement::SETTLEMENT_COUNT  => 0,
+            DailySettlement::TRANSACTION_COUNT => 0,
             DailySettlement::INITIATED_AT      => time(),
             DailySettlement::API_FEE           => 0,
             DailySettlement::GATEWAY_FEE       => 0,
             DailySettlement::URLS              => null,
-        );
+        ];
 
-        $dailySettlement->fill($input);
-
-        $this->repo->saveOrFail($dailySettlement);
+        $dailySettlement->build($input);
 
         return $dailySettlement;
     }
 
-    protected function updateDailySettlementEntity($urlText, $urlExcel)
+    protected function updateDailySettlementForSettlement($settlement, $txnsCount)
+    {
+        $this->dailySettlement->incrementAmount($setl->getAmoun());
+        $this->dailySettlement->incrementFees($setl->getFees());
+        $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
+        $this->dailySettlement->incrementSettlementCount();
+        $this->dailySettlement->incrementTransactionCount($txnsCount);
+
+        $this->repo->saveOrFail($this->dailySettlement);
+    }
+
+    protected function updateDailySettlementEntityUrls($urlText, $urlExcel)
     {
         $dailySettlement = $this->dailySettlement;
 
