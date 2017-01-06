@@ -13,6 +13,8 @@ use RZP\Error\ErrorCode;
 
 class AdminAccess
 {
+    const WILDCARD_PERMISSION = '*';
+
     protected $app;
 
     public function __construct(Application $app)
@@ -51,11 +53,31 @@ class AdminAccess
         return $next($request);
     }
 
+    private function getRoutePermissions(string $routeName)
+    {
+        $adminAuthRoutes = Route::$adminPermission;
+
+        if (isset($adminAuthRoutes[$routeName]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
+
+        return $adminAuthRoutes[$routeName];
+    }
+
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
-        if (in_array($routeName, self::getExcludedRoutes()) === true)
+        if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;
+        }
+
+        // Some orgs have global access to edit other org over specific routes
+        if ((in_array($routeName, Route::$crossOrgRoutes, true) === true) and
+            ($admin->org->isCrossOrgAccessEnabled() === true))
+        {
+            return true;
         }
 
         // Fetch public org Id from uri
@@ -116,14 +138,7 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        $adminAuthRoutes = Route::$adminPermission;
-
-        if (isset($adminAuthRoutes[$routeName]) === false)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
-        }
-
-        $permissions = $adminAuthRoutes[$routeName];
+        $permissions = $this->getRoutePermissions($routeName);
 
         // We have the following:
         // - permission
@@ -141,7 +156,8 @@ class AdminAccess
         // 2. Check if the specified permissions exist in our
         // generated white list
 
-        $policyPassed = $this->checkPermissionsAllowed($permissions, $adminPermissions);
+        $policyPassed = $this->checkPermissionsAllowed(
+            $permissions, $adminPermissions);
 
         if ($policyPassed === true)
         {
@@ -165,15 +181,33 @@ class AdminAccess
 
     private function checkPermissionsAllowed($toCheck, $haystack)
     {
+        if (in_array(self::WILDCARD_PERMISSION, $toCheck, true) === true)
+        {
+            $this->validateWildCardPermissionRules($toCheck);
+
+            return true;
+        }
+
         foreach ($toCheck as $permission)
         {
-            if (in_array($permission, $haystack) === false)
+            if (in_array($permission, $haystack, true) === false)
             {
                 return false;
             }
         }
 
         return true;
+    }
+
+    private function validateWildCardPermissionRules(array $permissions)
+    {
+        // Check wildcard permission is the only one used in the list
+        if ((in_array(self::WILDCARD_PERMISSION, $permissions) === true) and
+            (count($permissions) > 1))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PERMISSIONS_USAGE);
+        }
     }
 
     private function groupCheck($admin, $merchant)

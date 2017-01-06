@@ -35,16 +35,14 @@ class Entity extends Base\PublicEntity
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
     const TPV                           = 'tpv';
-
+    const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
-
+    const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
-
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
-
-    const ENABLED                       = 'enabled';
+    const DEFAULT_CURRENCY              = 'INR';
 
     /**
      * Used for column name in merchant terminal pivot table
@@ -67,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::SHARED,
         self::RECURRING,
         self::TPV,
+        self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -136,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
+        self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
@@ -245,6 +245,11 @@ class Entity extends Base\PublicEntity
     public function isShared()
     {
         return (bool) $this->getAttribute(self::SHARED);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
     }
 
     // ---------------------- END GETTERS ----------------------

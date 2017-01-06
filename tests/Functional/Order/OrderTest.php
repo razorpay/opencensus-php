@@ -163,6 +163,7 @@ class OrderTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
         $this->ba->publicAuth();
         $feesArray = $this->validateFees($payment);
+
         $this->ba->privateAuth();
 
         $amount = $payment['amount'];

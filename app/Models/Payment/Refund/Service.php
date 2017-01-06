@@ -17,10 +17,10 @@ use RZP\Models\Transaction;
 class Service extends Base\Service
 {
     /**
-     * We get the last 24 hours refunds created of a gateway.
+     * We get the last 100 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 86400;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
     public function getRefundsFile(array $input = array())
     {
@@ -330,7 +330,7 @@ class Service extends Base\Service
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTransaction->merchant)
                                         ->createTransactionForRefund(
-                                            $refundWithoutTransaction, $payment);
+                                            $refundWithoutTransaction, $payment, true);
 
                     $this->repo->saveOrFail($refundWithoutTransaction);
 

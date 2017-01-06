@@ -3,6 +3,7 @@
 namespace RZP\Models\Admin\Admin;
 
 use Hash;
+use Mail;
 use Event;
 use RZP\Error;
 use Carbon\Carbon;
@@ -12,7 +13,6 @@ use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Group;
 use RZP\Models\Admin\Org\AuthPolicy;
 use RZP\Models\Admin\Action;
-use Mail;
 use RZP\Models\Merchant;
 use RZP\Events\AuditLogEntry;
 use RZP\Trace\TraceCode;
@@ -34,7 +34,6 @@ class Service extends Base\Service
     {
         $email = $input['username'];
 
-        // Get the admin record
         $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
 
         if ($admin === null)
@@ -50,85 +49,62 @@ class Service extends Base\Service
             $authPolicy = new AuthPolicy\Service;
             $authPolicy->validateLogin($admin, $input['password']);
         }
-        catch (Exception\BadRequestValidationFailureException $e)
+        catch (Exception\RecoverableException $ex)
         {
-            $admin->incrementFailedAttempts();
-            $this->repo->saveOrFail($admin);
-
-            throw $e;
+            $this->handleAuthFailure($admin, Action::LOGIN_FAIL, $ex);
         }
-
-        // Valid password ?
-        $isAuthenticated = true;
-
-        $errorCode = null;
 
         if (Hash::check($input['password'], $admin->getPassword()))
         {
             $data = $this->generateLoginToken($admin);
 
-            $validate = $authPolicy->validateLogin($admin, $input['password'], 'after');
+            $authPolicy->validateLogin($admin, $input['password'], 'after');
 
-            // Send admin, description, entity object
-
-            if ($validate !== null)
-            {
-                $isAuthenticated = false;
-
-                $errorCode = Error\ErrorCode::BAD_REQUEST_AUTH_VALIDATION_FAILED;
-            }
-            else
-            {
-                $this->fireAdminAction($admin, Action::LOGIN);
-            }
+            $this->fireAdminAction($admin, Action::LOGIN);
 
             return $data;
         }
-        else
-        {
-            $isAuthenticated = false;
 
-            $errorCode = Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED;
-        }
-
-        return $this->handleAuthFailure($isAuthenticated, $errorCode, $admin);
+        $this->handleAuthFailure($admin);
     }
 
-    protected function handleAuthFailure(bool $isAuthenticated, string $errorCode, $admin)
+    protected function handleAuthFailure($admin, $action = Action::LOGIN_FAIL, $exception = null)
     {
-        if ($isAuthenticated === false)
+        $admin->incrementFailedAttempts();
+
+        $this->fireAdminAction(
+            $admin,
+            $action,
+            ['failed_attempts' => $admin->getFailedAttempts()]);
+
+        $this->repo->saveOrFail($admin);
+
+        if ($exception === null)
         {
-            $admin->incrementFailedAttempts();
-
-            $this->fireAdminAction(
-                $admin,
-                Action::LOGIN_FAIL,
-                ['failed_attempts' => $admin->getFailedAttempts()]);
-
-            $this->repo->saveOrFail($admin);
-
-            throw new Exception\BadRequestException($errorCode);
-
+            $exception = new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
         }
+
+        throw $exception;
     }
 
     protected function fireAdminAction(Entity $admin, array $action, array $customProperties = null)
     {
-        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ["admin" => $admin, "action" => $action]);
+        $this->trace->info(TraceCode::HEIMDALL_AUDIT_LOG, ['admin' => $admin, 'action' => $action]);
 
-        if (!is_array($admin))
+        if ($admin instanceof Entity)
         {
             $admin = $admin->toArrayPublic();
         }
+
         event(new AuditLogEntry($admin, $action, $customProperties));
-        //$this->app['events']->fire(new \RZP\Events\AuditLogEntry($admin, $action, $customProperties));
     }
 
     public function passwordReset(string $orgId, array $input)
     {
         $this->core()->passwordReset($orgId, $input);
 
-        return ["success" => true];
+        return ['success' => true];
     }
 
     public function loginWithOAuth($input)
@@ -138,9 +114,8 @@ class Service extends Base\Service
         // Get the admin record
         $admin = $this->repo->admin->findByEmail($input['email']);
 
-        // Valid token ?
-        if (($admin->oauth_access_token === $input['oauth_access_token']) and
-            ($admin->oauth_provider_id === $input['oauth_provider_id']))
+        if (($admin->getOAuthAccessToken() === $input['oauth_access_token']) and
+            ($admin->getOAuthProviderID() === $input['oauth_provider_id']))
         {
             $data = $this->generateLoginToken($admin);
 
@@ -148,19 +123,8 @@ class Service extends Base\Service
 
             return $data;
         }
-        else
-        {
-            $admin->incrementFailedAttempts();
 
-            $this->fireAdminAction($admin, Action::LOGIN_FAIL_OAUTH, ['failed_attempts' => $admin->getFailedAttempts()]);
-
-            $this->repo->saveOrFail($admin);
-
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_AUTHENTICATION_FAILED);
-        }
-
-        return null;
+        $this->handleAuthFailure($admin, Action::LOGIN_FAIL_OAUTH);
     }
 
     private function generateLoginToken($admin)
@@ -175,10 +139,9 @@ class Service extends Base\Service
 
         $tokenAttributes = [
             'token'      => str_random(40),
-            'expires_at' => Carbon::now()->addHours(1)->timestamp
+            'expires_at' => Carbon::now()->addDays(30)->timestamp
         ];
 
-        // Create a token for the user
         $token = $this->core()->createAuthToken($admin, $tokenAttributes);
 
         $admin = $admin->toArrayPublic();
@@ -203,7 +166,7 @@ class Service extends Base\Service
     {
         $org = $admin->org;
 
-        if ($org['auth_type'] !== 'password')
+        if ($org->getAuthType() !== 'password')
         {
             return;
         }
@@ -222,7 +185,7 @@ class Service extends Base\Service
         $template = [
             'user' => [
                 'email' => $admin->getEmail(),
-                // Hack for now. Remove it
+                // todo: Hack for now. Remove it
                 'password' => $input['password'],
                 'org' => $org->getDisplayName(),
                 'url' => $this->app['config']->get('applications.dashboard.url'),
@@ -246,7 +209,7 @@ class Service extends Base\Service
     {
         // Fetch admin with relations
         $admin = $this->repo->admin->findByPublicIdAndOrgIdWithRelations(
-            $adminId, $orgId, ['groups', 'roles']);
+            $adminId, $orgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admin->toArrayPublic();
     }
@@ -293,11 +256,14 @@ class Service extends Base\Service
 
         $admin = $admin->toArrayPublic();
 
-        $admin['permissions'] = $permissions->all();
+        if (empty($permissions) === false)
+        {
+            $admin[Entity::PERMISSIONS] = $permissions->all();
+        }
 
-        $admin['roles'] = $roleNames;
+        $admin[Entity::ROLES] = $roleNames;
 
-        $admin['groups'] = $groupRules;
+        $admin[Entity::GROUPS] = $groupRules;
 
         return $admin;
     }
@@ -319,18 +285,40 @@ class Service extends Base\Service
     {
         $orgId = Org\Entity::verifyIdAndStripSign($orgId);
 
-        $admins = $this->repo->admin->fetchByOrgId($orgId);
+        $admins = $this->repo->admin->fetchByOrgId($orgId, [Entity::GROUPS, Entity::ROLES]);
 
         return $admins->toArrayPublic();
     }
 
+    public function fetchMultipleOnAppAuth(array $input)
+    {
+        $admins = $this->repo->admin->fetch($input);
+
+        $admins = $admins->toArrayPublic();
+
+        // heimdall dashboard has a custom parser which is not compatible with
+        // collections. If dashboard needs a single entity and passes a unique
+        // key return the only collection
+        // todo: Use toArrayPublicEmbedded
+        if ($admins['count'] === 1)
+        {
+            return $admins['items'][0];
+        }
+
+        return [];
+    }
+
     public function editAdmin(string $orgId, string $adminId, array $input)
     {
-        $authAdmin = $this->app['basicauth']->getAdmin();
-
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
+        // making impromptu changes to make editAdmin work on appAuth
+        if ($this->app['basicauth']->isAdminAuth() === true)
+        {
+            $authAdmin = $this->app['basicauth']->getAdmin();
+
+            $admin->getValidator()->validateSelfEditForbidden($authAdmin, $admin);
+        }
 
         $admin = $this->core()->edit($admin, $input);
 
@@ -341,76 +329,87 @@ class Service extends Base\Service
     {
         $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
 
-        $adminGroups = $admin->groups->toArray();
-
-        $adminMerchants = $admin->merchants->toArray();
-
-        // Get entire children hierarchy for each group
-        // that the admin belongs to
-
-        $childrenGroups = [];
-
-        $childrenAdmins = [];
-
-        foreach ($adminGroups as $group)
+        // If the admin has special priv to fetch/view all the merchants
+        // of his org
+        if ($admin->canSeeAllMerchants())
         {
-            $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
+            $merchants = $this->repo->merchant->fetchMerchantsByOrgId($admin->org->id)->toArray();
 
-            $childrenGroups = array_merge($childrenGroups, $groupChildren);
+            $merchantIds = array_column($merchants, 'id');
+        }
+        else
+        {
+            $adminGroups = $admin->groups->toArray();
 
-            foreach ($groupChildren as $group)
+            $adminMerchants = $admin->merchants->toArray();
+
+            // Get entire children hierarchy for each group
+            // that the admin belongs to
+
+            $childrenGroups = [];
+
+            $childrenAdmins = [];
+
+            foreach ($adminGroups as $group)
             {
-                $group = new Group\Entity($group);
+                $groupChildren = (new Group\Service)->getChildrenHierarchy($orgId, $group['id']);
 
-                $childrenAdmins = array_merge($childrenAdmins, $group->admins->toArray());
+                $childrenGroups = array_merge($childrenGroups, $groupChildren);
+
+                foreach ($groupChildren as $group)
+                {
+                    $group = new Group\Entity($group);
+
+                    $childrenAdmins = array_merge($childrenAdmins, $group->admins->toArray());
+                }
             }
+
+            // An admin could belong to multiple groups
+            // so we need to select unique admins from $childrenAdmins
+
+            $adminIds = array_unique( array_column($childrenAdmins, 'id') );
+
+            $childrenAdmins = array_filter($childrenAdmins, function ($value, $key) use ($adminIds)
+            {
+                return in_array($key, array_keys($adminIds));
+            }, ARRAY_FILTER_USE_BOTH);
+
+            // Loop over all the groups and get their merchants
+            // TODO: this can be placed in the previous inner foreach as well
+
+            $merchants = [];
+
+            foreach ($childrenGroups as $group)
+            {
+                $groupId = Group\Entity::getSignedId($group['id']);
+
+                $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
+
+                $merchants = array_merge($merchants, $group->merchants->toArray());
+            }
+
+            // Loop over all the admins and get their merchants
+            //
+            // Note: currently a merchant can belong to only 1 admin
+            // not by DB design but by code constraints so we don't
+            // need to run the list of merchants through a uniqueness check
+
+            foreach ($childrenAdmins as $admin)
+            {
+                $adminId = Entity::getSignedId($admin['id']);
+
+                $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
+
+                $merchants = array_merge($merchants, $admin->merchants->toArray());
+            }
+
+            // Finally merging the admin's merchants with the list
+            // of merchants resolved from his hierarchy
+            $merchants = array_merge($merchants, $adminMerchants);
+
+            // ... and we'll return all the merchant IDs to the dashboard client
+            $merchantIds = array_column($merchants, 'id');
         }
-
-        // An admin could belong to multiple groups
-        // so we need to select unique admins from $childrenAdmins
-
-        $adminIds = array_unique( array_column($childrenAdmins, 'id') );
-
-        $childrenAdmins = array_filter($childrenAdmins, function ($value, $key) use ($adminIds)
-        {
-            return in_array($key, array_keys($adminIds));
-        }, ARRAY_FILTER_USE_BOTH);
-
-        // Loop over all the groups and get their merchants
-        // TODO: this can be placed in the previous inner foreach as well
-
-        $merchants = [];
-
-        foreach ($childrenGroups as $group)
-        {
-            $groupId = Group\Entity::getSignedId($group['id']);
-
-            $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
-
-            $merchants = array_merge($merchants, $group->merchants->toArray());
-        }
-
-        // Loop over all the admins and get their merchants
-        //
-        // Note: currently a merchant can belong to only 1 admin
-        // not by DB design but by code constraints so we don't
-        // need to run the list of merchants through a uniqueness check
-
-        foreach ($childrenAdmins as $admin)
-        {
-            $adminId = Entity::getSignedId($admin['id']);
-
-            $admin = $this->repo->admin->findByPublicIdAndOrgId($adminId, $orgId);
-
-            $merchants = array_merge($merchants, $admin->merchants->toArray());
-        }
-
-        // Finally merging the admin's merchants with the list
-        // of merchants resolved from his hierarchy
-        $merchants = array_merge($merchants, $adminMerchants);
-
-        // ... and we'll return all the merchant IDs to the dashboard client
-        $merchantIds = array_column($merchants, 'id');
 
         // Get all the admins of the merchant IDs
         // TODO: This can be moved in one of the foreach blocks above
@@ -422,7 +421,14 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $responseHash[$merchant->id] = $merchant->admins->first()->name;
+            $admin = $merchant->admins->first();
+
+            $responseHash[$merchant->id] = null;
+
+            if (empty($admin) === false)
+            {
+                $responseHash[$merchant->id] = $merchant->admins->first()->name;
+            }
         }
 
         return $responseHash;
@@ -459,9 +465,9 @@ class Service extends Base\Service
 
     public function logout()
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $adminToken = $this->app['basicauth']->getAdminToken();
 
-        $this->repo->admin_token->deleteTokensForAdmin($admin->getId());
+        (new Token\Service)->deleteToken($adminToken);
 
         return ['success' => true];
     }

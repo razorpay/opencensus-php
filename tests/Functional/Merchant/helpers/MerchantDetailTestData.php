@@ -7,6 +7,22 @@ use RZP\Error\PublicErrorDescription;
 
 return [
 
+    'testGetMerchantDetails' => [
+        'request' => [
+            'url' => '/merchant/activation',
+            'method' => 'GET'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
     'testUpdateIFSCCode' => [
         'request' => [
             'content' =>[
@@ -183,7 +199,7 @@ return [
                 "locked" => true
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -203,7 +219,7 @@ return [
                 "comment" => "true"
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -222,7 +238,26 @@ return [
                 "comment" => "true"
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
+        ],
+        'response' => [
+            'content' => [
+                "verification" => [
+                    "status" => "disabled",
+                    "disabled_reason" => "required_fields",
+                ],
+                "can_submit" => false,
+            ],
+        ],
+    ],
+
+    'testCommentMerchantWithNoMerchantDetail' => [
+        'request' => [
+            'content' =>[
+                "comment" => "true"
+            ],
+            'url' => '/merchant/activation/lock',
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -241,7 +276,7 @@ return [
                 'contact_name' => 'abcd',
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -264,7 +299,7 @@ return [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [
@@ -284,7 +319,7 @@ return [
                 "locked" => 0
             ],
             'url' => '/merchant/activation/lock',
-            'method' => 'POST'
+            'method' => 'PUT'
         ],
         'response' => [
             'content' => [

@@ -71,6 +71,37 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAdminWithExistingEmail()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'xyz@rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmailOfDeletedAdmin()
+    {
+        $admin = $this->testDeleteAdmin();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
+
+        $this->startTest();
+    }
+
     public function testGetAdmin()
     {
         $admin = $this->fixtures->create('admin', [
@@ -143,7 +174,12 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->groups->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['roles']));
     }
 
     public function testDeleteAllGroupsAdmin()
@@ -162,13 +198,19 @@ class AdminTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(0, count($admin->roles->all()));
+        $admin = $this->getAdmin(
+            $this->org->getPublicId(),
+            $admin->getPublicId(),
+            $this->authToken);
+
+        $this->assertEquals(0, count($admin['groups']));
     }
 
     public function testDeleteAdmin()
     {
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz@rzp.com'
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -178,6 +220,8 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        return $admin;
     }
 
     public function testDeleteAdminFailed()
@@ -435,7 +479,7 @@ class AdminTest extends TestCase
         if ((isset($result['success']) === true) and
             ($result['success'] === true))
         {
-            $admin = $this->getEntityById('admin', $admin->getId(), true);
+            $admin = $this->repo->findOrFailPublic($admin->getId());
 
             $this->assertTrue(Hash::check($newPassword, $admin['password']));
         }
@@ -462,7 +506,7 @@ class AdminTest extends TestCase
 
         $this->startTest();
 
-        $admin = $this->getEntityById('admin', $admin->getId(), true);
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check($oldPwd, $admin['password']));
     }
@@ -526,6 +570,8 @@ class AdminTest extends TestCase
                 'password' => 'Heimdall!432',
             ]);
 
+        $adminPublicId = $admin->getPublicId();
+
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
         // Create some admin tokens
@@ -555,5 +601,71 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+
+        // Check if the associated token is deleted on logout
+        $allTokens = $this->getEntities('admin_token', [], true);
+
+        $remainingTokens =[];
+
+        foreach ($allTokens['items'] as $t)
+        {
+            if ($t['admin_id'] === $adminPublicId)
+            {
+                $remainingTokens[] = $t['token'];
+            }
+        }
+
+        $this->assertArrayNotHasKey($token, $remainingTokens);
+     }
+
+     public function testGetAdminByEmailOnAppAuth()
+     {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'testadmin@rzp.com',
+            Admin\Entity::NAME    => 'test admin app auth',
+        ]);
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+     }
+
+     public function testEditAdminOnAppAuth()
+     {
+        $this->ba->appAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID => $this->orgId,
+        ]);
+
+        $dummyGrp = $this->fixtures->create(
+            'group', ['org_id' => $this->orgId]);
+
+        $admin->roles()->sync([Org::ADMIN_ROLE]);
+
+        $admin->groups()->sync([$dummyGrp->getId()]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId(), $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $managerRole = Role\Entity::getSignedId(Org::MANAGER_ROLE);
+
+        $this->testData[__FUNCTION__]['request']['content']['roles'] = (array) $managerRole;
+
+        $group = Group\Entity::getSignedId(Org::DEFAULT_GRP);
+
+        $this->testData[__FUNCTION__]['request']['content']['groups'] = (array) $group;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+
+        $this->assertEquals($result['roles'][0]['id'], $managerRole);
+
+        $this->assertEquals($result['groups'][0]['id'], $group);
      }
 }

@@ -155,8 +155,6 @@ class Processor extends Base\Core
 
     protected function createSettlements($channel, $schedule)
     {
-        $txns = new Base\PublicCollection;
-
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
@@ -172,18 +170,15 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS, $txns->getIds());
+        $this->trace->info(
+            TraceCode::SCHEDULE_UNSETTLED_TXNS,
+            ['count' => $txns->count()]);
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
-        return $this->repo->transaction(function() use ($txns, $channel)
-        {
-            list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
+        list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
 
-            $this->repo->transaction->settled($settledTxns, $this->setlTime);
-
-            return [$settlements, $settledTxns->count()];
-        });
+        return [$settlements, $settledTxns->count()];
     }
 
     protected function filterTransactionsForSettlement($txns, $channel)
@@ -226,9 +221,9 @@ class Processor extends Base\Core
         $txnsSettled = new Base\PublicCollection;
 
         $i = 0;
-        $count = $txns->count();
+        $txnsCount = $txns->count();
 
-        while ($i < $count)
+        while ($i < $txnsCount)
         {
             // Settlement amount
             $setlAmount = $setlGatewayFee = $setlApiFee = 0;
@@ -238,10 +233,15 @@ class Processor extends Base\Core
 
             // Get merchant
             assert($txns[$i]->merchant !== null);
-            $merchant = $txns[$i]->merchant;
-            $merchantId = $txns[$i]->getMerchantId();
 
-            while (($i < $count) and
+            $merchant = $txns[$i]->merchant;
+            $merchantId = $merchant->getId();
+
+            //
+            // Since transactions are ordered by the merchant id,
+            // we can do the following operation in O(n) instead of O(n^2)
+            //
+            while (($i < $txnsCount) and
                    ($txns[$i]->getMerchantId() === $merchantId))
             {
                 $txn = $txns[$i];
@@ -259,18 +259,27 @@ class Processor extends Base\Core
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
-                $setlAmount = 0;
                 continue;
             }
 
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $setl = $merchantSettler->settle(
-                                        $setlTxns,
-                                        $setlAmount,
-                                        $setlFee,
-                                        $setlApiFee,
-                                        $serviceTax);
+            $setl = $this->repo->transaction(
+                function()
+                    use ($merchantSettler, $setlTxns, $setlAmount,
+                         $setlFee, $setlApiFee, $serviceTax)
+                {
+                    $setl = $merchantSettler->settle(
+                                            $setlTxns,
+                                            $setlAmount,
+                                            $setlFee,
+                                            $setlApiFee,
+                                            $serviceTax);
+
+                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
+
+                    return $setl;
+                });
 
             $txnsSettled = $txnsSettled->merge($setlTxns);
 

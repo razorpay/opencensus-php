@@ -134,7 +134,7 @@ class NetbankingKotakGatewayTest extends TestCase
                 );
 
 
-        $content = $this->generateRefundsExcelForKkbkNB();
+        $content = $this->generateRefundsExcelForNB('KKBK');
 
         $refundsFileUrl = $content['netbanking_kotak'][0];
 
@@ -167,21 +167,6 @@ class NetbankingKotakGatewayTest extends TestCase
         assert(count($claimsFileLine1) === 6);
 
         assert(count($refundsFileLine1) === 6);
-    }
-
-    protected function generateRefundsExcelForKkbkNB()
-    {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/refunds/netbanking/excel',
-            'method' => 'post',
-            'content' => [
-                'bank'   => 'KKBK'
-            ],
-        );
-
-        return $this->makeRequestAndGetContent($request);
     }
 
     protected function doNetbankingKotakAuthAndCapturePayment()

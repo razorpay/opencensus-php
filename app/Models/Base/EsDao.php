@@ -44,9 +44,9 @@ class EsDao
         ];
         // Since the es client is being set on this, ensure that only this es
         // instance is used to perform any operations on the client.
-        $this->es->setEsClient($params);;
+        $this->es->setEsClient($params);
 
-        $heimdallHost = $this->config->get('database.es_heimdall_host');
+        $heimdallHost = $this->config->get('database.es_audit_host');
 
         $this->es->setHeimdallESClient([$heimdallHost]);
     }
@@ -306,7 +306,7 @@ class EsDao
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        $index = $this->config->get('database.es_heimdall')[$mode];
+        $index = $this->config->get('database.es_audit')[$mode];
 
         $params = [
             'index'  => $index,
@@ -332,7 +332,13 @@ class EsDao
             $params['body']['size'] = (int) $options['count'];
         }
 
-        $results =  $this->es->searchHeimdall($params);
+        $results = $this->es->searchHeimdall($params);
+
+        // If the index has no documents
+        if (empty($results))
+        {
+            $results = [];
+        }
 
         $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
 

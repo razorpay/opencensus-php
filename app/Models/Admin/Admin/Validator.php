@@ -10,9 +10,9 @@ use RZP\Models\Admin\Org\AuthPolicy;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        // One problem with this uniqueness if what if an admin
-        // wants to belong to 2 org or is moved from 1 to another
-        Entity::EMAIL                 => 'required|max:255|email|custom',
+        // The unique validation on email will run only on rows that have deleted_at = NULL
+        // Referred to https://github.com/laravel/framework/issues/1820#issuecomment-32828216 for this validation
+        Entity::EMAIL                 => 'required|max:255|email|unique:admins,email,NULL,deleted_at,deleted_at,NULL|custom',
         Entity::NAME                  => 'required|alpha_space|between:3,100',
         Entity::USERNAME              => 'sometimes|alpha_dash|between:3,50',
         Entity::PASSWORD              => 'sometimes|string|confirmed',
@@ -26,24 +26,28 @@ class Validator extends Base\Validator
         Entity::SUPERVISOR_CODE       => 'required|string',
         Entity::LOCATION_CODE         => 'required|string',
         Entity::EMPLOYEE_CODE         => 'required|string',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $editRules = [
         Entity::NAME                  => 'sometimes|alpha_space|between:3,100',
         Entity::PASSWORD              => 'sometimes|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'sometimes',
+        Entity::OAUTH_ACCESS_TOKEN    => 'sometimes|string|max:255',
+        Entity::OAUTH_PROVIDER_ID     => 'sometimes|string|max:255',
         Entity::BRANCH_CODE           => 'sometimes|string',
         Entity::DEPARTMENT_CODE       => 'sometimes|string',
         Entity::SUPERVISOR_CODE       => 'sometimes|string',
         Entity::LOCATION_CODE         => 'sometimes|string',
         Entity::EMPLOYEE_CODE         => 'sometimes|string',
         Entity::DISABLED              => 'sometimes|in:0,1',
-        'roles'                       => 'sometimes|array',
-        'merchants'                   => 'sometimes|array',
-        'groups'                      => 'sometimes|array',
+        Entity::ROLES                 => 'sometimes|array',
+        Entity::MERCHANTS             => 'sometimes|array',
+        Entity::GROUPS                => 'sometimes|array',
+        Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
     ];
 
     protected static $loginRules = [

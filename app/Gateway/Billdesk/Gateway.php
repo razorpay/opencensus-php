@@ -439,9 +439,10 @@ class Gateway extends Base\Gateway
             'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
             'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
             // The below two fields are not sent as part of refund response, but we get it in the verify response.
-            //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
-            //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
-            'ProcessStatus'     => $verifyResponse['ProcessStatus'],
+            // 'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            // 'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            // This is not received in verify response. This indicates whether refund was successful.
+            'ProcessStatus'     => 'Y',
             'TxnDate'           => $txnDate,
             'RefDateTime'       => $refDate,
         ];
@@ -785,6 +786,17 @@ class Gateway extends Base\Gateway
             [$responseBody]);
 
         $content = explode('|', $responseBody);
+
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        }
 
         $content = array_combine($fields, $content);
 

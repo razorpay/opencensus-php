@@ -168,6 +168,12 @@ class Handler extends ExceptionHandler
 
         $data = $this->getDataArrayPropertyFromException($exception, $extraData);
 
+        /**
+         * @note getTraceAsString logs function arguments, contrary to the older comment here
+         * TODO: Write a wrapper over getTrace that drops function arguments instead
+         *
+         * Ideally: we should use reflection to drop sensitive arguments only.
+         */
         $stack = explode("\n", $exception->getTraceAsString());
 
         if ($level === 0)
@@ -182,14 +188,6 @@ class Handler extends ExceptionHandler
             $stack = array_slice($stack, 0, 5);
         }
 
-        //
-        // @note: Always call function 'getTraceAsSring' to get stack trace
-        //        since it doesn't include function arguments.
-        //        Function arguments can contain sensitive data so should
-        //        never be logged. Never call 'getTrace' directly.
-        //
-        // @note: Don't remove this comment.
-        //
         $traceData = array(
             'class'     => get_class($exception),
             'code'      => $exception->getCode(),

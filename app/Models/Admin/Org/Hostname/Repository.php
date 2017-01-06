@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Org\Hostname;
 
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
@@ -10,13 +10,13 @@ class Repository extends Base\Repository
 
     // These are admin allowed params to search on.
     protected $appFetchParamRules = array(
-        Entity::ORG_ID                => 'sometimes|string',
-        Entity::HOSTNAME              => 'sometimes|string|max:255',
+        Entity::ORG_ID   => 'sometimes|string',
+        Entity::HOSTNAME => 'sometimes|string|max:255',
     );
 
     protected $adminFetchParamRules = array(
-        Entity::ORG_ID                => 'sometimes|string',
-        Entity::HOSTNAME              => 'sometimes|string|max:255',
+        Entity::ORG_ID   => 'sometimes|string',
+        Entity::HOSTNAME => 'sometimes|string|max:255',
     );
 
     public function findByHostname(string $hostname)

@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
@@ -16,10 +17,11 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
         'maestro',
-        'icici_billdesk',
+        'netbanking_billdesk',
         'recurring',
     ];
 
@@ -65,6 +67,22 @@ class TransactionFilter extends Terminal\Filter
         }
 
         return true;
+    }
+
+    public function currencyFilter($terminal, $input)
+    {
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $paymentCurrency = Currency::INR;
+        }
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
     }
 
     public function internationalFilter($terminal, $input)
@@ -138,8 +156,19 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function iciciBilldeskFilter($terminal, $input)
+    public function netbankingBilldeskFilter($terminal, $input)
     {
+        $bankIfsc = [
+            IFSC::ICIC,
+            IFSC::SBBJ,
+            IFSC::SBHY,
+            IFSC::SBIN,
+            IFSC::SBMY,
+            IFSC::SBTR,
+            IFSC::STBP,
+            IFSC::STCB,
+        ];
+
         $bank = $input['payment']->getBank();
 
         $gateway = $terminal->getGateway();
@@ -149,7 +178,7 @@ class TransactionFilter extends Terminal\Filter
         $networkCategory = $terminal->getNetworkCategory();
 
         if (($input['payment']->isNetbanking()) and
-            ($bank === IFSC::ICIC) and
+            (in_array($bank, $bankIfsc, true) === true) and
             ($gateway === Gateway::BILLDESK))
         {
             // Two rules to be checked
