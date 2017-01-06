@@ -554,8 +554,7 @@ trait FileHandlerTrait
     {
         $rows = $this->getFileLines($file);
 
-        $data = array();
-        $headings = $this->getHeadings();
+        $data = [];
 
         foreach ($rows as $ix => $row)
         {
@@ -565,20 +564,28 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $values = explode('~', $row);
-
-            if (count($headings) !== count($values))
-            {
-                throw new Exception\RuntimeException(
-                    'Count of array elements for combine not equal. Heading count: ' .
-                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
-            }
-
-            $values = array_combine($headings, $values);
-            $data[] = $values;
+            $data[] = $this->parseTextRow($row);
         }
 
         return $data;
+    }
+
+    protected function parseTextRow($row)
+    {
+        $headings = $this->getHeadings();
+
+        $values = explode('~', $row);
+
+        if (count($headings) !== count($values))
+        {
+            throw new Exception\RuntimeException(
+                'Count of array elements for combine not equal. Heading count: ' .
+                count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
+        }
+
+        $values = array_combine($headings, $values);
+
+        return $values;
     }
 
     protected function parseExcelFile($filePath)
