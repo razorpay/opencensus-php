@@ -10,6 +10,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
+use RZP\Models\Terminal\GatewayPriorities;
 
 class Gateway
 {
@@ -607,7 +608,7 @@ class Gateway
         switch ($method)
         {
             case Method::CARD:
-                $gateways = self::$directCardGateways;
+                $gateways = (new GatewayPriorities)->fetchOrderedGatewaysForMethod($method);
 
                 if ($mode === Mode::TEST)
                 {
