@@ -122,8 +122,17 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function reassignMerchantForTerminal(string $id, string $mid)
+    public function reassignMerchantForTerminal(string $id, array $input)
     {
+
+        if (isset($input['merchant_id']) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Merchant Id is required');
+        }
+
+        $mid = $input['merchant_id'];
+
         $terminal = $this->repo->terminal->getById($id);
 
         $merchant = $this->repo->merchant->findOrFailPublic($mid);

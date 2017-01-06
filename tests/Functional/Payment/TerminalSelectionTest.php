@@ -118,11 +118,14 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
 
-        $url = '/terminals/' . $tid . '/merchants/' . $mid . '/reassign';
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  $mid];
 
         $request = [
             'url'    => $url,
             'method' => 'PUT',
+            'content' => $requestContent,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -135,11 +138,14 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($tid, $payment['terminal_id']);
 
-        $url = '/terminals/' . $tid . '/merchants/' . '1MercShareTerm' . '/reassign';
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  '1MercShareTerm'];
 
         $request = [
-            'url'    => $url,
-            'method' => 'PUT',
+            'url'     => $url,
+            'method'  => 'PUT',
+            'content' => $requestContent,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
