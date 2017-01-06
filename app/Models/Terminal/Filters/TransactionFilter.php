@@ -11,6 +11,7 @@ use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
@@ -170,7 +171,8 @@ class TransactionFilter extends Terminal\Filter
             IFSC::SBTR,
             IFSC::STBP,
             IFSC::STCB,
-            IFSC::PUNB,
+            Netbanking::PUNB_C,
+            Netbanking::PUNB_R,
             IFSC::CNRB,
         ];
 
