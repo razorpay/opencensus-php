@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Airtel;
 
 use RZP\Exception;
 use Carbon\Carbon;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -130,16 +131,16 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $response, $authContent);
+        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $authContent);
     }
 
-    protected function getVerifyMatchStatus($verify, $response)
+    protected function getVerifyMatchStatus($verify, $authContent)
     {
         $status = VerifyResult::STATUS_MATCH;
 
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify, $authContent);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -162,14 +163,21 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkGatewaySuccess($verify, $response)
+    protected function checkGatewaySuccess($verify, $authContent)
     {
-        $verify->gatewaySuccess = false;
-
-        if ((isset($response[VerifyFields::STATUS]) === true) and
-            ($response[VerifyFields::STATUS] === Status::SUCCESS))
+        if ($authContent === null)
         {
-            $verify->gatewaySuccess = true;
+            $verify->gatewaySuccess = false;
+        }
+        else
+        {
+            $verify->gatewaySuccess = false;
+
+            if ((isset($authContent[VerifyFields::STATUS]) === true) and
+                ($authContent[VerifyFields::STATUS] === Status::SUCCESS))
+            {
+                $verify->gatewaySuccess = true;
+            }
         }
     }
 
@@ -224,37 +232,44 @@ class Gateway extends Base\Gateway
         return json_encode($data);
     }
 
-    protected function saveVerifyContentIfNeeded($verify, $response, $content)
+    protected function saveVerifyContentIfNeeded($verify, $content)
     {
         $input = $verify->input;
 
         $gatewayPayment = $verify->payment;
 
-        if ((isset($content[VerifyFields::STATUS]) === true) and
-            ($content[VerifyFields::STATUS]) === Status::SUCCESS)
+        $attributes = $this->getVerifyAttributes($content);
+
+        // Late authorization case
+        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
         {
-            $attributes = $this->getVerifyAttributes($response, $content);
+            $gatewayPayment->fill($attributes);
 
-            // Late authorization case
-            if ($gatewayPayment[Base\Entity::RECEIVED] === false)
-            {
-                $gatewayPayment->fill($attributes);
-
-                $this->repo->saveOrFail($gatewayPayment);
-            }
+            $this->repo->saveOrFail($gatewayPayment);
         }
 
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes($response, $content)
+    protected function getVerifyAttributes($content)
     {
+        if ($content[VerifyFields::STATUS] === Status::SUCCESS)
+        {
+            $merchantCode = ErrorCodes::getSuccessField();
+        }
+        else
+        {
+            $merchantCode = ErrorCodes::getRzpRandomError();
+        }
+
+        $message = ErrorCodes::getErrorCodeDescription($merchantCode);
+
         $contentToSave = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[VerifyFields::STATUS],
             Base\Entity::BANK_PAYMENT_ID => $content[VerifyFields::TRANSACTION_ID],
-            Base\Entity::MERCHANT_CODE   => $response[VerifyFields::CODE],
-            Base\Entity::ERROR_MESSAGE   => $response[VerifyFields::MESSAGE_TEXT],
+            Base\Entity::MERCHANT_CODE   => $merchantCode,
+            Base\Entity::ERROR_MESSAGE   => $message,
             Base\Entity::DATE            => $content[VerifyFields::TRANSACTION_DATE],
         ];
 
@@ -265,36 +280,55 @@ class Gateway extends Base\Gateway
     {
         $bankPaymentId = $verify->payment->getBankPaymentId();
 
-        foreach ($response[VerifyFields::TRANSACTION] as $transaction)
+        if (empty($response[VerifyFields::TRANSACTION]) === true)
         {
-            if ($transaction[VerifyFields::TRANSACTION_ID] === $bankPaymentId)
+            $authContent = [];
+        }
+        else
+        {
+            foreach ($response[VerifyFields::TRANSACTION] as $transaction)
             {
-                return $transaction;
+                if ($transaction[VerifyFields::TRANSACTION_ID] === $bankPaymentId)
+                {
+                    return $transaction;
+                }
+            }
+
+            // Saved bank_payment_id from Auth not found in Verify Response
+            // We then mock a failed verify response, and return that transaction
+            $log = [
+                'BANK_PAYMENT_ID' => $bankPaymentId,
+                'response'        => $response
+            ];
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
+                $log);
+
+            if ($bankPaymentId !== null)
+            {
+                $authContent = $this->mockFailedVerifyTransaction($bankPaymentId);
+            }
+            else
+            {
+                $authContent = $transaction;
             }
         }
 
-        // Saved bank_payment_id from Auth not found in Verify Response
-        // We then mock a failed verify response, and return that transaction
-        $log = [
-            'BANK_PAYMENT_ID' => $bankPaymentId,
-            'response'        => $response
-        ];
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_UNEXPECTED,
-            $log);
-
-        return $this->mockFailedVerifyTransaction($transaction, $bankPaymentId);
+        return $authContent;
     }
 
     /*
-     * Mocking a failed response from verify
+     * Mocking a failed response from verify, random amount of 1/-
      */
-    protected function mockFailedVerifyTransaction($transaction, $bankPaymentId)
+    protected function mockFailedVerifyTransaction($bankPaymentId)
     {
-        $transaction[VerifyFields::STATUS] = Status::FAILURE;
-
-        $transaction[VerifyFields::TRANSACTION_ID] = $bankPaymentId;
+        $transaction = [
+            VerifyFields::STATUS             => Status::FAILURE,
+            VerifyFields::TRANSACTION_ID     => $bankPaymentId,
+            VerifyFields::TRANSACTION_DATE   => Carbon::now()->format(self::TIME_FORMAT),
+            VerifyFields::TRANSACTION_AMOUNT => '1',
+        ];
 
         return $transaction;
     }

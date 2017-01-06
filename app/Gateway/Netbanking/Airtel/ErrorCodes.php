@@ -6,9 +6,12 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
-    protected static $success = '000';
+    protected static $success   = '000';
+
+    protected static $rzpRandom = '1000';
 
     protected static $errorCodeDesc = [
+        '000'       => 'Success',
         '902'       => 'Invalid MID in Request',
         '905'       => 'Invalid input in Success / Failure URL',
         '909'       => 'Invalid Currency, only INR supported',
@@ -18,6 +21,7 @@ class ErrorCodes
         '920'       => 'Invalid Transaction Id / Date',
         '923'       => 'Sum of all reversal amounts is greater than transaction amount',
         '999'       => 'Any other Airtel Payment Bank failure',
+        '1000'      => 'Random Razorpay authorization error',
         '9002'      => 'Invalid parameter in request',
         '999999'    => 'Any other Airtel Payment Bank failure'
     ];
@@ -59,5 +63,10 @@ class ErrorCodes
     public static function getSuccessField()
     {
         return self::$success;
+    }
+
+    public static function getRzpRandomError()
+    {
+        return self::$rzpRandom;
     }
 }
