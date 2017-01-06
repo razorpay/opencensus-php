@@ -96,7 +96,7 @@
           <div id="failure" class="card">
             {!! $error_icon !!}
             <h2>Payment Failed</h2>
-            <p>{{ $POST['error']['description'] }}</p>
+            <p>{{ $data['error']['description'] }}</p>
             <button>Retry</button>
           </div>
         @endif
