@@ -163,7 +163,6 @@ class TransactionFilter extends Terminal\Filter
         ];
 
         $mutualFundsIfsc = [
-            IFSC::ICIC,
             IFSC::SBBJ,
             IFSC::SBHY,
             IFSC::SBIN,
@@ -172,7 +171,6 @@ class TransactionFilter extends Terminal\Filter
             IFSC::STBP,
             IFSC::STCB,
             IFSC::PUNB,
-            IFSC::PUCB,
             IFSC::CNRB,
         ];
 
@@ -198,11 +196,6 @@ class TransactionFilter extends Terminal\Filter
                 // false.
                 case 'securities' :
                 case 'commodities' :
-                    if ($bank !== IFSC::ICIC)
-                    {
-                        return true;
-                    }
-
                     return ($terminal->isShared() === false);
                     break;
 
