@@ -110,7 +110,7 @@ class Service extends Base\Service
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
+        $terminal = (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }
@@ -119,7 +119,9 @@ class Service extends Base\Service
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->reassignMerchantForTerminal($terminal, $mid);
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $terminal = (new Terminal\Core)->reassignMerchantForTerminal($terminal, $merchant);
 
         return $terminal->toArrayPublic();
     }
@@ -128,7 +130,7 @@ class Service extends Base\Service
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
+        $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
 
         return $terminal->toArrayPublic();
     }
