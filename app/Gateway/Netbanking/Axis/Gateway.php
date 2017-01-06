@@ -82,8 +82,6 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        // sd($request);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
@@ -98,8 +96,6 @@ class Gateway extends Base\Gateway
         // Response XML
         $content = $verify->verifyResponseBody;
 
-        // sd($content);
-
         $response = $this->parseResponseXml($content);
 
         $this->trace->info(
@@ -107,6 +103,8 @@ class Gateway extends Base\Gateway
             $response);
 
         $this->getVerifyStatus($verify, $response);
+
+        $this->saveVerifyStatusifNeeded($verify, $response);
     }
 
     protected function getVerifyStatus($verify, $response)
@@ -121,6 +119,8 @@ class Gateway extends Base\Gateway
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
+
+        $verify->status = $status;
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
     }
@@ -154,14 +154,13 @@ class Gateway extends Base\Gateway
         $input = $verify->input;
         $payment = $verify->payment;
 
-        $data = $this->getDefaultRequestData($input);
-
-        $paymentDate = $this->getPaymentDate($payment);
-
-        $pid = $this->getMerchantId();
-
-        $data[RequestFields::DATE] = $paymentDate;
-        $data[RequestFields::PAYEE_ID] = $pid;
+        $data = [
+            RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
+            RequestFields::VERIFY_ITC      => strtoupper($payment['payment_id']),
+            RequestFields::VERIFY_PRN      => $payment['payment_id'],
+            RequestFields::VERIFY_DATE     => $this->getPaymentDate($payment),
+            RequestFields::VERIFY_AMT      => $payment['amount'],
+        ];
 
         return $data;
     }
@@ -283,6 +282,34 @@ class Gateway extends Base\Gateway
         return [
             'received'          => true,
             'status'            => $content[ResponseFields::STATUS],
+            'amount'            => $content[ResponseFields::AMOUNT],
+            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+        ];
+    }
+
+    protected function saveVerifyStatusifNeeded($verify, $content)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $attributes = $this->getVerifyAttributes($content);
+
+        // Late authorization case
+        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
+        {
+            $gatewayPayment->fill($attributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+        }
+
+        return $gatewayPayment;
+    }
+
+    protected function getVerifyAttributes($content)
+    {
+        return [
+            'received'          => true,
+            'status'            => $content[ResponseFields::PAYMENT_STATUS],
+            'amount'            => $content[ResponseFields::AMOUNT],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }

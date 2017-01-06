@@ -238,6 +238,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_AXIS,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,

@@ -48,6 +48,8 @@ class NetbankingAxisGatewayTest extends TestCase
     {
         $payment = $this->doAuthPayment($this->payment);
 
+        $this->mockSetBankPaymentId();
+
         $content = $this->verifyPayment($payment['razorpay_payment_id']);
 
         assert($content['payment']['verified'] === 1);
@@ -172,6 +174,16 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
             $content['PaymentStatus'] = 'F';
+        });
+    }
+
+    protected function mockSetBankPaymentId()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $payment = $this->getLastEntity('netbanking', true);
+
+            $content['BID'] = $payment['bank_payment_id'];
         });
     }
 }

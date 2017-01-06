@@ -86,13 +86,12 @@ class Server extends Base\Mock\Server
     protected function getVerifyXml($input)
     {
         $response = [
-            ResponseFields::PAYEE_ID                   => $input[RequestFields::PAYEE_ID],
-            ResponseFields::ITEM_CODE                  => $input[RequestFields::ITEM_CODE],
-            ResponseFields::MERCHANT_UNIQUE_REFERENCE  => $input[RequestFields::MERCHANT_UNIQUE_REFERENCE],
-            ResponseFields::DATE                       => $input[RequestFields::DATE],
-            ResponseFields::AMOUNT                     => $input[RequestFields::AMOUNT],
-            // How do I get the BID to show up??
-            // ResponseFields::BANK_REFERENCE_ID          => $input[RequestFields::BANK_REFERENCE_ID],
+            ResponseFields::PAYEE_ID                   => $input[RequestFields::VERIFY_PAYEE_ID],
+            ResponseFields::ITEM_CODE                  => $input[RequestFields::VERIFY_ITC],
+            ResponseFields::MERCHANT_UNIQUE_REFERENCE  => $input[RequestFields::VERIFY_PRN],
+            ResponseFields::DATE                       => $input[RequestFields::VERIFY_AMT],
+            ResponseFields::AMOUNT                     => $input[RequestFields::VERIFY_DATE],
+            ResponseFields::BANK_REFERENCE_ID          => '',
             ResponseFields::PAYMENT_STATUS             => Constants::SUCCESS,
         ];
 
