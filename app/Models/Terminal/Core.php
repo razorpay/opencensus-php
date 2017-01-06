@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -38,7 +38,7 @@ class Core extends Base\Core
         return $terminal;
     }
 
-    public function reassignMerchantForTerminal(Entity $terminal, string $mid)
+    public function reassignMerchantForTerminal(Entity $terminal, Merchant\Entity $merchant)
     {
         if ($terminal->isShared() === true)
         {
@@ -46,9 +46,11 @@ class Core extends Base\Core
                 ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
         }
 
-        $terminal->setMerchantId($mid);
+        $terminal->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($terminal);
+
+        return $terminal;
     }
 
     public function copy($input, $terminal)
