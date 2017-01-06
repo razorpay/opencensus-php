@@ -97,7 +97,7 @@
             {!! $error_icon !!}
             <h2>Payment Failed</h2>
             <p>{{ $data['error']['description'] }}</p>
-            <button>Retry</button>
+            <button onclick="razorpay.open()">Retry</button>
           </div>
         @endif
         <script>
@@ -150,8 +150,9 @@
               options.image = merchant_details.image;
             }
           }
+          var razorpay = Razorpay(options);
           @if (!isset($data['error']))
-            Razorpay.open(options);
+            razorpay.open();
           @endif
         </script>
       @endif
