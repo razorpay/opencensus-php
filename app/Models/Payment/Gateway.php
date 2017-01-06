@@ -608,8 +608,8 @@ class Gateway
         switch ($method)
         {
             case Method::CARD:
-                $gateways = (new GatewayPriorities)->fetchOrderedGatewaysForMethod($method);
-
+                $gateways = (new GatewayPriorities\Entity)->fetchOrderedGatewaysForMethod($method);
+                sd($gateways);
                 if ($mode === Mode::TEST)
                 {
                     $gateways = array_merge($gateways, self::$directCardGatewaysInTest);
