@@ -81,10 +81,10 @@
     </div>
     @if ($data['view_less'] === true)
       @if ($data['status'] !== 'paid')
-        @if (isset($_POST['error']))
+        @if (isset($data['error']))
           <div id='failure'>
             <h2>Error</h2>
-            <p>{{ $POST['error']['description'] }}</p>
+            <p>{{ $data['error']['description'] }}</p>
             <button>Retry</button>
           </div>
         @endif
@@ -104,9 +104,10 @@
               document.body.className = 'paid';
             },
             prefill: {
-              contact: data.customer_contact,
-              email: data.customer_email
+              contact: 999998888,
+              email: 'aa@bv.cc'
             },
+            redirect: true,
             callback_url: location.href,
             theme: {
               close_button: false
@@ -138,7 +139,7 @@
               options.image = merchant_details.image;
             }
           }
-          @if (!isset($_POST['error']))
+          @if (!isset($data['error']))
             Razorpay.open(options);
           @endif
         </script>
