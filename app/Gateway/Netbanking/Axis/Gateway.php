@@ -42,6 +42,8 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
+        $this->traceGatewayPaymentRequest($request, $input);
+
         return $request;
     }
 
@@ -86,23 +88,21 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseBody = $response->body;
+        $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
     public function verifyPayment($verify)
     {
         // Response XML
-        $content = $verify->verifyResponseBody;
-
-        $response = $this->parseResponseXml($content);
+        $content = $verify->verifyResponseContent;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $response);
+            $content);
 
-        $this->getVerifyStatus($verify, $response);
+        $this->getVerifyStatus($verify, $content);
 
-        $this->saveVerifyStatusifNeeded($verify, $response);
+        $this->saveVerifyResponseIfNeeded($verify, $content);
     }
 
     protected function getVerifyStatus($verify, $response)
@@ -149,7 +149,6 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyData($verify)
     {
-        $input = $verify->input;
         $payment = $verify->payment;
 
         $data = [
@@ -178,8 +177,6 @@ class Gateway extends Base\Gateway
 
     protected function getAuthorizeEncryptedString($input)
     {
-        $masterKey = $this->getSecret();
-
         $defaultData = $this->getDefaultRequestData($input);
 
         $data = [
@@ -198,7 +195,7 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
-        return $this->encryptString($stringToEncrypt, $masterKey);
+        return $this->encryptString($stringToEncrypt);
     }
 
     protected function getDefaultRequestData($input)
@@ -230,11 +227,9 @@ class Gateway extends Base\Gateway
 
     protected function getDataFromResponse($encryptedResponse)
     {
-        $masterKey = $this->getSecret();
-
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $decryptedString = $this->decryptString(urldecode($encryptedString), $masterKey);
+        $decryptedString = $this->decryptString(urldecode($encryptedString));
 
         parse_str($decryptedString, $response);
 
@@ -248,7 +243,7 @@ class Gateway extends Base\Gateway
         if (empty($content) ===  true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
-                [$encryptedString]);
+                ['encrypted_string' => $encryptedString]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
@@ -261,7 +256,7 @@ class Gateway extends Base\Gateway
         if ((isset($attrs['status']) === false) or
             ($attrs['status'] !== Constants::YES))
         {
-            $this->trace->info(
+            $this->trace->error(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['content' => $content]);
 
@@ -280,7 +275,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function saveVerifyStatusifNeeded($verify, $content)
+    protected function saveVerifyResponseIfNeeded($verify, $content)
     {
         $gatewayPayment = $verify->payment;
 
@@ -302,7 +297,7 @@ class Gateway extends Base\Gateway
         return [
             'received'          => true,
             'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMOUNT],
+            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMT],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
@@ -323,30 +318,33 @@ class Gateway extends Base\Gateway
         return (array) $responseArray['Table1'];
     }
 
-    public function encryptString(string $string, string $masterKey)
+    public function encryptString(string $string)
     {
-        $aes = new AES(self::MODE_CBC);
-
-        $aes->setKey($masterKey);
-
-        $aes->setIV($masterKey);
+        $aes = $this->createAesCrypter();
 
         // returning Encrypted String
         return base64_encode($aes->encrypt($string));
     }
 
-    public function decryptString(string $string, string $masterKey)
+    public function decryptString(string $string)
     {
+        $aes = $this->createAesCrypter();
+
+        // returning Decrypted String
+        return $aes->decrypt(base64_decode($string));
+    }
+
+    protected function createAesCrypter()
+    {
+        $masterKey = $this->getSecret();
+
         $aes = new AES(self::MODE_CBC);
 
         $aes->setKey($masterKey);
 
         $aes->setIV($masterKey);
 
-        $encryptedString = base64_decode($string);
-
-        // returning Decrypted String
-        return $aes->decrypt($encryptedString);
+        return $aes;
     }
 
     /*

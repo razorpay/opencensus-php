@@ -38,10 +38,8 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedData($input)
     {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
-        $decryptedString = $this->getGatewayInstance()->decryptString(
-            $input[RequestFields::ENCRYPTED_STRING], $masterKey);
+        $decryptedString = $this->getGatewayInstance()
+                                ->decryptString($input[RequestFields::ENCRYPTED_STRING]);
 
         $toReplace   = ['~', '$'];
         $willReplace = ['=', '&'];
@@ -71,12 +69,10 @@ class Server extends Base\Mock\Server
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
 
-        $masterKey = $this->getGatewayInstance()->getSecret();
+         $encryptedString = urlencode($this->getGatewayInstance()
+                                           ->encryptString($query));
 
-         $encryptString = urlencode($this->getGatewayInstance()
-                                         ->encryptString($query,$masterKey));
-
-        $content[ResponseFields::ENCRYPTED_STRING] = $encryptString;
+        $content[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 
         return $content;
     }
@@ -84,13 +80,13 @@ class Server extends Base\Mock\Server
     protected function getVerifyXml($input)
     {
         $response = [
-            ResponseFields::PAYEE_ID               => $input[RequestFields::VERIFY_PAYEE_ID],
-            ResponseFields::ITEM_CODE              => $input[RequestFields::VERIFY_ITC],
-            ResponseFields::MERCHANT_REFERENCE     => $input[RequestFields::VERIFY_PRN],
-            ResponseFields::DATE                   => $input[RequestFields::VERIFY_AMT],
-            ResponseFields::VERIFY_RESPONSE_AMOUNT => $input[RequestFields::VERIFY_DATE],
-            ResponseFields::BANK_REFERENCE_ID      => '',
-            ResponseFields::PAYMENT_STATUS         => Constants::SUCCESS,
+            ResponseFields::PAYEE_ID            => $input[RequestFields::VERIFY_PAYEE_ID],
+            ResponseFields::ITEM_CODE           => $input[RequestFields::VERIFY_ITC],
+            ResponseFields::MERCHANT_REFERENCE  => $input[RequestFields::VERIFY_PRN],
+            ResponseFields::DATE                => $input[RequestFields::VERIFY_AMT],
+            ResponseFields::VERIFY_RESPONSE_AMT => $input[RequestFields::VERIFY_DATE],
+            ResponseFields::BANK_REFERENCE_ID   => '',
+            ResponseFields::PAYMENT_STATUS      => Constants::SUCCESS,
         ];
 
         // for test cases

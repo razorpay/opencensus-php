@@ -140,7 +140,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->doAuthPayment($this->payment);
 
-        $this->mockVerifyFailure();
+        $this->mockVerifyStatusFailure();
 
         $this->runRequestResponseFlow($data, function() use ($payment){
             $this->verifyPayment($payment['razorpay_payment_id']);
@@ -169,7 +169,7 @@ class NetbankingAxisGatewayTest extends TestCase
         });
     }
 
-    protected function mockVerifyFailure()
+    protected function mockVerifyStatusFailure()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
