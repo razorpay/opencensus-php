@@ -16,11 +16,20 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num'
     );
 
-    public function findForPayment($paymentId)
+    public function findForPayment($paymentId, $findRecent = false)
     {
-        return $this->repo
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->get();
+        $results = $this->newQuery()
+                        ->where(Entity::PAYMENT_ID, '=', $paymentId);
+
+        if ($findRecent === true)
+        {
+            $result = $results->orderBy(Entity::CREATED_AT, 'desc')
+                              ->first();
+
+            return $result;
+        }
+
+        return $results->get();
     }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

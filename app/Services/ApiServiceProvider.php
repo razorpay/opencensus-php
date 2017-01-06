@@ -86,14 +86,14 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->app->singleton('segment', function($app)
-        {
-            return new SegmentClient($app);
-        });
-
         $this->app->singleton('upi.client', function($app)
         {
             return new \Razorpay\UPI\Client;
+        });
+
+        $this->app->singleton('segment', function($app)
+        {
+            return new EventTrackerClient($app);
         });
 
         $this->registerApiMutex();
