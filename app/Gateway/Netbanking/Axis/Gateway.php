@@ -25,9 +25,9 @@ class Gateway extends Base\Gateway
     const MODE_CBC = 2;
 
     protected $map = [
-        RequestFields::AMOUNT                    => 'amount',
-        RequestFields::MERCHANT_UNIQUE_REFERENCE => 'payment_id',
-        RequestFields::ITEM_CODE                 => 'caps_payment_id'
+        RequestFields::AMOUNT             => 'amount',
+        RequestFields::MERCHANT_REFERENCE => 'payment_id',
+        RequestFields::ITEM_CODE          => 'caps_payment_id'
     ];
 
     public function authorize(array $input)
@@ -49,11 +49,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace>info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
         $content = $this->getDataFromResponse($input['gateway']);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
@@ -196,7 +194,6 @@ class Gateway extends Base\Gateway
 
         $data = array_merge($defaultData, $data);
 
-        // trace before encryption
         $this->traceGatewayPaymentRequest($data, $input);
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
@@ -206,14 +203,10 @@ class Gateway extends Base\Gateway
 
     protected function getDefaultRequestData($input)
     {
-        $paymentId = $input['payment']['id'];
-
-        $amount = number_format($input['payment']['amount'] /100, 2, '.', ' ');
-
         return [
-            RequestFields::MERCHANT_UNIQUE_REFERENCE => $paymentId,
-            RequestFields::ITEM_CODE                 => strtoupper($paymentId),
-            RequestFields::AMOUNT                    => $amount
+            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
+            RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
+            RequestFields::AMOUNT             => $input['payment']['amount'] /100
         ];
     }
 

@@ -9,8 +9,6 @@ use RZP\Gateway\Netbanking\Axis\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    const MODE_CBC = 1;
-
     public function authorize($input)
     {
         parent::authorize($input);
@@ -58,13 +56,13 @@ class Server extends Base\Mock\Server
     protected function createResponse($data)
     {
         $response =  [
-            ResponseFields::STATUS                      => Constants::YES,
-            ResponseFields::MERCHANT_UNIQUE_REFERENCE   => $data[RequestFields::MERCHANT_UNIQUE_REFERENCE],
-            ResponseFields::BANK_REFERENCE_ID           => mt_rand(1000000000, 9999999999), // 10 digit no.
-            ResponseFields::ITEM_CODE                   => $data[RequestFields::ITEM_CODE],
-            ResponseFields::AMOUNT                      => $data[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY_CODE               => Constants::INDIAN_RUPEE,
-            ResponseFields::FLAG                        => Constants::SUCCESS,
+            ResponseFields::STATUS             => Constants::YES,
+            ResponseFields::MERCHANT_REFERENCE => $data[RequestFields::MERCHANT_REFERENCE],
+            ResponseFields::BANK_REFERENCE_ID  => mt_rand(1000000000, 9999999999),
+            ResponseFields::ITEM_CODE          => $data[RequestFields::ITEM_CODE],
+            ResponseFields::AMOUNT             => $data[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY_CODE      => Constants::INDIAN_RUPEE,
+            ResponseFields::FLAG               => Constants::SUCCESS,
         ];
 
         // for test cases
@@ -86,13 +84,13 @@ class Server extends Base\Mock\Server
     protected function getVerifyXml($input)
     {
         $response = [
-            ResponseFields::PAYEE_ID                  => $input[RequestFields::VERIFY_PAYEE_ID],
-            ResponseFields::ITEM_CODE                 => $input[RequestFields::VERIFY_ITC],
-            ResponseFields::MERCHANT_UNIQUE_REFERENCE => $input[RequestFields::VERIFY_PRN],
-            ResponseFields::DATE                      => $input[RequestFields::VERIFY_AMT],
-            ResponseFields::VERIFY_RESPONSE_AMOUNT    => $input[RequestFields::VERIFY_DATE],
-            ResponseFields::BANK_REFERENCE_ID         => '',
-            ResponseFields::PAYMENT_STATUS            => Constants::SUCCESS,
+            ResponseFields::PAYEE_ID               => $input[RequestFields::VERIFY_PAYEE_ID],
+            ResponseFields::ITEM_CODE              => $input[RequestFields::VERIFY_ITC],
+            ResponseFields::MERCHANT_REFERENCE     => $input[RequestFields::VERIFY_PRN],
+            ResponseFields::DATE                   => $input[RequestFields::VERIFY_AMT],
+            ResponseFields::VERIFY_RESPONSE_AMOUNT => $input[RequestFields::VERIFY_DATE],
+            ResponseFields::BANK_REFERENCE_ID      => '',
+            ResponseFields::PAYMENT_STATUS         => Constants::SUCCESS,
         ];
 
         // for test cases

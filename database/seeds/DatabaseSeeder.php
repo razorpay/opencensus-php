@@ -508,7 +508,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
-        $this->createNetbankingAxisTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -719,7 +719,7 @@ class DatabaseSeeder extends Seeder
         );
     }
 
-    protected function createNetbankingAxisTerminals()
+    protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
             array(
