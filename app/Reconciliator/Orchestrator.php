@@ -54,6 +54,13 @@ class Orchestrator
         self::ADMIN    => ['prashanth.yv@razorpay.com'],
     ];
 
+    /**
+     * Gateways for which we run validations on email content
+     */
+    const GATEWAY_EMAIL_VALIDATION = [
+        self::HDFC,
+    ];
+
 
     /*********************
      * Instance variables
@@ -213,7 +220,7 @@ class Orchestrator
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
-        $this->setGatewayFromEmailId();
+        $this->setGatewayFromEmail();
 
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
@@ -412,11 +419,25 @@ class Orchestrator
      *
      * @throws Exception\ReconciliationException
      */
-    protected function setGatewayFromEmailId()
+    protected function setGatewayFromEmail()
+    {
+        // For a particular gateway, reconciliation files can be sent from more than one email ID.
+        $gateway = $this->getGatewayFromEmail();
+
+        if ($gateway === self::ADMIN)
+        {
+            $gateway = $this->emailDetails['subject'];
+            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+                    "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
+        }
+
+        $this->setGatewayReconciliatorObject($gateway);
+    }
+
+    protected function getGatewayFromEmail()
     {
         $fromEmailId = $this->emailDetails['from'];
 
-        // For a particular gateway, reconciliation files can be sent from more than one email ID.
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
         if (empty($gateway) === true)
@@ -427,14 +448,30 @@ class Orchestrator
             );
         }
 
-        if ($gateway === self::ADMIN)
+        if (($this->gatewayEmailValidationIsNeeded($gateway) === true)
+            and ($this->gatewayEmailIsValid($gateway) === false))
         {
-            $gateway = $this->emailDetails['subject'];
-            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
-                    "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
+            throw new Exception\ReconciliationException(
+                'Email content is invalid.',
+                ['email_details' => $this->emailDetails]
+            );
         }
 
-        $this->setGatewayReconciliatorObject($gateway);
+        return $gateway;
+    }
+
+    protected function gatewayEmailValidationIsNeeded($gateway)
+    {
+        return (in_array($gateway, self::GATEWAY_EMAIL_VALIDATION, true) === true);
+    }
+
+    protected function gatewayEmailIsValid($gateway)
+    {
+        $gatewayEmailValidator = 'validate' . ucfirst(strtolower($gateway)) . 'email';
+
+        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+
+        return $valid;
     }
 
     protected function getFileDetailsFromInput($inputDetails, $input)

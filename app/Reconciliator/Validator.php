@@ -16,6 +16,10 @@ class Validator
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
+    const GATEWAY_SUBJECT_REGEX = [
+        Orchestrator::HDFC => "/.*Email MPR as of [0-9]{2}-.{3}-20[0-9]{2}/",
+    ];
+
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
@@ -33,6 +37,22 @@ class Validator
         }
 
         return true;
+    }
+
+    public function validateHdfcEmail($emailDetails)
+    {
+        $subject = $emailDetails['subject'];
+
+        $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::HDFC];
+
+        // HDFC also sends Corporate MPR emails, that should fail here
+        if ((preg_match($regex, $subject) !== 0)
+            and (strpos($subject, 'Corporate') === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateAttachments(& $input)
