@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BANK_ACCOUNT_ID       = 'bank_account_id';
+    const DAILY_SETTLEMENT_ID   = 'daily_settlement_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
     const SERVICE_TAX           = 'service_tax';
@@ -27,7 +28,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'settlement';
 
     protected $fillable = array(
-//        self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
@@ -82,6 +82,11 @@ class Entity extends Base\PublicEntity
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
+    }
+
+    public function dailySettlement()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Daily\Entity');
     }
 
     public function isStatusCreated()
