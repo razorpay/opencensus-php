@@ -107,72 +107,7 @@ class Gateway extends Base\Gateway
     {
         $response = $this->decrypt($responseBody);
 
-        $fields = [];
-        switch ($type) {
-            case Action::COLLECT:
-
-                // There are lots of additional dummy fields
-                // after this, which we ignore
-                $fields = [
-                    ResponseFields::PAYMENT_ID,
-                    ResponseFields::UPI_TXN_ID,
-                    ResponseFields::AMOUNT,
-                    ResponseFields::STATUS,
-                    ResponseFields::STATUS_DESCRIPTION,
-                    ResponseFields::PAYER_VA,
-                    ResponseFields::PAYEE_VA,
-                ];
-
-                break;
-
-            case Action::VERIFY:
-                $fields = [
-                    ResponseFields::UPI_TXN_ID,
-                    ResponseFields::PAYMENT_ID,
-                    ResponseFields::AMOUNT,
-                    ResponseFields::TXN_AUTH_DATE,
-                    ResponseFields::STATUS,
-                    ResponseFields::STATUS_DESCRIPTION,
-                    ResponseFields::RESPCODE,
-                    ResponseFields::APPROVAL_NO,
-                    ResponseFields::PAYER_VA,
-                    ResponseFields::NPCI_UPI_TXN_ID,
-                    ResponseFields::REFERENCE_ID,
-                ];
-                break;
-
-            case Action::REFUND:
-                $fields = [
-                    ResponseFields::UPI_TXN_ID,
-                    ResponseFields::PAYMENT_ID,
-                    ResponseFields::AMOUNT,
-                    ResponseFields::TXN_AUTH_DATE,
-                    ResponseFields::STATUS,
-                    ResponseFields::STATUS_DESCRIPTION,
-                    ResponseFields::RESPCODE,
-                    ResponseFields::APPROVAL_NO,
-                    ResponseFields::PAYER_VA,
-                    ResponseFields::APPROVAL_NO,
-                    ResponseFields::TXN_ID,
-                    ResponseFields::CUSTOMER_REFERENCE_ID,
-                ];
-                break;
-
-            case Action::CALLBACK:
-                $fields = [
-                    ResponseFields::UPI_TXN_ID,
-                    ResponseFields::PAYMENT_ID,
-                    ResponseFields::AMOUNT,
-                    ResponseFields::TXN_AUTH_DATE,
-                    ResponseFields::STATUS,
-                    ResponseFields::STATUS_DESCRIPTION,
-                    ResponseFields::RESPCODE,
-                    ResponseFields::APPROVAL_NO,
-                    ResponseFields::PAYER_VA,
-                    ResponseFields::NPCI_UPI_TXN_ID,
-                    ResponseFields::REFERENCE_ID
-                ];
-        }
+        $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
 
         $values = explode('|', $response);
 
@@ -287,7 +222,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Encrypts data before sending it to ICICI
+     * Encrypts data
      * @param  string $data
      * @return string
      */
