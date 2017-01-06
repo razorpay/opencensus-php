@@ -33,6 +33,8 @@ class Gateway extends Base\Gateway
 
     const TIME_FORMAT            = 'dmYhis';
 
+    const ACTION_ERROR           = 'Action not set correctly';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -60,14 +62,7 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($content);
 
-        $attributes = $this->getCallbackAttributes($content);
-
-        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment']['id'], Action::AUTHORIZE);
-
-        $gatewayPayment->fill($attributes);
-
-        $gatewayPayment->saveOrFail();
+        $this->saveCallbackContent($input, $content);
 
         $this->checkActionStatus($content);
     }
@@ -96,7 +91,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest($verify)
+    protected function sendPaymentVerifyRequest($verify)
     {
         $content = $this->getPaymentVerifyData($verify);
 
@@ -119,7 +114,7 @@ class Gateway extends Base\Gateway
         $this->checkActionStatus($responseArray);
     }
 
-    public function verifyPayment($verify)
+    protected function verifyPayment($verify)
     {
         $response = $verify->verifyResponseContent;
 
@@ -199,6 +194,18 @@ class Gateway extends Base\Gateway
         $data[AuthFields::HASH] = $this->getHashOfArray($data, 'request');
 
         return $data;
+    }
+
+    protected function saveCallbackContent($input, $content)
+    {
+        $attributes = $this->getCallbackAttributes($content);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'], Action::AUTHORIZE);
+
+        $gatewayPayment->fill($attributes);
+
+        $gatewayPayment->saveOrFail();
     }
 
     protected function getCallbackAttributes($content)
@@ -430,7 +437,7 @@ class Gateway extends Base\Gateway
                 return $content[RefundFields::HASH];
 
             default:
-                throw new Exception\RuntimeException('Action not set correctly');
+                throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
     }
 
@@ -470,7 +477,7 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception\RuntimeException('Action not set correctly');
+                throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
 
         $salt = $this->getSecret();
@@ -580,7 +587,7 @@ class Gateway extends Base\Gateway
                 break;
 
             default:
-                throw new Exception/RuntimeException('Action not set correctly');
+                throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
 
         $successValue = ErrorCodes::getSuccessField();
