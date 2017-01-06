@@ -14,6 +14,7 @@ final class Route
 
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
+        'callback_params'                         => ['get',      'callback_params',                                'PublicController@getCallbackUrlWithParams'                         ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
@@ -852,6 +853,7 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'callback_params',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',

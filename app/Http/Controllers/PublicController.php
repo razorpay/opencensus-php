@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use View;
+use View, Request;
 
 class PublicController extends Controller
 {
@@ -15,5 +15,9 @@ class PublicController extends Controller
         ];
 
         return View::make('public.account', $data);
+    }
+
+    public function getCallbackUrlWithParams() {
+        return View::make('public.callback_params', array("params" => Request::all()));
     }
 }
