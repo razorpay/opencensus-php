@@ -14,10 +14,6 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID => 'sometimes|string|size:18',
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
-
-        // Es specific params
-        Base\EsRepository::QUERY => 'sometimes|string|min:1|max:100',
-        Entity::NOTES            => 'sometimes|string|min:1|max:40',
     ];
 
     protected $proxyFetchParamRules = [
@@ -28,11 +24,6 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
-    ];
-
-    protected $esWhitelistedParams = [
-        Base\EsRepository::QUERY,
-        Entity::NOTES,
     ];
 
     public function getInvoicesForNotification($medium)
