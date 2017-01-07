@@ -79,11 +79,11 @@ class InvoiceController extends Controller
 
     public function getInvoiceView($invoiceId)
     {
-        $error = (array) Request::get('error');
+        $error = Request::get('error');
 
         $data = $this->service->getInvoiceViewDetails($invoiceId);
 
-        if ($error)
+        if (empty($error) === false)
         {
             $data['error'] = $error;
         }
