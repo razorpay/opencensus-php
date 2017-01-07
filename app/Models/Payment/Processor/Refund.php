@@ -466,6 +466,25 @@ trait Refund
         }
     }
 
+    protected function recordTransactionForRefund($forceRefundTransaction = false)
+    {
+        $this->repo->transaction(function() use ($forceRefundTransaction)
+        {
+            $payment = $this->payment;
+
+            $this->paymentRepo->lockForUpdate($payment->getKey());
+
+            try
+            {
+                $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
+            }
+            catch (\Exception $ex)
+            {
+                // TODO: Log it as critical error
+            }
+        });
+    }
+
     protected function recordRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
@@ -525,17 +544,26 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
-            if (($payment->getTransactionId() !== null) or
-                ($payment->isAuthorized() === false))
+            if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
+
+                $refund->setGatewayRefunded(true);
             }
             else if ($this->gatewaySupportsReversal($payment) === true)
             {
                 $this->reverseOnGateway($data);
+
+                // TODO: Should we set gateway_refunded in this case?
+                // Or should we add a new one - gateway_reversed?
             }
 
-            $this->recordRefund();
+            $this->updatePaymentRefunded();
+
+            $this->repo->saveOrFail($this->payment);
+            $this->repo->saveOrFail($refund);
+
+            $this->recordTransactionForRefund();
 
             $this->sendRefundNotification($payment, $refund);
         });

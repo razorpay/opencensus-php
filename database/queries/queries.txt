@@ -1461,3 +1461,7 @@ UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
 UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
+
+ALTER TABLE refunds
+    ADD COLUMN gateway_refunded TINYINT AFTER base_amount
+    ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
