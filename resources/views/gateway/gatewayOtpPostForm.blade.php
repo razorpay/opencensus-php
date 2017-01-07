@@ -21,6 +21,9 @@ border:2px solid #29B7D6;border-top-color:transparent}
   </script>
   <script type="text/javascript" src="{{$data['cdn']}}/static/payment_redirect/bundle.js"></script>
   {{-- Do not remove below form — needed to run tests --}}
+  <form class="card" id="otpform" name="otpform" action="{{$data['data']['request']['url']}}" method="post">
+    <input id='otp' type="hidden" name="otp" maxlength="6">
+  </form>
   <form id="form2" name="form2">
     <input type="hidden" name="type" value="{{$data['data']['type']}}">
     <input type="hidden" name="gateway" value="{{$data['data']['gateway']}}">

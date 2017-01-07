@@ -335,12 +335,13 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'otp')
             {
-                $template_data = array(
-                                       'data' => $data,
-                                       'cdn'  => $this->config->get('url.cdn.production'));
+                $templateData = [
+                   'data' => $data,
+                   'cdn'  => $this->config->get('url.cdn.production')
+                ];
 
                 return View::make('gateway.gatewayOtpPostForm')
-                           ->with('data', $template_data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'return')
             {
