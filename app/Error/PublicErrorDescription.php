@@ -5,7 +5,7 @@ namespace RZP\Error;
 class PublicErrorDescription
 {
     const GATEWAY_ERROR                                                         = 'There is a problem with the gateway causing the payment to fail';
-    const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins';
+    const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
