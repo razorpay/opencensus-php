@@ -69,7 +69,7 @@ class TerminalSelectionTest extends TestCase
 
         $request = [
             'url'    => $url,
-            'method' => 'PUT'
+            'method' => 'PUT',
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -84,7 +84,68 @@ class TerminalSelectionTest extends TestCase
 
         $request = [
             'url'    => $url,
-            'method' => 'DELETE'
+            'method' => 'DELETE',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
+    public function testMerchantAssign()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
+
+        $mid = Merchant\Account::TEST_ACCOUNT;
+
+        $tid = '10BillDirTrmn2';
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  $mid];
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+            'content' => $requestContent,
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($tid, $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  '1MercShareTerm'];
+
+        $request = [
+            'url'     => $url,
+            'method'  => 'PUT',
+            'content' => $requestContent,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
