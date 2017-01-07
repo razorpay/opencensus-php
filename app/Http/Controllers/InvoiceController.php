@@ -79,7 +79,7 @@ class InvoiceController extends Controller
 
     public function getInvoiceView($invoiceId)
     {
-        $input = Request::get('error');
+        $input = (array) Request::get('error', []);
 
         $data = $this->service->getInvoiceViewDetails($invoiceId);
 
