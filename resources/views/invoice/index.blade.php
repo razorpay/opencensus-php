@@ -129,11 +129,11 @@
             }
           };
 
-          @if ($data['merchant_details'])
+          @if (isset($data['merchant_details']))
             @if ($data['merchant_details']['id'] === '6lGF5wNtCS8UA0')
               options.theme.branding = 'payzapp'
-            @elseif ($data['merchant_details']['organization'])
-              @if ($data['merchant_details']['organization']['invoice_logo_url'])
+            @elseif (isset($data['merchant_details']['organization']))
+              @if (isset($data['merchant_details']['organization']['invoice_logo_url']))
                 options.theme.branding = merchant_details.organization.invoice_logo_url;
               @endif
             @endif
