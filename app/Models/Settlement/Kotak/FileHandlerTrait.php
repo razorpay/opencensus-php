@@ -564,7 +564,7 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $data[] = $this->parseTextRow($row);
+            $data[] = $this->parseTextRow($row, $ix);
         }
 
         return $data;
