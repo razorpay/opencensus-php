@@ -17,7 +17,7 @@ class Entity extends Base\Entity
 
     protected $table = 'merchants';
 
-    protected $hidden = ['password', 'remember_token', 'confirm_token'];
+    protected $hidden = array('password', 'remember_token');
 
     protected $fillable = array(
         'id',
