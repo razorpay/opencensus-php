@@ -3,6 +3,7 @@
 namespace RZP\Tests;
 
 use Mailgun\Mailgun;
+use RZP\Http\Route;
 
 class RoutesTest extends TestCase
 {
@@ -24,6 +25,36 @@ class RoutesTest extends TestCase
     public function testJSONPRoute()
     {
         ;
+    }
+
+    public function testAuthGroupsAreDisjoint()
+    {
+        $groups = [
+            Route::$internal,
+            Route::$private,
+            Route::$public,
+            Route::$publicCallback,
+            Route::$proxy,
+            Route::$device,
+            Route::$admin,
+            Route::$direct,
+        ];
+
+        $uniqueRoutes = [];
+
+        foreach ($groups as $group)
+        {
+            foreach ($group as $route)
+            {
+                $this->assertEquals(
+                    array_key_exists($route, $uniqueRoutes),
+                    false,
+                    "$route route appears in two distinct auth groups"
+                );
+
+                $uniqueRoutes[$route] = true;
+            }
+        }
     }
 
     public function testMailgunRoute()
