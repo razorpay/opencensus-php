@@ -948,11 +948,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
         }
-        else if($response->status_code === 504)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
-        }
         else if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
@@ -988,5 +983,14 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
         }
+    }
+
+    protected function sendGatewayRequest($request)
+    {
+        $response = parent::sendGatewayRequest($request);
+
+        $this->handleServerTimeouts($response);
+
+        return $response;
     }
 }
