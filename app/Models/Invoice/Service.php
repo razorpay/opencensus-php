@@ -97,7 +97,7 @@ class Service extends Base\Service
             'id'    => $merchant->getId(),
         ];
 
-        if (empty($merchant->org) === false)
+        if ($merchant->getOrgId() !== null)
         {
             $merchantDetails['organization'] = $merchant->org->toArrayPublic();
         }

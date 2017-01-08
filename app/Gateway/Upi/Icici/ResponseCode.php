@@ -26,13 +26,11 @@ class ResponseCode
 
     public static function getResponseMessage($code)
     {
-        if (array_key_exists($code, self::CODES))
+        if (isset(self::CODES[$code]) === true)
         {
             return self::CODES[$code];
         }
-        else
-        {
-            return 'Unknown Gateway Response Code';
-        }
+
+        return 'Unknown Gateway Response Code';
     }
 }
