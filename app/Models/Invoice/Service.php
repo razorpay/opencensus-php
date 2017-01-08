@@ -70,7 +70,8 @@ class Service extends Base\Service
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        if ($routeName === 'invoice_view_test')
+        if (($routeName === 'invoice_view_test') or
+            ($routeName === 'invoice_view_test_post'))
         {
             $mode = Mode::TEST;
         }
