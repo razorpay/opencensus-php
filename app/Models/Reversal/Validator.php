@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\ReverseTransfer;
+namespace RZP\Models\Reversal;
 
 use RZP\Base;
 use RZP\Exception;
@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         'amount'                => 'sometimes|integer|min:100'
     ];
 
-    public function validateReverseTransfers()
+    public function validateReversals()
     {
 
     }

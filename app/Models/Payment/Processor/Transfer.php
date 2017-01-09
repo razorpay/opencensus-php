@@ -37,10 +37,6 @@ trait Transfer
 
         $this->repo->saveOrFail($txn);
 
-        $payment->originPayment()->associate($originPayment);
-
-        $this->repo->saveOrFail($payment);
-
         $this->saveFeeDetails($txn, $feesSplit);
 
         return $payment;

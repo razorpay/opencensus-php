@@ -34,7 +34,7 @@ class Entity extends Base\PublicEntity
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
     const INVOICE_ID            = 'invoice_id';
-    const ORIGIN_PAYMENT_ID     = 'origin_payment_id';
+    const TRANSFER_ID           = 'transfer_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -253,6 +253,7 @@ class Entity extends Base\PublicEntity
         self::VERIFY_BUCKET        => null,
         self::GATEWAY              => null,
         self::TERMINAL_ID          => null,
+        self::TRANSFER_ID          => null,
     ];
 
     protected $amounts = [
@@ -884,9 +885,10 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Getters ---------------------------------------------
-    public function getOriginPaymentId()
+
+    public function getTransferId()
     {
-        return $this->getAttribute(SELF::ORIGIN_PAYMENT_ID);
+        return $this->getAttribute(SELF::TRANSFER_ID);
     }
 
     public function getAmount()
@@ -1496,9 +1498,9 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
-    public function originPayment()
+    public function transfer()
     {
-        return $this->belongsTo('RZP\Models\Payment\Entity', self::ORIGIN_PAYMENT_ID, self::ID);
+        return $this->belongsTo('RZP\Models\Transfer\Entity', self::TRANSFER_ID);
     }
 
 // --------------- Relation to other entity section ends -----------------------

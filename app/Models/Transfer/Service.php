@@ -3,7 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
-use RZP\Models\ReverseTransfer;
+use RZP\Models\Reversal;
 
 class Service extends Base\Service
 {
@@ -29,7 +29,7 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $reversal = (new ReverseTransfer\Core)->createForTransferReversal($transfer, $input);
+        $reversal = (new Reversal\Core)->createForTransferReversal($transfer, $input);
 
         return $reversal->toArrayPublic();
     }

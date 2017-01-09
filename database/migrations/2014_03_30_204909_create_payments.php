@@ -9,6 +9,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Transfer;
 use RZP\Models\Order;
 
 class CreatePayments  extends Migration
@@ -51,7 +52,7 @@ class CreatePayments  extends Migration
             $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->char(Payment::ORIGIN_PAYMENT_ID, Payment::ID_LENGTH)
+            $table->char(Payment::TRANSFER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
             $table->tinyInteger(Payment::INTERNATIONAL)
@@ -233,14 +234,6 @@ class CreatePayments  extends Migration
                   ->on(Table::CARD)
                   ->on_delete('restrict');
         });
-
-        Schema::table(Table::PAYMENT, function(Blueprint $table)
-        {
-            $table->foreign(Payment::ORIGIN_PAYMENT_ID)
-                  ->references(Payment::ID)
-                  ->on(Table::PAYMENT)
-                  ->on_delete('restrict');
-        });
     }
 
     /**
@@ -252,8 +245,6 @@ class CreatePayments  extends Migration
     {
         Schema::table(Table::PAYMENT, function($table)
         {
-            $table->dropForeign(Table::PAYMENT .'_'. Payment::ORIGIN_PAYMENT_ID . '_foreign');
-
             $table->dropForeign(Table::PAYMENT.'_'.Payment::CARD_ID.'_foreign');
 
             $table->dropForeign(Table::PAYMENT.'_'.Payment::TRANSACTION_ID.'_foreign');

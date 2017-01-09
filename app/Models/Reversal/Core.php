@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\ReverseTransfer;
+namespace RZP\Models\Reversal;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -14,40 +14,48 @@ use RZP\Models\Merchant;
 class Core extends Base\Core
 {
     /**
-     * Create a reverse_transfer for a Marketplace refund,
+     * Create a reversal for a Marketplace refund,
      * and a transaction that updates the Marketplace balance
      *
      * @param  Transfer\Entity              $transfer
      * @param  Merchant\Entity              $merchant
      * @param  int                          $amount
-     * @return ReverseTransfer\Entity
+     * @return Reversal\Entity
      */
     public function createForMarketplaceRefund(Transfer\Entity $transfer, Merchant\Entity $merchant, int $amount) : Entity
     {
-        $reverseTrf = $this->createEntity($amount, $transfer->getCurrency());
+        $reversal = $this->createEntity($amount, $transfer->getCurrency());
 
-        $reverseTrf->transfer()->associate($transfer);
+        $reversal->transfer()->associate($transfer);
 
-        $reverseTrf->merchant()->associate($merchant);
+        $reversal->merchant()->associate($merchant);
 
-        $reverseTrf->setBaseAmount();
+        $reversal->setBaseAmount();
 
-        $txn = (new Transaction\Core)->createFromReverseTransfer($reverseTrf);
+        $txn = (new Transaction\Core)->createFromReversal($reversal);
 
         $this->repo->saveOrFail($txn);
 
-        $reverseTrf->transaction()->associate($txn);
+        $reversal->transaction()->associate($txn);
 
-        $transfer->reverseAmount($amount, $reverseTrf->getBaseAmount());
+        $transfer->reverseAmount($amount, $reversal->getBaseAmount());
 
         $this->repo->saveOrFail($transfer);
 
-        $this->repo->saveOrFail($reverseTrf);
+        $this->repo->saveOrFail($reversal);
 
-        return $reverseTrf;
+        return $reversal;
     }
 
-    public function createForTransferReversal(Transfer\Entity $transfer, array $input)
+
+    /**
+     * Creates a Reversal from a direct transfer
+     *
+     * @param  Transfer\Entity      $transfer
+     * @param  array                $input
+     * @return Reversal\Entity
+     */
+    public function createForTransferReversal(Transfer\Entity $transfer, array $input) : Entity
     {
         (new Validator)->validateInput('reversal', $input);
 
@@ -66,11 +74,11 @@ class Core extends Base\Core
             'currency'  => $currency,
         ];
 
-        $reverseTrf = (new Entity)->fill($data);
+        $reversal = (new Entity)->fill($data);
 
-        $reverseTrf->generateId();
+        $reversal->generateId();
 
-        return $reverseTrf;
+        return $reversal;
     }
 
 }

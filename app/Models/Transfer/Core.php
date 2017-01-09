@@ -215,7 +215,13 @@ class Core extends Base\Core
 
         $baseAmount = $transferPayment->getBaseAmount();
 
-        return $this->createTransfer($account, $source, $transferInput, $baseAmount);
+        $transfer = $this->createTransfer($account, $source, $transferInput, $baseAmount);
+
+        $transferPayment->transfer()->associate($transfer);
+
+        $this->repo->saveOrFail($transferPayment);
+
+        return $transfer;
     }
 
     protected function verifyFeatureAllowed(string $feature)

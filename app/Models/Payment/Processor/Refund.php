@@ -17,7 +17,7 @@ use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Models\Transfer;
-use RZP\Models\ReverseTransfer;
+use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -394,8 +394,8 @@ trait Refund
 
         $transferPayment = $this->repo
                                 ->payment
-                                ->fetchTransferPaymentByOriginPaymentId(
-                                    $payment->getId(), $accountId);
+                                ->fetchPaymentByTransferIdAndMerchant(
+                                    $transfer->getId(), $accountId);
 
         // @todo: DB queried here
         assert ($this->merchant->accounts->contains($accountId));
@@ -403,7 +403,7 @@ trait Refund
         (new Processor($transferPayment->merchant))
             ->refundTransferPayment($transferPayment, $amount);
 
-        (new ReverseTransfer\Core)
+        (new Reversal\Core)
             ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 

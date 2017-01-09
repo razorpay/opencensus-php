@@ -65,7 +65,7 @@ class Entity
     const ADMIN_TOKEN           = 'admin_token';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSFER              = 'transfer';
-    const REVERSE_TRANSFER      = 'reverse_transfer';
+    const REVERSAL              = 'reversal';
     const CUSTOMER_BALANCE      = 'customer_balance';
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const OFFER                 = 'offer';
@@ -133,7 +133,7 @@ class Entity
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
         self::TRANSFER              => \RZP\Models\Transfer::class,
         self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
-        self::REVERSE_TRANSFER      => \RZP\Models\ReverseTransfer::class,
+        self::REVERSAL              => \RZP\Models\Reversal::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
         self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,

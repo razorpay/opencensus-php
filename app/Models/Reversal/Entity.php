@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\ReverseTransfer;
+namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
 use RZP\Models\Transfer;
@@ -15,9 +15,9 @@ class Entity extends Base\PublicEntity
     const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
 
-    protected static $sign = 'revtrf';
+    protected static $sign = 'revsl';
 
-    protected $entity = 'reverse_transfer';
+    protected $entity = 'reversal';
 
     protected $generateIdOnCreate = true;
 

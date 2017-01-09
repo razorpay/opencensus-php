@@ -628,14 +628,14 @@ class Core extends Base\Core
      * Create transaction and update balances for a reverse transfer
      * on a Marketplace payment refund
      *
-     * @param  ReverseTransfer\Entity   $reverseTrf
+     * @param  Reversal\Entity   $reversal
      * @return Entity
      */
-    public function createFromReverseTransfer($reverseTrf)
+    public function createFromReversal($reversal)
     {
         $txn = new Transaction\Entity;
 
-        $amount = $reverseTrf->getAmount();
+        $amount = $reversal->getAmount();
 
         $nowTimestamp = time();
 
@@ -651,15 +651,15 @@ class Core extends Base\Core
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::SERVICE_TAX   => 0,
             Transaction\Entity::AMOUNT        => $amount,
-            Transaction\Entity::TYPE          => Transaction\Type::REVERSETRANSFER,
+            Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
             Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
         ];
 
         $txn->fillAndGenerateId($data);
 
-        $txn->merchant()->associate($reverseTrf->merchant);
+        $txn->merchant()->associate($reversal->merchant);
 
-        $txn->sourceAssociate($reverseTrf);
+        $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
 

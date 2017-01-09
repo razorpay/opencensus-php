@@ -50,7 +50,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
-        $this->checkReverseTransfersSingle($transfers['items']);
+        $this->checkReversalsSingle($transfers['items']);
 
         $paymentEntity = $this->getEntityById('payment', explode('_', $this->payment['id'])[1], true);
 
@@ -88,7 +88,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000002'));
 
-        $this->checkReverseTransfersSingle($transfers['items']);
+        $this->checkReversalsSingle($transfers['items']);
 
         $transferEntity = $this->getEntityById('transfer', $transferId, true);
 
@@ -139,7 +139,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->refundPayment($this->payment['id'], 2000);
 
-        $this->checkReverseTransfersSingle($transfers['items']);
+        $this->checkReversalsSingle($transfers['items']);
 
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
     }
@@ -201,7 +201,7 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->refundPayment($this->payment['id'], null, $reversals);
 
-        $this->checkReverseTransfersSingle($transfers['items'], $reversals);
+        $this->checkReversalsSingle($transfers['items'], $reversals);
 
         $this->assertEquals(20000 - 2000, $this->getAccountBalance('10000000000001'));
 
@@ -217,7 +217,7 @@ class PaymentMarketplaceRefundTest extends TestCase
     }
 
     // Use only when a single refund reversal is made per transfer.
-    protected function checkReverseTransfersSingle($transfers = [], $reversals = [])
+    protected function checkReversalsSingle($transfers = [], $reversals = [])
     {
         $index = 0;
 
@@ -227,13 +227,13 @@ class PaymentMarketplaceRefundTest extends TestCase
 
             Transfer\Entity::verifyIdAndSilentlyStripSign($id);
 
-            $content = $this->getEntities('reverse_transfer', ['transfer_id' => $id], true)['items'][0];
+            $content = $this->getEntities('reversal', ['transfer_id' => $id], true)['items'][0];
 
             $expected = [
                 'transfer_id'   => $transfer['id'],
                 'merchant_id'   => '10000000000000',
                 'amount'        => $reversals[$index]['amount'] ?? $transfer['amount'],
-                'entity'        => 'reverse_transfer',
+                'entity'        => 'reversal',
             ];
 
             $this->assertArraySelectiveEquals($expected, $content);

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\ReverseTransfer;
+namespace RZP\Models\Reversal;
 
 use RZP\Models\Base;
 

@@ -3,14 +3,14 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\ReverseTransfer\Entity;
+use RZP\Models\Reversal\Entity;
 use RZP\Models\Transfer;
 use RZP\Constants\Table;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
 
-class CreateReverseTransfers extends Migration
+class CreateReversals extends Migration
 {
     /**
      * Run the migrations.
@@ -19,7 +19,7 @@ class CreateReverseTransfers extends Migration
      */
     public function up()
     {
-        Schema::create(Table::REVERSE_TRANSFER, function(Blueprint $table)
+        Schema::create(Table::REVERSAL, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -72,24 +72,24 @@ class CreateReverseTransfers extends Migration
      */
     public function down()
     {
-        Schema::table(Table::REVERSE_TRANSFER, function($table)
+        Schema::table(Table::REVERSAL, function($table)
         {
             $table->dropForeign
             (
-                Table::REVERSE_TRANSFER . '_' . Entity::TRANSACTION_ID . '_foreign'
+                Table::REVERSAL . '_' . Entity::TRANSACTION_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::REVERSE_TRANSFER . '_' . Entity::MERCHANT_ID . '_foreign'
+                Table::REVERSAL . '_' . Entity::MERCHANT_ID . '_foreign'
             );
 
             $table->dropForeign
             (
-                Table::REVERSE_TRANSFER . '_' . Entity::TRANSFER_ID . '_foreign'
+                Table::REVERSAL . '_' . Entity::TRANSFER_ID . '_foreign'
             );
         });
 
-        Schema::drop(Table::REVERSE_TRANSFER);
+        Schema::drop(Table::REVERSAL);
     }
 }

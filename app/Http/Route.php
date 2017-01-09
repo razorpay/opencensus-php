@@ -970,6 +970,8 @@ final class Route
         'customer_get_wallet_balance'   => Feature::OPENWALLET,
         'customer_get_wallet_statement' => Feature::OPENWALLET,
         'reports_transaction_broking'   => Feature::BROKING_REPORT,
+        'transfer_create'               => Feature::MARKETPLACE,
+        'transfer_create_reversal'      => Feature::MARKETPLACE,
     );
 
     /*
