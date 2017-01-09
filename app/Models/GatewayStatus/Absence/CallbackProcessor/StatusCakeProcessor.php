@@ -53,6 +53,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             }
             else
             {
+                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS, ['input' => $input]);
+
                 throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $sStatus);
             }
             
@@ -60,6 +62,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             if ($status === 1)
             {
+                $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_EDIT, ['data' => $data]);
+
                 $absent = $this->processor->fetchMostRecentActive($data);
 
                 if (empty($absent) === false)
@@ -74,6 +78,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             }
             else
             {
+                $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_CREATE, ['data' => $data]);
+                
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
                 // events for the same url.
                 return $this->processor->createAction($data);
