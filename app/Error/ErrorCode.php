@@ -441,4 +441,8 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
+    const BAD_REQUEST_INVALID_CARD_GATEWAY                                          = 'BAD_REQUEST_INVALID_CARD_GATEWAY';
+    const BAD_REQUEST_INVALID_NETBANKING_GATEWAY                                    = 'BAD_REQUEST_INVALID_NETBANKING_GATEWAY';
 }

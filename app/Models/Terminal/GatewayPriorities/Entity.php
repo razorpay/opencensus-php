@@ -12,7 +12,11 @@ class Entity extends Redis\SortedSet
 
     public function build(array $priorities)
     {
-        $this->data = $priorities;
+        $validator = new Validator($this);
+
+        $validator->validateInput('create', $priorities);
+
+        $this->setData($priorities);
 
         return $this;
     }
