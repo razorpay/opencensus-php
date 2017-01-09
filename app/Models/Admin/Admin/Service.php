@@ -208,9 +208,10 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN);
         }
 
-        Cache::forget($key);
-
         $this->core()->updatePassword($admin, $input, true);
+
+        // Flush the key so that the link cannot be used again.
+        Cache::forget($key);
 
         return ['success' => true];
     }
