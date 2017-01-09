@@ -29,7 +29,11 @@ class Service extends Impl\Base
      */
     protected $services = [];
 
-    protected $allowFallback = false;
+    protected $trace;
+
+    protected $config;
+
+    protected $allowFallback;
 
     public function __construct(Config $config, Trace $trace)
     {
@@ -64,10 +68,12 @@ class Service extends Impl\Base
      * Shorten given url.
      *
      * @param string       $url
-     * @param bool|boolean $fail - If fail is passed as false, returns url itself
+     * @param bool|boolean $fail   - If fail is passed as false, returns url itself
      *                             in case of failures.
      *
      * @return string
+     * @throws Exception\RuntimeException
+     * @throws null
      */
     public function shorten(string $url, bool $fail = true)
     {
@@ -106,9 +112,9 @@ class Service extends Impl\Base
      * Returns implementation of given service(eg. gimli, bitly etc.)
      *
      * @param string $service
-     * @param array  $config
      *
      * @return Impl\Base
+     * @throws Exception\RuntimeException
      */
     protected function driver(string $service)
     {

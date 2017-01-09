@@ -4,7 +4,6 @@ namespace RZP\Services\Elfin\Impl;
 
 class Gimli extends Base
 {
-
     private $secret;
 
     private $apiUrl;
