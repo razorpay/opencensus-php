@@ -180,9 +180,9 @@ class Processor extends Base\Core
 
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
-        list($settlements, $settledTxns) = $this->createSettlementsFromTxns($txns, $channel);
+        list($settlements, $settledTxnsCount) = $this->createSettlementsFromTxns($txns, $channel);
 
-        return [$settlements, $settledTxns->count()];
+        return [$settlements, $settledTxnsCount];
     }
 
     protected function filterTransactionsForSettlement($txns, $channel)
@@ -222,7 +222,7 @@ class Processor extends Base\Core
     protected function createSettlementsFromTxns($txns, $channel)
     {
         $settlements = new Base\PublicCollection;
-        $txnsSettled = new Base\PublicCollection;
+        $txnsSettledCount = 0;
 
         $i = 0;
         $txnsCount = $txns->count();
@@ -293,12 +293,12 @@ class Processor extends Base\Core
                     return $setl;
                 });
 
-            $txnsSettled = $txnsSettled->merge($setlTxns);
+            $txnsSettledCount += $setlTxns->count();
 
             $settlements->push($setl);
         }
 
-        return [$settlements, $txnsSettled];
+        return [$settlements, $txnsSettledCount];
     }
 
     protected function createDailySettlementEntity($channel)
@@ -326,7 +326,7 @@ class Processor extends Base\Core
         $this->dailySettlement->incrementAmount($setl->getAmoun());
         $this->dailySettlement->incrementFees($setl->getFees());
         $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
-        $this->dailySettlement->incrementSettlementCount();
+        $this->dailySettlement->incrementSettlementCount(1);
         $this->dailySettlement->incrementTransactionCount($txnsCount);
 
         $this->repo->saveOrFail($this->dailySettlement);
