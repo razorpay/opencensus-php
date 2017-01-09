@@ -69,6 +69,8 @@ trait Refund
                 $data);
         }
 
+        $this->refund->setGatewayRefunded(true);
+
         $this->recordTransactionAndUpdatePaymentForRefund();
     }
 
@@ -100,6 +102,8 @@ trait Refund
 
             if ($verify === false)
             {
+                $refund->setGatewayRefunded(true);
+
                 $this->recordTransactionAndUpdatePaymentForRefund(true);
 
                 $this->trace->info(
