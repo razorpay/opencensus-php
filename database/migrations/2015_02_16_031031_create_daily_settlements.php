@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 
 class CreateDailySettlements extends Migration
@@ -63,6 +64,9 @@ class CreateDailySettlements extends Migration
 
         Schema::table(Table::SETTLEMENT, function($table)
         {
+            $table->string(Settlement::DAILY_SETTLEMENT_ID)
+                  ->nullable();
+
             $table->foreign(Settlement::DAILY_SETTLEMENT_ID)
                   ->references(DailySettlement::ID)
                   ->on(Table::DAILY_SETTLEMENT)
