@@ -42,9 +42,14 @@ export default class InvoiceLineItem extends ModalContainer {
   }
 
   render() {
-    let { fieldName, fieldItem, index, items, onRemove } = this.props
-    let selectedItemId = fieldItem.item ? fieldItem.item.id :
-                          fieldItem.item_id ? fieldItem.item_id : null
+    let {
+      fieldName,
+      index,
+      disabled,
+      items,
+      onRemove
+    } = this.props
+    let selectedOption = this.props.invoice_line_items[index]
 
     return (
       <tr>
@@ -64,7 +69,7 @@ export default class InvoiceLineItem extends ModalContainer {
             name={`${fieldName}.item_id`}
             component={TypeAhead}
             options={items}
-            selected={selectedItemId}
+            selected={selectedOption}
             optionLabelPath='name'
             placeholder='Select an item'
             onChange={(selectedItem) => {
@@ -74,6 +79,7 @@ export default class InvoiceLineItem extends ModalContainer {
               }, 0)
             }}
             onQuickAdd={this.quickCreateItem}
+            disabled={disabled}
           />
         </td>
 
@@ -84,6 +90,7 @@ export default class InvoiceLineItem extends ModalContainer {
             class='form-control text-right'
             type='number'
             min={1}
+            disabled={disabled}
           />
         </td>
 

@@ -28,7 +28,7 @@ export default class InvoiceLineItemTable extends Component {
   }
 
   render() {
-    let { fields, items } = this.props
+    let { fields, items, disabled } = this.props
 
     return (
       <div class='invoice-lineitem'>
@@ -37,8 +37,8 @@ export default class InvoiceLineItemTable extends Component {
             <tr>
               <th>Item Details</th>
               <th style={{width: '12%'}} class='text-right'>Quantity</th>
-              <th style={{width: '18%'}} class='text-right'>Rate</th>
-              <th class='text-right'>Amount</th>
+              <th style={{width: '18%'}} class='text-right'>Rate (INR)</th>
+              <th class='text-right'>Amount (INR)</th>
             </tr>
           </thead>
           <tbody>
@@ -47,6 +47,7 @@ export default class InvoiceLineItemTable extends Component {
                 <LineItem
                   key={`line_item_${idx}`}
                   index={idx}
+                  disabled={disabled}
                   fieldName={fieldName}
                   fieldItem={item}
                   items={items}
@@ -70,27 +71,30 @@ export default class InvoiceLineItemTable extends Component {
           <div class='invoice-total pull-right'>
             <dl class='dl-horizontal'>
               <dt>SUB TOTAL:</dt>
-              <dd class='text-right'>{this.calculateItemsSubTotal()}</dd>
+              <dd class='text-right'>₹ {this.calculateItemsSubTotal()}</dd>
 
               <dt>TOTAL:</dt>
-              <dd class='text-right'>{this.calculateInvoiceTotal()}</dd>
+              <dd class='text-right'>₹ {this.calculateInvoiceTotal()}</dd>
             </dl>
           </div>
 
-          <button
-            class='btn btn-default add-line-item'
-            style={{
-              marginLeft: '40px'
-            }}
-            type='button'
-            onClick={() => fields.push({
-              item: null,
-              quantity: 1,
-              amountInINR: '0.00'
-            })}
-          >
-            ADD ITEM
-          </button>
+          {
+            !disabled &&
+            <button
+              class='btn btn-default add-line-item'
+              style={{
+                marginLeft: '40px'
+              }}
+              type='button'
+              onClick={() => fields.push({
+                item: null,
+                quantity: 1,
+                amountInINR: '0.00'
+              })}
+            >
+              ADD LINE ITEM
+            </button>
+          }
         </div>
       </div>
     )

@@ -80,14 +80,15 @@ export default class CreatePaymentLink extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, invoice } = this.props
     let isLiveMode = this.props.mode === 'live'
-    let isNewForm = !(this.props.invoice && !isBlank(this.props.invoice.line_items))
+    let isNewForm =  !(invoice && !isBlank(invoice.line_items))
+    let isEdit = !!invoice
 
     return (
       <div>
         <ModalHeader
-          title={this.props.invoice ? 'Edit Payment Link' : 'Create Payment Link'}
+          title={isEdit ? 'Edit Payment Link' : 'Create Payment Link'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -113,6 +114,7 @@ export default class CreatePaymentLink extends Component {
                       class='form-control'
                       autoFocus={true}
                       validate={required('Please provide the amount')}
+                      disabled={isEdit}
                     />
                   </div>
                 </div>
@@ -129,6 +131,7 @@ export default class CreatePaymentLink extends Component {
                       type='textarea'
                       class='form-control'
                       validate={required('Please provide the description')}
+                      disabled={isEdit}
                     />
                   </div>
                 </div>
@@ -157,6 +160,7 @@ export default class CreatePaymentLink extends Component {
                   class='form-control'
                   placeholder='Customer phone'
                   validate={phone('Please provide valid contact number')}
+                  disabled={isEdit}
                 />
               </div>
 
@@ -167,6 +171,7 @@ export default class CreatePaymentLink extends Component {
                   class='form-control'
                   placeholder='Customer email'
                   validate={email('Please provide valid email')}
+                  disabled={isEdit}
                 />
               </div>
             </div>
@@ -185,6 +190,7 @@ export default class CreatePaymentLink extends Component {
                       component={InputField}
                       class='form-control'
                       validate={required('Please provide product/service name')}
+                      disabled={isEdit}
                     />
                   </div>
                 </div>
@@ -200,6 +206,7 @@ export default class CreatePaymentLink extends Component {
                       component={InputField}
                       class='form-control'
                       validate={required('Please provide the amount')}
+                      disabled={isEdit}
                     />
                   </div>
                 </div>
@@ -227,6 +234,7 @@ export default class CreatePaymentLink extends Component {
                     name='sms_notify'
                     component='input'
                     type='checkbox'
+                    disabled={isEdit}
                   />
                   SMS
                 </label>
@@ -235,6 +243,7 @@ export default class CreatePaymentLink extends Component {
                     name='email_notify'
                     component='input'
                     type='checkbox'
+                    disabled={isEdit}
                   />
                   Email
                 </label>

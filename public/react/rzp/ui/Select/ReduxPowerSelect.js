@@ -8,7 +8,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
     input,
     meta,
     selected,
-    optionLabelPath = 'name',
+    optionLabelPath,
     optionValuePath = 'id',
     onQuickAdd,
     onChange = () => {},
@@ -16,7 +16,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
   } = props
 
   let selectedValue = input.value || selected
-  let selectedOption = findBy(props.options, optionValuePath, selectedValue)
+  let selectedOption = typeof selectedValue === 'string' ? findBy(props.options, optionValuePath, selectedValue) : selected
   let searchIndices = props.searchIndices || [optionLabelPath]
   let showQuickAdd = !!onQuickAdd
 

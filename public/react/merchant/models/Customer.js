@@ -5,14 +5,11 @@ import { isBlank } from 'rzp/utils/rzp-utils'
 export default class Customer extends Entity {
   static resourceIdField = 'id'
   static resourceUrl = '/customers'
-  static resourceFields = [
+
+  resourceFields = [
     'id',
     'name',
     'email',
-    'contact'
-  ]
-  static editableFields = [
-    'name',
     'contact'
   ]
 

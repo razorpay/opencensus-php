@@ -30,14 +30,8 @@ export default class BaseModel {
   }
 
   serialize() {
-    let Klass = this.constructor
+    let fields = (typeof this.resourceFields === 'function') ? this.resourceFields() : this.resourceFields
     let serializedModel = {}
-    let fields = Klass.resourceFields
-    let isNew = this.isNew
-
-    if (!isNew) {
-      fields = Klass.editableFields || fields
-    }
 
     for (let i = 0, len = fields.length; i < len; i++) {
       let prop = fields[i]

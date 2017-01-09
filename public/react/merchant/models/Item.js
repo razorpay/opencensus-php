@@ -5,7 +5,8 @@ import { getFixedINRAmount } from 'rzp/utils/rzp-utils'
 export default class Item extends Entity {
   static resourceIdField = 'id'
   static resourceUrl = '/items'
-  static resourceFields = [
+
+  resourceFields = [
     'id',
     'name',
     'amount',

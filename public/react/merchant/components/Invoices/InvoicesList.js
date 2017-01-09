@@ -31,22 +31,31 @@ const InvoiceListItem = (props) => {
       </td>
       <td>
         <div class='row-action'>
-          <div class='btn-group'>
-            <button
+          {
+            invoice.isEditable ?
+            <div class='btn-group'>
+              <button
+                class='btn btn-xs btn-default'
+                onClick={props.onEditClick}
+              >
+                <i class='fa fa-edit'></i>
+                <span>edit</span>
+              </button>
+              <button
+                class='btn btn-xs btn-default'
+                onClick={props.onDeleteClick}
+              >
+                <i class='fa fa-trash text-danger'></i>
+                <span>delete</span>
+              </button>
+            </div> :
+            <a
               class='btn btn-xs btn-default'
-              onClick={props.onEditClick}
+              href={`#/app/invoices/${invoice.id}/details`}
             >
-              <i class='fa fa-edit'></i>
-              <span>edit</span>
-            </button>
-            <button
-              class='btn btn-xs btn-default'
-              onClick={props.onDeleteClick}
-            >
-              <i class='fa fa-trash text-danger'></i>
-              <span>delete</span>
-            </button>
-          </div>
+              view details
+            </a>
+          }
         </div>
       </td>
     </tr>

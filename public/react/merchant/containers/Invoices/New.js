@@ -25,6 +25,7 @@ const selector = formValueSelector('newInvoice')
       customers: state.customers.customers,
       items: state.items.items,
       customer: selector(state, 'customer'),
+      isIssued: selector(state, 'status') === 'issued'
     }
   },
   {
@@ -103,6 +104,7 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   render() {
     const { handleSubmit } = this.props
+    let isIssued = this.props.isIssued
 
     return (
       <div class='react-root'>
@@ -139,6 +141,8 @@ export default class InvoicesNewContainer extends ModalContainer {
                           name='description'
                           component='textarea'
                           class='form-control'
+                          autoFocus={true}
+                          disabled={isIssued}
                         />
                       </div>
                     </div>
@@ -167,6 +171,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                           optionLabelPath='displayName'
                           placeholder='Select a customer'
                           onQuickAdd={this.quickCreateCustomer}
+                          disabled={isIssued}
                         />
                       </div>
                     </div>
@@ -192,6 +197,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                     name='line_items'
                     component={LineItemTable}
                     items={this.props.items}
+                    disabled={isIssued}
                   />
 
                   <div class='form-group'>
