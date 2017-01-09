@@ -24,36 +24,12 @@ class SortedSet
 
     protected $trace;
 
-    public function __construct()
+    public function __construct(string $key)
     {
         $app = App::getFacadeRoot();
 
-        $this->redis = Redis::getFacadeRoot();
-
+        $this->key = $key;
         $this->trace = $app['trace'];
-    }
-
-    public function save()
-    {
-        $redisKey = $this->generateRedisKey();
-
-        $dataToSave = $this->getFormattedData();
-
-        try
-        {
-            $result = $this->redis->zadd($redisKey, ...$dataToSave);
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-
-            throw new Exception\ServerErrorException(
-                        "Error saving to redis with key: $redisKey",
-                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
-
-        }
-        return $result >= 0 ? true : false;
     }
 
     public function toArray()
@@ -61,33 +37,6 @@ class SortedSet
         return [
             $this->key => $this->data
         ];
-    }
-
-    protected function fetchMembers($descending = true)
-    {
-        $redisKey = $this->generateRedisKey();
-
-        $fetchOptions = [
-            'startIndex' => 0,
-            'endIndex'   => -1,
-            'withScores' => 'WITHSCORES'
-        ];
-
-        try
-        {
-            if ($descending === true)
-            {
-                $this->data = $this->redis->zrevrange($redisKey, ...$fetchOptions);
-            }
-            else
-            {
-                $this->data = $this->zrange($redisKey, ...$fetchOptions);
-            }
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-        }
     }
 
     protected function removeMembers(array $members)
@@ -109,12 +58,12 @@ class SortedSet
         }
     }
 
-    protected function generateRedisKey()
+    public function getRedisKey()
     {
         return static::$keyPrefix . static::$delimiter . $this->key;
     }
 
-    protected function getFormattedData()
+    public function getDataToSave()
     {
         $formattedData = [];
 
@@ -125,5 +74,10 @@ class SortedSet
         }
 
         return $formattedData;
+    }
+
+    public function setData(array $redisData)
+    {
+        $this->data = $redisData;
     }
 }
