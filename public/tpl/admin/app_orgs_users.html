@@ -33,6 +33,7 @@
             <th>Name</th>
             <th>Username</th>
             <th>Email</th>
+            <th>Role</th>
             <th>Employee / Department / Branch / Location / Supervisor Code</th>
             <th>Locked</th>
             <th>Disabled</th>
@@ -45,6 +46,9 @@
             <td>{{row.name}}</td>
             <td>{{row.username}}</td>
             <td>{{row.email}}</td>
+            <td>
+              {{row.roles && row.roles.length ? row.roles[0].name : '--'}}
+            </td>
             <td>
               {{row.employee_code}} /
               {{row.department_code}} /
@@ -72,7 +76,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="9" class="text-center">
                 <ul class="pagination"></ul>
             </td>
           </tr>

@@ -62,6 +62,51 @@ class Service extends Base\Service
         $this->cache = $app['cache'];
     }
 
+    public function forgotPassword($input)
+    {
+        $error = $data = null;
+
+        $domain = \Request::server('SERVER_NAME');
+
+        $org = $this->getOrgFromCache($domain);
+
+        // `/access/resetpwd` is a hard-coded angular route
+        $resetPasswordUrl = 'https://' . $org['hostname'] . '/admin#/access/resetpwd';
+
+        $input['reset_password_url'] = $resetPasswordUrl;
+
+        try
+        {
+            $data = $this->api->admin->forgotPassword($org['id'], $input);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
+    public function resetPassword($input)
+    {
+        $error = $data = null;
+
+        $domain = \Request::server('SERVER_NAME');
+
+        $org = $this->getOrgFromCache($domain);
+
+        try
+        {
+            $data = $this->api->admin->resetPassword($org['id'], $input);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
     public function passwordLogin($domain, array $input)
     {
         $error = $data = null;
@@ -2653,4 +2698,28 @@ class Service extends Base\Service
         return [$error, $data];
     }
 
+    public function logout()
+    {
+        $error = $data = null;
+
+        $this->setAdminCredentials();
+
+        $user = Auth::guard('api')->user();
+
+        $orgId = $user->org_id;
+
+        try
+        {
+            $data = $this->api->admin->logout($orgId);
+
+            // Dashboard logout
+            Auth::guard('api')->logout();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$error, $data];
+    }
 }
