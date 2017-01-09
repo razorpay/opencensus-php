@@ -262,8 +262,9 @@ class Validator extends Base\Validator
      * to decide validity.
      *
      * @param array $input
-     * @return void
-     * */
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateNetworkCategory($input)
     {
         if (empty($input[Entity::NETWORK_CATEGORY]) === true)
@@ -301,7 +302,7 @@ class Validator extends Base\Validator
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();
-            $this->validateInput($gateway.'_edit_terminal', $input);
+            $this->validateInput($gateway . '_edit_terminal', $input);
         }
         else
         {
