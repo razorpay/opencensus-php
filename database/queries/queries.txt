@@ -1461,3 +1461,9 @@ UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
 UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
+
+ALTER TABLE transactions
+    MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT NULL,
+    MODIFY COLUMN fee_model TINYINT(1) DEFAULT NULL;
+UPDATE transactions SET fee_bearer = NULL WHERE type != 'payment';
+UPDATE transactions SET fee_model = NULL WHERE type != 'payment';

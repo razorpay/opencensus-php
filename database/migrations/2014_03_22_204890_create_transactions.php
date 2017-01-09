@@ -85,10 +85,10 @@ class CreateTransactions extends Migration
             $table->string(Transaction::CHANNEL, 8);
 
             $table->tinyInteger(Transaction::FEE_BEARER)
-                  ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+                  ->nullable();
 
             $table->tinyInteger(Transaction::FEE_MODEL)
-                  ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
+                  ->nullable();
 
             $table->string(Transaction::CREDIT_TYPE, 25)
                   ->default(CreditType::DEFAULT);

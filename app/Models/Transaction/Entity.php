@@ -114,8 +114,8 @@ class Entity extends Base\PublicEntity
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
-        self::FEE_MODEL             => Merchant\FeeModel::PREPAID,
-        self::FEE_BEARER            => Merchant\FeeBearer::PLATFORM,
+        self::FEE_MODEL             => null,
+        self::FEE_BEARER            => null,
         self::CREDIT_TYPE           => CreditType::DEFAULT,
     );
 
