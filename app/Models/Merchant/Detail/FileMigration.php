@@ -92,7 +92,7 @@ class FileMigration extends Base\Service
 
             $this->repo->saveOrFail($fileStore);
 
-            $params[$key] = $fileStore->getId();
+            $params[$key] = $fileStore->getPublicId();
         }
 
         $merchantDetail->fill($params);
