@@ -271,6 +271,8 @@ class InvoiceTest extends TestCase
         $this->createDraftInvoice();
 
         $this->startTest();
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceWithBasicFieldsAndLineItems()
@@ -300,6 +302,8 @@ class InvoiceTest extends TestCase
 
         $this->assertNotContains('1000000002item', $lineItemIds);
         $this->assertNotContains('1000000003item', $lineItemIds);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
@@ -327,6 +331,8 @@ class InvoiceTest extends TestCase
         );
 
         $this->startTest();
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceWithCustomerDetails()
@@ -337,6 +343,8 @@ class InvoiceTest extends TestCase
 
         $customer = $this->getLastEntity('customer', true);
         $this->assertEquals($customer['id'], $response['customer_id']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceWithCustomerIdAndDetails()
@@ -352,6 +360,8 @@ class InvoiceTest extends TestCase
         $this->fixtures->create('invoice');
 
         $this->startTest();
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateIssuedInvoiceWithExtraFields()
@@ -499,6 +509,8 @@ class InvoiceTest extends TestCase
         $this->createDraftInvoice();
 
         $this->startTest();
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testAddLineItemsToInvoiceWithBadData()
@@ -612,6 +624,8 @@ class InvoiceTest extends TestCase
 
         $items = $this->getEntities('item', [], true);
         $this->assertEquals(1, $items['count']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateLineItemOfInvoiceWithNewItemData()
@@ -631,6 +645,8 @@ class InvoiceTest extends TestCase
 
         $items = $this->getEntities('item', [], true);
         $this->assertEquals(2, $items['count']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateLineItemOfInvoiceWithExistingItem()
@@ -655,6 +671,8 @@ class InvoiceTest extends TestCase
 
         $items = $this->getEntities('item', [], true);
         $this->assertEquals(2, $items['count']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateLineItemOfInvoiceWithBadData()
@@ -689,6 +707,8 @@ class InvoiceTest extends TestCase
 
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(0, $lineItems['count']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testRemoveManyLineItemsOfInvoice()
@@ -701,6 +721,8 @@ class InvoiceTest extends TestCase
 
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(1, $lineItems['count']);
+
+        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testRemoveManyLineItemsOfInvoiceWithBadData()
