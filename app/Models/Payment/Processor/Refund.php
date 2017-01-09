@@ -571,8 +571,10 @@ trait Refund
                 // TODO: Record this too.
             }
 
+            // Record refund since it's refunded on gateway
             $this->updatePaymentRefunded();
 
+            // Create transaction for refund
             $this->recordTransactionForRefund();
 
             $this->sendRefundNotification($payment, $refund);
