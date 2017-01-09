@@ -140,9 +140,9 @@ class Entity extends Base\PublicEntity
         $this->increment(self::SERVICE_TAX, $value);
     }
 
-    public function incrementSettlementCount($value)
+    public function incrementSettlementCount()
     {
-        $this->increment(self::SETTLEMENT_COUNT, $value);
+        $this->increment(self::SETTLEMENT_COUNT);
     }
 
     public function incrementTransactionCount($value)

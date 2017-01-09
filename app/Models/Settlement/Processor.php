@@ -25,6 +25,8 @@ class Processor extends Base\Core
 
     protected $mutex;
 
+    protected $dailySettlement;
+
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
     const MUTEX_LOCK_TIMEOUT    = 900;
@@ -123,8 +125,6 @@ class Processor extends Base\Core
     {
         try
         {
-            $this->dailySettlement = $this->createDailySettlementEntity($channel);
-
             list($settlements, $txnCount) = $this->createSettlements($channel, $schedule);
 
             $data = [
@@ -280,7 +280,7 @@ class Processor extends Base\Core
                                             $setlApiFee,
                                             $serviceTax);
 
-                    $this->updateDailySettlementForSettlement($setl, $setlTxns->count());
+                    $this->createOrupdateDailySettlementForSettlement($setl, $setlTxns->count());
 
                     $setl->dailySettlement()->associate($this->dailySettlement);
 
@@ -299,17 +299,17 @@ class Processor extends Base\Core
         return [$settlements, $txnsSettledCount];
     }
 
-    protected function createDailySettlementEntity($channel)
+    protected function createDailySettlementEntity($setl, $txnsCount)
     {
         $dailySettlement = new DailySettlement;
 
         $input = [
-            DailySettlement::CHANNEL           => $channel,
-            DailySettlement::AMOUNT            => 0,
-            DailySettlement::FEES              => 0,
-            DailySettlement::SERVICE_TAX       => 0,
-            DailySettlement::SETTLEMENT_COUNT  => 0,
-            DailySettlement::TRANSACTION_COUNT => 0,
+            DailySettlement::CHANNEL           => $setl->getChannel(),
+            DailySettlement::AMOUNT            => $setl->getAmount(),
+            DailySettlement::FEES              => $setl->getFees(),
+            DailySettlement::SERVICE_TAX       => $setl->getServiceTax(),
+            DailySettlement::SETTLEMENT_COUNT  => 1,
+            DailySettlement::TRANSACTION_COUNT => $txnsCount,
             DailySettlement::INITIATED_AT      => time(),
             DailySettlement::API_FEE           => 0,
             DailySettlement::GATEWAY_FEE       => 0,
@@ -321,13 +321,20 @@ class Processor extends Base\Core
         return $dailySettlement;
     }
 
-    protected function updateDailySettlementForSettlement($setl, $txnsCount)
+    protected function createOrupdateDailySettlementForSettlement($setl, $txnsCount)
     {
-        $this->dailySettlement->incrementAmount($setl->getAmount());
-        $this->dailySettlement->incrementFees($setl->getFees());
-        $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
-        $this->dailySettlement->incrementSettlementCount(1);
-        $this->dailySettlement->incrementTransactionCount($txnsCount);
+        if ($this->dailySettlement === null)
+        {
+            $this->dailySettlement = $this->createDailySettlementEntity($setl, $txnsCount);
+        }
+        else
+        {
+            $this->dailySettlement->incrementAmount($setl->getAmount());
+            $this->dailySettlement->incrementFees($setl->getFees());
+            $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
+            $this->dailySettlement->incrementSettlementCount();
+            $this->dailySettlement->incrementTransactionCount($txnsCount);
+        }
 
         $this->repo->saveOrFail($this->dailySettlement);
     }

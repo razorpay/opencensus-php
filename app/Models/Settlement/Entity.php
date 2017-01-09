@@ -39,6 +39,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
+        self::DAILY_SETTLEMENT_ID,
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
