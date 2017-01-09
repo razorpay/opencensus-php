@@ -154,9 +154,25 @@ class Generator extends Base\Core
      * Here t or l is short form for test or live mode.
      *
      * @return string
+     * @throws LogicException
      */
     protected function getInvoiceLink()
     {
+        $invoiceId = $this->invoice->getId();
+
+        //
+        // This is required here because this piece of code is a little prone to bugs.
+        // Invoice ID may not be generated at this point due to which we will
+        // get a wrong url. Bitly won't throw an exception because it still gets
+        // a valid url. The url would end up being something like 'invoices.razorpay.com/i/inv_'.
+        //
+        if (empty($invoiceId) === true)
+        {
+            throw new LogicException(
+                'Invoice ID is empty. Should not have reached here',
+                 ErrorCode::SERVER_ERROR_INVOICE_ID_EMPTY);
+        }
+
         $shortMode = self::SHORT_MODE_TEST;
 
         if ($this->mode === Mode::LIVE)
@@ -164,8 +180,9 @@ class Generator extends Base\Core
             $shortMode = self::SHORT_MODE_LIVE;
         }
 
-        $invoiceId = $this->invoice->getPublicId();
-        $invoiceLink = $this->baseInvoiceUrl . '/' . $shortMode . '/' . $invoiceId;
+        $invoicePublicId = $this->invoice->getPublicId();
+
+        $invoiceLink = $this->baseInvoiceUrl . '/' . $shortMode . '/' . $invoicePublicId;
 
         return $invoiceLink;
     }

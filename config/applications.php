@@ -70,8 +70,8 @@ return array(
         'mock'     => env('ELFIN_MOCK', true),
         'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
         'gimli'    => [
-            'secret'   => env('GIMLI_SECRET', 'RANDOM_SECRET'),
-            'base_url' => env('GIMLI_BASE_URL', 'http://gimli.razorpay.dev/v1')
+            'secret'   => env('GIMLI_SECRET'),
+            'base_url' => env('GIMLI_BASE_URL')
         ],
         'bitly'    => [
             'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
