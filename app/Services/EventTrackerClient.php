@@ -357,7 +357,7 @@ class EventTrackerClient extends Base\Core
 
                 if (empty($pa->$getterName()) === false)
                 {
-                    $analytics[$key] = $pa->getterName();
+                    $analytics[$key] = $pa->$getterName();
                 }
             }
 
