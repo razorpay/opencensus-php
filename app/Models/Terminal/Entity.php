@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
      */
     const TERMINAL_ID                   = 'terminal_id';
 
+    const SUB_MERCHANTS                 = 'sub_merchants';
+
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
@@ -98,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::ENABLED
+        self::ENABLED,
+        self::SUB_MERCHANTS,
     ];
 
     protected $hidden = [
@@ -205,6 +208,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    protected function getSubMerchants()
+    {
+        return $this->merchants()->pluck(self::ID);
+    }
+
     public function isEnabled()
     {
         return $this->getAttribute(self::ENABLED);
@@ -252,6 +260,11 @@ class Entity extends Base\PublicEntity
     public function setEnabled($status)
     {
         $this->setAttribute(self::ENABLED, $status);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -510,5 +523,17 @@ class Entity extends Base\PublicEntity
     public function isNon3DSRecurring()
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
+
+    public function toArrayPublic($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
     }
 }
