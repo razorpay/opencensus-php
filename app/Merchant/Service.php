@@ -684,6 +684,26 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function markInvoiceAsIssued($mode, $id)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->markAsIssued($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
     /**
      * Remove the team member on the given merchant.
      *

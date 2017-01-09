@@ -65,4 +65,11 @@ class Invoice extends Entity
 
         return $this->request('POST', $relativeUrl, []);
     }
+
+    public function markAsIssued($id)
+    {
+        $relativeUrl = 'invoices/' . $id . '/issue';
+
+        return $this->request('POST', $relativeUrl, []);
+    }
 }

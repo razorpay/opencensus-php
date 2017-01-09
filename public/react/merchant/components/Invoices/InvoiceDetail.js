@@ -25,14 +25,23 @@ export default (props) => {
           <Alert type={statusMsg.type} message={statusMsg.message} />
 
           <div class='invoice-header'>
-            <DropdownButton
-              title='Send'
-              class='pull-right'
-              btnTriggerClass='btn-primary btn-sm'
-            >
-              <MenuItem onClick={() => props.onNotify('sms')}>Send via SMS</MenuItem>
-              <MenuItem onClick={() => props.onNotify('email')}>Send via Email</MenuItem>
-            </DropdownButton>
+            {
+              invoice.status === 'draft' ?
+              <AsyncButton
+                class='btn btn-primary btn-sm pull-right'
+                text='Mark as Issued'
+                pendingText='Saving...'
+                onClick={props.onIssue}
+              /> :
+              <DropdownButton
+                title='Send'
+                class='pull-right'
+                btnTriggerClass='btn-primary btn-sm'
+              >
+                <MenuItem onClick={() => props.onNotify('sms')}>Send via SMS</MenuItem>
+                <MenuItem onClick={() => props.onNotify('email')}>Send via Email</MenuItem>
+              </DropdownButton>
+            }
             <h3>{invoice.id}</h3>
           </div>
 

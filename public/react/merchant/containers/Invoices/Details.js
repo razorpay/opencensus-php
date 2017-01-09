@@ -1,11 +1,11 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import { fetchInvoice, notifyCustomer } from 'merchant/modules/invoices/details'
+import * as InvoiceActions from 'merchant/modules/invoices/details'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
 
 @connect(
   (state) => state.invoice,
-  { fetchInvoice, notifyCustomer }
+  InvoiceActions
 )
 export default class InvoiceDetailContainer extends Component {
   constructor() {
@@ -14,6 +14,7 @@ export default class InvoiceDetailContainer extends Component {
       statusMsg: {}
     }
     this.notifyCustomer = ::this.notifyCustomer
+    this.issueInvoice = ::this.issueInvoice
   }
 
   componentWillMount() {
@@ -38,6 +39,24 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
+  issueInvoice() {
+    return this.props.issueInvoice(this.props.invoice).then((response) => {
+      this.setState({
+        statusMsg: {
+          type: 'success',
+          message: 'Invoice issued successfully'
+        }
+      })
+    }).catch((error) => {
+      this.setState({
+        statusMsg: {
+          type: 'error',
+          message: error.errors
+        }
+      })
+    })
+  }
+
   render() {
     let { loading, invoice } = this.props
     let statusMsg = this.state.statusMsg
@@ -50,6 +69,7 @@ export default class InvoiceDetailContainer extends Component {
             isLoading={loading}
             statusMsg={statusMsg}
             onNotify={this.notifyCustomer}
+            onIssue={this.issueInvoice}
           />
         </div>
       </div>

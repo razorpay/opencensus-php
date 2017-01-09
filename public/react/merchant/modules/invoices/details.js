@@ -4,6 +4,7 @@ import Invoice from 'merchant/models/Invoice'
 const INVOICE_FETCH = 'INVOICE_FETCH'
 const SMS_SEND = 'SMS_SEND'
 const EMAIL_SEND = 'EMAIL_SEND'
+const INVOICE_ISSUE = 'INVOICE_ISSUE'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
@@ -23,6 +24,15 @@ export const notifyCustomer = (invoice, type) => {
   }
 }
 
+export const issueInvoice = (invoice) => {
+  return (dispatch) => {
+    return dispatch({
+      type: INVOICE_ISSUE,
+      payload: invoice.markAsIssued()
+    })
+  }
+}
+
 let initialState = {
   loading: true,
   invoice: {
@@ -37,6 +47,7 @@ export default function (state = initialState, action) {
     case `${INVOICE_FETCH}::PENDING`:
       return set(state, 'loading', true)
 
+    case `${INVOICE_ISSUE}::SUCCESS`:
     case `${INVOICE_FETCH}::SUCCESS`:
       return merge(state, {
         loading: false,
