@@ -1063,7 +1063,7 @@ class DatabaseSeeder extends Seeder
                 'gateway'               => 'netbanking_axis',
                 'card'                  => '0',
                 'netbanking'            => '1',
-                'gateway_merchant_id'   => 'test_pid',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
                 'gateway_secure_secret' => Crypt::encrypt('test_masterkey'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),

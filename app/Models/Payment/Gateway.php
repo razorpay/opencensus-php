@@ -281,6 +281,16 @@ class Gateway
     );
 
     /**
+     * For the banks that need a claims file to be generated,
+     * we have a list of banks that support this feature
+     * @var array
+     */
+    public static $claimsFileToBank = [
+        IFSC::KKBK,
+        // IFSC::UTIB,
+    ];
+
+    /**
      * Card gateways which support domestic payments in live mode.
      *
      * @var array

@@ -18,6 +18,7 @@ class RefundFile extends Base\RefundFile
         RefundFileFields::PAYEE_ID,
         RefundFileFields::PAYEE_NAME,
         RefundFileFields::BANK_ID,
+        RefundFileFields::ITEM_CODE,
         RefundFileFields::PAYMENT_REFERENCE_NO,
         RefundFileFields::AMOUNT,
         RefundFileFields::DATETIME,
@@ -49,14 +50,16 @@ class RefundFile extends Base\RefundFile
         foreach ($input['data'] as $index => $row)
         {
             $date = Carbon::createFromTimestamp(
-            $row['payment']['created_at'], 'Asia/Kolkata')->format('Y/m/d');
+                    $row['payment']['created_at'], 'Asia/Kolkata')
+                    ->format('Y/m/d');
 
             $data[] = [
                 $index + 1,
                 $row['terminal']['gateway_merchant_id'],
                 Constants::PAYEE_NAME,
                 $row['gateway']['bank_payment_id'],
-                $row['payment']['id'], // check
+                strtoupper($row['payment']['id']),
+                $row['payment']['id'],
                 $row['payment']['amount'] /100,
                 $date,
                 $row['refund']['amount'] /100

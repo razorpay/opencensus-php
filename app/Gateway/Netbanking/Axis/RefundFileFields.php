@@ -8,6 +8,7 @@ class RefundFileFields
     const PAYEE_ID              = 'Payee Id'; // pid
     const PAYEE_NAME            = 'Payee name'; // RAZORPAY
     const BANK_ID               = 'BID';
+    const ITEM_CODE             = 'ITC';
     const PAYMENT_REFERENCE_NO  = 'PRN';
     const AMOUNT                = 'AMOUNT';
     const DATETIME              = 'DATETIME';

@@ -1,0 +1,87 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Axis;
+
+use Carbon;
+use RZP\Gateway\Base;
+
+class ClaimsFile extends Base\RefundFile
+{
+    protected static $fileToWriteName = '-IConnect_Claim_Razorpay';
+
+    const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
+
+    protected static $headers = [
+        ClaimsFileFields::SERIAL_NUMBER,
+        ClaimsFileFields::PAYEE_ID,
+        ClaimsFileFields::PAYEE_NAME,
+        ClaimsFileFields::BANK_ID,
+        ClaimsFileFields::ITEM_CODE,
+        ClaimsFileFields::PAYMENT_REFERENCE_NUMBER,
+        ClaimsFileFields::AMOUNT,
+        ClaimsFileFields::DATETIME
+    ];
+
+    public function generate($input)
+    {
+        list($txt, $totalAmount) = $this->getClaimsData($input);
+
+        $name = $this->getFileToWriteName();
+
+        $filePath = $this->writeToTextFile($txt);
+
+        $fileFullPath = $this->getFullFilePath($name);
+
+        return [$totalAmount, $fileFullPath];
+    }
+
+    protected function getClaimsData($input)
+    {
+        $totalAmount = 0;
+
+        foreach ($input['data'] as $index => $row)
+        {
+            $date = Carbon::createFromTimestamp(
+                    $row['payment']['created_at'], 'Asia/Kolkata')
+                    ->format('Y-m-d');
+
+            $data[] = [
+                $index + 1,
+                $row['terminal']['gateway_merchant_id'],
+                Constants::PAYEE_NAME,
+                $row['gateway']['bank_payment_id'],
+                strtoupper($row['payment']['id']),
+                $row['payment']['id'],
+                $row['payment']['amount'] /100,
+                $date
+            ];
+
+            $totalAmount += $row['payment']['amount'] / 100;
+        }
+
+        $initialLine = $this->getInitialLine();
+
+        $txt = $this->getTextData($data, $initialLine);
+
+        return [$txt, $totalAmount];
+    }
+
+    protected function getInitialLine()
+    {
+        $data = self::$headers;
+
+        $line = implode('~~', $data) . "\r\n";
+
+        return $line;
+    }
+
+    /*
+     * @override parent class's method
+     */
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+
+        return static::$fileToWriteName.'_'.$time.'_1';
+    }
+}

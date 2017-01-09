@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Gateway\Netbanking\Kotak;
+namespace RZP\Gateway\Netbanking\Axis;
 
 use RZP\Gateway\Netbanking\Base;
 

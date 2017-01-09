@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
@@ -204,7 +203,7 @@ class Gateway extends Base\Gateway
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
-            RequestFields::AMOUNT             => $input['payment']['amount'] /100
+            RequestFields::AMOUNT             => $input['payment']['amount'] / 100
         ];
     }
 

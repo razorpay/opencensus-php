@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Axis;
 
+use Mail;
+use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -114,6 +116,30 @@ class NetbankingAxisGatewayTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $this->refundPayment($payment['id']);
+
+        // Mail catch with amount and refund everywhere
+        // Mail::shouldReceive('queue')
+        //       ->once()
+        //       ->with(
+        //             Mockery::any(),
+        //             Mockery::on(function ($data)
+        //                 {
+        //                     $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+        //                     $testData = array(
+        //                         'subject' => 'Axis Netbanking claims and refund files for '.$date,
+        //                         'amount' => [
+        //                             'claims' => 1500,
+        //                             'refunds' => 500,
+        //                             'total' => 1000,
+        //                         ]);
+
+        //                     $this->assertArraySelectiveEquals($testData, $data);
+
+        //                     return true;
+        //                 }),
+        //             Mockery::any()
+        //         );
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 

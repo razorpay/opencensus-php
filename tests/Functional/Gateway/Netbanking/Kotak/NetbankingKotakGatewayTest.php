@@ -133,7 +133,6 @@ class NetbankingKotakGatewayTest extends TestCase
                     Mockery::any()
                 );
 
-
         $content = $this->generateRefundsExcelForNB('KKBK');
 
         $refundsFileUrl = $content['netbanking_kotak'][0];
