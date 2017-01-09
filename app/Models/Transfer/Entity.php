@@ -4,6 +4,7 @@ namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
 use RZP\Models\Transaction;
+use RZP\Exception;
 use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
@@ -177,8 +178,8 @@ class Entity extends Base\PublicEntity
 
         if ($amount > $amountUnreversed)
         {
-            throw new Exception\LogicException(
-                'Transfer refund amount should be less than or equal to amount not refunded yet');
+            throw new Exception\BadRequestValidationFailureException(
+                'Transfer reversal amount should be less than or equal to amount not refunded yet');
         }
 
         $amountReversed = $this->getAmountReversed() + $amount;

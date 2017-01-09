@@ -22,7 +22,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'asd is not a valid id'
+                    'description' => 'The customer must be 19 characters.'
                 ],
             ],
             'status_code' => 400,

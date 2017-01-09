@@ -412,6 +412,9 @@ final class Route
         'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
+        'transfer_fetch'                          => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
+        'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
+        'transfer_create_reversal'                => ['post',     'transfers/{id}/reversal',                        'TransferController@postTransferReversal'                           ],
     );
 
     public static $public = array(
@@ -542,6 +545,9 @@ final class Route
         'customer_collect_request_fetch_private',
         'customer_get_wallet_balance',
         'customer_get_wallet_statement',
+        'transfer_fetch',
+        'transfer_create',
+        'transfer_create_reversal',
     );
 
     public static $internal = array(

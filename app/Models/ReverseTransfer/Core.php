@@ -47,6 +47,18 @@ class Core extends Base\Core
         return $reverseTrf;
     }
 
+    public function createForTransferReversal(Transfer\Entity $transfer, array $input)
+    {
+        (new Validator)->validateInput('reversal', $input);
+
+        $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
+
+        return $this->repo->transaction(function () use ($transfer, $input, $amount)
+        {
+            return $this->createForMarketplaceRefund($transfer, $this->merchant, $amount);
+        });
+    }
+
     protected function createEntity(int $amount, string $currency) : Entity
     {
         $data = [

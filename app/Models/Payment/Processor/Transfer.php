@@ -12,10 +12,10 @@ trait Transfer
      * Create a payment entity for marketplace transfer,
      * create and process a payment transaction
      *
-     * @param  Payment\Entity  $originPayment
      * @param  array           $input
+     * @param  Payment\Entity  $originPayment
      */
-    public function processTransfer(Payment\Entity $originPayment, array $input) : Payment\Entity
+    public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
     {
         $input['method'] = Payment\Method::TRANSFER;
 
@@ -49,14 +49,19 @@ trait Transfer
     /**
      * Set the base amount for the transfer payment
      * derived from the conversion rate applied to the
-     * parent payment
+     * parent payment (if defined),
+     * else converts for the transfer payment
      *
-     * @param  Payment\Entity $originPayment
-     * @param  Payment\Entity $transferPayment
+     * @param  Payment\Entity|null  $originPayment
+     * @param  Payment\Entity       $transferPayment
      */
-    protected function processCurrencyConversionsForTransfer(Payment\Entity $originPayment, Payment\Entity $transferPayment)
+    protected function processCurrencyConversionsForTransfer($originPayment, Payment\Entity $transferPayment)
     {
-        if ($originPayment->getCurrency() === $transferPayment->getCurrency())
+        if ($originPayment === null)
+        {
+            $this->processCurrencyConversions($transferPayment);
+        }
+        else if ($originPayment->getCurrency() === $transferPayment->getCurrency())
         {
             $conversionFactor = $originPayment->getCurrencyConversionRate();
 

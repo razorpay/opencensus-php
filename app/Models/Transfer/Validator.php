@@ -10,13 +10,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = [
-        Entity::TO_ID          => 'required|alpha_num|size:14',
-        Entity::TO_TYPE        => 'required|string',
-        Entity::SOURCE_ID      => 'required|alpha_num|size:14',
-        Entity::SOURCE_TYPE    => 'required|string',
+    protected static $transferRules = [
+        ToType::ACCOUNT        => 'required_without:customer|string|size:18',
+        ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer',
-        Entity::CURRENCY       => 'required|size:3'
+        Entity::CURRENCY       => 'required|size:3',
     ];
 
     public function validateTransfers(

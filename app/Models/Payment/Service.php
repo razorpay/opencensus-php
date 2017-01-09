@@ -36,12 +36,12 @@ class Service extends Base\Service
      * (internal payments created on Marketplace transfer to accounts)
      *
      * @param  Merchant\Entity $account
-     * @param  Payment\Entity  $originPayment
      * @param  array           $input
+     * @param  Payment\Entity  $originPayment
      */
-    public function processTransfer(Merchant\Entity $account, Payment\Entity $originPayment, array $input)
+    public function processTransfer(Merchant\Entity $account, array $input, Payment\Entity $originPayment = null)
     {
-        return $this->getNewProcessor($account)->processTransfer($originPayment, $input);
+        return $this->getNewProcessor($account)->processTransfer($input, $originPayment);
     }
 
     /**
