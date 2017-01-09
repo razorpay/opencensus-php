@@ -91,9 +91,7 @@ export default class InvoicesNewContainer extends ModalContainer {
   save(props) {
     return this.props.saveInvoice(props).then((invoice) => {
       this.context.ngRouter.transitionTo('app.invoices.list').then(() => {
-        setTimeout(() => {
-          this.props.highLightInvoice(invoice.id)
-        }, 1500)
+        this.props.highLightInvoice(invoice.id)
       })
     }).catch(({ errors }) => {
       this.setState({
