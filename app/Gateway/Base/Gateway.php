@@ -343,7 +343,7 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options']  = array();
+            $request['options'] = array();
         }
 
         if (isset($request['headers']) === false)
