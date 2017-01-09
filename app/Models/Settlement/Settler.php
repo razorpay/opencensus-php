@@ -11,12 +11,15 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
 class Settler
 {
     protected $settlements;
+
+    protected $dailySettlement;
 
     protected $input;
 
@@ -59,10 +62,14 @@ class Settler
 
         $txns = $this->fetchMerchantTransactionsToSettle($input, $merchant);
 
-        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
-        {
-            return $this->processSettlements($input, $channel, $txns);
-        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function() use($input, $channel, $txns)
+            {
+                return $this->processSettlements($input, $channel, $txns);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
@@ -80,10 +87,14 @@ class Settler
 
         $txns = $this->fetchTransactionsToSettle($input);
 
-        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function() use($input, $channel, $txns)
-        {
-            return $this->processSettlements($input, $channel, $txns);
-        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function() use($input, $channel, $txns)
+            {
+                return $this->processSettlements($input, $channel, $txns);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
@@ -103,17 +114,12 @@ class Settler
 
         foreach ($channels as $channel)
         {
-            $res = $this->getOrCreateDailySettlementForToday($input, $channel);
-
-            if ($res !== null)
-            {
-                $data[$channel] = $res;
-                continue;
-            }
+            $this->dailySettlement = $this->createDailySettlementEntity($channel);
 
             $this->traceSetlInitiating($channel);
 
             $settleForChannelVar = 'settleFor' . ucfirst($channel);
+
             $data[$channel] = $this->$settleForChannelVar($txns);
         }
 
@@ -146,7 +152,7 @@ class Settler
 
     protected function settleForKotak($txns)
     {
-        $data['channel'] = 'kotak';
+        $data['channel'] = Channel::KOTAK;
 
         try
         {
@@ -155,15 +161,7 @@ class Settler
             $data['count'] = $settlements->count();
             $data['transaction_count'] = $txns->count();
 
-            if ($settlements->count() !== 0)
-            {
-                $this->updateDailySettlementAttributes(
-                    null,
-                    null,
-                    $settlements->count(),
-                    $txns->count());
-            }
-            else
+            if ($settlements->count() === 0)
             {
                 $data['message'] = 'No settlements found!';
             }
@@ -249,8 +247,6 @@ class Settler
 
     protected function createSettlements($txns, $channel)
     {
-        $this->dailySettlement->channel = $channel;
-
         $settlements = new Base\PublicCollection;
         $txnsSettled = new Base\PublicCollection;
 
@@ -297,8 +293,11 @@ class Settler
                             ['id' => $txn->getId()]);
 
                         $txn[Transaction\Entity::SETTLED_AT] = null;
-                        $txn->saveOrFail();
+
+                        $this->repo->saveOrFail($txn);
+
                         $i++;
+
                         continue;
                     }
                 }
@@ -331,11 +330,16 @@ class Settler
                                             $setlApiFee,
                                             $serviceTax);
 
+                $this->updateDailySettlementForSettlement($setl, $setlTxns->count());
+
+                $setl->dailySettlement()->associate($this->dailySettlement);
+
+                $this->repo->saveOrFail($setl);
+
                 $this->repo->transaction->settled($setlTxns, self::$settlementTimestamp);
 
                 return $setl;
             });
-
 
             $settlements->push($setl);
             $txnsSettled = $txnsSettled->merge($setlTxns);
@@ -347,12 +351,6 @@ class Settler
             $totalServiceTax += $serviceTax;
         }
 
-        $this->dailySettlement->amount = $totalSetlAmount;
-        $this->dailySettlement->api_fee = $totalSetlApiFee;
-        $this->dailySettlement->gateway_fee = $totalSetlGatewayFee;
-        $this->dailySettlement->fees = $totalSetlFee;
-        $this->dailySettlement->service_tax = $totalServiceTax;
-
         $amounts = array(
             'amount'        => $totalSetlAmount,
             'fees'          => $totalSetlApiFee,
@@ -362,21 +360,6 @@ class Settler
         );
 
         return [$settlements, $txnsSettled, $amounts];
-    }
-
-    protected function updateDailySettlementAttributes($urlText, $urlExcel, $setlCount, $txnCount)
-    {
-        $urls = array();
-        $urls['kotak_settlement_txt'] = $urlText;
-        $urls['kotak_settlement_excel'] = $urlExcel;
-
-        $dailySettlement = $this->dailySettlement;
-        $dailySettlement->setUrls($urls);
-        $dailySettlement->initiated_at = time();
-        $dailySettlement->settlement_count = $setlCount;
-        $dailySettlement->transaction_count = $txnCount;
-
-        $dailySettlement->saveOrFail();
     }
 
     /**
@@ -486,18 +469,37 @@ class Settler
             ]);
     }
 
-    protected function getOrCreateDailySettlementForToday(array $input, $channel)
+    protected function createDailySettlementEntity($channel)
     {
-        $overwrite = $this->isInputValue($input, 'overwrite', '1');
+        $dailySettlement = new DailySettlement;
 
-        if ($overwrite === true)
-        {
-            $this->dailySettlement = $this->repo->daily_settlement->getSettlementForToday($channel);
-        }
-        else
-        {
-            $this->dailySettlement = Settlement\Daily\Entity::newForToday();
-        }
+        $input = [
+            DailySettlement::CHANNEL           => $channel,
+            DailySettlement::AMOUNT            => 0,
+            DailySettlement::FEES              => 0,
+            DailySettlement::SERVICE_TAX       => 0,
+            DailySettlement::SETTLEMENT_COUNT  => 0,
+            DailySettlement::TRANSACTION_COUNT => 0,
+            DailySettlement::INITIATED_AT      => time(),
+            DailySettlement::API_FEE           => 0,
+            DailySettlement::GATEWAY_FEE       => 0,
+            DailySettlement::URLS              => null,
+        ];
+
+        $dailySettlement->build($input);
+
+        return $dailySettlement;
+    }
+
+    protected function updateDailySettlementForSettlement($setl, $txnsCount)
+    {
+        $this->dailySettlement->incrementAmount($setl->getAmount());
+        $this->dailySettlement->incrementFees($setl->getFees());
+        $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
+        $this->dailySettlement->incrementSettlementCount(1);
+        $this->dailySettlement->incrementTransactionCount($txnsCount);
+
+        $this->repo->saveOrFail($this->dailySettlement);
     }
 
     protected function isInputValue(array $input, $key, $value)

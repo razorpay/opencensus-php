@@ -280,13 +280,11 @@ class Processor extends Base\Core
                                             $setlApiFee,
                                             $serviceTax);
 
-                    $this->updateDailySettlementForSettlement($setl, $settledTxns->count());
+                    $this->updateDailySettlementForSettlement($setl, $setlTxns->count());
 
                     $setl->dailySettlement()->associate($this->dailySettlement);
 
-                    $this->saveOrFail($this->dailySettlement);
-
-                    $this->saveOrFail($setl);
+                    $this->repo->saveOrFail($setl);
 
                     $this->repo->transaction->settled($setlTxns, $this->setlTime);
 
@@ -303,6 +301,8 @@ class Processor extends Base\Core
 
     protected function createDailySettlementEntity($channel)
     {
+        $dailySettlement = new DailySettlement;
+
         $input = [
             DailySettlement::CHANNEL           => $channel,
             DailySettlement::AMOUNT            => 0,
@@ -321,9 +321,9 @@ class Processor extends Base\Core
         return $dailySettlement;
     }
 
-    protected function updateDailySettlementForSettlement($settlement, $txnsCount)
+    protected function updateDailySettlementForSettlement($setl, $txnsCount)
     {
-        $this->dailySettlement->incrementAmount($setl->getAmoun());
+        $this->dailySettlement->incrementAmount($setl->getAmount());
         $this->dailySettlement->incrementFees($setl->getFees());
         $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
         $this->dailySettlement->incrementSettlementCount(1);
