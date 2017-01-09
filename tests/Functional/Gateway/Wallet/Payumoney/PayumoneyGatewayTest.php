@@ -343,7 +343,7 @@ class PayumoneyGatewayTest extends TestCase
         $originalData = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($originalData['data']['payment_id']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -371,7 +371,7 @@ class PayumoneyGatewayTest extends TestCase
         // Send topup request
         $response = $this->runRequestResponseFlow($data, function() use ($originalData)
         {
-            return $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+            return $this->doWalletTopupViaAjaxRoute($originalData['data']['payment_id']);
         });
 
         $wallet = $this->getLastEntity('wallet', true);
@@ -396,7 +396,7 @@ class PayumoneyGatewayTest extends TestCase
         // Send topup request
         $response = $this->runRequestResponseFlow($data, function() use ($originalData)
         {
-            return $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+            return $this->doWalletTopupViaAjaxRoute($originalData['data']['payment_id']);
         });
 
         $wallet = $this->getLastEntity('wallet', true);
@@ -411,7 +411,7 @@ class PayumoneyGatewayTest extends TestCase
 
         $originalData = $this->response->getOriginalContent()->data;
 
-        $response = $this->doWalletTopup($originalData['payment_id']);
+        $response = $this->doWalletTopup($originalData['data']['payment_id']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
