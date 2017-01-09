@@ -70,7 +70,8 @@ class Service extends Base\Service
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
-        if ($routeName === 'invoice_view_test')
+        if (($routeName === 'invoice_view_test') or
+            ($routeName === 'invoice_view_test_post'))
         {
             $mode = Mode::TEST;
         }
@@ -96,7 +97,7 @@ class Service extends Base\Service
             'id'    => $merchant->getId(),
         ];
 
-        if (empty($merchant->org) === false)
+        if ($merchant->getOrgId() !== null)
         {
             $merchantDetails['organization'] = $merchant->org->toArrayPublic();
         }
