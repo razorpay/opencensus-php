@@ -406,7 +406,7 @@ class Gateway
         {
             throw new Exception\GatewayTimeoutException('Response status: 504');
         }
-        else if ($response->status_code > 500)
+        else if ($response->status_code >= 500)
         {
             $e = new Exception\GatewayErrorException(
                         ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
@@ -415,6 +415,20 @@ class Gateway
             $e->setData($data);
 
             throw $e;
+        }
+        else if ($response->status_code >= 300)
+        {
+            //
+            // Trace non 200 status codes to figure out what else
+            // needs to be handled here later.
+            //
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_RESPONSE,
+                [
+                    'status_code' => $response->status_code,
+                    'gateway' => $this->gateway
+                ]);
         }
     }
 
