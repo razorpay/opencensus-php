@@ -35,7 +35,7 @@ class Service extends Base\Service
 
         foreach ($methods as $method)
         {
-            $priorities = $this->redis->fetchData(new Entity($method));
+            $priorities = $this->redis->populateEntityData(new Entity($method));
 
             $result->push($priorities->toArray());
         }
@@ -50,9 +50,9 @@ class Service extends Base\Service
     {
         $gatewayPriorities = new Entity($method);
 
-        $gatewayPriorities = $this->redis->removeData($gatewayPriorities, $gateways);
+        $gatewayPriorities = $this->redis->removeEntityData($gatewayPriorities, $gateways);
 
-        $gatewayPriorities = $this->redis->fetchData($gatewayPriorities);
+        $gatewayPriorities = $this->redis->populateEntityData($gatewayPriorities);
 
         return $gatewayPriorities->toArray();
     }
@@ -97,7 +97,7 @@ class Service extends Base\Service
     {
         $priorities = new Entity($method);
 
-        $this->redis->fetchData($priorities);
+        $this->redis->populateEntityData($priorities);
 
         return $priorities->getGateways();
     }
