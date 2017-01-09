@@ -189,12 +189,16 @@ class Core extends Base\Core
         Merchant\Entity $merchant,
         Base\PublicEntity $morphEntity)
     {
-        $this->createOrUpdateLineItemsViaUpdate($lineItemsDetails, $morphEntity, $merchant);
-
         //
-        // Clean old line items which were not sent in the input
+        // This must be done before creating the line items
+        // since we delete all the line items which are present
+        // in the DB but not sent in the input.
+        // If we delete after creating, we will end up deleting
+        // the newly created line items also.
         //
         $this->deleteLineItemsViaUpdate($morphEntity, $lineItemsDetails);
+
+        $this->createOrUpdateLineItemsViaUpdate($lineItemsDetails, $morphEntity, $merchant);
     }
 
     // -------------------- Protected methods --------------------
@@ -228,6 +232,12 @@ class Core extends Base\Core
         }
     }
 
+    /**
+     * All the line items are deleted which are found in the DB but not in the input.
+     *
+     * @param Base\PublicEntity $morphEntity
+     * @param array             $lineItemsDetails
+     */
     protected function deleteLineItemsViaUpdate(Base\PublicEntity $morphEntity, array $lineItemsDetails)
     {
         $existingLineItems = $morphEntity->lineItems()->get();
