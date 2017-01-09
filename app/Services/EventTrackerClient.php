@@ -348,7 +348,7 @@ class EventTrackerClient extends Base\Core
                 $analytics['order_id'] = $payment->getOrderId();
             }
 
-            $pa = $this->repo->analytics->findForPayment($paymentId, true);
+            $pa = $this->repo->payment_analytics->findForPayment($paymentId, true);
 
             foreach ($this->contextKeys as $key)
             {
