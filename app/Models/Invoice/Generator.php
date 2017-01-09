@@ -345,19 +345,21 @@ class Generator extends Base\Core
      * TO BE REMOVED.
      *
      * For testing purposes, it'll set services to:
-     * - gimli:       For demo merchant account
-     * - gimli,bitly: For test merchant account
+     * - gimli:       For one demo merchant account
+     * - gimli,bitly: For one other demo merchant account
      * - bitly:       For others
      */
     protected function setElfinServices()
     {
-        switch ($this->merchant->getEmail())
+        switch ($this->merchant->getId())
         {
-            case 'harshit.marwah@razorpay.com':
+            // harshit.marwah@razorpay.com
+            case '4izmfM9TFCAgFN':
                 $this->elfin->setServices([Elfin::GIMLI]);
                 break;
 
-            case 'harshil@razorpay.com':
+            // harshilmathur@gmail.com
+            case '2aTeFCKTYWwfrF':
                 $this->elfin->setServices([Elfin::GIMLI, Elfin::BITLY]);
                 break;
 
