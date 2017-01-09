@@ -681,10 +681,6 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        // Regular error handling cannot be used here because freecharge sends
-        // an error code if the transaction does not exist
-        $this->handleServerTimeouts($response);
-
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
@@ -943,12 +939,7 @@ class Gateway extends Base\Gateway
      */
     protected function handleRequestFailed($response)
     {
-        if ($response->status_code === 500)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
-        }
-        else if ($response->status_code === 202)
+        if ($response->status_code === 202)
         {
             $content = $this->jsonToArray($response->body);
 
@@ -972,25 +963,5 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return self::BALANCE_CACHE_KEY . $payment['id'];
-    }
-
-    protected function handleServerTimeouts($response)
-    {
-        // Freecharge servers timeout internally, It is not request timeout.
-        // Handle the timeout errors
-        if ($response->status_code === 504)
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT);
-        }
-    }
-
-    protected function sendGatewayRequest($request)
-    {
-        $response = parent::sendGatewayRequest($request);
-
-        $this->handleServerTimeouts($response);
-
-        return $response;
     }
 }

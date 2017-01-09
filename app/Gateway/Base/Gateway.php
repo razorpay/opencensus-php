@@ -392,10 +392,30 @@ class Gateway
             }
         }
 
+        $this->validateResponse($response);
+
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
+    }
+
+    protected function validateResponse($response)
+    {
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayTimeoutException('Response status: 504');
+        }
+        else if ($response->status_code > 500)
+        {
+            $e = new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+
+            $data = ['status_code' => $response->status_code, 'body' => $response->body];
+            $e->setData($data);
+
+            throw $e;
+        }
     }
 
     protected function runPaymentVerifyFlow($verify)
