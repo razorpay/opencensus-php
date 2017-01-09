@@ -123,6 +123,31 @@ class Entity extends Base\PublicEntity
         return $urls;
     }
 
+    public function incrementAmount($value)
+    {
+        $this->increment(self::AMOUNT, $value);
+    }
+
+    public function incrementFees($value)
+    {
+        $this->increment(self::FEES, $value);
+    }
+
+    public function incrementServiceTax($value)
+    {
+        $this->increment(self::SERVICE_TAX, $value);
+    }
+
+    public function incrementSettlementCount($value)
+    {
+        $this->increment(self::SETTLEMENT_COUNT, $value);
+    }
+
+    public function incrementTransactionCount($value)
+    {
+        $this->increment(self::TRANSACTION_COUNT, $value);
+    }
+
     public function setUrls($urls)
     {
         return $this->setAttribute('urls', $urls);
