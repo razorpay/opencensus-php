@@ -68,14 +68,13 @@ class Service extends Impl\Base
      * Shorten given url.
      *
      * @param string       $url
-     * @param bool|boolean $fail   - If fail is passed as false, returns url itself
-     *                             in case of failures.
+     * @param bool|boolean $fail - If fail is passed as true it'll bubble up ex.
      *
      * @return string
      * @throws Exception\RuntimeException
      * @throws null
      */
-    public function shorten(string $url, bool $fail = true)
+    public function shorten(string $url, bool $fail = false)
     {
         $e = null;
 

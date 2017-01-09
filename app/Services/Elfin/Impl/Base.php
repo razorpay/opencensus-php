@@ -8,7 +8,7 @@ use RZP\Exception;
 
 abstract class Base
 {
-    abstract public function shorten(string $url, bool $fail = true);
+    abstract public function shorten(string $url, bool $fail = false);
 
     protected function makeRequestAndValidateHeader(string $api, array $headers, $params)
     {

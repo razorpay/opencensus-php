@@ -252,7 +252,7 @@ class Generator extends Base\Core
     {
         $longUrl = $this->getInvoiceLink();
 
-        $shortenedUrl = $this->elfin->shorten($longUrl, false);
+        $shortenedUrl = $this->elfin->shorten($longUrl);
 
         $this->trace->info(
             TraceCode::INVOICE_LINKS,

@@ -17,7 +17,7 @@ class Gimli extends Base
         $this->secret = $config['secret'];
     }
 
-    public function shorten(string $url, bool $fail = true)
+    public function shorten(string $url, bool $fail = false)
     {
         $params = $this->getParams($url);
 

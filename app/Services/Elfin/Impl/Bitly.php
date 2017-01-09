@@ -15,7 +15,7 @@ class Bitly extends Base
         $this->accessToken = $config['secret'];
     }
 
-    public function shorten(string $url, bool $fail = true)
+    public function shorten(string $url, bool $fail = false)
     {
         $params = $this->getParams($url);
 

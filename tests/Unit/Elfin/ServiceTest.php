@@ -126,13 +126,6 @@ class ServiceTest extends TestCase
                        ->with('bitly')
                        ->willReturn($this->bitly);
 
-        $exception = new Exception\RuntimeException(
-            'Unexpected response code received from Gimli service.',
-            [
-                'status_code' => 500
-            ]
-        );
-
         $this->bitly->expects($this->once())
                     ->method('makeRequestAndValidateHeader')
                     ->willReturn(
@@ -142,7 +135,7 @@ class ServiceTest extends TestCase
                         ]
                     );
 
-        $shortUrl = $this->service->shorten($this->testUrl);
+        $shortUrl = $this->service->shorten($this->testUrl, true);
 
         $this->assertEquals('https://bitly.dev/xyz', $shortUrl);
     }
@@ -182,7 +175,7 @@ class ServiceTest extends TestCase
                             ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $shortUrl = $this->service->shorten($this->testUrl);
+        $shortUrl = $this->service->shorten($this->testUrl, true);
     }
 
     public function testShortenFailAllSilent()
@@ -216,7 +209,7 @@ class ServiceTest extends TestCase
                             ->method('makeRequestAndValidateHeader')
                             ->will($this->throwException($exception));
 
-        $shortUrl = $this->service->shorten($this->testUrl, false);
+        $shortUrl = $this->service->shorten($this->testUrl);
 
         $this->assertEquals($this->testUrl, $shortUrl);
     }
