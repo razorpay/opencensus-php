@@ -194,8 +194,10 @@ trait RepositoryUpdateTestAndLive
         unset(
             $testAttributes['created_at'],
             $testAttributes['updated_at'],
+            $testAttributes['deleted_at'],
             $liveAttributes['created_at'],
-            $liveAttributes['updated_at']);
+            $liveAttributes['updated_at'],
+            $liveAttributes['deleted_at']);
 
         $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
         $diff2 = array_diff_assoc($liveAttributes, $testAttributes);

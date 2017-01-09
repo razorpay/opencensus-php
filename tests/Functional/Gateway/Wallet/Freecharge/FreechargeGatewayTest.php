@@ -130,12 +130,12 @@ class FreechargeGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_freecharge',
-                            'otp_attempts'  => 3,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_freecharge',
+            'otp_attempts'  => 3,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -151,14 +151,14 @@ class FreechargeGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_freecharge',
-                            'contact'       => '9111111111',
-                            'otp_attempts'  => 2,
-                            'otp_count'     => 1,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_freecharge',
+            'contact'       => '9111111111',
+            'otp_attempts'  => 2,
+            'otp_count'     => 1,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $wallet = $this->fixtures->create('wallet', [
             'payment_id'    => $payment->getId(),
@@ -209,7 +209,7 @@ class FreechargeGatewayTest extends TestCase
         $originalData = $this->response->getOriginalContent()->data;
 
         // Send topup redirect request.
-        $response = $this->doWalletTopupViaAjaxRoute($originalData['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($originalData['data']['payment_id']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -257,22 +257,23 @@ class FreechargeGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_freecharge',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->getId()
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_freecharge',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->getId()
+        ]);
 
         $paymentId = $payment->getPublicId();
 
         $request = $this->testData['topupDataAlreadyProcessed'];
 
         // Send topup request
-        $this->runRequestResponseFlow($request, function() use ($paymentId) {
+        $this->runRequestResponseFlow($request, function() use ($paymentId)
+        {
             $this->doWalletTopupViaAjaxRoute($paymentId);
         });
     }
@@ -295,31 +296,28 @@ class FreechargeGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_freecharge',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_freecharge',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
-        $wallet = $this->fixtures->create(
-            'wallet',
-            [
-                'payment_id'          => $payment->getId(),
-                'amount'              => $payment->getAmount(),
-                'wallet'              => self::WALLET,
-                'gateway_merchant_id' => 'random_id',
-                'reference1'          => '1asda2345',
-                'action'              => 'authorize',
-                'status_code'         => 'SUCCESS',
-                // Causes the failure, gateway_payment_id is not set if payment
-                // failed
-                'gateway_payment_id'  => 'asdas',
-            ]
-        );
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'          => $payment->getId(),
+            'amount'              => $payment->getAmount(),
+            'wallet'              => self::WALLET,
+            'gateway_merchant_id' => 'random_id',
+            'reference1'          => '1asda2345',
+            'action'              => 'authorize',
+            'status_code'         => 'SUCCESS',
+            // Causes the failure, gateway_payment_id is not set if payment
+            // failed
+            'gateway_payment_id'  => 'asdas',
+        ]);
 
 
         $id = $payment->getPublicId();
@@ -341,32 +339,29 @@ class FreechargeGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'status'        => 'captured',
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_freecharge',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'status'        => 'captured',
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_freecharge',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         // Causes the failure, gateway_payment_id is not set if payment
         // failed
-        $wallet = $this->fixtures->create(
-            'wallet',
-            [
-                'payment_id'          => $payment->getId(),
-                'amount'              => $payment->getAmount(),
-                'wallet'              => self::WALLET,
-                'gateway_merchant_id' => 'random_id',
-                'reference1'          => '1asda2345',
-                'action'              => 'authorize',
-                'status_code'         => 'SUCCESS',
-                'received'            => true,
-            ]
-        );
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'          => $payment->getId(),
+            'amount'              => $payment->getAmount(),
+            'wallet'              => self::WALLET,
+            'gateway_merchant_id' => 'random_id',
+            'reference1'          => '1asda2345',
+            'action'              => 'authorize',
+            'status_code'         => 'SUCCESS',
+            'received'            => true,
+        ]);
 
         $id = $payment->getPublicId();
 

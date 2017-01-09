@@ -166,6 +166,7 @@ class TraceCode
 
     const NETBANKING_PAYMENT_CALLBACK               = 'NETBANKING_PAYMENT_CALLBACK';
     const SMS_SENDING_FAILED                        = 'SMS_SENDING_FAILED';
+    const GATEWAY_ALREADY_REFUNDED_INPUT            = 'GATEWAY_ALREADY_REFUNDED_INPUT';
 
     const CHECKOUT_PREFERENCES_REQUEST              = 'CHECKOUT_PREFERENCES_REQUEST';
     const CHECKOUT_PREFERENCES_COOKIE_CHECK         = 'CHECKOUT_PREFERENCES_COOKIE_CHECK';
@@ -361,6 +362,7 @@ class TraceCode
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+    const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 

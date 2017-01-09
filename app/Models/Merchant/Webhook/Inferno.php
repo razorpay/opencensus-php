@@ -38,7 +38,7 @@ class Inferno
     ];
 
     /**
-     * We keep it internally as 7 seconds
+     * We keep it internally as 20 seconds
      * but publicly we only say it's 5 seconds.
      */
     const WEBHOOK_TIMEOUT = 20;
@@ -151,7 +151,8 @@ class Inferno
     {
         $headers = array(
             'User-Agent'    => 'Razorpay-Webhook/v1',
-            'Content-Type'  => 'application/json'
+            'Content-Type'  => 'application/json',
+            'Expect'        => null,
         );
 
         if (empty($hmac) === false)
