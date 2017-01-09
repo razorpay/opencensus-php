@@ -1465,3 +1465,8 @@ UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
 ALTER TABLE refunds
     ADD COLUMN gateway_refunded TINYINT AFTER base_amount
     ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
+    
+ALTER TABLE admin_tokens
+    MODIFY COLUMN id char(14);
+
+TRUNCATE TABLE admin_tokens;

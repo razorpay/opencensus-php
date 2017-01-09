@@ -5,7 +5,7 @@ namespace RZP\Error;
 class PublicErrorDescription
 {
     const GATEWAY_ERROR                                                         = 'There is a problem with the gateway causing the payment to fail';
-    const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins';
+    const SERVER_ERROR                                                          = 'The server encountered an error. The incident has been reported to admins.';
     const GATEWAY_ERROR_REQUEST_TIMEOUT                                         = 'The gateway request to submit payment information timed out. Please submit your details again';
     const GATEWAY_ERROR_PROCESSING_DECLINED                                     = 'Payment failed due to processing error on gateway';
     const GATEWAY_ERROR_SYSTEM_BUSY                                             = 'Gateway system is busy, please retry.';
@@ -15,6 +15,7 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
 
+    const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
@@ -252,6 +253,7 @@ class PublicErrorDescription
     const BAD_REQUEST_MERCHANT_LOGO_TOO_SMALL                                   = 'The dimensions of the image are too small. Minimum dimensions should be 256x256';
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                          = 'Shared terminal cannot be copied';
+    const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                = 'Shared terminal merchant cannot be changed';
 
     const BAD_REQUEST_RECONCILIATION                                            = 'Error occurred during reconciliation';
     const BAD_REQUEST_INVALID_COUNTRY                                           = 'Invalid country code/name passed';
@@ -295,7 +297,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 
-    const BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID                                  = 'Email provided is not a valid email';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
