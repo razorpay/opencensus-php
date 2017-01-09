@@ -483,6 +483,8 @@ trait Refund
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
             $this->createTransactionForRefund($this->refund, $payment);
+
+            $this->repo->commit();
         }
         catch (\Exception $ex)
         {
