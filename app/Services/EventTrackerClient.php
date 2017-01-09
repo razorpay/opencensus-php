@@ -336,12 +336,12 @@ class EventTrackerClient extends Base\Core
             return;
         }
 
-        $paymentId = $payment->getPublicId();
+        $paymentId = $payment->getId();
 
         // caching paymentContext
         if (isset($this->paymentContext[$paymentId]) === false)
         {
-            $analytics['payment_id'] = $paymentId;
+            $analytics['payment_id'] = $payment->getPublicId();
 
             if (empty($payment->getOrderId()) === false)
             {

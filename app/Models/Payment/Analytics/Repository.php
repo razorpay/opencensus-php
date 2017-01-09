@@ -24,7 +24,7 @@ class Repository extends Base\Repository
         if ($findRecent === true)
         {
             $result = $results->orderBy(Entity::CREATED_AT, 'desc')
-                              ->first();
+                              ->firstOrFail();
 
             return $result;
         }
