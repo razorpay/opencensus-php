@@ -567,11 +567,13 @@ trait Refund
                 // Or should we add a new one - gateway_reversed?
             }
 
+            // Record refund since gateway it's refunded on gateway
             $this->updatePaymentRefunded();
 
             $this->repo->saveOrFail($this->payment);
             $this->repo->saveOrFail($refund);
 
+            // Created txn for refund.
             $this->recordTransactionForRefund();
 
             $this->sendRefundNotification($payment, $refund);
