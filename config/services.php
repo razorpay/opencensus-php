@@ -31,5 +31,9 @@ return [
 
     'mutex' => [
         'mock' => env('MUTEX_MOCK', false)
+    ],
+
+    'redis_store' => [
+        'mock' => env('REDIS_MOCK', false)
     ]
 ];

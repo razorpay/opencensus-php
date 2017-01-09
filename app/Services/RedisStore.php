@@ -12,17 +12,11 @@ use RZP\Exception;
 
 class RedisStore
 {
-    const SORTED_SET = 'sorted_set';
-
     protected $requestId;
 
     protected $trace;
 
     protected $redis;
-
-    protected static $entityClassToDataTypeMap = [
-        'RZP\Models\Base\Redis\SortedSet' => self::SORTED_SET
-    ];
 
     public function __construct($app)
     {
@@ -48,7 +42,7 @@ class RedisStore
         }
     }
 
-    public function populateEntityData(RedisEntity $entity)
+    public function fetchEntityData(RedisEntity $entity)
     {
         $redisKey = $entity->getRedisKey();
 
@@ -97,7 +91,7 @@ class RedisStore
             throw new Exception\ServerErrorException(
                         "Error saving to redis with key: $redisKey",
                         ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
+                        $dataToSave);
 
         }
         return $result >= 0 ? true : false;
@@ -118,6 +112,8 @@ class RedisStore
         catch (PredisException $e)
         {
             $this->trace->traceException($e);
+
+            return [];
         }
     }
 
@@ -132,9 +128,9 @@ class RedisStore
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error removing data from set with key: $redisKey",
+                        "Error removing data from set with key: $key",
                         ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
+                        $members);
         }
     }
 }

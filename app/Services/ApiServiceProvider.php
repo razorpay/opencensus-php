@@ -227,6 +227,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('redis_store', function ($app)
         {
+            $redisMock = $app['config']->get('services.redis_store.mock');
+
+            if ($redisMock === true)
+            {
+                return new Mock\RedisStore($app);
+            }
+
             return new RedisStore($app);
         });
     }
