@@ -1475,3 +1475,8 @@ UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
 UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
+
+ALTER TABLE admin_tokens
+    MODIFY COLUMN id char(14);
+
+TRUNCATE TABLE admin_tokens;
