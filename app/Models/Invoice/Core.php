@@ -367,7 +367,7 @@ class Core extends Base\Core
 
     protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
     {
-        ;
+        $this->repo->saveOrFail($invoice);;
     }
 
     /**
