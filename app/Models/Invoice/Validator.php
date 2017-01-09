@@ -10,6 +10,23 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    //
+    // We have rules on create and update for the two status: DRAFT, ISSUED.
+    // Eg. In ISSUED state, you cannot update amount of the invoice. There are
+    //     rules to accomodate such requirements. This way it's good to manage and
+    //     is easy to understand.
+    //
+    // - Create invoice in DRAFT status
+    // - Create invoice in ISSUED status
+    // - Update invoice when it's in DRAFT status
+    // - Update invoice when it's in ISSUED status
+    //
+
+    const CREATE_DRAFT  = 'createDraft';
+    const CREATE_ISSUED = 'createIssued';
+    const EDIT_DRAFT    = 'editDraft';
+    const EDIT_ISSUED   = 'editIssued';
+
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
@@ -18,6 +35,7 @@ class Validator extends Base\Validator
 
         // Entity::DUE_BY              => 'sometimes|integer',
         // Entity::SCHEDULED_AT        => 'sometimes|integer',
+
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
         Entity::DATE                => 'sometimes|integer',
@@ -30,36 +48,154 @@ class Validator extends Base\Validator
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
         Entity::LINE_ITEMS          => 'sometimes|array',
-        Entity::AMOUNT              => 'required_with:description|integer|min:100|max:50000000',
-        Entity::DESCRIPTION         => 'required_with:amount|string|max:2048',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|boolean',
+    ];
+
+    //
+    // Following is redundant and same as $createRules but keeping it as it keeps code
+    // at other places clean
+    //
+
+    protected static $createDraftRules = [
+        // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
+        // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
+        // Entity::ADJUSTMENT          => 'sometimes|integer',
+        // Entity::SHIPPING            => 'sometimes|integer|min:1',
+
+        // Entity::DUE_BY              => 'sometimes|integer',
+        // Entity::SCHEDULED_AT        => 'sometimes|integer',
+
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|boolean',
+    ];
+
+    protected static $createIssuedRules = [
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::CUSTOMER            => 'sometimes|array',
+        Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::DRAFT               => 'sometimes|in:0',
+    ];
+
+    protected static $editDraftRules  = [
+        Entity::SMS_NOTIFY          => 'sometimes|boolean',
+        Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+        Entity::VIEW_LESS           => 'sometimes|in:1',
+        Entity::SOURCE              => 'sometimes|string|max:32|custom',
+        Entity::TYPE                => 'sometimes|string|max:16|custom',
+        Entity::CUSTOMER            => 'sometimes',
+        Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
+        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
+        Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
     ];
 
-    protected static $createValidators = [
+    protected static $editIssuedRules  = [
+        Entity::DATE                => 'sometimes|integer',
+        Entity::TERMS               => 'sometimes|string|max:2048',
+        Entity::NOTES               => 'sometimes|notes',
+        Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
+    ];
+
+    //
+    // Custom validators.
+    //
+
+    protected static $createValidators =[
+        Entity::AMOUNT,
+        Entity::CURRENCY,
+    ];
+
+    protected static $createIssuedValidators = [
         Entity::LINE_ITEMS,
         Entity::CURRENCY,
     ];
 
-    /**
-     * Validates: - Either line_items or amount, description should exists in input
-     *            - But not both
-     *            - If line_items exists then count should be between 1-10
-     */
-    public function validateLineItems(array $input)
+    protected static $editDraftValidators = [
+        Entity::AMOUNT,
+
+        //
+        // Amount should not be updated by via input if line items already exists
+        // for the invoice.
+        //
+
+        self::EDIT_DRAFT . Entity::AMOUNT,
+    ];
+
+    public function validateAmount(array $input)
     {
-        $lineItemsExists = isset($input[Entity::LINE_ITEMS]);
+        //
+        // Amount should only be sent, if type is not invoice as invoice must
+        // have line items and amount gets calculated from there.
+        //
 
-        $amountExists    = isset($input[Entity::AMOUNT]);
-        $descExists      = isset($input[Entity::DESCRIPTION]);
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
 
-        if (($lineItemsExists) ^ ($amountExists and $descExists) === false)
+        $type = $input[Entity::TYPE] ?? $this->entity->getType();
+
+        if ($type === null)
+        {
+            $type = Type::INVOICE;
+        }
+
+        if ($type === Type::INVOICE)
         {
             throw new BadRequestValidationFailureException(
-                'Provide either line_items or amount, description.'
+                'amount can be only sent for ecod or link types.'
             );
         }
 
+        // If amount is set, input should not contain line_items.
+
+        if (isset($input[Entity::LINE_ITEMS]) === true)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount should not be sent if line_items are being sent in the input.'
+            );
+        }
+    }
+
+    public function validateLineItems(array $input)
+    {
         if (isset($input[Entity::LINE_ITEMS]) === false)
         {
             return;
@@ -74,6 +210,10 @@ class Validator extends Base\Validator
             );
         }
 
+        //
+        // We are currently not allowing more than 10 line items
+        // in the input. There's no concrete reason for this though.
+        //
         if ($lineItemsCount > 10)
         {
             throw new BadRequestValidationFailureException(
@@ -87,6 +227,10 @@ class Validator extends Base\Validator
      * no other validations would happen and will attempt to flush null in db.
      * Ref: https://laravel.com/docs/5.2/validation#rule-string
      * To avoid that, adding validator to be run by spine here.
+     *
+     * @param array $input
+     *
+     * @throws BadRequestValidationFailureException
      */
     public function validateCurrency(array $input)
     {
@@ -115,8 +259,27 @@ class Validator extends Base\Validator
         Type::checkType($value);
     }
 
-    public function validateMerchantHasKeys(Merchant\Entity $merchant)
+    public function validateEditDraftAmount(array $input)
     {
+        if (isset($input[Entity::AMOUNT]) === false)
+        {
+            return;
+        }
+
+        $invoice = $this->entity;
+
+        if ($invoice->lineItems()->count() > 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount cannot be updated if invoice has line_items'
+            );
+        }
+    }
+
+    public function validateMerchantHasKeys()
+    {
+        $merchant = $this->entity->merchant;
+
         $keys = $merchant->keys;
 
         foreach ($keys as $key)
@@ -127,6 +290,10 @@ class Validator extends Base\Validator
             }
         }
 
+        //
+        // Note that this exception will be thrown even if a key is present
+        // but if it is going to be expired soon or is already expired.
+        //
         throw new BadRequestException(
             ErrorCode::BAD_REQUEST_API_KEY_NOT_PRESENT,
             null,
@@ -135,25 +302,131 @@ class Validator extends Base\Validator
             ]);
     }
 
-    public function validateSendNotificationRequest(Entity $invoice, string $medium)
+    public function validateSendNotificationRequest(string $medium)
     {
+        $invoice = $this->entity;
+
+        $this->validateOperation('sendNotification');
+
         if (NotifyMedium::isMediumValid($medium) === false)
         {
-            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium');
+            throw new BadRequestValidationFailureException($medium . ' is not a valid communication medium.');
         }
 
-        if (($medium === NotifyMedium::EMAIL) and empty($invoice->getCustomerEmail()))
+        if (($medium === NotifyMedium::EMAIL) and
+            (empty($invoice->getCustomerEmail())))
         {
             throw new BadRequestValidationFailureException(
-                'Email can not be sent since email address has not been provided'
+                'Email can not be sent since email address has not been provided.'
             );
         }
 
-        if (($medium === NotifyMedium::SMS) and empty($invoice->getCustomerContact()))
+        if (($medium === NotifyMedium::SMS) and
+            (empty($invoice->getCustomerContact())))
         {
             throw new BadRequestValidationFailureException(
-                'SMS can not be sent since contact number has not been provided'
+                'SMS can not be sent since contact number has not been provided.'
             );
+        }
+    }
+
+    public function validateOperation(string $operation)
+    {
+        assert(in_array($operation, $this->entity->getValidOperations(), true));
+
+        switch ($operation)
+        {
+            case 'update':
+                $allowedStatuses = [
+                    Status::DRAFT,
+                    Status::ISSUED,
+                ];
+
+                break;
+
+            case 'sendNotification':
+                $allowedStatuses = [
+                    Status::ISSUED,
+                ];
+
+                break;
+
+            default:
+                $allowedStatuses = [
+                    Status::DRAFT,
+                ];
+        }
+
+        $invoiceStatus = $this->entity->getStatus();
+
+        if (in_array($invoiceStatus, $allowedStatuses, true) === false)
+        {
+            throw new BadRequestValidationFailureException(
+                'Operation not allowed for invoice in ' . $invoiceStatus . ' status.'
+            );
+        }
+    }
+
+    /**
+     * Validates if an invoice can be issued or not.
+     * It has the following checks:
+     *  - Invoice should have amount set to a non-zero value
+     *  - Either description (minimal invoice) or non-zero line items should exist
+     */
+    public function validateInvoiceIssue()
+    {
+        $invoice = $this->entity;
+
+        $type = $invoice->getType();
+
+        switch ($type)
+        {
+            case Type::INVOICE:
+                $this->validateInvoiceIssueForInvoiceType($invoice);
+                break;
+
+            default:
+                $this->validateInvoiceIssueForOtherTypes($invoice);
+                break;
+        }
+    }
+
+    protected function validateInvoiceIssueForInvoiceType(Entity $invoice)
+    {
+        $lineItemsCount = $invoice->lineItems()->count();
+
+        if ($lineItemsCount === 0)
+        {
+            throw new BadRequestValidationFailureException(
+                'line_items is required.');
+        }
+
+        $customer = $invoice->customer;
+
+        if (empty($customer))
+        {
+            throw new BadRequestValidationFailureException(
+                'customer is required.');
+        }
+    }
+
+    protected function validateInvoiceIssueForOtherTypes(Entity $invoice)
+    {
+        $invoiceAmount = $invoice->getAmount();
+
+        if ($invoiceAmount === null)
+        {
+            throw new BadRequestValidationFailureException(
+                'amount cannot be empty.');
+        }
+
+        $lineItemsCount = $invoice->lineItems()->count();
+        $description    = $invoice->getDescription();
+
+        if (($lineItemsCount === 0) and ($description === null))
+        {
+            throw new BadRequestValidationFailureException(
+                'description is required.');
         }
     }
 
