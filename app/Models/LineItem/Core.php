@@ -178,53 +178,63 @@ class Core extends Base\Core
      *                                     // will be deleted.
      * ]
      *
-     * @param array             $input
+     * @param array             $lineItemsDetails
      * @param Merchant\Entity   $merchant
      * @param Base\PublicEntity $morphEntity
      *
      * @return Core
      */
     public function updateLineItems(
-        array $input,
+        array $lineItemsDetails,
         Merchant\Entity $merchant,
         Base\PublicEntity $morphEntity)
     {
-        $oldLineItemsCollection = $morphEntity->lineItems()->get();
+        $this->createOrUpdateLineItemsViaUpdate($lineItemsDetails, $morphEntity, $merchant);
 
-        $inputLineItemIds = collect($input)->pluck('id')->all();
+        //
+        // Clean old line items which were not sent in the input
+        //
+        $this->deleteLineItemsViaUpdate($morphEntity, $lineItemsDetails);
+    }
 
-        foreach ($input as $lineItemDetails)
+    // -------------------- Protected methods --------------------
+
+    protected function createOrUpdateLineItemsViaUpdate(
+        array $lineItemsDetails,
+        Base\PublicEntity $morphEntity,
+        Merchant\Entity $merchant)
+    {
+        foreach ($lineItemsDetails as $lineItemDetails)
         {
             //
-            // If id exists in input, find and update the line item
+            // If id exists in input, find and update the line item.
+            // Else, create new line item with given input
             //
 
             if (array_key_exists(Entity::ID, $lineItemDetails))
             {
-                $id = $lineItemDetails[Entity::ID];
+                $lineItemId = $lineItemDetails[Entity::ID];
                 unset($lineItemDetails[Entity::ID]);
 
                 $lineItem = $this->repo->line_item
-                                       ->findByPublicIdAndMorphEntity($id, $morphEntity);
+                    ->findByPublicIdAndMorphEntity($lineItemId, $morphEntity);
 
                 $this->update($lineItem, $lineItemDetails, $merchant, $morphEntity);
             }
-
-            //
-            // Else, create new line item with given input
-            //
-
             else
             {
                 $this->create($lineItemDetails, $merchant, $morphEntity);
             }
         }
+    }
 
-        //
-        // Clean old line items which were not sent in the input
-        //
+    protected function deleteLineItemsViaUpdate(Base\PublicEntity $morphEntity, array $lineItemsDetails)
+    {
+        $existingLineItems = $morphEntity->lineItems()->get();
 
-        $oldLineItemsCollection->map(
+        $inputLineItemIds = collect($lineItemsDetails)->pluck('id')->all();
+
+        $existingLineItems->map(
             function($lineItem, $i) use ($inputLineItemIds)
             {
                 if (in_array($lineItem->getPublicId(), $inputLineItemIds, true) === false)
@@ -232,11 +242,7 @@ class Core extends Base\Core
                     $this->delete($lineItem);
                 }
             });
-
-        return $this;
     }
-
-    // -------------------- Protected methods --------------------
 
     /**
      * @param array             $lineItemDetails
