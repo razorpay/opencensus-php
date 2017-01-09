@@ -488,6 +488,12 @@ trait Refund
 
             $this->createTransactionForRefund($this->refund, $payment);
 
+            //
+            // This needs to be saved here because of the association with
+            // transaction which is set in the createTransactionForRefund function.
+            //
+            $this->repo->saveOrFail($this->refund);
+
             $this->repo->commit();
         }
         catch (\Exception $ex)

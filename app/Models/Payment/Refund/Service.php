@@ -310,8 +310,7 @@ class Service extends Base\Service
 
         $this->trace->info(
             TraceCode::TRANSACTION_REFUND_TRACE,
-            ['total_count' => $totalCount]
-        );
+            ['total_count' => $totalCount]);
 
         $successes = $failures = 0;
         $failureRefundIds = [];
@@ -363,10 +362,81 @@ class Service extends Base\Service
             'failed_refund_ids' => $failureRefundIds,
         ];
     }
-    
+
     public function createMissingTransactionsForGatewayRefunded()
     {
         $gatewayRefundedWithoutTxns = $this->repo->refund->fetchGatewayRefundedRefundsWithoutTxns();
+
+        $totalCount = count($gatewayRefundedWithoutTxns);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUNDED_TXNS_MISSING,
+            [
+                'total_count' => $totalCount,
+                'refund_ids' => $gatewayRefundedWithoutTxns->pluck('id')->toArray(),
+            ]);
+
+        $successes = $failures = 0;
+        $failureRefundIds = [];
+
+        foreach ($gatewayRefundedWithoutTxns as $gatewayRefundedWithoutTxn)
+        {
+            $success = $this->createMissingRefundTransaction($gatewayRefundedWithoutTxn);
+
+            if ($success === true)
+            {
+                $successes += 1;
+            }
+            else
+            {
+                $failures += 1;
+                $failureRefundIds[] = $gatewayRefundedWithoutTxn->getId();
+            }
+        }
+    }
+
+    protected function createMissingRefundTransaction(Entity $refundWithoutTxn, bool $forceRefundTransaction = false)
+    {
+        $this->trace->info(
+            TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
+            $refundWithoutTxn->toArray());
+
+        try
+        {
+            $payment = $refundWithoutTxn->payment;
+
+            $this->repo->transaction(
+                function()
+                use($refundWithoutTxn, $payment, $forceRefundTransaction)
+                {
+                    $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
+                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
+
+                    if ($transaction === null)
+                    {
+                        throw new Exception\LogicException('Transaction did not get created');
+                    }
+
+                    //
+                    // This needs to be saved here because of the association with
+                    // transaction which is set in the createTransactionForRefund function.
+                    //
+                    $this->repo->saveOrFail($refundWithoutTxn);
+                });
+
+            return true;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->error(
+                TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
+                $refundWithoutTxn->toArray()
+            );
+
+            $this->trace->traceException($ex);
+
+            return false;
+        }
     }
 
     public function createGatewayRefundRecords($gateway)
