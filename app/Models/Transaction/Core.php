@@ -150,19 +150,21 @@ class Core extends Base\Core
         return [$txn, $feesSplit];
     }
 
-    protected function fillTxnFeesAndAmount($txn, $payment)
+    protected function fillTxnFeesAndAmount(Transaction\Entity $txn, Payment\Entity $payment)
     {
         $pricingRuleId = null;
 
-        $merchantBalance = $this->getBalanceLockForUpdate($payment->merchant);
+        $merchant = $payment->merchant;
 
-        $amountCredits = $merchantBalance->getAmountCredits();
-
-        $feeCredits = $merchantBalance->getFeeCredits();
+        $merchantBalance = $this->getBalanceLockForUpdate($merchant);
 
         $amount = $payment->getBaseAmount();
 
         $oldTransaction = $this->checkIfOldPayment($payment);
+
+        $txn->setFeeModel($merchant->getFeeModel());
+
+        $txn->setFeeBearer($merchant->getFeeBearer());
 
         $feesSplit = new Base\PublicCollection;
 
@@ -173,64 +175,20 @@ class Core extends Base\Core
             $fee = 0;
             $serviceTax = 0;
             $credit = $amount;
+
+            $txn->setPricingRule($pricingRuleId);
         }
-        else if (($this->app->runningUnitTests() === false) and
-                 ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
-                 ($payment->isCard() === true) and
-                 ($payment->card->isInternational() === false) and
-                 ($payment->card->isDebit() === true) and
-                 (time() < 1483228800))
+        else if ($merchant->isPrepaid())
         {
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
-
-            $fee = 0;
-            $serviceTax = 0;
-            $credit = $amount;
-        }
-        else if ($amountCredits > 0)
-        {
-            $this->trace->info(
-                TraceCode::TRANSACTION_FREE_CREDITS,
-                [
-                    'payment_id' => $payment->getId(),
-                    'amount' => $amount,
-                    'free_credits' => $amountCredits,
-                ]
-            );
-            $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
-
-            $credit = $amount;
-            $fee = 0;
-            $serviceTax = 0;
-
-            $txn->setGratis(true);
-        }
-        // If the customer is fee bearer for the merchant
-        // use the fees and service tax from both
-        else if ($payment->merchant->isFeeBearerCustomer())
-        {
-            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
-
-            $credit = $amount - $fee;
+            list($credit, $fee, $serviceTax, $feesSplit)
+                = $this->calculatePrepaidFee($payment, $txn, $merchantBalance);
         }
         else
         {
-            list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
-
-            if ($feeCredits >= $fee)
-            {
-                $credit         = $amount;
-                $feeCredits     = $fee;
-
-                $txn->setFeeCredits($feeCredits);
-            }
-            else
-            {
-                $credit = $amount - $fee;
-            }
+            list($credit, $fee, $serviceTax, $feesSplit)
+                = $this->calculatePostpaidFee($payment, $txn, $merchantBalance);
         }
 
-        $txn->setPricingRule($pricingRuleId);
         $txn->setAmount($amount);
         $txn->setCredit($credit);
         $txn->setDebit(0);
@@ -238,6 +196,180 @@ class Core extends Base\Core
         $txn->setServiceTax($serviceTax);
 
         return [$txn, $feesSplit];
+    }
+
+    /**
+     * Calculate Fee for Prepaid Fee Model
+     * Merchant can be a fee_bearer customer or platform
+     *
+     * @param  Payment\Entity          $payment
+     * @param  Transaction\Entity      $transaction
+     * @param  Merchant\Balance\Entity $merchantBalance
+     * @return [type]
+     */
+    protected function calculatePrepaidFee(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction,
+        Merchant\Balance\Entity $merchantBalance)
+    {
+        $amountCredits = $merchantBalance->getAmountCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+        switch (true)
+        {
+            case ($transaction->isFeeBearerCustomer()):
+                return $this->calculateFeeForPrepaidDefault($payment, $transaction);
+
+            case ($amountCredits > 0):
+                return $this->calculateFeeForAmountCredit($payment, $transaction);
+
+            case ($feeCredits >= $fee):
+                return $this->calculateFeeForFeeCredit($payment, $transaction);
+
+            default:
+                return $this->calculateFeeForPrepaidDefault($payment, $transaction);
+        }
+    }
+
+    /**
+     * Calculate Fee for Postpaid Fee Model
+     * Merchant can only be a fee_bearer platform
+     *
+     * @param  Payment\Entity          $payment
+     * @param  Transaction\Entity      $transaction
+     * @param  Merchant\Balance\Entity $merchantBalance
+     * @return [type]
+     */
+    protected function calculatePostpaidFee(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction,
+        Merchant\Balance\Entity $merchantBalance)
+    {
+        $amountCredits = $merchantBalance->getAmountCredits();
+
+        $feeCredits = $merchantBalance->getFeeCredits();
+
+        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+        switch (true)
+        {
+            case ($amountCredits > 0):
+                return $this->calculateFeeForAmountCredit($payment, $transaction);
+
+            case ($feeCredits >= $fee):
+                return $this->calculateFeeForFeeCredit($payment, $transaction);
+
+            default:
+                return $this->calculateFeeForPostpaidDefault($payment, $transaction);
+        }
+    }
+
+    /**
+     * Calculate Fee for Amount Credit
+     * Credit = amount, fee & ST = 0
+     * @param  Payment\Entity          $payment         [description]
+     * @param  Transaction\Entity      $transaction     [description]
+     * @param  Merchant\Balance\Entity $merchantBalance [description]
+     * @return [type]                                   [description]
+     */
+    protected function calculateFeeForAmountCredit(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction)
+    {
+        $amount = $payment->getBaseAmount();
+
+        $this->trace->info(
+            TraceCode::TRANSACTION_AMOUNT_CREDITS,
+            [
+                'payment_id'     => $payment->getId(),
+                'amount'         => $amount
+            ]
+        );
+
+        $pricingRuleId = (new Pricing\Fee)->getZeroPricingPlanRule($payment);
+
+        $transaction->setPricingRule($pricingRuleId);
+
+        $credit = $amount;
+        $fee = 0;
+        $serviceTax = 0;
+
+        $transaction->setGratis(true);
+
+        $transaction->setCreditType(Transaction\CreditType::AMOUNT);
+
+        return [$credit, $fee, $serviceTax, new Base\PublicCollection];
+    }
+
+    /**
+     * Calculate Fee for Fee Credit
+     * credit = amount, fee_credit = fee
+     * @param  Payment\Entity     $payment     [description]
+     * @param  Transaction\Entity $transaction [description]
+     * @return [type]                          [description]
+     */
+    protected function calculateFeeForFeeCredit(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction)
+    {
+        $amount = $payment->getBaseAmount();
+
+        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+        $credit = $amount;
+        $feeCredits = $fee;
+
+        $transaction->setFeeCredits($feeCredits);
+        $transaction->setCreditType(Transaction\CreditType::FEE);
+
+        return [$credit, $fee, $serviceTax, $feesSplit];
+    }
+
+    /**
+     * Calculate Prepaid Fee for Default credit type
+     * credit = amount - fee
+     * @param  Payment\Entity     $payment     [description]
+     * @param  Transaction\Entity $transaction [description]
+     * @return [type]                          [description]
+     */
+    protected function calculateFeeForPrepaidDefault(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction)
+    {
+        $amount = $payment->getBaseAmount();
+
+        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+        $credit = $amount - $fee;
+
+        $transaction->setCreditType(Transaction\CreditType::DEFAULT);
+
+        return [$credit, $fee, $serviceTax, $feesSplit];
+    }
+
+    /**
+     * Calculate Postpaid Fee for Default credit type
+     * credit = amount
+     * @param  Payment\Entity     $payment     [description]
+     * @param  Transaction\Entity $transaction [description]
+     * @return [type]                          [description]
+     */
+    protected function calculateFeeForPostpaidDefault(
+        Payment\Entity $payment,
+        Transaction\Entity $transaction)
+    {
+        $amount = $payment->getBaseAmount();
+
+        list($fee, $serviceTax, $feesSplit) = $this->calculateMerchantFees($payment);
+
+        $credit = $amount;
+
+        $transaction->setCreditType(Transaction\CreditType::DEFAULT);
+
+        return [$credit, $fee, $serviceTax, $feesSplit];
     }
 
     protected function checkIfOldPayment($payment)
@@ -467,7 +599,11 @@ class Core extends Base\Core
 
         $amountCredits = $merchantBalance->getAmountCredits();
 
-        assert($amountCredits > 0);
+        // Removing Assert for now, as there is a race condition. if 2 payments
+        // are authorized at the same time where we create txn on auth with. both
+        // will try to set amount credits to zero and one will throw below assert
+        // as both txn were marked as gratis on authorization
+        // assert($amountCredits > 0);
 
         //
         // Even if free credits is less than txn amount, we still give full

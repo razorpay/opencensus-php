@@ -93,7 +93,7 @@ class BrokerTransactionReport extends Report
                 self::SB_CESS            => $feesBreakup['SB Cess'],
                 self::KK_CESS            => $feesBreakup['Krishi Kalyan Cess'],
                 self::TOTAL_CHARGEABLE   => $feesBreakup['Total Chargeable'],
-                self::NET_AMOUNT         => $this->getTxnNetAmount($txn),
+                self::NET_AMOUNT         => ($txn->getAmount() / 100),
                 self::PAYMENT_STATUS     => $this->getTxnPaymentStatus($txn),
                 self::SETTLEMENT_DATE    => $setlDate,
                 self::REFUND_REFERENCE   => null,
@@ -217,38 +217,18 @@ class BrokerTransactionReport extends Report
         }
     }
 
+    /**
+     * For broker report we need to show the fees as 0.0 although actual fees
+     * are applied to the txn amount
+     */
     protected function getFeesBreakupDetails($txn)
     {
-        $fees = [];
-
-        if ($txn->isTypePayment() === false)
-        {
-            $fees = [
-                'Txn Charges'        => '0.0',
-                'Service Tax'        => '0.0',
-                'SB Cess'            => '0.0',
-                'Krishi Kalyan Cess' => '0.0',
-                'Total Chargeable'   => '0.0',
-            ];
-
-            return $fees;
-        }
-
-        $feesBreakup = $txn->feesBreakup;
-
-        $feesBreakupDetails = $feesBreakup->flatMap(function ($fee)
-        {
-            return [$fee->getName() => $fee->getAmount()];
-        });
-
-        $feesBreakupDetails = $feesBreakupDetails->toArray();
-
         $fees = [
-            'Txn Charges'        => ($feesBreakupDetails[FeeBreakup\Name::PAYMENT] ?? 0) / 100,
-            'Service Tax'        => ($feesBreakupDetails[FeeBreakup\Name::SERVICE_TAX] ?? 0) / 100,
-            'SB Cess'            => ($feesBreakupDetails[FeeBreakup\Name::SWACHH_BHARAT_CESS] ?? 0) / 100,
-            'Krishi Kalyan Cess' => ($feesBreakupDetails[FeeBreakup\Name::KRISHI_KALYAN_CESS] ?? 0) / 100,
-            'Total Chargeable'   => ($txn->getFee() / 100),
+            'Txn Charges'        => 0,
+            'Service Tax'        => 0,
+            'SB Cess'            => 0,
+            'Krishi Kalyan Cess' => 0,
+            'Total Chargeable'   => 0,
         ];
 
         return $fees;

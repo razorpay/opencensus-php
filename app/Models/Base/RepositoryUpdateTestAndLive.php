@@ -194,8 +194,10 @@ trait RepositoryUpdateTestAndLive
         unset(
             $testAttributes['created_at'],
             $testAttributes['updated_at'],
+            $testAttributes['deleted_at'],
             $liveAttributes['created_at'],
-            $liveAttributes['updated_at']);
+            $liveAttributes['updated_at'],
+            $liveAttributes['deleted_at']);
 
         $diff1 = array_diff_assoc($testAttributes, $liveAttributes);
         $diff2 = array_diff_assoc($liveAttributes, $testAttributes);
@@ -217,7 +219,7 @@ trait RepositoryUpdateTestAndLive
         if ($diff)
         {
             $msg = 'Entity: ' . $this->entity . PHP_EOL . $msg;
-            $msg = 'A row in test and live database do not match' . PHP_EOL;
+            $msg .= '. A row in test and live database do not match' . PHP_EOL;
 
             throw new Exception\LogicException($msg);
         }

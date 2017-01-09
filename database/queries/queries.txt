@@ -1314,6 +1314,21 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
+--- Pre code deployment / PR: https://github.com/razorpay/api/pull/1620
+
+ALTER TABLE invoices MODIFY COLUMN order_id CHAR(14) DEFAULT NULL;
+ALTER TABLE invoices MODIFY COLUMN amount BIGINT(20) DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX invoices_deleted_at_index ON invoices (deleted_at);
+
+ALTER TABLE line_items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX line_items_deleted_at_index ON line_items (deleted_at);
+
+ALTER TABLE items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX items_deleted_at_index ON items (deleted_at);
+
+---
+
 --- Pre deployment https://github.com/razorpay/api/pull/910
 ALTER TABLE payments
     ADD COLUMN gateway_captured TINYINT AFTER auto_captured
@@ -1326,7 +1341,6 @@ UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
 
 ---
 
-----
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource
@@ -1420,9 +1434,9 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
-ALTER TABLE payments 
+ALTER TABLE payments
     MODIFY contact VARCHAR(20);
-    
+
 ALTER TABLE org_hostname
     MODIFY COLUMN id CHAR(14);
 
@@ -1442,3 +1456,27 @@ UPDATE org_hostname
 ALTER TABLE merchant_details
     ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,
     ADD COLUMN department VARCHAR (255) AFTER role;
+
+# Queries to remove redundant features column in merchants table
+ALTER TABLE merchants
+    DROP COLUMN features;
+DELETE FROM features WHERE name='cardsaving';
+
+## Queries for PR:1943
+ALTER TABLE merchants
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer;
+ALTER TABLE transactions
+    ADD COLUMN fee_bearer TINYINT(1) NOT NULL DEFAULT 0 AFTER channel,
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
+    ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
+UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
+UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
+
+ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
+
+UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
+
+ALTER TABLE admin_tokens
+    MODIFY COLUMN id char(14);
+
+TRUNCATE TABLE admin_tokens;

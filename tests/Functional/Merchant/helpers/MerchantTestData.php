@@ -1174,11 +1174,6 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "flashcheckout",
-                        'value' => FALSE,
-                        'display_name' => "Flash Checkout"
-                    ],
-                    [
                         'feature' => "noflashcheckout",
                         'value' => FALSE,
                         'display_name' => "No Flash Checkout"
@@ -1193,7 +1188,7 @@ return [
         'request' => [
             'content' => [
                 "features" => [
-                    "flashcheckout" => "1",
+                    "noflashcheckout" => "1",
                 ],
                 "optout_reason" => "some reason"
             ],
@@ -1204,9 +1199,9 @@ return [
             'content' => [
                 'features' => [
                     [
-                        'feature' => "flashcheckout",
+                        'feature' => "noflashcheckout",
                         'value' => TRUE,
-                        'display_name' => "Flash Checkout"
+                        'display_name' => "No Flash Checkout"
                     ]
                 ]
             ],

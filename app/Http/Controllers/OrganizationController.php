@@ -283,11 +283,20 @@ class OrganizationController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postPasswordReset(Admin\Admin\Service $adminService, string $id)
+    public function postForgotPassword(Admin\Admin\Service $adminService, string $orgId)
     {
         $input = Request::all();
 
-        $response = $adminService->passwordReset($id, $input);
+        $response = $adminService->forgotPassword($orgId, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postResetPassword(Admin\Admin\Service $adminService, string $orgId)
+    {
+        $input = Request::all();
+
+        $response = $adminService->resetPassword($orgId, $input);
 
         return ApiResponse::json($response);
     }

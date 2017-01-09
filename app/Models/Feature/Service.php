@@ -27,7 +27,7 @@ class Service extends Base\Service
         $response['assigned_features'] = $this->repo->feature->findByEntityId($entityId);
 
         // all_features is a list of currently available features in the system
-        $response['all_features'] = Constants::$allFeatures;
+        $response['all_features'] = array_keys(Constants::$featureValueMap);
 
         return $response;
     }

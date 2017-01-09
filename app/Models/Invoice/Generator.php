@@ -8,7 +8,6 @@ use Config;
 
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception\BadRequestException;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
@@ -33,13 +32,6 @@ class Generator extends Base\Core
     protected $merchant;
 
     /**
-     * @var Customer\Entity
-     */
-    protected $customer;
-
-    protected $lineItems = [];
-
-    /**
      * @var LineItem\Core
      */
     protected $lineItemCore;
@@ -59,48 +51,45 @@ class Generator extends Base\Core
     const SHORT_MODE_LIVE = 'l';
     const SHORT_MODE_TEST = 't';
 
-    public function __construct(Merchant\Entity $merchant)
+    public function __construct(Merchant\Entity $merchant, Entity $invoice = null)
     {
         parent::__construct();
 
         $this->merchant = $merchant;
 
+        $this->invoice  = $invoice;
+
+        $this->lineItemCore = new LineItem\Core;
+
         $this->elfin = $this->app['elfin'];
 
         $this->setElfinServices();
-
-        $this->lineItemCore = new LineItem\Core;
 
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
     public function generate(array $input)
     {
-        $invoice = $this->generateInvoiceSkeleton($input);
+        $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($invoice, $input)
+                function() use ($input)
                 {
-                    $this->buildAndSaveInvoice($input);
+                    $this->preProcessGeneration($input);
+
+                    if ($this->invoice->getStatus() === Status::ISSUED)
+                    {
+                        $this->issueInvoice();
+                    }
+
+                    $this->repo->saveOrFail($this->invoice);
                 });
         }
         catch (\Exception $e)
         {
-            // Check if is Mysql duplicate on unique index error
-            if ($e instanceof \Illuminate\Database\QueryException and $e->errorInfo[1] == 1062)
-            {
-                throw new BadRequestException(
-                    ErrorCode::BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT,
-                    null,
-                    [
-                        'invoice_id'    => $this->invoice->getId(),
-                        'input'         => $input,
-                    ]);
-            }
-
-            throw $e;
+            ExceptionHandler::handleMySqlUniqueError($e, $this->invoice, $input);
         }
 
         //
@@ -125,90 +114,38 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function generateInvoiceSkeleton(array $input)
+    protected function preProcessGeneration(array $input)
     {
-        $invoice = new Entity;
+        $this->associateCustomerWithInvoice($input);
 
-        $invoice->build($input);
-        $invoice->merchant()->associate($this->merchant);
-
-        //
-        // This is being done because dashboard can create an invoice
-        // for the merchant even if the merchant has not generated
-        // any keys at all.
-        //
-
-        $invoice->getValidator()->validateMerchantHasKeys($this->merchant);
-
-        //
-        // This is being done so that we can do associations
-        // without saving the invoice. Also, to generate a shortUrl,
-        // we need the invoice ID.
-        //
-
-        $invoice->generateId();
-
-        $this->invoice = $invoice;
-
-        return $invoice;
+        $this->createLineItemsFromInputAndSetInvoiceAmount($input);
     }
 
-    protected function buildAndSaveInvoice(array $input)
+    /**
+     * This method updates all associations of invoice in update request.
+     * Eg. In case of draft invoice, one can update customer details.
+     *
+     * @param array $input
+     *
+     * @return null
+     */
+    public function updateDraftInvoice(array $input)
     {
-        $this->customer = $this->associateCustomerWithInvoice($input);
+        $this->associateCustomerWithInvoice($input);
 
-        $this->createLineItemsForInvoice($input);
+        if (isset($input[Entity::LINE_ITEMS]) === false)
+        {
+            return;
+        }
 
-        $this->createOrderForInvoice();
+        $this->lineItemCore->updateLineItems(
+            $input[Entity::LINE_ITEMS],
+            $this->merchant,
+            $this->invoice);
 
-        $this->setStatus($input);
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
 
-        $this->setShortUrl();
-
-        // Saving here for the associations
-        $this->repo->saveOrFail($this->invoice);
-
-        //
-        // This function should be called only after saving the
-        // invoice entity and the items entities because the invoice
-        // should be created and saved before it can be associated
-        // with the items.
-        //
-        $this->associateLineItemsToInvoice();
-    }
-
-    protected function setStatus(array $input)
-    {
-        $this->invoice->setStatus(Status::ISSUED);
-
-        // // TODO: Needs to be thought about well.
-        // if ((isset($input[Entity::DRAFT]) === true) and
-        //     ($input[Entity::DRAFT] === 1))
-        // {
-        //     $this->invoice->setStatus(Status::DRAFT);
-        // }
-        // else
-        // {
-        //     $this->invoice->setStatus(Status::ISSUED);
-        // }
-    }
-
-    protected function setShortUrl()
-    {
-        $longUrl = $this->getInvoiceLink();
-
-        $shortenedUrl = $this->elfin->shorten($longUrl);
-
-        $this->trace->info(
-            TraceCode::INVOICE_LINKS,
-            [
-                'invoice_id' => $this->invoice->getId(),
-                'short_url' => $shortenedUrl,
-                'long_url' => $longUrl,
-            ]
-        );
-
-        $this->invoice->setShortUrl($shortenedUrl);
+        $this->invoice->setAmount($totalAmount);
     }
 
     /**
@@ -228,118 +165,113 @@ class Generator extends Base\Core
         }
 
         $invoiceId = $this->invoice->getPublicId();
-
         $invoiceLink = $this->baseInvoiceUrl . '/' . $shortMode . '/' . $invoiceId;
 
         return $invoiceLink;
     }
 
-    protected function associateLineItemsToInvoice()
+    protected function generateInvoiceSkeleton(array $input)
     {
-        foreach ($this->lineItems as $lineItem)
+        //
+        // If draft=1 in input, validate against createDraftRules else createIssuedRules.
+        //
+
+        $operation = Validator::CREATE_ISSUED;
+
+        if ((isset($input[Entity::DRAFT])) and
+            ($input[Entity::DRAFT]) === '1')
         {
-            $lineItem->entity()->associate($this->invoice);
-
-            $this->repo->saveOrFail($lineItem);
-        }
-    }
-
-    protected function createLineItemsForInvoice(array $input)
-    {
-        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
-
-        if ($lineItemsDetails)
-        {
-            $this->lineItems = $this->createLineItemsFromInput($lineItemsDetails);
-
-            $invoiceAmount = $this->lineItemCore->getTotalAmountFromLineItems($this->lineItems);
-
-            $this->invoice->setAmount($invoiceAmount);
-        }
-    }
-
-    protected function createLineItemsFromInput(array $lineItemsDetails)
-    {
-        $lineItems = [];
-
-        foreach ($lineItemsDetails as $singleLineItem)
-        {
-            // It also removes the item details from the array.
-            $item = $this->getItemForLineItem($singleLineItem);
-
-            $lineItem = $this->lineItemCore->create(
-                $singleLineItem,
-                $this->merchant,
-                $this->invoice,
-                $item
-            );
-
-            $lineItems[] = $lineItem;
+            $operation = Validator::CREATE_DRAFT;
         }
 
-        return $lineItems;
+        $invoice = new Entity;
+
+        $invoice->build($input);
+
+        (new Validator)->validateInput(camel_case($operation), $input);
+
+        $invoice->merchant()->associate($this->merchant);
+
+        //
+        // This is being done because dashboard can create an invoice
+        // for the merchant even if the merchant has not generated
+        // any keys at all.
+        //
+
+        $invoice->getValidator()->validateMerchantHasKeys();
+
+        //
+        // This is being done so that we can do associations
+        // without saving the invoice. Also, to generate a shortUrl,
+        // we need the invoice ID.
+        //
+
+        $invoice->generateId();
+
+        $this->invoice = $invoice;
     }
 
     /**
-     * Get item details if item_id is set.
-     * Otherwise create item with item relevant input from line item.
-     * If item is created, then item related input in line item needs to
-     * be removed from line item. That's why $lineItem is passed by reference.
-     *
-     * Returns item created for the line item.
-     *
-     * @param array $lineItem
-     *
-     * @return Item\Entity
+     * This method does following:
+     * - Validates if invoice can be issued
+     * - Create it's order
+     * - Set the short URL
+     * - Update invoice status
+     * - Save the invoice
      */
-    protected function getItemForLineItem(array & $lineItem)
+    public function issueInvoice()
     {
-        if (isset($lineItem[LineItem\Entity::ITEM_ID]) === true)
-        {
-            $itemId = $lineItem[LineItem\Entity::ITEM_ID];
+        $this->invoice->getValidator()
+                      ->validateInvoiceIssue();
 
-            $item = $this->getItemFromItemId($itemId);
-        }
-        else
-        {
-            $itemDetails = $this->separateItemInputFromLineItemInput($lineItem);
+        $this->invoice->setStatus(Status::ISSUED);
 
-            $item = $this->createItemFromItemDetails($itemDetails);
-        }
+        $this->createAndAssociateOrderForInvoice();
 
-        return $item;
+        $this->setShortUrl();
     }
 
-    protected function getItemFromItemId($itemId)
+    protected function setShortUrl()
     {
-        $item = $this->repo->item->findByPublicIdAndMerchant($itemId, $this->merchant);
+        $longUrl = $this->getInvoiceLink();
 
-        $this->validateInvoiceAndItemCurrency($item->getCurrency());
+        $shortenedUrl = $this->elfin->shorten($longUrl, false);
 
-        return $item;
+        $this->trace->info(
+            TraceCode::INVOICE_LINKS,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'invoice_status' => $this->invoice->getStatus(),
+                'short_url'      => $shortenedUrl,
+                'long_url'       => $longUrl,
+            ]);
+
+        $this->invoice->setShortUrl($shortenedUrl);
     }
 
-    protected function createItemFromItemDetails(array $itemDetails)
+    protected function createLineItemsFromInputAndSetInvoiceAmount(array $input)
     {
-        if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
+        if (isset($input[Entity::LINE_ITEMS]) === false)
         {
-            $itemDetails[Item\Entity::CURRENCY] = $this->invoice->getCurrency();
+            return;
         }
 
-        $this->validateInvoiceAndItemCurrency($itemDetails[Item\Entity::CURRENCY]);
+        $this->lineItemCore->updateLineItems(
+            $input[Entity::LINE_ITEMS],
+            $this->merchant,
+            $this->invoice);
 
-        $item = (new Item\Core)->create($itemDetails, $this->merchant);
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
 
-        return $item;
+        $this->invoice->setAmount($totalAmount);
     }
 
-    protected function createOrderForInvoice()
+    protected function createAndAssociateOrderForInvoice()
     {
         $orderAmount = $this->invoice->getAmount();
 
         $orderCurrency = $this->invoice->getCurrency();
 
-        // TODO: Should we store any specific value here?
         $orderReceipt = 'Invoice Order';
 
         $orderInput = [
@@ -352,8 +284,6 @@ class Generator extends Base\Core
         $order = (new Order\Core)->create($orderInput, $this->merchant);
 
         $this->invoice->order()->associate($order);
-
-        return $order;
     }
 
     /**
@@ -366,17 +296,25 @@ class Generator extends Base\Core
      * @param array $input
      *
      * @return null|Customer\Entity
+     * @throws BadRequestValidationFailureException
      */
     protected function associateCustomerWithInvoice(array $input)
     {
         $customerDetails = ($input[Entity::CUSTOMER]) ?? [];
 
+        $customerId = ($input[Entity::CUSTOMER_ID]) ?? null;
+
+        if ($customerId and $customerDetails)
+        {
+            throw new BadRequestValidationFailureException(
+                'Expecting either customer_id or customer details'
+            );
+        }
+
         $customer = null;
 
-        if (isset($input[Entity::CUSTOMER_ID]) === true)
+        if ($customerId)
         {
-            $customerId = $input[Entity::CUSTOMER_ID];
-
             $customer = $this->repo->customer->findByPublicIdAndMerchant(
                                                 $customerId, $this->merchant);
 
@@ -398,51 +336,6 @@ class Generator extends Base\Core
         {
             $this->invoice->customer()->associate($customer);
             $this->invoice->setCustomerDetails($customer);
-        }
-
-        return $customer;
-    }
-
-    /**
-     * Request payload contains flattened linesItemDetails,
-     * i.e. It has line item attributes (eg. quantity) and
-     * the contained item attributes (eg. name, amount etc.).
-     *
-     * This function separates those payloads for it to be used further.
-     *
-     * @param array $lineItemDetails
-     *
-     * @return array
-     */
-    protected function separateItemInputFromLineItemInput(array & $lineItemDetails)
-    {
-        $itemDetails = [];
-
-        foreach ($lineItemDetails as $key => $value)
-        {
-            if (in_array($key, Item\Entity::$allFields, true))
-            {
-                $itemDetails[$key] = $value;
-
-                unset($lineItemDetails[$key]);
-            }
-        }
-
-        return $itemDetails;
-    }
-
-    /**
-     * @param string $itemCurrency
-     *
-     * @throws BadRequestValidationFailureException
-     */
-    protected function validateInvoiceAndItemCurrency(string $itemCurrency)
-    {
-        if ($itemCurrency !== $this->invoice->getCurrency())
-        {
-            throw new BadRequestValidationFailureException(
-                'Currency of all items should be same as of the invoice itself'
-            );
         }
     }
 
