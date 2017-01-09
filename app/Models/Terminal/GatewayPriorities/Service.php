@@ -3,6 +3,8 @@
 namespace RZP\Models\Terminal\GatewayPriorities;
 
 use RZP\Constants\Mode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment\Method;
 
@@ -25,6 +27,12 @@ class Service extends Base\Service
         {
             return $priorities->toArray();
         }
+
+        throw new Exception\ServerErrorException(
+                        "Error saving priorities for method: $method",
+                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                        $data);
+
     }
 
     public function fetchGatewayPriorities()
@@ -35,7 +43,7 @@ class Service extends Base\Service
 
         foreach ($methods as $method)
         {
-            $priorities = $this->redis->populateEntityData(new Entity($method));
+            $priorities = $this->redis->fetchEntityData(new Entity($method));
 
             $result->push($priorities->toArray());
         }
@@ -52,7 +60,7 @@ class Service extends Base\Service
 
         $gatewayPriorities = $this->redis->removeEntityData($gatewayPriorities, $gateways);
 
-        $gatewayPriorities = $this->redis->populateEntityData($gatewayPriorities);
+        $gatewayPriorities = $this->redis->fetchEntityData($gatewayPriorities);
 
         return $gatewayPriorities->toArray();
     }
@@ -97,7 +105,7 @@ class Service extends Base\Service
     {
         $priorities = new Entity($method);
 
-        $this->redis->populateEntityData($priorities);
+        $this->redis->fetchEntityData($priorities);
 
         return $priorities->getGateways();
     }
