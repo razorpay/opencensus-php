@@ -37,11 +37,13 @@ class Core extends Base\Core
     {
         $token = new Token\Entity;
 
+        $token->generateId();
+
         $token->build($input);
 
         $token->admin()->associate($admin);
 
-        $token->saveOrFail();
+        $this->repo->saveOrFail($token);
 
         return $token;
     }
