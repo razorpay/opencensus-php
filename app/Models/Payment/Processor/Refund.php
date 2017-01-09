@@ -69,7 +69,7 @@ trait Refund
                 $data);
         }
 
-        $this->createTransactionAndUpdatePaymentForRefund();
+        $this->recordTransactionAndUpdatePaymentForRefund();
     }
 
     public function verifyRefund(Payment\Refund\Entity $refund)
@@ -100,7 +100,7 @@ trait Refund
 
             if ($verify === false)
             {
-                $this->createTransactionAndUpdatePaymentForRefund(true);
+                $this->recordTransactionAndUpdatePaymentForRefund(true);
 
                 $this->trace->info(
                     TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -488,13 +488,21 @@ trait Refund
         }
         catch (\Exception $ex)
         {
-            // TODO: Log it as critical error
+            $this->trace->traceException($ex);
+
+            $this->trace->error(
+                TraceCode::REFUND_TRANSACTION_FAILED,
+                [
+                    'payment_id'    => $this->payment->getId(),
+                    'refund_id'     => $this->refund->getId(),
+                    'error_message' => $ex->getMessage(),
+                ]);
 
             $this->repo->rollback();
         }
     }
 
-    protected function createTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
+    protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
         {
@@ -505,9 +513,6 @@ trait Refund
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
             $this->updatePaymentRefunded();
-
-            $this->repo->saveOrFail($this->payment);
-            $this->repo->saveOrFail($this->refund);
         });
     }
 
@@ -563,14 +568,10 @@ trait Refund
             {
                 $this->reverseOnGateway($data);
 
-                // TODO: Should we set gateway_refunded in this case?
-                // Or should we add a new one - gateway_reversed?
+                // TODO: Record this too.
             }
 
             $this->updatePaymentRefunded();
-
-            $this->repo->saveOrFail($this->payment);
-            $this->repo->saveOrFail($refund);
 
             $this->recordTransactionForRefund();
 
@@ -602,6 +603,9 @@ trait Refund
 
             $this->payment->refundAmount($amount, $baseAmount);
         }
+
+        $this->repo->saveOrFail($this->payment);
+        $this->repo->saveOrFail($this->refund);
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
 
