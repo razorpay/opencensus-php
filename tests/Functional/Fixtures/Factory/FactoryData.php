@@ -436,7 +436,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-            'id'            => $faker->randomNumber(6),
+            'id'            => $faker->uniqueid,
             'admin_id'      => 'RazorpayUserId',
             'token'         => $faker->name(20),
             'created_at'    => $faker->timestamp,
