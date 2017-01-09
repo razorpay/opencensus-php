@@ -50,9 +50,13 @@ class RefundTest extends TestCase
 
         $refund = $this->startTest($payment['id'], (string)$payment['amount']);
 
-        $this->assertEquals(substr($refund['id'], 0, 5), 'rfnd_');
+        $this->assertEquals('rfnd_', substr($refund['id'], 0, 5));
 
         $this->assertGreaterThan(time() - 30, $refund['created_at']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
     }
 
     public function testMultipleRefunds()
@@ -137,7 +141,7 @@ class RefundTest extends TestCase
         $this->startTest($this->payment['public_id'], 100.1);
     }
 
-    public function testRefundofOldAuthorizedPayments()
+    public function testRefundOfOldAuthorizedPayments()
     {
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(6)->timestamp;
 
@@ -264,9 +268,14 @@ class RefundTest extends TestCase
         $this->assertArrayHasKey('authorized', $content);
         $this->assertEquals(1, $content['authorized']);
 
-        $refunded = $this->getLastEntity('hdfc', true);
+        $hdfcRefundedEntity = $this->getLastEntity('hdfc', true);
 
-        $this->assertEquals('refunded', $refunded['status']);
+        $this->assertEquals('refunded', $hdfcRefundedEntity['status']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertNotNull($refund['transaction_id']);
     }
 
     public function testVerifyRefund()
@@ -278,29 +287,37 @@ class RefundTest extends TestCase
 
         $refund2 = $this->refundPayment($payment['id'], $payment['amount']);
 
+        $refund2 = $this->getLastEntity('refund', true);
+
         $response = $this->verifyRefund($refund2['id']);
 
         $this->assertEquals('Refund verified successfully.', $response[0]['verify_refund']);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertArraySelectiveEquals($refund2, $refund);
     }
 
     public function testVerifyBuggyRefund()
     {
-        $this->markTestIncomplete();
-
         // Case where refunded payment has no entry in hdfc
+
         $authorizedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:purchased',
-            ['authorized_at' => $authorizedAt, 'created_at' => $authorizedAt]);
-
-        $hdfcEntityForPayment = $this->getEntities('hdfc', ['from'=>$authorizedAt -1, 'to'=>$authorizedAt+1],true);
+            [
+                'authorized_at' => $authorizedAt,
+                'created_at' => $authorizedAt
+            ]);
 
         $content = $this->refundOldAuthorizedPayments();
 
         $refund = $this->getLastEntity('refund', true);
 
         $hdfcEntityForRefund = $this->getLastEntity('hdfc', true);
+
+        $refundTransaction = $this->getLastEntity('transaction', true);
 
         // Disable foreign key checks to allow testing buggy case
         DB::statement("SET foreign_key_checks = 0");
@@ -310,17 +327,26 @@ class RefundTest extends TestCase
         // Enable foreign key checks
         DB::statement("SET foreign_key_checks = 1");
 
+        $this->fixtures->refund->edit($refund['id'], ['transaction_id' => null, 'gateway_refunded' => false]);
+        $this->fixtures->transaction->edit($refundTransaction['id'], ['entity_id' => 'boohooboohooaa']);
+
         $response = $this->verifyRefund($refund['id']);
 
-        $this->assertEquals('Refund verification failed and Refund performed.', $response['verify_refund']);
+        $hdfcEntityForRefund = $this->getLastEntity('hdfc', true);
+        $refund = $this->getLastEntity('refund', true);
+        $refundTransaction = $this->getLastEntity('transaction', true);
 
-        $refunded = $this->getLastEntity('hdfc', true);
+        $this->assertEquals($refund['id'], $refundTransaction['entity_id']);
+        $this->assertEquals(true, $refund['gateway_refunded']);
+        $this->assertEquals('txn_' . $refund['transaction_id'], $refundTransaction['id']);
 
-        $this->assertEquals('refunded', $refunded['status']);
+        $this->assertEquals('Refund verification failed and Refund performed.', $response[0]['verify_refund']);
 
-        $this->assertEquals($payment['id'], $refunded['payment_id']);
+        $this->assertEquals('refunded', $hdfcEntityForRefund['status']);
 
-        $this->assertNotEquals($refund['id'], $refunded['refund_id']);
+        $this->assertEquals($payment['id'], $hdfcEntityForRefund['payment_id']);
+
+        $this->assertEquals($refund['id'], 'rfnd_' . $hdfcEntityForRefund['refund_id']);
     }
 
     public function testFetchRefundById()

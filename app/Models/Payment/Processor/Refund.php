@@ -575,11 +575,15 @@ trait Refund
                 // TODO: Record this too.
             }
 
+            //
+            // NOTE: We should create the transaction before we update
+            // the payment as refunded since there is different logic
+            // for creating a refund transaction based on the payment status.
+            //
+            $this->recordTransactionForRefund();
+
             // Record refund since it's refunded on gateway
             $this->updatePaymentRefunded();
-
-            // Create transaction for refund
-            $this->recordTransactionForRefund();
 
             $this->sendRefundNotification($payment, $refund);
         });
