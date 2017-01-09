@@ -350,7 +350,7 @@ class EventTrackerClient extends Base\Core
 
             $pa = $this->repo->payment_analytics->findForPayment($paymentId, true);
 
-            foreach ($this->contextKeys as $key)
+            foreach (self::CONTEXT_KEYS as $key)
             {
                 // generates getter function
                 $getterName = 'get'.studly_case($key);
