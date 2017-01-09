@@ -7,7 +7,6 @@
     @include('partials.loader')
   </head>
   <body onload="document.forms[0].submit()">
-    <div class="loader vis" style="position:absolute;top:115px;left:50%;margin-left:-12px"></div>
     <form action="<?= $data['request']['url'] ?>" method="post">
       @foreach ($data['request']['content'] as $key => $value)
           <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}" />

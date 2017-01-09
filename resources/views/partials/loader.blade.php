@@ -6,3 +6,4 @@
   opacity:0;border:2px solid #29B7D6;border-top-color:transparent}
 .vis{opacity:1}
 </style>
+<div class="loader vis" style="position:absolute;top:115px;left:50%;margin-left:-12px"></div>

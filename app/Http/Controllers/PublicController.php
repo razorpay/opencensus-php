@@ -18,6 +18,21 @@ class PublicController extends Controller
     }
 
     public function getCallbackUrlWithParams() {
-        return View::make('public.callback_params', array("params" => Request::all()));
+        $allParams = Request::all();
+
+        $data = array(
+                    'params' => json_decode($allParams['params']),
+                    'url' => $allParams['url']
+                );
+
+        if (isset($allParams['razorpay_payment_id'])) {
+            $data['payment_id'] = $allParams['razorpay_payment_id'];
+        }
+        else {
+            // passing as json encoded string
+            $data['options'] = $allParams['options'];
+        }
+
+        return View::make('public.callback_params', $data);
     }
 }
