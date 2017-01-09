@@ -6,7 +6,8 @@ use Redis;
 use Predis\PredisException;
 
 use RZP\Error\ErrorCode;
-use RZP\Models\Base\Redis as RedisEntity;
+use RZP\Models\Base\Redis as RedisModel;
+use RZP\Models\Base\Redis\RedisEntity;
 use RZP\Exception;
 
 class RedisStore
@@ -30,7 +31,7 @@ class RedisStore
         $this->redis = Redis::getFacadeRoot();
     }
 
-    public function save($entity)
+    public function save(RedisEntity $entity)
     {
         $redisKey = $entity->getRedisKey();
 
@@ -38,7 +39,7 @@ class RedisStore
 
         switch (true)
         {
-            case $entity instanceof RedisEntity\SortedSet:
+            case $entity instanceof RedisModel\SortedSet:
                 return $this->saveSortedSet($redisKey, $dataToSave);
 
             default:
@@ -47,13 +48,13 @@ class RedisStore
         }
     }
 
-    public function fetchData($entity)
+    public function populateEntityData(RedisEntity $entity)
     {
         $redisKey = $entity->getRedisKey();
 
         switch (true)
         {
-            case $entity instanceof RedisEntity\SortedSet:
+            case $entity instanceof RedisModel\SortedSet:
                 $entity->setData($this->fetchSortedSetData($redisKey));
                 break;
 
@@ -65,13 +66,13 @@ class RedisStore
         return $entity;
     }
 
-    public function removeData($entity, $data)
+    public function removeEntityData(RedisEntity $entity, array $data)
     {
         $redisKey = $entity->getRedisKey();
 
         switch (true)
         {
-            case $entity instanceof RedisEntity\SortedSet:
+            case $entity instanceof RedisModel\SortedSet:
                 $this->removeSortedSetMembers($redisKey, $data);
                 break;
 
@@ -83,7 +84,7 @@ class RedisStore
         return $entity;
     }
 
-    protected function saveSortedSet($redisKey, $dataToSave)
+    protected function saveSortedSet(string $redisKey, array $dataToSave)
     {
         try
         {
