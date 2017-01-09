@@ -49,10 +49,14 @@ class Processor extends Base\Core
             return $message;
         }
 
-        $data = $this->mutex->acquireAndRelease(self::MUTEX_RESOURCE, function () use ($input, $channel, $schedule)
-        {
-            return $this->processSettlements($input, $channel, $schedule);
-        }, self::MUTEX_LOCK_TIMEOUT, ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input, $channel, $schedule)
+            {
+                return $this->processSettlements($input, $channel, $schedule);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
 
         return $data;
     }
