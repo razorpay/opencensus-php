@@ -19,21 +19,16 @@ class Entity extends Redis\SortedSet
 
     public function getMethod()
     {
-        return $this->key;
+        return $this->getKey();
     }
 
     public function getPriorities()
     {
-        return $this->data;
+        return $this->getData();
     }
 
     public function getGateways()
     {
-        if ($this->data !== null and count($this->data) > 0)
-        {
-            return array_keys($this->data);
-        }
-
-        return null;
+        return $this->getSetMembers();
     }
 }
