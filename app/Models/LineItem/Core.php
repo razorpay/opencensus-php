@@ -155,7 +155,7 @@ class Core extends Base\Core
             $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
         }
 
-        return $totalAmount;
+        return ($totalAmount === 0) ? null : $totalAmount;
     }
 
     /**

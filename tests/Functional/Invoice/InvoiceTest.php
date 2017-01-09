@@ -270,6 +270,9 @@ class InvoiceTest extends TestCase
     {
         $this->createDraftInvoice();
 
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
         $this->startTest();
 
         $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);

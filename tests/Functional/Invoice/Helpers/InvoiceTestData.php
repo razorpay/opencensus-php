@@ -927,7 +927,16 @@ return [
                     'customer_address' => null,
                 ],
                 'order_id'             => null,
-                'line_items'           => [],
+                'line_items'           => [
+                    [
+                        'id'          => 'li_100000lineitem',
+                        'quantity'    => 1,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                    ],
+                ],
                 'payment_id'           => null,
                 'status'               => 'draft',
                 'issued_at'            => null,
@@ -936,7 +945,7 @@ return [
                 'email_status'         => null,
                 'date'                 => 1480506888,
                 'terms'                => 'Updated terms & conditions',
-                'amount'               => 0,
+                'amount'               => null,
                 'description'          => null,
                 'notes'                => [
                     'new_key'          => 'new_value'
@@ -1681,7 +1690,7 @@ return [
                 'view_less'  => true,
                 'notes'      => [],
                 'status'     => 'draft',
-                'amount'     => 0,
+                'amount'     => null,
                 'currency'   => 'INR',
             ]
         ]

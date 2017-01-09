@@ -119,10 +119,13 @@ class Generator extends Base\Core
     {
         $this->associateCustomerWithInvoice($input);
 
-        $lineItemsDetails = ($input[Entity::LINE_ITEMS]) ?? [];
+        if (isset($input[Entity::LINE_ITEMS]) === false)
+        {
+            return;
+        }
 
         $this->lineItemCore->updateLineItems(
-            $lineItemsDetails,
+            $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
 
