@@ -61,7 +61,7 @@ class AuditLogListener
 
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        $this->baseIndex = $this->config->get('database.es_heimdall')[$mode];
+        $this->baseIndex = $this->config->get('database.es_audit')[$mode];
     }
 
 
@@ -167,7 +167,7 @@ class AuditLogListener
 
         try
         {
-            if ($this->config->get('database.es_heimdall_mock') === false)
+            if ($this->config->get('database.es_audit_mock') === false)
             {
                 // $fields['extra'] = ...;
                 $this->esDao->storeAdminEvent(

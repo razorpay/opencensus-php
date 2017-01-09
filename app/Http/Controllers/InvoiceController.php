@@ -79,8 +79,16 @@ class InvoiceController extends Controller
 
     public function getInvoiceView($invoiceId)
     {
+        $error = Request::get('error');
+
         $data = $this->service->getInvoiceViewDetails($invoiceId);
 
-        return View::make('invoice.index')->with('data', $data);
+        if (empty($error) === false)
+        {
+            $data['error'] = $error;
+        }
+
+        return View::make('invoice.index')
+                   ->with('data', $data);
     }
 }

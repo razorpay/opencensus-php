@@ -141,6 +141,7 @@ final class Route
         'terminal_toggle'                         => ['put',      'terminals/{id}/toggle',                          'TerminalController@toggleTerminal'                                 ],
         'terminal_add_merchant'                   => ['put',      'terminals/{id}/merchants/{mid}',                 'TerminalController@addMerchant'                                    ],
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
+        'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
@@ -282,6 +283,8 @@ final class Route
         'invoice_view_live'                       => ['get',      'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_view_test'                       => ['get',      't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'invoice_expire'                          => ['post',     'invoices/expire',                                'InvoiceController@expireInvoices'                                  ],
+        'invoice_view_live_post'                  => ['post',     'l/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
+        'invoice_view_test_post'                  => ['post',     't/{id}',                                         'InvoiceController@getInvoiceView'                                  ],
         'item_create'                             => ['post',     'items',                                          'ItemController@createItem'                                         ],
         'item_fetch'                              => ['get',      'items/{id}',                                     'ItemController@getItem'                                            ],
         'item_fetch_multiple'                     => ['get',      'items',                                          'ItemController@getItems'                                           ],
@@ -309,6 +312,13 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
+        'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
+        'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
+        'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
+        'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
+        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
+        'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
+        'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -351,12 +361,6 @@ final class Route
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_password_reset'                    => ['post',     'orgs/{orgId}/admin/password/reset',              'OrganizationController@postPasswordReset'                          ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
-        'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
-        'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
-        'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
-        'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
-        'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
-        'international_exchange_rates'            => ['post',     'international/{currency}/rates',                 'AdminController@postInternationalRates'                            ],
 
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
@@ -566,6 +570,7 @@ final class Route
         'terminal_toggle',
         'terminal_add_merchant',
         'terminal_remove_merchant',
+        'terminal_reassign_merchant',
         'terminal_check_encrypted_value',
         'key_fetch_by_id',
         'key_fetch_multiple',
@@ -678,7 +683,8 @@ final class Route
         'offer_create',
         'offer_update',
         'offer_delete',
-        'international_exchange_rates',
+        'currency_update_rates',
+        'currency_fetch_rates',
         'upi_psp_disallow',
         'upi_psp_allow',
     );
@@ -829,6 +835,8 @@ final class Route
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
+        'invoice_view_live_post',
+        'invoice_view_test_post',
         'sms_callback',
         'reconciliate',
         'checkout_public',
@@ -881,7 +889,7 @@ final class Route
             'refund_create_gateway_record',
             'migrate_transactions',
             'merchant_migrate_features',
-            'international_exchange_rates',
+            'currency_update_rates',
         ),
 
         'mailgun' => array(
@@ -922,6 +930,15 @@ final class Route
         'setl_combined_report'          => 'setl_report',
         'reports_transaction_broking'   => 'broking_report'
     );
+
+    /*
+     * Routes that can be accessed by other org admins.
+     * primarily razorpay org
+     */
+    public static $crossOrgRoutes = [
+        'org_edit',
+        'org_get',
+    ];
 
     const RAZORPAYJS_ROUTES = array(
         'payment_cancel',

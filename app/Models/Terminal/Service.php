@@ -27,13 +27,20 @@ class Service extends Base\Service
         return $terminals;
     }
 
-    public function getTerminals($mid)
+    public function getTerminals(string $mid, array $input)
     {
+        $subMerchantFlag = false;
+
+        if (isset($input['sub_merchant']) === true)
+        {
+            $subMerchantFlag = (bool) $input['sub_merchant'];
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        return $terminals->toArrayPublic();
+        return $terminals->toArrayPublic($subMerchantFlag);
     }
 
     public function getTerminal($mid, $tid)
@@ -110,16 +117,31 @@ class Service extends Base\Service
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
+        $terminal = (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
 
         return $terminal->toArrayPublic();
     }
 
-    public function addMerchantToTerminal(string $id, string $merchantId)
+    public function reassignMerchantForTerminal(string $id, array $input)
     {
         $terminal = $this->repo->terminal->getById($id);
 
-        (new Terminal\Core)->addMerchantToTerminal($terminal, $merchantId);
+        $terminal->getValidator()->validateInput('reassign', $input);
+
+        $mid = $input[Entity::MERCHANT_ID];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $terminal = (new Terminal\Core)->reassignMerchantForTerminal($terminal, $merchant);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function addMerchantToTerminal(string $id, string $mid)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
 
         return $terminal->toArrayPublic();
     }

@@ -54,6 +54,7 @@ class ErrorCode
     const GATEWAY_ERROR_COMMUNICATION_ERROR                                         = 'GATEWAY_ERROR_COMMUNICATION_ERROR';
     const GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY                         = 'GATEWAY_ERROR_CARD_HOLDER_DIDNT_RETURN_FROM_RUPAY';
     const GATEWAY_ERROR_USER_INACTIVE                                               = 'GATEWAY_ERROR_USER_INACTIVE';
+    const GATEWAY_ERROR_CARD_NOT_ENROLLED                                           = 'GATEWAY_ERROR_CARD_NOT_ENROLLED';
 
     const GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH                                   = 'GATEWAY_ERROR_SUPPORT_GREATER_THAN_AUTH';
 
@@ -344,6 +345,7 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                                = 'BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED';
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                              = 'BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED';
+    const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                    = 'BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED';
 
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
@@ -378,6 +380,8 @@ class ErrorCode
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
     const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
     const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
+    const SERVER_ERROR_MULTIPLE_REFUNDS_FOUND                                       = 'SERVER_ERROR_MULTIPLE_REFUNDS_FOUND';
+    const SERVER_ERROR_GATEWAY_NOT_REFUNDED                                         = 'SERVER_ERROR_GATEWAY_NOT_REFUNDED';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
