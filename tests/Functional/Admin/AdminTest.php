@@ -535,6 +535,11 @@ class AdminTest extends TestCase
             $admin = $this->repo->findOrFailPublic($admin->getId());
 
             $this->assertTrue(Hash::check($newPassword, $admin['password']));
+
+            // Check that token has then been expired
+            $token = Cache::get($key);
+
+            $this->assertNull($token);
         }
     }
 
