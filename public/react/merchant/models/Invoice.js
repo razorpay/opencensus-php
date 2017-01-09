@@ -5,7 +5,7 @@ import { getFixedINRAmount, isBlank } from 'rzp/utils/rzp-utils'
 export default class Invoice extends Entity {
   static resourceIdField = 'id'
   static resourceUrl = '/invoices'
-  static resourceProperties = [
+  static resourceFields = [
     'id',
     'amount',
     'currency',

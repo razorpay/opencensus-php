@@ -32,7 +32,6 @@ const InvoiceListItem = (props) => {
       <td>
         <div class='row-action'>
           <div class='btn-group'>
-{/*
             <button
               class='btn btn-xs btn-default'
               onClick={props.onEditClick}
@@ -40,7 +39,6 @@ const InvoiceListItem = (props) => {
               <i class='fa fa-edit'></i>
               <span>edit</span>
             </button>
-*/}
             <button
               class='btn btn-xs btn-default'
               onClick={props.onDeleteClick}

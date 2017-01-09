@@ -43,7 +43,7 @@ export default class AddCustomer extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, pristine } = this.props
 
     return (
       <div>

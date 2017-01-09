@@ -1,8 +1,11 @@
+import { objectDiff, isBlank } from 'rzp/utils/rzp-utils'
+
 export default class BaseModel {
   static resourceIdField = 'id'
 
-  constructor(props) {
+  constructor(props = {}) {
     Object.assign(this, props)
+    this.stashPayload(props)
   }
 
   get isNew() {
@@ -19,7 +22,7 @@ export default class BaseModel {
   }
 
   getResourceMethod() {
-    return this.isNew ? 'post' : 'put'
+    return this.isNew ? 'post' : 'patch'
   }
 
   getResourceUrlAndMethod() {
@@ -28,15 +31,20 @@ export default class BaseModel {
 
   serialize() {
     let Klass = this.constructor
-    let resourceProperties = Klass.resourceProperties
     let serializedModel = {}
+    let fields = Klass.resourceFields
+    let isNew = this.isNew
 
-    for (let i = 0, len = resourceProperties.length; i < len; i++) {
-      let prop = resourceProperties[i]
+    if (!isNew) {
+      fields = Klass.editableFields || fields
+    }
+
+    for (let i = 0, len = fields.length; i < len; i++) {
+      let prop = fields[i]
       serializedModel[prop] = this.serializeProperty(prop)
     }
 
-    return serializedModel
+    return objectDiff(this.__stashed__, serializedModel)
   }
 
   serializeProperty(prop) {
@@ -47,12 +55,20 @@ export default class BaseModel {
     for (let prop in json) {
       this.deserializeProperty(prop, json[prop])
     }
+
     this.didDeserialize()
+    this.stashPayload(json)
     return this
   }
 
   deserializeProperty(prop, value) {
     this[prop] = value
+  }
+
+  stashPayload(json) {
+    if (!this.isNew && isBlank(this.__stashed__)) {
+      this.__stashed__ = json
+    }
   }
 
   didDeserialize() {}

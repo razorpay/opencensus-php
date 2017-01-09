@@ -16,7 +16,7 @@ class Item extends Entity
 
     public function edit($id, $params = [])
     {
-        return parent::request('PUT', $this->getEntityUrl() . $id, $params);
+        return parent::request('PATCH', $this->getEntityUrl() . $id, $params);
     }
 
 

@@ -16,7 +16,7 @@ class Invoice extends Entity
     {
         $this->appendUserId($params);
         $entityUrl = $this->getEntityUrl().$id;
-        return $this->request('PUT', $entityUrl, $params);
+        return $this->request('PATCH', $entityUrl, $params);
     }
 
     public function all($options = [])

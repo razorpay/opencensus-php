@@ -40,21 +40,22 @@
 
 .invoice-lineitem {
   .table > thead > tr > th {
-    padding: 12px 40px;
     background-color: #E3F4FE;
   }
 
+  .table > thead > tr > th,
   .table > tbody > tr > td {
-    padding: 15px 20px;
+    padding: 12px 25px;
+  }
 
-    &:first-child {
-      padding-left: 40px;
-    }
+  .table > thead > tr > th:first-child,
+  .table > tbody > tr > td:first-child {
+    padding-left: 40px;
+  }
 
-    &:last-child {
-      padding-right: 40px;
-      position: relative
-    }
+  .table > thead > tr > th:last-child,
+  .table > tbody > tr > td:last-child {
+    padding-right: 40px;
   }
 }
 

@@ -56,3 +56,16 @@ export const pipe = (...funcs) => {
 export const normalizeDate = date => (moment(date).format('D/M/Y'))
 
 export const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)
+
+
+export const objectDiff = (oldObj = {}, newObj = {}) => {
+  return Object.keys(newObj).reduce((prev, key) => {
+    let value = newObj[key]
+    let oldValue = oldObj[key]
+
+    if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
+      prev[key] = value
+    }
+    return prev
+  }, {})
+}

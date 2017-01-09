@@ -37,7 +37,7 @@ export default class InvoiceLineItemTable extends Component {
             <tr>
               <th>Item Details</th>
               <th style={{width: '12%'}} class='text-right'>Quantity</th>
-              <th style={{width: '15%'}} class='text-right'>Rate</th>
+              <th style={{width: '18%'}} class='text-right'>Rate</th>
               <th class='text-right'>Amount</th>
             </tr>
           </thead>

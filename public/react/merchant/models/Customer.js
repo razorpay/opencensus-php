@@ -5,12 +5,20 @@ import { isBlank } from 'rzp/utils/rzp-utils'
 export default class Customer extends Entity {
   static resourceIdField = 'id'
   static resourceUrl = '/customers'
-  static resourceProperties = [
+  static resourceFields = [
     'id',
     'name',
     'email',
     'contact'
   ]
+  static editableFields = [
+    'name',
+    'contact'
+  ]
+
+  getResourceMethod() {
+    return this.isNew ? 'post' : 'put'
+  }
 
   // This will be replaced with the ES autocomplete api
   static fetchForAutocomplete(data = {}) {
