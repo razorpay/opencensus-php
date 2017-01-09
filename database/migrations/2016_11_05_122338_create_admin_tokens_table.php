@@ -20,7 +20,8 @@ class CreateAdminTokensTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments(AdminToken::ID);
+            $table->char(AdminToken::ID, AdminToken::ID_LENGTH)
+                  ->primary();
 
             $table->char(AdminToken::ADMIN_ID, 14);
 
