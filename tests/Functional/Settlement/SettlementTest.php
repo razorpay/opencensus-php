@@ -267,7 +267,7 @@ class SettlementTest extends TestCase
 
         $dailySetl = $this->getLastEntity('daily_settlement', true);
 
-        $this->assertEquals($setl['daily_settlement_id'], $dailySetl['id']);
+        $this->assertEquals($setl['batch_settlement_id'], $dailySetl['id']);
 
         // $request = array('url' => '/settlements/details', 'method' => 'post');
         // $content = $this->makeRequestAndGetContent($request);

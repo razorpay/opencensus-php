@@ -11,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Models\Settlement\Daily\Entity as BatchSettlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
@@ -25,7 +25,7 @@ class Processor extends Base\Core
 
     protected $mutex;
 
-    protected $dailySettlement;
+    protected $batchSettlement;
 
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
@@ -137,7 +137,7 @@ class Processor extends Base\Core
             {
                 list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
 
-                $this->updateDailySettlementEntityUrls($urlText, $urlExcel);
+                $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
 
                 $data['settlement_text_file']  = $urlText;
                 $data['settlement_excel_file'] = $urlExcel;
@@ -280,9 +280,9 @@ class Processor extends Base\Core
                                             $setlApiFee,
                                             $serviceTax);
 
-                    $this->createOrupdateDailySettlementForSettlement($setl, $setlTxns->count());
+                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
 
-                    $setl->dailySettlement()->associate($this->dailySettlement);
+                    $setl->batchSettlement()->associate($this->batchSettlement);
 
                     $this->repo->saveOrFail($setl);
 
@@ -299,58 +299,58 @@ class Processor extends Base\Core
         return [$settlements, $txnsSettledCount];
     }
 
-    protected function createDailySettlementEntity($setl, $txnsCount)
+    protected function createBatchSettlementEntity($setl, $txnsCount)
     {
-        $dailySettlement = new DailySettlement;
+        $batchSettlement = new BatchSettlement;
 
         $input = [
-            DailySettlement::CHANNEL           => $setl->getChannel(),
-            DailySettlement::AMOUNT            => $setl->getAmount(),
-            DailySettlement::FEES              => $setl->getFees(),
-            DailySettlement::SERVICE_TAX       => $setl->getServiceTax(),
-            DailySettlement::SETTLEMENT_COUNT  => 1,
-            DailySettlement::TRANSACTION_COUNT => $txnsCount,
-            DailySettlement::INITIATED_AT      => time(),
-            DailySettlement::API_FEE           => 0,
-            DailySettlement::GATEWAY_FEE       => 0,
-            DailySettlement::URLS              => null,
+            BatchSettlement::CHANNEL           => $setl->getChannel(),
+            BatchSettlement::AMOUNT            => $setl->getAmount(),
+            BatchSettlement::FEES              => $setl->getFees(),
+            BatchSettlement::SERVICE_TAX       => $setl->getServiceTax(),
+            BatchSettlement::SETTLEMENT_COUNT  => 1,
+            BatchSettlement::TRANSACTION_COUNT => $txnsCount,
+            BatchSettlement::INITIATED_AT      => time(),
+            BatchSettlement::API_FEE           => 0,
+            BatchSettlement::GATEWAY_FEE       => 0,
+            BatchSettlement::URLS              => null,
         ];
 
-        $dailySettlement->build($input);
+        $batchSettlement->build($input);
 
-        return $dailySettlement;
+        return $batchSettlement;
     }
 
-    protected function createOrupdateDailySettlementForSettlement($setl, $txnsCount)
+    protected function createOrUpdateBatchSettlementForSettlement($setl, $txnsCount)
     {
-        if ($this->dailySettlement === null)
+        if ($this->batchSettlement === null)
         {
-            $this->dailySettlement = $this->createDailySettlementEntity($setl, $txnsCount);
+            $this->batchSettlement = $this->createBatchSettlementEntity($setl, $txnsCount);
         }
         else
         {
-            $this->dailySettlement->incrementAmount($setl->getAmount());
-            $this->dailySettlement->incrementFees($setl->getFees());
-            $this->dailySettlement->incrementServiceTax($setl->getServiceTax());
-            $this->dailySettlement->incrementSettlementCount();
-            $this->dailySettlement->incrementTransactionCount($txnsCount);
+            $this->batchSettlement->incrementAmount($setl->getAmount());
+            $this->batchSettlement->incrementFees($setl->getFees());
+            $this->batchSettlement->incrementServiceTax($setl->getServiceTax());
+            $this->batchSettlement->incrementSettlementCount();
+            $this->batchSettlement->incrementTransactionCount($txnsCount);
         }
 
-        $this->repo->saveOrFail($this->dailySettlement);
+        $this->repo->saveOrFail($this->batchSettlement);
     }
 
-    protected function updateDailySettlementEntityUrls($urlText, $urlExcel)
+    protected function updateBatchSettlementEntityUrls($urlText, $urlExcel)
     {
-        $dailySettlement = $this->dailySettlement;
+        $batchSettlement = $this->batchSettlement;
 
         $urls = [
             'kotak_settlement_txt'   => $urlText,
             'kotak_settlement_excel' => $urlExcel
         ];
 
-        $dailySettlement->setUrls($urls);
+        $batchSettlement->setUrls($urls);
 
-        $this->repo->saveOrFail($dailySettlement);
+        $this->repo->saveOrFail($batchSettlement);
     }
 
     protected function generateSettlementFile($settlements, $channel)
