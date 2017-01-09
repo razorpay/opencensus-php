@@ -15,13 +15,16 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Razorpay - Testing page</title>
     <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Ubuntu', 'Cantarell', 'Droid Sans', 'Helvetica Neue', sans-serif;
+        }
         form {
             margin: 20px auto;
             max-width: 700px;
         }
         input[type=submit] {
             color: #414141;
-            border: 1px solid #aaa;
+            border: 1px solid #ccc;
             background-color: #E6E6E6;
             text-decoration: none;
             border-radius: 2px;
@@ -212,18 +215,5 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 </form>
 </div>
 </div>
-
-<table width="96%" border="0" cellspacing="0" cellpadding="0">
-<tr>
-    <td height="2" bgcolor="black" class="titleline"></td>
-</tr>
-</table>
-<table border="1" align="center"  width="100%" >
-    <tr>
-    <td align="left" width="90%"><b>Testing Page</b></td>
-    <td align="right"width="10%"><img src="" width="169" height="37" border="0" alt=""></td>
-    </tr>
-</table>
-
 </body>
 </html>
