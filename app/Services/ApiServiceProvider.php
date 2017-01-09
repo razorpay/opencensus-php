@@ -109,6 +109,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
+
+        $this->registerRedisStoreProvider();
     }
 
     /**
@@ -135,6 +137,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
+            'redis_store'
         );
     }
 
@@ -217,6 +220,14 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Mutex($app);
+        });
+    }
+
+    protected function registerRedisStoreProvider()
+    {
+        $this->app->singleton('redis_store', function ($app)
+        {
+            return new RedisStore($app);
         });
     }
 

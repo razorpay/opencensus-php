@@ -10,29 +10,11 @@ class Entity extends Redis\SortedSet
 
     protected static $delimiter = ':';
 
-    public function build(string $method, array $priorities)
+    public function build(array $priorities)
     {
-        $this->key = $method;
-
         $this->data = $priorities;
 
         return $this;
-    }
-
-    public function fetchPrioritiesForMethod(string $method)
-    {
-        $this->key = $method;
-
-        $this->fetchMembers();
-
-        return $this;
-    }
-
-    public function removePrioritiesForMethod($method, array $gateways)
-    {
-        $this->key = $method;
-
-        $this->removeMembers($gateways);
     }
 
     public function getMethod()
@@ -47,7 +29,7 @@ class Entity extends Redis\SortedSet
 
     public function getGateways()
     {
-        if ($this->data !== null)
+        if ($this->data !== null and count($this->data) > 0)
         {
             return array_keys($this->data);
         }

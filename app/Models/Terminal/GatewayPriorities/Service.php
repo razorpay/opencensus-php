@@ -4,14 +4,24 @@ namespace RZP\Models\Terminal\GatewayPriorities;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
+use RZP\Models\Payment\Method;
 
 class Service extends Base\Service
 {
+    protected $redis;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->redis = $this->app['redis_store'];
+    }
+
     public function addGatewayPrioritiesForMethod(string $method, array $data)
     {
-        $priorities = (new Entity)->build($method, $data);
+        $priorities = (new Entity($method))->build($data);
 
-        if ($priorities->save() === true)
+        if ($this->redis->save($priorities) === true)
         {
             return $priorities->toArray();
         }
@@ -19,16 +29,18 @@ class Service extends Base\Service
 
     public function fetchGatewayPriorities()
     {
-        $methods = ['card', 'netbanking'];
+        $methods = [Method::CARD, Method::NETBANKING];
 
-        $priorities = new Base\PublicCollection;
+        $result = new Base\PublicCollection;
 
         foreach ($methods as $method)
         {
-            $priorities->push((new Entity)->fetchPrioritiesForMethod($method)->toArray());
+            $priorities = $this->redis->fetchData(new Entity($method));
+
+            $result->push($priorities->toArray());
         }
 
-        return $priorities->flatMap(function ($value)
+        return $result->flatMap(function ($value)
         {
             return $value;
         })->toArray();
@@ -36,11 +48,13 @@ class Service extends Base\Service
 
     public function removeGatewayPrioritiesForMethod(string $method, array $gateways)
     {
-        $gatewayPriorities = new Entity;
+        $gatewayPriorities = new Entity($method);
 
-        $gatewayPriorities->removePrioritiesForMethod($method, $gateways);
+        $gatewayPriorities = $this->redis->removeData($gatewayPriorities, $gateways);
 
-        return $gatewayPriorities->fetchPrioritiesForMethod($method)->toArray();
+        $gatewayPriorities = $this->redis->fetchData($gatewayPriorities);
+
+        return $gatewayPriorities->toArray();
     }
 
     public function getGatewaysPriority($method, $mode = Mode::LIVE)
@@ -54,7 +68,7 @@ class Service extends Base\Service
 
                 if ($mode === Mode::TEST)
                 {
-                    $gateways = array_merge($gateways, DefaultPriorities::$directCardGatewaysInTest);
+                    $gateways = array_merge($gateways, DefaultPriorities::$directCardGatewaysInTestOrder);
                 }
 
                 break;
@@ -64,7 +78,7 @@ class Service extends Base\Service
 
                 if ($mode === Mode::TEST)
                 {
-                    $gateways = array_merge($gateways, self::$directNetbankingGatewaysInTest);
+                    $gateways = array_merge($gateways, DefaultPriorities::$directNetbankingGatewaysInTestOrder);
                 }
 
                 // Adds direct netbanking to have highest priority
@@ -81,7 +95,9 @@ class Service extends Base\Service
 
     public function fetchOrderedGatewaysForMethod(string $method)
     {
-        $priorities = (new Entity)->fetchPrioritiesForMethod($method);
+        $priorities = new Entity($method);
+
+        $this->redis->fetchData($priorities);
 
         return $priorities->getGateways();
     }
