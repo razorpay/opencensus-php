@@ -2,7 +2,13 @@
 
 namespace RZP\Models\Base\Redis;
 
+use App;
 use Redis;
+
+use Predis\PredisException;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class SortedSet
 {
@@ -16,13 +22,15 @@ class SortedSet
 
     protected $redis;
 
+    protected $trace;
+
     public function __construct()
     {
+        $app = App::getFacadeRoot();
+
         $this->redis = Redis::getFacadeRoot();
 
-        $this->key = '';
-
-        $this->data = [];
+        $this->trace = $app['trace'];
     }
 
     public function save()
@@ -31,8 +39,20 @@ class SortedSet
 
         $dataToSave = $this->getFormattedData();
 
-        $result = $this->redis->zadd($redisKey, ...$dataToSave);
+        try
+        {
+            $result = $this->redis->zadd($redisKey, ...$dataToSave);
+        }
+        catch (PredisException $e)
+        {
+            $this->trace->traceException($e);
 
+            throw new Exception\ServerErrorException(
+                        "Error saving to redis with key: $redisKey",
+                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                        $this->data);
+
+        }
         return $result >= 0 ? true : false;
     }
 
@@ -43,19 +63,30 @@ class SortedSet
         ];
     }
 
-    protected function fetchMembers($withScores = true, $descending = true)
+    protected function fetchMembers($descending = true)
     {
         $redisKey = $this->generateRedisKey();
 
-        $fetchOptions = $this->generateFetchOptions($withScores);
+        $fetchOptions = [
+            'startIndex' => 0,
+            'endIndex'   => -1,
+            'withScores' => 'WITHSCORES'
+        ];
 
-        if ($descending === true)
+        try
         {
-            $this->data = $this->redis->zrevrange($redisKey, ...$fetchOptions);
+            if ($descending === true)
+            {
+                $this->data = $this->redis->zrevrange($redisKey, ...$fetchOptions);
+            }
+            else
+            {
+                $this->data = $this->zrange($redisKey, ...$fetchOptions);
+            }
         }
-        else
+        catch (PredisException $e)
         {
-            $this->data = $this->zrange($redisKey, ...$fetchOptions);
+            $this->trace->traceException($e);
         }
     }
 
@@ -63,23 +94,19 @@ class SortedSet
     {
         $redisKey = $this->generateRedisKey();
 
-        $this->redis->zrem($redisKey, ...$members);
-    }
-
-    protected function generateFetchOptions($withScores)
-    {
-        $options = [
-            'startIndex' => 0,
-            'endIndex' => -1,
-            'withScores' => 'WITHSCORES'
-        ];
-
-        if ($withScores === false)
+        try
         {
-            unset($options['withScores']);
+            $this->redis->zrem($redisKey, ...$members);
         }
+        catch (PredisException $e)
+        {
+            $this->trace->traceException($e);
 
-        return array_values($options);
+            throw new Exception\ServerErrorException(
+                        "Error removing data from set with key: $redisKey",
+                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                        $this->data);
+        }
     }
 
     protected function generateRedisKey()

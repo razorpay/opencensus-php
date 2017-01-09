@@ -29,7 +29,8 @@ class NetbankingSorter extends Terminal\Sorter
 
         $gatewaysForBank = Gateway::getGatewaysForNetbankingBankIndexed($bank);
 
-        $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
+        $gatewaysPriority = (new GatewayPriorities\Service)
+                            ->getGatewaysPriority($method, $input['mode']);
 
         $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
 
