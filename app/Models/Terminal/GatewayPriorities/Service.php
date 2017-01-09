@@ -32,7 +32,6 @@ class Service extends Base\Service
                         "Error saving priorities for method: $method",
                         ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
                         $data);
-
     }
 
     public function fetchGatewayPriorities()
