@@ -72,6 +72,25 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchMostRecentActive(array $input)
+    {
+        $query = $this->newQuery();
+
+        $keyOperatorMap = [
+            Entity::GATEWAY => '=',
+            Entity::ISSUER => '=',
+            Entity::METHOD => '=',
+            Entity::SOURCE => '=',
+            Entity::FROM => '<='
+        ];
+
+        $this->buildQuery($keyOperatorMap, $input, $query);
+
+        $query->whereNull(Entity::TO);
+
+        return $query->latest();
+    }
+
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
     {
         foreach($keyOperatorMap as $key => $operator)

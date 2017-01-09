@@ -9,7 +9,7 @@ use RZP\Models\Base;
 
 class Processor extends Base\Core
 {
-    protected $uniqueCheckerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD];
+    protected $uniqueCheckerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD, Entity::FROM];
     
     public function createAction(array $input)
     {
@@ -66,5 +66,22 @@ class Processor extends Base\Core
         $absentees = $this->repo->gateway_absence->fetchAbsent($queryParams);
         
         return $absentees->first();
+    }
+
+    public function fetchMostRecentActive(array $input)
+    {
+        $queryParams = [];
+
+        foreach($this->uniqueCheckerKeys as $key)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $queryParams[$key] = $input[$key];
+            }
+        }
+
+        $activeAbsentees = $this->repo->gateway_absence->fetchMostRecentActive($queryParams);
+
+        return $activeAbsentees->first();
     }
 }

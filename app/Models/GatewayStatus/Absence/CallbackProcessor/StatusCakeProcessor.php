@@ -60,7 +60,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             if ($status === 1)
             {
-                $absent = $this->processor->verifyIfExists($data);
+                $absent = $this->processor->fetchMostRecentActive($data);
 
                 if (empty($absent) === false)
                 {
@@ -145,6 +145,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         else
         {
             $formatted[Entity::FROM] = time();
+
+            $formatted[Entity::TO] = null;
         }
 
         $issuer = strtoupper($input['Tags']);
