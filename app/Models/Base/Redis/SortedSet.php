@@ -10,59 +10,8 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
-class SortedSet
+class SortedSet extends RedisEntity
 {
-    protected static $keyPrefix = '';
-
-    protected static $delimioter = '';
-
-    protected $key;
-
-    protected $data;
-
-    protected $redis;
-
-    protected $trace;
-
-    public function __construct(string $key)
-    {
-        $app = App::getFacadeRoot();
-
-        $this->key = $key;
-        $this->trace = $app['trace'];
-    }
-
-    public function toArray()
-    {
-        return [
-            $this->key => $this->data
-        ];
-    }
-
-    protected function removeMembers(array $members)
-    {
-        $redisKey = $this->generateRedisKey();
-
-        try
-        {
-            $this->redis->zrem($redisKey, ...$members);
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-
-            throw new Exception\ServerErrorException(
-                        "Error removing data from set with key: $redisKey",
-                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
-        }
-    }
-
-    public function getRedisKey()
-    {
-        return static::$keyPrefix . static::$delimiter . $this->key;
-    }
-
     public function getDataToSave()
     {
         $formattedData = [];
@@ -76,8 +25,8 @@ class SortedSet
         return $formattedData;
     }
 
-    public function setData(array $redisData)
+    public function getSetMembers()
     {
-        $this->data = $redisData;
+        return (empty($this->data) === true) ? null : array_keys($this->data);
     }
 }
