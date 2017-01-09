@@ -363,6 +363,11 @@ class Service extends Base\Service
             'failed_refund_ids' => $failureRefundIds,
         ];
     }
+    
+    public function createMissingTransactionsForGatewayRefunded()
+    {
+        $gatewayRefundedWithoutTxns = $this->repo->refund->fetchGatewayRefundedRefundsWithoutTxns();
+    }
 
     public function createGatewayRefundRecords($gateway)
     {

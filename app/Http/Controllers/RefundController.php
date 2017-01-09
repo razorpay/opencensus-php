@@ -71,6 +71,13 @@ class RefundController extends Controller
 
         return ApiResponse::json($summary);
     }
+    
+    public function postGatewayRefundedTransactions()
+    {
+        $data = $this->refund->createMissingTransactionsForGatewayRefunded();
+        
+        return ApiResponse::json($data);
+    }
 
     public function postManualGatewayRefund($refundIds)
     {

@@ -117,6 +117,22 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchGatewayRefundedRefundsWithoutTxns()
+    {
+        return $this->newQuery()
+                    ->join(
+                        Table::PAYMENT,
+                        Table::REFUND . '.' . Entity::PAYMENT_ID,
+                        '=',
+                        Table::PAYMENT . '.' . Payment\Entity::ID)
+                    ->select(Table::REFUND . '.*')
+                    ->whereNull(Table::REFUND . '.' . Entity::TRANSACTION_ID)
+                    ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
+                    ->where(Table::REFUND . '.' . Entity::GATEWAY_REFUNDED, '=', 1)
+                    ->with('payment', 'merchant')
+                    ->get();
+    }
+
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
         $attrs = $this->getAttributeWithTableName('*');
