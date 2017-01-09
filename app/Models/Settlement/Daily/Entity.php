@@ -88,9 +88,11 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::AMOUNT            => 'int',
         self::FEES              => 'int',
+        self::DATE              => 'int',
         self::SERVICE_TAX       => 'int',
         self::API_FEE           => 'int',
         self::GATEWAY_FEE       => 'int',
+        self::INITIATED_AT      => 'int',
         self::SETTLEMENT_COUNT  => 'int',
         self::TRANSACTION_COUNT => 'int',
     ];
