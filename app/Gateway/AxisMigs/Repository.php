@@ -54,7 +54,7 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $paymentId)
                     ->where('vpc_Command', '=', Command::REFUND)
                     ->where('vpc_TxnResponseCode', '=', '0')
-                    ->where('vpc_RefundedAmount', '=', $refundAmount)
+                    ->where('vpc_Amount', '=', $refundAmount)
                     ->get();
     }
 

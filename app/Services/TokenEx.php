@@ -167,7 +167,7 @@ class TokenEx
         unset($response[self::VALUE]);
 
         $this->trace->info(
-            TraceCode::TOKENEX_REQUEST,
+            TraceCode::TOKENEX_RESPONSE,
             [
                 'response' => $response
             ]);

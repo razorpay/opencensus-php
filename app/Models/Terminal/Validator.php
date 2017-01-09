@@ -46,6 +46,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
     ];
 
+    protected static $reassignRules = [
+        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+    ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
