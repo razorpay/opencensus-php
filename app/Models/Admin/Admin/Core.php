@@ -90,8 +90,8 @@ class Core extends Base\Core
         }
     }
 
-    public function passwordReset(
-        string $orgId,
+    public function updatePassword(
+        Entity $admin,
         array $input,
         bool $forgotPassword = true)
     {
@@ -99,18 +99,11 @@ class Core extends Base\Core
 
         $validator->validateInput('reset', $input);
 
-        $email = $input['email'];
-
-        $admin = $this->repo->admin->findByOrgIdAndEmail(
-            $orgId, $email, ['org']);
-
-        $admin->getValidator()->validateOrgSupportsPasswordReset(
-            $admin->org->getAuthType());
-
         $admin->setAuditAction(Action::RESET_PASSWORD);
 
         // Check if the pwd follows the auth policy guidelines
         $authPolicy = new AuthPolicy\Service;
+
         $authPolicy->validate($admin, $input['password']);
 
         // In case of forgotten passwords, oldPassword is not present.
