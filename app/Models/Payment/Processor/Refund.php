@@ -69,7 +69,7 @@ trait Refund
                 $data);
         }
 
-        $this->recordRefund();
+        $this->createTransactionAndUpdatePaymentForRefund();
     }
 
     public function verifyRefund(Payment\Refund\Entity $refund)
@@ -100,7 +100,7 @@ trait Refund
 
             if ($verify === false)
             {
-                $this->recordRefund(true);
+                $this->createTransactionAndUpdatePaymentForRefund(true);
 
                 $this->trace->info(
                     TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -466,26 +466,33 @@ trait Refund
         }
     }
 
-    protected function recordTransactionForRefund($forceRefundTransaction = false)
+    protected function recordTransactionForRefund()
     {
-        $this->repo->transaction(function() use ($forceRefundTransaction)
+        //
+        // We are not using transaction closure because we do not want to
+        // throw an exception here and just want to log it as an error.
+        // This seemed like a cleaner way to do it than having multiple catch blocks.
+        //
+
+        $this->repo->beginTransaction();
+
+        try
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            try
-            {
-                $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
-            }
-            catch (\Exception $ex)
-            {
-                // TODO: Log it as critical error
-            }
-        });
+            $this->createTransactionForRefund($this->refund, $payment);
+        }
+        catch (\Exception $ex)
+        {
+            // TODO: Log it as critical error
+
+            $this->repo->rollback();
+        }
     }
 
-    protected function recordRefund($forceRefundTransaction = false)
+    protected function createTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
         {
