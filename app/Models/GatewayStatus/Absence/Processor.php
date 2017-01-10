@@ -48,8 +48,8 @@ class Processor extends Base\Core
 
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
 
-        return ['message' => 'Gateway Absence successfully deleted'];
-    }
+        return $downWindow->toArrayDeleted();
+   }
 
     public function verifyIfExists(array $input)
     {

@@ -34,10 +34,12 @@ class Core extends Base\Core
     {
         // in case we have a terminal id, we need to ensure the corresponding merchant
         // alone receives this data. Else, nothing to send here
-        $terminal = $absent->terminal;
+        $terminalId = $absent->getTerminalId();
 
-        if ($terminal !== null)
+        if ($terminalId !== null)
         {
+            $terminal = $absent->terminal;
+
             if ($terminal->getMerchantId() !== $merchant->getId())
             {
                 return [];

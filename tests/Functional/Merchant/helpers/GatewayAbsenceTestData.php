@@ -207,7 +207,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'message' => 'Gateway Absence successfully deleted'
+                'deleted' => true
             ]
         ]
     ],

@@ -47,17 +47,16 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             
             $status = null;
 
-            if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]))
-            {
-                $status = ($sStatus === self::STATUS_UP) ? true : false;
-            }
-            else
+            if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
             {
                 $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS, ['input' => $input]);
 
                 throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $sStatus);
+
             }
-            
+
+            $status = ($sStatus === self::STATUS_UP);
+
             $data = $this->formatInput($input, $status);
 
             if ($status === true)
@@ -125,14 +124,26 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
     protected function validateInput(array $input)
     {
-        $issuer = $input['Tags'];
+        $issuer = $this->getIssuer($input);
 
-        if ((empty($issuer) === true) or (IFSC::exists(strtoupper($issuer)) === false))
+        if (empty($issuer) === true)
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
 
             throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
         }
+    }
+
+    protected function getIssuer(array $input)
+    {
+        $issuer = $input['Tags'];
+
+        if ((empty($issuer) === true) or (IFSC::exists(strtoupper($issuer)) === false))
+        {
+            return null;
+        }
+
+        return strtoupper($issuer);
     }
 
     protected function formatInput(array $input, int $status)
@@ -155,7 +166,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             $formatted[Entity::TO] = null;
         }
 
-        $issuer = strtoupper($input['Tags']);
+        $issuer = $this->getIssuer($input);
         
         $formatted[Entity::ISSUER] = $issuer;
 
