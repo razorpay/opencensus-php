@@ -446,7 +446,7 @@ class Service extends Base\Service
                 use($refundWithoutTxn, $payment, $forceRefundTransaction)
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
-                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
+                                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
 
                     if ($transaction === null)
                     {

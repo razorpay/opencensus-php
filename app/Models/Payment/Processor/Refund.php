@@ -620,8 +620,11 @@ trait Refund
             $this->payment->refundAmount($amount, $baseAmount);
         }
 
-        $this->repo->saveOrFail($this->payment);
-        $this->repo->saveOrFail($this->refund);
+        $this->repo->transaction(function()
+        {
+            $this->repo->saveOrFail($this->payment);
+            $this->repo->saveOrFail($this->refund);
+        });
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
 
