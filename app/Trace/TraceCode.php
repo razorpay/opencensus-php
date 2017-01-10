@@ -488,6 +488,11 @@ class TraceCode
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
 
+    // Trace codes for Gateway Priorities
+    const ADD_GATEWAY_PRIORITIES_REQUEST            = 'ADD_GATEWAY_PRIORITIES_REQUEST';
+    const FETCH_GATEWAY_PRIORITIES_RESPONSE         = 'FETCH_GATEWAY_PRIORITIES_RESPONSE';
+    const REMOVE_GATEWAY_PRIORITIES_REQUEST         = 'REMOVE_GATEWAY_PRIORITIES_REQUEST';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
@@ -611,6 +616,10 @@ class TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
+
+        self::ADD_GATEWAY_PRIORITIES_REQUEST            => 'Add gateway priorities',
+        self::FETCH_GATEWAY_PRIORITIES_RESPONSE         => 'Gateway priorities response',
+        self::REMOVE_GATEWAY_PRIORITIES_REQUEST         => 'Remove gateway priorities request'
     );
 
     /**

@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Base\Redis;
 
+/**
+ * This abstract class defines methods which any entity stored in redis
+ * should implement
+ */
 abstract class RedisEntity
 {
     abstract public function getKey();
