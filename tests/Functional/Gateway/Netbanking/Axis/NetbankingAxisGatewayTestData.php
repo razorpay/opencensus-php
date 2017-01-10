@@ -30,6 +30,7 @@ return [
         'entity' => 'payment',
         'terminal_id' => '100NbAxisTrmnl',
     ],
+
     'testPaymentNetbankingEntity' => [
         'action' => 'authorize',
         'amount' => 500,
@@ -38,6 +39,7 @@ return [
         'error_message' => null,
         'entity' => 'netbanking',
     ],
+
     'testFailedRefund' => [
         'response'  => [
             'content'     => [
@@ -53,6 +55,7 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_CAPTURED,
         ],
     ],
+
     'testFailedAuthPayment' => [
         'response'  => [
             'content'     => [
@@ -68,6 +71,7 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
         ],
     ],
+
     'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
@@ -83,6 +87,7 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
     'testAuthFailedVerifySuccess' => [
         'response'  => [
             'content'     => [
@@ -98,6 +103,7 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
     'testFailedRefund' => [
         'response'  => [
             'content'     => [
