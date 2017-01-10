@@ -122,7 +122,8 @@ class NetbankingAxisGatewayTest extends TestCase
         // Refund a payment
         $lastPayment = $payments['items'][2];
 
-        $this->refundPayment($lastPayment['id'], 100);
+        // Refunding 100 rupees followed by 400
+        $this->refundPayment($lastPayment['id'], 10000);
 
         $this->refundPayment($lastPayment['id']);
 
@@ -145,6 +146,7 @@ class NetbankingAxisGatewayTest extends TestCase
                         {
                             $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
+                            // Amounts are in rupees
                             $testData = array(
                                 'subject' => 'Axis Netbanking claims and refund files for '.$date,
                                 'amount' => [

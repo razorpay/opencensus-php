@@ -118,7 +118,7 @@ class Gateway extends Base\Gateway
 
         $verify->status = $status;
 
-        $verify->match = ($status == VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
     protected function checkApiSuccess(Verify $verify)
