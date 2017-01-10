@@ -190,7 +190,9 @@ class MerchantController extends Controller
 
     public function getTerminals($mid)
     {
-        $data = (new Terminal\Service)->getTerminals($mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }

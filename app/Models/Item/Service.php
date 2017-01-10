@@ -36,17 +36,26 @@ class Service extends Base\Service
         return $items->toArrayPublic();
     }
 
-    // public function update(string $id, array $input)
-    // {
-    //     $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
+    public function update(string $id, array $input)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
 
-    //     return $this->core->update($item, $input)->toArrayPublic();
-    // }
+        $item = $this->core->update($item, $input);
 
-    // public function delete(string $id)
-    // {
-    //     $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
+        return $item->toArrayPublic();
+    }
 
-    //     return $this->core->delete($item);
-    // }
+    public function delete(string $id)
+    {
+        $item = $this->repo->item->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $item = $this->core->delete($item);
+
+        if ($item === null)
+        {
+            return [];
+        }
+
+        return $item->toArrayPublic();
+    }
 }

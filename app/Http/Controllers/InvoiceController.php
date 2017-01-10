@@ -15,7 +15,7 @@ class InvoiceController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Invoice\Service();
+        $this->service = new Invoice\Service;
     }
 
     public function createInvoice()
@@ -42,6 +42,67 @@ class InvoiceController extends Controller
 
         return ApiResponse::json($invoices);
     }
+
+    public function updateInvoice($id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->update($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function issueInvoice($id)
+    {
+        $invoice = $this->service->issue($id);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function deleteInvoice($id)
+    {
+        $response = $this->service->delete($id);
+
+        return ApiResponse::json($response);
+    }
+
+    // -------------------------- Line Items --------------------------
+
+    public function addLineItems($id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->addLineItems($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function updateLineItem($id, $lineItemId)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->updateLineItem($id, $lineItemId, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function removeLineItem($id, $lineItemId)
+    {
+        $invoice = $this->service->removeLineItem($id, $lineItemId);
+
+        return ApiResponse::json($invoice);
+    }
+
+    public function removeManyLineItems($id)
+    {
+        $input = Request::all();
+
+        $invoice = $this->service->removeManyLineItems($id, $input);
+
+        return ApiResponse::json($invoice);
+    }
+
+    // -------------------------- End Line Items --------------------------
 
     public function sendNotifications()
     {
@@ -79,8 +140,16 @@ class InvoiceController extends Controller
 
     public function getInvoiceView($invoiceId)
     {
+        $error = Request::get('error');
+
         $data = $this->service->getInvoiceViewDetails($invoiceId);
 
-        return View::make('invoice.index')->with('data', $data);
+        if (empty($error) === false)
+        {
+            $data['error'] = $error;
+        }
+
+        return View::make('invoice.index')
+                   ->with('data', $data);
     }
 }
