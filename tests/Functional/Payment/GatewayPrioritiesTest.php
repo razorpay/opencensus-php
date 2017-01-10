@@ -66,11 +66,11 @@ class GatewayPrioritiesTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return [
-                    'hdfc' => '50',
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'hdfc'        => '50',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ];
             });
 
@@ -80,7 +80,7 @@ class GatewayPrioritiesTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return [
-                    'ebs' => '50',
+                    'ebs'      => '50',
                     'billdesk' => '40'
                 ];
             });
@@ -98,11 +98,11 @@ class GatewayPrioritiesTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return [
-                    'hdfc' => '50',
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'hdfc'        => '50',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ];
             });
 
@@ -132,10 +132,10 @@ class GatewayPrioritiesTest extends TestCase
             ->andReturnUsing(function ()
             {
                 return [
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ];
             });
 

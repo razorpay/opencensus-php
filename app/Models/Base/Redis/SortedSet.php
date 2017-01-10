@@ -74,8 +74,8 @@ class SortedSet extends RedisEntity
     }
 
     /**
-     * Predis returns the data as associative array which is what we want (Great Stuff)
-     * So we store it as is is
+     * Predis returns the data as associative array
+     * which is what we want (Great Stuff). So we store it as it is
      */
     public function setData(array $redisData)
     {
@@ -91,6 +91,7 @@ class SortedSet extends RedisEntity
 
     /**
      * Returns the members of the sorted set in sorted order.
+     *
      * @return array Sorted set members or null if data is empty array
      */
     public function getSetMembers()

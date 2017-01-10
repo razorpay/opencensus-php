@@ -58,7 +58,7 @@ class Service extends Base\Service
             return $value;
         });
 
-        $this->trace->info(TraceCode::FETCH_GATEWAY_PRIORITIES_RESPONSE, $priorities->toArray());
+        $this->trace->info(TraceCode::FETCH_GATEWAY_PRIORITIES_RESPONSE, $result->toArray());
 
         return $result->toArray();
     }
@@ -86,7 +86,8 @@ class Service extends Base\Service
         switch ($method)
         {
             case Method::CARD:
-                $gateways = $this->fetchOrderedGatewaysForMethod($method) ?? DefaultPriorities::$directCardGatewaysOrder;
+                $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
+                            DefaultPriorities::$directCardGatewaysOrder;
 
                 if ($mode === Mode::TEST)
                 {
@@ -96,7 +97,8 @@ class Service extends Base\Service
                 break;
 
             case Method::NETBANKING:
-                $gateways = $this->fetchOrderedGatewaysForMethod($method) ?? DefaultPriorities::$directNetbankingGatewaysOrder;
+                $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
+                            DefaultPriorities::$directNetbankingGatewaysOrder;
 
                 if ($mode === Mode::TEST)
                 {
