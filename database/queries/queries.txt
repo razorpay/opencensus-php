@@ -1476,6 +1476,13 @@ ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER AL
 
 UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
 
+ALTER TABLE transactions
+    MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT -1,
+    MODIFY COLUMN fee_model TINYINT(1) DEFAULT -1;
+UPDATE transactions SET fee_bearer = '-1' WHERE type != 'payment';
+UPDATE transactions SET fee_model = '-1' WHERE type != 'payment';
+
+
 ALTER TABLE admin_tokens
     MODIFY COLUMN id char(14);
 
