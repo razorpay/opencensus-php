@@ -851,8 +851,10 @@ class Gateway extends Base\Gateway
     protected function getVerifyRequestContentArray($input)
     {
         $request[ApiRequestFields::A1_ACTION]
-                    [ApiRequestFields::A1_INQUIRY_ORDER]
-                        [ApiRequestFields::A1_ORDER_ID] = $input['payment']['id'];
+                    [ApiRequestFields::A1_INQUIRY_ORDER] = [
+            ApiRequestFields::A1_ORDER_ID => $input['payment']['id'],
+            ApiRequestFields::A1_STORE_ID => $this->getStoreId(),
+        ];
 
         return $request;
     }
@@ -860,6 +862,8 @@ class Gateway extends Base\Gateway
     protected function getCaptureRequestArray($input)
     {
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
 
         $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
 
@@ -874,6 +878,8 @@ class Gateway extends Base\Gateway
     {
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
 
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+
         $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
 
         $body[ApiRequestFields::V1_TRANSACTION_DETAILS][ApiRequestFields::V1_ORDER_ID] = $input['payment']['id'];
@@ -886,6 +892,8 @@ class Gateway extends Base\Gateway
     protected function getReverseRequestArray($input)
     {
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                             $input['payment'][Payment\Entity::ID],
