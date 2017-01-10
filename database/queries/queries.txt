@@ -1314,6 +1314,21 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
+--- Pre code deployment / PR: https://github.com/razorpay/api/pull/1620
+
+ALTER TABLE invoices MODIFY COLUMN order_id CHAR(14) DEFAULT NULL;
+ALTER TABLE invoices MODIFY COLUMN amount BIGINT(20) DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX invoices_deleted_at_index ON invoices (deleted_at);
+
+ALTER TABLE line_items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX line_items_deleted_at_index ON line_items (deleted_at);
+
+ALTER TABLE items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX items_deleted_at_index ON items (deleted_at);
+
+---
+
 --- Pre deployment https://github.com/razorpay/api/pull/910
 ALTER TABLE payments
     ADD COLUMN gateway_captured TINYINT AFTER auto_captured
@@ -1326,7 +1341,6 @@ UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
 
 ---
 
-----
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource
@@ -1467,3 +1481,9 @@ ALTER TABLE transactions
     MODIFY COLUMN fee_model TINYINT(1) DEFAULT 0;
 UPDATE transactions SET fee_bearer = '2' WHERE type != 'payment';
 UPDATE transactions SET fee_model = '2' WHERE type != 'payment';
+
+
+ALTER TABLE admin_tokens
+    MODIFY COLUMN id char(14);
+
+TRUNCATE TABLE admin_tokens;

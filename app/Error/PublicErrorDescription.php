@@ -15,10 +15,12 @@ class PublicErrorDescription
     const GATEWAY_ERROR_PAYMENT_BIN_CHECK_FAILED                                = 'Card rejected by bank.';
     const GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR                            = 'Payment failed because card holder couldn\'t be authenticated';
 
+    const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                              = 'The reset link has expired or invalid';
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
+    const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';
     const BAD_REQUEST_PAYMENT_FAILED                                            = 'Payment failed';
     const BAD_REQUEST_PAYMENT_CANCELLED_BY_USER                                 = 'Payment processing cancelled by user';
@@ -214,7 +216,6 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY                                           = 'Invalid gateway provided for the request';
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                = 'Invoice status cannot be retrieved now';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                    = 'Payment is not in authorized state';
-    const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                             = 'Customer details should be sent as part of the invoice request';
     const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                   = 'Invalid keyword sent in the request';
     const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                    = 'Some fields are missing in the request';
     const BAD_REQUEST_CUSTOMER_ID_MISSING                                       = 'Sending customer ID is mandatory';
@@ -293,10 +294,13 @@ class PublicErrorDescription
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
 
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
+    const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'Cannot edit/delete an item with which invoices have been created already';
+    const BAD_REQUEST_ITEM_INACTIVE                                             = 'Item cannot be used as it is inactive';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                     = 'You can not edit/delete an item with which invoices have been created already';
+
     const BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE                               = 'You cannot change the value of this feature';
 
-    const BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID                                  = 'Email provided is not a valid email';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';

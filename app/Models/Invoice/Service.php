@@ -5,6 +5,9 @@ namespace RZP\Models\Invoice;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
+use RZP\Exception;
+
+use RZP\Models\LineItem;
 
 class Service extends Base\Service
 {
@@ -26,16 +29,118 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $invoice->toArrayPublic();
     }
 
     public function fetchMultiple(array $input)
     {
-        $invoices = $this->repo->invoice->fetch($input, $this->merchant->getId());
+        $invoices = $this->repo->invoice
+                               ->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();
+    }
+
+    public function update(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->update($invoice, $input, $this->merchant);
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function issue(string $id)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->issue($invoice, $this->merchant);
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function delete(string $id)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->delete($invoice);
+
+        if ($invoice === null)
+        {
+            return [];
+        }
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function addLineItems(string $id, array $input)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->addLineItems($invoice, $input, $this->merchant);
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function updateLineItem(string $id, string $lineItemId, array $input)
+    {
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $lineItem = $this->repo->line_item
+                               ->findByPublicIdAndMorphEntity(
+                                    $lineItemId,
+                                    $invoice
+                                );
+
+        $invoice = $this->core->updateLineItem(
+            $invoice,
+            $lineItem,
+            $input,
+            $this->merchant
+        );
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function removeLineItem(string $id, string $lineItemId)
+    {
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $lineItem = $this->repo->line_item
+                               ->findByPublicIdAndMorphEntity(
+                                    $lineItemId,
+                                    $invoice
+                                );
+
+        $invoice = $this->core->removeLineItem($invoice, $lineItem);
+
+        return $invoice->toArrayPublic();
+    }
+
+    public function removeManyLineItems(string $id, array $input)
+    {
+        $invoice  = $this->repo->invoice
+                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        (new LineItem\Validator)->validateInput('remove_many', $input);
+
+        $lineItems = $this->repo->line_item
+                               ->findManyByPublicIdsAndMorphEntity(
+                                    $input[LineItem\Entity::IDS],
+                                    $invoice
+                                );
+
+        $invoice = $this->core->removeManyLineItems($invoice, $lineItems);
+
+        return $invoice->toArrayPublic();
     }
 
     public function sendNotification($id, $medium)
@@ -84,6 +189,13 @@ class Service extends Base\Service
 
         Entity::verifyIdAndStripSign($invoiceId);
         $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
+
+        if ($invoice->isDraft())
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invoice with id ' . $invoice->getPublicId() . ' is not issued yet'
+            );
+        }
 
         $merchant = $invoice->merchant;
 
