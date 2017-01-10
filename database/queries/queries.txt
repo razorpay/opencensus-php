@@ -1487,3 +1487,12 @@ ALTER TABLE admin_tokens
     MODIFY COLUMN id char(14);
 
 TRUNCATE TABLE admin_tokens;
+
+--- Queries to be run before deploying invoices-schema-fixes-1
+
+ALTER TABLE line_items ADD COLUMN name varchar(512) DEFAULT NULL AFTER entity_type;
+ALTER TABLE line_items ADD COLUMN description varchar(2048) DEFAULT NULL AFTER name;
+ALTER TABLE line_items ADD COLUMN amount int(11) DEFAULT NULL AFTER description;
+ALTER TABLE line_items ADD COLUMN currency char(3) DEFAULT NULL AFTER amount;
+
+---

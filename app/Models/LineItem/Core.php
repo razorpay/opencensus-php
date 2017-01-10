@@ -330,8 +330,6 @@ class Core extends Base\Core
             if (in_array($key, $itemFields, true))
             {
                 $itemDetails[$key] = $value;
-
-                unset($lineItemDetails[$key]);
             }
         }
 
