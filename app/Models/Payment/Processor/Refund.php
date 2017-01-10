@@ -364,7 +364,11 @@ trait Refund
         // Refund and reverse_transfer each transfer payment
         foreach ($input['reversals'] as $reversal)
         {
-            $this->refundAndReverseTransferPayment($payment, $reversal['transfer'], $reversal['amount']);
+            $transfer = $this->repo
+                             ->transfer
+                             ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
+
+            $this->refundAndReverseTransferPayment($payment, $transfer, $reversal['amount']);
         }
     }
 
@@ -377,16 +381,12 @@ trait Refund
      * @param  int            $amount
      * @return void
      */
-    protected function refundAndReverseTransferPayment(Payment\Entity $payment, string $transferId, int $amount)
+    public function refundAndReverseTransferPayment(Payment\Entity $payment, Transfer\Entity $transfer, int $amount)
     {
-        $transfer = $this->repo
-                         ->transfer
-                         ->findByPublicIdAndMerchant($transferId, $this->merchant);
-
         if ($transfer->getAmountUnreversed() === 0)
         {
             throw new Exception\BadRequestValidationFailureException(
-                        'Transfer ID: ' . $transferId . 'has been fully reversed already'
+                        'Transfer ID: ' . $transfer->getPublicId() . 'has been fully reversed already'
                     );
         }
 
@@ -394,7 +394,7 @@ trait Refund
 
         $transferPayment = $this->repo
                                 ->payment
-                                ->fetchPaymentByTransferIdAndMerchant(
+                                ->findByTransferIdAndMerchant(
                                     $transfer->getId(), $accountId);
 
         // @todo: DB queried here
@@ -403,7 +403,7 @@ trait Refund
         (new Processor($transferPayment->merchant))
             ->refundTransferPayment($transferPayment, $amount);
 
-        (new Reversal\Core)
+        return (new Reversal\Core)
             ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 

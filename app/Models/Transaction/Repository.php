@@ -26,17 +26,6 @@ class Repository extends Base\Repository
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
 
-    public function fetchTxnsExpectedToSettle($timestamp)
-    {
-        return $this->newQuery()
-                    ->where(Transaction\Entity::SETTLED_AT, '=', $timestamp)
-                    ->where(Transaction\Entity::SETTLED, '=', 0)
-                    ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->orderBy(Transaction\Entity::MERCHANT_ID)
-                    ->orderBy(Transaction\Entity::ID)
-                    ->get();
-    }
-
     public function fetchUnsettledTransactions($timestamp)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
@@ -49,6 +38,7 @@ class Repository extends Base\Repository
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
@@ -74,6 +64,7 @@ class Repository extends Base\Repository
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
+                    ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::SETTLED, '=', 0)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
@@ -88,6 +79,7 @@ class Repository extends Base\Repository
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
     {
         return $this->newQuery()
+                    ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)

@@ -615,7 +615,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchPaymentByTransferIdAndMerchant(string $transferId, string $accountId)
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
     {
         return $this->newQuery()
                     ->where(Entity::TRANSFER_ID, $transferId)

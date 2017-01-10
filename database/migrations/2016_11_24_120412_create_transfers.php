@@ -49,6 +49,13 @@ class CreateTransfers extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->tinyInteger(Entity::ON_HOLD)
+                  ->default(0);
+
+            $table->integer(Entity::HOLD_UNTIL)
+                  ->nullable()
+                  ->default(null);
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->char(Entity::TRANSACTION_ID, Entity::ID_LENGTH);

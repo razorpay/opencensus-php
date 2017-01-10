@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Transfer;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
@@ -15,6 +17,17 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer',
         Entity::CURRENCY       => 'required|size:3',
+        Entity::ON_HOLD        => 'required_with:hold_until|boolean',
+        Entity::HOLD_UNTIL     => 'sometimes|integer',
+    ];
+
+    protected static $editRules = [
+        Entity::ON_HOLD        => 'required|boolean',
+        Entity::HOLD_UNTIL     => 'sometimes|integer',
+    ];
+
+    protected static $editValidators = [
+        'hold_parameters'
     ];
 
     public function validateTransfers(
@@ -124,6 +137,32 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_NOT_ENOUGH_BALANCE);
+        }
+    }
+
+    public function validateHoldParameters(array $input)
+    {
+        if ((isset($input['on_hold']) === false) and
+            (isset($input['hold_until']) === false))
+        {
+            return;
+        }
+
+        if (isset($input['hold_until']) === true)
+        {
+            if ($input['on_hold'] === '0')
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The on_hold field must be set to 1, if hold_until is sent');
+            }
+
+            $now = Carbon::now('Asia/Kolkata');
+
+            if ($input['hold_until'] < $now->timestamp)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'The hold_until timestamp cannot be less than the current timestamp');
+            }
         }
     }
 }

@@ -4,9 +4,19 @@ namespace RZP\Models\Transfer;
 
 use RZP\Models\Base;
 use RZP\Models\Reversal;
+use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
+    protected $core;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Core();
+    }
+
     public function fetch(string $id) : array
     {
         $transfer =  $this->repo
@@ -18,19 +28,22 @@ class Service extends Base\Service
 
     public function create(array $input) : array
     {
-        $transfer = (new Core)->createForMerchant($input);
+        $transfer = $this->core->createForMerchant($input);
 
         return $transfer->toArrayPublic();
     }
 
-    public function reversal(string $id, array $input) : array
+    public function reverse(string $id, array $input) : array
     {
-        $transfer =  $this->repo
-                          ->transfer
-                          ->findByPublicIdAndMerchant($id, $this->merchant);
-
-        $reversal = (new Reversal\Core)->createForTransferReversal($transfer, $input);
+        $reversal = $this->core->reverse($id, $input);
 
         return $reversal->toArrayPublic();
+    }
+
+    public function edit(string $id, array $input) : array
+    {
+        $transfer = $this->core->edit($id, $input);
+
+        return $transfer->toArrayPublic();
     }
 }

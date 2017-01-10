@@ -70,6 +70,7 @@ class TraceCode
     const PAYMENT_TRANSACTION_OLD                   = 'PAYMENT_TRANSACTION_OLD';
     const PAYMENT_USER_AGENT_ANOMALY                = 'PAYMENT_USER_AGENT_ANOMALY';
     const PAYMENT_CARD_IIN_MISSING                  = 'PAYMENT_CARD_IIN_MISSING';
+    const PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION    = 'PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION';
     const TRANSACTION_CREATED_IN_VERIFY_CAPTURE     = 'TRANSACTION_CREATED_IN_VERIFY_CAPTURE';
     const TRANSACTION_AMOUNT_CREDITS                = 'TRANSACTION_AMOUNT_CREDITS';
     const PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION   = 'PAYMENT_NOT_CAPTURED_CREATE_TRANSACTION';
@@ -526,6 +527,7 @@ class TraceCode
         self::PAYMENT_CAPTURE_ORDER_UPDATE              => 'Update corresponding order on payment capture',
         self::PAYMENT_TRANSACTION_OLD                   => 'Updating/Creating transaction of an old payment',
         self::TRANSACTION_AMOUNT_CREDITS                => 'Using amount credits for the payment',
+        self::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION    => 'Updating transaction after the payment hold was toggled',
         self::PAYMENT_VERIFY_CAPTURE_FAILURE            => 'Issue while performing verify for capture',
         self::VERIFY_CAPTURE_RESPONSE                   => 'Response received on verify capture',
         self::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED       => 'Payment cannot be auto captured since it is not in authorized state',

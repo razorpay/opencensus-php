@@ -92,6 +92,13 @@ class CreatePayments  extends Migration
             $table->string(Payment::VPA, 100)
                   ->nullable();
 
+            $table->tinyInteger(Payment::ON_HOLD)
+                  ->default(0);
+
+            $table->integer(Payment::HOLD_UNTIL)
+                  ->nullable()
+                  ->default(null);
+
             $table->char(Payment::EMI_PLAN_ID, 14)
                   ->nullable();
 

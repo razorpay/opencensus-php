@@ -3,6 +3,7 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
@@ -30,7 +31,7 @@ class Core extends Base\Core
      * @param  int                $amount
      * @return Transfer\Entity
      */
-    public function createTransfer(Base\Entity $to, Base\Entity $source, array $input, int $baseAmount) : Entity
+    protected function createTransfer(Base\Entity $to, Base\Entity $source, array $input, int $baseAmount) : Entity
     {
         $transferData = [
             Entity::TO_ID           => $to->getId(),
@@ -39,6 +40,8 @@ class Core extends Base\Core
             Entity::SOURCE_TYPE     => $source->getEntityName(),
             Entity::AMOUNT          => $input['amount'],
             Entity::CURRENCY        => $input['currency'],
+            Entity::ON_HOLD         => $input['on_hold'] ?? 0,
+            Entity::HOLD_UNTIL      => $input['hold_until'] ?? null,
         ];
 
         $transfer = (new Entity);
@@ -74,8 +77,88 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function () use ($input)
         {
-            return $this->makeTransfer($input, $this->merchant);
+            $transfer = $this->makeTransfer($input, $this->merchant);
+
+            return $transfer;
         });
+    }
+
+    /**
+     * Edit the attributes of a transfer entity
+     * Currently: edit allowed on on_hold and hold_until
+     *
+     * @param  string           $id
+     * @param  array            $input
+     * @return Transfer\Entity
+     */
+    public function edit(string $id, array $input) : Entity
+    {
+        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $transfer->edit($input);
+
+        if ($transfer->getOnHold() === false)
+        {
+            $transfer->setHoldUntil(null);
+        }
+
+        return $this->repo->transaction(function () use ($transfer, $input)
+        {
+            $this->repo->saveOrFail($transfer);
+
+            $this->processTransferHold($transfer, $input);
+
+            return $transfer;
+        });
+    }
+
+    /**
+     * Create and process a reversal on a transfer
+     *
+     * @param  string           $id
+     * @param  array            $input
+     * @return Reversal\Entity
+     */
+    public function reverse(string $id, array $input)
+    {
+        $transfer = $this->repo
+                         ->transfer
+                         ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        // Reversals not coded yet for customer wallet transfer refunds
+        // @todo: Change flow to create reversals for both customer/account transfers
+        assert ($transfer->getToType() === E::MERCHANT);
+
+        $transferPayment = $this->repo
+                                ->payment
+                                ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+        // If amount is not set in input,
+        // reverse the entire transfer amount pernding
+        $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
+
+        return $this->repo->transaction(function () use ($transfer, $transferPayment, $amount)
+        {
+            $reversal = (new Payment\Processor\Processor($this->merchant))
+                            ->refundAndReverseTransferPayment($transferPayment, $transfer, $amount);
+
+            return $reversal;
+        });
+    }
+
+    protected function processTransferHold(Entity $transfer, array $input)
+    {
+        $payment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+        $payment->setOnHold($transfer->getOnHold());
+
+        $payment->setHoldUntil($transfer->getHoldUntil());
+
+        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
+
+        $this->repo->saveOrFail($txn);
+
+        return $payment;
     }
 
     /**
@@ -129,7 +212,11 @@ class Core extends Base\Core
      */
     protected function makeTransfer(array $input, Base\Entity $source) : Entity
     {
-        (new Validator)->validateInput('transfer', $input);
+        $validator = new Validator;
+
+        $validator->validateInput('transfer', $input);
+
+        $validator->validateHoldParameters($input);
 
         if (isset($input[ToType::CUSTOMER]) === true)
         {
@@ -205,12 +292,15 @@ class Core extends Base\Core
         }
 
         $paymentData = [
-            Payment\Entity::AMOUNT    => $transferInput['amount'],
-            Payment\Entity::CONTACT   => $transferInput['contact'] ?? null,
-            Payment\Entity::EMAIL     => $transferInput['email'] ?? null,
-            Payment\Entity::CURRENCY  => $transferInput['currency'],
+            Payment\Entity::AMOUNT      => $transferInput['amount'],
+            Payment\Entity::CONTACT     => $transferInput['contact'] ?? null,
+            Payment\Entity::EMAIL       => $transferInput['email'] ?? null,
+            Payment\Entity::CURRENCY    => $transferInput['currency'],
+            Payment\Entity::ON_HOLD     => $transferInput['on_hold'] ?? 0,
+            Payment\Entity::HOLD_UNTIL  => $transferInput['hold_until'] ?? null,
         ];
 
+        // @todo: Fix incorrect txn order. Payment txn saved before transfer txn.
         $transferPayment = (new Payment\Service)->processTransfer($account, $paymentData, $originPayment);
 
         $baseAmount = $transferPayment->getBaseAmount();

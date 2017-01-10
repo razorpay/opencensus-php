@@ -81,6 +81,27 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function updateOnHoldToggle(Payment\Entity $payment)
+    {
+        $txn = $payment->transaction;
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
+        $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+
+        $this->trace->info(
+            TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+            ]
+        );
+
+        return $txn;
+    }
+
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
@@ -134,7 +155,9 @@ class Core extends Base\Core
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+        $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
 
         $this->updateCredits($txn, $payment);
 
@@ -597,7 +620,7 @@ class Core extends Base\Core
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => time(),
-            Transaction\Entity::SETTLED       => 1,
+            Transaction\Entity::SETTLED       => 0,
             Transaction\Entity::SETTLED_AT    => $settledAt,
             Transaction\Entity::FEE           => 0,
             Transaction\Entity::SERVICE_TAX   => 0,
@@ -882,7 +905,9 @@ class Core extends Base\Core
             $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
 
-        return $returnTime;
+        $holdUntilTime = $payment->getHoldUntil();
+
+        return max($returnTime, $holdUntilTime);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)

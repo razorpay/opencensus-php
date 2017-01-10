@@ -413,6 +413,7 @@ final class Route
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
         'transfer_fetch'                          => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
+        'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversal',                        'TransferController@postTransferReversal'                           ],
     );
@@ -546,6 +547,7 @@ final class Route
         'customer_get_wallet_balance',
         'customer_get_wallet_statement',
         'transfer_fetch',
+        'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
     );

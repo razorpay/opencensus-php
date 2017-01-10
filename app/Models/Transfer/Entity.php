@@ -20,6 +20,8 @@ class Entity extends Base\PublicEntity
     const BASE_AMOUNT           = 'base_amount';
     const AMOUNT_REVERSED       = 'amount_reversed';
     const BASE_AMOUNT_REVERSED  = 'base_amount_reversed';
+    const ON_HOLD               = 'on_hold';
+    const HOLD_UNTIL            = 'hold_until';
     const TRANSACTION_ID        = 'transaction_id';
 
     protected static $sign = 'trf';
@@ -35,7 +37,9 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::SOURCE_ID,
-        self::SOURCE_TYPE
+        self::SOURCE_TYPE,
+        self::ON_HOLD,
+        self::HOLD_UNTIL,
     ];
 
     protected $visible = [
@@ -50,6 +54,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::BASE_AMOUNT_REVERSED,
+        self::ON_HOLD,
+        self::HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -63,6 +69,8 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
+        self::ON_HOLD,
+        self::HOLD_UNTIL,
         self::CREATED_AT,
     ];
 
@@ -79,10 +87,14 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT            => 'int',
         self::AMOUNT_REVERSED        => 'int',
         self::BASE_AMOUNT_REVERSED   => 'int',
+        self::ON_HOLD                => 'bool',
+        self::HOLD_UNTIL             => 'int',
     ];
 
     protected $defaults = [
         self::AMOUNT_REVERSED   => 0,
+        self::ON_HOLD           => 0,
+        self::HOLD_UNTIL        => null,
     ];
 
     // -------------------- Relations ---------------------------
@@ -104,6 +116,8 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Relations -----------------------
 
+    // -------------------- Getters -----------------------------
+
     public function getAmount()
     {
         return (int) $this->getAttribute(self::AMOUNT);
@@ -116,7 +130,7 @@ class Entity extends Base\PublicEntity
 
     public function getBaseAmount()
     {
-        return $this->GetAttribute(self::BASE_AMOUNT);
+        return $this->getAttribute(self::BASE_AMOUNT);
     }
 
     public function getToId()
@@ -149,6 +163,16 @@ class Entity extends Base\PublicEntity
         return $this->getBaseAmount() - $this->getBaseAmountReversed();
     }
 
+    public function getOnHold()
+    {
+        return $this->getAttribute(self::ON_HOLD);
+    }
+
+    public function getHoldUntil()
+    {
+        return $this->getAttribute(self::HOLD_UNTIL);
+    }
+
     /**
      * Get the rate at which currency conversion was applied to
      * the transfer amount
@@ -162,6 +186,10 @@ class Entity extends Base\PublicEntity
         return $baseAmount / $transferAmount;
     }
 
+    // -------------------- End Getters ---------------------------
+
+    // -------------------- Setters ---------------------------
+
     public function setBaseAmount(int $amount)
     {
         $this->setAttribute(self::BASE_AMOUNT, $amount);
@@ -171,6 +199,18 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::AMOUNT_REVERSED, $amount);
     }
+
+    public function setOnHold(bool $onHold)
+    {
+        $this->setAttribute(self::ON_HOLD, $onHold);
+    }
+
+    public function setHoldUntil($holdUntil)
+    {
+        $this->setAttribute(self::HOLD_UNTIL, $holdUntil);
+    }
+
+    // -------------------- End Setters ---------------------------
 
     public function reverseAmount(int $amount, int $baseAmount)
     {

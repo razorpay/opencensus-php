@@ -37,8 +37,17 @@ class TransferController extends Controller
     {
         $input = Request::all();
 
-        $reversal = $this->service->reversal($id, $input);
+        $reversal = $this->service->reverse($id, $input);
 
         return ApiResponse::json($reversal);
+    }
+
+    public function patchTransfer(string $id)
+    {
+        $input = Request::all();
+
+        $transfer = $this->service->edit($id, $input);
+
+        return ApiResponse::json($transfer);
     }
 }

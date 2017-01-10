@@ -47,26 +47,6 @@ class Core extends Base\Core
         return $reversal;
     }
 
-
-    /**
-     * Creates a Reversal from a direct transfer
-     *
-     * @param  Transfer\Entity      $transfer
-     * @param  array                $input
-     * @return Reversal\Entity
-     */
-    public function createForTransferReversal(Transfer\Entity $transfer, array $input) : Entity
-    {
-        (new Validator)->validateInput('reversal', $input);
-
-        $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
-
-        return $this->repo->transaction(function () use ($transfer, $input, $amount)
-        {
-            return $this->createForMarketplaceRefund($transfer, $this->merchant, $amount);
-        });
-    }
-
     protected function createEntity(int $amount, string $currency) : Entity
     {
         $data = [

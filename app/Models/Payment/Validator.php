@@ -41,6 +41,8 @@ class Validator extends Base\Validator
         'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
+        'on_hold'                 =>  'required_with:hold_until|boolean',
+        'hold_until'              =>  'sometimes|integer',
         '_'                       =>  'sometimes'
     ];
 
