@@ -49,7 +49,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]))
             {
-                $status = ($sStatus === self::STATUS_UP) ? 1 : 0;    
+                $status = ($sStatus === self::STATUS_UP) ? true : false;
             }
             else
             {
@@ -60,7 +60,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             
             $data = $this->formatInput($input, $status);
 
-            if ($status === 1)
+            if ($status === true)
             {
                 $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_EDIT, ['data' => $data]);
 
@@ -93,7 +93,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
     protected function validateRequest(array $input)
     {
-        if (isset($input["Token"]) === false)
+        if (isset($input['Token']) === false)
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN, ['data' => $input]);
 
@@ -117,7 +117,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TOKEN, $msg);
 
-            throw new Exception\BadRequestValidationFailureException("StatusCake Token Validation Failure");
+            throw new Exception\BadRequestValidationFailureException('StatusCake Token Validation Failure');
         }
 
         $this->validateInput($input);
@@ -171,7 +171,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         // gateway here is just for reference. What we care about is actually the bank
         $formatted[Entity::GATEWAY] = $gateways[0];
 
-        $formatted[Entity::COMMENT] = "STATUSCAKE STATUSCODE : ". $input['StatusCode'];
+        $formatted[Entity::COMMENT] = 'STATUSCAKE STATUSCODE : '. $input['StatusCode'];
 
         return $formatted;
     }

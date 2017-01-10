@@ -198,7 +198,7 @@ class GatewayController extends Controller
      * @return \Symfony\Component\HttpFoundation\Response
      * @internal param string $gateway
      */
-    public function postCreateGatewayAbsence(Absence\Service $service)
+    public function postGatewayAbsence(Absence\Service $service)
     {
         $input = Request::all();
 
