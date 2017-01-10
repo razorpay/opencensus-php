@@ -8,11 +8,11 @@ return [
     'testSaveGatewayPriorities' => [
         'request' => [
             'content' => [
-                'hdfc' => '50',
-                'axis_migs' => '40',
-                'amex' => '30',
+                'hdfc'        => '50',
+                'axis_migs'   => '40',
+                'amex'        => '30',
                 'cybersource' => '20',
-                'first_data' => '10'
+                'first_data'  => '10'
             ],
             'url' => '/gateway/priorities/card',
             'method' => 'POST'
@@ -20,11 +20,11 @@ return [
         'response' => [
             'content' => [
                 'card' => [
-                    'hdfc' => '50',
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'hdfc'        => '50',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ]
             ]
         ]
@@ -32,11 +32,11 @@ return [
     'testSaveGatewayPrioritiesWithException' => [
         'request' => [
             'content' => [
-                'hdfc' => '50',
-                'axis_migs' => '40',
-                'amex' => '30',
+                'hdfc'        => '50',
+                'axis_migs'   => '40',
+                'amex'        => '30',
                 'cybersource' => '20',
-                'first_data' => '10'
+                'first_data'  => '10'
             ],
             'url' => '/gateway/priorities/card',
             'method' => 'POST'
@@ -58,11 +58,11 @@ return [
     'testSaveGatewayPrioritiesWithRedisException' => [
         'request' => [
             'content' => [
-                'hdfc' => '50',
-                'axis_migs' => '40',
-                'amex' => '30',
+                'hdfc'        => '50',
+                'axis_migs'   => '40',
+                'amex'        => '30',
                 'cybersource' => '20',
-                'first_data' => '10'
+                'first_data'  => '10'
             ],
             'url' => '/gateway/priorities/card',
             'method' => 'POST'
@@ -89,11 +89,11 @@ return [
         'response' => [
             'content' => [
                 'card' => [
-                    'hdfc' => '50',
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'hdfc'        => '50',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ],
                 'netbanking' => [
                     'ebs' => '50',
@@ -110,11 +110,11 @@ return [
         'response' => [
             'content' => [
                 'card' => [
-                    'hdfc' => '50',
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'hdfc'        => '50',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ],
                 'netbanking' => [
                 ]
@@ -130,10 +130,10 @@ return [
         'response' => [
             'content' => [
                 'card' => [
-                    'axis_migs' => '40',
-                    'amex' => '30',
+                    'axis_migs'   => '40',
+                    'amex'        => '30',
                     'cybersource' => '20',
-                    'first_data' => '10'
+                    'first_data'  => '10'
                 ]
             ]
         ]
@@ -161,11 +161,11 @@ return [
     'testUnsupportedPaymentMethod' => [
         'request' => [
             'content' => [
-                'hdfc' => '50',
-                'axis_migs' => '40',
-                'amex' => '30',
+                'hdfc'        => '50',
+                'axis_migs'   => '40',
+                'amex'        => '30',
                 'cybersource' => '20',
-                'first_data' => '10'
+                'first_data'  => '10'
             ],
             'url' => '/gateway/priorities/wallet',
             'method' => 'POST'
@@ -187,11 +187,11 @@ return [
     'testInvalidGatewayForMethod' => [
         'request' => [
             'content' => [
-                'hdfc' => '50',
-                'axis_migs' => '40',
-                'amex' => '30',
+                'hdfc'        => '50',
+                'axis_migs'   => '40',
+                'amex'        => '30',
                 'cybersource' => '20',
-                'first_data' => '10'
+                'first_data'  => '10'
             ],
             'url' => '/gateway/priorities/netbanking',
             'method' => 'POST'
