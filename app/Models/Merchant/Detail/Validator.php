@@ -142,7 +142,7 @@ class Validator extends Base\Validator
         Entity::COMMENT                         => 'sometimes|max:255',
     ];
 
-    protected static $editMigrateRules = [
+    protected static $migrateRules = [
         Entity::MERCHANT_ID                     => 'required',
         Entity::BUSINESS_PROOF_URL              => 'sometimes|url',
         Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|url',

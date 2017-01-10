@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Config;
+use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -38,7 +39,7 @@ class FileMigration extends Base\Service
         {
             try
             {
-                $merchantDetail->edit($merchantDetail->toArray(), 'editMigrate');
+                $merchantDetail->getValidator()->validateInput('migrate', $merchantDetail->toArray());
 
                 $this->createFileId($merchantDetail);
             }
@@ -76,14 +77,14 @@ class FileMigration extends Base\Service
         {
             $fileStoreParams = [
                 FileStore\Entity::MERCHANT_ID  => $merchantId,
-                FileStore\Entity::TYPE         => 'merchant_activation',
+                FileStore\Entity::TYPE         => $key,
                 FileStore\Entity::ENTITY_ID    => $merchantId,
-                FileStore\Entity::ENTITY_TYPE  => 'RZP\\Models\\Merchant\\Detail\\Entity',
+                FileStore\Entity::ENTITY_TYPE  => Constants\Entity::getEntityClass($merchantDetail->getEntity()),
                 FileStore\Entity::EXTENSION    => $value['content_type'],
                 FileStore\Entity::MIME         => FileStore\Format::VALID_EXTENSION_MIME_MAP[$value['content_type']][0],
                 FileStore\Entity::SIZE         => $value['content_length'],
                 FileStore\Entity::NAME         => explode('.', $value['aws_key'])[0],
-                FileStore\Entity::STORE        => 's3',
+                FileStore\Entity::STORE        => FileStore\Store::S3,
                 FileStore\Entity::LOCATION     => $value['aws_key'],
                 FileStore\Entity::BUCKET       => $value['bucket']
             ];
