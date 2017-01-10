@@ -8,7 +8,6 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Payment\Method;
 use RZP\Models\Payment\Gateway;
 
-
 class Validator extends Base\Validator
 {
     protected static $validPaymentMethods = [Method::CARD, Method::NETBANKING];
@@ -41,18 +40,27 @@ class Validator extends Base\Validator
     {
         $method = $this->entity->getMethod();
 
+        $valid = true;
+
         switch ($method) {
             case Method::CARD:
-                $this->validCardGateways($input);
+                $valid = $this->validCardGateways($input);
                 break;
 
             case Method::NETBANKING:
-                $this->validNetBankingGateways($input);
+                $valid = $this->validNetBankingGateways($input);
                 break;
 
             default:
                 throw new Exception\LogicException("Should not come here");
                 break;
+        }
+
+        if ($valid === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD
+            );
         }
     }
 
@@ -62,12 +70,7 @@ class Validator extends Base\Validator
 
         $cardGateways = DefaultPriorities::$directCardGatewaysOrder;
 
-        if (count($inputGateways) !== count(array_intersect($inputGateways, $cardGateways)))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_CARD_GATEWAY
-            );
-        }
+        return (count($inputGateways) === count(array_intersect($inputGateways, $cardGateways)));
     }
 
     protected function validNetBankingGateways(array $input)
@@ -76,11 +79,6 @@ class Validator extends Base\Validator
 
         $netbankingGateways = DefaultPriorities::$directNetbankingGatewaysOrder;
 
-        if (count($inputGateways) !== count(array_intersect($inputGateways, $netbankingGateways)))
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_NETBANKING_GATEWAY
-            );
-        }
+        return (count($inputGateways) === count(array_intersect($inputGateways, $netbankingGateways)));
     }
 }

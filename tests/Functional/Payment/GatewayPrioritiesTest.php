@@ -154,4 +154,14 @@ class GatewayPrioritiesTest extends TestCase
 
         $this->startTest();
     }
+
+    public function testUnsupportedPaymentMethod()
+    {
+        $this->startTest();
+    }
+
+    public function testInvalidGatewayForMethod()
+    {
+        $this->startTest();
+    }
 }
