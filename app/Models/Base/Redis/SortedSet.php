@@ -12,6 +12,36 @@ use RZP\Trace\TraceCode;
 
 class SortedSet extends RedisEntity
 {
+    protected static $keyPrefix = '';
+
+    protected static $delimiter = '';
+
+    protected $key;
+
+    protected $data;
+
+    public function __construct(string $key)
+    {
+        $this->key = $key;
+
+        $this->data = [];
+    }
+
+    public function getKey()
+    {
+        return $this->key;
+    }
+
+    public function getRedisKey()
+    {
+        return static::$keyPrefix . static::$delimiter . $this->key;
+    }
+
+    public function getData()
+    {
+        return $this->data;
+    }
+
     public function getDataToSave()
     {
         $formattedData = [];
@@ -23,6 +53,18 @@ class SortedSet extends RedisEntity
         }
 
         return $formattedData;
+    }
+
+    public function setData(array $redisData)
+    {
+        $this->data = $redisData;
+    }
+
+    public function toArray()
+    {
+        return [
+            $this->key => $this->data
+        ];
     }
 
     public function getSetMembers()
