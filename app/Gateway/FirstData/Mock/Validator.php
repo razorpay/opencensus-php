@@ -6,11 +6,11 @@ use RZP\Base;
 use RZP\Gateway\FirstData\ConnectRequestFields;
 use RZP\Gateway\FirstData\PaymentMode;
 use RZP\Gateway\FirstData\PaymentMethod;
-use RZP\Gateway\FirstData\Currency;
 use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
 use RZP\Constants\HashAlgo;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {

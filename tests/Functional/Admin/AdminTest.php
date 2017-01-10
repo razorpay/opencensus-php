@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use Cache;
 use Carbon\Carbon;
 use Hash;
 
@@ -67,6 +68,37 @@ class AdminTest extends TestCase
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmail()
+    {
+        $admin = $this->fixtures->create('admin', [
+            Admin\Entity::ORG_ID  => $this->orgId,
+            Admin\Entity::EMAIL   => 'xyz@rzp.com',
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+    }
+
+    public function testCreateAdminWithExistingEmailOfDeletedAdmin()
+    {
+        $admin = $this->testDeleteAdmin();
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['email'] = $admin->getEmail();
 
         $this->startTest();
     }
@@ -179,6 +211,7 @@ class AdminTest extends TestCase
     {
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID => $this->orgId,
+            Admin\Entity::EMAIL  => 'xyz@rzp.com'
         ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -188,6 +221,8 @@ class AdminTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
+
+        return $admin;
     }
 
     public function testDeleteAdminFailed()
@@ -421,20 +456,72 @@ class AdminTest extends TestCase
         $this->assertEquals($admin->isSuperAdmin(), true);
     }
 
-    public function testPasswordResetSuccess()
+    public function testForgotPasswordSuccess()
     {
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $admin->setPassword('M!2#uWd');
-
-        $this->repo->saveOrFail($admin);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
         $url = sprintf($url, $this->org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testForgotPasswordInvalidUser()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+    }
+
+    public function testForgotPasswordResetUrlBlank()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $result = $this->startTest();
+    }
+
+    public function testPasswordResetSuccess()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        $token = Cache::get($key);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
 
         $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
 
@@ -448,19 +535,20 @@ class AdminTest extends TestCase
             $admin = $this->repo->findOrFailPublic($admin->getId());
 
             $this->assertTrue(Hash::check($newPassword, $admin['password']));
+
+            // Check that token has then been expired
+            $token = Cache::get($key);
+
+            $this->assertNull($token);
         }
     }
 
-    public function testPasswordResetMismatch()
+    public function testPasswordResetTokenMismatch()
     {
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $oldPwd = 'M!2#uWd';
-
-        $admin->setPassword($oldPwd);
-
-        $this->repo->saveOrFail($admin);
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -474,15 +562,86 @@ class AdminTest extends TestCase
 
         $admin = $this->repo->findOrFailPublic($admin->getId());
 
-        $this->assertTrue(Hash::check($oldPwd, $admin['password']));
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
-    public function testPasswordResetInvalid()
+    public function testPasswordResetPasswordMismatch()
     {
         $admin = $this->fixtures->create(
             'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
 
-        $oldPwd = 'M!2#uWd';
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $key = sprintf(
+            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId,
+            $admin->getId());
+
+        $token = Cache::get($key);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
+    }
+
+    public function testPasswordResetInvalidPassword()
+    {
+        // This test checks if auth policy rules apply when new password is
+        // given for resetting the old password
+
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $key = sprintf(
+            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
+            $this->orgId, $admin->getId());
+
+        $token = Cache::get($key);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
+    }
+
+    public function testPasswordResetMaxRetain()
+    {
+        $admin = $this->fixtures->create(
+            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $key = sprintf(
+            Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY,
+            $this->orgId, $admin->getId());
+
+        $token = Cache::get($key);
+
+        $oldPwd = 'M!2#uWdx';
 
         $admin->setPassword($oldPwd);
 
@@ -494,9 +653,15 @@ class AdminTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertTrue(Hash::check($oldPwd, $admin['password']));
     }
 
     public function testPasswordResetInvalidAuthType()
@@ -504,23 +669,21 @@ class AdminTest extends TestCase
         $org = $this->fixtures->create('org', ['auth_type' => 'google_auth']);
 
         $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
-
-        $oldPwd = 'M!2#uWd';
-
-        $admin->setPassword($oldPwd);
-
-        $this->repo->saveOrFail($admin);
+            'admin', ['org_id' => $org->getId(), 'email' => 'abc@razorpay.com']);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
-        $url = sprintf($url, $this->org->getPublicId());
+        $url = sprintf($url, $org->getPublicId());
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->ba->appAuth();
 
         $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertTrue(Hash::check('test123456', $admin['password']));
     }
 
     public function testAdminLogout()
@@ -535,6 +698,8 @@ class AdminTest extends TestCase
                 'username' => 'ram@razorpay.com',
                 'password' => 'Heimdall!432',
             ]);
+
+        $adminPublicId = $admin->getPublicId();
 
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
@@ -565,6 +730,21 @@ class AdminTest extends TestCase
         $this->assertEquals($admin['name'], 'test admin');
 
         $this->startTest();
+
+        // Check if the associated token is deleted on logout
+        $allTokens = $this->getEntities('admin_token', [], true);
+
+        $remainingTokens =[];
+
+        foreach ($allTokens['items'] as $t)
+        {
+            if ($t['admin_id'] === $adminPublicId)
+            {
+                $remainingTokens[] = $t['token'];
+            }
+        }
+
+        $this->assertArrayNotHasKey($token, $remainingTokens);
      }
 
      public function testGetAdminByEmailOnAppAuth()

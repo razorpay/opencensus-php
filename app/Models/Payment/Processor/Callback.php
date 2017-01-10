@@ -149,7 +149,7 @@ trait Callback
 
     protected function processPaymentCallback($payment, $gatewayInput)
     {
-        $input['payment'] = $payment->toArray();
+        $input['payment'] = $payment->toArrayGateway();
         $input['gateway'] = $gatewayInput;
 
         if ($payment->getGlobalCustomerId() !== null)

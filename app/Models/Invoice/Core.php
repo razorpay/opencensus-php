@@ -6,14 +6,23 @@ use Mail;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
+    protected $lineItemCore;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->lineItemCore = new LineItem\Core;
+    }
+
     public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
@@ -31,16 +40,204 @@ class Core extends Base\Core
         return $invoice;
     }
 
+    public function update(Entity $invoice, array $input, Merchant\Entity $merchant)
+    {
+        $this->trace->info(TraceCode::INVOICE_UPDATE_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'input'          => $input,
+            ]);
+
+        $status = $invoice->getStatus();
+
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        //
+        // Once basic fill by edit call on entity is done, Based on invoice status,
+        // it calls either updateDraftInvoice|updateIssuedInvoice.
+        //
+        // This was done to maintain flow clean. Because if not now, there are chances
+        // we want to handle different things in different case.
+        //
+        // This is neat base code for that.
+        //
+
+        $operation = 'edit' . studly_case($status);
+
+        try
+        {
+            $invoice->edit($input, $operation);
+
+            $updateFunction = 'update' . studly_case($status) . 'Invoice';
+
+            $this->$updateFunction($merchant, $invoice, $input);
+        }
+        catch (\Exception $e)
+        {
+            ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
+        }
+
+        return $invoice;
+    }
+
+    public function issue(Entity $invoice, Merchant\Entity $merchant)
+    {
+        $this->trace->info(
+            TraceCode::INVOICE_ISSUE_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+            ]);
+
+        $this->repo->transaction(
+            function() use ($invoice, $merchant)
+            {
+                (new Generator($merchant, $invoice))->issueInvoice();
+
+                $this->repo->saveOrFail($invoice);
+            });
+
+        (new Notifier($invoice))->sendNotificationToCustomer();
+
+        return $invoice;
+    }
+
+    public function delete(Entity $invoice)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_DELETE_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+            ]);
+
+        return $this->repo->invoice->deleteOrFail($invoice);
+    }
+
+    public function addLineItems(
+        Entity $invoice,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'input'          => $input,
+            ]);
+
+        $this->repo->transaction(
+            function() use ($invoice, $input, $merchant)
+            {
+                $this->lineItemCore->createMany($input, $merchant, $invoice);
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            });
+
+        return $invoice;
+    }
+
+    public function updateLineItem(
+        Entity $invoice,
+        LineItem\Entity $lineItem,
+        array $input,
+        Merchant\Entity $merchant)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_UPDATE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_id'   => $lineItem->getId(),
+                'input'          => $input,
+            ]);
+
+        $this->repo->transaction(
+            function() use ($invoice, $lineItem, $input, $merchant)
+            {
+                $this->lineItemCore->update(
+                    $lineItem,
+                    $input,
+                    $merchant,
+                    $invoice
+                );
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            });
+
+        return $invoice;
+    }
+
+    public function removeLineItem(Entity $invoice, LineItem\Entity $lineItem)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_id'   => $lineItem->getId(),
+            ]
+        );
+
+        $this->repo->transaction(
+            function() use ($lineItem, $invoice)
+            {
+                $this->lineItemCore->delete($lineItem);
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            });
+
+        return $invoice;
+    }
+
+    public function removeManyLineItems(Entity $invoice, Base\PublicCollection $lineItems)
+    {
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->trace->info(
+            TraceCode::INVOICE_REMOVE_LINE_ITEM_REQUEST,
+            [
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'line_item_ids'  => $lineItems->pluck('id')->toArray(),
+            ]);
+
+        $this->repo->transaction(
+            function() use ($lineItems, $invoice)
+            {
+                $this->lineItemCore->deleteMany($lineItems);
+
+                $this->recomputeInvoiceAmount($invoice);
+                $this->repo->saveOrFail($invoice);
+            });
+
+        return $invoice;
+    }
+
     public function sendNotification(Entity $invoice, $medium)
     {
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
             [
-                'invoice_id' => $invoice->getId(),
-                'medium'     => $medium,
+                'invoice_id'     => $invoice->getId(),
+                'invoice_status' => $invoice->getStatus(),
+                'medium'         => $medium,
             ]);
 
-        $invoice->getValidator()->validateSendNotificationRequest($invoice, $medium);
+        $invoice->getValidator()->validateSendNotificationRequest($medium);
 
         $notifier = new Notifier($invoice);
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
@@ -56,7 +253,6 @@ class Core extends Base\Core
     {
         $expiredInvoices = $this->repo->invoice->getExpiredInvoices();
 
-        // TODO: Ensure that when the payment is being made, the invoice is in `issued` state only.
         foreach ($expiredInvoices as $expiredInvoice)
         {
             $expiredInvoice->setStatus(Status::EXPIRED);
@@ -80,9 +276,7 @@ class Core extends Base\Core
     {
         $paymentId = $invoice->getPaymentId();
 
-        $invoiceStatus = $invoice->getStatus();
-
-        if ($invoiceStatus !== Status::PAID)
+        if ($invoice->hasBeenPaid() === false)
         {
             return [
                 Entity::STATUS => $invoice->getStatus()
@@ -96,7 +290,8 @@ class Core extends Base\Core
 
     public function getFormattedInvoiceData($invoiceId, Merchant\Entity $merchant)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($invoiceId, $merchant);
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($invoiceId, $merchant);
 
         $orderId = $invoice->getOrderId();
 
@@ -153,5 +348,61 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($invoice);
+    }
+
+    // -------------------- Protected methods --------------------
+
+    protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
+    {
+        $this->repo->transaction(
+            function() use ($merchant, $invoice, $input)
+            {
+                $this->generateAttributesOnUpdate($invoice, $input);
+
+                (new Generator($merchant, $invoice))->updateDraftInvoice($input);
+
+                $this->repo->saveOrFail($invoice);
+            });
+    }
+
+    protected function updateIssuedInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
+    {
+        $this->repo->saveOrFail($invoice);
+    }
+
+    /**
+     * Whenever invoice gets updated via add/update/delete of it's line items,
+     * The invoice amount is calculated and set again.
+     *
+     * We don't need to set order amount here because order is created only in
+     * issued state and recomputing invoice amount happens in draft state.
+     *
+     * @param Entity $invoice
+     */
+    protected function recomputeInvoiceAmount(Entity $invoice)
+    {
+        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($invoice);
+
+        $invoice->setAmount($totalAmount);
+    }
+
+    /**
+     * Invoice/Entity has few generators which are dependent on extra request
+     * input keys. Those need to be run again in case of put request.
+     *
+     * @param Entity $invoice
+     * @param array  $input
+     */
+    protected function generateAttributesOnUpdate(Entity $invoice, array $input)
+    {
+        if (isset($input[Entity::EMAIL_NOTIFY]))
+        {
+            $invoice->generateEmailStatus($input);
+        }
+
+        if (isset($input[Entity::SMS_NOTIFY]))
+        {
+            $invoice->generateSmsStatus($input);
+        }
     }
 }

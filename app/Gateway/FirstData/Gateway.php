@@ -13,6 +13,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;

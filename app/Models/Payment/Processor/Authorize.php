@@ -12,11 +12,13 @@ use RZP\Constants\Mode;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Admin;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Emi;
+use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
@@ -25,12 +27,12 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Transaction;
+use RZP\Models\Upi;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
@@ -49,6 +51,8 @@ trait Authorize
 
         // $gatewayInput is being passed by reference.
         // Adds callback url, payment and card info to $gatewayInput
+        $this->processCurrencyConversions($payment);
+
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
@@ -202,7 +206,6 @@ trait Authorize
         // If $request is not null, then payment is two-step process
         // where client needs to provide additional info via his browser.
         //
-        //
         if ($request !== null)
         {
             return $this->getPaymentGatewayRequestData($request, $payment);
@@ -237,7 +240,7 @@ trait Authorize
         $this->repo->saveOrFail($payment);
     }
 
-    protected function autoCapturePaymentIfApplicable($payment)
+    protected function autoCapturePaymentIfApplicable(Payment\Entity $payment)
     {
         if ($this->shouldAutoCapture($payment) === true)
         {
@@ -478,7 +481,7 @@ trait Authorize
         //
         // Call gateway input
         //
-        $gatewayInput['payment'] = $payment->toArray();
+        $gatewayInput['payment'] = $payment->toArrayGateway();
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
 
@@ -506,6 +509,8 @@ trait Authorize
     protected function dummyPrePaymentAuthorizeProcessing($payment, $input)
     {
         $gatewayInput = [];
+
+        $this->processCurrencyConversions($payment);
 
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
@@ -608,6 +613,8 @@ trait Authorize
             // to authorized
             $this->updateAndNotifyPaymentAuthorized(true);
 
+            $this->autoCapturePaymentIfApplicable($payment);
+
             $this->repo->saveOrFail($payment);
 
             $this->setPayment($payment);
@@ -650,6 +657,44 @@ trait Authorize
         }
     }
 
+    protected function processCurrencyConversions(Payment\Entity $payment)
+    {
+        $currency = $payment->getCurrency();
+
+        $merchant = $payment->merchant;
+
+        if ($currency !== Currency\Currency::INR)
+        {
+            // mcc is supported only for merchants where this flag is set to true or false
+            // or merchant is not fee bearer
+            if (($merchant->convertOnApi() === null) or
+                ($merchant->isFeeBearerCustomer() === true))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+            }
+
+            // mcc is supported only for card payments
+            if ($payment->isCard() === false)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+
+            }
+        }
+
+        $amount = $payment->getAmount();
+
+        $baseAmount = (new Currency\Core)->getBaseAmount($amount, $currency);
+
+        $payment->setBaseAmount($baseAmount);
+
+        if ($payment->isCard() === true)
+        {
+            $payment->setConvertCurrency($payment->merchant->convertOnApi());
+        }
+    }
+
     /**
      * @param Payment\Entity $payment
      * @param array $input Input data received from checkout/merchant.
@@ -689,6 +734,11 @@ trait Authorize
             $emiDuration = $input['emi_duration'];
 
             $this->setBankAndEmiPlanDetails($payment, $cardNumber, $emiDuration);
+        }
+
+        if ($payment->isUpi())
+        {
+            $this->validateUpiPspIsAllowed($payment);
         }
 
         $payment->setInternational();
@@ -1456,7 +1506,7 @@ trait Authorize
                 'gateway' => $this->getEncryptedGatewayText($payment->getGateway()),
                 // TODO: Return metadata in a better format
                 'contact' => $payment->getContact(),
-                'amount'  => number_format(($payment->getAmount()/100), 2),
+                'amount'  => number_format(($payment->getAmount() / 100), 2),
                 'wallet'  => $payment->getWallet()
             ];
 
@@ -1678,6 +1728,16 @@ trait Authorize
         {
             $payment->getValidator()->validateCardAndCvv($input);
         }
+    }
+
+    protected function validateUpiPspIsAllowed($payment)
+    {
+        $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
+
+        $disallowedPsps = json_decode($disallowedPspJson, true);
+
+        $payment->getValidator()->validateUpiVpaPsp(
+            $payment->getVpa(), $disallowedPsps);
     }
 
     protected function checkAndValidateAmexIfNotEnabled($methods, $card)

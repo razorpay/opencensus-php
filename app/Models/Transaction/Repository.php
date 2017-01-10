@@ -55,6 +55,10 @@ class Repository extends Base\Repository
 
         $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
 
+        // TODO: Need to fix this.
+        // If there are too many merchants, the sql query string length
+        // can become too long and get truncated.
+
         $txns = $this->newQuery()
                      ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
                      ->where(Entity::SETTLED_AT, '<', $timestamp)
@@ -291,10 +295,11 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function findByEntityId($entityId, $fail = false)
+    public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
                     ->first();
 
         if (($txn === null) and

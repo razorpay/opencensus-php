@@ -20,7 +20,7 @@ class ItemTest extends TestCase
 
         $this->fixtures->merchant->addFeatures(['invoice']);
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
     }
 
     public function testCreateItem()
@@ -47,37 +47,39 @@ class ItemTest extends TestCase
         $this->startTest();
     }
 
-    // public function testPutItem()
-    // {
-    //     $this->fixtures->create('item');
+    public function testUpdateItem()
+    {
+        $this->fixtures->create('item');
 
-    //     $this->startTest();
-    // }
+        $this->startTest();
 
-    // public function testPutItemHavingLineItemsAssociated()
-    // {
-    //     $this->fixtures->create('item');
-    //     $this->fixtures->create('line_item');
+        $this->assertUpdateResponseWithLastEntity('item', __FUNCTION__);
+    }
 
-    //     $this->startTest();
-    // }
+    public function testUpdateItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
 
-    // public function testDeleteItem()
-    // {
-    //     $this->fixtures->create('item');
+        $this->startTest();
+    }
 
-    //     $this->startTest();
+    public function testDeleteItem()
+    {
+        $this->fixtures->create('item');
 
-    //     $item = $this->getLastEntity('item', true);
+        $this->startTest();
 
-    //     $this->assertEmpty($item);
-    // }
+        $item = $this->getLastEntity('item', true);
 
-    // public function testDeleteItemHavingLineItemsAssociated()
-    // {
-    //     $this->fixtures->create('item');
-    //     $this->fixtures->create('line_item');
+        $this->assertEmpty($item);
+    }
 
-    //     $this->startTest();
-    // }
+    public function testDeleteItemHavingLineItemsAssociated()
+    {
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
 }
