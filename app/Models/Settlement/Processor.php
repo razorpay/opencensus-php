@@ -165,7 +165,9 @@ class Processor extends Base\Core
         }
         else
         {
-            list($txns, $schedules) = $this->repo->transaction->fetchUnsettledTxnsAndSchedules($this->setlTime);
+            $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
+
+            $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
 
             $schedules->callOnEveryItem('updateNextRun');
 
