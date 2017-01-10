@@ -180,6 +180,7 @@ class Payment extends Base
         $card = $this->fixtures->create('card');
 
         $defaultValues = array(
+            'merchant_id' => '10000000000000',
             'authorized_at' => time(),
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
@@ -190,7 +191,7 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = parent::create($attributes);
-        $merchant = (new \RZP\Models\Merchant\Repository)->find('10000000000000');
+        $merchant = (new \RZP\Models\Merchant\Repository)->find($attributes['merchant_id']);
 
         $payment->merchant()->associate($merchant);
         $payment->setRelation('card', $card);
