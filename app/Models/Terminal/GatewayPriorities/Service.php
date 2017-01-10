@@ -7,6 +7,8 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Payment\Method;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -22,6 +24,8 @@ class Service extends Base\Service
     public function addGatewayPrioritiesForMethod(string $method, array $data)
     {
         $priorities = (new Entity($method))->build($data);
+
+        $this->trace->info(TraceCode::ADD_GATEWAY_PRIORITIES_REQUEST, $priorities->toArray());
 
         if ($this->redis->save($priorities) === true)
         {
@@ -47,18 +51,29 @@ class Service extends Base\Service
             $result->push($priorities->toArray());
         }
 
-        return $result->flatMap(function ($value)
+        // $result is a collection of arrays. Running it through a flatmap to get
+        // the structure as <method> => <priorities>
+        $result = $result->flatMap(function ($value)
         {
             return $value;
-        })->toArray();
+        });
+
+        $this->trace->info(TraceCode::FETCH_GATEWAY_PRIORITIES_RESPONSE, $priorities->toArray());
+
+        return $result->toArray();
     }
 
     public function removeGatewayPrioritiesForMethod(string $method, array $gateways)
     {
+        $this->trace->info(TraceCode::REMOVE_GATEWAY_PRIORITIES_REQUEST,
+                            [$method => $gateways]);
+
         $gatewayPriorities = new Entity($method);
 
+        // Removes gateways from the redis sorted set
         $gatewayPriorities = $this->redis->removeEntityData($gatewayPriorities, $gateways);
 
+        // Refreshes the priorities again by fetching from redis
         $gatewayPriorities = $this->redis->fetchEntityData($gatewayPriorities);
 
         return $gatewayPriorities->toArray();

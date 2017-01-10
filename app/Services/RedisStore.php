@@ -12,8 +12,6 @@ use RZP\Exception;
 
 class RedisStore
 {
-    protected $requestId;
-
     protected $trace;
 
     protected $redis;
@@ -25,6 +23,13 @@ class RedisStore
         $this->redis = Redis::getFacadeRoot();
     }
 
+    /**
+     * Saves given RedisEntity data to redis
+     *
+     * @param  RedisEntity $entity Entity to save
+     *
+     * @return bool status to denote if save was successful
+     */
     public function save(RedisEntity $entity)
     {
         $redisKey = $entity->getRedisKey();
@@ -42,6 +47,11 @@ class RedisStore
         }
     }
 
+    /**
+     * Fetches data for entity from redis and stores it in entity
+     *
+     * @param  RedisEntity $entity Entity for which to fetch redis data
+     */
     public function fetchEntityData(RedisEntity $entity)
     {
         $redisKey = $entity->getRedisKey();
@@ -60,6 +70,12 @@ class RedisStore
         return $entity;
     }
 
+    /**
+     * Removes entity data from redis
+     *
+     * @param  RedisEntity $entity Entity for which to remove data
+     * @param  array       $data   Data to be removed
+     */
     public function removeEntityData(RedisEntity $entity, array $data)
     {
         $redisKey = $entity->getRedisKey();
@@ -89,7 +105,7 @@ class RedisStore
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error saving to redis with key: $redisKey",
+                        "Error saving to redis sorted set with key: $redisKey",
                         ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
                         $dataToSave);
 
@@ -101,8 +117,8 @@ class RedisStore
     {
         $fetchOptions = array_values([
             'startIndex' => 0,
-            'endIndex'   => -1,
-            'withScores' => 'WITHSCORES'
+            'endIndex'   => -1,                 // end index is -1 to denote we want to fetch all members
+            'withScores' => 'WITHSCORES'        // option to tell redis to return sorted set data with scores
         ]);
 
         try
@@ -128,7 +144,7 @@ class RedisStore
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error removing data from set with key: $key",
+                        "Error removing data from sorted set with key: $key",
                         ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
                         $members);
         }
