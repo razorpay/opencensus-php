@@ -2,14 +2,6 @@
 
 namespace RZP\Models\Base\Redis;
 
-use App;
-use Redis;
-use Predis\PredisException;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Trace\TraceCode;
-
 /**
  * This class is used to store a sorted set data type in redis
  * More info about sorted set here https://redis.io/topics/data-types-intro
