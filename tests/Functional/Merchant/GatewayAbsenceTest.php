@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Merchant;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use Carbon\Carbon;
 
 class GatewayAbsenceTest extends TestCase
 {
@@ -350,11 +351,14 @@ class GatewayAbsenceTest extends TestCase
 
     public function testGatewayAbsenceFetchWithEmptyTo()
     {
-        $content1 = $this->createGatewayAbsenceWithEmptyTo('netbanking_hdfc', strtotime('-1 hour'));
 
-        $content2 = $this->createGatewayAbsenceWithEmptyTo('netbanking_kotak', strtotime('+1 hour'));
+        $content1 = $this->createGatewayAbsenceWithEmptyTo('netbanking_hdfc',
+            Carbon::now()->subMinutes(60)->timestamp);
 
-        $from = time();
+        $content2 = $this->createGatewayAbsenceWithEmptyTo('netbanking_kotak',
+            Carbon::now()->addMinutes(60)->timestamp);
+
+        $from = Carbon::now()->timestamp;
 
         $request = [
             'content' => ['from' => $from],
@@ -438,16 +442,16 @@ class GatewayAbsenceTest extends TestCase
 
     protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc', $terminalId = null)
     {
-        $from = strtotime('-1 hour');
+        $from = Carbon::now()->subMinutes(60)->timestamp;
 
-        $to = strtotime('+1 hour');
+        $to = Carbon::now()->addMinutes(60)->timestamp;
 
         return $this->__createGatewayAbsence($gatewayName, $from, $to, $terminalId);
     }
 
     protected function createGatewayAbsenceNullTo($gatewayName = 'netbanking_hdfc')
     {
-        $from = strtotime('-1 hour');
+        $from = Carbon::now()->subMinutes(60)->timestamp;
 
         $to = null;
 
