@@ -12,7 +12,7 @@ class Validator extends Base\Validator
         RequestFields::AUTHENTICATION_CALL_MODE => 'required|string|in:2',
         RequestFields::CATEGORY_ID              => 'required|string|in:IRCSM',
         RequestFields::ENCRYPTED_STRING         => 'required|string',
-        RequestFields::RETURN_URL               => 'required|string'
+        RequestFields::RETURN_URL               => 'required|string|url'
     ];
 
     protected static $verifyRules = [
@@ -20,6 +20,6 @@ class Validator extends Base\Validator
         RequestFields::VERIFY_ITC               => 'required|string|size:14',
         RequestFields::VERIFY_PRN               => 'required|string|size:14',
         RequestFields::VERIFY_AMT               => 'required|numeric',
-        RequestFields::VERIFY_DATE              => 'required',
+        RequestFields::VERIFY_DATE              => 'required|date_format:Y-m-d',
     ];
 }

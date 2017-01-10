@@ -88,65 +88,103 @@ class NetbankingAxisGatewayTest extends TestCase
 
     public function testRefundFileGeneration()
     {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $this->doAuthAndCapturePayment($this->payment);
 
-        // Refund the above payment in full
-        $refund = $this->refundPayment($payment['id']);
+        $this->doAuthAndCapturePayment($this->payment);
 
-        // Create a new payment #2
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $this->doAuthAndCapturePayment($this->payment);
 
-        // do a partial refund of the above payment
-        $refund = $this->refundPayment($payment['id'], 10000);
-        // refund the remaining amount in the payment
-        $refund = $this->refundPayment($payment['id']);
+        $payments = $this->getEntities('payment', [], true);
 
-        // Get all the pending refunds
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)
+                                                      ->addMinutes(30)
+                                                      ->timestamp;
+
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at'    => $createdAt,
+                                                              'authorized_at' => $createdAt + 10,
+                                                              'captured_at'   => $createdAt + 20]);
+        }
+
+        // Set the transactions to be reconciled today
+        $transactions = $this->getEntities('transaction', [], true);
+
+        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)
+                                                     ->addMinutes(13)
+                                                     ->timestamp;
+
+        foreach ($transactions['items'] as $transaction)
+        {
+            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+        }
+
+        // Refund a payment
+        $lastPayment = $payments['items'][2];
+
+        $this->refundPayment($lastPayment['id'], 100);
+
+        $this->refundPayment($lastPayment['id']);
+
         $refunds = $this->getEntities('refund', [], true);
 
-        // Convert the created_at dates to yesterday so that they are
-        // picked up during txt file generation
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(45)->timestamp;
+
+        // Mark refunds as created yesterday
         foreach ($refunds['items'] as $refund)
         {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-            // Find out how this works using sd's
             $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
         }
 
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $this->refundPayment($payment['id']);
-
         // Mail catch with amount and refund everywhere
-        // Mail::shouldReceive('queue')
-        //       ->once()
-        //       ->with(
-        //             Mockery::any(),
-        //             Mockery::on(function ($data)
-        //                 {
-        //                     $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                        {
+                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-        //                     $testData = array(
-        //                         'subject' => 'Axis Netbanking claims and refund files for '.$date,
-        //                         'amount' => [
-        //                             'claims' => 1500,
-        //                             'refunds' => 500,
-        //                             'total' => 1000,
-        //                         ]);
+                            $testData = array(
+                                'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                                'amount' => [
+                                    'claims' => 1500,
+                                    'refunds' => 500,
+                                    'total' => 1000,
+                                ]);
 
-        //                     $this->assertArraySelectiveEquals($testData, $data);
+                            $this->assertArraySelectiveEquals($testData, $data);
 
-        //                     return true;
-        //                 }),
-        //             Mockery::any()
-        //         );
+                            return true;
+                        }),
+                    Mockery::any()
+                );
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 
-        $this->assertEquals($data['netbanking_axis']['count'], 3);
-        // assert that total amount is 1000
-        $this->assertEquals($data['netbanking_axis']['file'][0], 1000);
-        $this->assertTrue(file_exists($data['netbanking_axis']['file'][1]));
+        $this->assertTrue(file_exists($data['netbanking_axis'][0]));
+
+        $this->assertTrue(file_exists($data['netbanking_axis'][1]));
+
+        $refundsFileContents = file($data['netbanking_axis'][0]);
+
+        $claimsFileContents = file($data['netbanking_axis'][1]);
+
+        // 2 refunds + 1 initial line
+        assert(count($refundsFileContents) === 3);
+
+        // 3 claims + 1 initial line
+        assert(count($claimsFileContents) === 4);
+
+        $refundsFileLine1 = explode('~~', $refundsFileContents[1]);
+
+        // Each line should have 9 columns
+        assert(count($refundsFileLine1) === 9);
+
+        $claimsFileLine1 = explode('~~', $refundsFileContents[1]);
+
+        // Each line should have 8 columns
+        assert(count($claimsFileLine1) === 9);
     }
 
     public function testFailedAuthPayment()

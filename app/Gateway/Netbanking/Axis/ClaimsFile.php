@@ -2,7 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
-use Carbon;
+use Carbon\Carbon;
 use RZP\Gateway\Base;
 
 class ClaimsFile extends Base\RefundFile
@@ -64,6 +64,15 @@ class ClaimsFile extends Base\RefundFile
         $txt = $this->getTextData($data, $initialLine);
 
         return [$txt, $totalAmount];
+    }
+
+    protected function getTextData($data, $prependLine = '')
+    {
+        $ignoreLastNewline = true;
+
+        $txt = $this->generateText($data, '~~', $ignoreLastNewline);
+
+        return $prependLine . $txt;
     }
 
     protected function getInitialLine()

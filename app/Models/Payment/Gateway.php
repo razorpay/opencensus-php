@@ -287,7 +287,7 @@ class Gateway
      */
     public static $claimsFileToBank = [
         IFSC::KKBK,
-        // IFSC::UTIB,
+        IFSC::UTIB,
     ];
 
     /**

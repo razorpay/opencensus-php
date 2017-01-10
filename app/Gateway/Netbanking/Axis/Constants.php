@@ -14,4 +14,5 @@ class Constants
     const AUTH_MENU_ID   = 'CIMSHP';
     const AUTH_CALL_MODE = '2';
     const CATEGORY_ID    = 'IRCSM';
+    const MODE_CBC       = 2;
 }

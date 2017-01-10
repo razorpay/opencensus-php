@@ -43,7 +43,7 @@ class RefundFile extends Base\RefundFile
         return [$totalAmount, $file['local_file_path']];
     }
 
-    protected function getRefundData($input)
+    protected function getRefundData(array $input)
     {
         $totalAmount = 0;
 
@@ -84,13 +84,13 @@ class RefundFile extends Base\RefundFile
         return $line;
     }
 
-    protected function getTextData($data, $prependLine = '')
+    protected function getTextData(array $data, string $prependLine = '')
     {
         $ignoreLastNewline = true;
 
         $txt = $this->generateText($data, '~~', $ignoreLastNewline);
 
-        $txt = $prependLine.$txt;
+        $txt = $prependLine . $txt;
 
         return $txt;
     }
@@ -102,6 +102,6 @@ class RefundFile extends Base\RefundFile
     {
         $time = Carbon::now('Asia/Kolkata')->format('Ymd');
 
-        return static::$fileToWriteName.'_'.$time.'_1';
+        return static::$fileToWriteName . '_' . $time . '_1';
     }
 }

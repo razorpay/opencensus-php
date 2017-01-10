@@ -22,8 +22,6 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'axis';
 
-    const MODE_CBC = 2;
-
     protected $map = [
         RequestFields::AMOUNT             => 'amount',
         RequestFields::MERCHANT_REFERENCE => 'payment_id',
@@ -36,7 +34,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $entity = $this->getDefaultRequestData($input);
+        $entity = $this->getEntityAttributes($input);
 
         $payment = $this->createGatewayPaymentEntity($entity);
 
@@ -55,14 +53,14 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $attrs = $this->getCallbackAttributes($content);
 
-        $payment->fill($attrs);
+        $gatewayEntity->fill($attrs);
 
-        $this->repo->saveOrFail($payment);
+        $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkResponseStatus($attrs, $content);
     }
@@ -76,7 +74,7 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function sendPaymentVerifyRequest($verify)
+    public function sendPaymentVerifyRequest(Verify $verify)
     {
         $content = $this->getPaymentVerifyData($verify);
 
@@ -91,7 +89,7 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
-    public function verifyPayment($verify)
+    public function verifyPayment(Verify $verify)
     {
         // Response XML
         $content = $verify->verifyResponseContent;
@@ -105,7 +103,7 @@ class Gateway extends Base\Gateway
         $this->saveVerifyResponseIfNeeded($verify, $content);
     }
 
-    protected function getVerifyStatus($verify, $response)
+    protected function getVerifyStatus(Verify $verify, array $response)
     {
         $this->checkApiSuccess($verify);
 
@@ -120,10 +118,10 @@ class Gateway extends Base\Gateway
 
         $verify->status = $status;
 
-        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($status == VerifyResult::STATUS_MATCH) ? true : false;
     }
 
-    protected function checkApiSuccess($verify)
+    protected function checkApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
 
@@ -136,7 +134,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkGatewaySuccess($verify, $response)
+    protected function checkGatewaySuccess(Verify $verify, array $response)
     {
         $verify->gatewaySuccess = false;
 
@@ -147,7 +145,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getPaymentVerifyData($verify)
+    protected function getPaymentVerifyData(Verify $verify)
     {
         $payment = $verify->payment;
 
@@ -162,7 +160,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getPaymentRequestData($input)
+    protected function getPaymentRequestData(array $input)
     {
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
@@ -175,9 +173,9 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getAuthorizeEncryptedString($input)
+    protected function getAuthorizeEncryptedString(array $input)
     {
-        $defaultData = $this->getDefaultRequestData($input);
+        $defaultData = $this->getEntityAttributes($input);
 
         $data = [
             RequestFields::PAYEE_ID          => $this->getMerchantId(),
@@ -198,7 +196,7 @@ class Gateway extends Base\Gateway
         return $this->encryptString($stringToEncrypt);
     }
 
-    protected function getDefaultRequestData($input)
+    protected function getEntityAttributes(array $input)
     {
         return [
             RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
@@ -208,8 +206,8 @@ class Gateway extends Base\Gateway
     }
 
     /*
-     * @param associative array $data
-     * @return string in key1~value1$key2~value2 format
+     * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
+     * @return Eg. string "PRN~6vTX585l2WP6Bq$MD~P"
      */
     protected function prepareStringToEncrypt(array $data)
     {
@@ -225,7 +223,7 @@ class Gateway extends Base\Gateway
         return $queryString;
     }
 
-    protected function getDataFromResponse($encryptedResponse)
+    protected function getDataFromResponse(array $encryptedResponse)
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
@@ -238,7 +236,7 @@ class Gateway extends Base\Gateway
         return $response;
     }
 
-    protected function checkDecryptionFailure($encryptedString, $content)
+    protected function checkDecryptionFailure(string $encryptedString, array $content)
     {
         if (empty($content) ===  true)
         {
@@ -251,7 +249,7 @@ class Gateway extends Base\Gateway
     }
 
 
-    protected function checkResponseStatus($attrs, $content)
+    protected function checkResponseStatus(array $attrs, array $content)
     {
         if ((isset($attrs['status']) === false) or
             ($attrs['status'] !== Constants::YES))
@@ -265,7 +263,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getCallbackAttributes($content)
+    protected function getCallbackAttributes(array $content)
     {
         return [
             'received'          => true,
@@ -275,7 +273,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function saveVerifyResponseIfNeeded($verify, $content)
+    protected function saveVerifyResponseIfNeeded(Verify $verify, array $content)
     {
         $gatewayPayment = $verify->payment;
 
@@ -292,7 +290,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes($content)
+    protected function getVerifyAttributes(array $content)
     {
         return [
             'received'          => true,
@@ -302,14 +300,14 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getPaymentDate($payment)
+    protected function getPaymentDate(Base\Entity $payment)
     {
         $timestamp = $payment['original']['created_at'];
 
         return date('Y-m-d', $timestamp);
     }
 
-    protected function parseResponseXml($response)
+    protected function parseResponseXml(string $response)
     {
         $responseArray = (array) simplexml_load_string($response);
 
@@ -338,7 +336,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new AES(self::MODE_CBC);
+        $aes = new AES(Constants::MODE_CBC);
 
         $aes->setKey($masterKey);
 
