@@ -176,6 +176,8 @@ class Settler
             $data['settlement_text_file'] = $urlText;
 
             $data['settlement_excel_file'] = $urlExcel;
+
+            $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
         }
 
         $this->successNotification($data, $settlements);
@@ -505,6 +507,20 @@ class Settler
         }
 
         $this->repo->saveOrFail($this->batchSettlement);
+    }
+
+    protected function updateBatchSettlementEntityUrls($urlText, $urlExcel)
+    {
+        $batchSettlement = $this->batchSettlement;
+
+        $urls = [
+            'kotak_settlement_txt'   => $urlText,
+            'kotak_settlement_excel' => $urlExcel
+        ];
+
+        $batchSettlement->setUrls($urls);
+
+        $this->repo->saveOrFail($batchSettlement);
     }
 
     protected function isInputValue(array $input, $key, $value)
