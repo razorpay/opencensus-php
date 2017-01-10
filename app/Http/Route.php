@@ -151,6 +151,7 @@ final class Route
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
+        'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
         'pricing_upload_plan'                     => ['post',     'pricing/upload',                                 'PricingController@postUploadPricingPlan'                           ],
         'pricing_get_plans'                       => ['get',      'pricing',                                        'PricingController@getPricingPlans'                                 ],
@@ -691,6 +692,8 @@ final class Route
         'currency_fetch_rates',
         'upi_psp_disallow',
         'upi_psp_allow',
+        'merchant_activation_migrate',
+        'transaction_create_fees_breakup',
     );
 
     public static $proxy = array(
@@ -903,9 +906,9 @@ final class Route
             'batch_process_file',
             'order_refund_multiple_authorized',
             'refund_create_gateway_record',
-            'migrate_transactions',
             'merchant_migrate_features',
             'currency_update_rates',
+            'merchant_activation_migrate'
         ),
 
         'mailgun' => array(
