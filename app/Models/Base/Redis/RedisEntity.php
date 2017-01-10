@@ -2,52 +2,17 @@
 
 namespace RZP\Models\Base\Redis;
 
-class RedisEntity
+abstract class RedisEntity
 {
-    protected static $keyPrefix = '';
+    abstract public function getKey();
 
-    protected static $delimiter = '';
+    abstract public function getRedisKey();
 
-    protected $key;
+    abstract public function getData();
 
-    protected $data;
+    abstract public function getDataToSave();
 
-    public function __construct(string $key)
-    {
-        $this->key = $key;
+    abstract public function setData(array $redisData);
 
-        $this->data = [];
-    }
-
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    public function getRedisKey()
-    {
-        return static::$keyPrefix . static::$delimiter . $this->key;
-    }
-
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    public function getDataToSave()
-    {
-        return $this->data;
-    }
-
-    public function setData(array $redisData)
-    {
-        $this->data = $redisData;
-    }
-
-    public function toArray()
-    {
-        return [
-            $this->key => $this->data
-        ];
-    }
+    abstract public function toArray();
 }
