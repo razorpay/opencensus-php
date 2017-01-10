@@ -6,6 +6,7 @@ use Config;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore;
 use RZP\Base\RuntimeManager;
@@ -144,14 +145,7 @@ class FileMigration extends Base\Service
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-
-            $this->trace->info(
-                TraceCode::MERCHANT_DETAIL_MIGRATE_FAILED,
-                [
-                    'exception'     => $ex->getMessage(),
-                    'merchant_id'   => $merchantId
-                ]);
+            $this->trace->traceException($ex, Trace::INFO, TraceCode::MERCHANT_DETAIL_MIGRATE_FAILED);
 
             throw $ex;
         }
