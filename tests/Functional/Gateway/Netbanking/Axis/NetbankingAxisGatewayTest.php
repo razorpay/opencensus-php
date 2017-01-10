@@ -35,14 +35,14 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('netbanking', true);
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
 
-        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertArrayHasKey('bank_payment_id', $gatewayEntity);
 
-        $this->assertTrue(filter_var($payment['bank_payment_id'],
+        $this->assertTrue(filter_var($gatewayEntity['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
     }
 
@@ -229,7 +229,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function mockPaymentFailure()
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
             $content['PAID'] = 'N';
         });
@@ -237,7 +237,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function mockVerifyStatusFailure()
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
             $content['PaymentStatus'] = 'F';
         });
@@ -245,11 +245,11 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function mockSetBankPaymentId()
     {
-        $this->mockServerContentFunction(function(&$content, $action = null)
+        $this->mockServerContentFunction(function(& $content, $action = null)
         {
-            $payment = $this->getLastEntity('netbanking', true);
+            $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-            $content['BID'] = $payment['bank_payment_id'];
+            $content['BID'] = $gatewayEntity['bank_payment_id'];
         });
     }
 }

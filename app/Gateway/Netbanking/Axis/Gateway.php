@@ -36,7 +36,7 @@ class Gateway extends Base\Gateway
 
         $entityAttributes = $this->getEntityAttributes($input);
 
-        $payment = $this->createGatewayPaymentEntity($entityAttributes);
+        $this->createGatewayPaymentEntity($entityAttributes);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -49,7 +49,9 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                           ['gateway_response' => $input['gateway'],
+                            'payment_id'       => $input['payment']['id']]);
 
         $content = $this->getDataFromResponse($input['gateway']);
 
@@ -149,11 +151,15 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
 
+        $timestamp = $payment['original']['created_at'];
+
+        $date = date('Y-m-d', $timestamp);
+
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
             RequestFields::VERIFY_ITC      => strtoupper($payment['payment_id']),
             RequestFields::VERIFY_PRN      => $payment['payment_id'],
-            RequestFields::VERIFY_DATE     => $this->getPaymentDate($payment),
+            RequestFields::VERIFY_DATE     => $date,
             RequestFields::VERIFY_AMT      => $payment['amount'],
         ];
 
@@ -231,6 +237,8 @@ class Gateway extends Base\Gateway
 
         parse_str($decryptedString, $response);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $response);
+
         $this->checkDecryptionFailure($encryptedString, $response);
 
         return $response;
@@ -241,7 +249,8 @@ class Gateway extends Base\Gateway
         if (empty($content) ===  true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['encrypted_string' => $encryptedString]);
+                ['encrypted_string' => $encryptedString,
+                 'payment_id'       => $content[ResponseFields::MERCHANT_REFERENCE]]);
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
@@ -298,13 +307,6 @@ class Gateway extends Base\Gateway
             'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMT],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
-    }
-
-    protected function getPaymentDate(Base\Entity $payment)
-    {
-        $timestamp = $payment['original']['created_at'];
-
-        return date('Y-m-d', $timestamp);
     }
 
     protected function parseResponseXml(string $response)
