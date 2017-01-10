@@ -442,7 +442,7 @@ class ErrorCode
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 
+    // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
-    const BAD_REQUEST_INVALID_CARD_GATEWAY                                          = 'BAD_REQUEST_INVALID_CARD_GATEWAY';
-    const BAD_REQUEST_INVALID_NETBANKING_GATEWAY                                    = 'BAD_REQUEST_INVALID_NETBANKING_GATEWAY';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
 }
