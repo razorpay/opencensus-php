@@ -4,8 +4,8 @@ namespace RZP\Models\Base\Redis;
 
 use App;
 use Redis;
-
 use Predis\PredisException;
+
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
