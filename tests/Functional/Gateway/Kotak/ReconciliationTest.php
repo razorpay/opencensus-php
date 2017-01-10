@@ -205,6 +205,7 @@ class ReconciliationTest extends TestCase
     protected function fetchAndMatchDailySettlement()
     {
         $content = $this->getEntities('daily_settlement', [], true);
+
         $data = array(
             'entity' => 'collection',
             'count' => 1,
