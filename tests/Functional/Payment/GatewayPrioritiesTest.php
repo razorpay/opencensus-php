@@ -58,6 +58,7 @@ class GatewayPrioritiesTest extends TestCase
 
     public function testFetchGatewayPriorities()
     {
+        // Setting the config to false here so that real service is used for fetch
         config(['services.redis_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
@@ -90,6 +91,7 @@ class GatewayPrioritiesTest extends TestCase
 
     public function testFetchGatewayPrioritiesWithException()
     {
+        // Setting the config to false here so that real service is used for fetch
         config(['services.redis_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
@@ -119,6 +121,7 @@ class GatewayPrioritiesTest extends TestCase
 
     public function testRemoveGatewayPriorities()
     {
+        // Setting the config to false here so that real service is used for fetch
         config(['services.redis_store.mock' => false]);
 
         Redis::shouldReceive('zrem')
