@@ -24,6 +24,15 @@ class FileMigration extends Base\Service
         Entity::PROMOTER_ADDRESS_URL
     ];
 
+    public function __construct()
+    {
+        parent::__construct();
+
+        $config =  \Config::get('aws');
+
+        $this->s3Client = Handler::getClient();
+    }
+
     public function migrateMerchantDocuments($input)
     {
         $response = [];
@@ -45,16 +54,9 @@ class FileMigration extends Base\Service
             }
             catch(\Exception $ex)
             {
-                $this->trace->traceException($ex);
+                $this->trace->traceException($ex, Trace::INFO, TraceCode::MERCHANT_DETAIL_MIGRATE_FAILED);
 
                 $response[$merchantDetail->getMerchantId()] = $ex->getMessage();
-
-                $this->trace->info(
-                    TraceCode::MERCHANT_DETAIL_MIGRATE_FAILED,
-                    [
-                        'exception'         => $ex->getMessage(),
-                        'merchant_detail'   => $merchantDetail->toArray()
-                    ]);
 
                 continue;
             }
@@ -103,9 +105,7 @@ class FileMigration extends Base\Service
 
     protected function getFileInfo(Detail\Entity $merchantDetail)
     {
-        $config =  \Config::get('aws');
-
-        $s3 = Handler::getClient();
+        $s3 = $this->s3Client;
 
         $bucket = $config['activation_bucket'];
 
