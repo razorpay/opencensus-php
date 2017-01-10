@@ -403,20 +403,6 @@ class Settler
         return $urls;
     }
 
-    protected function collectApiFees($apiFee, $channel)
-    {
-        if ($channel !== Settlement\Channel::KOTAK)
-        {
-            throw new Exception\LogicException('Not valid channel: ' . $channel);
-        }
-
-        $feeAccount = $this->repo->merchant->findOrFail(Merchant\Account::API_FEE_ACCOUNT);
-
-        list($setl, $adjTxn) = (new Settlement\Merchant($feeAccount, $channel))->collectApiFees($apiFee);
-
-        return [$setl, $adjTxn];
-    }
-
     protected function fetchTransactionsToSettle($input)
     {
         $ts = $this->initSettlementTimestamp();
