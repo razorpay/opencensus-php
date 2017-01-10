@@ -55,7 +55,7 @@ class Processor extends Base\Core
     {
         $queryParams = [];
 
-        foreach($this->uniqueCheckerKeys as $key)
+        foreach ($this->uniqueCheckerKeys as $key)
         {
             if (isset($input[$key]) === true)
             {
@@ -72,7 +72,7 @@ class Processor extends Base\Core
     {
         $queryParams = [];
 
-        foreach($this->uniqueCheckerKeys as $key)
+        foreach ($this->uniqueCheckerKeys as $key)
         {
             if (isset($input[$key]) === true)
             {

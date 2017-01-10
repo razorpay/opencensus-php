@@ -423,9 +423,6 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
-
-
-
     //----- helpers -----
 
     protected function fillDefaultsForTests($functionName)

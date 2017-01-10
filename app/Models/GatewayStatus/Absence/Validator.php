@@ -123,7 +123,7 @@ class Validator extends Base\Validator
 
         if ($issuer === null)
         {
-            return ;
+            return;
         }
 
         $this->validateIssuerWallet($method, $issuer);
@@ -137,8 +137,7 @@ class Validator extends Base\Validator
             if (empty($issuer) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Issuer: '. $issuer .' cannot be empty for method: '.$method
-                );
+                    'Issuer: '. $issuer .' cannot be empty for method: '.$method);
             }
 
             $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
@@ -181,7 +180,8 @@ class Validator extends Base\Validator
         $method = $input[Entity::METHOD];
 
         // card type is not applicable for netbanking
-        if ((strtolower($method) === Method::CARD) and (in_array(strtolower($cardType), ['debit', 'credit']) === false))
+        if ((strtolower($method) === Method::CARD) and
+            (in_array(strtolower($cardType), ['debit', 'credit']) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Card Type: '.$cardType. ' is not supported'

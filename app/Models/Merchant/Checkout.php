@@ -40,7 +40,7 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
-        $data['gateway_status'] = (new Absence\Core)->getFormattedCheckoutData($merchant);
+        $data['gateway_status'] = (new Absence\Core)->getFormattedGatewayAbsenceCheckoutData($merchant);
 
         $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
 

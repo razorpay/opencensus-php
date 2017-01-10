@@ -43,7 +43,7 @@ class Repository extends Base\Repository
         // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
         // setting the $to value to $input['to'] if available or $input['from']. The essential
         // idea is to fetch the list of gateways/issuers at the current point in time.
-        $to = (isset($input[Entity::TO]) === true) ? $input[Entity::TO] : null;
+        $to = (isset($input[Entity::TO]) === true) ?? null;
 
         if ((empty($to) === true) and (isset($input[Entity::FROM])))
         {
@@ -65,7 +65,7 @@ class Repository extends Base\Repository
             $query->where(function ($query) use ($to)
             {
                 $query->whereNull(Entity::TO);
-                $query->orwhere(Entity::TO, '>=', $to);
+                $query->orWhere(Entity::TO, '>=', $to);
             });
         }
 
@@ -93,7 +93,7 @@ class Repository extends Base\Repository
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)
     {
-        foreach($keyOperatorMap as $key => $operator)
+        foreach ($keyOperatorMap as $key => $operator)
         {
             if (isset($input[$key]) === true)
             {

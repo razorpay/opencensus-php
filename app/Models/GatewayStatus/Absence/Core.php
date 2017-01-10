@@ -58,7 +58,7 @@ class Core extends Base\Core
         return array_filter($data);
     }
 
-    public function getFormattedCheckoutData(Merchant\Entity $merchant)
+    public function getFormattedGatewayAbsenceCheckoutData(Merchant\Entity $merchant)
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
