@@ -277,7 +277,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::NETWORK_CATEGORY,
-                $input[Entity::NETWORK_CATEGORY]);
+                [$input[Entity::NETWORK_CATEGORY]]);
             }
     }
 
