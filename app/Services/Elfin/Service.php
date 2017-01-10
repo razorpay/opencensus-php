@@ -127,7 +127,7 @@ class Service extends Impl\Base
 
     protected function createDriver($service)
     {
-        $class = __NAMESPACE__ . '\\Impl\\' . ucfirst($service);
+        $class = __NAMESPACE__ . '\\Impl\\' . studly_case($service);
 
         if (class_exists($class) === false)
         {

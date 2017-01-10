@@ -2,6 +2,8 @@
 
 namespace RZP\Services\Elfin\Impl;
 
+use RZP\Constants\HashAlgo;
+
 class Gimli extends Base
 {
     private $secret;
@@ -53,6 +55,6 @@ class Gimli extends Base
 
     protected function getSignature(string $payload)
     {
-        return hash_hmac('sha1', $payload, $this->secret);
+        return hash_hmac(HashAlgo::SHA1, $payload, $this->secret);
     }
 }

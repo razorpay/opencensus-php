@@ -48,7 +48,6 @@ class Bitly extends Base
         if (($res['status_code'] !== 200) or
             (isset($res['data']['url']) === false))
         {
-
             throw new Exception\RuntimeException($res['status_txt'], $res);
         }
     }
