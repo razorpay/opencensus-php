@@ -354,4 +354,18 @@ class Repository extends Base\Repository
 
         return $transactions;
     }
+
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('transaction'))
+        {
+            return $payment->transaction;
+        }
+
+        $transaction = $this->findOrFail($payment->getTransactionId());
+
+        $payment->setRelation('transaction', $transaction);
+
+        return $transaction;
+    }
 }

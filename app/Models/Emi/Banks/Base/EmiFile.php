@@ -9,7 +9,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use Str;
 
-class EmiFile extends Base\Core;
+class EmiFile extends Base\Core
 {
     use FileHandlerTrait;
 

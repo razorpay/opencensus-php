@@ -47,7 +47,7 @@ class EmiFile extends Base\EmiFile
 
             $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
 
-            $txn = $this->repo->transaction->fetchForPayment($payment);
+            $txn = $this->repo->transaction->fetchForPayment($emiPayment);
 
             $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
