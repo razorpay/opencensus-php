@@ -9,9 +9,9 @@ class FeeModel
     const NA        = 'na';
 
     protected static $values = [
+        self::NA        => -1,
         self::PREPAID   => 0,
         self::POSTPAID  => 1,
-        self::NA        => 2,
     ];
 
     public static function getValueForFeeModelString($feeModel)

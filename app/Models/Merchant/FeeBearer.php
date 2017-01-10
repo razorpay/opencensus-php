@@ -9,9 +9,9 @@ class FeeBearer
     const NA       = 'na';
 
     protected static $values = [
+        self::NA       => -1,
         self::PLATFORM => 0,
         self::CUSTOMER => 1,
-        self::NA       => 2,
     ];
 
     public static function getValueForBearerString($bearer)
