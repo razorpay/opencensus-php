@@ -1480,6 +1480,12 @@ ALTER TABLE refunds
     ADD COLUMN gateway_refunded TINYINT AFTER base_amount
     ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
     
+ALTER TABLE transactions
+    MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT -1,
+    MODIFY COLUMN fee_model TINYINT(1) DEFAULT -1;
+UPDATE transactions SET fee_bearer = '-1' WHERE type != 'payment';
+UPDATE transactions SET fee_model = '-1' WHERE type != 'payment';
+
 ALTER TABLE admin_tokens
     MODIFY COLUMN id char(14);
 

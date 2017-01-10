@@ -931,6 +931,7 @@ final class Route
     protected static $jsonpRoutes = array(
         'checkout',
         'payment_create_jsonp',
+        'payment_get_status',
         'merchant_public_get_banks',
         'merchant_methods',
     );
