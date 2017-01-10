@@ -29,7 +29,7 @@ class FileMigration extends Base\Service
     {
         parent::__construct();
 
-        $config =  \Config::get('aws');
+        $this->config =  \Config::get('aws');
 
         $this->s3Client = Handler::getClient();
     }
@@ -108,7 +108,7 @@ class FileMigration extends Base\Service
     {
         $s3 = $this->s3Client;
 
-        $bucket = $config['activation_bucket'];
+        $bucket = $this->config['activation_bucket'];
 
         $merchantId = $merchantDetail->getMerchantId();
 
