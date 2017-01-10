@@ -14,15 +14,15 @@ class RefundFile extends Base\RefundFile
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 
     protected static $headers = [
-        RefundFileFields::SERIAL_NO,
-        RefundFileFields::PAYEE_ID,
-        RefundFileFields::PAYEE_NAME,
-        RefundFileFields::BANK_ID,
-        RefundFileFields::ITEM_CODE,
-        RefundFileFields::PAYMENT_REFERENCE_NO,
-        RefundFileFields::AMOUNT,
-        RefundFileFields::DATETIME,
-        RefundFileFields::REFUND_AMOUNT,
+        'Sr. No',
+        'Payee id', // pid
+        'Payee name', // RAZORPAY
+        'BID',
+        'ITC',
+        'PRN',
+        'AMOUNT',
+        'DATETIME',
+        'REFUND Amount',
     ];
 
     public function generate($input)

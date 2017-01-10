@@ -12,14 +12,14 @@ class ClaimsFile extends Base\RefundFile
     const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
 
     protected static $headers = [
-        ClaimsFileFields::SERIAL_NUMBER,
-        ClaimsFileFields::PAYEE_ID,
-        ClaimsFileFields::PAYEE_NAME,
-        ClaimsFileFields::BANK_ID,
-        ClaimsFileFields::ITEM_CODE,
-        ClaimsFileFields::PAYMENT_REFERENCE_NUMBER,
-        ClaimsFileFields::AMOUNT,
-        ClaimsFileFields::DATETIME
+        'Sr. No',
+        'PayeeId', // pid
+        'PayeeName', // RAZORPAY
+        'BID',
+        'ITC',
+        'PRN',
+        'Amount',
+        'DateTime',
     ];
 
     public function generate($input)

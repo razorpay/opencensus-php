@@ -339,39 +339,6 @@ class Gateway
         return (new $class)->generate($input);
     }
 
-    public function generateClaims($input)
-    {
-        $paymentIds = array_map(function($row)
-        {
-            return $row['payment']['id'];
-        }, $input['data']);
-
-        $gatewayPayments = $this->repo->fetchByPaymentIdsAndAction(
-                                $paymentIds, Action::AUTHORIZE);
-
-        // payment id is key and gatewayPayment entity is value
-        $gatewayPayments = $gatewayPayments->getDictionaryByAttribute(Entity::PAYMENT_ID);
-
-        // Adding relevant information to each gateway row in $input['data']
-        $input['data'] = array_map(function($row) use ($gatewayPayments)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayPayments[$paymentId]) === true)
-            {
-                $row['gateway'] = $gatewayPayments[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $input['data']);
-
-        $namespace = $this->getGatewayNamespace();
-
-        $class = $namespace . '\\' . 'ClaimsFile';
-
-        return (new $class)->generate($input);
-    }
-
     protected function sendGatewayRequest($request)
     {
         if (isset($request['options']) === false)

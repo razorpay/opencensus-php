@@ -34,9 +34,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $entity = $this->getEntityAttributes($input);
+        $entityAttributes = $this->getEntityAttributes($input);
 
-        $payment = $this->createGatewayPaymentEntity($entity);
+        $payment = $this->createGatewayPaymentEntity($entityAttributes);
 
         $request = $this->getStandardRequestArray($content);
 
