@@ -1500,6 +1500,3 @@ WHERE id='6gysDIemK9qx3W';
 
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
-
-
-ALTER TABLE billdesk ADD INDEX billdesk_refstatus_index (RefStatus);

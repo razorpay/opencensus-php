@@ -97,15 +97,23 @@ class Repository extends Base\Repository
         $response = $this->newQuery()
                          ->select($billdeskAttributes)
                          ->where('RefStatus', '=', RefundStatus::CANCELLED)
-                         ->whereRaw($billdeskRefundIdAttr . ' NOT IN ' .
-                                '(' .
-                                ' SELECT ' . $refundIdAttr .
-                                ' FROM ' . $refundTable .
-                                ' JOIN ' . $paymentTable . ' ON ' . $refundPaymentIdAttr . ' = ' . $paymentIdAttr .
-                                ' WHERE ' . $paymentGatewayAttr . ' = ' . '\'' . Payment\Gateway::BILLDESK . '\'' .
-                                '   AND ' . $paymentTransactionIdAttr . ' IS NOT NULL ' .
-                                ')'
-                         )
+                         ->whereNotIn(
+                             $billdeskRefundIdAttr,
+                             function($query)
+                             use($refundIdAttr,
+                                 $refundTable,
+                                 $paymentTable,
+                                 $refundPaymentIdAttr,
+                                 $paymentIdAttr,
+                                 $paymentGatewayAttr,
+                                 $paymentTransactionIdAttr)
+                             {
+                                 $query->select($refundIdAttr)
+                                       ->from($refundTable)
+                                       ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                                       ->where($paymentGatewayAttr, '=', Payment\Gateway::BILLDESK)
+                                       ->whereNotNull($paymentTransactionIdAttr);
+                             })
                          ->get();
 
         return $response;
