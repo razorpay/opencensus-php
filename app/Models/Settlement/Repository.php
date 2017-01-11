@@ -33,6 +33,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSettlementsByBatchSettlementId($batchSettlementId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_SETTLEMENT_ID, '=', $batchSettlementId)
+                    ->get();
+    }
+
     public function getSettlementsBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
