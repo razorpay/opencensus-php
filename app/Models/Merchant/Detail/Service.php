@@ -63,7 +63,7 @@ class Service extends Base\Service
                 $fileName,
                 $key);
 
-            $params[$key] = $file['id'];
+            $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
         $merchantDetails->fill($params);

@@ -1495,6 +1495,16 @@ ALTER TABLE line_items ADD COLUMN description varchar(2048) DEFAULT NULL AFTER n
 ALTER TABLE line_items ADD COLUMN amount int(11) DEFAULT NULL AFTER description;
 ALTER TABLE line_items ADD COLUMN currency char(3) DEFAULT NULL AFTER amount;
 
+--- Queries to be run after deploying invoices-schema-fixes-1
+
+UPDATE line_items li
+    LEFT JOIN items i on li.item_id = i.id
+SET
+    li.name = i.name,
+    li.description = i.description,
+    li.amount = i.amount,
+    li.currency = i.currency;
+
 --- Queries to be run after deploying invoices-schema-fixes-2
 
 ALTER TABLE line_items MODIFY COLUMN name varchar(512) NOT NULL;
