@@ -269,6 +269,48 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) $refundEntity->getRefundAmount() * 100;
+        $processStatus = $refundEntity->getProcessStatus();
+        $refundStatus = $refundEntity->getRefundStatus();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'process_status' => $processStatus,
+                'refund_status' => $refundStatus,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($processStatus !== 'Y') or
+            (($refundStatus !== RefundStatus::REFUNDED) and
+             ($refundStatus !== RefundStatus::CANCELLED)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * This only handles for payments which have exactly one refund (either full or partial).
      * Currently, I don't see a way where we can handle this for multiple partial refunds too.

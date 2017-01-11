@@ -17,6 +17,7 @@ use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Trace\TraceCode;
+use RZP\Services\Elfin\Service as Elfin;
 
 class Generator extends Base\Core
 {
@@ -35,7 +36,16 @@ class Generator extends Base\Core
      */
     protected $lineItemCore;
 
-    protected $bitly;
+    /**
+     * Elfin: Url shortener service
+     */
+    protected $elfin;
+
+    /**
+     * Base invoice url from which invoice link is generated.
+     * @var string
+     */
+    protected $baseInvoiceUrl;
 
     const ORDER_CURRENCY = 'INR';
     const SHORT_MODE_LIVE = 'l';
@@ -49,9 +59,13 @@ class Generator extends Base\Core
 
         $this->invoice  = $invoice;
 
-        $this->bitly = $this->app['bitly'];
-
         $this->lineItemCore = new LineItem\Core;
+
+        $this->elfin = $this->app['elfin'];
+
+        $this->setElfinServices();
+
+        $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
     public function generate(array $input)
@@ -134,8 +148,18 @@ class Generator extends Base\Core
         $this->invoice->setAmount($totalAmount);
     }
 
-    public static function getInvoiceLink(string $invoiceId, string $mode)
+    /**
+     * Invoice long url is of the following format:
+     * <base invoice url>/(t|l)/<Invoice public id>
+     * Here t or l is short form for test or live mode.
+     *
+     * @return string
+     * @throws LogicException
+     */
+    protected function getInvoiceLink()
     {
+        $invoiceId = $this->invoice->getId();
+
         //
         // This is required here because this piece of code is a little prone to bugs.
         // Invoice ID may not be generated at this point due to which we will
@@ -146,22 +170,19 @@ class Generator extends Base\Core
         {
             throw new LogicException(
                 'Invoice ID is empty. Should not have reached here',
-                ErrorCode::SERVER_ERROR_INVOICE_ID_EMPTY
-            );
+                 ErrorCode::SERVER_ERROR_INVOICE_ID_EMPTY);
         }
-
-        $app = App::getFacadeRoot();
-
-        $baseInvoiceUrl = $app['config']->get('app.invoice');
 
         $shortMode = self::SHORT_MODE_TEST;
 
-        if ($mode === Mode::LIVE)
+        if ($this->mode === Mode::LIVE)
         {
             $shortMode = self::SHORT_MODE_LIVE;
         }
 
-        $invoiceLink = $baseInvoiceUrl . '/' . $shortMode . '/' . Entity::getSignedId($invoiceId);
+        $invoicePublicId = $this->invoice->getPublicId();
+
+        $invoiceLink = $this->baseInvoiceUrl . '/' . $shortMode . '/' . $invoicePublicId;
 
         return $invoiceLink;
     }
@@ -229,9 +250,9 @@ class Generator extends Base\Core
 
     protected function setShortUrl()
     {
-        $longUrl = self::getInvoiceLink($this->invoice->getId(), $this->mode);
+        $longUrl = $this->getInvoiceLink();
 
-        $shortenedUrl = $this->bitly->shortenUrl($longUrl);
+        $shortenedUrl = $this->elfin->shorten($longUrl);
 
         $this->trace->info(
             TraceCode::INVOICE_LINKS,
@@ -332,6 +353,36 @@ class Generator extends Base\Core
         {
             $this->invoice->customer()->associate($customer);
             $this->invoice->setCustomerDetails($customer);
+        }
+    }
+
+    /**
+     * Sets Elfin services.
+     *
+     * TO BE REMOVED.
+     *
+     * For testing purposes, it'll set services to:
+     * - gimli:       For one demo merchant account
+     * - gimli,bitly: For one other demo merchant account
+     * - bitly:       For others
+     */
+    protected function setElfinServices()
+    {
+        switch ($this->merchant->getId())
+        {
+            // harshit.marwah@razorpay.com
+            case '4izmfM9TFCAgFN':
+                $this->elfin->setServices([Elfin::GIMLI]);
+                break;
+
+            // harshilmathur@gmail.com
+            case '2aTeFCKTYWwfrF':
+                $this->elfin->setServices([Elfin::GIMLI, Elfin::BITLY]);
+                break;
+
+            default:
+                $this->elfin->setServices([Elfin::BITLY]);
+                break;
         }
     }
 }
