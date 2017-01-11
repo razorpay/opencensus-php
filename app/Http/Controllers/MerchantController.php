@@ -633,5 +633,14 @@ class MerchantController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function postMerchantDetailMigrate()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\FileMigration)->migrateMerchantDocuments($input);
+
+        return ApiResponse::json($response);
+    }
     // == / Activation Form Handlers ==
 }

@@ -269,7 +269,6 @@ class ErrorCode
     const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                       = 'BAD_REQUEST_CARD_BILL_SHIP_MISMATCH';
     const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                    = 'BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE';
-    const BAD_REQUEST_BITLY_LONG_URL_EMPTY                                          = 'BAD_REQUEST_BITLY_LONG_URL_EMPTY';
     const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                       = 'BAD_REQUEST_INVALID_MESSAGE_KEYWORD';
     const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                        = 'BAD_REQUEST_MISSING_FIELDS_MESSAGE';
 
