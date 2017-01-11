@@ -32,7 +32,7 @@ class CreateMerchantOffer extends Migration
                   ->references(Offer::ID)
                   ->on(Table::OFFER);
 
-            $table->unique(array(self::MERCHANT_ID, self::OFFER_ID));
+            $table->unique([self::MERCHANT_ID, self::OFFER_ID]);
         });
     }
 
@@ -45,9 +45,13 @@ class CreateMerchantOffer extends Migration
     {
         Schema::table(Table::MERCHANT_OFFER, function ($table)
         {
-            $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::MERCHANT_ID.'_foreign');
+            // We are removing this because mysql thinks of merchant_id foreign constraint
+            // as equivalent of unique constraint on composer unique key of merchant_id
+            // and offer_id. Thus it overrides the constraint key for foreign key
+            // Refer: http://stackoverflow.com/questions/5312083/mysql-unique-foreign-key
+            // $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::MERCHANT_ID.'_foreign');
 
-            $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::MERCHANT_OFFER.'_'.self::OFFER_ID.'_foreign');
         });
 
         Schema::drop(Table::MERCHANT_OFFER);
