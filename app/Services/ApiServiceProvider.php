@@ -100,7 +100,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMaxMind();
 
-        $this->registerBitly();
+        $this->registerElfin();
 
         $this->registerExchange();
 
@@ -130,6 +130,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'maxmind',
             'raven',
             'repo',
+            'elfin',
             'segment',
             'upi.client',
             'webhook.inferno',
@@ -174,18 +175,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerBitly()
+    protected function registerElfin()
     {
-        $this->app->singleton('bitly', function($app)
+        $this->app->singleton('elfin', function($app)
         {
-            $bitlyMock = $app['config']->get('applications.bitly.mock');
+            $mock = $app['config']->get('applications.elfin.mock');
 
-            if ($bitlyMock === true)
+            if ($mock)
             {
-                return new Mock\Bitly($app);
+                return new Elfin\Mock\Service($app['config'], $app['trace']);
             }
 
-            return new Bitly($app);
+            return new Elfin\Service($app['config'], $app['trace']);
         });
     }
 

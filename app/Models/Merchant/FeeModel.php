@@ -6,8 +6,10 @@ class FeeModel
 {
     const PREPAID   = 'prepaid';
     const POSTPAID  = 'postpaid';
+    const NA        = 'na';
 
     protected static $values = [
+        self::NA        => -1,
         self::PREPAID   => 0,
         self::POSTPAID  => 1,
     ];
