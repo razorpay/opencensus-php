@@ -82,7 +82,7 @@ class FileMigration extends Base\Service
                 FileStore\Entity::MERCHANT_ID  => $merchantId,
                 FileStore\Entity::TYPE         => $key,
                 FileStore\Entity::ENTITY_ID    => $merchantId,
-                FileStore\Entity::ENTITY_TYPE  => Constants\Entity::getEntityClass($merchantDetail->getEntity()),
+                FileStore\Entity::ENTITY_TYPE  => 'merchant_detail',
                 FileStore\Entity::EXTENSION    => $value['content_type'],
                 FileStore\Entity::MIME         => FileStore\Format::VALID_EXTENSION_MIME_MAP[$value['content_type']][0],
                 FileStore\Entity::SIZE         => $value['content_length'],
@@ -96,7 +96,7 @@ class FileMigration extends Base\Service
 
             $this->repo->saveOrFail($fileStore);
 
-            $params[$key] = $fileStore->getPublicId();
+            $params[$key] = $fileStore->getId();
         }
 
         $merchantDetail->fill($params);

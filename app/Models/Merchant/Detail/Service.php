@@ -63,7 +63,7 @@ class Service extends Base\Service
                 $fileName,
                 $key);
 
-            $params[$key] = $file['id'];
+            $params[$key] = substr($file['id'], 5);
         }
 
         $merchantDetails->fill($params);
