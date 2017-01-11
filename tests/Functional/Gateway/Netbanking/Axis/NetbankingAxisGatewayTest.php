@@ -96,7 +96,7 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->generateRefundsExcelForNB('UTIB');
 
-        $this->checkRefundExcelData($data);
+        $this->checkRefundTextData($data);
     }
 
     public function testFailedAuthPayment()
@@ -210,7 +210,7 @@ class NetbankingAxisGatewayTest extends TestCase
                 );
     }
 
-    protected function checkRefundExcelData($data)
+    protected function checkRefundTextData($data)
     {
         $this->assertTrue(file_exists($data['netbanking_axis'][0]));
 

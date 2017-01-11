@@ -17,32 +17,6 @@
       <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <p>PFA Claims and Refund files. Forward this mail to Dashrathi.Dakwa@axisbank.com, Venkatesh.Ramachandran@axisbank.com, Santosh.Sakpal@axisbank.com, settlements@razorpay.com</p>
-            <table style="border: 1px solid grey;">
-                <thead>
-                    <tr style="border: 1px solid grey">
-                        <th style="border: 1px solid grey">Sr. No.</th>
-                        <th style="border: 1px solid grey">Particulars</th>
-                        <th style="border: 1px solid grey">Amount</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">1</td>
-                        <td style="border: 1px solid grey">Sale transactions</td>
-                        <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
-                    </tr>
-                    <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">2</td>
-                        <td style="border: 1px solid grey">Refunds</td>
-                        <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
-                    </tr>
-                    <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey"></td>
-                        <td style="border: 1px solid grey">Amount to be remitted to  Account</td>
-                        <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
-                    </tr>
-                </tbody>
-            </table>
           </td>
         </tr></table>
 </div>
