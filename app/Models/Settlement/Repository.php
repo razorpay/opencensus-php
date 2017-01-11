@@ -10,10 +10,11 @@ class Repository extends Base\Repository
     protected $entity = 'settlement';
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
-        Entity::STATUS          => 'sometimes|in:created,processed,failed',
-        Entity::UTR             => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID      => 'sometimes|alpha_num',
+        Entity::STATUS              => 'sometimes|in:created,processed,failed',
+        Entity::UTR                 => 'sometimes|alpha_num',
     );
 
     public function getSettlementWithFeesAsNullOrZero()
