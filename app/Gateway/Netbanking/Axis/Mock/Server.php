@@ -3,8 +3,9 @@
 namespace RZP\Gateway\Netbanking\Axis\Mock;
 
 use RZP\Gateway\Base;
-use phpseclib\Crypt\AES;
+use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
+use RZP\Gateway\Netbanking\Axis\Crypto;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
@@ -40,7 +41,9 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedData($input)
     {
-        $decryptedString = $this->decryptString($input[RequestFields::ENCRYPTED_STRING]);
+        $crypto = new Crypto(Mode::TEST);
+
+        $decryptedString = $crypto->decryptString($input[RequestFields::ENCRYPTED_STRING]);
 
         $toReplace   = ['~', '$'];
         $willReplace = ['=', '&'];
@@ -70,7 +73,9 @@ class Server extends Base\Mock\Server
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
 
-        $encryptedString = urlencode($this->encryptString($query));
+        $crypto = new Crypto(Mode::TEST);
+
+        $encryptedString = urlencode($crypto->encryptString($query));
 
         $content[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 
@@ -100,34 +105,5 @@ class Server extends Base\Mock\Server
         array_walk_recursive($response, array ($xml->Table1, 'addChild'));
 
         return $xml->asXML();
-    }
-
-    public function encryptString(string $string)
-    {
-        $aes = $this->createAesCrypter();
-
-        // returning Encrypted String
-        return base64_encode($aes->encrypt($string));
-    }
-
-    public function decryptString(string $string)
-    {
-        $aes = $this->createAesCrypter();
-
-        // returning Decrypted String
-        return $aes->decrypt(base64_decode($string));
-    }
-
-    protected function createAesCrypter()
-    {
-        $masterKey = $this->getGatewayInstance()->getSecret();
-
-        $aes = new AES(Constants::MODE_CBC);
-
-        $aes->setKey($masterKey);
-
-        $aes->setIV($masterKey);
-
-        return $aes;
     }
 }

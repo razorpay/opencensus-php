@@ -8,7 +8,7 @@ class Url
 
     const VERIFY_DOMAIN    = 'https://www.axisbiconnect.co.in/';
 
-    const AUTHORIZE        = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?';
+    const AUTHORIZE        = 'wps/portal/rBanking/AxisSMRetailLogin/axissmretailpage?AuthenticationFG.MENU_ID=CIMSHP&AuthenticationFG.CALL_MODE=2&CATEGORY_ID=IRCSM';
 
     const VERIFY           = 'AXISPaymentsVerification/Web/Applications/Query.aspx';
 }

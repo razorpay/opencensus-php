@@ -171,9 +171,6 @@ class Gateway extends Base\Gateway
         $encryptedString = $this->getAuthorizeEncryptedString($input);
 
         return [
-            RequestFields::AUTHENTICATION_MENU_ID   => Constants::AUTH_MENU_ID,
-            RequestFields::AUTHENTICATION_CALL_MODE => Constants::AUTH_CALL_MODE,
-            RequestFields::CATEGORY_ID              => Constants::CATEGORY_ID,
             RequestFields::ENCRYPTED_STRING         => $encryptedString,
             RequestFields::RETURN_URL               => $input['callbackUrl']
         ];
@@ -199,7 +196,9 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
-        return $this->encryptString($stringToEncrypt);
+        $crypto = new Crypto($this->mode);
+
+        return $crypto->encryptString($stringToEncrypt);
     }
 
     protected function getEntityAttributes(array $input)
@@ -233,7 +232,9 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $decryptedString = $this->decryptString(urldecode($encryptedString));
+        $crypto = new Crypto($this->mode);
+
+        $decryptedString = $crypto->decryptString(urldecode($encryptedString));
 
         parse_str($decryptedString, $response);
 
@@ -316,35 +317,6 @@ class Gateway extends Base\Gateway
         // Lets assume we verify only one payment at a time
         // So the response will contain just 1 table at a time
         return (array) $responseArray['Table1'];
-    }
-
-    public function encryptString(string $string)
-    {
-        $aes = $this->createAesCrypter();
-
-        // returning Encrypted String
-        return base64_encode($aes->encrypt($string));
-    }
-
-    public function decryptString(string $string)
-    {
-        $aes = $this->createAesCrypter();
-
-        // returning Decrypted String
-        return $aes->decrypt(base64_decode($string));
-    }
-
-    protected function createAesCrypter()
-    {
-        $masterKey = $this->getSecret();
-
-        $aes = new AES(Constants::MODE_CBC);
-
-        $aes->setKey($masterKey);
-
-        $aes->setIV($masterKey);
-
-        return $aes;
     }
 
     /*

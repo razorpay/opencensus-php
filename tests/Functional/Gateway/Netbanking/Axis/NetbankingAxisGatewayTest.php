@@ -90,8 +90,6 @@ class NetbankingAxisGatewayTest extends TestCase
     {
         $payments = $this->createPaymentsToClaim();
 
-        $this->setTransactionsToBeReconciledToday();
-
         $this->createRefundForFileGeneration($payments);
 
         $this->checkMailQueue();
@@ -161,22 +159,6 @@ class NetbankingAxisGatewayTest extends TestCase
         }
 
         return $payments;
-    }
-
-    protected function setTransactionsToBeReconciledToday()
-    {
-        // Set the transactions to be reconciled today
-        $transactions = $this->getEntities('transaction', [], true);
-
-        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)
-                                                     ->addMinutes(13)
-                                                     ->timestamp;
-
-        foreach ($transactions['items'] as $transaction)
-        {
-            $this->fixtures->edit('transaction', $transaction['id'],
-                                 ['reconciled_at' => $reconciledAt]);
-        }
     }
 
     protected function createRefundForFileGeneration($payments)
