@@ -7,7 +7,6 @@ use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {
-
     protected $twoFaError = false;
 
     protected $twoFaErrorCodes = [

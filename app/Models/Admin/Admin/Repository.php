@@ -14,6 +14,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'admin';
 
+    protected $appFetchParamRules = [
+        Entity::EMAIL => 'sometimes|email',
+    ];
+
     public function findByEmail($email)
     {
         $email = strtolower($email);
@@ -34,6 +38,19 @@ class Repository extends Base\Repository
                     ->where(Entity::EMAIL, '=', $email)
                     ->with($relations)
                     ->first();
+    }
+
+    public function findByOrgIdAndEmailOrFail($orgId, $email, $relations=[])
+    {
+        $email = strtolower($email);
+
+        Org\Entity::verifyIdAndSilentlyStripSign($orgId);
+
+        return $this->newQuery()
+                    ->orgId($orgId)
+                    ->where(Entity::EMAIL, '=', $email)
+                    ->with($relations)
+                    ->firstOrFailPublic();
     }
 
     public function lockUnactivatedAccounts($timestamp)

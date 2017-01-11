@@ -51,7 +51,6 @@ class Netbanking
         IFSC::UBIN,
         IFSC::UTIB,
         IFSC::VIJB,
-        IFSC::VYSA,
         IFSC::YESB,
     );
 

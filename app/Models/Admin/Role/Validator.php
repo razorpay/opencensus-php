@@ -29,7 +29,5 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE);
         }
-
-        return $role;
     }
 }

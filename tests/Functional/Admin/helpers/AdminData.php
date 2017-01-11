@@ -65,15 +65,83 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_ADMIN_EMAIL,
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
-            'internal_error_code' => ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL,
         ],
+    ],
+
+    'testCreateAdminWithExistingEmail' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@rzp.com',
+                'username'           => 'harshil',
+                'password'           => 'random!12#',
+                'remember_token'     => 'yes',
+                'oauth_access_token' => 'oauth123',
+                'oauth_provider_id'  => 'google',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateAdminWithExistingEmailOfDeletedAdmin' => [
+        'request' => [
+            'url' => '/orgs/%s/admins',
+            'method' => 'post',
+            'content' => [
+                'name'                  => 'test admin',
+                'username'              => 'harshil',
+                'password'              => 'random!12#',
+                'password_confirmation' => 'random!12#',
+                'remember_token'        => 'yes',
+                'oauth_access_token'    => 'oauth123',
+                'oauth_provider_id'     => 'google',
+                'employee_code'         => 'rzp_1',
+                'branch_code'           => 'krmgla',
+                'supervisor_code'       => 'shk',
+                'location_code'         => '560030',
+                'department_code'       => 'tech',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name'               => 'test admin',
+                'email'              => 'xyz@rzp.com',
+                'username'           => 'harshil',
+                'remember_token'     => 'yes',
+                'employee_code'      => 'rzp_1',
+                'branch_code'        => 'krmgla',
+                'supervisor_code'    => 'shk',
+                'location_code'      => '560030',
+                'department_code'    => 'tech',
+            ],
+            'status_code' => 200,
+        ]
     ],
 
     'testGetAdmin' => [
@@ -109,12 +177,31 @@ return [
         ],
     ],
 
+    'testEditAdminOnAppAuth' => [
+        'request' => [
+            'url' => '/orgs/%s/admin-app-auth/%s',
+            'method' => 'put',
+            'content' => [
+                'name' => 'test',
+                'password' => 'M123!#asd',
+                'password_confirmation' => 'M123!#asd'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'name' => 'test',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testDeleteAllRolesAdmin' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'roles' => [],
             ],
         ],
         'response' => [
@@ -129,6 +216,7 @@ return [
             'method' => 'put',
             'content' => [
                 'name' => 'test',
+                'groups' => [],
             ],
         ],
         'response' => [
@@ -281,6 +369,20 @@ return [
         ],
     ],
 
+    'testGetAdminByEmailOnAppAuth' => [
+        'request' => [
+            'url'     => '/admins/get-multiple-app-auth?email=testadmin@rzp.com',
+            'method'  => 'get',
+            'content' => [],
+        ],
+        'response' => [
+            'content'     => [
+                'name' => 'test admin app auth'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
     'testSelfEditAdminFailed' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s',
@@ -306,14 +408,13 @@ return [
         ],
     ],
 
-    'testPasswordResetSuccess' => [
+    'testForgotPasswordSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/forgot_password',
             'method' => 'post',
             'content' => [
-                'email'                 => 'abc@razorpay.com',
-                'password'              => 'Heimdall!4#2',
-                'password_confirmation' => 'Heimdall!4#2',
+                'email' => 'abc@razorpay.com',
+                'reset_password_url' => 'hello.com'
             ],
         ],
         'response' => [
@@ -323,14 +424,35 @@ return [
         ],
     ],
 
-    'testPasswordResetMismatch' => [
+    'testForgotPasswordInvalidUser' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/forgot_password',
             'method' => 'post',
             'content' => [
-                'email'                 => 'abc@razorpay.com',
-                'password'              => 'Heimdall!4#2',
-                'password_confirmation' => 'Heimdall!4#28',
+                'email' => 'xyz@razorpay.com',
+                'reset_password_url' => 'hello.com'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL,
+        ],
+    ],
+
+    'testForgotPasswordResetUrlBlank' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/forgot_password',
+            'method' => 'post',
+            'content' => [
+                'email' => 'xyz@razorpay.com',
             ],
         ],
         'response'  => [
@@ -347,14 +469,105 @@ return [
         ],
     ],
 
-    'testPasswordResetInvalid' => [
+    'testPasswordResetSuccess' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
+    'testPasswordResetTokenMismatch' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
+                'token'                 => 'dummytoken'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN,
+        ],
+    ],
+
+    'testPasswordResetPasswordMismatch' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#28',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPasswordResetInvalidPassword' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
                 'password'              => 'p',
                 'password_confirmation' => 'p',
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testPasswordResetMaxRetain' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'M!2#uWdx',
+                'password_confirmation' => 'M!2#uWdx',
             ],
         ],
         'response'  => [
@@ -373,12 +586,12 @@ return [
 
     'testPasswordResetInvalidAuthType' => [
         'request' => [
-            'url' => '/orgs/%s/admin/password/reset',
+            'url' => '/orgs/%s/admin/reset_password',
             'method' => 'post',
             'content' => [
                 'email'                 => 'abc@razorpay.com',
-                'password'              => 'p',
-                'password_confirmation' => 'p',
+                'password'              => 'M!2#uWdx',
+                'password_confirmation' => 'M!2#uWdx',
             ],
         ],
         'response'  => [

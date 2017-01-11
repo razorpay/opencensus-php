@@ -36,7 +36,7 @@ class SettlementTest extends TestCase
                 'payment:captured',
                 [
                     'merchant_id' => $merchant->getId(),
-                    'amount' => '10000'
+                    'amount' => '10000',
                 ]
             );
 
@@ -264,6 +264,10 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $setl = $this->getLastEntity('settlement', true);
+
+        $dailySetl = $this->getLastEntity('daily_settlement', true);
+
+        $this->assertEquals($setl['batch_settlement_id'], $dailySetl['id']);
 
         // $request = array('url' => '/settlements/details', 'method' => 'post');
         // $content = $this->makeRequestAndGetContent($request);

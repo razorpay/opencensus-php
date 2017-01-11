@@ -34,13 +34,16 @@ class Inferno
         'ssl certificate problem: certificate has expired',
         '<url> malformed',
         'server error response',
+        'too many redirects',
     ];
 
     /**
-     * We keep it internally as 7 seconds
+     * We keep it internally as 20 seconds
      * but publicly we only say it's 5 seconds.
      */
     const WEBHOOK_TIMEOUT = 20;
+
+    const WEBHOOK_REDIRECTS = 3;
 
     public function __construct()
     {
@@ -148,7 +151,8 @@ class Inferno
     {
         $headers = array(
             'User-Agent'    => 'Razorpay-Webhook/v1',
-            'Content-Type'  => 'application/json'
+            'Content-Type'  => 'application/json',
+            'Expect'        => null,
         );
 
         if (empty($hmac) === false)
@@ -270,13 +274,17 @@ class Inferno
 
         $headers = $this->getRequestHeaders($hmac);
 
-        $request = array(
+        $request = [
             'url' => $webhook->getUrl(),
             'method' => 'post',
             'content' => $event,
-            'headers' => $headers);
+            'headers' => $headers
+        ];
 
-        $request['options'] = ['timeout' => self::WEBHOOK_TIMEOUT];
+        $request['options'] = [
+            'timeout'   => self::WEBHOOK_TIMEOUT,
+            'redirects' => self::WEBHOOK_REDIRECTS,
+        ];
 
         return $request;
     }

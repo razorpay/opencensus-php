@@ -9,13 +9,30 @@ use RZP\Models\Payment\Gateway;
 
 class Category
 {
-    const DEFAULT_METHOD = [
-        Method::NETBANKING => 'ecommerce',
-    ];
+    const DEFAULT         = 'default';
 
-    const DEFAULT_NETWORK = [
-        Network::AMEX   => 'retail_services',
-    ];
+    const SECURITIES      = 'securities';
+    const COMMODITIES     = 'commodities';
+    const GROCERY         = 'grocery';
+    const ECOMMERCE       = 'ecommerce';
+    const EDUCATION       = 'education';
+    const GOVT_EDUCATION  = 'govt_education';
+    const PVT_EDUCATION   = 'pvt_education';
+    const UTILITIES       = 'utilities';
+    const CORPORATE       = 'corporate';
+    const INSURANCE       = 'insurance';
+    const HOUSING         = 'housing';
+    const MUTUAL_FUNDS    = 'mutual_funds';
+    const TRAVEL_AGENCY   = 'travel_agency';
+    const RETAIL_SERVICES = 'retail_services';
+
+
+    /**
+     * Categories mapped to invalid will not find an
+     * appropriate category to override. Only the category
+     * allowed by default will be chosen
+     */
+    const INVALID = 'invalid';
 
     /**
      * The list of all possible categories that can be chosen
@@ -23,224 +40,130 @@ class Category
      * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        'securities',
-        'commodities',
-        'grocery',
-        'ecommerce',
-        'govt_education',
-        'pvt_education',
-        'utilities',
-        'corporate',
-        'insurance',
-        'housing',
-        'mutual_funds',
-        'travel_agency',
+        Category::SECURITIES,
+        Category::COMMODITIES,
+        Category::GROCERY,
+        Category::ECOMMERCE,
+        Category::GOVT_EDUCATION,
+        Category::PVT_EDUCATION,
+        Category::UTILITIES,
+        Category::CORPORATE,
+        Category::INSURANCE,
+        Category::HOUSING,
+        Category::MUTUAL_FUNDS,
+        Category::TRAVEL_AGENCY,
     ];
 
 
     /**
-     * INCOMPATIBLE categories will not allow terminals, that
+     * INCOMPATIBLE categories will not allow terminals that
      * do not match the corresponding categories.
      * The list below is of the category2 on merchant entity.
      * The terminals marked null or default will be filtered
      * out.
-     **/
+     */
     const INCOMPATIBLE = [
-        'securities',
-        'commodities',
+        Category::SECURITIES,
+        Category::COMMODITIES,
     ];
 
     /**
-     * For netbanking, each of the categories on the left will
-     * be mapped to the category on the right.
-     * */
-    const METHOD_NETBANKING = [
-        'securities'     => 'securities',
-        'commodities'    => 'commodities',
-        'grocery'        => 'grocery',
-        'ecommerce'      => 'ecommerce',
-        'govt_education' => 'govt_education',
-        'pvt_education'  => 'pvt_education',
-        'utilities'      => 'utilities',
-        'corporate'      => 'corporate',
-        'insurance'      => 'insurance',
-        'housing'        => 'housing',
-        'mutual_funds'   => 'mutual_funds',
-        'travel_agency'  => 'travel_agency',
+     * By default Check for the name that is mentioned as is.
+     * If it is renamed, then the new name that is mentioned will be
+     * used to check for a network category
+     */
+    const CATEGORIES = [
+        Method::NETBANKING => [
+            Category::DEFAULT => Category::ECOMMERCE,
+        ],
+        Method::CARD => [
+            Category::DEFAULT => Category::ECOMMERCE,
+            Network::AMEX     => [
+                Category::DEFAULT        => Category::RETAIL_SERVICES,
+                Category::GROCERY        => 'sup_hypermrkt_deptstore',
+                Category::ECOMMERCE      => Category::RETAIL_SERVICES,
+                Category::GOVT_EDUCATION => Category::EDUCATION,
+                Category::PVT_EDUCATION  => Category::EDUCATION,
+                Category::CORPORATE      => Category::INVALID,
+                Category::INSURANCE      => Category::INSURANCE,
+                Category::HOUSING        => Category::HOUSING,
+            ],
+        ]
     ];
-
-    /**
-     * The default categories allowed are the ones specified in method.
-     * Anything defined on network, or otherwise is an override.
-     * If for some category an override is not required,
-     * i.e the category decided by the method is to be used,
-     * then it should be left empty
-     * */
-    const NETWORK_AMEX = [
-        'securities'     => 'incompatible',
-        'commodities'    => 'incompatible',
-        'grocery'        => 'sup_hypermrkt_deptstore',
-        'ecommerce'      => 'retail_services',
-        'govt_education' => 'education',
-        'pvt_education'  => 'education', //confirm this is not education services
-        'utilities'      => 'utilities',
-        'corporate'      => '',
-        'insurance'      => 'insurance',
-        'housing'        => 'housing',
-        'mutual_funds'   => 'mutual_funds',
-        'travel_agency'  => 'travel_agency',
-    ];
-
-    public static function getDefaultForMethod($method)
-    {
-        return self::getDefaultForType('method', $method);
-    }
-
-    public static function getDefaultForNetwork($network)
-    {
-        return self::getDefaultForType('network', $network);
-    }
-
-    protected static function getDefaultForType($type, $item)
-    {
-        $category = null;
-
-        $constantName = self::getConstantName('default', $type);
-
-        if ((self::isConstantDefined('default', $type) === true) and
-            (isset(constant('self::'.$constantName)[$item]) === true))
-        {
-            $category = constant('self::'.$constantName)[$item];
-        }
-
-        return $category;
-    }
-
-    public static function getDefaultForMethodAndNetwork($method, $network)
-    {
-        $category = null;
-
-        $category = self::getDefaultForMethod($method);
-
-        $networkCategory = self::getDefaultForNetwork($network);
-
-        if (empty($networkCategory) === false)
-        {
-            $category = $networkCategory;
-        }
-
-        return $category;
-    }
-
-    public static function getCategoryForMethod($method, $category)
-    {
-        return self::getCategoryForType('method', $method, $category);
-    }
-
-    public static function getCategoryForNetwork($network, $category)
-    {
-        return self::getCategoryForType('network', $network, $category);
-    }
-
-    /**
-     * Utility function that is used to get the category for a
-     * particular pair of (method, $method) or a (network, $network)
-     * */
-    protected static function getCategoryForType($type, $item, $category)
-    {
-        $returnCategory = null;
-
-        $name = self::getConstantName($type, $item);
-
-        if ((is_null($category) === false) and
-            (self::isConstantDefined($type, $item)) and
-            (isset(constant('self::'.$name)[$category]) === true))
-        {
-            $returnCategory = constant('self::'.$name)[$category];
-        }
-
-        return $returnCategory;
-    }
-
-    public static function getCategoryForMethodAndNetwork($method, $network, $category)
-    {
-        $methodCategory = self::getCategoryForMethod($method, $category);
-
-        $defaultMethodCategory = self::getDefaultForMethod($method);
-
-        $networkCategory = self::getCategoryForNetwork($network, $category);
-
-        $defaultNetworkCategory = self::getDefaultForNetwork($network);
-
-        $returnCategory = $methodCategory;
-
-        if (is_null($returnCategory) === true)
-        {
-            $returnCategory = $defaultMethodCategory;
-        }
-
-        // Don't perform network override if the networkCategory is ''
-        if ((is_null($networkCategory) === false) && ($networkCategory !== ''))
-        {
-            $returnCategory = $networkCategory;
-
-            if (is_null($returnCategory) === true)
-            {
-                $returnCategory = $defaultNetworkCategory;
-            }
-        }
-
-        return $returnCategory;
-    }
 
     public static function isMerchantCategoryIncompatible($category)
     {
-        return in_array($category, self::INCOMPATIBLE);
-    }
-
-    protected static function isConstantDefined($type, $name)
-    {
-        $name = self::getConstantName($type, $name);
-
-        return defined('self::'.$name);
-    }
-
-    protected static function getConstantName($type, $name)
-    {
-        return strtoupper($type.'_'.$name);
+        return in_array($category, Category::INCOMPATIBLE, true);
     }
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, self::CATEGORIES_ALL);
+        return in_array($category, Category::CATEGORIES_ALL, true);
     }
 
     public static function isNetworkCategoryValid($input)
     {
+        $category = $input[Entity::NETWORK_CATEGORY];
+
+        if ($category === self::INVALID)
+        {
+            return false;
+        }
+
         // Get the correct constant for the terminal
         // get the values array and check in array
-        $values = [];
-
-        $category = $input[Entity::NETWORK_CATEGORY];
+        $allCategories = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
 
         $method = self::getMethod($input);
 
         $network = self::getNetwork($input);
 
-        if (self::isConstantDefined('network', $network) === true)
+        if (isset(self::CATEGORIES[$method][$network]) === true)
         {
-            $networkConstantName = self::getConstantName('network', $network);
-
-            $values = array_values(constant('self::'.$networkConstantName));
-        }
-        else if (self::isConstantDefined('method', $method) === true)
-        {
-            $methodConstantName = self::getConstantName('method', $method);
-
-            $values = array_values(constant('self::'.$methodConstantName));
+            foreach (self::CATEGORIES[$method][$network] as $category2 => $networkCategory)
+            {
+                $allCategories[$category2] = $networkCategory;
+            }
         }
 
-        return in_array($category, $values);
+        // No need to worry about duplicates. we only need values
+        $values = array_values($allCategories);
+
+        return in_array($category, $values, true);
+    }
+
+    public static function getDefaultForMethodAndNetwork($method, $network)
+    {
+        return self::getCategoryForMethodAndNetwork($method, $network, self::DEFAULT);
+    }
+
+    public static function getCategoryForMethodAndNetwork($method, $network, $category2)
+    {
+        $networkCategory = self::getDefaultNetworkCategory($category2);
+
+        if (isset(self::CATEGORIES[$method][$category2]) === true)
+        {
+            $networkCategory = self::CATEGORIES[$method][$category2];
+        }
+
+        if (isset(self::CATEGORIES[$method][$network][$category2]) === true)
+        {
+            $networkCategory = self::CATEGORIES[$method][$network][$category2];
+        }
+
+        return $networkCategory;
+    }
+
+    protected static function getDefaultNetworkCategory($category2)
+    {
+        $networkCategory = null;
+
+        if ($category2 !== Category::DEFAULT)
+        {
+            $networkCategory = $category2;
+        }
+
+        return $networkCategory;
     }
 
     protected static function getNetwork($input)
