@@ -307,7 +307,7 @@ final class Route
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
         'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postGatewayAbsence'                        ],
-        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
+        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putGatewayAbsence'                         ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'statuscake_gateway_webhook'              => ['post',     'statuscake/callback',                            'GatewayController@postStatusCakeCallback'                          ],

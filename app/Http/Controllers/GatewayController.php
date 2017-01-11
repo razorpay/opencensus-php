@@ -213,7 +213,7 @@ class GatewayController extends Controller
      * @param string $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function putUpdateGatewayAbsence(Absence\Service $service, string $id)
+    public function putGatewayAbsence(Absence\Service $service, string $id)
     {
         $input = Request::all();
 

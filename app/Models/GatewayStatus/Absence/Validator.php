@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card;
 
 class Validator extends Base\Validator
 {
@@ -153,7 +154,8 @@ class Validator extends Base\Validator
 
     protected function validateIssuerWallet(string $method, string $issuer = null)
     {
-        if (($method !== Method::WALLET) and (IFSC::exists(strtoupper($issuer)) === false))
+        if (($method !== Method::WALLET) and
+            (IFSC::exists(strtoupper($issuer)) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Issuer: '. $issuer. ' is not a valid Bank Name'
