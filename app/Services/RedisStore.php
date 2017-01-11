@@ -7,7 +7,7 @@ use Predis\PredisException;
 
 use RZP\Error\ErrorCode;
 use RZP\Models\Base\Redis as RedisModel;
-use RZP\Models\Base\Redis\RedisEntity;
+use RZP\Models\Base\Redis\Entity as RedisEntity;
 use RZP\Exception;
 
 class RedisStore

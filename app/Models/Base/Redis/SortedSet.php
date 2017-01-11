@@ -6,7 +6,7 @@ namespace RZP\Models\Base\Redis;
  * This class is used to store a sorted set data type in redis
  * More info about sorted set here https://redis.io/topics/data-types-intro
  */
-class SortedSet extends RedisEntity
+class SortedSet extends Entity
 {
     // Variable to store the redis namespace for a sorted set.
     // Should be overriden in child class
@@ -69,9 +69,9 @@ class SortedSet extends RedisEntity
      * Predis returns the data as associative array
      * which is what we want (Great Stuff). So we store it as it is
      */
-    public function setData(array $redisData)
+    public function setData(array $data)
     {
-        $this->data = $redisData;
+        $this->data = $data;
     }
 
     public function toArray()

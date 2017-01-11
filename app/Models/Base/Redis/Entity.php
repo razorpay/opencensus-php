@@ -6,7 +6,7 @@ namespace RZP\Models\Base\Redis;
  * This abstract class defines methods which any entity stored in redis
  * should implement
  */
-abstract class RedisEntity
+abstract class Entity
 {
     abstract public function getKey();
 
@@ -16,7 +16,7 @@ abstract class RedisEntity
 
     abstract public function getDataToSave();
 
-    abstract public function setData(array $redisData);
+    abstract public function setData(array $data);
 
     abstract public function toArray();
 }
