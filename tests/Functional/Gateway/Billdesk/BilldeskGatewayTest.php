@@ -73,6 +73,23 @@ class BilldeskGatewayTest extends TestCase
         $this->verifyPayment($payment['id']);
     }
 
+    public function testPaymentVerifyError()
+    {
+        $data = $this->testData['testPaymentVerifyError'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+
+    }
+
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -95,6 +112,7 @@ class BilldeskGatewayTest extends TestCase
         $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentRefund'], $refund);
 

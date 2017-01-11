@@ -35,21 +35,21 @@ class Entity extends Base\PublicEntity
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
     const TPV                           = 'tpv';
-
+    const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
-
+    const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
-
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
-
-    const ENABLED                       = 'enabled';
+    const DEFAULT_CURRENCY              = 'INR';
 
     /**
      * Used for column name in merchant terminal pivot table
      */
     const TERMINAL_ID                   = 'terminal_id';
+
+    const SUB_MERCHANTS                 = 'sub_merchants';
 
     //const PRIORITY                      = 'priority';
 
@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::SHARED,
         self::RECURRING,
         self::TPV,
+        self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -99,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::ENABLED
+        self::ENABLED,
+        self::SUB_MERCHANTS,
     ];
 
     protected $hidden = [
@@ -129,6 +131,7 @@ class Entity extends Base\PublicEntity
         self::SHARED                    => false,
         self::EMI                       => false,
         self::TPV                       => false,
+        self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
@@ -205,6 +208,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    protected function getSubMerchants()
+    {
+        return $this->merchants()->pluck(self::ID);
+    }
+
     public function isEnabled()
     {
         return $this->getAttribute(self::ENABLED);
@@ -235,6 +243,11 @@ class Entity extends Base\PublicEntity
         return (bool) $this->getAttribute(self::SHARED);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
     // ---------------------- END GETTERS ----------------------
 
     // ---------------------- SETTERS ----------------------
@@ -247,6 +260,11 @@ class Entity extends Base\PublicEntity
     public function setEnabled($status)
     {
         $this->setAttribute(self::ENABLED, $status);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -505,5 +523,17 @@ class Entity extends Base\PublicEntity
     public function isNon3DSRecurring()
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
+
+    public function toArrayPublic($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
     }
 }

@@ -51,5 +51,7 @@ class Core
         $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->device = $this->app['basicauth']->getDevice();
     }
 }

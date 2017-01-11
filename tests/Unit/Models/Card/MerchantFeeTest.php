@@ -3,6 +3,7 @@
 namespace RZP\Tests\Unit\Models\Card;
 
 use Mockery;
+use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Pricing;
 use RZP\Models\Payment;
@@ -518,6 +519,13 @@ class MerchantFeeTest extends TestCase
         $this->runMerchantFeeTest("100", "Maestro", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::UNKNOWN, false, $isCardInternational);
     }
 
+    public function testInternationalCardRuleSelectionWithNoMatchingRule()
+    {
+        $isCardInternational = true;
+
+        $this->runMerchantFeeTestWithException("100", "Visa", ["payment" => "1nvp2XPMmaRLzz"], Card\Type::CREDIT, false, $isCardInternational);
+    }
+
     public function testNetBankingRuleSelection()
     {
         $this->fee->setPricingRepo($this->getMockPricingRepo());
@@ -560,6 +568,37 @@ class MerchantFeeTest extends TestCase
 
     protected function runMerchantFeeTest($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
     {
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational);
+
+        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+
+        $this->assertPricingRules($expectedRules, $feesSplit);
+    }
+
+    protected function runMerchantFeeTestWithException($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
+    {
+        $payment = $this->createPaymentEntityForCard($amount, $network, $expectedRules, $cardType, $isRecurring, $isCardInternational);
+
+        $payment['id'] = 'testPay1234567';
+
+        try
+        {
+             $this->fee->calculateMerchantFees($payment);
+        }
+        catch(Exception\LogicException $ex)
+        {
+            $this->assertEquals("SERVER_ERROR_PRICING_RULE_ABSENT", $ex->getCode());
+
+            $this->assertEquals("Invalid rule count: 0, Payment Id: testPay1234567", $ex->getMessage());
+
+            return;
+        }
+
+        $this->fail();
+    }
+
+    protected function createPaymentEntityForCard($amount, $network, array $expectedRules, $cardType, $isRecurring = false, $isCardInternational = false)
+    {
         $paymentArray = $this->getDefaultPaymentEntityArray();
 
         $paymentArray['amount'] = $amount;
@@ -580,9 +619,9 @@ class MerchantFeeTest extends TestCase
 
         $payment->setRecurring($isRecurring);
 
-        list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
+        $payment->setBaseAmount($amount);
 
-        $this->assertPricingRules($expectedRules, $feesSplit);
+        return $payment;
     }
 
     protected function runMerchantFeeTestNetB($amount, $bank, array $expectedRules)
@@ -596,6 +635,8 @@ class MerchantFeeTest extends TestCase
         $paymentArray[Payment\Entity::METHOD] = Payment\Method::NETBANKING;
 
         $payment = new Payment\Entity($paymentArray);
+
+        $payment->setBaseAmount($amount);
 
         list($fee, $serviceTax, $feesSplit) = $this->fee->calculateMerchantFees($payment);
 

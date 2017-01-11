@@ -144,6 +144,8 @@ trait RepositoryFetch
 
         $entity = $entity[count($entity) - 1];
 
+        $entity = strtolower($entity);
+
         $esRepoClass = Constants\Entity::getEntityEsRepository($entity);
 
         $esRepo = new $esRepoClass;

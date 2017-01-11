@@ -38,6 +38,9 @@ class CreateOrgs extends Migration
 
             $table->boolean(Org::ALLOW_SIGN_UP);
 
+            $table->boolean(Org::CROSS_ORG_ACCESS)
+                  ->default(0);
+
             $table->string(Org::LOGIN_LOGO_URL)
                   ->nullable();
 
@@ -46,6 +49,10 @@ class CreateOrgs extends Migration
 
             $table->string(Org::INVOICE_LOGO_URL)
                   ->nullable();
+
+            $table->string(Org::CUSTOM_CODE, 255)
+                  ->nullable()
+                  ->unique();
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Org::CREATED_AT);

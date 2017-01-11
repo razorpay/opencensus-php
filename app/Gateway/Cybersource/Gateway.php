@@ -29,6 +29,8 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'cybersource_%s_card_details';
 
+    const CACHE_TTL = 15;
+
     // Request timeout limit in seconds
     const TIMEOUT = 60;
 
@@ -693,7 +695,7 @@ class Gateway extends Base\Gateway
             'vault_token' => $vaultToken
         ];
 
-        Cache::store($this->secureCacheDriver)->put($key, $data, 10);
+        Cache::store($this->secureCacheDriver)->put($key, $data, self::CACHE_TTL);
     }
 
     protected function setCardNumberAndCvv(&$input)

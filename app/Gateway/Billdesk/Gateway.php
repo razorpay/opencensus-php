@@ -787,6 +787,17 @@ class Gateway extends Base\Gateway
 
         $content = explode('|', $responseBody);
 
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        }
+
         $content = array_combine($fields, $content);
 
         $this->trace->info(
