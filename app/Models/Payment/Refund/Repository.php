@@ -119,17 +119,21 @@ class Repository extends Base\Repository
 
     public function fetchGatewayRefundedRefundsWithoutTxns()
     {
+        $refundAttrs = $this->getAttributeWithTableName('*');
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundGatewayRefundedAttr = $this->getAttributeWithTableName(Entity::GATEWAY_REFUNDED);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
         return $this->newQuery()
-                    ->join(
-                        Table::PAYMENT,
-                        Table::REFUND . '.' . Entity::PAYMENT_ID,
-                        '=',
-                        Table::PAYMENT . '.' . Payment\Entity::ID)
-                    ->select(Table::REFUND . '.*')
-                    ->whereNull(Table::REFUND . '.' . Entity::TRANSACTION_ID)
-                    ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
-                    ->where(Table::REFUND . '.' . Entity::GATEWAY_REFUNDED, '=', 1)
-                    ->with('payment', 'merchant')
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->select($refundAttrs)
+                    ->whereNull($refundTransactionIdAttr)
+                    ->whereNotNull($paymentTransactionIdAttr)
+                    ->where($refundGatewayRefundedAttr, '=', 1)
+                    ->with(['payment', 'merchant'])
                     ->get();
     }
 

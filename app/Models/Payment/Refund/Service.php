@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -473,12 +474,12 @@ class Service extends Base\Service
         }
         catch (\Exception $ex)
         {
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
                 $refundWithoutTxn->toArray()
             );
-
-            $this->trace->traceException($ex);
 
             return false;
         }

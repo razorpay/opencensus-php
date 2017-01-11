@@ -15,6 +15,7 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -472,43 +473,35 @@ trait Refund
 
     protected function recordTransactionForRefund()
     {
-        //
-        // We are not using transaction closure because we do not want to
-        // throw an exception here and just want to log it as an error.
-        // This seemed like a cleaner way to do it than having multiple catch blocks.
-        //
-
-        $this->repo->beginTransaction();
-
         try
         {
-            $payment = $this->payment;
+            $this->repo->transaction(
+                function()
+                {
+                    $payment = $this->payment;
 
-            $this->paymentRepo->lockForUpdate($payment->getKey());
+                    $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            $this->createTransactionForRefund($this->refund, $payment);
+                    $this->createTransactionForRefund($this->refund, $payment);
 
-            //
-            // This needs to be saved here because of the association with
-            // transaction which is set in the createTransactionForRefund function.
-            //
-            $this->repo->saveOrFail($this->refund);
-
-            $this->repo->commit();
+                    //
+                    // This needs to be saved here because of the association with
+                    // transaction which is set in the createTransactionForRefund function.
+                    //
+                    $this->repo->saveOrFail($this->refund);
+                });
         }
         catch (\Exception $ex)
         {
-            $this->trace->traceException($ex);
-
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::REFUND_TRANSACTION_FAILED,
                 [
                     'payment_id'    => $this->payment->getId(),
                     'refund_id'     => $this->refund->getId(),
                     'error_message' => $ex->getMessage(),
                 ]);
-
-            $this->repo->rollback();
         }
     }
 
