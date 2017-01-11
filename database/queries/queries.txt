@@ -1494,6 +1494,7 @@ ALTER TABLE line_items ADD COLUMN name varchar(512) DEFAULT NULL AFTER entity_ty
 ALTER TABLE line_items ADD COLUMN description varchar(2048) DEFAULT NULL AFTER name;
 ALTER TABLE line_items ADD COLUMN amount int(11) DEFAULT NULL AFTER description;
 ALTER TABLE line_items ADD COLUMN currency char(3) DEFAULT NULL AFTER amount;
+ALTER TABLE line_items MODIFY COLUMN item_id char(14) DEFAULT NULL;
 
 --- Queries to be run after deploying invoices-schema-fixes-1
 

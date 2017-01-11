@@ -32,6 +32,8 @@ class CreateLineItems extends Migration
 
             $table->string(Entity::NAME, 512);
 
+            $table->string(Entity::NAME, 512);
+
             $table->string(Entity::DESCRIPTION, 2048)
                   ->nullable();
 
