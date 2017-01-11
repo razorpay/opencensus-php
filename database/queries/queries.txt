@@ -1487,3 +1487,13 @@ ALTER TABLE admin_tokens
     MODIFY COLUMN id char(14);
 
 TRUNCATE TABLE admin_tokens;
+
+DELETE FROM fees_breakup WHERE transaction_id = '6gz9V7qKmbU9C7';
+UPDATE payments SET transaction_id=null WHERE id='6gysDIemK9qx3W';
+DELETE FROM transactions WHERE id ='6gz9V7qKmbU9C7';
+UPDATE payments
+SET status='failed',
+error_code='BAD_REQUEST_ERROR',
+internal_error_code='BAD_REQUEST_PAYMENT_FAILED',
+error_description='Payment failed'
+WHERE id='6gysDIemK9qx3W';
