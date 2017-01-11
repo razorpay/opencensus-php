@@ -1488,7 +1488,7 @@ ALTER TABLE admin_tokens
 
 TRUNCATE TABLE admin_tokens;
 
-#adds batch id for daily settlement in settlement entity
+# Adds batch id for daily settlement in settlement entity
 ALTER TABLE settlements
     ADD COLUMN batch_settlement_id CHAR(14) AFTER bank_account_id,
     ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id)
