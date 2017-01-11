@@ -118,8 +118,7 @@ class Category
 
         $network = self::getNetwork($input);
 
-        if ((isset(self::CATEGORIES[$method]) === true) and
-            (isset(self::CATEGORIES[$method][$network]) === true))
+        if (isset(self::CATEGORIES[$method][$network]) === true)
         {
             foreach (self::CATEGORIES[$method][$network] as $category2 => $networkCategory)
             {
@@ -142,18 +141,14 @@ class Category
     {
         $networkCategory = self::getDefaultNetworkCategory($category2);
 
-        if (isset(self::CATEGORIES[$method]) === true)
+        if (isset(self::CATEGORIES[$method][$category2]) === true)
         {
-            if (isset(self::CATEGORIES[$method][$category2]) === true)
-            {
-                $networkCategory = self::CATEGORIES[$method][$category2];
-            }
+            $networkCategory = self::CATEGORIES[$method][$category2];
+        }
 
-            if ((isset(self::CATEGORIES[$method][$network]) === true) and
-                (isset(self::CATEGORIES[$method][$network][$category2]) === true))
-            {
-                $networkCategory = self::CATEGORIES[$method][$network][$category2];
-            }
+        if (isset(self::CATEGORIES[$method][$network][$category2]) === true)
+        {
+            $networkCategory = self::CATEGORIES[$method][$network][$category2];
         }
 
         return $networkCategory;
@@ -163,7 +158,7 @@ class Category
     {
         $networkCategory = null;
 
-        if ($category2 !== self::DEFAULT)
+        if ($category2 !== Category::DEFAULT)
         {
             $networkCategory = $category2;
         }
