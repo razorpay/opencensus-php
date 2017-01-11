@@ -23,6 +23,10 @@ class Core extends Base\Core
 
         $lineItem = (new Entity);
 
+        //
+        // If without ITEM_ID (template), no CURRENCY is send, we use invoice's
+        // currency.
+        //
         if ((isset($input[Entity::ITEM_ID]) === false)
             and (isset($input[Entity::CURRENCY]) === false))
         {
@@ -237,10 +241,17 @@ class Core extends Base\Core
     }
 
     /**
+     * If ITEM_ID is send in input, fetches that item and:
+     * - Associates that item with line item
+     * - Usages it's name, description, amount, currency to fill in line item
+     *   entity.
      *
-     * @param array $input
+     * @param Entity            $lineItem
+     * @param array             $input
+     * @param Merchant\Entity   $merchant
+     * @param Base\PublicEntity $morphEntity
      *
-     * @return array
+     * @return null
      */
     protected function setItemAssociationAndUpdateInput(
         Entity $lineItem,
@@ -265,7 +276,5 @@ class Core extends Base\Core
         $input[Entity::DESCRIPTION] = $item->getDescription();
         $input[Entity::AMOUNT]      = $item->getAmount();
         $input[Entity::CURRENCY]    = $item->getCurrency();
-
-        return $input;
     }
 }
