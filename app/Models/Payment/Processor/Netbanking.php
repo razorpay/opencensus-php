@@ -26,6 +26,7 @@ class Netbanking
 
     protected static $self = [
         IFSC::HDFC,
+        IFSC::UTIB,
         IFSC::KKBK
     ];
 
