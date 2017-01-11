@@ -146,9 +146,9 @@ return [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY,
                 ],
-                'http_status_code' => 401,
+                // 'http_status_code' => 401,
             ],
-            'status_code' => 200,
+            'status_code' => 401,
         ],
     ],
 
