@@ -18,7 +18,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'admin_token';
 
-    public $incrementing = true;
+    protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::ADMIN_ID,
