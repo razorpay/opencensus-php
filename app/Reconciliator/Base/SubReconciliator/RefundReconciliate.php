@@ -131,7 +131,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
                     'gateway'       => get_called_class()
                 ]);
 
-            $this->app['trace']->traceException($ex);
+            $this->trace->traceException($ex);
 
             throw $ex;
 
@@ -201,56 +201,18 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function getRowDetailsStructured($row)
     {
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_FILE_ROW,
             $row
         );
 
-        $refundId = $this->getRefundId($row);
+        $refund = $this->getApiRefundEntityFromRow($row);
+        $refundId = $refund->getId();
 
-        // If refund id is not present, return. No point of evaluating the row.
-        if (empty($refundId) === true)
+        // If we cannot get the refund, return. No point of evaluating the row.
+        if ($refund === null)
         {
             return null;
-        }
-
-        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
-        {
-            $this->app['trace']->info(
-                [
-                    'trace_code' => TraceCode::RECON_INFO_ALERT,
-                    'message'    => 'Refund ID being sent in the file is not as expected.',
-                    'row'        => $row,
-                    'refund_id'  => $refundId,
-                    'gateway'    => get_called_class()
-                ]);
-
-            return null;
-        }
-
-        try
-        {
-            $this->refund = $this->repo->refund->findOrFail($refundId);
-        }
-        catch (\Exception $ex)
-        {
-            $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
-
-            if ($refundSuccess === false)
-            {
-                $this->messenger->raiseReconAlert(
-                    [
-                        'trace_code' => TraceCode::RECON_MISMATCH,
-                        'message' => 'Unable to create a refund on API after finding it missing',
-                        'row' => $row,
-                        'refund_id' => $refundId,
-                        'gateway' => get_called_class(),
-                    ]);
-
-                return null;
-            }
-
-            $this->refund = $this->repo->refund->findOrFail($refundId);
         }
 
         // Sets the corresponding payment for the refund.
@@ -288,6 +250,58 @@ class RefundReconciliate extends Foundation\SubReconciliate
         return $rowDetails;
     }
 
+    protected function getApiRefundEntityFromRow(array $row)
+    {
+        $refundId = $this->getRefundId($row);
+
+        // If refund id is not present, return. No point of evaluating the row.
+        if (empty($refundId) === true)
+        {
+            return null;
+        }
+
+        if (UniqueIdEntity::verifyUniqueId($refundId) === false)
+        {
+            $this->trace->info(
+                [
+                    'trace_code' => TraceCode::RECON_INFO_ALERT,
+                    'message'    => 'Refund ID being sent in the file is not as expected.',
+                    'row'        => $row,
+                    'refund_id'  => $refundId,
+                    'gateway'    => get_called_class()
+                ]);
+
+            return null;
+        }
+
+        try
+        {
+            $this->refund = $this->repo->refund->findOrFail($refundId);
+        }
+        catch (\Exception $ex)
+        {
+            $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
+
+            if ($refundSuccess === false)
+            {
+                $this->messenger->raiseReconAlert(
+                    [
+                        'trace_code' => TraceCode::RECON_MISMATCH,
+                        'message' => 'Unable to create a refund on API after finding it missing',
+                        'row' => $row,
+                        'refund_id' => $refundId,
+                        'gateway' => get_called_class(),
+                    ]);
+
+                return null;
+            }
+
+            $this->refund = $this->repo->refund->findOrFail($refundId);
+        }
+
+        return $this->refund;
+    }
+
     /**
      * This will create a refund on the API side. It will also check that
      * the refund on the gateway side is already created.
@@ -305,6 +319,51 @@ class RefundReconciliate extends Foundation\SubReconciliate
      */
     protected function createRefundOnApi(array $row, string $refundId, \Exception $ex)
     {
-        return false;
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code' => TraceCode::RECON_INFO_ALERT,
+                'message'    => 'Refund not found in DB. -> ' . $ex->getMessage(),
+                'row'        => $row,
+                'refund_id'  => $refundId,
+                'gateway'    => get_called_class()
+            ]);
+
+        $paymentId = $this->getPaymentId($row);
+
+        $refundAmount = $this->getRefundAmount($row);
+
+        if (($paymentId === null) or ($refundAmount === null))
+        {
+            $this->trace->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'row' => $row,
+                    'message' => 'Unable to get the payment ID or amount from the refund recon file',
+                    'refund_id' => $refundId,
+                    'refund_amount' => $refundAmount,
+                    'payment_id' => $paymentId,
+                ]);
+
+            return false;
+        }
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchant = $payment->merchant;
+
+        $processor = new Payment\Processor\Processor($merchant);
+
+        try
+        {
+            $processor->createRefundOnApiFromRecon($payment, $refundId, $refundAmount);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException($ex);
+
+            return false;
+        }
+
+        return true;
     }
 }
