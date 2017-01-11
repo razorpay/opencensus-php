@@ -39,37 +39,15 @@ trait Refund
 
     public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
     {
-        if ($payment->transaction === null)
-        {
-            throw new Exception\LogicException(
-                'Transaction expected but not present for payment: ' . $payment->getId());
-        }
+        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
+    }
 
-        $input = ['amount' => $refundAmount];
-
-        $refund = $this->buildRefundEntity($payment, $input);
-
-        $this->setPaymentAndRefundInfo($refund, $payment);
-
-        $refund->setId($refundId);
-
-        $data = [
-            'payment_id' => $payment->getId(),
-            'refund_id' => $refundId,
-            'refund_amount' => $refundAmount,
-        ];
-
-        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
-
-        if ($gatewayRefunded === false)
-        {
-            throw new Exception\LogicException(
-                'Should have been refunded on gateway but is not',
-                ErrorCode::SERVER_ERROR_GATEWAY_NOT_REFUNDED,
-                $data);
-        }
-
-        $this->recordRefund();
+    public function createRefundOnApiForCancelledBilldeskRefund(
+        Payment\Entity $payment,
+        string $refundId,
+        int $refundAmount)
+    {
+        $this->createRefundOnApiSeparately($payment, $refundId, $refundAmount);
     }
 
     public function verifyRefund(Payment\Refund\Entity $refund)
@@ -211,40 +189,6 @@ trait Refund
         return $this->callGatewayForCreateRefundRecord($data);
     }
 
-    protected function setPaymentAndRefundInfo($refund, $payment)
-    {
-        $this->merchant = $payment->merchant;
-
-        $this->methods = $payment->merchant->methods;
-
-        $this->refund = $refund;
-
-        $this->payment = $payment;
-    }
-
-    /**
-     * Sends out refund related notifications
-     * To 3 places in total:
-     *
-     * - Dashboard (for analytics)
-     * - Slack (for us to see)
-     * - EMails (to both customer and merchant)
-     * @param  Payment\Entity        $payment Payment Entity
-     * @param  Payment\Refund\Entity $refund  Refund Entity
-     * @return null
-     */
-    protected function sendRefundNotification(Payment\Entity $payment, Payment\Refund\Entity $refund)
-    {
-        //
-        // Analytics is on dashboard side for now
-        //
-        $notifier = new Notify($payment);
-        $notifier->addRefund($refund);
-        $notifier->trigger(Notify::REFUNDED);
-
-        $this->notifyDashboard('refund', $this->refund);
-    }
-
     public function refundAuthorizedPayment(Payment\Entity $payment, array $input = [])
     {
         $this->setPayment($payment);
@@ -276,23 +220,6 @@ trait Refund
         return $this->refund($payment, $input);
     }
 
-    protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
-    {
-        if ($payment->isFullyRefunded())
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
-        }
-
-        if ($payment->isCaptured() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
-        }
-
-        return $this->refund($payment, $input, $batch);
-    }
-
     public function refundPaymentViaMerchant($paymentId, $input)
     {
         $payment = $this->retrieve($paymentId);
@@ -317,6 +244,74 @@ trait Refund
 
         // No refund existed so fire a new one.
         return $this->refundCapturedPayment($payment, $input, $batch);
+    }
+
+    /**
+     * @param Payment\Refund\Entity $refund
+     * @param Payment\Entity $payment
+     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
+     *                                      for authAndCapture supported gateways before creating a refund transaction
+     *
+     * @return null|Transaction\Entity
+     * @throws Exception\LogicException
+     */
+    public function createTransactionForRefund(
+        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
+    {
+        $gateway = $payment->getGateway();
+
+        assert ($refund->getTransactionId() === null);
+
+        // For authAndCapture supported gateways, payment transaction is created only after capture.
+        // For gateways which don't support authAndCapture, payment transaction is created after authorization.
+        // There are a few gateways which are partially authAndCapture gateways. This means that for
+        // some networks, payment transaction is created at authorization and for some networks, payment
+        // transaction is created at capture.
+
+        // Hence, for [notAuthAndCapture] and [notAuthAndCaptureForSpecificNetworks] gateways,
+        // we do not check for the capture timestamp.
+        // For [authAndCapture] gateways, we check for capture timestamp.
+
+        $networkCode = null;
+        $paymentCard = $payment->card;
+
+        // If payment method is wallet or net banking.
+        if ($paymentCard !== null)
+        {
+            $networkCode = $paymentCard->getNetworkCode();
+        }
+
+        $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
+
+        if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
+            ($supportsAuthAndCapture === false) or
+            ($forceRefundTransaction === true))
+        {
+            if ($payment->transaction === null)
+            {
+                throw new Exception\LogicException(
+                    'Transaction expected but not present for payment: ' . $payment->getId());
+            }
+
+            $txn = (new Transaction\Core)->createFromRefund($refund);
+
+            $this->repo->saveOrFail($txn);
+
+            $this->trace->info(
+                TraceCode::REFUND_TRANSACTION_CREATED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'refund_id'         => $refund->getId(),
+                    'transaction_id'    => $txn->getId(),
+                    'auth_capture'      => $supportsAuthAndCapture,
+                    'force_refund_txn'  => $forceRefundTransaction,
+                ]
+            );
+
+            return $txn;
+        }
+
+        return null;
     }
 
     protected function callGatewayForVerifyRefund($data)
@@ -594,74 +589,6 @@ trait Refund
         }
     }
 
-    /**
-     * @param Payment\Refund\Entity $refund
-     * @param Payment\Entity $payment
-     * @param bool $forceRefundTransaction This param is used for when we don't want to check for captured payment
-     *                                      for authAndCapture supported gateways before creating a refund transaction
-     *
-     * @return null|Transaction\Entity
-     * @throws Exception\LogicException
-     */
-    public function createTransactionForRefund(
-        Payment\Refund\Entity $refund, Payment\Entity $payment, $forceRefundTransaction = false)
-    {
-        $gateway = $payment->getGateway();
-
-        assert ($refund->getTransactionId() === null);
-
-        // For authAndCapture supported gateways, payment transaction is created only after capture.
-        // For gateways which don't support authAndCapture, payment transaction is created after authorization.
-        // There are a few gateways which are partially authAndCapture gateways. This means that for
-        // some networks, payment transaction is created at authorization and for some networks, payment
-        // transaction is created at capture.
-
-        // Hence, for [notAuthAndCapture] and [notAuthAndCaptureForSpecificNetworks] gateways,
-        // we do not check for the capture timestamp.
-        // For [authAndCapture] gateways, we check for capture timestamp.
-
-        $networkCode = null;
-        $paymentCard = $payment->card;
-
-        // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
-        {
-            $networkCode = $paymentCard->getNetworkCode();
-        }
-
-        $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
-
-        if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false) or
-            ($forceRefundTransaction === true))
-        {
-            if ($payment->transaction === null)
-            {
-                throw new Exception\LogicException(
-                    'Transaction expected but not present for payment: ' . $payment->getId());
-            }
-
-            $txn = (new Transaction\Core)->createFromRefund($refund);
-
-            $this->repo->saveOrFail($txn);
-
-            $this->trace->info(
-                TraceCode::REFUND_TRANSACTION_CREATED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'refund_id'         => $refund->getId(),
-                    'transaction_id'    => $txn->getId(),
-                    'auth_capture'      => $supportsAuthAndCapture,
-                    'force_refund_txn'  => $forceRefundTransaction,
-                ]
-            );
-
-            return $txn;
-        }
-
-        return null;
-    }
-
     protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
     {
         $data = [
@@ -705,5 +632,91 @@ trait Refund
         }
 
         return null;
+    }
+
+    protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
+    {
+        if ($payment->isFullyRefunded())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_REFUNDED);
+        }
+
+        if ($payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        return $this->refund($payment, $input, $batch);
+    }
+
+    protected function setPaymentAndRefundInfo($refund, $payment)
+    {
+        $this->merchant = $payment->merchant;
+
+        $this->methods = $payment->merchant->methods;
+
+        $this->refund = $refund;
+
+        $this->payment = $payment;
+    }
+
+    /**
+     * Sends out refund related notifications
+     * To 3 places in total:
+     *
+     * - Dashboard (for analytics)
+     * - Slack (for us to see)
+     * - EMails (to both customer and merchant)
+     * @param  Payment\Entity        $payment Payment Entity
+     * @param  Payment\Refund\Entity $refund  Refund Entity
+     * @return null
+     */
+    protected function sendRefundNotification(Payment\Entity $payment, Payment\Refund\Entity $refund)
+    {
+        //
+        // Analytics is on dashboard side for now
+        //
+        $notifier = new Notify($payment);
+        $notifier->addRefund($refund);
+        $notifier->trigger(Notify::REFUNDED);
+
+        $this->notifyDashboard('refund', $this->refund);
+    }
+
+    protected function createRefundOnApiSeparately(Payment\Entity $payment, string $refundId, int $refundAmount)
+    {
+        if ($payment->transaction === null)
+        {
+            throw new Exception\LogicException(
+                'Transaction expected but not present for payment: ' . $payment->getId());
+        }
+
+        $input = ['amount' => $refundAmount];
+
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refund->setId($refundId);
+
+        $data = [
+            'payment_id' => $payment->getId(),
+            'refund_id' => $refundId,
+            'refund_amount' => $refundAmount,
+        ];
+
+        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
+
+        if ($gatewayRefunded === false)
+        {
+            throw new Exception\LogicException(
+                'Should have been refunded on gateway but is not',
+                ErrorCode::SERVER_ERROR_GATEWAY_NOT_REFUNDED,
+                $data);
+        }
+
+        $this->recordRefund();
     }
 }

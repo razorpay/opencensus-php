@@ -1497,3 +1497,9 @@ error_code='BAD_REQUEST_ERROR',
 internal_error_code='BAD_REQUEST_PAYMENT_FAILED',
 error_description='Payment failed'
 WHERE id='6gysDIemK9qx3W';
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_refstatus_index (RefStatus);
+
+
+ALTER TABLE billdesk ADD INDEX billdesk_refstatus_index (RefStatus);
