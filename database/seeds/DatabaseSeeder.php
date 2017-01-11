@@ -1059,7 +1059,7 @@ class DatabaseSeeder extends Seeder
         DB::table(Table::TERMINAL)->insert(
             array(
                 'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
-                'merchant_id'           => Account::TEST_ACCOUNT,
+                'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => 'netbanking_axis',
                 'card'                  => '0',
                 'netbanking'            => '1',

@@ -5,7 +5,7 @@ namespace RZP\Gateway\Netbanking\Axis\Mock;
 use RZP\Gateway\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Currency\Currency;
-use RZP\Gateway\Netbanking\Axis\Crypto;
+use RZP\Gateway\Netbanking\Axis\AESCrypto;
 use RZP\Gateway\Netbanking\Axis\Constants;
 use RZP\Gateway\Netbanking\Axis\RequestFields;
 use RZP\Gateway\Netbanking\Axis\ResponseFields;
@@ -41,7 +41,9 @@ class Server extends Base\Mock\Server
 
     protected function getDecryptedData($input)
     {
-        $crypto = new Crypto(Mode::TEST);
+        $masterKey = $this->getGatewayInstance()->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
 
         $decryptedString = $crypto->decryptString($input[RequestFields::ENCRYPTED_STRING]);
 
@@ -73,7 +75,9 @@ class Server extends Base\Mock\Server
         // Make sure this is correct, there is some lack of clarity here
         $query = http_build_query($response);
 
-        $crypto = new Crypto(Mode::TEST);
+        $masterKey = $this->getGatewayInstance()->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
 
         $encryptedString = urlencode($crypto->encryptString($query));
 

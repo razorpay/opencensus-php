@@ -196,7 +196,9 @@ class Gateway extends Base\Gateway
 
         $stringToEncrypt = $this->prepareStringToEncrypt($data);
 
-        $crypto = new Crypto($this->mode);
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
 
         return $crypto->encryptString($stringToEncrypt);
     }
@@ -232,7 +234,9 @@ class Gateway extends Base\Gateway
     {
         $encryptedString = $encryptedResponse[ResponseFields::ENCRYPTED_STRING];
 
-        $crypto = new Crypto($this->mode);
+        $masterKey = $this->getSecret();
+
+        $crypto = new AESCrypto($masterKey);
 
         $decryptedString = $crypto->decryptString(urldecode($encryptedString));
 

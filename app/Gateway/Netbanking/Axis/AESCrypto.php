@@ -4,17 +4,17 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 use phpseclib\Crypt\AES;
 
-class Crypto
+class AESCrypto
 {
     protected $masterKey;
 
     protected $iv;
 
-    public function __construct(string $mode)
+    public function __construct(string $masterKey)
     {
-        $this->masterKey = $this->getGatewayInstance($mode)->getSecret();
+        $this->masterKey = $masterKey;
 
-        $this->iv = $this->getGatewayInstance($mode)->getSecret();
+        $this->iv = $masterKey;
     }
 
     public function encryptString(string $string)
@@ -42,14 +42,5 @@ class Crypto
         $aes->setIV($this->iv);
 
         return $aes;
-    }
-
-    protected function getGatewayInstance(string $mode)
-    {
-        $gateway = new \RZP\Gateway\Netbanking\Axis\Gateway;
-
-        $gateway->setMode($mode);
-
-        return $gateway;
     }
 }

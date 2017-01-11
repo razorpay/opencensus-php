@@ -73,6 +73,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $refund = $this->refundPayment($payment['id'], 10000);
 
         $this->assertEquals($refund['amount'], 10000);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 10000);
     }
 
     public function testFailedRefund()
