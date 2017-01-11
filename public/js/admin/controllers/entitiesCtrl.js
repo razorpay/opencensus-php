@@ -68,6 +68,7 @@ app.controller('EntitiesCtrl', [
       'mobikwik',
       'netbanking_hdfc',
       'netbanking_kotak',
+      'netbanking_axis',
       'paytm',
       'sharp',
       'upi_icici',
