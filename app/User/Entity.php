@@ -78,7 +78,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     /**
      * Get all of the merchants that the user belongs to.
      */
-    public function merchants($archivedAlso = false)
+    public function merchants($archivedAlso = true)
     {
         $query = $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
             ->withPivot(['role']);
