@@ -411,7 +411,9 @@ class Service extends Base\Service
         return $summary;
     }
 
-    protected function createAllRefundsMissingTransaction(array $refundsWithoutTxn, bool $forceRefundTransaction = false)
+    protected function createAllRefundsMissingTransaction(
+        Base\PublicCollection $refundsWithoutTxn,
+        bool $forceRefundTransaction = false)
     {
         $totalCount = count($refundsWithoutTxn);
 
