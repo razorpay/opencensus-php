@@ -587,6 +587,13 @@ class Entity extends Base\PublicEntity
 
     protected function setContactAttribute($contact)
     {
+        if ($contact === null)
+        {
+            $this->attributes[self::CONTACT] = null;
+
+            return;
+        }
+
         $number = new PhoneBook($contact, true);
 
         if ($number->isValidNumber() === true)
@@ -625,11 +632,15 @@ class Entity extends Base\PublicEntity
     {
         $contact = $this->attributes[self::CONTACT];
 
+        if ($contact === null)
+        {
+            return null;
+        }
+
         $phoneBook = new PhoneBook($contact, true);
 
         return (string) $phoneBook;
     }
-
 
     protected function getVerifiedAttribute()
     {
