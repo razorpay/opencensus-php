@@ -136,7 +136,7 @@ class FileMigration extends Base\Service
                     $fileInfo[$key] = [
                         'bucket'         => $bucket,
                         'aws_key'        => $awsKey,
-                        'content_type'   => $fileExtension,
+                        'content_type'   => strtolower($fileExtension),
                         'content_length' => $result['ContentLength'],
 
                     ];
