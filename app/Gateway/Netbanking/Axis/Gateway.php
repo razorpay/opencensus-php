@@ -65,6 +65,8 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayEntity);
 
         $this->checkResponseStatus($attrs, $content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
