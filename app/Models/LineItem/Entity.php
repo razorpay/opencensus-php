@@ -23,8 +23,6 @@ class Entity extends Base\PublicEntity
     const QUANTITY         = 'quantity';
     const DELETED_AT       = 'deleted_at';
 
-    const ITEM             = 'item';
-
     //
     // Input keys
     //
@@ -84,10 +82,19 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
-        self::ITEM,
     ];
 
     // -------------------------- Getters --------------------------
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
 
     public function getQuantity()
     {
@@ -101,17 +108,6 @@ class Entity extends Base\PublicEntity
     protected function setPublicItemIdAttribute(array & $array)
     {
         $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
-    }
-
-    protected function setPublicItemAttribute(array & $array)
-    {
-        // Flatten response: Merge item attributes into line_item level.
-
-        $item = $this->item->toArrayPublic();
-
-        unset($item[Item\Entity::ID]);
-
-        $array = array_merge($array, $item);
     }
 
     // -------------------------- Public Setters Ends --------------------------

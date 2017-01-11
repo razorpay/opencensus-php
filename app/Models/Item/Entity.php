@@ -19,30 +19,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY              = 'currency';
     const DELETED_AT            = 'deleted_at';
 
-    //
-    // We use this property to pluck all item related fields from request
-    // payload of line items operations. Yes, that payload contains item related
-    // fields at the same level.
-    //
-    // New attribute when being added, please check:
-    // - $allFields
-    // - LineItem.($visible, $public)
-    //
-    public static $allFields    = [
-        self::ACTIVE,
-        self::NAME,
-        self::DESCRIPTION,
-        self::AMOUNT,
-        self::CURRENCY,
-    ];
-
-    //
-    // Fields which are always editable, irrespective of other custom validations
-    //
-    public static $fieldsAlwaysEditable = [
-        self::ACTIVE,
-    ];
-
     protected static $sign      = 'item';
 
     protected $entity           = 'item';
@@ -92,6 +68,16 @@ class Entity extends Base\PublicEntity
     ];
 
     // -------------------------- Getters --------------------------
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
 
     public function getAmount()
     {

@@ -1020,7 +1020,7 @@ return [
                         'id'          => 'li_100001lineitem',
                         'quantity'    => 1,
                         'name'        => 'Very new item 3',
-                        'description' => null,
+                        'description' => 'Some item description',
                         'amount'      => 500,
                         'currency'    => 'INR',
                     ],
@@ -1497,7 +1497,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required.',
+                    'description' => 'The amount field is required when item id is not present.',
                 ],
             ],
             'status_code' => 400,
@@ -1524,7 +1524,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required.',
+                    'description' => 'The amount field is required when item id is not present.',
                 ],
             ],
             'status_code' => 400,

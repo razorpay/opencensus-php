@@ -21,30 +21,28 @@ class Core extends Base\Core
             $input
         );
 
-        list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
+        $lineItem = (new Entity);
 
-        $lineItem = (new Entity)->build($lineItemDetails);
+        if ((isset($input[Entity::ITEM_ID]) === false)
+            and (isset($input[Entity::CURRENCY]) === false))
+        {
+            $input[Entity::CURRENCY] = $morphEntity->getCurrency();
+        }
+
+        $this->setItemAssociationAndUpdateInput(
+            $lineItem,
+            $input,
+            $merchant,
+            $morphEntity);
+
+        $lineItem->build($input);
+
+        $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
 
         $lineItem->merchant()->associate($merchant);
         $lineItem->entity()->associate($morphEntity);
 
-        $this->repo->transaction(
-            function() use ($merchant, $morphEntity, $lineItem, $lineItemDetails, $itemDetails)
-            {
-                //
-                // Create or get item(if id exists in input) and associate with line item.
-                //
-
-                $item = $this->createItemOrGetExisting(
-                    $lineItemDetails,
-                    $itemDetails,
-                    $merchant,
-                    $morphEntity);
-
-                $lineItem->item()->associate($item);
-
-                $this->repo->saveOrFail($lineItem);
-            });
+        $this->repo->saveOrFail($lineItem);
 
         return $lineItem;
     }
@@ -84,33 +82,17 @@ class Core extends Base\Core
                 'input' => $input,
             ]);
 
-        list($lineItemDetails, $itemDetails) = $this->separateItemInputFromLineItemInput($input);
+        $this->setItemAssociationAndUpdateInput(
+            $lineItem,
+            $input,
+            $merchant,
+            $morphEntity);
 
-        $lineItem->edit($lineItemDetails);
+        $lineItem->edit($input);
 
-        $this->repo->transaction(
-            function() use ($merchant, $morphEntity, $lineItem, $lineItemDetails, $itemDetails)
-            {
-                //
-                // Updates item association if item_id or item details are sent
-                // as part of update input.
-                //
+        $lineItem->getValidator()->validateCurrency($morphEntity->getCurrency());
 
-                if ((isset($lineItemDetails[Entity::ITEM_ID])) or
-                    (empty($itemDetails) === false))
-                {
-                    $item = $this->createItemOrGetExisting(
-                        $lineItemDetails,
-                        $itemDetails,
-                        $merchant,
-                        $morphEntity);
-
-                    $lineItem->item()->associate($item);
-                }
-
-                $this->repo->saveOrFail($lineItem);
-            }
-        );
+        $this->repo->saveOrFail($lineItem);
 
         return $lineItem;
     }
@@ -152,7 +134,7 @@ class Core extends Base\Core
 
         foreach ($lineItems as $lineItem)
         {
-            $totalAmount += ($lineItem->getQuantity() * $lineItem->item->getAmount());
+            $totalAmount += ($lineItem->getQuantity() * $lineItem->getAmount());
         }
 
         return ($totalAmount === 0) ? null : $totalAmount;
@@ -255,84 +237,35 @@ class Core extends Base\Core
     }
 
     /**
-     * @param array             $lineItemDetails
-     * @param array             $itemDetails
-     * @param Merchant\Entity   $merchant
-     * @param Base\PublicEntity $morphEntity
      *
-     * @return Item\Entity
-     * @throws Exception\BadRequestException
-     */
-    protected function createItemOrGetExisting(
-        array $lineItemDetails,
-        array $itemDetails,
-        Merchant\Entity $merchant,
-        Base\PublicEntity $morphEntity)
-    {
-        $item = null;
-
-        //
-        // If ITEM_ID exists in input, use the existing active item for association.
-        //
-
-        if (isset($lineItemDetails[Entity::ITEM_ID]) === true)
-        {
-            $item = $this->repo->item->findActiveByPublicIdAndMerchantOrFail(
-                $lineItemDetails[Entity::ITEM_ID],
-                $merchant
-            );
-        }
-
-        //
-        // Else creates item with given input
-        //
-
-        if (empty($item))
-        {
-            //
-            // Use morphEntity's currency if item's currency not in input
-            //
-
-            if (isset($itemDetails[Item\Entity::CURRENCY]) === false)
-            {
-                $itemDetails[Item\Entity::CURRENCY] = $morphEntity->getCurrency();
-            }
-
-            $item = (new Item\Core)->create($itemDetails, $merchant);
-        }
-
-        $item->getValidator()->validateCurrency(
-            $item->getCurrency(),
-            $morphEntity->getCurrency());
-
-        return $item;
-    }
-
-    /**
-     * Request payload contains flattened lineItemDetails,
-     * i.e. It has line item attributes (eg. quantity) and
-     * the contained item attributes (eg. name, amount etc.).
-     *
-     * This function separates those payloads for it to be used further.
-     *
-     * @param array $lineItemDetails
+     * @param array $input
      *
      * @return array
      */
-    protected function separateItemInputFromLineItemInput(array $lineItemDetails)
+    protected function setItemAssociationAndUpdateInput(
+        Entity $lineItem,
+        array & $input,
+        Merchant\Entity $merchant,
+        Base\PublicEntity $morphEntity)
     {
-        $itemDetails = [];
-
-        $itemFields = Item\Entity::$allFields;
-
-        foreach ($lineItemDetails as $key => $value)
+        if (isset($input[Entity::ITEM_ID]) === false)
         {
-            if (in_array($key, $itemFields, true))
-            {
-                $itemDetails[$key] = $value;
-            }
+            return $input;
         }
 
-        return [$lineItemDetails, $itemDetails];
+        $item = $this->repo->item
+                           ->findActiveByPublicIdAndMerchantOrFail(
+                                $input[Entity::ITEM_ID],
+                                $merchant
+                            );
+
+        $lineItem->item()->associate($item);
+
+        $input[Entity::NAME]        = $item->getName();
+        $input[Entity::DESCRIPTION] = $item->getDescription();
+        $input[Entity::AMOUNT]      = $item->getAmount();
+        $input[Entity::CURRENCY]    = $item->getCurrency();
+
+        return $input;
     }
 }
