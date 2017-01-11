@@ -69,7 +69,7 @@ class CreateDailySettlements extends Migration
 
             $table->foreign(Settlement::BATCH_SETTLEMENT_ID)
                   ->references(BatchSettlement::ID)
-                  ->on(Table::DAILY_SETTLEMENT)
+                  ->on(Table::BATCH_SETTLEMENT)
                   ->on_delete('restrict');
         });
     }
@@ -87,6 +87,6 @@ class CreateDailySettlements extends Migration
                 Table::SETTLEMENT . '_' . SETTLEMENT::BATCH_SETTLEMENT_ID . '_foreign');
         });
 
-        Schema::drop(Table::DAILY_SETTLEMENT);
+        Schema::drop(Table::BATCH_SETTLEMENT);
     }
 }
