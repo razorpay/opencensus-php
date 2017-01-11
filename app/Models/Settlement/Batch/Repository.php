@@ -1,15 +1,15 @@
 <?php
 
-namespace RZP\Models\Settlement\Daily;
+namespace RZP\Models\Settlement\Batch;
 
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Settlement\Daily;
+use RZP\Models\Settlement\Batch;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'daily_settlement';
+    protected $entity = 'batch_settlement';
 
     protected static $fetchExtraParamRules = array(
         'date' => 'integer|digits:8');
