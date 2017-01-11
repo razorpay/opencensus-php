@@ -9,7 +9,23 @@ use RZP\Models\Payment\Gateway;
 
 class Category
 {
-    const DEFAULT = 'default';
+    const DEFAULT         = 'default';
+
+    const SECURITIES      = 'securities';
+    const COMMODITIES     = 'commodities';
+    const GROCERY         = 'grocery';
+    const ECOMMERCE       = 'ecommerce';
+    const EDUCATION       = 'education';
+    const GOVT_EDUCATION  = 'govt_education';
+    const PVT_EDUCATION   = 'pvt_education';
+    const UTILITIES       = 'utilities';
+    const CORPORATE       = 'corporate';
+    const INSURANCE       = 'insurance';
+    const HOUSING         = 'housing';
+    const MUTUAL_FUNDS    = 'mutual_funds';
+    const TRAVEL_AGENCY   = 'travel_agency';
+    const RETAIL_SERVICES = 'retail_services';
+
 
     /**
      * Categories mapped to invalid will not find an
@@ -24,18 +40,18 @@ class Category
      * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        'securities',
-        'commodities',
-        'grocery',
-        'ecommerce',
-        'govt_education',
-        'pvt_education',
-        'utilities',
-        'corporate',
-        'insurance',
-        'housing',
-        'mutual_funds',
-        'travel_agency',
+        Category::SECURITIES,
+        Category::COMMODITIES,
+        Category::GROCERY,
+        Category::ECOMMERCE,
+        Category::GOVT_EDUCATION,
+        Category::PVT_EDUCATION,
+        Category::UTILITIES,
+        Category::CORPORATE,
+        Category::INSURANCE,
+        Category::HOUSING,
+        Category::MUTUAL_FUNDS,
+        Category::TRAVEL_AGENCY,
     ];
 
 
@@ -47,8 +63,8 @@ class Category
      * out.
      */
     const INCOMPATIBLE = [
-        'securities',
-        'commodities',
+        Category::SECURITIES,
+        Category::COMMODITIES,
     ];
 
     /**
@@ -58,31 +74,31 @@ class Category
      */
     const CATEGORIES = [
         Method::NETBANKING => [
-            self::DEFAULT => 'ecommerce',
+            Category::DEFAULT => Category::ECOMMERCE,
         ],
         Method::CARD => [
-            self::DEFAULT => 'ecommerce',
-            Network::AMEX => [
-                self::DEFAULT    => 'retail_services',
-                'grocery'        => 'sup_hypermrkt_deptstore',
-                'ecommerce'      => 'retail_services',
-                'govt_education' => 'education',
-                'pvt_education'  => 'education',
-                'corporate'      => self::INVALID,
-                'insurance'      => 'insurance',
-                'housing'        => 'housing',
+            Category::DEFAULT => Category::ECOMMERCE,
+            Network::AMEX     => [
+                Category::DEFAULT        => Category::RETAIL_SERVICES,
+                Category::GROCERY        => 'sup_hypermrkt_deptstore',
+                Category::ECOMMERCE      => Category::RETAIL_SERVICES,
+                Category::GOVT_EDUCATION => Category::EDUCATION,
+                Category::PVT_EDUCATION  => Category::EDUCATION,
+                Category::CORPORATE      => Category::INVALID,
+                Category::INSURANCE      => Category::INSURANCE,
+                Category::HOUSING        => Category::HOUSING,
             ],
         ]
     ];
 
     public static function isMerchantCategoryIncompatible($category)
     {
-        return in_array($category, self::INCOMPATIBLE, true);
+        return in_array($category, Category::INCOMPATIBLE, true);
     }
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, self::CATEGORIES_ALL, true);
+        return in_array($category, Category::CATEGORIES_ALL, true);
     }
 
     public static function isNetworkCategoryValid($input)
@@ -96,7 +112,7 @@ class Category
 
         // Get the correct constant for the terminal
         // get the values array and check in array
-        $checkArray = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
+        $allCategories = array_combine(self::CATEGORIES_ALL, self::CATEGORIES_ALL);
 
         $method = self::getMethod($input);
 
@@ -107,12 +123,12 @@ class Category
         {
             foreach (self::CATEGORIES[$method][$network] as $category2 => $networkCategory)
             {
-                $checkArray[$category2] = $networkCategory;
+                $allCategories[$category2] = $networkCategory;
             }
         }
 
         // No need to worry about duplicates. we only need values
-        $values = array_values($checkArray);
+        $values = array_values($allCategories);
 
         return in_array($category, $values, true);
     }
