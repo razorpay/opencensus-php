@@ -14,21 +14,7 @@ class  StoreManager extends BaseStoreManager
         if (($store instanceof Store\PriorityStore) and
             $store->getKeyPrefix() === 'gateway_priority')
         {
-            if ($store->getKey() === 'card')
-            {
-                $store->setData([
-                    Gateway::HDFC        => '50',
-                    Gateway::AXIS_MIGS   => '40',
-                    Gateway::AMEX        => '30',
-                    Gateway::CYBERSOURCE => '20',
-                    Gateway::FIRST_DATA  => '10'
-                ]);
-            }
-
-            $store->setData([
-                Gateway::BILLDESK => '50',
-                Gateway::EBS      => '40'
-            ]);
+            $store->setData([]);
         }
 
         return $store;
