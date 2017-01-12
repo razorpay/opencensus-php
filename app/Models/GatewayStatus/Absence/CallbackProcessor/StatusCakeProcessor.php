@@ -49,7 +49,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
             {
-                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS, ['input' => $input]);
+                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS,
+                                    ['input' => $input]);
 
                 throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $sStatus);
 
@@ -94,7 +95,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
     {
         if (isset($input['Token']) === false)
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN, ['data' => $input]);
+            $this->trace->critical(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN,
+                                    ['data' => $input]);
 
             throw new Exception\BadRequestValidationFailureException('StatusCake Token Missing');
         }
