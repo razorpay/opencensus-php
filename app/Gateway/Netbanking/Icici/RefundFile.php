@@ -14,16 +14,16 @@ class RefundFile extends Base\RefundFile
 
     // The columns of the file
     protected static $headers = [
-        'Sr No',
-        'Payee_id',
-        'SPID',
-        'Bank Reference No.',
-        'Transaction Date',
-        'Transaction Amount',
-        'Refund Amount',
-        'Transaction Id',
-        'Reversal/Cancellation',
-        'Remarks',
+        RefundFileFields::SERAL_NO,
+        RefundFileFields::PAYEE_ID,
+        RefundFileFields::SPID,
+        RefundFileFields::BANK_REFERENCE_ID,
+        RefundFileFields::TRANSACTION_DATE,
+        RefundFileFields::TRANSACTION_AMOUNT,
+        RefundFileFields::REFUND_AMOUNT,
+        RefundFileFields::TRANSACTION_ID,
+        RefundFileFields::REFUND_MODE,
+        RefundFileFields::REMARKS,
     ];
 
     public function generate($input)
@@ -59,16 +59,16 @@ class RefundFile extends Base\RefundFile
                 $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
 
             $data[] = [
-                RefundFileFields::SERAL_NO               => $index + 1,
-                RefundFileFields::PAYEE_ID               => $row['terminal']['gateway_merchant_id'],
-                RefundFileFields::SPID                   => $row['terminal']['gateway_merchant_id2'],
-                RefundFileFields::BANK_REFERENCE_ID      => $row['gateway']['bank_payment_id'],
-                RefundFileFields::TRANSACTION_DATE       => $date,
-                RefundFileFields::TRANSACTION_AMOUNT     => $row['payment']['amount'] / 100,
-                RefundFileFields::REFUND_AMOUNT          => $row['refund']['amount'] / 100,
-                RefundFileFields::TRANSACTION_ID         => $row['payment']['id'],
-                RefundFileFields::REFUND_MODE            => 'C',
-                RefundFileFields::REMARKS                => '',
+                RefundFileFields::SERAL_NO           => $index + 1,
+                RefundFileFields::PAYEE_ID           => $row['terminal']['gateway_merchant_id'],
+                RefundFileFields::SPID               => $row['terminal']['gateway_merchant_id2'],
+                RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id'],
+                RefundFileFields::TRANSACTION_DATE   => $date,
+                RefundFileFields::TRANSACTION_AMOUNT => $row['payment']['amount'] / 100,
+                RefundFileFields::REFUND_AMOUNT      => $row['refund']['amount'] / 100,
+                RefundFileFields::TRANSACTION_ID     => $row['payment']['id'],
+                RefundFileFields::REFUND_MODE        => 'C',
+                RefundFileFields::REMARKS            => '',
             ];
         }
 
