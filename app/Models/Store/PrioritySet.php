@@ -11,7 +11,7 @@ use RZP\Exception;
  * This class is used to store a sorted set data type in redis
  * More info about sorted set here https://redis.io/topics/data-types-intro
  */
-class PriorityStore extends Base
+class PrioritySet extends Base
 {
     protected $keyPrefix;
 
@@ -20,47 +20,6 @@ class PriorityStore extends Base
     protected $data;
 
     protected static $delimiter = ':';
-
-    public function __construct(string $keyPrefix, string $key)
-    {
-        parent::__construct();
-
-        $this->key = $key;
-
-        $this->keyPrefix = $keyPrefix;
-    }
-
-    public function getKey()
-    {
-        return $this->key;
-    }
-
-    public function getKeyPrefix()
-    {
-        return $this->keyPrefix;
-    }
-
-    public function generateStoreKey()
-    {
-        return  $this->keyPrefix . self::$delimiter . $this->key;
-    }
-
-    public function getData()
-    {
-        return $this->data;
-    }
-
-    public function setData($data)
-    {
-        $this->data = $data;
-    }
-
-    public function toArray()
-    {
-        return [
-            $this->key => $this->data
-        ];
-    }
 
     /**
      * Returns the members of the sorted set ordered by socre.
