@@ -236,9 +236,9 @@ class Validator extends Base\Validator
             );
         }
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = strtolower($input[Entity::GATEWAY]);
 
-        if (Gateway::isMethodSupported($input[Entity::METHOD], $gateway) === false)
+        if (Gateway::isMethodSupported($method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Method: '.$input['method'] .' is not supported for gateway: '. $gateway

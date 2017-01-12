@@ -371,7 +371,61 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
-    public function testStatusCakeWebHook()
+    public function testStatusCakeWebHookNB()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeWebHookCard()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeWebHookWallet()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidNB()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidCard()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidWallet()
+    {
+        $this->ba->directAuth();
+
+        $this->testData[__FUNCTION__]['request']['content']['Token'] = $this->statusCakeToken;
+
+        $this->startTest();
+    }
+
+    public function testStatusCakeInvalidFormat()
     {
         $this->ba->directAuth();
 
@@ -391,7 +445,7 @@ class GatewayAbsenceTest extends TestCase
             'Name' => 'Test',
             'StatusCode' => 400,
             'Status' => 'Down',
-            'Tags' => 'HDFC'
+            'Tags' => 'NETBANKING_HDFC'
         ];
 
         $request = [

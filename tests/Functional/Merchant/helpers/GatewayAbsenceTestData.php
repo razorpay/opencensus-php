@@ -408,7 +408,155 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testStatusCakeWebHook' => [
+    'testStatusCakeWebHookNB' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'NETBANKING_HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'issuer' => 'HDFC',
+                'method' => 'netbanking',
+                'reason_code' => 'ISSUER_DOWN',
+                'gateway' => 'netbanking_hdfc'
+            ]
+        ]
+    ],
+    'testStatusCakeWebHookCard' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'CARD_HDFC'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'card',
+                'reason_code' => 'ISSUER_DOWN',
+                'gateway' => 'HDFC'
+            ]
+        ]
+    ],
+
+    'testStatusCakeWebHookWallet' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'WALLET_AIRTELMONEY'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'method' => 'wallet',
+                'reason_code' => 'ISSUER_DOWN',
+                'gateway' => 'WALLET_AIRTELMONEY'
+            ]
+        ]
+    ],
+
+    'testStatusCakeInvalidNB' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'NETBANKING_XYZ'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testStatusCakeInvalidCard' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'CARD_XYZ'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testStatusCakeInvalidWallet' => [
+        'request' => [
+            'content' => [
+                'URL' => 'http://www.example.com',
+                'Method' => 'Website',
+                'Name' => 'Test',
+                'StatusCode' => 400,
+                'Status' => 'Down',
+                'Tags' => 'WALLET_XYZ'
+            ],
+            'method' => 'POST',
+            'url' => '/statuscake/callback'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    // data specified without any method
+    'testStatusCakeInvalidFormat' => [
         'request' => [
             'content' => [
                 'URL' => 'http://www.example.com',
@@ -423,13 +571,18 @@ return [
         ],
         'response' => [
             'content' => [
-                'issuer' => 'HDFC',
-                'method' => 'netbanking',
-                'reason_code' => 'ISSUER_DOWN',
-                'gateway' => 'netbanking_hdfc'
-            ]
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
     'testStatusCakeWebHookMissingToken' => [
         'request' => [
             'content' => [
