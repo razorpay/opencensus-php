@@ -2,19 +2,22 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
-use RZP\Constants\Mode as RZPMode;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Gateway\Base as GatewayBase;
-use RZP\Gateway\Netbanking\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
 use phpseclib\Crypt\AES;
+use RZP\Error\ErrorCode;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Constants\Mode as RZPMode;
+use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
 {
-    use GatewayBase\AuthorizeFailed;
+    use AuthorizeFailed;
 
     protected $gateway = 'netbanking_icici';
 
@@ -52,7 +55,7 @@ class Gateway extends Base\Gateway
             $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
-            $input['payment'][Payment\Entity::ID], GatewayBase\Action::AUTHORIZE);
+            $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
         $attrs = $this->getCallbackAttributes($content);
 
@@ -61,13 +64,15 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($payment);
 
         $this->checkResponseStatus($attrs, $content);
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
     {
         parent::verify($input);
 
-        $verify = new GatewayBase\Verify($this->gateway, $input);
+        $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
     }
@@ -84,11 +89,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponse = $response;
         $verify->verifyResponseBody = $response->body;
-        $verify->verifyResponseContent = $content;
-
-        return $response;
     }
 
     public function verifyPayment($verify)
@@ -108,7 +109,7 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyStatus($verify, $xml)
     {
-        $status = GatewayBase\VerifyResult::STATUS_MATCH;
+        $status = VerifyResult::STATUS_MATCH;
 
         $this->getApiSuccess($verify);
 
@@ -116,12 +117,12 @@ class Gateway extends Base\Gateway
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = GatewayBase\VerifyResult::STATUS_MISMATCH;
+            $status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->match = ($status === GatewayBase\VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->status = $status;
 
-        return $status;
+        $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
     protected function getApiSuccess($verify)
