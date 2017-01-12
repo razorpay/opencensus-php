@@ -92,7 +92,7 @@ class Repository extends Base\Repository
                     ->where(function ($query) use ($merchant)
                     {
                         $query->whereNull('merchant_offer.merchant_id')
-                                ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
+                              ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
                     });
     }
 }

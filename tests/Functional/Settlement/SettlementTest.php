@@ -269,9 +269,8 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($setl['batch_settlement_id'], $dailySetl['id']);
 
-        // $request = array('url' => '/settlements/details', 'method' => 'post');
-        // $content = $this->makeRequestAndGetContent($request);
-        // sd($content);
+        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $dailySetl['id']]);
+        $content = $this->makeRequestAndGetContent($request);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -415,16 +414,12 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $time = $setl['created_at'] - 1;
-
-        $this->fixtures->edit('settlement', $setl['id'],
-            [
-                'created_at' => $time
-            ]);
-
         $request = array(
             'url' => '/settlements/file/generate',
-            'method' => 'POST'
+            'method' => 'POST',
+            'content' => [
+                'batch_settlement_id' => $setl['batch_settlement_id']
+            ]
         );
 
         $content = $this->makeRequestAndGetContent($request);
