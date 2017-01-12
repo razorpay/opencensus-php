@@ -29,7 +29,6 @@ class BankCodes
         IFSC::IBKL => 'IDB',                    // Idbi Bank Ltd
         IFSC::INDB => 'IDS',                    // Indusind Bank Ltd
         IFSC::IDIB => 'INB',                    // Indian Bank
-        IFSC::VYSA => 'ING',                    // ING VYSA Bank - Merged into KKBK
         IFSC::IOBA => 'IOB',                    // Indian Overseas Bank
         IFSC::JAKA => 'JKB',                    // Jammu And Kashmir Bank Ltd
         IFSC::KARB => 'KBL',                    // Karnataka Bank Ltd
