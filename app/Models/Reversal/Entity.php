@@ -12,7 +12,6 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID       = 'merchant_id';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
-    const BASE_AMOUNT       = 'base_amount';
     const TRANSACTION_ID    = 'transaction_id';
 
     protected static $sign = 'revsl';
@@ -39,6 +38,7 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::TRANSFER_ID,
         self::AMOUNT,
         self::CURRENCY,
@@ -47,12 +47,10 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT        => 'int',
-        self::BASE_AMOUNT   => 'int'
     ];
 
     protected $amounts = [
         self::AMOUNT,
-        self::BASE_AMOUNT,
     ];
 
     protected $publicSetters = [
@@ -85,31 +83,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getBaseAmount()
+    public function getTransferId()
     {
-        return $this->getAttribute(self::BASE_AMOUNT);
-    }
-
-    public function setBaseAmount()
-    {
-        $transfer = $this->transfer;
-
-        $amount = $this->getAmount();
-
-        $unreversedAmount = $transfer->getAmountUnreversed();
-
-        if ($amount === $unreversedAmount)
-        {
-            $baseAmount = $transfer->getBaseAmountUnreversed();
-        }
-        else
-        {
-            $conversionRate = $transfer->getCurrencyConversionRate();
-
-            $baseAmount = (int) floor($amount * $conversionRate);
-        }
-
-        $this->setAttribute(self::BASE_AMOUNT, $baseAmount);
+        return $this->getAttribute(self::TRANSFER_ID);
     }
 
     public function setPublicTransferIdAttribute(array & $attributes)

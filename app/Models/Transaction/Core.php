@@ -609,7 +609,7 @@ class Core extends Base\Core
     {
         $txn = new Transaction\Entity;
 
-        $amount = $transfer->getBaseAmount();
+        $amount = $transfer->getAmount();
 
         $settledAt = time();
 

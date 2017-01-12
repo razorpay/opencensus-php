@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Transfer;
 
-use RZP\Models\Base;
-use RZP\Models\Transaction;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
+use RZP\Models\Base;
+use RZP\Models\Transaction;
 
 class Entity extends Base\PublicEntity
 {
@@ -17,9 +17,8 @@ class Entity extends Base\PublicEntity
     const SOURCE_TYPE           = 'source_type';
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
-    const BASE_AMOUNT           = 'base_amount';
+    const REVERSAL_STATUS       = 'reversal_status';
     const AMOUNT_REVERSED       = 'amount_reversed';
-    const BASE_AMOUNT_REVERSED  = 'base_amount_reversed';
     const ON_HOLD               = 'on_hold';
     const HOLD_UNTIL            = 'hold_until';
     const TRANSACTION_ID        = 'transaction_id';
@@ -50,10 +49,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::AMOUNT,
-        self::BASE_AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
-        self::BASE_AMOUNT_REVERSED,
         self::ON_HOLD,
         self::HOLD_UNTIL,
         self::TRANSACTION_ID,
@@ -84,9 +81,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT                 => 'int',
-        self::BASE_AMOUNT            => 'int',
         self::AMOUNT_REVERSED        => 'int',
-        self::BASE_AMOUNT_REVERSED   => 'int',
         self::ON_HOLD                => 'bool',
         self::HOLD_UNTIL             => 'int',
     ];
@@ -128,9 +123,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
-    public function getBaseAmount()
+    public function getSourceId()
     {
-        return $this->getAttribute(self::BASE_AMOUNT);
+        return $this->getAttribute(self::SOURCE_ID);
     }
 
     public function getToId()
@@ -153,16 +148,6 @@ class Entity extends Base\PublicEntity
         return $this->getAmount() - $this->getAmountReversed();
     }
 
-    public function getBaseAmountReversed()
-    {
-        return $this->getAttribute(self::BASE_AMOUNT_REVERSED);
-    }
-
-    public function getBaseAmountUnreversed()
-    {
-        return $this->getBaseAmount() - $this->getBaseAmountReversed();
-    }
-
     public function getOnHold()
     {
         return $this->getAttribute(self::ON_HOLD);
@@ -173,27 +158,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::HOLD_UNTIL);
     }
 
-    /**
-     * Get the rate at which currency conversion was applied to
-     * the transfer amount
-     */
-    public function getCurrencyConversionRate()
-    {
-        $baseAmount = $this->getBaseAmount();
-
-        $transferAmount = $this->getAmount();
-
-        return $baseAmount / $transferAmount;
-    }
-
     // -------------------- End Getters ---------------------------
 
     // -------------------- Setters ---------------------------
-
-    public function setBaseAmount(int $amount)
-    {
-        $this->setAttribute(self::BASE_AMOUNT, $amount);
-    }
 
     public function setAmountReversed(int $amount)
     {
@@ -212,7 +179,7 @@ class Entity extends Base\PublicEntity
 
     // -------------------- End Setters ---------------------------
 
-    public function reverseAmount(int $amount, int $baseAmount)
+    public function reverseAmount(int $amount)
     {
         $amountUnreversed = $this->getAmountUnreversed();
 
@@ -224,12 +191,7 @@ class Entity extends Base\PublicEntity
 
         $amountReversed = $this->getAmountReversed() + $amount;
 
-        $baseAmountReversed = $this->getBaseAmountReversed() + $baseAmount;
-
         $this->setAttribute(self::AMOUNT_REVERSED, $amountReversed);
-
-        $this->setAttribute(self::BASE_AMOUNT_REVERSED, $baseAmountReversed);
-
     }
 
     public function setPublicTransactionIdAttribute(array & $attributes)

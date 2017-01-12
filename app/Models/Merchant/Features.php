@@ -3,7 +3,6 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Exception;
-use RZP\Models\Feature\Constants as Feature;
 
 class Features
 {

@@ -24,53 +24,9 @@ class Core extends Base\Core
     }
 
     /**
-     * Creates and saves a new transfer entity
-     *
-     * @param  Base\Entity        $from        Source entity for transfer
-     * @param  Base\Entity        $to          Recieving entity for transfer
-     * @param  int                $amount
-     * @return Transfer\Entity
-     */
-    protected function createTransfer(Base\Entity $to, Base\Entity $source, array $input, int $baseAmount) : Entity
-    {
-        $transferData = [
-            Entity::TO_ID           => $to->getId(),
-            Entity::TO_TYPE         => $to->getEntityName(),
-            Entity::SOURCE_ID       => $source->getId(),
-            Entity::SOURCE_TYPE     => $source->getEntityName(),
-            Entity::AMOUNT          => $input['amount'],
-            Entity::CURRENCY        => $input['currency'],
-            Entity::ON_HOLD         => $input['on_hold'] ?? 0,
-            Entity::HOLD_UNTIL      => $input['hold_until'] ?? null,
-        ];
-
-        $transfer = (new Entity);
-
-        $transfer->generate($transferData);
-
-        $transfer->fill($transferData);
-
-        $transfer->generateId();
-
-        $transfer->setBaseAmount($baseAmount);
-
-        $transfer->merchant()->associate($this->merchant);
-
-        $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
-
-        $this->repo->saveOrFail($txn);
-
-        $transfer->transaction()->associate($txn);
-
-        $this->repo->saveOrFail($transfer);
-
-        return $transfer;
-    }
-
-    /**
      * Create a direct transfer from Merchant balance
      *
-     * @param  array  $input
+     * @param  array                    $input
      * @return Transfer\Entity
      */
     public function createForMerchant(array $input) : Entity
@@ -84,8 +40,39 @@ class Core extends Base\Core
     }
 
     /**
+     * Create a transfer from a source payment
+     *
+     * @param   Payment\Entity          $payment
+     * @param   array                   $input
+     * @return  Base\PublicCollection
+     */
+    public function createForPayment(Payment\Entity $payment, array $input)
+    {
+        $transfers = new Base\PublicCollection;
+
+        $merchantBalance = $this->repo->balance->getMerchantBalance($this->merchant);
+
+        (new Validator)->validateTransfers($payment, $merchantBalance, $input);
+
+        $totalTransferAmount = 0;
+
+        foreach ($input as $transfer)
+        {
+            $transfer = $this->makeTransfer($transfer, $payment);
+
+            $totalTransferAmount += $transfer['amount'];
+
+            $transfers->push($transfer);
+        }
+
+        $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+
+        return $transfers;
+    }
+
+    /**
      * Edit the attributes of a transfer entity
-     * Currently: edit allowed on on_hold and hold_until
+     * Currently allowed for on_hold and hold_until fields
      *
      * @param  string           $id
      * @param  array            $input
@@ -113,84 +100,62 @@ class Core extends Base\Core
     }
 
     /**
-     * Create and process a reversal on a transfer
+     * Creates and saves a new transfer entity
      *
-     * @param  string           $id
-     * @param  array            $input
-     * @return Reversal\Entity
+     * @param  Base\Entity        $source      Source entity for transfer
+     * @param  Base\Entity        $to          Receiving entity for transfer
+     * @param  int                $amount
+     * @return Transfer\Entity
      */
-    public function reverse(string $id, array $input)
+    protected function createTransfer(Base\Entity $source, Base\Entity $to, array $input) : Entity
     {
-        $transfer = $this->repo
-                         ->transfer
-                         ->findByPublicIdAndMerchant($id, $this->merchant);
+        $transferData = [
+            Entity::TO_ID           => $to->getId(),
+            Entity::TO_TYPE         => $to->getEntityName(),
+            Entity::SOURCE_ID       => $source->getId(),
+            Entity::SOURCE_TYPE     => $source->getEntityName(),
+        ];
 
-        // Reversals not coded yet for customer wallet transfer refunds
-        // @todo: Change flow to create reversals for both customer/account transfers
-        assert ($transfer->getToType() === E::MERCHANT);
+        $transferData = $transferData + $input;
 
-        $transferPayment = $this->repo
-                                ->payment
-                                ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+        $transfer = new Entity;
 
-        // If amount is not set in input,
-        // reverse the entire transfer amount pernding
-        $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
+        $transfer->generate($transferData);
 
-        return $this->repo->transaction(function () use ($transfer, $transferPayment, $amount)
-        {
-            $reversal = (new Payment\Processor\Processor($this->merchant))
-                            ->refundAndReverseTransferPayment($transferPayment, $transfer, $amount);
+        $transfer->fill($transferData);
 
-            return $reversal;
-        });
+        $transfer->generateId();
+
+        $transfer->merchant()->associate($this->merchant);
+
+        $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
+
+        $this->repo->saveOrFail($txn);
+
+        $transfer->transaction()->associate($txn);
+
+        $this->repo->saveOrFail($transfer);
+
+        return $transfer;
     }
 
-    protected function processTransferHold(Entity $transfer, array $input)
+    protected function updatePaymentHold(Entity $transfer, array $input)
     {
-        $payment = $this->repo->payment->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+        $payment = $this->repo
+                        ->payment
+                        ->findByTransferIdAndMerchant(
+                            $transfer->getId(),
+                            $transfer->getToId());
 
         $payment->setOnHold($transfer->getOnHold());
 
         $payment->setHoldUntil($transfer->getHoldUntil());
 
-        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
+        $txn = (new Transaction\Core)->updatePaymentHold($payment);
+
+        $this->repo->saveOrFail($payment);
 
         $this->repo->saveOrFail($txn);
-
-        return $payment;
-    }
-
-    /**
-     * Create and process a payment transfer
-     *
-     * @param   Payment\Entity          $payment
-     * @param   Merchant\Entity         $merchant
-     * @param   array                   $input
-     * @return  Base\PublicCollection
-     */
-    public function createForPayment(Payment\Entity $payment, Merchant\Entity $merchant, array $input)
-    {
-        $transfers = new Base\PublicCollection;
-
-        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
-
-        (new Validator)->validateTransfers($payment, $merchantBalance, $input);
-
-        $totalTransferAmount = 0;
-
-        foreach ($input as $transfer)
-        {
-            $transfer =$this->makeTransfer($transfer, $payment);
-
-            $totalTransferAmount += $transfer['amount'];
-
-            $transfers->push($transfer);
-        }
-
-        $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
-
-        return $transfers;
     }
 
     protected function updatePaymentAmountTransferred($payment, int $amount)
@@ -206,8 +171,8 @@ class Core extends Base\Core
     /**
      * Create and process a transfer
      *
-     * @param  array       $input
-     * @param  Base\Entity $source
+     * @param  array                $input
+     * @param  Base\Entity          $source
      * @return Transfer\Entity
      */
     protected function makeTransfer(array $input, Base\Entity $source) : Entity
@@ -220,37 +185,41 @@ class Core extends Base\Core
 
         if (isset($input[ToType::CUSTOMER]) === true)
         {
-            return $this->customerTransfer($source, $input);
+            $id = $input[ToType::CUSTOMER];
+
+            return $this->customerTransfer($id, $source, $input);
         }
         else if (isset($input[ToType::ACCOUNT]) === true)
         {
-            return $this->accountTransfer($source, $input);
+            $id = $input[ToType::ACCOUNT];
+
+            return $this->accountTransfer($id, $source, $input);
         }
     }
 
     /**
      * Transfer to a customer account
      *
-     * @param  Base\Entity      $source
-     * @param  array            $transferInput
+     * @param  Base\Entity          $source
+     * @param  array                $input
      * @return Transfer\Entity
      */
-    protected function customerTransfer(Base\Entity $source, array $transferInput) : Transfer\Entity
+    protected function customerTransfer(string $customerId, Base\Entity $source, array $input) : Entity
     {
         $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
-            ['transfer' => $transferInput]);
+            ['transfer' => $input]);
 
         $to = $this->repo
                    ->customer
-                   ->findByPublicIdAndMerchant($transferInput[ToType::CUSTOMER], $this->merchant);
+                   ->findByPublicIdAndMerchant($customerId, $this->merchant);
 
-        $transfer = $this->createTransfer($to, $source, $transferInput, $transferInput['amount']);
+        $transfer = $this->createTransfer($source, $to, $input);
 
         $customerTxn = (new Customer\Transaction\Core)
-                        ->createFromCustomerCredit($transfer, $transferInput['amount'], $to->getId());
+                            ->createFromCustomerCredit($transfer, $input['amount'], $to->getId());
 
         $this->repo->saveOrFail($customerTxn);
 
@@ -261,24 +230,22 @@ class Core extends Base\Core
      * Transfer to a Marketplace account
      *
      * @param  Base\Entity      $source
-     * @param  array            $transferInput
+     * @param  array            $input
      * @return Transfer\Entity
      */
-    protected function accountTransfer(Base\Entity $source, array $transferInput) : Transfer\Entity
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input) : Entity
     {
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
-            ['transfer' => $transferInput]);
+            ['transfer' => $input]);
 
         $originPayment = null;
 
-        $accountId = $transferInput[ToType::ACCOUNT];
-
-        $account = $this->repo
-                        ->merchant
-                        ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
+        $to = $this->repo
+                   ->merchant
+                   ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
 
         if (($source instanceof Payment\Entity) === true)
         {
@@ -291,21 +258,9 @@ class Core extends Base\Core
             $input['email']   = $originPayment->getEmail();
         }
 
-        $paymentData = [
-            Payment\Entity::AMOUNT      => $transferInput['amount'],
-            Payment\Entity::CONTACT     => $transferInput['contact'] ?? null,
-            Payment\Entity::EMAIL       => $transferInput['email'] ?? null,
-            Payment\Entity::CURRENCY    => $transferInput['currency'],
-            Payment\Entity::ON_HOLD     => $transferInput['on_hold'] ?? 0,
-            Payment\Entity::HOLD_UNTIL  => $transferInput['hold_until'] ?? null,
-        ];
+        $transfer = $this->createTransfer($source, $to, $input);
 
-        // @todo: Fix incorrect txn order. Payment txn saved before transfer txn.
-        $transferPayment = (new Payment\Service)->processTransfer($account, $paymentData, $originPayment);
-
-        $baseAmount = $transferPayment->getBaseAmount();
-
-        $transfer = $this->createTransfer($account, $source, $transferInput, $baseAmount);
+        $transferPayment = (new Payment\Service)->processTransfer($to, $input, $originPayment);
 
         $transferPayment->transfer()->associate($transfer);
 
@@ -327,8 +282,8 @@ class Core extends Base\Core
      * Check that: A transfer can only be done once to an account
      * for a payment
      *
-     * @param  string $paymentId
-     * @param  string $accountId
+     * @param  string           $paymentId
+     * @param  string           $accountId
      * @throws Exception\BadRequestException
      */
     protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId)

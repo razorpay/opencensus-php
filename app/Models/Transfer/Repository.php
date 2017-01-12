@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Transfer;
 
+use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transfer\Entity;
@@ -20,10 +21,10 @@ class Repository extends Base\Repository
     public function fetchByAccountIdAndMerchant(
         string $accountId,
         Merchant\Entity $marketplace,
-        $fail = true)
+        bool $fail = true)
     {
         $query = $this->newQuery()
-                      ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                      ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                       ->where(Entity::TO_TYPE, 'merchant')
                       ->where(Entity::TO_ID, $accountId)
                       ->merchantId($marketplace->getId());
@@ -49,7 +50,7 @@ class Repository extends Base\Repository
     public function fetchBySourcePaymentIdAndMerchant(string $paymentId, Merchant\Entity $merchant)
     {
         return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->merchantId($merchant->getId())
                     ->get();
@@ -61,7 +62,7 @@ class Repository extends Base\Repository
         Merchant\Entity $marketplace)
     {
         return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, SourceType::PAYMENT)
+                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->where(Entity::TO_TYPE, 'merchant')
                     ->where(Entity::TO_ID, $accountId)

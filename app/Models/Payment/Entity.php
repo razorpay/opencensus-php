@@ -817,7 +817,7 @@ class Entity extends Base\PublicEntity
 
     public function isTransferred()
     {
-        return (($this->getAttribute(self::AMOUNT_TRANSFERRED > 0)) === true);
+        return (($this->getAttribute(self::AMOUNT_TRANSFERRED) > 0) === true);
     }
 
     public function isFailed()
@@ -1550,7 +1550,7 @@ class Entity extends Base\PublicEntity
 
         $amount = (int) $amount;
 
-        $baseAmount= (int) $baseAmount;
+        $baseAmount = (int) $baseAmount;
 
         $amountUnrefunded = $this->getAmountUnrefunded();
 

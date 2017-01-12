@@ -241,9 +241,7 @@ trait Refund
      */
     protected function shouldRefundWithTransfers(Payment\Entity $payment, array & $input) : bool
     {
-        $hasTransfers = ($payment->getAmountTransferred() > 0);
-
-        if (($hasTransfers === false) or
+        if (($payment->isTransferred() === false) or
             ($payment->isTransfer() === true) or
             ($payment->getRefundStatus() === Payment\Refund\Status::FULL))
         {
@@ -321,6 +319,7 @@ trait Refund
      */
     protected function implicitAddReversalsForFullRefund($transfers, $payment, array & $input)
     {
+
         if ($transfers === null)
         {
             $transfers = $this->repo
@@ -751,9 +750,9 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund, $input)
         {
-            if ($payment->isTransfer())
+            if ($payment->isTransfer() === true)
             {
-                ; // Marketplace: do nothing here, Transfer refunds are internal
+                ; // Marketplace: do nothing, refunds on transfer payments are internal
             }
             else if ($payment->getTransactionId() !== null)
             {

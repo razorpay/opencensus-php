@@ -2,9 +2,7 @@
 
 namespace RZP\Models\Reversal;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
+use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
@@ -30,21 +28,53 @@ class Core extends Base\Core
 
         $reversal->merchant()->associate($merchant);
 
-        $reversal->setBaseAmount();
-
         $txn = (new Transaction\Core)->createFromReversal($reversal);
 
         $this->repo->saveOrFail($txn);
 
         $reversal->transaction()->associate($txn);
 
-        $transfer->reverseAmount($amount, $reversal->getBaseAmount());
+        $transfer->reverseAmount($amount);
 
         $this->repo->saveOrFail($transfer);
 
         $this->repo->saveOrFail($reversal);
 
         return $reversal;
+    }
+
+    /**
+     * Create and process a reversal on a transfer
+     *
+     * @param  string           $id
+     * @param  array            $input
+     * @return Reversal\Entity
+     */
+    public function reverse(string $id, array $input)
+    {
+        $transfer = $this->repo
+                         ->transfer
+                         ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        // Reversals not coded yet for customer wallet transfer refunds
+        // @todo: Change flow to create reversals for both customer/account transfers
+        assert ($transfer->getToType() === E::MERCHANT);
+
+        $transferPayment = $this->repo
+                                ->payment
+                                ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
+
+        // If amount not send in input,
+        // reverse the entire transfer amount pending
+        $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
+
+        return $this->repo->transaction(function () use ($transfer, $transferPayment, $amount)
+        {
+            $reversal = (new Payment\Processor\Processor($this->merchant))
+                            ->refundAndReverseTransferPayment($transferPayment, $transfer, $amount);
+
+            return $reversal;
+        });
     }
 
     protected function createEntity(int $amount, string $currency) : Entity

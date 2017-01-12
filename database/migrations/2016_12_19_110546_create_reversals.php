@@ -35,9 +35,6 @@ class CreateReversals extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            $table->integer(Entity::BASE_AMOUNT)
-                  ->unsigned();
-
             $table->char(Entity::TRANSACTION_ID, Transaction\Entity::ID_LENGTH);
 
             $table->integer(Entity::CREATED_AT);

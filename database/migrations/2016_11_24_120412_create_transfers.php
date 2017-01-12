@@ -38,14 +38,7 @@ class CreateTransfers extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            $table->integer(Entity::BASE_AMOUNT)
-                  ->unsigned();
-
             $table->integer(Entity::AMOUNT_REVERSED)
-                  ->unsigned()
-                  ->default(0);
-
-            $table->integer(Entity::BASE_AMOUNT_REVERSED)
                   ->unsigned()
                   ->default(0);
 

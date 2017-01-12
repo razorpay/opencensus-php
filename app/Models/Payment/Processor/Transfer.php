@@ -17,9 +17,17 @@ trait Transfer
      */
     public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
     {
-        $input['method'] = Payment\Method::TRANSFER;
+        $paymentData = [
+            Payment\Entity::AMOUNT      => $input['amount'],
+            Payment\Entity::CONTACT     => $input['contact'] ?? null,
+            Payment\Entity::EMAIL       => $input['email'] ?? null,
+            Payment\Entity::CURRENCY    => $input['currency'],
+            Payment\Entity::ON_HOLD     => $input['on_hold'] ?? 0,
+            Payment\Entity::HOLD_UNTIL  => $input['hold_until'] ?? null,
+            Payment\Entity::METHOD      => Payment\Method::TRANSFER,
+        ];
 
-        $payment = $this->createPaymentEntity($input);
+        $payment = $this->createPaymentEntity($paymentData);
 
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
 
@@ -48,10 +56,12 @@ trait Transfer
      * parent payment (if defined),
      * else converts for the transfer payment
      *
+     * @todo: implementation pending
+     *
      * @param  Payment\Entity|null  $originPayment
      * @param  Payment\Entity       $transferPayment
      */
-    protected function processCurrencyConversionsForTransfer($originPayment, Payment\Entity $transferPayment)
+    protected function processCurrencyConversionsForTransfer(Payment\Entity $originPayment, Payment\Entity $transferPayment)
     {
         if ($originPayment === null)
         {

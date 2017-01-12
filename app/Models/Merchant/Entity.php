@@ -224,10 +224,10 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a marketplace vendor account
+    // Is the merchant under a linked-account under marketplace
     public function isAccount()
     {
-        return ($this->getParentId() !== NULL);
+        return $this->isAttributeNotNull(self::PARENT_ID);
     }
 
     public function isEducationCategory()
@@ -335,7 +335,7 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
-    // All marketplace accounts belonging to the Marketplace merchant
+    // All linked-accounts belonging to the Marketplace merchant
     public function accounts()
     {
         return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);

@@ -35,7 +35,7 @@ class Service extends Base\Service
 
     public function reverse(string $id, array $input) : array
     {
-        $reversal = $this->core->reverse($id, $input);
+        $reversal = (new Reversal\Core)->reverse($id, $input);
 
         return $reversal->toArrayPublic();
     }

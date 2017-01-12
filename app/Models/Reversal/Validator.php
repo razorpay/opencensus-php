@@ -14,8 +14,13 @@ class Validator extends Base\Validator
         'amount'                => 'sometimes|integer|min:100'
     ];
 
-    public function validateReversals()
+    public function validateReversalAmount(array $input)
     {
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
 
+        // validate amount limits etc
     }
 }
