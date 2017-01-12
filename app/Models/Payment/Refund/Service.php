@@ -427,6 +427,62 @@ class Service extends Base\Service
         return $summary;
      }
 
+    public function createBilldeskCancelledRefunds()
+    {
+        $cancelledBilldeskRefunds = $this->repo->billdesk->fetchMissingBilldeskCancelledRefunds();
+
+        $successes = $failures = 0;
+        $failureRefunds = [];
+
+        // We get all the Billdesk refunds. We return back data for applicable and if success.
+
+        foreach ($cancelledBilldeskRefunds as $cancelledBilldeskRefund)
+        {
+            $paymentId = $cancelledBilldeskRefund->getPaymentId();
+            $refundId = $cancelledBilldeskRefund->getRefundId();
+            $refundAmount = (int) ($cancelledBilldeskRefund->getRefundAmount() * 100);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $this->getNewProcessor($merchant)
+                     ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
+
+                $successes += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failures += 1;
+
+                $failureRefunds[] = $refundId;
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $total = count($cancelledBilldeskRefunds);
+
+        $summary = [
+            'total'             => $total,
+            'success'           => $successes,
+            'failures'          => $failures,
+            'failed_refunds'    => $failureRefunds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MISSING_BILLDESK_CANCELLED_REFUNDS,
+            $summary);
+
+        $message = 'Missing billdesk cancelled refunds created';
+
+        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
+    }
+
     protected function getNewProcessor($merchant)
     {
         $processor = new Payment\Processor\Processor($merchant);

@@ -49,8 +49,6 @@ class FileMigration extends Base\Service
         {
             try
             {
-                $merchantDetail->getValidator()->validateInput('migrate', $merchantDetail->toArray());
-
                 $this->createFileId($merchantDetail);
             }
             catch(\Exception $ex)
@@ -121,6 +119,12 @@ class FileMigration extends Base\Service
                 if ($merchantDetail[$key] !== null)
                 {
                     $s3url = $merchantDetail[$key];
+
+                    // Its already an UFH, so we don't need to migrate it.
+                    if (strlen($s3url) <= 19)
+                    {
+                        continue;
+                    }
 
                     $fileName = explode($merchantId, $s3url)[1];
 

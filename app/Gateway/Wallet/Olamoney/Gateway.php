@@ -291,7 +291,7 @@ class Gateway extends Base\Gateway
         if (($content[ResponseFields::STATUS] === Status::SUCCESS) and
             (isset($content[ResponseFields::AMOUNT]) === true))
         {
-            $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
+            $userBalance = (int) (($content[ResponseFields::AMOUNT]) * 100);
 
             $key = $this->getBalanceKeyForCache($input['payment']);
 

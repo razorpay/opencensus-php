@@ -314,6 +314,7 @@ final class Route
         'statuscake_gateway_webhook'              => ['post',     'statuscake/callback',                            'GatewayController@postStatusCakeCallback'                          ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+        'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
@@ -695,6 +696,7 @@ final class Route
         'upi_psp_allow',
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
+        'billdesk_create_cancelled_refunds',
     );
 
     public static $proxy = array(
@@ -813,7 +815,6 @@ final class Route
         'admin_roles_revoke'         => ['create_admin', 'create_role'],
         'admin_merchants_create'     => ['create_admin', 'create_merchant'],
         'admin_merchants_delete'     => ['delete_admin', 'delete_merchant'],
-        'group_create'               => ['create_group'],
         'group_edit'                 => ['edit_group'],
         'group_delete'               => ['delete_group'],
         'group_merchants_create'     => ['create_group', 'create_merchants'],
@@ -910,7 +911,8 @@ final class Route
             'refund_create_gateway_record',
             'merchant_migrate_features',
             'currency_update_rates',
-            'merchant_activation_migrate'
+            'merchant_activation_migrate',
+            'billdesk_create_cancelled_refunds',
         ),
 
         'mailgun' => array(
