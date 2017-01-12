@@ -323,6 +323,25 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShAmexEduTrmnl', $payment['terminal_id']);
     }
 
+    public function testTerminalCategoryChoiceNoOverride()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:shared_amex_category_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through amex education services terminal
+        $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
+    }
+
     public function testTerminalCategoryCorporate()
     {
         $this->fixtures->merchant->editCategory2('corporate');
