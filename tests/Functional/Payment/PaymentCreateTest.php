@@ -51,6 +51,19 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaymentWithoutContact()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['contact']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreatePaymentCheckoutCallbackNo3dSecure()
     {
         $this->payment['card']['number'] = '555555555555558';
