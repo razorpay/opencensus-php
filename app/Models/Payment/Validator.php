@@ -26,8 +26,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'required_unless:method,aeps|email',
-        'contact'                 =>  'required_unless:method,aeps|contact_syntax',
+        'email'                   =>  'sometimes|email',
+        'contact'                 =>  'sometimes|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -60,8 +60,19 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact'
+        'contact',
+        'email',
     ];
+
+    protected function validateEmail($input)
+    {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::EMAIL]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email field is required.', Entity::EMAIL);
+        }
+    }
 
     protected function validateMethod($attribute, $method)
     {
@@ -214,6 +225,13 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::CONTACT]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The contact field is required.', Entity::CONTACT);
+        }
+
         if ($input['method'] === Payment\Method::WALLET)
         {
             $number = new PhoneBook($input['contact'], true);
