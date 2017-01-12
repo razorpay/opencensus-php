@@ -8,9 +8,10 @@ use App;
 
 use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Orchestrator
+class Orchestrator extends Base\Core
 {
     const GATEWAY = 'gateway';
 
@@ -123,7 +124,7 @@ class Orchestrator
             }
             catch (Exception\ReconciliationException $e)
             {
-                $this->app['trace']->error(
+                $this->trace->error(
                     TraceCode::RECON_ALERT,
                     (array) json_decode($e->getMessage())
                 );
@@ -142,7 +143,7 @@ class Orchestrator
             );
         }
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
             $this->allFilesDetails
         );
@@ -165,7 +166,7 @@ class Orchestrator
         unset($input['stripped-html']);
         unset($input['stripped-text']);
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_REQUEST,
             $input
         );
@@ -232,7 +233,7 @@ class Orchestrator
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_FILE_DETAILS,
                 [
                     'message'      => 'File details of the file being orchestrated.',
@@ -266,7 +267,7 @@ class Orchestrator
                         'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
                     ]);
 
-                $this->app['trace']->traceException($ex);
+                $this->trace->traceException($ex);
 
                 $this->handleFileSkip($file, $fileDetails);
 
@@ -298,7 +299,7 @@ class Orchestrator
 
         if ($inExclude === true)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_FILE_SKIP,
                 [
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
@@ -418,7 +419,7 @@ class Orchestrator
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
-            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
+            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING, true)),
                     "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
         }
 
@@ -517,7 +518,7 @@ class Orchestrator
                 }
                 catch (\Exception $ex)
                 {
-                    $this->app['trace']->traceException($ex);
+                    $this->trace->traceException($ex);
 
                     $this->messenger->raiseReconAlert(
                         [
