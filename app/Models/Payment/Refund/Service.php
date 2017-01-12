@@ -440,7 +440,7 @@ class Service extends Base\Service
         {
             $paymentId = $cancelledBilldeskRefund->getPaymentId();
             $refundId = $cancelledBilldeskRefund->getRefundId();
-            $refundAmount = $cancelledBilldeskRefund->getRefundAmount();
+            $refundAmount = (int) ($cancelledBilldeskRefund->getRefundAmount() * 100);
 
             $payment = $this->repo->payment->findOrFailPublic($paymentId);
 
