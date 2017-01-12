@@ -6,11 +6,11 @@ use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Models\Terminal;
-use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -23,8 +23,6 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'icici';
 
-    const MODE_ECB = 1;
-
     protected $map = [
         RequestFields::AMOUNT  => 'amount'
     ];
@@ -35,11 +33,13 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $entity = $this->createPaymentArray($input);
+        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
         $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input);
 
         return $request;
     }
@@ -48,11 +48,11 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+
         $content = $this->getDataFromResponse($input['gateway']);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -102,9 +102,7 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             (array) $xml);
 
-        $status = $this->getVerifyStatus($verify, $xml);
-
-        return $status;
+        $this->getVerifyStatus($verify, $xml);
     }
 
     protected function getVerifyStatus($verify, $xml)
@@ -169,7 +167,7 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        $paymentDate = $this->getPaymentDate($payment);
+        $paymentDate = date('Y-m-d', $payment['original']['created_at']);
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
@@ -194,7 +192,9 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        return base64_encode($this->encryptString($queryString, $masterKey));
+        $aes = new AESCrypto($masterKey);
+
+        return base64_encode($aes->encryptString($queryString, $masterKey));
     }
 
     protected function getAuthorizeRequestData($input)
@@ -222,27 +222,21 @@ class Gateway extends Base\Gateway
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         return [
-            RequestFields::PAYMENT_REFERENCE_NUBER => $prn ,
+            RequestFields::PAYMENT_REFERENCE_NUBER => $prn,
             RequestFields::ITEM_CODE               => strtoupper($prn),
             RequestFields::AMOUNT                  => $amount,
-            RequestFields::CURRENCY_CODE           => 'INR',
+            RequestFields::CURRENCY_CODE           => Currency::INR,
         ];
     }
 
     protected function createDefaultRequestData($input)
     {
-        $pid = $this->getPid();
-
-        $spid = $this->getSpid();
-
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         $data = [
-            RequestFields::OBJ_NAME   => Constants::LOGIN,
-            RequestFields::BAY_BANKID => Constants::BANKID,
             RequestFields::MODE       => Mode::PAY,
-            RequestFields::PAYEE_ID   => $pid,
-            RequestFields::SPID       => $spid,
+            RequestFields::PAYEE_ID   => $this->getPid(),
+            RequestFields::SPID       => $this->getSpid(),
         ];
 
         return $data;
@@ -270,27 +264,13 @@ class Gateway extends Base\Gateway
         return $url;
     }
 
-    protected function createPaymentArray($input)
-    {
-        $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
-
-        return [
-            RequestFields::AMOUNT => $amount
-        ];
-    }
-
-    protected function getPaymentDate($payment)
-    {
-        $timestamp = $payment['original']['created_at'];
-
-        return date('Y-m-d', $timestamp);
-    }
-
     protected function getDataFromResponse($data)
     {
         $masterKey = $this->getSecret();
 
-        $decryptedString = $this->decryptString(
+        $aes = new AESCrypto($masterKey);
+
+        $decryptedString = $aes->decryptString(
             base64_decode($data['ES']), $masterKey);
 
         parse_str($decryptedString, $content);
@@ -345,22 +325,6 @@ class Gateway extends Base\Gateway
         return $xml['@attributes'];
     }
 
-    public function encryptString(string $string, string $masterKey)
-    {
-        $aes = new AES(self::MODE_ECB);
-        $aes->setKey($masterKey);
-
-        return $aes->encrypt($string);
-    }
-
-    public function decryptString(string $string, string $masterKey)
-    {
-        $aes = new AES(self::MODE_ECB);
-        $aes->setKey($masterKey);
-
-        return $aes->decrypt($string);
-    }
-
     public function getPid()
     {
         if ($this->mode === RZPMode::TEST)
@@ -373,13 +337,11 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        $spid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
-
         if ($this->mode === RZPMode::TEST)
         {
-            $spid = $this->config['test_spid'];
+            return $this->getTestMerchantId2();
         }
 
-        return $spid;
+        return $this->getLiveMerchantId2();
     }
 }

@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-use phpseclib\Crypt\AES;
+use RZP\Gateway\Netbanking\Icici\AESCrypto;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
@@ -11,8 +11,6 @@ use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
-    const MODE_ECB = 1;
-
     public function authorize($input)
     {
         parent::authorize($input);
@@ -69,7 +67,9 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $content['ES'] = base64_encode($this->getGatewayInstance()->encryptString($httpQuery, $masterKey));
+        $aes = new AESCrypto($masterKey);
+
+        $content['ES'] = base64_encode($aes->encryptString($httpQuery, $masterKey));
 
         return $content;
     }
@@ -78,7 +78,9 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $decryptedString = $this->getGatewayInstance()->decryptString(base64_decode($input['ES']), $masterKey);
+        $aes = new AESCrypto($masterKey);
+
+        $decryptedString = $aes->decryptString(base64_decode($input['ES']), $masterKey);
 
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);
@@ -110,7 +112,7 @@ class Server extends Base\Mock\Server
             ResponseFields::PAYMENT_REFERENCE_NUBER => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
             ResponseFields::CURRENCY                => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::PAYMENT_DATE            => $input[RequestFields::PAYMENT_DATE],
-            ResponseFields::AMOUNT                  => number_format($input[RequestFields::AMOUNT], 2, '.', ''),
+            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
             ResponseFields::STATE                   => Constants::SUCCESS,
         ];
     }

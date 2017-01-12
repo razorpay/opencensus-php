@@ -209,7 +209,7 @@ return array(
     'netbanking_icici' => [
         'test_hash_secret'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
-        'test_spid'         => env('NETBANKING_ICICI_GATEWAY_TEST_SPID'),
+        'test_merchant_id2' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
     ],
 
     'netbanking_axis' => array(

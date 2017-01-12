@@ -14,16 +14,16 @@ class RefundFile extends Base\RefundFile
 
     // The columns of the file
     protected static $headers = [
-        RefundFileFields::SERAL_NO,
-        RefundFileFields::PAYEE_ID,
-        RefundFileFields::SPID,
-        RefundFileFields::BANK_REFERENCE_ID,
-        RefundFileFields::TRANSACTION_DATE,
-        RefundFileFields::TRANSACTION_AMOUNT,
-        RefundFileFields::REFUND_AMOUNT,
-        RefundFileFields::TRANSACTION_ID,
-        RefundFileFields::REFUND_MODE,
-        RefundFileFields::REMARKS,
+        'Sr No',
+        'Payee_id',
+        'SPID',
+        'Bank Reference No.',
+        'Transaction Date',
+        'Transaction Amount',
+        'Refund Amount',
+        'Transaction Id',
+        'Reversal/Cancellation',
+        'Remarks',
     ];
 
     public function generate($input)

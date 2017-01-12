@@ -14,8 +14,6 @@ class Validator extends Base\Validator
     const MODE_ECB = 1;
 
     protected static $authRules = [
-        RequestFields::OBJ_NAME                  => 'required|in:bay_mc_login',
-        RequestFields::BAY_BANKID                => 'required|in:ICI',
         RequestFields::MODE                      => 'required|alpha|in:P,V',
         RequestFields::PAYEE_ID                  => 'required|string',
         RequestFields::SPID                      => 'required|string',
@@ -27,8 +25,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::OBJ_NAME                  => 'required|in:bay_mc_login',
-        RequestFields::BAY_BANKID                => 'required|in:ICI',
         RequestFields::MODE                      => 'required|alpha|size:1',
         RequestFields::PAYEE_ID                  => 'required|string',
         RequestFields::SPID                      => 'required|string',

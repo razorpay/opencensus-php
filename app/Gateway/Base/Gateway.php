@@ -698,6 +698,23 @@ class Gateway
         return $this->input['terminal']['gateway_merchant_id'];
     }
 
+    protected function getTestMerchantId2()
+    {
+        $code = null;
+
+        if (isset($this->config['test_merchant_id2']))
+        {
+            $code = $this->config['test_merchant_id2'];
+        }
+
+        return $code;
+    }
+
+    protected function getLiveMerchantId2()
+    {
+        return $this->input['terminal']['gateway_merchant_id2'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];
