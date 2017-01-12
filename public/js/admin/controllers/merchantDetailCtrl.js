@@ -589,6 +589,40 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    $scope.suspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/suspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant suspended successfully', true);
+          $scope.merchant.details.suspended_at = Date.now() / 1000;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.unsuspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unsuspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant unsuspended successfully', true);
+          $scope.merchant.details.suspended_at = null;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
 
     // Assign pricing modal
     $scope.openAssignPricing = function () {

@@ -41,7 +41,9 @@ class Service extends Base\Service
     // 15 minutes
     const TIMEOUT = 900;
     const ALREADY_ARCHIVED = 'Merchant already archived.';
+    const ALREADY_SUSPENDED = 'Merchant already suspended.';
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
+    const CANT_SUSPEND_LIVE = 'Live merchants can not be suspended.';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
@@ -341,7 +343,8 @@ class Service extends Base\Service
             'merchants.created_at',
             'merchants.updated_at',
             'merchant_details.submitted_at',
-            'merchants.archived_at'
+            'merchants.archived_at',
+            'merchants.suspended_at'
         ];
 
         $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
@@ -355,13 +358,19 @@ class Service extends Base\Service
             $data = $data->withAllTags($input['tags']);
         }
 
-        if (isset($input['archived']))
+        if (isset($input['suspended']))
+        {
+            $data = $data->whereNotNull('suspended_at');
+        }
+
+        else if (isset($input['archived']))
         {
             $data = $data->whereNotNull('archived_at');
         }
         else
         {
-            $data = $data->whereNull('archived_at');
+            $data = $data->whereNull('archived_at')
+                         ->whereNull('suspended_at');
         }
 
         $data = $data->get();
@@ -374,6 +383,20 @@ class Service extends Base\Service
 
             switch ($key)
             {
+                case "suspended":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        return ($merchant->suspended_at !== null);
+                    });
+                    break;
+
+                case "archived":
+                    $response = $data->filter(function($merchant) use($value)
+                    {
+                        return ($merchant->archived_at !== null);
+                    });
+                    break;
+
                 case "activated":
                     $response = $data->filter(function($merchant) use($value)
                     {
@@ -628,6 +651,7 @@ class Service extends Base\Service
 
         $response = array(
             'archived_at'       => $merchant['archived_at'],
+            'suspended_at'       => $merchant['suspended_at'],
             'steps_finished'    => $merchantDetails['steps_finished'],
             'locked'            => $merchantDetails['locked'],
             'submitted'         => $merchantDetails['submitted'],
@@ -1502,6 +1526,63 @@ class Service extends Base\Service
         $this->logActionToSlack($merchant, Actions::UNARCHIVED);
 
         $merchant->archived_at = null;
+        $merchant->save();
+
+        return array();
+    }
+
+    public function suspendMerchant($id)
+    {
+        $error = [];
+        $merchant = Merchant\Entity::findOrSoftFail($id);
+
+        if ($merchant->suspended_at !== null)
+        {
+            $error = [self::ALREADY_SUSPENDED];
+        }
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $data = $this->api->merchant->fetch($id);
+
+            // This is a hard fail and we return
+            // immediately
+            if ($data->live === true)
+            {
+                return [self::CANT_SUSPEND_LIVE];
+            }
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            // We just ignore this for now
+            $error =[$e->getMessage()];
+        }
+        finally
+        {
+            $this->logActionToSlack($merchant, Actions::SUSPENDED);
+            $merchant->suspend();
+
+            // Return empty array in case of success
+            return [];
+        }
+    }
+
+    public function unsuspendMerchant($id)
+    {
+        $error = array();
+
+        $merchant = Merchant\Entity::findorfail($id);
+
+        if($merchant->suspended_at === null)
+        {
+            return array("Merchant not suspended.");
+        }
+
+        $this->logActionToSlack($merchant, Actions::UNSUSPENDED);
+
+        $merchant->suspended_at = null;
         $merchant->save();
 
         return array();
