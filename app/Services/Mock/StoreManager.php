@@ -11,7 +11,7 @@ class  StoreManager extends BaseStoreManager
     // Returns dummy data for tests
     public function fetch(Store\Base $store)
     {
-        if (($store instanceof Store\PriorityStore) and
+        if (($store instanceof Store\PrioritySet) and
             $store->getKeyPrefix() === 'gateway_priority')
         {
             $store->setData([]);
