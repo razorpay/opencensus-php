@@ -15,6 +15,7 @@ use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -78,7 +79,9 @@ trait Refund
 
             if ($verify === false)
             {
-                $this->recordRefund(true);
+                $refund->setGatewayRefunded(true);
+
+                $this->recordTransactionAndUpdatePaymentForRefund(true);
 
                 $this->trace->info(
                     TraceCode::VERIFY_REFUND_TRANSACTION_CREATED,
@@ -461,7 +464,41 @@ trait Refund
         }
     }
 
-    protected function recordRefund($forceRefundTransaction = false)
+    protected function recordTransactionForRefund()
+    {
+        try
+        {
+            $this->repo->transaction(
+                function()
+                {
+                    $payment = $this->payment;
+
+                    $this->paymentRepo->lockForUpdate($payment->getKey());
+
+                    $this->createTransactionForRefund($this->refund, $payment);
+
+                    //
+                    // This needs to be saved here because of the association with
+                    // transaction which is set in the createTransactionForRefund function.
+                    //
+                    $this->repo->saveOrFail($this->refund);
+                });
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::REFUND_TRANSACTION_FAILED,
+                [
+                    'payment_id'    => $this->payment->getId(),
+                    'refund_id'     => $this->refund->getId(),
+                    'error_message' => $ex->getMessage(),
+                ]);
+        }
+    }
+
+    protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
     {
         $this->repo->transaction(function() use ($forceRefundTransaction)
         {
@@ -472,9 +509,6 @@ trait Refund
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
             $this->updatePaymentRefunded();
-
-            $this->repo->saveOrFail($this->payment);
-            $this->repo->saveOrFail($this->refund);
         });
     }
 
@@ -520,17 +554,28 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
         {
-            if (($payment->getTransactionId() !== null) or
-                ($payment->isAuthorized() === false))
+            if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
+
+                $refund->setGatewayRefunded(true);
             }
             else if ($this->gatewaySupportsReversal($payment) === true)
             {
                 $this->reverseOnGateway($data);
+
+                // TODO: Record this too.
             }
 
-            $this->recordRefund();
+            //
+            // NOTE: We should create the transaction before we update
+            // the payment as refunded since there is different logic
+            // for creating a refund transaction based on the payment status.
+            //
+            $this->recordTransactionForRefund();
+
+            // Record refund since it's refunded on gateway
+            $this->updatePaymentRefunded();
 
             $this->sendRefundNotification($payment, $refund);
         });
@@ -560,6 +605,12 @@ trait Refund
 
             $this->payment->refundAmount($amount, $baseAmount);
         }
+
+        $this->repo->transaction(function()
+        {
+            $this->repo->saveOrFail($this->payment);
+            $this->repo->saveOrFail($this->refund);
+        });
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
 
@@ -717,6 +768,8 @@ trait Refund
                 $data);
         }
 
-        $this->recordRefund();
+        $this->refund->setGatewayRefunded(true);
+
+        $this->recordTransactionAndUpdatePaymentForRefund();
     }
 }

@@ -1479,7 +1479,9 @@ ALTER TABLE orgs
 UPDATE orgs
     SET cross_org_access=1 WHERE id='100000razorpay';
 
-# Changes defaults for fee bearer and fee model
+ALTER TABLE refunds ADD COLUMN gateway_refunded TINYINT AFTER base_amount;
+ALTER TABLE refunds ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
+
 ALTER TABLE transactions
     MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT -1,
     MODIFY COLUMN fee_model TINYINT(1) DEFAULT -1;
