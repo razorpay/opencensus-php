@@ -1473,10 +1473,10 @@ UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
 UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 
 # Adds cross org access control via flag
-ALTER TABLE orgs 
+ALTER TABLE orgs
     ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
-UPDATE orgs 
+UPDATE orgs
     SET cross_org_access=1 WHERE id='100000razorpay';
 
 # Changes defaults for fee bearer and fee model
@@ -1492,6 +1492,20 @@ ALTER TABLE admin_tokens
 
 TRUNCATE TABLE admin_tokens;
 
+## Queries for PR:1978
+ALTER TABLE org_hostname
+    DROP COLUMN deleted_at;
+
+-----------
+# Set of queries to change org_id column's length from 255 to 14
+
+ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign,
+    MODIFY COLUMN org_id char(14) NOT NULL;
+
+ALTER TABLE org_hostname
+    ADD CONSTRAINT org_hostname_org_id_foreign FOREIGN KEY(`org_id`) REFERENCES orgs(`id`) ON DELETE RESTRICT;
+
 # Adds batch id for daily settlement in settlement entity
 ALTER TABLE settlements
     ADD COLUMN batch_settlement_id CHAR(14) AFTER bank_account_id,
@@ -1499,6 +1513,7 @@ ALTER TABLE settlements
     REFERENCES daily_settlements(id) ON DELETE RESTRICT;
 
 # Fixes a failed airtel money payment marked as authorized via verify
+
 DELETE FROM fees_breakup WHERE transaction_id = '6gz9V7qKmbU9C7';
 UPDATE payments SET transaction_id=null WHERE id='6gysDIemK9qx3W';
 DELETE FROM transactions WHERE id ='6gz9V7qKmbU9C7';

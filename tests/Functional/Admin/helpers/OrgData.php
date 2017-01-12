@@ -51,6 +51,7 @@ return [
             'method' => 'put',
             'content' => [
                 'email_domains' => ['fbapi.com'],
+                'hostname' => 'test1.com, test2.com',
                 'email' => 'test@hdfc.com',
                 'allow_sign_up' => true,
                 'display_name' => 'HDFC Bank',
@@ -269,7 +270,7 @@ return [
             'url' => '/orgs',
             'method' => 'post',
             'content' => [
-                'hostname'  => 'dashboard.razorpay.com',
+                'hostname'  => 'test1.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
@@ -299,6 +300,20 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateOrgHostnameSameAsDeletedHostname' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'allow_sign_up' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
         ],
     ],
 
