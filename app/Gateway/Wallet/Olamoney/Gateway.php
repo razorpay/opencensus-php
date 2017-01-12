@@ -68,6 +68,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
+        $request['headers'] = $this->getRequestHeaders();
+
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->parseResponseBody($response);
@@ -858,8 +860,6 @@ class Gateway extends Base\Gateway
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
         $request = $this->getStandardRequestArray(json_encode($content));
-
-        $request['headers'] = $this->getRequestHeaders();
 
         return $request;
     }
