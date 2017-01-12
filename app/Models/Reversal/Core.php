@@ -56,6 +56,8 @@ class Core extends Base\Core
                          ->transfer
                          ->findByPublicIdAndMerchant($id, $this->merchant);
 
+        (new Validator)->validateReversalAmount($transfer, $input);
+
         // Reversals not coded yet for customer wallet transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
         assert ($transfer->getToType() === E::MERCHANT);

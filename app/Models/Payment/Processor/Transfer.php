@@ -45,6 +45,14 @@ trait Transfer
 
         $this->repo->saveOrFail($txn);
 
+        $payment->setServiceTax($txn->getServiceTax());
+
+        if ($this->merchant->isFeeBearerCustomer() === false)
+        {
+            //set and fee values from txn
+            $payment->setFee($txn->getFee());
+        }
+
         $this->saveFeeDetails($txn, $feesSplit);
 
         return $payment;
@@ -61,7 +69,7 @@ trait Transfer
      * @param  Payment\Entity|null  $originPayment
      * @param  Payment\Entity       $transferPayment
      */
-    protected function processCurrencyConversionsForTransfer(Payment\Entity $originPayment, Payment\Entity $transferPayment)
+    protected function processCurrencyConversionsForTransfer($originPayment, Payment\Entity $transferPayment)
     {
         if ($originPayment === null)
         {

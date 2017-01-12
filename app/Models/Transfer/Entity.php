@@ -231,6 +231,11 @@ class Entity extends Base\PublicEntity
 
         $entity = E::getEntityClass($sourceType);
 
+        if ($sourceType === 'merchant')
+        {
+            $entity = 'RZP\Models\Merchant\AccountEntity';
+        }
+
         if ($sourceId !== null)
         {
             $attributes[self::SOURCE_ID] = $entity::getSignedId($sourceId);

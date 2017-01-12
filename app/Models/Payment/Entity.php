@@ -284,6 +284,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED      => 'int',
         self::AUTO_CAPTURED        => 'bool',
         self::ON_HOLD              => 'bool',
+        self::HOLD_UNTIL           => 'int',
         self::SIGNED               => 'bool',
         self::AMOUNT               => 'int',
         self::FEE                  => 'int',

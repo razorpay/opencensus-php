@@ -93,7 +93,7 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($transfer);
 
-            $this->processTransferHold($transfer, $input);
+            $this->updatePaymentHold($transfer, $input);
 
             return $transfer;
         });
@@ -151,7 +151,7 @@ class Core extends Base\Core
 
         $payment->setHoldUntil($transfer->getHoldUntil());
 
-        $txn = (new Transaction\Core)->updatePaymentHold($payment);
+        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
 
         $this->repo->saveOrFail($payment);
 
