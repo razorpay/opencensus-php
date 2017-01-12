@@ -1485,7 +1485,8 @@ class Service extends Base\Service
             $error = [self::ALREADY_ARCHIVED];
         }
 
-        if ($merchantDetails->submitted_at === null)
+        if (($merchantDetails->submitted_at !== null) and
+            ((int) $merchant->activated === 0))
         {
             return [self::CANT_ARCHIVE_NON_ACTIVATED];
         }
