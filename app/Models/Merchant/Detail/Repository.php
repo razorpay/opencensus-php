@@ -28,8 +28,14 @@ class Repository extends Base\Repository
                         Entity::PROMOTER_PROOF_URL,
                         Entity::PROMOTER_PAN_URL,
                         Entity::PROMOTER_ADDRESS_URL)
-                    ->whereNotNull(Entity::BUSINESS_PROOF_URL)
-                    ->whereRaw('length(business_proof_url) > 19')
+                    ->whereRaw(
+                        'length(business_proof_url) > 19 or
+                        length(business_operation_proof_url) > 19 or
+                        length(business_pan_url) > 19 or
+                        length(address_proof_url) > 19 or
+                        length(promoter_proof_url) > 19 or
+                        length(promoter_pan_url) > 19 or
+                        length(promoter_address_url) > 19')
                     ->orderBy(Entity::MERCHANT_ID)
                     ->skip($skip)
                     ->take($count)
