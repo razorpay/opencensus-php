@@ -5,7 +5,6 @@ namespace RZP\Gateway\Netbanking\Icici;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Models\Terminal;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\Action;
