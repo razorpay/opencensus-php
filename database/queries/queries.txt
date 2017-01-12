@@ -1472,31 +1472,61 @@ ALTER TABLE transactions
 UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
 UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
 
-ALTER TABLE orgs ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
+# Adds cross org access control via flag
+ALTER TABLE orgs
+    ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
 
-UPDATE orgs SET cross_org_access=1 WHERE id='100000razorpay';
+UPDATE orgs
+    SET cross_org_access=1 WHERE id='100000razorpay';
 
 ALTER TABLE refunds
     ADD COLUMN gateway_refunded TINYINT AFTER base_amount
     ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
-    
+
 ALTER TABLE transactions
     MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT -1,
     MODIFY COLUMN fee_model TINYINT(1) DEFAULT -1;
 UPDATE transactions SET fee_bearer = '-1' WHERE type != 'payment';
 UPDATE transactions SET fee_model = '-1' WHERE type != 'payment';
 
+# Changes Primary key to alpha numeric for amdin_tokens entity
 ALTER TABLE admin_tokens
     MODIFY COLUMN id char(14);
 
 TRUNCATE TABLE admin_tokens;
 
+## Queries for PR:1978
+ALTER TABLE org_hostname
+    DROP COLUMN deleted_at;
+
+-----------
+# Set of queries to change org_id column's length from 255 to 14
+
+ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign,
+    MODIFY COLUMN org_id char(14) NOT NULL;
+
+ALTER TABLE org_hostname
+    ADD CONSTRAINT org_hostname_org_id_foreign FOREIGN KEY(`org_id`) REFERENCES orgs(`id`) ON DELETE RESTRICT;
+
+# Adds batch id for daily settlement in settlement entity
+ALTER TABLE settlements
+    ADD COLUMN batch_settlement_id CHAR(14) AFTER bank_account_id,
+    ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+# Fixes a failed airtel money payment marked as authorized via verify
+
 DELETE FROM fees_breakup WHERE transaction_id = '6gz9V7qKmbU9C7';
 UPDATE payments SET transaction_id=null WHERE id='6gysDIemK9qx3W';
 DELETE FROM transactions WHERE id ='6gz9V7qKmbU9C7';
 UPDATE payments
-SET status='failed',
-error_code='BAD_REQUEST_ERROR',
-internal_error_code='BAD_REQUEST_PAYMENT_FAILED',
-error_description='Payment failed'
+    SET status='failed',
+    error_code='BAD_REQUEST_ERROR',
+    internal_error_code='BAD_REQUEST_PAYMENT_FAILED',
+    error_description='Payment failed',
+    authorized_at=NULL
 WHERE id='6gysDIemK9qx3W';
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_refstatus_index (RefStatus);

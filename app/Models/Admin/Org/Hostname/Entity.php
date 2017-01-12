@@ -2,19 +2,15 @@
 
 namespace RZP\Models\Admin\Org\Hostname;
 
-use Illuminate\Database\Eloquent\SoftDeletes;
-
 use RZP\Models\Admin\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\Entity
 {
-    use SoftDeletes;
     use RevisionableTrait;
 
     const ORG_ID        = 'org_id';
     const HOSTNAME      = 'hostname';
-    const DELETED_AT    = 'deleted_at';
 
     protected $entity = 'org_hostname';
 
