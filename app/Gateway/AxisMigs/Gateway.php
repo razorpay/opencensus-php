@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
 
         $content['received'] = 1;
         $refund->fill($content);
-        $refund->saveOrFail();
+        $this->repo->saveOrFail($refund);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REFUND,
@@ -106,11 +106,110 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
+    public function verifyRefund(array $input)
+    {
+        $isRefundRequired = $this->isRefundRequired($input);
+
+        if ($isRefundRequired)
+        {
+            $this->refund($input);
+
+            // Verified and refund performed
+            return false;
+        }
+
+        // Verified to not require any refund
+        return true;
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
+
+        foreach ($refundedEntities as $refundedEntity)
+        {
+            if ($refundedEntity->getRefundId() === $refundId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isRefundRequired(array $input)
+    {
+        $paymentId = $input['payment']['id'];
+        $refundAmount = $input['amount'];
+
+        //
+        // Gets all the refund entities with the given amount and payment id and which were successful.
+        // This is not an absolute check since for the same payment id, two partial refunds of the same
+        // amount could be successful.
+        //
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $verifyContent = $this->sendPaymentVerifyRequest($verify);
+
+        //
+        // If the payment transaction id is present, we assume that the payment
+        // has been captured on the gateway.
+        // We also check for the refund entities, if present. If refund entity is present
+        // we assume that the payment has been refunded on gateway and refund should
+        // not be called again.
+        //
+        if (($input['payment']['transaction_id'] === null) or
+            ($refundedEntities->count() > 0) or
+            ((isset($verifyContent['vpc_RefundedAmount']) === true) and
+             ($verifyContent['vpc_RefundedAmount'] !== '0')))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function reverse(array $input)
+    {
+        parent::reverse($input);
+
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
+                                $input['payment']['id'], Command::PAY);
+
+        $content = $this->getPaymentReversalRequestContent($input, $payment);
+
+        $toSaveContent = $content;
+        $toSaveContent['refund_id'] = $input['refund']['id'];
+        $toSaveContent['terminal_id'] = $input['terminal']['id'];
+        $toSaveContent['vpc_Amount'] = $input['refund']['amount'];
+
+        $refund = $this->createGatewayPaymentEntity($toSaveContent, $input);
+
+        $content = $this->postAmaTransactionRequestAndGetContent($content, $input);
+
+        $content['received'] = 1;
+        $refund->fill($content);
+        $this->repo->saveOrFail($refund);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REVERSE_RESPONSE,
+            ['content' => $content,
+            'action' => $this->action,
+            'payment' => $input['payment'],
+            'refund' => $input['refund']]);
+    }
+
     public function forceAuthorizeFailed($input)
     {
         $repo = $this->repo;
 
-        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommandOrFail($input['payment']['id'], Command::PAY);
 
         // If it's already authorized on axis side, there's nothing to do here. We just return back.
         if (($gatewayPayment->getTransactionId() !== null) and
@@ -165,7 +264,7 @@ class Gateway extends Base\Gateway
     {
         assert ($input['payment']['status'] === 'authorized');
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndCommand(
+        $gatewayPayment = $this->repo->findByPaymentIdAndCommandOrFail(
             $input['payment']['id'], Command::PAY);
 
         $capturedAmount = (int) $gatewayPayment['vpc_CapturedAmount'];
@@ -478,6 +577,18 @@ class Gateway extends Base\Gateway
         $content = array(
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_MerchTxnRef'   => $input['payment']['id'],
+            'vpc_TransNo'       => $payment['vpc_TransactionNo'],
+        );
+
+        return $content;
+    }
+
+    protected function getPaymentReversalRequestContent($input, $payment)
+    {
+        $content = array(
+            'vpc_Command'       => AxisMigs\Command::REVERSAL,
+            'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );

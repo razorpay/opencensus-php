@@ -8,8 +8,10 @@ use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
+use RZP\Models\Admin;
 use RZP\Models\Batch;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
@@ -35,23 +37,52 @@ trait Refund
         return $refund;
     }
 
+    public function createRefundOnApiFromRecon(Payment\Entity $payment, string $refundId, int $refundAmount)
+    {
+        if ($payment->transaction === null)
+        {
+            throw new Exception\LogicException(
+                'Transaction expected but not present for payment: ' . $payment->getId());
+        }
+
+        $input = ['amount' => $refundAmount];
+
+        $refund = $this->buildRefundEntity($payment, $input);
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $refund->setId($refundId);
+
+        $data = [
+            'payment_id' => $payment->getId(),
+            'refund_id' => $refundId,
+            'refund_amount' => $refundAmount,
+        ];
+
+        $gatewayRefunded = $this->callGatewayForAlreadyRefunded($data);
+
+        if ($gatewayRefunded === false)
+        {
+            throw new Exception\LogicException(
+                'Should have been refunded on gateway but is not',
+                ErrorCode::SERVER_ERROR_GATEWAY_NOT_REFUNDED,
+                $data);
+        }
+
+        $this->recordRefund();
+    }
+
     public function verifyRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        if ($payment->getGateway() !== Payment\Gateway::HDFC)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
-        }
+        $gateway = $payment->getGateway();
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        Payment\Refund\Validator::validateVerifyRefundAllowed($gateway);
+
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -115,14 +146,14 @@ trait Refund
         // The payment should have been captured. Otherwise, refund transaction should not have been created.
         // Though, there are some edge cases where refund transaction was created even though the payment has not
         // been captured. Check PR #905 and #909.
-        assert (($payment->hasBeenCaptured() === true) or
-                (in_array($payment->card->getNetworkCode(),
-                          [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        // Commenting this because we have reached past this stage.
+        // A refund transaction could have been created even if the payment is not captured.
+        // assert (($payment->hasBeenCaptured() === true) or
+        //         (in_array($payment->card->getNetworkCode(),
+        //                   [Card\Network::MAES, Card\Network::RUPAY, Card\Network::DICL]) === true));
+
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -171,9 +202,10 @@ trait Refund
         assert ($payment->getTransactionId() !== null);
 
         $data = [
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount()
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
         ];
 
         return $this->callGatewayForCreateRefundRecord($data);
@@ -307,6 +339,13 @@ trait Refund
         return $verifyRefundResult;
     }
 
+    protected function callGatewayForAlreadyRefunded($data)
+    {
+        $gatewayRefunded = $this->callGatewayFunction(Payment\Action::ALREADY_REFUNDED, $data);
+
+        return $gatewayRefunded;
+    }
+
     protected function callGatewayForManualRefund($data)
     {
         $manualGatewayRefundResult = null;
@@ -316,8 +355,7 @@ trait Refund
             [
                 'payment_id'    => $data['payment']['id'],
                 'refund_id'     => $data['refund']['id'],
-            ]
-        );
+            ]);
 
         try
         {
@@ -373,7 +411,7 @@ trait Refund
                 throw $ex;
             }
 
-            $curlMessage = $ex->getData()['message'];
+            $curlMessage = strtolower($ex->getData()['message']);
 
             //
             // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
@@ -452,14 +490,15 @@ trait Refund
             [
                 'payment_id' => $payment->getId(),
                 'input' => $input
-            ]
-        );
+            ]);
 
         $this->setPayment($payment);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
         $refund->merchant()->associate($this->merchant);
+
+        $refund->setBaseAmount();
 
         if ($this->payment->isCaptured())
         {
@@ -473,14 +512,11 @@ trait Refund
         return $refund;
     }
 
-    protected function processRefund(Payment\Refund\Entity $refund)
+    protected function  processRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
-        $data = array(
-            'payment'   => $payment->toArray(),
-            'refund'    => $refund->toArray(),
-            'amount'    => $refund->getAmount());
+        $data = $this->getGatewayDataForRefund($refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
@@ -523,7 +559,11 @@ trait Refund
         }
         else
         {
-            $this->payment->refundAmount($this->refund->getAmount());
+            $amount = $this->refund->getAmount();
+
+            $baseAmount = $this->refund->getBaseAmount();
+
+            $this->payment->refundAmount($amount, $baseAmount);
         }
 
         $this->tracePaymentInfo(TraceCode::PAYMENT_REFUND_SUCCESS);
@@ -537,12 +577,12 @@ trait Refund
 
         $balance = (new Merchant\Balance\Repository)->getMerchantBalance($merchant);
 
-        if ($balance->getBalance() < $refund->getAmount())
+        if ($balance->getBalance() < $refund->getBaseAmount())
         {
             $traceMessage = [
                 'message' => 'Not enough balance',
                 'merchant_balance' => $balance->getBalance(),
-                'refund_amount' => $refund->getAmount()
+                'refund_amount' => $refund->getBaseAmount()
             ];
 
             $this->trace->info(TraceCode::PAYMENT_REFUND_FAILURE, $traceMessage);
@@ -620,6 +660,25 @@ trait Refund
         }
 
         return null;
+    }
+
+    protected function getGatewayDataForRefund(Payment\Refund\Entity $refund, Payment\Entity $payment)
+    {
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        if ($payment->getConvertCurrency())
+        {
+            $data['amount'] = $refund->getBaseAmount();
+
+            $data['currency'] = Currency\Currency::INR;
+        }
+
+        return $data;
     }
 
     protected function findExistingRefundForBatch(Batch\Entity $batch, Payment\Entity $payment)

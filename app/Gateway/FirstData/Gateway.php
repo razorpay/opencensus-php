@@ -13,6 +13,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
@@ -213,24 +214,13 @@ class Gateway extends Base\Gateway
 
     protected function getSoapResponse($requestContent)
     {
-        try
-        {
-            $xmlResponse = $this->postSoapRequest($requestContent, ApiRequestFields::ORDER_REQUEST);
+        $xmlResponse = $this->postSoapRequest($requestContent, ApiRequestFields::ORDER_REQUEST);
 
-            $traceCode = $this->getTraceCode();
+        $traceCode = $this->getTraceCode();
 
-            $this->trace->info($traceCode, [$xmlResponse->asXml()]);
+        $this->trace->info($traceCode, [$xmlResponse->asXml()]);
 
-            $response = $this->parseOrderResponse($xmlResponse);
-        }
-        catch (Exception\GatewayTimeoutException $e)
-        {
-            // If a timeout occurs, don't throw an exception just yet.
-            // We build a mock response, that allows the gateway entity
-            // to be created, then throw the same exception
-            // in checkApprovalCode
-            $response = $this->buildTimeoutResponse($e);
-        }
+        $response = $this->parseOrderResponse($xmlResponse);
 
         return $response;
     }
@@ -244,11 +234,6 @@ class Gateway extends Base\Gateway
             $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
-
-            if ($gatewayEntity->getReceived() === false)
-            {
-                throw new Exception\GatewayTimeoutException($gatewayEntity->getApprovalCode());
-            }
 
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
         }

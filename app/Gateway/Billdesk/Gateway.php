@@ -269,6 +269,48 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) $refundEntity->getRefundAmount() * 100;
+        $processStatus = $refundEntity->getProcessStatus();
+        $refundStatus = $refundEntity->getRefundStatus();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'process_status' => $processStatus,
+                'refund_status' => $refundStatus,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($processStatus !== 'Y') or
+            (($refundStatus !== RefundStatus::REFUNDED) and
+             ($refundStatus !== RefundStatus::CANCELLED)))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     /**
      * This only handles for payments which have exactly one refund (either full or partial).
      * Currently, I don't see a way where we can handle this for multiple partial refunds too.
@@ -369,10 +411,14 @@ class Gateway extends Base\Gateway
      * DISCLAIMER: Will not work as expected in the following case:
      * There are 3 partial refunds with amounts 5, 10 and 15.
      * The refunds with 5 and 10 go through successfully and
-     * the one with 15 fails due to some server issue on Billdesk side and that times out on our end.
+     * the one with 15 fails due to some server issue on Billdesk side and that times out (db lock) on our end.
      * Now, since the one with 15 was timed out, we mark it as refunded in API and run the following flow.
      * This below function will return back with TRUE because the refund amount totals 15. We will end up
      * creating a refund entity on the gateway side even when we are not supposed to!
+     *
+     * @param array $input
+     *
+     * @return array
      */
     protected function verifyIfRefunded(array $input)
     {
@@ -394,7 +440,7 @@ class Gateway extends Base\Gateway
 
         $gatewayRefundAmount = (int) ($verifyResponse['RefAmount'] * 100);
 
-        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED] + $input['refund'][Payment\Refund\Entity::AMOUNT];
+        $totalApiRefundAmount = $input['payment'][Payment\Entity::AMOUNT_REFUNDED];
 
         return [($gatewayRefundAmount === $totalApiRefundAmount), $verifyResponse];
     }
@@ -435,9 +481,10 @@ class Gateway extends Base\Gateway
             'TxnReferenceNo'    => $verifyResponse['TxnReferenceNo'],
             'RefAmount'         => $input['refund'][Payment\Refund\Entity::AMOUNT],
             // The below two fields are not sent as part of refund response, but we get it in the verify response.
-            //'ErrorStatus'       => $verifyResponse['ErrorStatus'],
-            //'ErrorDescription'  => $verifyResponse['ErrorDescription'],
-            'ProcessStatus'     => $verifyResponse['ProcessStatus'],
+            // 'ErrorStatus'       => $verifyResponse['ErrorStatus'],
+            // 'ErrorDescription'  => $verifyResponse['ErrorDescription'],
+            // This is not received in verify response. This indicates whether refund was successful.
+            'ProcessStatus'     => 'Y',
             'TxnDate'           => $txnDate,
             'RefDateTime'       => $refDate,
         ];
@@ -782,6 +829,17 @@ class Gateway extends Base\Gateway
 
         $content = explode('|', $responseBody);
 
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        }
+
         $content = array_combine($fields, $content);
 
         $this->trace->info(
@@ -846,16 +904,16 @@ class Gateway extends Base\Gateway
 
     protected function createGatewayPaymentEntity($attributes)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-        $payment->setPaymentId($attributes['CustomerID']);
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+        $gatewayPayment->setPaymentId($attributes['CustomerID']);
 
-        $payment->fill($attributes);
-        $payment->setAction($this->action);
-        $this->repo->saveOrFail($payment);
+        $gatewayPayment->fill($attributes);
+        $gatewayPayment->setAction($this->action);
+        $this->repo->saveOrFail($gatewayPayment);
 
-        $this->setTpv($payment);
+        $this->setTpv($gatewayPayment);
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     public function getMessageStringWithHash($content)

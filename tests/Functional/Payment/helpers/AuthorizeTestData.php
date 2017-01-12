@@ -176,10 +176,10 @@ return [
         ],
     ],
 
-    'testNonInrCurrency' => [
+    'testNonSupportedCurrency' => [
         'request' => [
             'content' => [
-                'currency' => 'USD',
+                'currency' => 'EUR',
             ],
         ],
         'response' => [
@@ -573,6 +573,19 @@ return [
         ]
     ],
 
+    'testFixAuthorizedAt' => [
+        'request' => [
+            'content' => [],
+            'method' => 'POST',
+        ],
+        'response' => [
+            'content' => [
+                'status' => 'failed',
+                'authorized_at' => null
+            ],
+        ],
+    ],
+
     'testTimeoutOldPayment' => [
         'request' => [
             'content' => [],
@@ -788,9 +801,9 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
-                'http_status_code' => 400,
+                // 'http_status_code' => 400,
             ],
-            'status_code' => 200,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
@@ -804,9 +817,9 @@ return [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
-                'http_status_code' => 400,
+                // 'http_status_code' => 400,
             ],
-            'status_code' => 200,
+            'status_code' => 400,
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',

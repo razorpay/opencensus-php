@@ -12,7 +12,7 @@ class Raven
 {
     const SMS_ID = 'sms_id';
 
-    const REQUEST_TIMEOUT = 30;
+    const REQUEST_TIMEOUT = 60;
 
     protected $baseUrl;
 

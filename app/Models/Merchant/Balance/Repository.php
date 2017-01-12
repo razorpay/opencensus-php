@@ -52,16 +52,20 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalCredits = $nodalBalance->getAmountCredits();
-        $nodalCredits = $nodalCredits - $balance->getAmountCredits() + $amountCredits;
-        $nodalBalance->setAmountCredits($nodalCredits);
+        // $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
+        //
+        // $nodalCredits = $nodalBalance->getAmountCredits();
+        //
+        // $nodalCredits = $nodalCredits - $balance->getAmountCredits() + $amountCredits;
+        //
+        // $nodalBalance->setAmountCredits($nodalCredits);
 
         $balance->setAmountCredits($amountCredits);
 
         $balance->saveOrFail();
-        $nodalBalance->saveOrFail();
+
+        // $nodalBalance->saveOrFail();
 
         return $balance;
     }
@@ -81,16 +85,18 @@ class Repository extends Base\Repository
         assert ($this->isTransactionActive());
 
         $balance = $this->findOrFail($merchant->getId());
-        $nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
+        //$nodalBalance = $this->getNodalBalanceLockForUpdate($channel);
 
-        $nodalCredits = $nodalBalance->getFeeCredits();
-        $nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
-        $nodalBalance->setFeeCredits($nodalCredits);
+        //$nodalCredits = $nodalBalance->getFeeCredits();
+        //$nodalCredits = $nodalCredits - $balance->getFeeCredits() + $feeCredits;
+
+        //$nodalBalance->setFeeCredits($nodalCredits);
 
         $balance->setFeeCredits($feeCredits);
 
         $balance->saveOrFail();
-        $nodalBalance->saveOrFail();
+
+        //$nodalBalance->saveOrFail();
 
         return $balance;
     }

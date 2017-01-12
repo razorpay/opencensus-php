@@ -62,6 +62,8 @@ class Entity extends Base\PublicEntity
     const PROMOTER_ADDRESS_URL              =      'promoter_address_url';
     const TRANSACTION_REPORT_EMAIL          =      'transaction_report_email';
     const COMMENT                           =      'comment';
+    const ROLE                              =      'role';
+    const DEPARTMENT                        =      'department';
     const STEPS_FINISHED                    =      'steps_finished';
     const LOCKED                            =      'locked';
     const SUBMITTED                         =      'submitted';
@@ -129,6 +131,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
         self::TRANSACTION_REPORT_EMAIL,
+        self::ROLE,
+        self::DEPARTMENT,
         self::COMMENT,
         self::STEPS_FINISHED,
         self::LOCKED,
@@ -188,6 +192,8 @@ class Entity extends Base\PublicEntity
         self::BANK_BENEFICIARY_CITY,
         self::BANK_BENEFICIARY_STATE,
         self::BANK_BENEFICIARY_PIN,
+        self::ROLE,
+        self::DEPARTMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];

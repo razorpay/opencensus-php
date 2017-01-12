@@ -66,6 +66,23 @@ class Service extends Base\Service
         return $this->getNewProcessor()->process($input);
     }
 
+    /**
+     * Processes a upi payment
+     *
+     * @param array $input
+     *
+     * @return array|mixed
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    public function processUpi(array $input)
+    {
+        $input['_']['source']   = 's2s';
+        $input['method']        = 'upi';
+
+        return $this->getNewProcessor()->process($input);
+    }
+
     public function processAndReturnFees(array & $input)
     {
         return $this->getNewProcessor()->processAndReturnFees($input);
@@ -278,6 +295,29 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function fixAuthorizeAt($id)
+    {
+        $payment = $this->core->retrieveById($id);
+
+        if (($payment->isFailed() === false) or
+            ($payment->hasBeenCaptured() === true))
+        {
+            throw new Exception\BadRequestException(
+                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+        }
+
+        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+            'payment_id' => $id,
+            'old_authorized_at' => $payment->getAuthorizeTimestamp()
+        ]);
+
+        $payment->setAuthorizeAtNull();
+
+        $this->repo->saveOrFail($payment);
+
+        return $payment->toArray();
+    }
+
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
     {
         Payment\Entity::verifyIdAndStripSign($paymentId);
@@ -311,6 +351,17 @@ class Service extends Base\Service
         $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
+    }
+
+    public function fetchTransactionByPaymentId($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $transaction->toArrayPublic();
     }
 
     /**
@@ -934,7 +985,7 @@ class Service extends Base\Service
         Mail::send(
             'emails.merchant.authorized_reminder',
             $data,
-            function ($message) use ($subject, $emails, $name)
+            function ($message) use ($subject, $emails, $name, $data)
             {
 
                 foreach ($emails as $email)
@@ -947,6 +998,12 @@ class Service extends Base\Service
                 $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
+
+                $headers = $message->getHeaders();
+
+                foreach ($data['payments'] as $payment) {
+                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                }
             });
     }
 

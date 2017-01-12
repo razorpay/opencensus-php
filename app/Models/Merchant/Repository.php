@@ -30,6 +30,7 @@ class Repository extends Base\Repository
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
         Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
@@ -139,6 +140,21 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable().'.*');
     }
 
+    protected function addQueryParamFeeBearer($query, $params)
+    {
+        $feeBearer = $this->getAttributeWithTableName(Entity::FEE_BEARER);
+
+        $query->where($feeBearer, '=', FeeBearer::getValueForBearerString($params[Entity::FEE_BEARER]));
+    }
+
+    protected function addQueryParamFeeModel($query, $params)
+    {
+        $feeModel = $this->getAttributeWithTableName(Entity::FEE_MODEL);
+
+        $query->where($feeModel, '=', FeeModel::getValueForFeeModelString($params[Entity::FEE_MODEL]));
+    }
+
+
     /**
      * Returns all the emails and names for all Merchants
      * No limits
@@ -199,6 +215,24 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
+    }
+
+    /**
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
+                    ->get();
+    }
+
+    public function fetchMerchantsByOrgId($orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
     }
 }

@@ -66,7 +66,9 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|email|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::ROLE                            => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
@@ -126,15 +128,46 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PROOF_URL              => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
-        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|email|max:255',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::ROLE                            => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
     ];
 
-    protected static $lockRules = [
-        Entity::LOCKED                          => 'required|boolean',
+    protected static $editAfterLockRules = [
+        Entity::LOCKED                          => 'sometimes|boolean',
+        Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::COMMENT                         => 'sometimes|max:255',
     ];
+
+    protected static $migrateRules = [
+        Entity::MERCHANT_ID                     => 'required',
+        Entity::BUSINESS_PROOF_URL              => 'sometimes|url',
+        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|url',
+        Entity::BUSINESS_PAN_URL                => 'sometimes|url',
+        Entity::ADDRESS_PROOF_URL               => 'sometimes|url',
+        Entity::PROMOTER_PROOF_URL              => 'sometimes|url',
+        Entity::PROMOTER_PAN_URL                => 'sometimes|url',
+        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|url',
+    ];
+
+    public function validateTransactionReportEmail($attribute, $value)
+    {
+        $emails = explode(',', $value);
+
+        foreach ($emails as $email)
+        {
+            if (filter_var($email, FILTER_VALIDATE_EMAIL) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    "The provided transaction report email is invalid: $email",
+                    Entity::TRANSACTION_REPORT_EMAIL
+                );
+            }
+        }
+    }
 
     public function validateBankBranchIfsc($attribute, $value)
     {

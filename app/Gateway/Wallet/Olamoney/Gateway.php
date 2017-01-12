@@ -15,6 +15,7 @@ use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Status as PaymentStatus;
+use RZP\Models\Payment\Processor;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -67,11 +68,18 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
+        $request['headers'] = $this->getRequestHeaders();
+
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $this->createWalletRefundEntity($content, $input);
 
@@ -84,6 +92,44 @@ class Gateway extends Base\Gateway
                 $content[ResponseFields::STATUS],
                 $message);
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Processor\Wallet::OLAMONEY);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+        $refundEntityStatusCode = $refundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'status_code'           => $refundEntityStatusCode,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($refundEntityStatusCode !== ResponseFields::REFUND_SUCCESS_STATUS))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function verify(array $input)
@@ -106,8 +152,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpGenerateRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'payment_id' => $input['payment']['id']]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -124,7 +174,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $code = $content['status'];
 
@@ -150,7 +205,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -168,8 +228,12 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::REFRESH_TOKEN] = '';
         }
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE,
-            ['content' => $content, 'payment_id' => $input['payment']['id']]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'content' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         // Payment fails, throw exception
         if (($content[ResponseFields::STATUS] !== Status::SUCCESS) or
@@ -200,7 +264,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray();
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -210,7 +279,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $userBalance = 0;
 
@@ -246,7 +320,12 @@ class Gateway extends Base\Gateway
 
         $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -285,8 +364,12 @@ class Gateway extends Base\Gateway
         $traceContent[RequestFields::ACCESS_TOKEN] = '';
         $traceContent[RequestFields::HASH] = '';
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $traceContent]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'content' => $traceContent
+            ]);
 
         $request['headers'] = $this->getRequestHeaders();
 
@@ -316,7 +399,7 @@ class Gateway extends Base\Gateway
             RequestFields::NOTIFICATION_URL     => $notificationUrl,
             RequestFields::AMOUNT               => $amount,
             RequestFields::CURRENCY             => $input['payment']['currency'],
-            RequestFields::COUPON_CODE          => 'RPAY15',
+            RequestFields::COUPON_CODE          => 'NA',
             RequestFields::USER_ACCESS_TOKEN    => $input['token']['gateway_token'],
         );
 
@@ -414,8 +497,12 @@ class Gateway extends Base\Gateway
         $content[RequestFields::ACCESS_TOKEN] = '';
         $content[RequestFields::HASH] = '';
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST,
-            ['request' => $request, 'content' => $content]);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            [
+                'request' => $request,
+                'content' => $content
+            ]);
 
         $query = http_build_query($requestContent);
 
@@ -773,8 +860,6 @@ class Gateway extends Base\Gateway
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
         $request = $this->getStandardRequestArray(json_encode($content));
-
-        $request['headers'] = $this->getRequestHeaders();
 
         return $request;
     }

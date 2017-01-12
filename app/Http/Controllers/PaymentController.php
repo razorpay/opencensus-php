@@ -100,6 +100,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postFixAuthorizedAt($id)
+    {
+        $data = $this->payment->fixAuthorizeAt($id);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Captures an authorized payment
      *
@@ -131,7 +138,7 @@ class PaymentController extends Controller
     }
 
     /**
-     * @deprecated 
+     * @deprecated
      * @return mixed
      */
     public function postAutoCapture()
@@ -160,6 +167,13 @@ class PaymentController extends Controller
         $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
+    }
+
+    public function getTransactionForPayment($paymentId)
+    {
+        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
+
+        return ApiResponse::json($transaction);
     }
 
     public function postTimeout()

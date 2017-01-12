@@ -6,7 +6,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
-use RZP\Gateway\Netbanking;
+use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -17,10 +17,10 @@ use RZP\Models\Transaction;
 class Service extends Base\Service
 {
     /**
-     * We get the last 24 hours refunds created of a gateway.
+     * We get the last 100 days refunds created of a gateway.
      * We run the cron for this once a day.
      */
-    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 86400;
+    const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
     public function getRefundsFile(array $input = array())
     {
@@ -111,10 +111,12 @@ class Service extends Base\Service
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
         // Handling netbanking kotak using seperate file.
-        if (($gatewayCode === IFSC::KKBK) and
+        if ((in_array($gatewayCode, Payment\Gateway::$claimsFileToBank)) and
             ($type === Payment\Entity::BANK))
         {
-            $result = (new Netbanking\Kotak\DailyFiles)->generate($from, $to);
+            $class = $this->getDailyFilesNamespace($gatewayCode);
+
+            $result = (new $class($gatewayCode))->generate($from, $to);
 
             return $result;
         }
@@ -125,6 +127,13 @@ class Service extends Base\Service
 
             return $this->generateRefundFile($refunds);
         }
+    }
+
+    protected function getDailyFilesNamespace($gatewayCode)
+    {
+        $entity = Payment\Gateway::$netbankingToGatewayMap[$gatewayCode];
+
+        return Constants\Entity::$namespace[$entity] . '\\DailyFiles';
     }
 
     protected function generateRefundFile($refunds)
@@ -330,7 +339,7 @@ class Service extends Base\Service
                 {
                     $transaction = $this->getNewProcessor($refundWithoutTransaction->merchant)
                                         ->createTransactionForRefund(
-                                            $refundWithoutTransaction, $payment);
+                                            $refundWithoutTransaction, $payment, true);
 
                     $this->repo->saveOrFail($refundWithoutTransaction);
 

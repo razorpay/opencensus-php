@@ -181,8 +181,11 @@ class Response
 
     protected function isResponseJsonp($route)
     {
+        $callback = $this->app['request']->input('callback');
+
         return (($this->jsonp === null) and
-                ($this->isJsonpRoute($route)));
+                ($this->isJsonpRoute($route)) and
+                ($callback !== null));
     }
 
     protected function stopBrowserCaching($response)
@@ -274,6 +277,7 @@ class Response
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
+            'payment_get_status'
         );
 
         return (in_array($route, $jsonpRoutes));

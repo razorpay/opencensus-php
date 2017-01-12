@@ -65,15 +65,15 @@ class Service extends Base\Service
 
         return $mailer->send();
     }
-    
+
     public function processMailgunCallback($type, $input)
     {
         $validator = new Validator;
-        
+
         $validator->setStrictFalse();
-        
+
         $validator->validateInput('mailgun_webhook', $input);
-        
+
         return (new Mailgun)->processCallback($type, $input);
     }
 }

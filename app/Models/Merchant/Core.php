@@ -12,6 +12,7 @@ use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Models\Feature;
 use RZP\Exception;
+use RZP\Models\Admin\Action;
 
 use Config;
 
@@ -20,6 +21,8 @@ class Core extends Base\Core
     public function create($input)
     {
         $merchant = (new Merchant\Entity)->build($input);
+
+        $merchant->setAuditAction(Action::CREATE_MERCHANT);
 
         $email['email'] = $input['email'];
 
@@ -30,6 +33,11 @@ class Core extends Base\Core
         $this->repo->saveOrFail($merchant);
 
         $this->addMerchantSupportingEntities($merchant);
+
+        if (isset($input['groups']) === true)
+        {
+            $this->repo->sync($merchant, 'groups', $input['groups']);
+        }
 
         return $merchant;
     }
@@ -50,6 +58,8 @@ class Core extends Base\Core
 
         $subMerchant = (new Merchant\Entity)->build($input);
 
+        $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
+
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
         $this->repo->saveOrFail($subMerchant);
@@ -67,18 +77,7 @@ class Core extends Base\Core
 
         (new Methods\Core)->setDefaultMethods($merchant);
 
-        $this->setDefaultFeatures($merchant);
-
         (new Detail\Service)->createMerchantDetails($merchant);
-    }
-
-    protected function setDefaultFeatures($merchant)
-    {
-        (new Feature\Core)->create([
-            'name'          => Feature\Constants::CARD_SAVING,
-            'entity_id'     => $merchant->getId(),
-            'entity_type'   => 'merchant'
-        ]);
     }
 
     /**
@@ -90,11 +89,18 @@ class Core extends Base\Core
      */
     public function edit($merchant, $input)
     {
+        $merchant->setAuditAction(Action::EDIT_MERCHANT);
+
         $merchant->edit($input);
 
         $plan = $this->repo->pricing->getMerchantPricingPlan($merchant);
 
         (new Methods\Core)->validateInternationalPricingForMerchant($merchant, $plan);
+
+        if (isset($input['groups']) === true)
+        {
+            $this->repo->sync($merchant, 'groups', $input['groups']);
+        }
 
         $this->saveAndNotify($merchant);
 

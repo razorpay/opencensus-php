@@ -19,6 +19,7 @@ class Terminal extends Base
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
         $this->createSharedNetbankingIciciTerminal();
+        $this->createSharedNetbankingAxisTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -675,8 +676,6 @@ class Terminal extends Base
 
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
-        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
-
         $defaultValues = [
             'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
             'merchant_id'               => $merchantId,
@@ -684,6 +683,25 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay_icici',
             'gateway_merchant_id2'      => 'razorpay_submerchant',
             'gateway_terminal_password' => 'razorpay_password',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAxisTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_AXIS_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_axis',
+            'gateway_merchant_id'       => 'test_pid',
+            'gateway_secure_secret'     => 'test_masterkey',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

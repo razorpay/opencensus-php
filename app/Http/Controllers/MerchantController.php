@@ -6,6 +6,7 @@ use ApiResponse;
 use Request;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
@@ -189,7 +190,9 @@ class MerchantController extends Controller
 
     public function getTerminals($mid)
     {
-        $data = (new Terminal\Service)->getTerminals($mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }
@@ -468,6 +471,13 @@ class MerchantController extends Controller
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
+    public function getBrokerTransactionReport()
+    {
+        $input = Request::all();
+
+        return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, E::TRANSACTION);
+    }
+
     public function getInvoiceReport()
     {
         $input = Request::all();
@@ -615,11 +625,20 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
-    public function postLockActivation($id)
+    public function putEditMerchantDetailsAfterLock($id)
     {
         $input = Request::all();
 
-        $response = (new Detail\Service)->lockMerchantDetails($id, $input);
+        $response = (new Detail\Service)->editMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantDetailMigrate()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\FileMigration)->migrateMerchantDocuments($input);
 
         return ApiResponse::json($response);
     }
