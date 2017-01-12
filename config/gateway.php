@@ -207,8 +207,8 @@ return array(
     ),
 
     'netbanking_icici' => [
-        'test_master_key'   => env('NETBANKING_ICICI_GATEWAY_TEST_MASTER_KEY'),
-        'test_pid'          => env('NETBANKING_ICICI_GATEWAY_TEST_PID'),
+        'test_hash_secret'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_spid'         => env('NETBANKING_ICICI_GATEWAY_TEST_SPID'),
     ],
 

@@ -192,7 +192,7 @@ class Gateway extends Base\Gateway
 
         $queryString = $this->createQueryString($data);
 
-        $masterKey = $this->getMasterKey();
+        $masterKey = $this->getSecret();
 
         return base64_encode($this->encryptString($queryString, $masterKey));
     }
@@ -288,7 +288,7 @@ class Gateway extends Base\Gateway
 
     protected function getDataFromResponse($data)
     {
-        $masterKey = $this->getMasterKey();
+        $masterKey = $this->getSecret();
 
         $decryptedString = $this->decryptString(
             base64_decode($data['ES']), $masterKey);
@@ -361,28 +361,14 @@ class Gateway extends Base\Gateway
         return $aes->decrypt($string);
     }
 
-    public function getMasterKey()
-    {
-        $masterKey = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
-
-        if ($this->mode === RZPMode::TEST)
-        {
-            $masterKey = $this->config['test_master_key'];
-        }
-
-        return $masterKey;
-    }
-
     public function getPid()
     {
-        $pid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
-
         if ($this->mode === RZPMode::TEST)
         {
-            $pid = $this->config['test_pid'];
+            return $this->getTestMerchantId();
         }
 
-        return $pid;
+        return $this->getLiveMerchantId();
     }
 
     public function getSpid()

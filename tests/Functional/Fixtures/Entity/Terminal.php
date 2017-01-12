@@ -676,13 +676,15 @@ class Terminal extends Base
 
     public function createSharedNetbankingIciciTerminal(array $attributes = [])
     {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
         $defaultValues = [
             'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_icici',
             'gateway_merchant_id'       => 'razorpay_icici',
             'gateway_merchant_id2'      => 'razorpay_submerchant',
-            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_secure_secret'     => 'razorpay_password',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

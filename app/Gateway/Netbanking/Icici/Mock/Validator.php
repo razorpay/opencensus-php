@@ -87,6 +87,6 @@ class Validator extends Base\Validator
 
         $gateway->setMode(Mode::TEST);
 
-        return $gateway->getMasterKey();
+        return $gateway->getSecret();
     }
 }

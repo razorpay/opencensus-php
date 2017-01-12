@@ -4,10 +4,10 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Icici\RequestFields;
-use RZP\Gateway\Netbanking\Icici\ResponseFields;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
+use RZP\Gateway\Netbanking\Icici\RequestFields;
+use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -65,7 +65,7 @@ class Server extends Base\Mock\Server
 
     protected function formatResponseData($postData)
     {
-        $masterKey = $this->getGatewayInstance()->getMasterKey();
+        $masterKey = $this->getGatewayInstance()->getSecret();
 
         $httpQuery = http_build_query($postData);
 
@@ -76,7 +76,7 @@ class Server extends Base\Mock\Server
 
     protected function decryptData($input)
     {
-        $masterKey = $this->getGatewayInstance()->getMasterKey();
+        $masterKey = $this->getGatewayInstance()->getSecret();
 
         $decryptedString = $this->getGatewayInstance()->decryptString(base64_decode($input['ES']), $masterKey);
 
