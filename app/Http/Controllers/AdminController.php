@@ -632,12 +632,14 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function changePrimaryMerchant($mode, $terminalId, $merchantId)
+    public function changePrimaryMerchant($mode, $terminalId)
     {
+        $input = Input::all();
+
         list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
             $mode,
             $terminalId,
-            $merchantId);
+            $input);
 
         return AppResponse::jsonResponse($error, $data);
     }

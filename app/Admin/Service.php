@@ -1847,7 +1847,7 @@ class Service extends Base\Service
         return [ $error, $response ];
     }
 
-    public function changeTerminalPrimaryMerchant($mode, $terminalId, $merchantId)
+    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
     {
         $error = $response = null;
 
@@ -1855,7 +1855,7 @@ class Service extends Base\Service
 
         try
         {
-            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $merchantId)->toArray();
+            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

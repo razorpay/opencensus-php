@@ -46,11 +46,11 @@ class Terminal extends Entity
         return $this->request('PUT', $relativeUrl);
     }
 
-    public function changePrimaryMerchant($id, $merchantId)
+    public function changePrimaryMerchant($id, $params)
     {
-        $relativeUrl = $this->getEntityUrl() . $id . '/merchants/' . $merchantId . '/reassign';
+        $relativeUrl = $this->getEntityUrl() . $id . '/reassign';
 
-        return $this->request('PUT', $relativeUrl);
+        return $this->request('PUT', $relativeUrl, $params);
     }
 
     public function toggle($id, $params)

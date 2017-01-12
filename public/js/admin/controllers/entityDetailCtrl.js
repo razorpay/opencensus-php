@@ -131,13 +131,12 @@ app.controller('EntityDetailCtrl', [
           alert('There was an error while enabling the terminal');
         });
       },
-      addMerchant: function(id, merchant_id) {
-        var data = { merchant_ids: [ merchant_id ] };
-        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchants', data);
+      addSubMerchant: function(id, merchant_id) {
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
 
         request.success(function (data) {
           if (data.success) {
-            alert('Merchant added successfully');
+            alert('Sub Merchant added successfully');
 
             $scope.entity.sub_merchants.unshift(merchant_id);
           } else {
@@ -148,8 +147,10 @@ app.controller('EntityDetailCtrl', [
         });
       },
       changePrimaryMerchant: function (terminal_id, merchant_id) {
-        var url = '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/merchant/' + merchant_id + '/reassign';
-        var request = $http.put(url);
+        var url = '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/reassign';
+        var request = $http.put(url, {
+          merchant_id: merchant_id
+        });
 
         request.success(function (data) {
           if (data.success) {
@@ -300,7 +301,7 @@ app.controller('EntityDetailCtrl', [
         });
 
         modalInstance.result.then(function (input) {
-            $scope.terminal.addMerchant(input.id, input.merchant_id);
+            $scope.terminal.addSubMerchant(input.id, input.merchant_id);
         }, function() {
         });
       }
