@@ -43,7 +43,6 @@ class Service extends Base\Service
     const ALREADY_ARCHIVED = 'Merchant already archived.';
     const ALREADY_SUSPENDED = 'Merchant already suspended.';
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
-    const CANT_SUSPEND_LIVE = 'Live merchants can not be suspended.';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
@@ -351,7 +350,6 @@ class Service extends Base\Service
             ->select($selectFields)
             ->with('tagged')
             ->whereIn('merchants.id', array_keys($merchantIds));
-
 
         if (isset($input['tags']))
         {
@@ -1541,32 +1539,14 @@ class Service extends Base\Service
             $error = [self::ALREADY_SUSPENDED];
         }
 
-        $this->setApiCredentials();
+        $this->logActionToSlack($merchant, Actions::SUSPENDED);
+        $merchant->suspend();
 
-        try
-        {
-            $data = $this->api->merchant->fetch($id);
+        $this->liveDisableMerchant($id);
 
-            // This is a hard fail and we return
-            // immediately
-            if ($data->live === true)
-            {
-                return [self::CANT_SUSPEND_LIVE];
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            // We just ignore this for now
-            $error =[$e->getMessage()];
-        }
-        finally
-        {
-            $this->logActionToSlack($merchant, Actions::SUSPENDED);
-            $merchant->suspend();
+        $this->postEditMerchant($id, ['hold_funds' => 1]);
 
-            // Return empty array in case of success
-            return [];
-        }
+        return [];
     }
 
     public function unsuspendMerchant($id)
