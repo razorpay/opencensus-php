@@ -142,6 +142,17 @@ class Validator extends Base\Validator
         Entity::COMMENT                         => 'sometimes|max:255',
     ];
 
+    protected static $migrateRules = [
+        Entity::MERCHANT_ID                     => 'required',
+        Entity::BUSINESS_PROOF_URL              => 'sometimes|url',
+        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|url',
+        Entity::BUSINESS_PAN_URL                => 'sometimes|url',
+        Entity::ADDRESS_PROOF_URL               => 'sometimes|url',
+        Entity::PROMOTER_PROOF_URL              => 'sometimes|url',
+        Entity::PROMOTER_PAN_URL                => 'sometimes|url',
+        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|url',
+    ];
+
     public function validateTransactionReportEmail($attribute, $value)
     {
         $emails = explode(',', $value);

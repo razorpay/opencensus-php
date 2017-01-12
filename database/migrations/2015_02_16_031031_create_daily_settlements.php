@@ -4,6 +4,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Settlement\Daily\Entity as DailySettlement;
 
 class CreateDailySettlements extends Migration
@@ -60,6 +61,17 @@ class CreateDailySettlements extends Migration
             $table->index(DailySettlement::CREATED_AT);
             $table->index(DailySettlement::DATE);
         });
+
+        Schema::table(Table::SETTLEMENT, function($table)
+        {
+            $table->string(Settlement::BATCH_SETTLEMENT_ID)
+                  ->nullable();
+
+            $table->foreign(Settlement::BATCH_SETTLEMENT_ID)
+                  ->references(DailySettlement::ID)
+                  ->on(Table::DAILY_SETTLEMENT)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -69,6 +81,12 @@ class CreateDailySettlements extends Migration
      */
     public function down()
     {
+        Schema::table(Table::SETTLEMENT, function($table)
+        {
+            $table->dropForeign(
+                Table::SETTLEMENT . '_' . SETTLEMENT::BATCH_SETTLEMENT_ID . '_foreign');
+        });
+
         Schema::drop(Table::DAILY_SETTLEMENT);
     }
 }

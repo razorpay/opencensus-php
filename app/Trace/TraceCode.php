@@ -136,21 +136,35 @@ class TraceCode
     const CARD_NUMBER_SCRUBBED                      = 'CARD_NUMBER_SCRUBBED';
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
-    const CUSTOMER_ID_ABSENT                        = 'CUSTOMER_ID_ABSENT';
-    const INVOICE_ID_ABSENT                         = 'INVOICE_ID_ABSENT';
+
     const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
     const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                           = 'INVOICE_CREATED';
+    const INVOICE_UPDATE_REQUEST                    = 'INVOICE_UPDATE_REQUEST';
+    const INVOICE_ISSUE_REQUEST                     = 'INVOICE_ISSUE_REQUEST';
+    const INVOICE_DELETE_REQUEST                    = 'INVOICE_DELETE_REQUEST';
+    const INVOICE_ADD_LINE_ITEM_REQUEST             = 'INVOICE_ADD_LINE_ITEM_REQUEST';
+    const INVOICE_UPDATE_LINE_ITEM_REQUEST          = 'INVOICE_UPDATE_LINE_ITEM_REQUEST';
+    const INVOICE_REMOVE_LINE_ITEM_REQUEST          = 'INVOICE_REMOVE_LINE_ITEM_REQUEST';
     const INVOICE_EXISTING_CUSTOMER                 = 'INVOICE_EXISTING_CUSTOMER';
     const INVOICE_LINKS                             = 'INVOICE_LINKS';
     const INVOICE_EMAIL_REQUEST                     = 'INVOICE_EMAIL_REQUEST';
     const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
-    const INVOICE_BITLY_RESPONSE                    = 'INVOICE_BITLY_RESPONSE';
-    const INVOICE_BITLY_FAIL                        = 'INVOICE_BITLY_FAIL';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
+    const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+
+    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
+    const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
+    const ITEM_DELETE_REQUEST                       = 'ITEM_DELETE_REQUEST';
+
+    const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
+    const LINE_ITEM_CREATE_BULK_REQUEST             = 'LINE_ITEM_CREATE_BULK_REQUEST';
+    const LINE_ITEM_UPDATE_REQUEST                  = 'LINE_ITEM_UPDATE_REQUEST';
+    const LINE_ITEM_DELETE_REQUEST                  = 'LINE_ITEM_DELETE_REQUEST';
+    const LINE_ITEM_DELETE_BULK_REQUEST             = 'LINE_ITEM_DELETE_BULK_REQUEST';
 
     const TRANSACTION_REFUND_TRACE                  = 'TRANSACTION_REFUND_TRACE';
     const CREATING_FEES_BREAKUP                     = 'CREATING_FEES_BREAKUP';
@@ -362,6 +376,7 @@ class TraceCode
     const MISC_TOSTRING_ERROR                       = 'MISC_TOSTRING_ERROR';
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
+    const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
@@ -416,9 +431,8 @@ class TraceCode
      */
     const PAYMENT_NOTES_INVALID                     = 'PAYMENT_NOTES_INVALID';
 
-    /**
-     * Additional trace codes for Segment integration
-     */
+    // Trace codes for Segment integration
+
     const GATEWAY_SELECTION_PREPROCESSING           = 'SEGMENT_GATEWAY_SELECTION_PREPROCESSING';
     const GATEWAY_POSTPROCESSING                    = 'GATEWAY_POSTPROCESSING';
     const OTP_GENERATE                              = 'OTP_GENERATE';
@@ -435,6 +449,7 @@ class TraceCode
     const SEGMENT_POST_FAILED                       = 'SEGMENT_POST_FAILED';
 
     // Trace code for features
+
     const FEATURE_DELETE_REQUEST                    = 'FEATURE_DELETE_REQUEST';
     const FEATURE_MIGRATION_EXCEPTION               = 'FEATURE_MIGRATION_EXCEPTION';
     const FEATURE_ASSIGNMENT_EXCEPTION              = 'FEATURE_ASSIGNMENT_EXCEPTION';
@@ -443,20 +458,18 @@ class TraceCode
 
     const MERCHANT_METHODS_BULK_UPDATE              = 'MERCHANT_METHODS_BULK_UPDATE';
 
-    /* Additional Tracecode for HeimDall */
+    // Trace codes for Heimdall
     const HEIMDALL_EVENT_RECORD                     = 'HEIMDALL_EVENT_RECORD';
     const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
     const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
 
-    // Trace code for item/line_items
-    const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
-    const LINE_ITEM_CREATE_REQUEST                  = 'LINE_ITEM_CREATE_REQUEST';
-
     // Trace code for Merchant Details
     const MERCHANT_DETAIL_DOES_NOT_EXIST            = 'MERCHANT_DETAIL_DOES_NOT_EXIST';
     const CREATE_MERCHANT_DETAIL                    = 'CREATE_MERCHANT_DETAIL';
     const CREATE_MERCHANT_DETAIL_FAILED             = 'CREATE_MERCHANT_DETAIL_FAILED';
+    const MERCHANT_DETAIL_MIGRATE_FAILED            = 'MERCHANT_DETAIL_MIGRATE_FAILED';
+    const MERCHANT_DETAIL_MIGRATE_INFO              = 'MERCHANT_DETAIL_MIGRATE_INFO';
 
     // Trace codes for offers
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
@@ -584,6 +597,8 @@ class TraceCode
         self::MERCHANT_DETAIL_DOES_NOT_EXIST            => 'Merchant Detail does not exists',
         self::CREATE_MERCHANT_DETAIL                    => 'Creating Merchant Detail',
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
+
+        self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
     );
 
     /**

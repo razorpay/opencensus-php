@@ -69,67 +69,49 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     );
 
-    protected $publicSetters = array(self::ENTITY);
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+    ];
 
-    protected $dates = array(
+    protected static $generators = array(
+        self::DATE
+    );
+
+    protected $dates = [
         self::DATE,
         self::INITIATED_AT,
         self::RECONCILED_AT,
-        self::RETURNED_AT);
+        self::RETURNED_AT
+    ];
 
-    protected $casts = array(
-        self::DATE => 'int'
-    );
+    protected $casts = [
+        self::AMOUNT            => 'int',
+        self::FEES              => 'int',
+        self::DATE              => 'int',
+        self::SERVICE_TAX       => 'int',
+        self::API_FEE           => 'int',
+        self::GATEWAY_FEE       => 'int',
+        self::INITIATED_AT      => 'int',
+        self::SETTLEMENT_COUNT  => 'int',
+        self::TRANSACTION_COUNT => 'int',
+    ];
 
-    public static function newForToday()
+    protected function generateDate($input)
     {
-        $entity = new static;
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
 
-        $entity->setTodayTimestamp();
-
-        return $entity;
+        $this->setAttribute(self::DATE, $timestamp);
     }
 
-    public function setTodayTimestamp()
+    public function getSettlementCount()
     {
-        $this->attributes[self::DATE] = self::getTodayTimestamp();
-    }
-
-    public function setFees($fees)
-    {
-        $this->setAttribute(self::FEES, $fees);
-    }
-
-    public static function getTodayTimestamp()
-    {
-        return Carbon::today('Asia/Kolkata')->timestamp;
-    }
-
-    public static function getTimestampForDate($day, $month, $year)
-    {
-        return Carbon::createFromDate($year, $month, $day, 'Asia/Kolkata');
-    }
-
-    public function getUrlsAttribute()
-    {
-        return json_decode($this->attributes['urls'], true);
-    }
-
-    public function setUrlsAttribute($urls)
-    {
-        $urls = json_encode($urls);
-
-        $this->attributes['urls'] = $urls;
+        return $this->getAttribute(self::SETTLEMENT_COUNT);
     }
 
     public function getUrls()
     {
-        return $this->getAttribute('urls');
-    }
-
-    public function setUrls($urls)
-    {
-        return $this->setAttribute('urls', $urls);
+        return $this->getAttribute(self::URLS);
     }
 
     public function addUrl($key, $url)
@@ -138,14 +120,44 @@ class Entity extends Base\PublicEntity
 
         $urls[$key] = $url;
 
-        $this->setAttribute('urls', $urls);
+        $this->setAttribute(self::URLS, $urls);
 
         return $urls;
     }
 
-    public function getSettlementCount()
+    public function incrementAmount($value)
     {
-        return $this->getAttribute(self::SETTLEMENT_COUNT);
+        $this->increment(self::AMOUNT, $value);
+    }
+
+    public function incrementFees($value)
+    {
+        $this->increment(self::FEES, $value);
+    }
+
+    public function incrementServiceTax($value)
+    {
+        $this->increment(self::SERVICE_TAX, $value);
+    }
+
+    public function incrementSettlementCount()
+    {
+        $this->increment(self::SETTLEMENT_COUNT);
+    }
+
+    public function incrementTransactionCount($value)
+    {
+        $this->increment(self::TRANSACTION_COUNT, $value);
+    }
+
+    public function setUrls($urls)
+    {
+        return $this->setAttribute('urls', $urls);
+    }
+
+    public function setFees($fees)
+    {
+        $this->setAttribute(self::FEES, $fees);
     }
 
     public function setServiceTax($servicetax)
@@ -155,43 +167,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
-    public function getServiceTax()
+    protected function getUrlsAttribute()
     {
-        return $this->getAttribute(self::SERVICE_TAX);
+        return json_decode($this->attributes[self::URLS], true);
     }
 
-    public function getAmountAttribute()
+    protected function setUrlsAttribute($urls)
     {
-        return (int) $this->attributes[self::AMOUNT];
-    }
+        $urls = json_encode($urls);
 
-    public function getFeesAttribute()
-    {
-        return (int) $this->attributes[self::FEES];
-    }
-
-    public function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
-
-    public function getApiFeeAttribute()
-    {
-        return (int) $this->attributes[self::API_FEE];
-    }
-
-    public function getGatewayFeeAttribute()
-    {
-        return (int) $this->attributes[self::GATEWAY_FEE];
-    }
-
-    public function getSettlementCountAttribute()
-    {
-        return (int) $this->attributes[self::SETTLEMENT_COUNT];
-    }
-
-    public function getTransactionCountAttribute()
-    {
-        return (int) $this->attributes[self::TRANSACTION_COUNT];
+        $this->attributes[self::URLS] = $urls;
     }
 }
