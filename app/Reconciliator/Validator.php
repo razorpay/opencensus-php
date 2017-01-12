@@ -17,7 +17,7 @@ class Validator
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC => "/.*Email MPR as of [0-9]{2}-.{3}-20[0-9]{2}/",
+        Orchestrator::HDFC => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -46,8 +46,8 @@ class Validator
         $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::HDFC];
 
         // HDFC also sends Corporate MPR emails, that should fail here
-        if ((preg_match($regex, $subject) !== 0)
-            and (strpos($subject, 'Corporate') === false))
+        if ((preg_match($regex, $subject) !== 0) and
+            (strpos($subject, 'Corporate') === false))
         {
             return true;
         }

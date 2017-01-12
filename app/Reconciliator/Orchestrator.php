@@ -61,7 +61,6 @@ class Orchestrator
         self::HDFC,
     ];
 
-
     /*********************
      * Instance variables
      *********************/
@@ -110,25 +109,31 @@ class Orchestrator
         // Checks if it's manual call or mailgun call
         if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
         {
+            $mail = false;
+
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
             $this->allFilesDetails = $this->manualEntry($input);
         }
         else
         {
+            $mail = true;
+
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
             $this->allFilesDetails = $this->mailGunEntry($input);
-
-            if ($this->allFilesDetails === null)
-            {
-                return [];
-            }
         }
 
         // There must be at least one file. Otherwise, error.
         if (empty($this->allFilesDetails) === true)
         {
+            // We do not throw an exception in case this route is hit via Mailgun
+            // because Mailgun will attempt retrying and we don't want that.
+            if ($mail === true)
+            {
+                return [];
+            }
+
             throw new Exception\ReconciliationException(
                 'File details are empty.'
             );
@@ -148,7 +153,7 @@ class Orchestrator
      * then trace everything else.
      * Other headers will be enough to identify the mail if needed.
      *
-     * @param  array $input Request body
+     * @param array $input Request body
      */
     protected function traceReconRequest(array $input)
     {
@@ -156,7 +161,6 @@ class Orchestrator
         unset($input['body-plain']);
         unset($input['stripped-html']);
         unset($input['stripped-text']);
-
 
         $this->app['trace']->info(
             TraceCode::RECON_REQUEST,
@@ -215,7 +219,7 @@ class Orchestrator
                 ]
             );
 
-            return;
+            return null;
         }
 
         // Figures out the gateway and sets the gateway reconciliator object for
@@ -448,8 +452,8 @@ class Orchestrator
             );
         }
 
-        if (($this->gatewayEmailValidationIsNeeded($gateway) === true)
-            and ($this->gatewayEmailIsValid($gateway) === false))
+        if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
+            ($this->gatewayEmailIsValid($gateway) === false))
         {
             throw new Exception\ReconciliationException(
                 'Email content is invalid.',
