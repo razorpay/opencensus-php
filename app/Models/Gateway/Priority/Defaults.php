@@ -1,10 +1,10 @@
 <?php
 
-namespace  RZP\Models\Terminal\GatewayPriorities;
+namespace  RZP\Models\Gateway\Priority;
 
 use RZP\Models\Payment\Gateway;
 
-class DefaultPriorities
+class Defaults
 {
     /**
      * These card gateways can be used live and can have direct

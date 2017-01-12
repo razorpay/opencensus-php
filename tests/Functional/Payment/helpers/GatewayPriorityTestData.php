@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testSaveGatewayPriorities' => [
+    'testSaveGatewayPriority' => [
         'request' => [
             'content' => [
                 'hdfc'        => '50',
@@ -14,7 +14,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priority/card',
             'method' => 'POST'
         ],
         'response' => [
@@ -29,7 +29,7 @@ return [
             ]
         ]
     ],
-    'testSaveGatewayPrioritiesWithException' => [
+    'testSaveGatewayPriorityWithException' => [
         'request' => [
             'content' => [
                 'hdfc'        => '50',
@@ -38,7 +38,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priority/card',
             'method' => 'POST'
         ],
         'response' => [
@@ -55,35 +55,9 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_REDIS_EXCEPTION
         ]
     ],
-    'testSaveGatewayPrioritiesWithRedisException' => [
+    'testFetchGatewayPriority' => [
         'request' => [
-            'content' => [
-                'hdfc'        => '50',
-                'axis_migs'   => '40',
-                'amex'        => '30',
-                'cybersource' => '20',
-                'first_data'  => '10'
-            ],
-            'url' => '/gateway/priorities/card',
-            'method' => 'POST'
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => PublicErrorDescription::SERVER_ERROR
-                ]
-            ],
-            'status_code' => 500,
-        ],
-        'exception' => [
-            'class' => 'RZP\Exception\ServerErrorException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_REDIS_EXCEPTION
-        ]
-    ],
-    'testFetchGatewayPriorities' => [
-        'request' => [
-            'url' => '/gateway/priorities',
+            'url' => '/gateway/priority',
             'method' => 'GET'
         ],
         'response' => [
@@ -102,9 +76,9 @@ return [
             ]
         ]
     ],
-    'testFetchGatewayPrioritiesWithException' => [
+    'testFetchGatewayPriorityWithException' => [
         'request' => [
-            'url' => '/gateway/priorities',
+            'url' => '/gateway/priority',
             'method' => 'GET'
         ],
         'response' => [
@@ -116,15 +90,14 @@ return [
                     'cybersource' => '20',
                     'first_data'  => '10'
                 ],
-                'netbanking' => [
-                ]
+                'netbanking' => null
             ]
         ]
     ],
-    'testRemoveGatewayPriorities' => [
+    'testRemoveGatewayPriority' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priority/card',
             'method' => 'DELETE'
         ],
         'response' => [
@@ -138,10 +111,10 @@ return [
             ]
         ]
     ],
-    'testRemoveGatewayPrioritiesWithException' => [
+    'testRemoveGatewayPriorityWithException' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priority/card',
             'method' => 'DELETE'
         ],
         'response' => [
@@ -167,7 +140,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priorities/wallet',
+            'url' => '/gateway/priority/wallet',
             'method' => 'POST'
         ],
         'response' => [
@@ -193,7 +166,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priorities/netbanking',
+            'url' => '/gateway/priority/netbanking',
             'method' => 'POST'
         ],
         'response' => [

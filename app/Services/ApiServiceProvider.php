@@ -110,7 +110,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMorphRelationMaps();
 
-        $this->registerRedisStoreProvider();
+        $this->registerStoreProvider();
     }
 
     /**
@@ -137,7 +137,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-            'redis_store'
+            'store'
         );
     }
 
@@ -223,18 +223,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerRedisStoreProvider()
+    protected function registerStoreProvider()
     {
-        $this->app->singleton('redis_store', function ($app)
+        $this->app->singleton('store', function ($app)
         {
-            $redisMock = $app['config']->get('services.redis_store.mock');
+            $storeMock = $app['config']->get('services.store.mock');
 
-            if ($redisMock === true)
+            if ($storeMock === true)
             {
-                return new Mock\RedisStore($app);
+                return new Mock\StoreManager($app);
             }
 
-            return new RedisStore($app);
+            return new StoreManager($app);
         });
     }
 

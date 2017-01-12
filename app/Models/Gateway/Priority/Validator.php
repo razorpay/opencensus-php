@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Terminal\GatewayPriorities;
+namespace RZP\Models\Gateway\Priority;
 
 use RZP\Base;
 use RZP\Exception;
@@ -12,7 +12,7 @@ class Validator extends Base\Validator
 {
     protected static $validPaymentMethods = [Method::CARD, Method::NETBANKING];
 
-    protected static $createRules = [
+    protected static $addPriorityRules = [
         Gateway::HDFC        => 'sometimes|numeric|min:0|max:100',
         Gateway::AXIS_MIGS   => 'sometimes|numeric|min:0|max:100',
         Gateway::AMEX        => 'sometimes|numeric|min:0|max:100',
@@ -22,24 +22,17 @@ class Validator extends Base\Validator
         Gateway::EBS         => 'sometimes|numeric|min:0|max:100'
     ];
 
-    protected static $createValidators = [
-        'method',
-        'gateways_for_method'
-    ];
-
-    protected function validateMethod(array $input)
+    public function validateMethod(string $method)
     {
-        if (in_array($this->entity->getMethod(), static::$validPaymentMethods, true) === false) {
+        if (in_array($method, static::$validPaymentMethods, true) === false) {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
             );
         }
     }
 
-    public function validateGatewaysForMethod(array $input)
+    public function validateGatewaysForMethod(string $method, array $input)
     {
-        $method = $this->entity->getMethod();
-
         $valid = true;
 
         switch ($method) {
@@ -68,7 +61,7 @@ class Validator extends Base\Validator
     {
         $inputGateways = array_keys($input);
 
-        $cardGateways = DefaultPriorities::$directCardGatewaysOrder;
+        $cardGateways = Defaults::$directCardGatewaysOrder;
 
         return (count($inputGateways) === count(array_intersect($inputGateways, $cardGateways)));
     }
@@ -77,7 +70,7 @@ class Validator extends Base\Validator
     {
         $inputGateways = array_keys($input);
 
-        $netbankingGateways = DefaultPriorities::$directNetbankingGatewaysOrder;
+        $netbankingGateways = Defaults::$directNetbankingGatewaysOrder;
 
         return (count($inputGateways) === count(array_intersect($inputGateways, $netbankingGateways)));
     }
