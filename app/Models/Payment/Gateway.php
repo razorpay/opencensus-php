@@ -10,7 +10,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
-use RZP\Models\Terminal\GatewayPriorities;
 
 class Gateway
 {
