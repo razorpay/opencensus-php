@@ -33,10 +33,10 @@ class Validator
 
         if (Orchestrator::getKeyFromSubArrayMatch($from, $validEmailIds) === null)
         {
-            return false;
+            throw new Exception\ReconciliationException(
+                'The sender email ID is not whitelisted.', ['email_details' => $emailDetails]
+            );
         }
-
-        return true;
     }
 
     public function validateHdfcEmail($emailDetails)

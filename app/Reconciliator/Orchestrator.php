@@ -109,31 +109,34 @@ class Orchestrator
         // Checks if it's manual call or mailgun call
         if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
         {
-            $mail = false;
-
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
             $this->allFilesDetails = $this->manualEntry($input);
         }
         else
         {
-            $mail = true;
+            try
+            {
+                // Sets the gateway reconciliator object and
+                // Gets all the file details from the input.
+                $this->allFilesDetails = $this->mailGunEntry($input);
+            }
+            catch (Exception\ReconciliationException $e)
+            {
+                $this->app['trace']->error(
+                    TraceCode::RECON_ALERT,
+                    (array) json_decode($e->getMessage())
+                );
 
-            // Sets the gateway reconciliator object and
-            // Gets all the file details from the input.
-            $this->allFilesDetails = $this->mailGunEntry($input);
+                // We do not throw an exception as route is hit via Mailgun
+                // because Mailgun will attempt retrying and we don't want that.
+                return [];
+            }
         }
 
         // There must be at least one file. Otherwise, error.
         if (empty($this->allFilesDetails) === true)
         {
-            // We do not throw an exception in case this route is hit via Mailgun
-            // because Mailgun will attempt retrying and we don't want that.
-            if ($mail === true)
-            {
-                return [];
-            }
-
             throw new Exception\ReconciliationException(
                 'File details are empty.'
             );
@@ -204,23 +207,7 @@ class Orchestrator
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
-        $valid = $this->validator->filterEmails($this->emailDetails);
-
-        if ($valid === false)
-        {
-            // Mailgun is attempting to forward a mail from the wrong recipient.
-            // We still need to return a 200 response, or else Mailgun will
-            // keep retrying.
-            $this->app['trace']->error(
-                TraceCode::RECON_ALERT,
-                [
-                    'error_message' => 'The sender email ID is not whitelisted.',
-                    'email_details' => $this->emailDetails,
-                ]
-            );
-
-            return null;
-        }
+        $this->validator->filterEmails($this->emailDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
@@ -248,7 +235,7 @@ class Orchestrator
             $this->app['trace']->info(
                 TraceCode::RECON_FILE_DETAILS,
                 [
-                    'message' => 'File details of the file being orchestrated.',
+                    'message'      => 'File details of the file being orchestrated.',
                     'file_details' => $fileDetails
                 ]
             );
@@ -365,7 +352,7 @@ class Orchestrator
     {
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::GATEWAY => $input['gateway'],
+            self::GATEWAY          => $input['gateway'],
         ];
 
         return $inputDetails;
@@ -374,11 +361,11 @@ class Orchestrator
     protected function getEmailDetails($input)
     {
         $emailDetails = [
-            'from' => $input['sender'],
-            'subject' => $input['subject'],
-            'to' => $input['recipient'],
+            'from'      => $input['sender'],
+            'subject'   => $input['subject'],
+            'to'        => $input['recipient'],
             'timestamp' => $input['timestamp'],
-            'body' => $input['stripped-text'],
+            'body'      => $input['stripped-text'],
         ];
 
         // Validates that attachments are present in the email.
@@ -471,7 +458,7 @@ class Orchestrator
 
     protected function gatewayEmailIsValid($gateway)
     {
-        $gatewayEmailValidator = 'validate' . ucfirst(strtolower($gateway)) . 'email';
+        $gatewayEmailValidator = 'validate' . title_case($gateway) . 'Email';
 
         $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
 
