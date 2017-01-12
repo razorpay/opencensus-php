@@ -43,6 +43,7 @@ class Service extends Base\Service
     const ALREADY_ARCHIVED = 'Merchant already archived.';
     const ALREADY_SUSPENDED = 'Merchant already suspended.';
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
+    const CANT_ARCHIVE_NON_ACTIVATED = 'Non activated merchants can not be archived.';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
@@ -1477,37 +1478,23 @@ class Service extends Base\Service
         $error = [];
         $merchant = Merchant\Entity::findOrSoftFail($id);
 
+        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
+
         if ($merchant->archived_at !== null)
         {
             $error = [self::ALREADY_ARCHIVED];
         }
 
-        $this->setApiCredentials();
-
-        try
+        if ($merchantDetails->submitted_at === null)
         {
-            $data = $this->api->merchant->fetch($id);
+            return [self::CANT_ARCHIVE_NON_ACTIVATED];
+        }
 
-            // This is a hard fail and we return
-            // immediately
-            if ($data->live === true)
-            {
-                return [self::CANT_ARCHIVE_LIVE];
-            }
-        }
-        catch (\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            // We just ignore this for now
-            $error =[$e->getMessage()];
-        }
-        finally
-        {
-            $this->logActionToSlack($merchant, Actions::ARCHIVED);
-            $merchant->archive();
+        $this->logActionToSlack($merchant, Actions::ARCHIVED);
+        $merchant->archive();
 
-            // Return empty array in case of success
-            return [];
-        }
+        // Return empty array in case of success
+        return [];
     }
 
     public function unarchiveMerchant($id)
