@@ -35,6 +35,10 @@ app.controller('MerchantsCtrl', [
         case '6':
           query.archived   = 1;
           break;
+
+        case '7':
+          query.suspended   = 1;
+          break;
       }
 
       // If we have tags in the list, send them as well

@@ -25,7 +25,8 @@ class Entity extends Base\Entity
         'email',
         'password',
         'activated',
-        'archived_at'
+        'archived_at',
+        'suspended_at'
     );
 
     protected $appends = ['referrer', 'tags'];
@@ -558,6 +559,12 @@ class Entity extends Base\Entity
     public function archive()
     {
         $this->archived_at = time();
+        $this->save();
+    }
+
+    public function suspend()
+    {
+        $this->suspended_at = time();
         $this->save();
     }
 }

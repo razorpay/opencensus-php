@@ -124,6 +124,14 @@
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
         </a>
+        <a href class="list-group-item" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unsuspendMerchant()"
+        >
+          Unsuspend Merchant <i class="pull-right fa fa-archive"></i>
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        >
+          Suspend Merchant <i class="pull-right fa fa-archive"></i>
+        </a>
         <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()" ng-show="admin.permissions.indexOf('edit_merchant_mark_referred') !== -1">
           Mark as Referred <i class="pull-right fa fa-gift"></i>
         </a>

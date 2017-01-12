@@ -228,6 +228,8 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
     Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
     Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
+    Route::get('/admin/merchant/{id}/suspend', 'AdminController@getMerchantSuspend');
+    Route::get('/admin/merchant/{id}/unsuspend', 'AdminController@getMerchantUnsuspend');
     Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
     Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
     Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');
