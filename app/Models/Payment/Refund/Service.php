@@ -6,7 +6,7 @@ use Config;
 use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
-use RZP\Gateway\Netbanking;
+use RZP\Constants;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -111,10 +111,12 @@ class Service extends Base\Service
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
         // Handling netbanking kotak using seperate file.
-        if (($gatewayCode === IFSC::KKBK) and
+        if ((in_array($gatewayCode, Payment\Gateway::$claimsFileToBank)) and
             ($type === Payment\Entity::BANK))
         {
-            $result = (new Netbanking\Kotak\DailyFiles)->generate($from, $to);
+            $class = $this->getDailyFilesNamespace($gatewayCode);
+
+            $result = (new $class($gatewayCode))->generate($from, $to);
 
             return $result;
         }
@@ -125,6 +127,13 @@ class Service extends Base\Service
 
             return $this->generateRefundFile($refunds);
         }
+    }
+
+    protected function getDailyFilesNamespace($gatewayCode)
+    {
+        $entity = Payment\Gateway::$netbankingToGatewayMap[$gatewayCode];
+
+        return Constants\Entity::$namespace[$entity] . '\\DailyFiles';
     }
 
     protected function generateRefundFile($refunds)

@@ -597,7 +597,7 @@ class SavedCardsPaymentCreateTest extends TestCase
             ],
             'response' => [
                 'content' => [
-                    'http_status_code' => 200,
+                    // 'http_status_code' => 200,
                     'version' => 1
                 ],
             ],
