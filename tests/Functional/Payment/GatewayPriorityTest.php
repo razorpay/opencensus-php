@@ -7,20 +7,20 @@ use Redis;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-class GatewayPrioritiesTest extends TestCase
+class GatewayPriorityTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__ . '/helpers/GatewayPrioritiesTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/GatewayPriorityTestData.php';
 
         parent::setUp();
 
         $this->ba->appAuth();
     }
 
-    public function testSaveGatewayPriorities()
+    public function testSaveGatewayPriority()
     {
         Redis::shouldReceive('zadd')
             ->once()
@@ -32,19 +32,7 @@ class GatewayPrioritiesTest extends TestCase
         $this->startTest();
     }
 
-    public function testSaveGatewayPrioritiesWithException()
-    {
-        Redis::shouldReceive('zadd')
-            ->once()
-            ->andReturnUsing(function ()
-            {
-                return -1;
-            });
-
-        $this->startTest();
-    }
-
-    public function testSaveGatewayPrioritiesWithRedisException()
+    public function testSaveGatewayPriorityWithException()
     {
         Redis::shouldReceive('zadd')
                 ->once()
@@ -56,14 +44,14 @@ class GatewayPrioritiesTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchGatewayPriorities()
+    public function testFetchGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.redis_store.mock' => false]);
+        config(['services.store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priorities:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -77,7 +65,7 @@ class GatewayPrioritiesTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priorities:netbanking', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -89,14 +77,14 @@ class GatewayPrioritiesTest extends TestCase
         $this->startTest();
     }
 
-    public function testFetchGatewayPrioritiesWithException()
+    public function testFetchGatewayPriorityWithException()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.redis_store.mock' => false]);
+        config(['services.store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priorities:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -110,7 +98,7 @@ class GatewayPrioritiesTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
                 ->once()
-                ->with('gateway_priorities:netbanking', 0, -1, 'WITHSCORES')
+                ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
                 ->andReturnUsing(function()
                 {
                     throw new \Predis\Response\ServerException('Internal Error');
@@ -119,19 +107,19 @@ class GatewayPrioritiesTest extends TestCase
         $this->startTest();
     }
 
-    public function testRemoveGatewayPriorities()
+    public function testRemoveGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.redis_store.mock' => false]);
+        config(['services.store.mock' => false]);
 
         Redis::shouldReceive('zrem')
             ->once()
-            ->with('gateway_priorities:card', 'hdfc')
+            ->with('gateway_priority:card', ['hdfc'])
             ->andReturn(null);
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priorities:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -145,11 +133,11 @@ class GatewayPrioritiesTest extends TestCase
         $this->startTest();
     }
 
-    public function testRemoveGatewayPrioritiesWithException()
+    public function testRemoveGatewayPriorityWithException()
     {
         Redis::shouldReceive('zrem')
                 ->once()
-                ->with('gateway_priorities:card', 'hdfc')
+                ->with('gateway_priority:card', ['hdfc'])
                 ->andReturnUsing(function()
                 {
                     throw new \Predis\Response\ServerException('Internal Error');
