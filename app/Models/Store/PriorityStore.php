@@ -69,7 +69,12 @@ class PriorityStore extends Base
      */
     public function getSetMembers()
     {
-        return (is_array($this->data) === true) ? array_keys($this->data) : $this->data;
+        if (empty($this->data) === true)
+        {
+            return null;
+        }
+
+        return array_keys($this->data);
     }
 
     public function saveOrFail()
