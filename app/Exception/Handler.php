@@ -98,6 +98,7 @@ class Handler extends ExceptionHandler
         array $extraData = [])
     {
         $traceData = $this->getExceptionDetails($exception, 0, $extraData);
+
         if (($level === null) and
             ($code === null))
         {

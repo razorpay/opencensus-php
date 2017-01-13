@@ -747,7 +747,7 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                      => $response[F::REQUEST_ID],
             E::REASON_CODE              => $response[F::REASON_CODE],
-            E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER],
+            E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER] ?? null,
             E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE] ?? null,
             E::AVS_CODE                 => $ccAuthReply[F::AVS_CODE] ?? null,
             E::CARD_CATEGORY            => $ccAuthReply[F::CARD_CATEGORY] ?? null,
