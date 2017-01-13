@@ -122,15 +122,17 @@ class Orchestrator extends Base\Core
                 // Gets all the file details from the input.
                 $this->allFilesDetails = $this->mailGunEntry($input);
             }
-            catch (Exception\ReconciliationException $e)
+            catch (Exception $e)
             {
                 $this->trace->error(
                     TraceCode::RECON_ALERT,
                     (array) json_decode($e->getMessage())
                 );
 
-                // We do not throw an exception as route is hit via Mailgun
-                // because Mailgun will attempt retrying and we don't want that.
+                $this->trace->traceException($e);
+
+                // We do not throw an exception as route is hit via Mailgun,
+                // and Mailgun will attempt retrying, which we don't want.
                 return [];
             }
         }
