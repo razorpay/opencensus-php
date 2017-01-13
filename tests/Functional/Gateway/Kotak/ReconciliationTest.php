@@ -40,8 +40,8 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate daily settlement entity
-        $this->fetchAndMatchDailySettlement();
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement();
     }
 
     public function testReconciliationFailure()
@@ -70,8 +70,8 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate daily settlement entity
-        $this->fetchAndMatchDailySettlement();
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement();
 
         $this->checkAdjustmentCreated();
 
@@ -202,16 +202,16 @@ class ReconciliationTest extends TestCase
         return $prEntities;
     }
 
-    protected function fetchAndMatchDailySettlement()
+    protected function fetchAndMatchBatchSettlement()
     {
-        $content = $this->getEntities('daily_settlement', [], true);
+        $content = $this->getEntities('batch_settlement', [], true);
 
         $data = array(
             'entity' => 'collection',
             'count' => 1,
             'items' => [
                 [
-                    'entity' => 'daily_settlement',
+                    'entity' => 'batch_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => 4385000,

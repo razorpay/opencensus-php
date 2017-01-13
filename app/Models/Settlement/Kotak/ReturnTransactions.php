@@ -41,7 +41,7 @@ class ReturnTransactions
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->dailySetlRepo = new Settlement\Daily\Repository;
+        $this->batchSetlRepo = new Settlement\Batch\Repository;
     }
 
     public function process($input)
@@ -53,15 +53,15 @@ class ReturnTransactions
 
         $url = $this->saveUploadedFileToAws($returnFile);
 
-        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail();
+        $this->batchSetttlement = $this->batchSetlRepo->getSettlementForTodayOrFail();
 
-        $this->dailySettlement->addUrl('kotak_return_txt', $url);
+        $this->batchSetttlement->addUrl('kotak_return_txt', $url);
 
         $data = $this->parseTextFile($returnFile);
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
 
-        $this->dailySettlement->addUrl('kotak_return_excel', $urlExcel);
+        $this->batchSetttlement->addUrl('kotak_return_excel', $urlExcel);
 
         $data = $this->processReturns($data);
 
@@ -110,8 +110,8 @@ class ReturnTransactions
             $collection->push($setl);
         }
 
-        $this->dailySettlement->returned_at = time();
-        $this->dailySettlement->saveOrFail();
+        $this->batchSetttlement->returned_at = time();
+        $this->batchSetttlement->saveOrFail();
 
         return $collection;
     }

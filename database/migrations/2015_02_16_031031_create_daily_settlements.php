@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Settlement\Entity as Settlement;
-use RZP\Models\Settlement\Daily\Entity as DailySettlement;
+use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 
 class CreateDailySettlements extends Migration
 {
@@ -17,49 +17,49 @@ class CreateDailySettlements extends Migration
      */
     public function up()
     {
-        Schema::create(Table::DAILY_SETTLEMENT, function(Blueprint $table)
+        Schema::create(Table::BATCH_SETTLEMENT, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char(DailySettlement::ID, DailySettlement::ID_LENGTH)
+            $table->char(BatchSettlement::ID, BatchSettlement::ID_LENGTH)
                   ->primary();
 
-            $table->integer(DailySettlement::DATE);
+            $table->integer(BatchSettlement::DATE);
 
-            $table->string(DailySettlement::CHANNEL, 8);
+            $table->string(BatchSettlement::CHANNEL, 8);
 
-            $table->bigInteger(DailySettlement::AMOUNT)
+            $table->bigInteger(BatchSettlement::AMOUNT)
                   ->unsigned();
 
-            $table->integer(DailySettlement::FEES);
+            $table->integer(BatchSettlement::FEES);
 
-            $table->integer(DailySettlement::SERVICE_TAX)
+            $table->integer(BatchSettlement::SERVICE_TAX)
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(DailySettlement::API_FEE);
+            $table->integer(BatchSettlement::API_FEE);
 
-            $table->integer(DailySettlement::GATEWAY_FEE);
+            $table->integer(BatchSettlement::GATEWAY_FEE);
 
-            $table->integer(DailySettlement::SETTLEMENT_COUNT);
+            $table->integer(BatchSettlement::SETTLEMENT_COUNT);
 
-            $table->integer(DailySettlement::TRANSACTION_COUNT);
+            $table->integer(BatchSettlement::TRANSACTION_COUNT);
 
-            $table->text(DailySettlement::URLS);
+            $table->text(BatchSettlement::URLS);
 
-            $table->integer(DailySettlement::INITIATED_AT);
+            $table->integer(BatchSettlement::INITIATED_AT);
 
-            $table->integer(DailySettlement::RECONCILED_AT)
+            $table->integer(BatchSettlement::RECONCILED_AT)
                   ->nullable();
 
-            $table->integer(DailySettlement::RETURNED_AT)
+            $table->integer(BatchSettlement::RETURNED_AT)
                   ->nullable();
 
-            $table->integer(DailySettlement::CREATED_AT);
-            $table->integer(DailySettlement::UPDATED_AT);
+            $table->integer(BatchSettlement::CREATED_AT);
+            $table->integer(BatchSettlement::UPDATED_AT);
 
-            $table->index(DailySettlement::CREATED_AT);
-            $table->index(DailySettlement::DATE);
+            $table->index(BatchSettlement::CREATED_AT);
+            $table->index(BatchSettlement::DATE);
         });
 
         Schema::table(Table::SETTLEMENT, function($table)
@@ -68,8 +68,8 @@ class CreateDailySettlements extends Migration
                   ->nullable();
 
             $table->foreign(Settlement::BATCH_SETTLEMENT_ID)
-                  ->references(DailySettlement::ID)
-                  ->on(Table::DAILY_SETTLEMENT)
+                  ->references(BatchSettlement::ID)
+                  ->on(Table::BATCH_SETTLEMENT)
                   ->on_delete('restrict');
         });
     }
@@ -87,6 +87,6 @@ class CreateDailySettlements extends Migration
                 Table::SETTLEMENT . '_' . SETTLEMENT::BATCH_SETTLEMENT_ID . '_foreign');
         });
 
-        Schema::drop(Table::DAILY_SETTLEMENT);
+        Schema::drop(Table::BATCH_SETTLEMENT);
     }
 }
