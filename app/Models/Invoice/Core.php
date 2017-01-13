@@ -15,6 +15,12 @@ class Core extends Base\Core
 {
     protected $lineItemCore;
 
+    //
+    // Class property to accumulate summary of bulk invoice expiration
+    // and send as api response.
+    //
+    protected $expireInvoicesSummary;
+
     public function __construct()
     {
         parent::__construct();
@@ -275,16 +281,19 @@ class Core extends Base\Core
      */
     public function expireInvoices()
     {
+        $this->expireInvoicesSummary = [
+            'count'     => 0,
+            'ids'       => [],
+            'failedIds' => [],
+        ];
+
         $this->repo->transaction(
             function ()
             {
                 $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvocies();
 
-                $summary = [
-                    'count'     => $invoices->count(),
-                    'ids'       => $invoices->getIds(),
-                    'failedIds' => [],
-                ];
+                $this->expireInvoicesSummary['count'] = $invoices->count();
+                $this->expireInvoicesSummary['ids']   = $invoices->getIds();
 
                 foreach ($invoices as $invoice)
                 {
@@ -296,14 +305,14 @@ class Core extends Base\Core
                     {
                         $this->trace->traceException($e);
 
-                        $summary['failedIds'][] = $invoice->getId();
+                        $this->expireInvoicesSummary['failedIds'][] = $invoice->getId();
                     }
                 }
-
-                $this->trace->info(TraceCode::EXPIRE_INVOICES_CRON, $summary);
             });
 
-        return [];
+        $this->trace->info(TraceCode::EXPIRE_INVOICES_CRON, $this->expireInvoicesSummary);
+
+        return $this->expireInvoicesSummary;
     }
 
     public function fetchStatus(Entity $invoice)
