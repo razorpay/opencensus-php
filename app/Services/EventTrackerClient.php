@@ -275,23 +275,23 @@ class EventTrackerClient extends Base\Core
 
             $method = $payment->getMethod();
 
-            $data['method'] = $method;
+            $properties['method'] = $method;
 
             // note: using individual here instead of getMethodWithDetail
             // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
             if ($method === Method::NETBANKING)
             {
-                $data['bank']  = $payment->getBankName();
+                $properties['bank']  = $payment->getBankName();
             }
 
             if ($method === Method::WALLET)
             {
-                $data['wallet'] = ucfirst($payment->getWallet());
+                $properties['wallet'] = ucfirst($payment->getWallet());
             }
 
             if ($method === Method::UPI)
             {
-                $data['vpa'] = $payment->getVpa();
+                $properties['vpa'] = $payment->getVpa();
             }
 
             $merchant = $payment->merchant;
