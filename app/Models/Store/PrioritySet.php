@@ -13,11 +13,14 @@ use RZP\Exception;
  */
 class PrioritySet extends Base
 {
-    protected $keyPrefix;
+    public function __construct(string $keyPrefix, string $key)
+    {
+        parent::__construct();
 
-    protected $key;
+        $this->key = $key;
 
-    protected $data;
+        $this->keyPrefix = $keyPrefix;
+    }
 
     protected static $delimiter = ':';
 
