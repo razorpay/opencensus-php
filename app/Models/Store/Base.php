@@ -19,17 +19,13 @@ class Base
     // Used to construcy key for data store. To be overriden by child classes
     protected static $delimiter = '';
 
-    function __construct(string $keyPrefix, string $key)
+    public function __construct()
     {
         $app = App::getFacadeRoot();
 
         $this->redis = $app['redis'];
 
         $this->trace = $app['trace'];
-
-        $this->key = $key;
-
-        $this->keyPrefix = $keyPrefix;
     }
 
      public function getKey()
