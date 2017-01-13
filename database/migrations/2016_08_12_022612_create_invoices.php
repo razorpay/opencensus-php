@@ -54,6 +54,9 @@ class CreateInvoices extends Migration
             $table->integer(Entity::EXPIRED_AT)
                   ->nullable();
 
+            $table->integer(Entity::EXPIRED_BY)
+                  ->nullable();
+
             $table->string(Entity::STATUS, 32);
 
             $table->string(Entity::EMAIL_STATUS, 32)
@@ -115,6 +118,7 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
+            $table->index(Entity::EXPIRED_BY);
 
             $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 

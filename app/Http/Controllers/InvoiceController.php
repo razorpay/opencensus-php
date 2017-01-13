@@ -118,6 +118,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function expireInvoice($id)
+    {
+        $invoice = $this->service->expireInvoice($id);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function expireInvoices()
     {
         $summary = $this->service->expireInvoices();

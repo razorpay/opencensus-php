@@ -213,6 +213,35 @@ class Repository extends \Razorpay\Spine\Repository
                     ->get();
     }
 
+    /**
+     * Selcts entity with FOR UPDATE lock.
+     * - Locks entity for update.
+     * - Avoids bad read if other session has already locked the entity for update.
+     *
+     * @param string $id
+     *
+     * @return Entity
+     */
+    public function lockForUpdate($id)
+    {
+        //
+        // Transaction must be active when aquiring this lock, otherwise it will
+        // just not work.
+        //
+        if ($this->isTransactionActive() === false)
+        {
+            throw new Exception\LogicException(
+                'lockForUpdate called when not in transaction.',
+                null,
+                [
+                    'entity_id' => $id,
+                    'entity'    => $this->entity,
+                ]);
+        }
+
+        return $this->newQuery()->lockForUpdate()->findOrFail($id);
+    }
+
     protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
     {
         return $this->newQuery()

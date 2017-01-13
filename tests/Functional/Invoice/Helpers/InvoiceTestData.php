@@ -483,7 +483,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice with id inv_1000000invoice is not issued yet',
+                    'description' => 'Operation not allowed for invoice in draft status.',
                 ],
             ],
             'status_code' => 400,

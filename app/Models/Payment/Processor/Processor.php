@@ -152,7 +152,14 @@ class Processor
 
         // Creates a payment entity in DB with the input values given.
         // Also takes care of fee-bearer customer flow.
-        $payment = $this->createPaymentEntity($input);
+        $this->repo->transaction(function() use ($input)
+        {
+            $payment = $this->createPaymentEntity($input);
+
+            $this->setPayment($payment);
+        });
+
+        $payment = $this->payment;
 
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
@@ -773,6 +780,10 @@ class Processor
 
         $invoice = $this->order->invoice;
 
+        $invoice = $this->repo->invoice->lockForUpdate($invoice->getId());
+
+        $invoice->getValidator()->validateInvoiceNotExpired();
+
         $payment->invoice()->associate($invoice);
     }
 
@@ -1006,16 +1017,14 @@ class Processor
     {
         //
         // Invoice related checks
-        // - Check if now is not past invoice due date
         // - Check if invoice status is ISSUED
         //
 
         $invoice = $payment->invoice;
 
-        $this->repo->reload($invoice);
+        $this->repo->invoice->lockForUpdate($invoice->getId());
 
-        if (($invoice->isIssued() === false) or
-            ($currentTime >= $invoice->getDueBy()))
+        if ($invoice->isIssued() === false)
         {
             $this->trace->debug(
                 TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
@@ -1024,8 +1033,6 @@ class Processor
                     'status'            => $payment->getStatus(),
                     'invoice_id'        => $invoice->getId(),
                     'invoice_status'    => $invoice->getStatus(),
-                    'invoice_due_by'    => $invoice->getDueBy(),
-                    'current_time'      => $currentTime,
                 ]);
 
             return false;

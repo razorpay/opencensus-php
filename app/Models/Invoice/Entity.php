@@ -36,6 +36,12 @@ class Entity extends Base\PublicEntity
     const ISSUED_AT             = 'issued_at';
     const PAID_AT               = 'paid_at';
     const EXPIRED_AT            = 'expired_at';
+
+    //
+    // Past expired_by, invoice status will change to EXPIRED
+    //
+    const EXPIRED_BY            = 'expired_by';
+
     // Email & SMS communication status
     const EMAIL_STATUS          = 'email_status';
     const SMS_STATUS            = 'sms_status';
@@ -83,6 +89,12 @@ class Entity extends Base\PublicEntity
 
     const DEFAULT_DUE_DAYS      = 60;
 
+    //
+    // For now it's defaul value is same across merchants, later it can be
+    // configurale at merchant's level.
+    //
+    const DEFAULT_EXPIRY_DAYS   = 60;
+
     protected static $sign      = 'inv';
 
     protected $entity           = 'invoice';
@@ -99,6 +111,7 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
+        'getInvoiceViewDetails',
     ];
 
     protected $defaults = [
@@ -114,6 +127,7 @@ class Entity extends Base\PublicEntity
         self::ISSUED_AT         => null,
         self::PAID_AT           => null,
         self::EXPIRED_AT        => null,
+        self::EXPIRED_BY        => null,
         self::RECEIPT           => null,
         self::DESCRIPTION       => null,
         self::NOTES             => [],
@@ -139,6 +153,7 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::STATUS,
+        self::EXPIRED_BY,
     ];
 
     // Fields that can be inserted by ->fill() directly
@@ -159,6 +174,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::TYPE,
         self::USER_ID,
+        self::EXPIRED_AT,
+        self::EXPIRED_BY,
         // self::ADJUSTMENT,
         // self::SHIPPING,
         // self::DISCOUNT,
@@ -179,6 +196,8 @@ class Entity extends Base\PublicEntity
         // self::CUSTOMER_NAME,
         // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
+        self::EXPIRED_AT,
+        self::EXPIRED_BY,
         self::SCHEDULED_AT,
         self::ISSUED_AT,
         self::PAID_AT,
@@ -216,6 +235,8 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
+        self::EXPIRED_AT,
+        self::EXPIRED_BY,
         self::ISSUED_AT,
         self::PAID_AT,
         self::SMS_STATUS,
@@ -254,9 +275,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::VIEW_LESS => 'bool',
-        self::AMOUNT    => 'int',
-        self::DATE      => 'int',
+        self::VIEW_LESS  => 'bool',
+        self::AMOUNT     => 'int',
+        self::DATE       => 'int',
+        self::EXPIRED_BY => 'int',
+        self::EXPIRED_AT => 'int',
     ];
 
     // -------------------------------------- Mutators --------------------------------------
@@ -366,6 +389,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::DUE_BY);
     }
 
+    public function getExpiredBy()
+    {
+        return $this->getAttribute(self::EXPIRED_BY);
+    }
+
     public function isDraft()
     {
         return ($this->getStatus() === Status::DRAFT);
@@ -374,6 +402,11 @@ class Entity extends Base\PublicEntity
     public function isIssued()
     {
         return ($this->getStatus() === Status::ISSUED);
+    }
+
+    public function isExpired()
+    {
+        return ($this->getStatus() === Status::EXPIRED);
     }
 
     // -------------------------------------- End Getters --------------------------------------
@@ -581,6 +614,22 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DUE_BY, $dueBy);
     }
 
+    public function generateExpiredBy($input)
+    {
+        if (isset($input[self::EXPIRED_BY]))
+        {
+            $expiredBy = $input[self::EXPIRED_BY];
+        }
+        else
+        {
+            $expiredBy = Carbon::now('Asia/Kolkata')
+                               ->addDays(self::DEFAULT_EXPIRY_DAYS)
+                               ->timestamp;
+        }
+
+        $this->setAttribute(self::EXPIRED_BY, $expiredBy);
+    }
+
     public function generateScheduledAt($input)
     {
         if (empty($input[self::SCHEDULED_AT]) === false)
@@ -667,6 +716,11 @@ class Entity extends Base\PublicEntity
     public function address()
     {
         return $this->belongsTo('RZP\Models\Address\Entity', 'customer_address');
+    }
+
+    public function payments()
+    {
+        return $this->hasMany('RZP\Models\Payment\Entity');
     }
 
     // -------------------------------------- End Relations --------------------------------------

@@ -302,6 +302,7 @@ final class FactoryData
             'status'           => 'issued',
             'due_by'           => $faker->timestamp,
             'scheduled_at'     => $faker->timestamp,
+            'expired_by'       => $faker->timestamp('+2 day'),
             'amount'           => 100000,
             'currency'         => 'INR',
         ]);

@@ -6,7 +6,6 @@ use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
 use RZP\Exception;
-
 use RZP\Models\LineItem;
 
 class Service extends Base\Service
@@ -152,6 +151,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function expireInvoice($id)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->expireInvoice($invoice);
+
+        return $invoice->toArrayPublic();
+    }
+
     public function expireInvoices()
     {
         return $this->core->expireInvoices();
@@ -190,12 +199,7 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($invoiceId);
         $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
 
-        if ($invoice->isDraft())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invoice with id ' . $invoice->getPublicId() . ' is not issued yet'
-            );
-        }
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $merchant = $invoice->merchant;
 

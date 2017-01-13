@@ -14,6 +14,7 @@ use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
 
 class Repository extends Base\Repository
 {
@@ -642,5 +643,45 @@ class Repository extends Base\Repository
     protected function validateWallet($attribute, $value)
     {
         Processor\Wallet::validateExists($value);
+    }
+
+    /**
+     * Gets all  payments which have an expired invoices associated and are
+     * late authorized (and authorized, not captured).
+     *
+     * @return RZP\Models\Base\PublicCollection
+     */
+    public function getLateAuthPaymentsOfExpiredInvoices()
+    {
+        // Raw sql:
+        //
+        // SELECT
+        //     *
+        // FROM
+        //     payments
+        // LEFT JOIN
+        //     invoices ON payments.invoice_id = invoices.id
+        // WHERE
+        //     payments.invoice_id IS NOT NULL
+        //     AND invoices.status = 'expired'
+        //     AND payments.status = 'authorized'
+        //     AND payments.late_authorized = 1
+        //
+
+        $paymentInvoiceIdCol = $this->getAttributeWithTableName(Entity::INVOICE_ID);
+        $paymentStatusCol    = $this->getAttributeWithTableName(Entity::STATUS);
+        $paymentLateAuthCol  = $this->getAttributeWithTableName(Entity::LATE_AUTHORIZED);
+
+        $invoiceMgr          = $this->manager->invoice;
+        $invoiceIdCol        = $invoiceMgr->getAttributeWithTableName(Invoice\Entity::ID);
+        $invoiceStatusCol    = $invoiceMgr->getAttributeWithTableName(Invoice\Entity::STATUS);
+
+        return $this->newQuery()
+                    ->leftJoin(Table::INVOICE, $paymentInvoiceIdCol, '=', $invoiceIdCol)
+                    ->whereNotNull($paymentInvoiceIdCol)
+                    ->where($invoiceStatusCol, '=', Invoice\Status::EXPIRED)
+                    ->where($paymentStatusCol, '=', Status::AUTHORIZED)
+                    ->where($paymentLateAuthCol, '=', '1')
+                    ->get();
     }
 }

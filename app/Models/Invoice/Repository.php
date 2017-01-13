@@ -37,13 +37,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getExpiredInvoices()
+    public function getIssuedAndPastExpiredByInvocies()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
+                    ->lockForUpdate()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::DUE_BY, '<', $currentTime)
+                    ->where(Entity::EXPIRED_BY, '<', $currentTime)
                     ->get();
     }
 

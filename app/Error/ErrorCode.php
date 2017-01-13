@@ -409,6 +409,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
+    const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
 
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';

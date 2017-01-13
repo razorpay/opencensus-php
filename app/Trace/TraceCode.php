@@ -137,7 +137,8 @@ class TraceCode
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
 
-    const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
+    const EXPIRE_INVOICES_CRON                      = 'EXPIRE_INVOICES_CRON';
+    const EXPIRE_INVOICE                            = 'EXPIRE_INVOICE';
     const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                           = 'INVOICE_CREATED';
@@ -155,6 +156,8 @@ class TraceCode
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
     const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+    const EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND      = 'EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND';
+    const EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND_FAIL = 'EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND_FAIL';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';

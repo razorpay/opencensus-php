@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
@@ -26,6 +28,11 @@ class Validator extends Base\Validator
     const CREATE_ISSUED = 'createIssued';
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
+
+    //
+    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    //
+    const MIN_EXPIRY_DAYS = 1;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -53,6 +60,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::EXPIRED_BY          => 'sometimes|integer',
     ];
 
     //
@@ -86,6 +94,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::EXPIRED_BY          => 'sometimes|integer',
     ];
 
     protected static $createIssuedRules = [
@@ -106,6 +115,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
+        Entity::EXPIRED_BY          => 'sometimes|integer',
     ];
 
     protected static $editDraftRules  = [
@@ -124,6 +134,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::EXPIRED_BY          => 'sometimes|integer',
     ];
 
     protected static $editIssuedRules  = [
@@ -351,6 +362,14 @@ class Validator extends Base\Validator
 
                 break;
 
+            case 'getInvoiceViewDetails':
+                $allowedStatuses = [
+                    Status::ISSUED,
+                    Status::PAID,
+                ];
+
+                break;
+
             default:
                 $allowedStatuses = [
                     Status::DRAFT,
@@ -370,12 +389,24 @@ class Validator extends Base\Validator
     /**
      * Validates if an invoice can be issued or not.
      * It has the following checks:
+     *  - Gap between invoice issue and expired by should be greater that a min
      *  - Invoice should have amount set to a non-zero value
      *  - Either description (minimal invoice) or non-zero line items should exist
      */
     public function validateInvoiceIssue()
     {
         $invoice = $this->entity;
+
+        $minExpiredBy = Carbon::now('Asia/Kolkata')->addDays(self::MIN_EXPIRY_DAYS)
+                                                   ->timestamp;
+
+        if ($invoice->getExpiredBy() < $minExpiredBy)
+        {
+            $message = 'expired_by should be at least ' . self::MIN_EXPIRY_DAYS
+                        . ' days in future at the time of issue.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
 
         $type = $invoice->getType();
 
@@ -388,6 +419,16 @@ class Validator extends Base\Validator
             default:
                 $this->validateInvoiceIssueForOtherTypes($invoice);
                 break;
+        }
+    }
+
+    public function validateInvoiceNotExpired()
+    {
+        $invoice = $this->entity;
+
+        if ($invoice->isExpired())
+        {
+            throw new BadRequestValidationFailureException('Invoice is expired.');
         }
     }
 
