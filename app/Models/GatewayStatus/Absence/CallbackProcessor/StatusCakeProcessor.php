@@ -43,20 +43,20 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         {
             $this->validateRequest($input);
 
-            $sStatus = strtoupper($input['Status']);
+            $scStatus = strtoupper($input['Status']);
             
             $status = null;
 
-            if (in_array($sStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
+            if (in_array($scStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
             {
                 $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS,
                                     ['input' => $input]);
 
-                throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $sStatus);
+                throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $scStatus);
 
             }
 
-            $status = ($sStatus === self::STATUS_UP);
+            $status = ($scStatus === self::STATUS_UP);
 
             $data = $this->formatInput($input, $status);
 
@@ -132,7 +132,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
 
-            throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
+            throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' , $issuer, $input);
         }
     }
 
@@ -141,6 +141,21 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
         {
             $issuer = strtoupper($issuer);
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
+
+            if (empty($gateways) === true)
+            {
+                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
+
+                throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer', $issuer, $input);
+            }
+
+            // gateway here is just for reference. What we care about is actually the bank. Gateway is a required
+            // entity and hence required
+            $gateway = $gateways[0];
+
+            return [$gateway, $issuer];
         }
         else
         {
@@ -148,21 +163,6 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
         }
-
-        $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
-
-        if (empty($gateways) === true)
-        {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
-
-            throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer', $issuer, $input);
-        }
-
-        // gateway here is just for reference. What we care about is actually the bank. Gateway is a required
-        // entity and hence required
-        $gateway = $gateways[0];
-
-        return [$gateway, $issuer];
     }
 
     /*
@@ -236,7 +236,6 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
                 throw new Exception\BadRequestValidationFailureException('StatusCake invalid data', $method, $input);
         }
     }
-
 
     protected function formatInput(array $input, int $status)
     {

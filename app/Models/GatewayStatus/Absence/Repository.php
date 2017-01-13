@@ -29,7 +29,7 @@ class Repository extends Base\Repository
         Entity::SOURCE         => 'sometimes|string|max:30'
     );
 
-    const KEYOPERATORMAP = [
+    const keyOperatorMap = [
         Entity::GATEWAY => '=',
         Entity::ISSUER => '=',
         Entity::METHOD => '=',

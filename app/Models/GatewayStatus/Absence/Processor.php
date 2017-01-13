@@ -9,7 +9,12 @@ use RZP\Models\Base;
 
 class Processor extends Base\Core
 {
-    protected $uniqueCheckerKeys = [Entity::GATEWAY, Entity::ISSUER, Entity::METHOD, Entity::FROM];
+    protected $uniqueCheckerKeys = [
+        Entity::GATEWAY,
+        Entity::ISSUER,
+        Entity::METHOD,
+        Entity::FROM
+    ];
     
     public function createAction(array $input)
     {

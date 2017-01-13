@@ -34,7 +34,11 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        Entity::TO, Entity::METHOD, Entity::ISSUER, Entity::CARD_TYPE, Entity::NETWORK
+        Entity::TO,
+        Entity::METHOD,
+        Entity::ISSUER,
+        Entity::CARD_TYPE,
+        Entity::NETWORK
     ];
 
     protected static $editValidators = [
