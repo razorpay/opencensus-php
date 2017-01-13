@@ -477,7 +477,7 @@ class Orchestrator extends Base\Core
         {
             // All the attachment files have to be named as 'attachment-{number}'
             // Validations should take care of this.
-            $file = $input['attachment-'.$attachmentNumber];
+            $file = $input['attachment-' . $attachmentNumber];
 
             // This step is mainly to figure out whether the file is of zip type,
             // since we need to execute a different set of flow ONLY for zip files.

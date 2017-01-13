@@ -72,6 +72,11 @@ class BaseException extends Exception
         return $this->data;
     }
 
+    public function setData($data)
+    {
+        $this->data = $data;
+    }
+
     public function getDataAsString()
     {
         $data = $this->data;

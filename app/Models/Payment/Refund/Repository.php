@@ -117,6 +117,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchGatewayRefundedRefundsWithoutTxns()
+    {
+        $refundAttrs = $this->getAttributeWithTableName('*');
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundGatewayRefundedAttr = $this->getAttributeWithTableName(Entity::GATEWAY_REFUNDED);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->select($refundAttrs)
+                    ->whereNull($refundTransactionIdAttr)
+                    ->whereNotNull($paymentTransactionIdAttr)
+                    ->where($refundGatewayRefundedAttr, '=', 1)
+                    ->with(['payment', 'merchant'])
+                    ->get();
+    }
+
     public function fetchRefundsForGatewayBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway)
     {
         $attrs = $this->getAttributeWithTableName('*');

@@ -270,7 +270,7 @@ class MockGatewayController extends Controller
         $server = $this->gateway->server($driver);
 
         //return $server->authorize($input, $paymentId);
-        
+
         return;
     }
 }

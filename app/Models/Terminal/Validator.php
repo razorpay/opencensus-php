@@ -46,6 +46,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
     ];
 
+    protected static $reassignRules = [
+        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+    ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
@@ -177,6 +181,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
+    protected static $netbankingAxisTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_axis',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -258,8 +268,9 @@ class Validator extends Base\Validator
      * to decide validity.
      *
      * @param array $input
-     * @return void
-     * */
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateNetworkCategory($input)
     {
         if (empty($input[Entity::NETWORK_CATEGORY]) === true)
@@ -272,7 +283,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::NETWORK_CATEGORY,
-                [$input]);
+                [$input[Entity::NETWORK_CATEGORY]]);
             }
     }
 
@@ -297,7 +308,7 @@ class Validator extends Base\Validator
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();
-            $this->validateInput($gateway.'_edit_terminal', $input);
+            $this->validateInput($gateway . '_edit_terminal', $input);
         }
         else
         {
