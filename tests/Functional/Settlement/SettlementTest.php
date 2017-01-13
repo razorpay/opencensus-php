@@ -247,8 +247,11 @@ class SettlementTest extends TestCase
 
         foreach ($payments as $payment)
         {
-            $attrs = ['payment' => $payments[0],
-                      'amount'  => '100'];
+            $attrs = [
+                'payment' => $payments[0],
+                'amount'  => '100'
+            ];
+
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
             $refunds[] = $refund;
         }
@@ -269,7 +272,7 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
 
-        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $dailySetl['id']]);
+        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $batchSetl['id']]);
         $content = $this->makeRequestAndGetContent($request);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
