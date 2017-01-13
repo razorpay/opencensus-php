@@ -360,6 +360,102 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantArchive()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $merchantDetail = $this->fixtures->create('merchant_detail',
+            [
+                'merchant_id' => $merchant['id'],
+                'submitted'   => true,
+                'locked'      => true
+            ]);
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['archived_at']);
+    }
+
+    public function testMerchantArchiveWithNoMerchantDetails()
+    {
+        $this->startTest();
+    }
+
+    public function testMerchantArchiveForAlreadyArchivedMerchant()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
+
+        $this->startTest();
+    }
+
+    public function testMerchantUnarchive()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => '123456789' ]);
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNull($merchant['archived_at']);
+    }
+
+    public function testMerchantUnarchiveForNonArchived()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'archived_at' => NULL ]);
+
+        $this->startTest();
+    }
+
+    public function testMerchantSuspend()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNotNull($merchant['suspended_at']);
+    }
+
+    public function testMerchantSuspendForAlreadySuspendedMerchant()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->startTest();
+    }
+
+    public function testMerchantUnSuspend()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => '123456789' ]);
+
+        $this->startTest();
+
+        $merchant = $this->getEntityById('merchant', $merchant['id'], true);
+
+        $this->assertNull($merchant['suspended_at']);
+    }
+
+    public function testMerchantUnSuspendForAlreadyUnSuspendedMerchant()
+    {
+        $merchant = $this->getLastEntity('merchant', true);
+
+        $this->fixtures->base->editEntity('merchant', $merchant['id'], [ 'suspended_at' => NULL ]);
+
+        $this->startTest();
+    }
+
     public function testAttemptPaymentOnNonLiveMerchant()
     {
         $this->testMerchantDisableLive();
