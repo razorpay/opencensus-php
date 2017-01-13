@@ -120,22 +120,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
             throw new Exception\BadRequestValidationFailureException('StatusCake Token Validation Failure');
         }
-
-        //$this->validateInput($input);
     }
-
-    protected function validateInput(array $input)
-    {
-        $issuer = $this->getIssuer($input);
-
-        if (empty($issuer) === true)
-        {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
-
-            throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' , $issuer, $input);
-        }
-    }
-
+    
     protected function getNetbankingData($issuer, $input)
     {
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))

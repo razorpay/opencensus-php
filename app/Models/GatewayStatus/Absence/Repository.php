@@ -36,7 +36,6 @@ class Repository extends Base\Repository
         Entity::SOURCE => '=',
         Entity::FROM => '<='
     ];
-    
     /**
      * We are using a custom fetch function here since we do not want to override fetch function.
      * @param array $input
