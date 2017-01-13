@@ -29,15 +29,14 @@ class Repository extends Base\Repository
         Entity::SOURCE         => 'sometimes|string|max:30'
     );
 
-    const keyOperatorMap = [
+    const KEY_OPERATOR_MAP = [
         Entity::GATEWAY => '=',
         Entity::ISSUER => '=',
         Entity::METHOD => '=',
         Entity::SOURCE => '=',
         Entity::FROM => '<='
     ];
-
-
+    
     /**
      * We are using a custom fetch function here since we do not want to override fetch function.
      * @param array $input
@@ -58,7 +57,7 @@ class Repository extends Base\Repository
             $to = $input[Entity::FROM];
         }
 
-        $this->buildQuery(self::KEYOPERATORMAP, $input, $query);
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
         if (empty($to) === false)
         {
@@ -76,7 +75,7 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery();
 
-        $this->buildQuery(self::KEYOPERATORMAP, $input, $query);
+        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
         $query->whereNull(Entity::TO);
 
