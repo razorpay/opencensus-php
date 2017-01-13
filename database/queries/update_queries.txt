@@ -1,0 +1,19 @@
+# Please add all entity update related queries here.
+# Fixes freecharge payment auth overwritten due to timeout
+
+UPDATE payments
+SET status='authorized',
+    authorized_at=1484196427,
+    error_code=NULL,
+    error_description=NULL,
+    internal_error_code=NULL
+WHERE id = '7485tQP4q0ZqV2';
+
+# Fixes Kotak payment capture overwritten due to timeout
+
+UPDATE payments
+SET status='captured',
+    error_code=NULL,
+    error_description=NULL,
+    internal_error_code=NULL
+WHERE id = '6zPgaO5CD69eyQ';
