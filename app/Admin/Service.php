@@ -43,7 +43,7 @@ class Service extends Base\Service
     const ALREADY_ARCHIVED = 'Merchant already archived.';
     const ALREADY_SUSPENDED = 'Merchant already suspended.';
     const CANT_ARCHIVE_LIVE = 'Live merchants can not be archived.';
-    const CANT_ARCHIVE_NON_ACTIVATED = 'Non activated merchants can not be archived.';
+    const CANT_ARCHIVE_MERCHANT = 'Merchant should have submitted the form, form should be locked and account should not be activated to archive a merchant';
     const INVALID_CREDENTIALS = 'Username or password is invalid.';
     const PRIMARY_LOGIN_ERROR = "There is no user associated with this account.";
     const PAGE_SIZE = 1000;
@@ -1473,6 +1473,14 @@ class Service extends Base\Service
         return array();
     }
 
+    /**
+     * Merchant Archive
+     * Conditions: merchant_details->submitted != null
+     *             and merchant_details->locked = true
+     *             and merchant->activated = false
+     * @param  [type] $id [description]
+     * @return [type]     [description]
+     */
     public function archiveMerchant($id)
     {
         $error = [];
@@ -1485,17 +1493,18 @@ class Service extends Base\Service
             $error = [self::ALREADY_ARCHIVED];
         }
 
-        if (($merchantDetails->submitted_at !== null) and
+        if(($merchantDetails->submitted_at !== null) and
+            ((int) $merchantDetails->locked === 1) and
             ((int) $merchant->activated === 0))
         {
-            return [self::CANT_ARCHIVE_NON_ACTIVATED];
+            $this->logActionToSlack($merchant, Actions::ARCHIVED);
+            $merchant->archive();
+
+            // Return empty array in case of success
+            return [];
         }
 
-        $this->logActionToSlack($merchant, Actions::ARCHIVED);
-        $merchant->archive();
-
-        // Return empty array in case of success
-        return [];
+        return [self::CANT_ARCHIVE_MERCHANT];
     }
 
     public function unarchiveMerchant($id)
