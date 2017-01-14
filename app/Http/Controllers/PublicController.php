@@ -17,31 +17,36 @@ class PublicController extends Controller
         return View::make('public.account', $data);
     }
 
-    public function getCallbackUrlWithParams() {
+    public function getCallbackUrlWithParams()
+    {
         $allParams = Request::all();
 
         $data = [
-                    // merchant site url, to create "go back to merchant website" link
-                    // this is required because otherwise there is no escape for customer until payment is successful
-                    // this is automatically picked from previous page.
-                    'back' => $allParams['back'],
+            // merchant site url, to create "go back to merchant website" link
+            // this is required because otherwise there is no escape for
+            // customer until payment is successful.
+            // This is automatically picked from previous page.
+            'back' => $allParams['back'],
 
-                    // parameters to be converted into POST. Reason we're going through this maneuver
-                    'params' => json_decode($allParams['params']),
+            // parameters to be converted into POST.
+            // Reason we're going through this maneuver
+            'params' => json_decode($allParams['params']),
 
-                    // actual callback_url, picked from previous page form action
-                    'url' => $allParams['url']
-                ];
+            // actual callback_url, picked from checkout page form action
+            'url' => $allParams['url']
+        ];
 
-        if (isset($allParams['razorpay_payment_id'])) {
+        if (isset($allParams['razorpay_payment_id']))
+        {
             $data['payment_id'] = $allParams['razorpay_payment_id'];
         }
-        else {
-            // fill basic error codes if it error parameter does not exist.
-            if (!isset($allParams['error']) || !isset($allParams['error']['description'])) {
-                $allParams['error'] = [
-                    'description' => 'Something went wrong'
-                ];
+        else
+        {
+            // Fill basic error codes if it error parameter does not exist.
+            if ((isset($allParams['error']) === false) or
+                (isset($allParams['error']['description']) === false))
+            {
+                $allParams['error'] = ['description' => 'Something went wrong'];
             }
 
             // just pass in printable error.
