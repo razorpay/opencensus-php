@@ -234,8 +234,8 @@ class Repository extends \Razorpay\Spine\Repository
                 'lockForUpdate called when not in transaction.',
                 null,
                 [
-                    'entity_id' => $id,
-                    'entity'    => $this->entity,
+                    'id'     => $id,
+                    'entity' => $this->getEntityName(),
                 ]);
         }
 
