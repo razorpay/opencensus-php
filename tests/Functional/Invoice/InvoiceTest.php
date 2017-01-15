@@ -41,6 +41,10 @@ class InvoiceTest extends TestCase
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        $this->assertNotNull($response['expired_by']);
+        $this->assertInternalType('int', $response['expired_by']);
+        $this->assertEquals(5184000, $response['expired_by'] - $response['issued_at']);
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -162,6 +166,17 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvoiceViewWithExpiredInvoice()
+    {
+        $this->fixtures->create('invoice',
+            [
+                'status'   => 'expired',
+                'order_id' => null
+            ]);
+
+        $this->startTest();
+    }
+
     public function testCreateIssuedInvoice()
     {
         $response = $this->startTest();
@@ -249,6 +264,11 @@ class InvoiceTest extends TestCase
     }
 
     public function testCreateInvoiceWithAmount()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateInvoiceWithBadExpiredBy()
     {
         $this->startTest();
     }
@@ -954,6 +974,89 @@ class InvoiceTest extends TestCase
 
         // Clear the mock.
         Carbon::setTestNow();
+    }
+
+    public function testExpireInvoice()
+    {
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testExpirePaidInvoice()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        // Just adds one failed payment too, for testing purposes.
+        $this->fixtures->create('payment:failed',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testExpireInvoiceWithFailedPayment()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        $this->fixtures->create('payment:failed',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testExpireInvoices()
+    {
+        // Issued invoice
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        // Issued invoice and past expired_by
+        $this->createOrder(['id' => '100000001order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000001invoice',
+                'order_id'   => '100000001order',
+                'expired_by' => 1484519217,
+            ]);
+
+        // Draft invoice and past expired_by
+        $this->createDraftInvoice([
+                'id'         => '1000002invoice',
+                'expired_by' => 1484519217
+            ]);
+
+        // Issued invoice, past expired_by but paid
+        $this->createOrder(['id' => '100000003order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000003invoice',
+                'order_id'   => '100000003order',
+                'expired_by' => 1484519217,
+                'status'     => 'paid',
+            ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

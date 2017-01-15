@@ -282,9 +282,9 @@ class Core extends Base\Core
     public function expireInvoices()
     {
         $this->expireInvoicesSummary = [
-            'count'     => 0,
-            'ids'       => [],
-            'failedIds' => [],
+            'count'      => 0,
+            'ids'        => [],
+            'failed_ids' => [],
         ];
 
         $this->repo->transaction(
@@ -305,7 +305,7 @@ class Core extends Base\Core
                     {
                         $this->trace->traceException($e);
 
-                        $this->expireInvoicesSummary['failedIds'][] = $invoice->getId();
+                        $this->expireInvoicesSummary['failed_ids'][] = $invoice->getId();
                     }
                 }
             });

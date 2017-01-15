@@ -494,6 +494,28 @@ return [
         ],
     ],
 
+    'testInvoiceViewWithExpiredInvoice' => [
+        'request' => [
+            'url'       => '/t/inv_1000000invoice',
+            'method'    => 'get',
+            'content'   => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testCreateIssuedInvoice' => [
         'request' => [
             'url'       => '/invoices',
@@ -862,6 +884,44 @@ return [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                     'description' => 'amount can be only sent for ecod or link types.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testCreateInvoiceWithBadExpiredBy' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'currency'      => 'INR',
+                'expired_by'    => 1484512480,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expired_by should be at least 1 days in future at the time of issue.',
                 ],
             ],
             'status_code' => 400,
@@ -2141,6 +2201,102 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
+        ],
+    ],
+
+    'testExpireInvoice' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'customer_id'  => 'cust_100000customer',
+                'short_url'    => 'http://bitly.dev/2eZ11Vn',
+                'notes'        => [],
+                'status'       => 'expired',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+            ],
+        ],
+    ],
+
+    'testExpirePaidInvoice' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/expire',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice expiry failed as payment exists or is in progress.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
+        ],
+    ],
+
+    'testExpireInvoiceWithFailedPayment' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'customer_id'  => 'cust_100000customer',
+                'short_url'    => 'http://bitly.dev/2eZ11Vn',
+                'notes'        => [],
+                'status'       => 'expired',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+            ],
+        ],
+    ],
+
+    'testExpireInvoices' => [
+        'request' => [
+            'url'     => '/invoices/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'count'      => 1,
+                'ids'        => [
+                    '1000001invoice',
+                ],
+                'failed_ids' => [],
+            ],
         ],
     ],
 ];
