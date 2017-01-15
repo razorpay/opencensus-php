@@ -681,7 +681,7 @@ class Service extends Base\Service
                     null,
                     TraceCode::EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND_FAIL,
                     [
-                        'payment_id'    => $authorizedPayment->getId(),
+                        'payment_id' => $paymentForRefund->getId(),
                     ]);
 
                 ++$failCount;
