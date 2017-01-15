@@ -87,7 +87,8 @@ class Validator extends Base\Validator
     {
         $vpaParts = explode('@', $vpa);
 
-        if (count($vpaParts) !== 2)
+        if ((count($vpaParts) !== 2) or
+            (strlen($vpaParts[1]) > 50))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
