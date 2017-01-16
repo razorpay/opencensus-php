@@ -122,7 +122,7 @@ class Orchestrator extends Base\Core
                 // Gets all the file details from the input.
                 $this->allFilesDetails = $this->mailGunEntry($input);
             }
-            catch (Exception $e)
+            catch (\Exception $e)
             {
                 $this->trace->error(
                     TraceCode::RECON_ALERT,
