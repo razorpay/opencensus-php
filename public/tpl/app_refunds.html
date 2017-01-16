@@ -5,7 +5,7 @@
       Refunds ({{mode + " Mode"| titlecase }})
       <spinner class="inline"></spinner>
 
-      <a ng-show="user.tags.indexOf('Batchrefunds') != -1" ui-sref="app.batch.upload()" class="btn btn-info pull-right">
+      <a ng-show="user.tags.indexOf('Batchrefunds') != -1"  my-role="owner manager operations admin finance" ui-sref="app.batch.upload()" class="btn btn-info pull-right">
           Batch Refunds
       </a>
 
