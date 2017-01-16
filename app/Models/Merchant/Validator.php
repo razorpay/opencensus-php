@@ -251,7 +251,7 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
         }
 
-        $validator = 'validate' . $action;
+        $validator = 'validate' .ucfirst($action);
 
         $this->$validator();
     }
