@@ -79,7 +79,7 @@ class Authenticate
         }
         else
         {
-            return ApiResponse::routeNotFound();
+            $ret = ApiResponse::routeNotFound();
         }
 
         if ($ret !== null)
@@ -92,6 +92,11 @@ class Authenticate
         if ($ret !== null)
         {
             return $ret;
+        }
+
+        if (in_array($route, Route::DISABLED_ROUTES, true))
+        {
+            return ApiResponse::routeDisabled();
         }
 
         return $next($request);
