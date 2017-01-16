@@ -147,7 +147,7 @@ class Validator extends Base\Validator
 
             $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
 
-            if (in_array($gateway, $gateways) === false)
+            if (in_array($gateway, $gateways, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Issuer: '. $issuer .' is not supported for gateway: '.$gateway
@@ -166,7 +166,7 @@ class Validator extends Base\Validator
             );
         }
 
-        if (($method === Method::WALLET) and (in_array($issuer, Gateway::$methodMap[Method::WALLET]) === false))
+        if (($method === Method::WALLET) and (in_array($issuer, Gateway::$methodMap[Method::WALLET], true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Issuer: '. $issuer. ' is not a valid Wallet'
@@ -187,7 +187,7 @@ class Validator extends Base\Validator
 
         // card type is not applicable for netbanking
         if ((strtolower($method) === Method::CARD) and
-            (in_array(strtolower($cardType), ['debit', 'credit']) === false))
+            (in_array(strtolower($cardType), ['debit', 'credit'], true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Card Type: '.$cardType. ' is not supported'
@@ -219,7 +219,7 @@ class Validator extends Base\Validator
 
         $cardNetWork = Gateway::$cardNetworkMap[$gateway];
 
-        if ((strtolower($method) === Method::CARD) and (in_array($network, $cardNetWork) === false))
+        if ((strtolower($method) === Method::CARD) and (in_array($network, $cardNetWork, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                   'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: '.$gateway
@@ -233,7 +233,7 @@ class Validator extends Base\Validator
 
         $method = strtolower($input[Entity::METHOD]);
 
-        if (in_array($method, $methods) === false)
+        if (in_array($method, $methods, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Method: '. $method . ' is not valid'
