@@ -14,7 +14,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priority/card',
+            'url' => '/gateway/priorities/card',
             'method' => 'POST'
         ],
         'response' => [
@@ -38,7 +38,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priority/card',
+            'url' => '/gateway/priorities/card',
             'method' => 'POST'
         ],
         'response' => [
@@ -57,7 +57,7 @@ return [
     ],
     'testFetchGatewayPriority' => [
         'request' => [
-            'url' => '/gateway/priority',
+            'url' => '/gateway/priorities',
             'method' => 'GET'
         ],
         'response' => [
@@ -78,7 +78,7 @@ return [
     ],
     'testFetchGatewayPriorityWithException' => [
         'request' => [
-            'url' => '/gateway/priority',
+            'url' => '/gateway/priorities',
             'method' => 'GET'
         ],
         'response' => [
@@ -97,8 +97,8 @@ return [
     'testRemoveGatewayPriority' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priority/card',
-            'method' => 'DELETE'
+            'url' => '/gateway/priorities/card',
+            'method' => 'PATCH'
         ],
         'response' => [
             'content' => [
@@ -114,8 +114,8 @@ return [
     'testRemoveGatewayPriorityWithException' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priority/card',
-            'method' => 'DELETE'
+            'url' => '/gateway/priorities/card',
+            'method' => 'PATCH'
         ],
         'response' => [
             'content' => [
@@ -140,7 +140,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priority/wallet',
+            'url' => '/gateway/priorities/wallet',
             'method' => 'POST'
         ],
         'response' => [
@@ -166,7 +166,7 @@ return [
                 'cybersource' => '20',
                 'first_data'  => '10'
             ],
-            'url' => '/gateway/priority/netbanking',
+            'url' => '/gateway/priorities/netbanking',
             'method' => 'POST'
         ],
         'response' => [
