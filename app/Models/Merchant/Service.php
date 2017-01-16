@@ -515,102 +515,15 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    protected function suspend($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $this->trace->info(TraceCode::MERCHANT_SUSPEND, $merchant->toArrayPublic());
-
-        if ($merchant->isSuspended() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
-        }
-
-        $merchant->suspend();
-
-        $this->repo->saveOrFail($merchant);
-
-        return $merchant->toArrayPublic();
-    }
-
-    protected function unsuspend($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $this->trace->info(TraceCode::MERCHANT_UNSUSPEND, $merchant->toArrayPublic());
-
-        if ($merchant->isSuspended() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
-        }
-
-        $merchant->unsuspend();
-
-        $this->repo->saveOrFail($merchant);
-
-        return $merchant->toArrayPublic();
-    }
-
     public function action($id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        (new Merchant\Validator)->validateInput('action', $input);
+        $merchant->getValidator()->validateInput('action', $input);
 
         $function = $input['action'];
-        return $this->$function($id);
-    }
 
-    protected function archive($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $this->trace->info(TraceCode::MERCHANT_ARCHIVE, $merchant->toArrayPublic());
-
-        if ($merchant->isArchived() === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED);
-        }
-
-        $merchantDetails = $merchant->merchantDetail;
-
-        if ($merchantDetails === null)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
-        }
-
-        if (($merchantDetails->isSubmitted() === true) and
-            ($merchantDetails->isLocked() === true) and
-            ($merchant->isActivated() === false))
-        {
-            $merchant->archive();
-
-            $this->repo->saveOrFail($merchant);
-
-            return $merchant->toArrayPublic();
-        }
-
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED);
-    }
-
-    protected function unarchive($id)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($id);
-
-        $this->trace->info(TraceCode::MERCHANT_UNARCHIVE, $merchant->toArrayPublic());
-
-        if ($merchant->isArchived() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED);
-        }
-
-        $merchant->unarchive();
+        $merchant->$function();
 
         $this->repo->saveOrFail($merchant);
 
