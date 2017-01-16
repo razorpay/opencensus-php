@@ -41,7 +41,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'confirm_token'];
 
     /**
      * The attributes that are mass assignable.
@@ -56,6 +56,8 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      * @var array
      */
     protected static $generators = array('id','confirm_token');
+
+    protected $appends = ['confirmed'];
 
     /**
      * Generates Uuid ID
@@ -120,6 +122,11 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function getCurrentMerchantAttribute()
     {
         return $this->currentMerchant();
+    }
+
+    public function getConfirmToken()
+    {
+        return $this->confirm_token;
     }
 
     /**
@@ -351,5 +358,10 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public static function getUserForConfirmation($token)
     {
         return self::where('confirm_token', '=', $token)->first();
+    }
+
+    public function getConfirmedAttribute()
+    {
+        return ($this->confirm_token === null);
     }
 }
