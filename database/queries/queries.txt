@@ -1225,7 +1225,7 @@ ALTER TABLE payments
 =======
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
-    ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
+    ADD COLUMN acquirer VARCHAR(20) AFTER amount,
     MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
 
 ----
