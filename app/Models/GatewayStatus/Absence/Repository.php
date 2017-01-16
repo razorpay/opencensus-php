@@ -41,8 +41,8 @@ class Repository extends Base\Repository
     {
         return false;
     }
-
-    protected function buildFetchQueryAdditional($params, $query)
+    
+    protected function addQueryParamDowntimeTo($query, $params)
     {
         // The default value for Entity::DOWNTIME_TO is null. This is because we do not necessarily know
         // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
