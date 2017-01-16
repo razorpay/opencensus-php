@@ -1,0 +1,131 @@
+<?php
+
+namespace RZP\Models\Settlement\Icici;
+
+use Carbon\Carbon;
+use Mail;
+use phpseclib\Crypt;
+
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\FileStore;
+
+class NodalAccount extends Base\Core
+{
+    // used in icici AES encrypter tool
+    CONST ENCRYPTION_KEY = "1836204826394167";
+
+    protected $date = null;
+
+    protected $queue = null;
+
+    protected $mail = null;
+
+    protected $id = null;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->date = Carbon::today('Asia/Kolkata');
+
+        $this->mail = \Mail::getFacadeRoot();
+
+        $this->id = Base\UniqueIdEntity::generateUniqueId();
+    }
+
+    public function generateSettlementFile($amount)
+    {
+        $plainText = $this->getPlainText($amount);
+
+        $encryptedText = $this->getEncryptedText($plainText);
+
+        $filePath = $this->createFile($encryptedText);
+
+        $this->sendIciciSettlementMail($filePath);
+    }
+
+    protected function getPlainText($amount)
+    {
+        $values = [
+            "N",
+            "Razorpay Software Pvt Ltd",
+            "7911547334",
+            "KKBK0000958",
+            sprintf('%0.2f', $amount),
+            $this->date->format('d/m/Y'),
+            "000205025290",
+            "Nodal Nodal Transfer",
+            $this->id,
+            "",
+            ""
+        ];
+
+        $csv = implode(',', $values);
+
+        return $csv;
+    }
+
+    protected function getEncryptedText($plainText)
+    {
+        $cipher = new Crypt\AES();
+
+        $cipher->setKey(self::ENCRYPTION_KEY);
+
+        $encryptedText = $cipher->encrypt($plainText);
+
+        return $encryptedText;
+    }
+
+    protected function createFile($text)
+    {
+        $fileName = 'icici/outgoing/Payout_' . $this->date->format('dmY') . '_' . $this->id;
+
+        $metadata = $this->getH2HMetadata();
+
+        $creator = new FileStore\Creator;
+
+        $file = $creator->extension(FileStore\Format::ENC)
+                        ->content($text)
+                        ->name($fileName)
+                        ->store(FileStore\Store::S3)
+                        ->type(FileStore\Type::ICICI_NODAL_SETTLEMENT)
+                        ->id($this->id)
+                        ->metadata($metadata)
+                        ->save()
+                        ->get();
+
+        return $file['local_file_path'];
+    }
+
+    protected function getH2HMetadata()
+    {
+        return [
+            'gid'   => '10000',
+            'uid'   => '10001',
+            'mtime' => Carbon::now()->timestamp,
+            'mode'  => '33188'
+        ];
+    }
+
+    protected function sendIciciSettlementMail(string $fullPath)
+    {
+        $data['file'] = $fullPath;
+        $data['body'] = 'Please find attached settlement file for icici';
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($fullPath)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('settlements@razorpay.com', 'ICICI Settlement File');
+
+            $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+            $message->subject("Icici Settlement files for $today");
+
+            $message->to($emails);
+
+            $message->attach($fullPath);
+        });
+    }
+}
