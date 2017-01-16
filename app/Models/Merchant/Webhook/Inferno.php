@@ -121,6 +121,8 @@ class Inferno
 
         $data['event'] = $event['event'];
 
+        $data['payment_id'] = $this->getPaymentIdFromEventData($event);
+
         if ($type === 'failure')
         {
             $subject .= 'Webhook failed for ' . $subjectName;
@@ -145,6 +147,18 @@ class Inferno
 
             $message->to($emails);
         });
+    }
+
+    protected function getPaymentIdFromEventData(array $eventData)
+    {
+        $paymentEvents = ['payment.authorized', 'payment.failed', 'payment.captured'];
+
+        if (in_array($eventData['event'], $paymentEvents, true) === true)
+        {
+            return $eventData['payload']['payment']['entity']['id'];
+        }
+
+        return null;
     }
 
     public function getRequestHeaders($hmac)
