@@ -215,6 +215,9 @@ class CybersourceGatewayTest extends TestCase
     {
         $payment = $this->doAuthPayment();
 
+        $this->fixtures->base->editEntity(
+            'payment', $payment['razorpay_payment_id'], ['authorized_at' => strtotime('-1 min')]);
+
         $response = $this->verifyPayment($payment['razorpay_payment_id']);
 
         $this->assertSame($response['payment']['verified'], 1);
@@ -226,6 +229,9 @@ class CybersourceGatewayTest extends TestCase
     public function testGatewayAuthorizedPaymentMatchVerify()
     {
         $payment = $this->doAuthPayment();
+
+        $this->fixtures->base->editEntity(
+            'payment', $payment['razorpay_payment_id'], ['authorized_at' => strtotime('-1 min')]);
 
         $this->mockServerContentFunction(function(&$content, $action = null)
         {

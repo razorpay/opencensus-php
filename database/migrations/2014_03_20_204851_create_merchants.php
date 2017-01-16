@@ -39,6 +39,12 @@ class CreateMerchants extends Migration
             $table->integer(Merchant::ACTIVATED_AT)
                   ->nullable();
 
+            $table->integer(Merchant::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::SUSPENDED_AT)
+                  ->nullable();
+
             $table->tinyInteger(Merchant::LIVE)
                   ->default(0);
 
