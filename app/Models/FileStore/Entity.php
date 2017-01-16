@@ -161,6 +161,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOCATION, $location);
     }
 
+    public function setMetadata($metadata)
+    {
+        $this->setAttribute(self::METADATA, $metadata);
+    }
+
     // ----------------------- Setters Ends----------------------------------------
 
     // ----------------------- Relations -----------------------------------------
@@ -219,6 +224,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getMetadata()
+    {
+        return $this->getAttribute(self::METADATA);
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()
@@ -232,4 +242,35 @@ class Entity extends Base\PublicEntity
 
         return $password;
     }
+
+    protected function getMetadataAttribute()
+    {
+        $metadata = $this->attributes[self::METADATA];
+
+        if ($metadata === null)
+        {
+            $metadata = [];
+        }
+        else
+        {
+            $metadata = json_decode($metadata, true);
+        }
+
+        return $metadata;
+    }
+
+    protected function setMetadataAttribute($metadata)
+    {
+        if ($metadata === null)
+        {
+            $this->attributes[self::METADATA] = [];
+        }
+        else
+        {
+            $this->attributes[self::METADATA] = json_encode($metadata);
+        }
+
+        return $metadata;
+    }
+
 }
