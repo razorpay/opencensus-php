@@ -45,6 +45,11 @@ class Authenticate
 
         $ret = null;
 
+        if (in_array($route, Route::DISABLED_ROUTES, true))
+        {
+            return ApiResponse::routeDisabled();
+        }
+
         if (in_array($route, Route::$internal, true))
         {
             $ret = $ba->appAuth();
@@ -92,11 +97,6 @@ class Authenticate
         if ($ret !== null)
         {
             return $ret;
-        }
-
-        if (in_array($route, Route::DISABLED_ROUTES, true))
-        {
-            return ApiResponse::routeDisabled();
         }
 
         return $next($request);
