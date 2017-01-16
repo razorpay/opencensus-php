@@ -1530,6 +1530,9 @@ WHERE id='6gysDIemK9qx3W';
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
 
+ALTER TABLE merchants
+    ADD COLUMN archived_at INT DEFAULT NULL AFTER activated_at,
+    ADD COLUMN suspended_at INT DEFAULT NULL AFTER archived_at;
 
 ----------------------------------- TODO ---------------------------------------
 
@@ -1538,3 +1541,4 @@ ALTER TABLE merchant_banks
 
 ALTER TABLE payments
     ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded;
+

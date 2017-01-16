@@ -351,6 +351,11 @@ class TraceCode
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
 
+    const MERCHANT_ARCHIVE                          = 'MERCHANT_ARCHIVE';
+    const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
+    const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
+    const MERCHANT_UNSUSPEND                        = 'MERCHANT_UNSUSPEND';
+
     const PRICING_PLAN_CREATE_ATTEMPT               = 'PRICING_PLAN_CREATE_ATTEMPT';
     const PRICING_PLAN_CREATE_SUCCESS               = 'PRICING_PLAN_CREATE_SUCCESS';
     const PRICING_PLAN_RULE_ADD_ATTEMPT             = 'PRICING_PLAN_RULE_ADD_ATTEMPT';

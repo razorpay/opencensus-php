@@ -479,6 +479,12 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
         }
 
+        if ($merchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
+        }
+
         $merchant->liveEnable();
 
         $this->repo->saveOrFail($merchant);
@@ -503,6 +509,21 @@ class Service extends Base\Service
         }
 
         $merchant->liveDisable();
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function action($id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->getValidator()->validateInput('action', $input);
+
+        $function = $input['action'];
+
+        $merchant->$function();
 
         $this->repo->saveOrFail($merchant);
 
