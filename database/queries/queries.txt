@@ -1216,18 +1216,19 @@ ALTER TABLE schedules
     ADD COLUMN deleted_at INTEGER AFTER updated_at;
 
 ---
-ALTER TABLE gateway_status_absence ADD method varchar(30) NOT NULL AFTER id;
-ALTER TABLE gateway_status_absence ADD issuer varchar(50) DEFAULT NULL AFTER gateway;
-ALTER TABLE gateway_status_absence ADD card_type varchar(10) DEFAULT NULL AFTER issuer;
-ALTER TABLE gateway_status_absence ADD network varchar(30) DEFAULT NULL AFTER card_type;
-ALTER TABLE gateway_status_absence ADD terminal_id char(14) DEFAULT NULL AFTER network;
-ALTER TABLE gateway_status_absence ADD reason_code varchar(30) NOT NULL AFTER terminal_id;
-ALTER TABLE gateway_status_absence ADD comment text DEFAULT NULL AFTER reason_code;
-ALTER TABLE gateway_status_absence ADD partial tinyint(4) NOT NULL DEFAULT '0' AFTER scheduled;
-ALTER TABLE gateway_status_absence ADD source varchar(30) AFTER partial;
-ALTER TABLE gateway_status_absence ADD CONSTRAINT `gateway_status_absence_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `terminals` (`id`);
-ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_issuer_index` (`issuer`);
-ALTER TABLE gateway_status_absence ADD KEY `gateway_status_absence_method_index` (`method`);
+ALTER TABLE gateway_status_absence
+    ADD COLUMN method varchar(30) NOT NULL AFTER id,
+    ADD COLUMN issuer varchar(50) DEFAULT NULL AFTER gateway,
+    ADD COLUMN card_type varchar(10) DEFAULT NULL AFTER issuer,
+    ADD COLUMN network varchar(30) DEFAULT NULL AFTER card_type,
+    ADD COLUMN terminal_id char(14) DEFAULT NULL AFTER network,
+    ADD COLUMN reason_code varchar(30) NOT NULL AFTER terminal_id,
+    ADD COLUMN comment text DEFAULT NULL AFTER reason_code,
+    ADD COLUMN partial tinyint(4) NOT NULL DEFAULT '0' AFTER scheduled,
+    ADD COLUMN source varchar(30) AFTER partial,
+    ADD CONSTRAINT `gateway_status_absence_terminal_id_foreign` FOREIGN KEY (`terminal_id`) REFERENCES `terminals` (`id`),
+    ADD KEY `gateway_status_absence_issuer_index` (`issuer`),
+    ADD KEY `gateway_status_absence_method_index` (`method`);
 ----
 ALTER TABLE adjustment
     ADD COLUMN settlement_id VARCHAR(14) AFTER transaction_id,

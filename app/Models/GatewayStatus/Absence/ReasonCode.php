@@ -25,6 +25,7 @@ class ReasonCode
 
     const SOURCE_STATUSCAKE  = 'STATUSCAKE';
     const SOURCE_BILLDESK    = 'BILLDESK';
+    const SOURCE_BANK        = 'BANK';
     const SOURCE_OTHER       = 'OTHER';
 
     protected static $sources = [

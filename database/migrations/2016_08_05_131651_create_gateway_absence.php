@@ -46,8 +46,7 @@ class CreateGatewayAbsence extends Migration
 
             $table->integer(AbsenceEntity::DOWNTIME_FROM);
 
-            // TO is optional, but we still need a value here
-            // keeping this to max time possible ~ Infinite time
+            // TO is optional
             $table->integer(AbsenceEntity::DOWNTIME_TO)
                   ->nullable();
 
