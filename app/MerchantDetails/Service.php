@@ -449,6 +449,7 @@ class Service extends Base\Service
         unset($input['bank_account_number_confirmation']);
         unset($input['locked']);
         unset($input['activation_progress']);
+        unset($input['agree_terms']);
 
         if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
         {
