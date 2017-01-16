@@ -624,8 +624,6 @@ class Service extends Base\Service
     {
         $merchant = Merchant\Entity::findOrSoftFail($id);
 
-        $merchantDetails = MerchantDetails\Entity::findorfail($id);
-
         $this->setApiCredentials();
 
         try
@@ -639,8 +637,9 @@ class Service extends Base\Service
             return $merchant;
         }
 
+        $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
-        $data['merchant_details'] = $merchantDetails->toArray();
+        $data['merchant_details'] = $merchantDetail;
 
         $merchant = $merchant->toArray();
 
@@ -649,15 +648,15 @@ class Service extends Base\Service
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = array(
-            'archived_at'       => $merchant['archived_at'],
-            'suspended_at'       => $merchant['suspended_at'],
-            'steps_finished'    => $merchantDetails['steps_finished'],
-            'locked'            => $merchantDetails['locked'],
-            'submitted'         => $merchantDetails['submitted'],
-            'tags'              => $merchant['tags'],
-            'submitted_at'      => $merchantDetails['submitted_at'],
+            'archived_at'         => $merchant['archived_at'],
+            'suspended_at'        => $merchant['suspended_at'],
+            'steps_finished'      => $merchantDetail['steps_finished'],
+            'locked'              => $merchantDetail['locked'],
+            'submitted'           => $merchantDetail['submitted'],
+            'tags'                => $merchant['tags'],
+            'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated'],
-            'referrer'          => $merchant['referrer'],
+            'referrer'            => $merchant['referrer'],
         ) + $data;
 
         return $response;

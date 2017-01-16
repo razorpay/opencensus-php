@@ -39,7 +39,7 @@ angular.module('app.services', [])
         $http.get('/user', { ignoreErrors: true }).success(function (data) {
           _identity = data.data;
           if (data.data.steps_finished) {
-            _identity.activation_progress = parseInt(data.data.steps_finished.length * 100 / 5);
+            _identity.activation_progress = data.data.activation_progress;
           }
           _authenticated = data.success === true;
           if (_authenticated)

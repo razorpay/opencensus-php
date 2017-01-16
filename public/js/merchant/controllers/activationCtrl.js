@@ -52,10 +52,10 @@ app.controller('ActivationCtrl', [
     $scope.onFileSelect = saveFile;
     $scope.genOperation = function (flag) {
       if (flag) {
-        $scope.data[2].business_operation_address = $scope.data[2].business_registered_address;
-        $scope.data[2].business_operation_state = $scope.data[2].business_registered_state;
-        $scope.data[2].business_operation_city = $scope.data[2].business_registered_city;
-        $scope.data[2].business_operation_pin = $scope.data[2].business_registered_pin;
+        $scope.data.business_operation_address = $scope.data.business_registered_address;
+        $scope.data.business_operation_state = $scope.data.business_registered_state;
+        $scope.data.business_operation_city = $scope.data.business_registered_city;
+        $scope.data.business_operation_pin = $scope.data.business_registered_pin;
       }
     };
     getData();
@@ -66,15 +66,15 @@ app.controller('ActivationCtrl', [
         angular.forEach(steps_finished, function (value) {
           $scope.check[value] = true;
         });
-        angular.forEach(data.data.data, function (value, key) {
+        angular.forEach(data.data, function (value, key) {
           $scope.data[key] = value;
         });
-        $scope.data[4].bank_account_number_confirmation = $scope.data[4].bank_account_number;
+        $scope.data.bank_account_number_confirmation = $scope.data.bank_account_number;
 
         angular.forEach(data.data.files, function (value, key) {
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
-        if (parseInt(data.data.submitted)) {
+        if (data.data.submitted === true) {
           user.identity().then(function (data) {
             if (data.activated == 1) {
               $scope.formAlerts.addAlert('info', 'Your account is already activated');
@@ -82,7 +82,7 @@ app.controller('ActivationCtrl', [
               $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
           });
         }
-        if (data.data.locked === 1) {
+        if (data.data.locked === true) {
           $scope.locked = true;
         }
 
@@ -91,18 +91,18 @@ app.controller('ActivationCtrl', [
         // ====
 
         if ($scope.org === 'hdfc') {
-          if (!$scope.data[4].bank_branch_ifsc) {
-            $scope.data[4].bank_branch_ifsc = 'HDFC';
+          if (!$scope.data.bank_branch_ifsc) {
+            $scope.data.bank_branch_ifsc = 'HDFC';
           }
 
-          if (!$scope.data[4].bank_account_type) {
-            $scope.data[4].bank_account_type = 'Current';
+          if (!$scope.data.bank_account_type) {
+            $scope.data.bank_account_type = 'Current';
           }
         }
       });
     }
     function saveStep(step) {
-      var data = $scope.data[step];
+      var data = $scope.data;
       if (step === 4) {
         if (data.bank_account_number !== data.bank_account_number_confirmation) {
           $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
@@ -191,7 +191,7 @@ app.controller('ActivationCtrl', [
       return (input.value !== notADateValue);
     }
     function submitForm(step) {
-      if ($scope.data[6].agree_terms !== true) {
+      if ($scope.data.agree_terms !== true) {
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;
       }
