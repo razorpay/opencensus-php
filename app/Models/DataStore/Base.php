@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Store;
+namespace RZP\Models\DataStore;
 
 use App;
 
@@ -28,7 +28,7 @@ class Base
         $this->trace = $app['trace'];
     }
 
-     public function getKey()
+    public function getKey()
     {
         return $this->key;
     }
@@ -40,7 +40,7 @@ class Base
 
     public function generateStoreKey()
     {
-        return  $this->keyPrefix . static::$delimiter . $this->key;
+        return $this->keyPrefix . static::$delimiter . $this->key;
     }
 
     public function getData()

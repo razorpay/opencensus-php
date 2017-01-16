@@ -47,7 +47,7 @@ class GatewayPriorityTest extends TestCase
     public function testFetchGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.store.mock' => false]);
+        config(['services.data_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
@@ -80,7 +80,7 @@ class GatewayPriorityTest extends TestCase
     public function testFetchGatewayPriorityWithException()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.store.mock' => false]);
+        config(['services.data_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
@@ -110,7 +110,7 @@ class GatewayPriorityTest extends TestCase
     public function testRemoveGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.store.mock' => false]);
+        config(['services.data_store.mock' => false]);
 
         Redis::shouldReceive('zrem')
             ->once()

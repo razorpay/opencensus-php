@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Store;
+namespace RZP\Models\DataStore;
 
 use Predis\PredisException;
 
