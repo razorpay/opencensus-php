@@ -241,30 +241,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postArchive($id)
+    public function putAction($id)
     {
-        $data = (new Merchant\Service)->archive($id);
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function postUnarchive($id)
-    {
-        $data = (new Merchant\Service)->unarchive($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postSuspend($id)
-    {
-        $data = (new Merchant\Service)->suspend($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postUnsuspend($id)
-    {
-        $data = (new Merchant\Service)->unsuspend($id);
+        $data = (new Merchant\Service)->action($id, $input);
 
         return ApiResponse::json($data);
     }

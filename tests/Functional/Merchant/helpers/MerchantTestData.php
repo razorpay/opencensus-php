@@ -1236,9 +1236,11 @@ return [
 
     'testMerchantArchive' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/archive',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1250,9 +1252,11 @@ return [
 
     'testMerchantArchiveWithNoMerchantDetails' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/archive',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1271,9 +1275,11 @@ return [
 
     'testMerchantArchiveForAlreadyArchivedMerchant' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/archive',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1292,9 +1298,11 @@ return [
 
     'testMerchantUnarchive' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/unarchive',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'unarchive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1306,9 +1314,11 @@ return [
 
     'testMerchantUnarchiveForNonArchived' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/unarchive',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'unarchive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1327,9 +1337,11 @@ return [
 
     'testMerchantSuspend' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/suspend',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'suspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1343,9 +1355,11 @@ return [
 
     'testMerchantSuspendForAlreadySuspendedMerchant' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/suspend',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'suspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1364,9 +1378,11 @@ return [
 
     'testMerchantUnSuspend' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/unsuspend',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1380,9 +1396,11 @@ return [
 
     'testMerchantUnSuspendForAlreadyUnSuspendedMerchant' => [
         'request' => [
-            'content' => [],
-            'url' => '/merchants/1cXSLlUU8V9sXl/unsuspend',
-            'method' => 'POST',
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
         ],
         'response' => [
             'content' => [
@@ -1396,6 +1414,29 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED,
+        ],
+    ],
+
+    'testMerchantUndefinedAction' => [
+        'request' => [
+            'content' => [
+                'action' => 'hello123'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
 ];

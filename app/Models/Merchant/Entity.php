@@ -55,6 +55,7 @@ class Entity extends Base\PublicEntity
      */
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
+    const ACTION                    = 'action';
 
     protected $entity = 'merchant';
 

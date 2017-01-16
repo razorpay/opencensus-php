@@ -515,7 +515,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function suspend($id)
+    protected function suspend($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -534,7 +534,7 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function unsuspend($id)
+    protected function unsuspend($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -553,7 +553,17 @@ class Service extends Base\Service
         return $merchant->toArrayPublic();
     }
 
-    public function archive($id)
+    public function action($id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        (new Merchant\Validator)->validateInput('action', $input);
+
+        $function = $input['action'];
+        return $this->$function($id);
+    }
+
+    protected function archive($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
@@ -588,7 +598,7 @@ class Service extends Base\Service
             ErrorCode::BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED);
     }
 
-    public function unarchive($id)
+    protected function unarchive($id)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 

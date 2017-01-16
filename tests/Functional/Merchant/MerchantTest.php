@@ -456,6 +456,11 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantUndefinedAction()
+    {
+        $this->startTest();
+    }
+
     public function testAttemptPaymentOnNonLiveMerchant()
     {
         $this->testMerchantDisableLive();

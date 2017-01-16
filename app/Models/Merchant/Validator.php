@@ -65,6 +65,10 @@ class Validator extends Base\Validator
         Entity::LOGO_URL                    => 'sometimes|max:2000',
     );
 
+    protected static $actionRules = array(
+        Entity::ACTION                      => 'required|custom'
+    );
+
     protected static $featureRules = [
         'features'          => 'required|array',
         'optout_reason'     => 'sometimes|string|max:200'
@@ -237,6 +241,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Auto refund delay should be between ' . $min . ' and ' . $max . ' ' . $duration);
+        }
+    }
+
+    protected function validateAction($attribute, $action)
+    {
+        if (Action::exists($action) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
         }
     }
 }
