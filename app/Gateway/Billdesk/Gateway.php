@@ -1064,8 +1064,10 @@ class Gateway extends Base\Gateway
         {
             $this->accountType = AccountType::ACCOUNT_MAP[$MerchantIdKey];
         }
-
-        $this->accountType = AccountType::UNKNOWN;
+        else
+        {
+            $this->accountType = AccountType::UNKNOWN;
+        }
     }
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
