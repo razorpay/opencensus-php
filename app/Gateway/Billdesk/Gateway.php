@@ -1000,10 +1000,10 @@ class Gateway extends Base\Gateway
 
         switch($accountType)
         {
-            case ACCOUNT_TYPE::PRIMARY:
+            case AccountType::PRIMARY:
                 return $this->config["live_access_code"];
 
-            case ACCOUNT_TYPE::SECONDARY:
+            case AccountType::SECONDARY:
                 return $this->config["live_access_code_sec"];
 
             case 'default':
@@ -1017,10 +1017,10 @@ class Gateway extends Base\Gateway
 
         switch($accountType)
         {
-            case ACCOUNT_TYPE::PRIMARY:
+            case AccountType::PRIMARY:
                 return $this->config["live_hash_secret"];
 
-            case ACCOUNT_TYPE::SECONDARY:
+            case AccountType::SECONDARY:
                 return $this->config["live_hash_secret_sec"];
 
             case 'default':
@@ -1060,7 +1060,7 @@ class Gateway extends Base\Gateway
     {
         $merchantIdKey = substr($merchantId, 0, 2);
 
-        if (in_array($MerchantIdKey, AccountType::ACCOUNT_MAP) === true)
+        if (in_array($merchantIdKey, AccountType::ACCOUNT_MAP) === true)
         {
             $this->accountType = AccountType::ACCOUNT_MAP[$MerchantIdKey];
         }
