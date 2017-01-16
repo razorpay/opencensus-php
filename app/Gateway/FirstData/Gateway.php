@@ -790,6 +790,13 @@ class Gateway extends Base\Gateway
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
+        $txnType = TxnType::AUTH;
+
+        if (Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false)
+        {
+            $txnType = TxnType::SALE;
+        }
+
         $content = [
             ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
             ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
@@ -813,7 +820,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::CVV                       => $input['card'][Card\Entity::CVV],
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
-            ConnectRequestFields::TXN_TYPE                  => TxnType::AUTH,
+            ConnectRequestFields::TXN_TYPE                  => $txnType,
             ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
         ];
 
