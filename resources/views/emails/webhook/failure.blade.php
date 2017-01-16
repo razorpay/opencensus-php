@@ -21,7 +21,11 @@ We tried to hit the <b>{{$mode}}</b> webhook specified url - <b>{!! $url !!} </b
 To help you debug this, here are a few more details about the failure event:<br><br>
 
 <b>Timestamp:</b> {!! $date !!}}<br>
-<b>Event:</b> {!! $event !!}<br><br>
+<b>Event:</b> {!! $event !!}<br>
+@if (isset($payment_id) === true)
+    <b>Payment Id:</b> {!! $payment_id !!}<br>
+@endif
+<br>
 
 We will only re-attempt the current webhook delivery multiple times more in next few hours.
 
