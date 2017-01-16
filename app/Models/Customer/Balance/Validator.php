@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Customer\Balance;
 
-use Carbon\Carbon;
-
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

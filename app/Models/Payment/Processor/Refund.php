@@ -545,16 +545,11 @@ trait Refund
 
     protected function recordTransactionAndUpdatePaymentForRefund($forceRefundTransaction = false)
     {
-        $this->repo->transaction(function() use ($forceRefundTransaction, $input)
+        $this->repo->transaction(function() use ($forceRefundTransaction)
         {
             $payment = $this->payment;
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
-
-            if ($this->shouldProcessReversals($payment, $input) === true)
-            {
-                $this->refundPaymentWithTransfers($input);
-            }
 
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
 
@@ -621,7 +616,6 @@ trait Refund
                 // TODO: Record this too.
             }
 
-            //
             // NOTE: We should create the transaction before we update
             // the payment as refunded since there is different logic
             // for creating a refund transaction based on the payment status.
@@ -629,7 +623,7 @@ trait Refund
             $this->recordTransactionForRefund();
 
             // Record refund since it's refunded on gateway
-            $this->updatePaymentRefunded();
+            $this->updatePaymentRefunded(true, $input);
 
             $this->sendRefundNotification($payment, $refund);
         });
@@ -644,8 +638,15 @@ trait Refund
         return Payment\Gateway::supportsReverse($gateway);
     }
 
-    protected function updatePaymentRefunded()
+    protected function updatePaymentRefunded($checkReversals = false, array $input = [])
     {
+        $processReversals = false;
+
+        if ($checkReversals === true)
+        {
+            $processReversals = $this->shouldProcessReversals($this->payment, $input);
+        }
+
         // Indicates buggy case where refund entity is already present
         if ($this->verifyRefundStatus === false)
         {
@@ -660,8 +661,13 @@ trait Refund
             $this->payment->refundAmount($amount, $baseAmount);
         }
 
-        $this->repo->transaction(function()
+        $this->repo->transaction(function() use ($processReversals, $input)
         {
+            if ($processReversals === true)
+            {
+                $this->refundPaymentWithTransfers($input);
+            }
+
             $this->repo->saveOrFail($this->payment);
             $this->repo->saveOrFail($this->refund);
         });
@@ -738,7 +744,6 @@ trait Refund
 
         return null;
     }
-
 
     protected function refundCapturedPayment($payment, array $input = [], Batch\Entity $batch = null)
     {

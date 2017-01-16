@@ -81,7 +81,12 @@ class Validator extends Base\Validator
 
     protected function validateEmail($input)
     {
-        if (($input[Entity::METHOD] !== 'aeps') and
+        $allowedPaymentMethods = [
+            'aeps',
+            Payment\Method::TRANSFER,
+        ];
+
+        if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
             (empty($input[Entity::EMAIL]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -241,7 +246,12 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        if (($input[Entity::METHOD] !== 'aeps') and
+        $allowedPaymentMethods = [
+            'aeps',
+            Payment\Method::TRANSFER,
+        ];
+
+        if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
             (empty($input[Entity::CONTACT]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(

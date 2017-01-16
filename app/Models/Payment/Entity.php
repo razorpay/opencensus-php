@@ -668,6 +668,11 @@ class Entity extends Base\PublicEntity
     {
         $contact = $this->attributes[self::CONTACT];
 
+        if ($contact === null)
+        {
+            return null;
+        }
+
         $phoneBook = new PhoneBook($contact, true);
 
         return (string) $phoneBook;
