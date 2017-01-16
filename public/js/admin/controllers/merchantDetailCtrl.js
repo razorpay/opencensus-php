@@ -955,7 +955,7 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
-          $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
+          $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
           $scope.merchant.details.international = data.data.details.international;
           var merchantGroups = data.data.groups || [];

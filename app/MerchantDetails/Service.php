@@ -167,7 +167,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $merchantDetails->addStepToStepsFinished(5);
+            // $merchantDetails->addStepToStepsFinished(5);
 
             $merchantDetails->saveOrFail();
         }

@@ -139,11 +139,14 @@ class MerchantController extends Controller
     {
         $input = Input::all();
 
-        list($error, $merchantDetails) = (new MerchantDetails\Service)->saveDetailsOnAPI($input);
-
-        if (empty($error))
+        if ((int) $id !== 5)
         {
-            (new MerchantDetails\Service)->saveMerchantDetails($input);
+            $error = (new MerchantDetails\Service)->saveDetails($id, $input);
+        }
+        else
+        {
+            $error = (new MerchantDetails\Service)->checkUploads();
+
         }
 
         return AppResponse::jsonResponse($error);

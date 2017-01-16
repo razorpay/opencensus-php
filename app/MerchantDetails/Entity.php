@@ -332,7 +332,7 @@ class Entity extends Base\Entity
 
         if (empty($error))
         {
-            $this->addStepToStepsFinished($step);
+            // $this->addStepToStepsFinished($step);
         }
 
         return $error;
