@@ -403,6 +403,7 @@ class Repository extends Base\Repository
         $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
         $txnRepo = $this->manager->transaction;
+
         $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
         $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
@@ -416,6 +417,31 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+
+    public function fetchReconciledPaymentsForTerminals($from, $to, $gateway, $status, $terminals)
+    {
+        $paymentAttrs = $this->getAttributeWithTableName('*');
+
+        $paymentId = $this->getAttributeWithTableName(Entity::ID);
+
+        $txnRepo = $this->manager->transaction;
+
+        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+
+        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
+
+        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+
+        return $this->newQuery()
+                    ->select($paymentAttrs)
+                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
+                    ->where(Entity::GATEWAY, '=', $gateway)
+                    ->where($transactionEntityType, '=', 'payment')
+                    ->whereBetween($transactionReconciledAt, [$from, $to])
+                    ->whereIn(Entity::STATUS, $status)
+                    ->whereIn(Entity::TERMINAL_ID, $terminals)
                     ->get();
     }
 

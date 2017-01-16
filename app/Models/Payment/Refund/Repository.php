@@ -167,6 +167,39 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchRefundsForTerminalsBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $terminals)
+    {
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $query = $this->newQuery();
+
+        $refunds = $query->select($attrs)->join(
+            $this->manager->payment->getTableName(),
+            function ($join) use ($from, $to, $type, $gatewayCode, $gateway, $terminals)
+            {
+                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+                $pRepo = $this->manager->payment;
+                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+                $pType = $pRepo->getAttributeWithTableName($type);
+                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+                $pTerminal = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
+
+                $join->on($rPaymentId, '=', $pId)
+                     ->where($rCreatedAt, '>=', $from)
+                     ->where($rCreatedAt, '<=', $to)
+                     ->where($pType, '=', $gatewayCode)
+                     ->where($pGateway, '=', $gateway)
+                     ->whereIn($pTerminal, $terminals);
+
+            })
+            ->with('payment')
+            ->get();
+
+        return $refunds;
+    }
+
     /**
      * Join with the corresponding gateway and check that this particular payment
      * has no gateway entity for the refund.
