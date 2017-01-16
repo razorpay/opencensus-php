@@ -191,6 +191,15 @@ class Gateway extends Base\Gateway
     {
         parent::verify($input);
 
+        // We are adding this condition as Cybersource updates the cache
+        // after sometime (read as 30 seconds). It a payment has been authorized
+        // recently (30 seconds), we skip the verify for that bucket.
+        if (($input['payment']['authorized_at'] !== null) and
+            ($input['payment']['authorized_at'] >= strtotime('-30 seconds')))
+        {
+            return null;
+        }
+
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
@@ -989,7 +998,9 @@ class Gateway extends Base\Gateway
 
         if ($cardNetwork === Card\Network::MC)
         {
-            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+            $ucafAuthData = $gatewayPayment->getUcafAuthenticationData();
+
+            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $ucafAuthData;
         }
 
         $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;
