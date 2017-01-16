@@ -14,7 +14,7 @@ class Repository extends Base\Repository
     {
         assert ($this->isTransactionActive());
 
-        return Entity::lockForUpdate()->findOrFail($customerId);
+        return Entity::lockForUpdate()->findOrFailPublic($customerId);
     }
 
     public function findByCustomerAndMerchantSilent(Customer\Entity $customer, Merchant\Entity $merchant)

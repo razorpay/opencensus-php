@@ -110,7 +110,7 @@ class Entity extends Base\PublicEntity
 
     public function transfers()
     {
-        return $this->morphMany('RZP\Models\Transfers\Entity', 'entity');
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'entity');
     }
 
     public function netbanking()

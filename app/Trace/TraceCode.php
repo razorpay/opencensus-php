@@ -41,9 +41,6 @@ class TraceCode
     const PAYMENT_CAPTURE_FAILURE_EXCEPTION         = 'PAYMENT_CAPTURE_FAILURE_EXCEPTION';
     const PAYMENT_QUEUE_CAPTURE_DELETE              = 'PAYMENT_QUEUE_CAPTURE_DELETE';
     const PAYMENT_CAPTURE_ADD_TO_QUEUE              = 'PAYMENT_CAPTURE_ADD_TO_QUEUE';
-    const PAYMENT_TRANSFER_REQUEST                  = 'PAYMENT_TRANSFER_REQUEST';
-    const PAYMENT_TRANSFER_SUCCESS                  = 'PAYMENT_TRANSFER_SUCCESS';
-    const PAYMENT_TRANSFER_FAILURE                  = 'PAYMENT_TRANSFER_FAILURE';
     const PAYMENT_TIMED_OUT                         = 'PAYMENT_TIMED_OUT';
     const PAYMENT_VERIFY_FAILED                     = 'PAYMENT_VERIFY_FAILED';
     const PAYMENT_FAILED                            = 'PAYMENT_FAILED';
@@ -478,6 +475,9 @@ class TraceCode
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
 
     // Trace for Payment/Transfers
+    const PAYMENT_TRANSFER_REQUEST                  = 'PAYMENT_TRANSFER_REQUEST';
+    const PAYMENT_TRANSFER_SUCCESS                  = 'PAYMENT_TRANSFER_SUCCESS';
+    const PAYMENT_TRANSFER_FAILURE                  = 'PAYMENT_TRANSFER_FAILURE';
     const PAYMENT_TRANSFER_VALIDATION_FAILED        = 'PAYMENT_TRANSFER_VALIDATION_FAILED';
 
     // Trace code for Merchant Details

@@ -145,7 +145,7 @@ class Gateway
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
         self::FIRST_DATA            => [],
-        self::WALLET_OPENWALLET    => [],
+        self::WALLET_OPENWALLET     => [],
     ];
 
     /**
