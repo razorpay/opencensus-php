@@ -790,6 +790,13 @@ class Gateway extends Base\Gateway
 
         $requestHash = $this->getRequestHash($txnDateTime, $chargeTotal, $currencyCode);
 
+        $txnType = TxnType::AUTH;
+
+        if (Payment\Gateway::supportsAuthAndCapture($this->gateway, $method) === false)
+        {
+            $txnType = TxnType::SALE;
+        }
+
         $content = [
             ConnectRequestFields::TIME_ZONE                 => 'Asia/Kolkata',
             ConnectRequestFields::TXN_DATE_TIME             => $txnDateTime,
@@ -813,7 +820,7 @@ class Gateway extends Base\Gateway
             ConnectRequestFields::CVV                       => $input['card'][Card\Entity::CVV],
             ConnectRequestFields::RESPONSE_SUCCESS_URL      => $input['callbackUrl'],
             ConnectRequestFields::RESPONSE_FAIL_URL         => $input['callbackUrl'],
-            ConnectRequestFields::TXN_TYPE                  => TxnType::AUTH,
+            ConnectRequestFields::TXN_TYPE                  => $txnType,
             ConnectRequestFields::PAYMENT_METHOD            => PaymentMethod::METHOD_MAP[$method],
         ];
 
@@ -861,9 +868,9 @@ class Gateway extends Base\Gateway
 
     protected function getCaptureRequestArray($input)
     {
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
-
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::CAPTURE;
 
         $this->setPaymentRequestArray($body, $input, TxnType::CAPTURE);
 
@@ -876,9 +883,9 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray($input)
     {
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
-
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REFUND;
 
         $this->setPaymentRequestArray($body, $input, TxnType::REFUND);
 
@@ -891,9 +898,9 @@ class Gateway extends Base\Gateway
 
     protected function getReverseRequestArray($input)
     {
-        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
-
         $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_STORE_ID] = $this->getStoreId();
+
+        $body[ApiRequestFields::V1_CREDIT_CARD_TX_TYPE][ApiRequestFields::V1_TYPE] = TxnType::REVERSE;
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                             $input['payment'][Payment\Entity::ID],
