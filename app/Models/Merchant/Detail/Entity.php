@@ -203,7 +203,9 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::LOCKED      => 'bool',
+        self::LOCKED                 => 'bool',
+        self::SUBMITTED              => 'bool',
+        self::BUSINESS_INTERNATIONAL => 'bool',
     ];
 
     public function merchant()
@@ -214,6 +216,11 @@ class Entity extends Base\PublicEntity
     public function isLocked()
     {
         return ($this->getAttribute(self::LOCKED) === true);
+    }
+
+    public function isSubmitted()
+    {
+        return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
     public function setContactEmail($email)

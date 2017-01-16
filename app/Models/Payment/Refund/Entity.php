@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const TRANSACTION_ID    = 'transaction_id';
     const NOTES             = 'notes';
     const BATCH_ID          = 'batch_id';
+    const GATEWAY_REFUNDED  = 'gateway_refunded';
 
     protected static $sign = 'rfnd';
 
@@ -28,17 +29,21 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected static $generators = array(self::ID, self::AMOUNT, self::CURRENCY);
+    protected static $generators = [
+        self::ID,
+        self::AMOUNT,
+        self::CURRENCY
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::PAYMENT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::PAYMENT_ID,
@@ -48,11 +53,12 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::NOTES,
         self::BATCH_ID,
+        self::GATEWAY_REFUNDED,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::AMOUNT,
@@ -60,20 +66,27 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
         self::NOTES,
         self::CREATED_AT
-    );
+    ];
 
-    protected $defaults = array(
-        self::NOTES      => []
-    );
+    protected $defaults = [
+        self::NOTES             => [],
+        self::GATEWAY_REFUNDED  => null,
+    ];
 
-    protected $publicSetters = array(
-        self::ID, self::ENTITY, self::PAYMENT_ID
-    );
+    protected $casts = [
+        self::GATEWAY_REFUNDED => 'bool',
+    ];
 
-    protected $amounts = array(
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::PAYMENT_ID
+    ];
+
+    protected $amounts = [
         self::AMOUNT,
         self::BASE_AMOUNT,
-    );
+    ];
 
     public function payment()
     {
@@ -105,7 +118,7 @@ class Entity extends Base\PublicEntity
         return $this->hasOne('RZP\Gateway\Billdesk\Entity');
     }
 
-    public function build(array $input = array())
+    public function build(array $input = [])
     {
         $payment = func_get_arg(1);
 
@@ -151,6 +164,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function isGatewayRefunded()
+    {
+        return ($this->getAttribute(self::GATEWAY_REFUNDED) === true);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
@@ -159,6 +177,11 @@ class Entity extends Base\PublicEntity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function setGatewayRefunded($gatewayRefunded)
+    {
+        $this->setAttribute(self::GATEWAY_REFUNDED, $gatewayRefunded);
     }
 
     public function setBaseAmount()

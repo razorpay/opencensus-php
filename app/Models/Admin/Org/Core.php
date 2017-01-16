@@ -50,7 +50,9 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::DELETE_ORG);
 
-        $this->repo->deleteOrFail($org);
+        (new Hostname\Core)->deleteHostnamesOfOrg($id);
+
+        $this->repo->org->deleteOrFail($org);
 
         return $org->toArrayDeleted();
     }

@@ -75,6 +75,7 @@ final class Route
         'refund_generate_excel'                   => ['post',     'refunds/excel',                                  'RefundController@generateRefunds'                                  ],
         'refund_verify'                           => ['post',     'refunds/{ids}/verify',                           'RefundController@postRefundVerify'                                 ],
         'refund_create_missing_txn'               => ['post',     'refunds/transaction',                            'RefundController@postRefundsTransactions'                          ],
+        'refund_gateway_refunded_txns'            => ['post',     'refunds/gateway_refunded/transaction',           'RefundController@postGatewayRefundedTransactions'                  ],
         'refund_gateway_manual'                   => ['post',     'refunds/{ids}/gateway',                          'RefundController@postManualGatewayRefund'                          ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
@@ -118,6 +119,7 @@ final class Route
         'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
+        'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_get_offers'                     => ['get',      'merchants/{mid}/offers',                         'MerchantController@getOffers'                                      ],
@@ -192,9 +194,7 @@ final class Route
         'setl_get_details'                        => ['get',      'settlements/{id}/details',                       'SettlementController@getSettlementDetails',                        ],
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
-        'daily_setl_calc_previous_fees'           => ['post',     'dailysettlements/fees/previous',                 'SettlementController@postDailySettlementCalculatePreviousFees'     ],
-        'daily_setl_fetch_by_id'                  => ['get',      'dailysettlements/{id}',                          'SettlementController@getDailySettlement'                           ],
-        'daily_setl_fetch_multiple'               => ['get',      'dailysettlements',                               'SettlementController@getDailySettlements'                          ],
+        'batch_setl_calc_previous_fees'           => ['post',     'batchsettlements/fees/previous',                 'SettlementController@postBatchSettlementCalculatePreviousFees'     ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -240,7 +240,7 @@ final class Route
         'transparent_redirect_get'                => ['get',      'redirect',                                       'AdminController@getTransparentRedirect'                            ],
         'transparent_redirect_post'               => ['post',     'redirect',                                       'AdminController@postTransparentRedirect'                           ],
         'settlement_compute_tax'                  => ['post',     'settlements/compute/tax',                        'SettlementController@postComputeSettlementServiceTax'              ],
-        'daily_settlement_compute_tax'            => ['post',     'dailysettlements/compute/tax',                   'SettlementController@postComputeDailySettlementServiceTax'         ],
+        'batch_settlement_compute_tax'            => ['post',     'batchsettlements/compute/tax',                   'SettlementController@postComputeBatchSettlementServiceTax'         ],
         'feature_dummy'                           => ['get',      'dummy',                                          'MerchantController@getDummyFeatures'                               ],
         'emi_plan_add'                            => ['post',     'emi',                                            'EmiController@addEmiPlan'                                          ],
         'emi_plans_fetch_multiple'                => ['get',      'emi',                                            'EmiController@fetchEmiPlans'                                       ],
@@ -313,6 +313,7 @@ final class Route
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'scorecard'                               => ['get',      'scorecard',                                      'AdminController@getScorecard'                                      ],
         'billdesk_reconcile_cancelled'            => ['post',     'reconciliate/{gateway}/cancelled',               'ReconciliatorController@postReconciliateCancelledTransactions'     ],
+        'billdesk_create_cancelled_refunds'       => ['post',     'refunds/billdesk/cancelled',                     'RefundController@postCreateBilldeskCancelledRefunds'               ],
         'feature_add'                             => ['post',     'features',                                       'FeatureController@addFeatures'                                     ],
         'feature_delete'                          => ['delete',   'features/{entityId}/{featureName}',              'FeatureController@deleteFeature'                                   ],
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
@@ -559,6 +560,7 @@ final class Route
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
+        'merchant_actions',
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
@@ -602,9 +604,9 @@ final class Route
         'setl_calc_previous_fees',
         'setl_post_details_old',
         'setl_fixer',
-        'daily_setl_fetch_by_id',
-        'daily_setl_fetch_multiple',
-        'daily_setl_calc_previous_fees',
+        'settlement_compute_tax',
+        'batch_setl_calc_previous_fees',
+        'batch_settlement_compute_tax',
         'payment_verify',
         'payment_authorize_failed',
         'payment_fix_authorize_at',
@@ -618,11 +620,10 @@ final class Route
         'payment_verify_multiple',
         'payment_authorize_time_out',
         'refund_create_missing_txn',
+        'refund_gateway_refunded_txns',
         'refund_gateway_manual',
         'refund_netbanking_generate_excel',
         'refund_generate_excel',
-        'settlement_compute_tax',
-        'daily_settlement_compute_tax',
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
@@ -694,6 +695,7 @@ final class Route
         'upi_psp_allow',
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
+        'billdesk_create_cancelled_refunds',
     );
 
     public static $proxy = array(
@@ -812,7 +814,6 @@ final class Route
         'admin_roles_revoke'         => ['create_admin', 'create_role'],
         'admin_merchants_create'     => ['create_admin', 'create_merchant'],
         'admin_merchants_delete'     => ['delete_admin', 'delete_merchant'],
-        'group_create'               => ['create_group'],
         'group_edit'                 => ['edit_group'],
         'group_delete'               => ['delete_group'],
         'group_merchants_create'     => ['create_group', 'create_merchants'],
@@ -908,7 +909,9 @@ final class Route
             'refund_create_gateway_record',
             'merchant_migrate_features',
             'currency_update_rates',
-            'merchant_activation_migrate'
+            'refund_gateway_refunded_txns',
+            'merchant_activation_migrate',
+            'billdesk_create_cancelled_refunds',
         ),
 
         'mailgun' => array(
@@ -988,6 +991,15 @@ final class Route
         'payment_topup_ajax',
         'payment_topup_post',
         'payment_redirect_callback',
+    );
+
+    /**
+     * Sometimes we need to disable routes without deleting them temporarily.
+     * It could be that the route is deleted later on and is here during
+     * the transition period only.
+     */
+    const DISABLED_ROUTES = array(
+        'merchant_copy_terminal',
     );
 
     public function __construct($app)

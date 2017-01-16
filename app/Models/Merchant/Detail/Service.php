@@ -63,7 +63,7 @@ class Service extends Base\Service
                 $fileName,
                 $key);
 
-            $params[$key] = $file['id'];
+            $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
         $merchantDetails->fill($params);
@@ -184,7 +184,9 @@ class Service extends Base\Service
         foreach (ValidationFields::DASHBOARD_FIELDS as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true))
+               (is_null($merchantDetailsArr[$key]) === true) or
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                    (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }

@@ -21,4 +21,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         return $refundId;
     }
+
+    protected function createRefundOnApi(array $row, string $refundId, \Exception $ex)
+    {
+        return false;
+    }
 }

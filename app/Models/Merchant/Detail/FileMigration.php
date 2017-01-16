@@ -49,8 +49,6 @@ class FileMigration extends Base\Service
         {
             try
             {
-                $merchantDetail->getValidator()->validateInput('migrate', $merchantDetail->toArray());
-
                 $this->createFileId($merchantDetail);
             }
             catch(\Exception $ex)
@@ -82,7 +80,7 @@ class FileMigration extends Base\Service
                 FileStore\Entity::MERCHANT_ID  => $merchantId,
                 FileStore\Entity::TYPE         => $key,
                 FileStore\Entity::ENTITY_ID    => $merchantId,
-                FileStore\Entity::ENTITY_TYPE  => Constants\Entity::getEntityClass($merchantDetail->getEntity()),
+                FileStore\Entity::ENTITY_TYPE  => $merchantDetail->getEntity(),
                 FileStore\Entity::EXTENSION    => $value['content_type'],
                 FileStore\Entity::MIME         => FileStore\Format::VALID_EXTENSION_MIME_MAP[$value['content_type']][0],
                 FileStore\Entity::SIZE         => $value['content_length'],
@@ -96,7 +94,7 @@ class FileMigration extends Base\Service
 
             $this->repo->saveOrFail($fileStore);
 
-            $params[$key] = $fileStore->getPublicId();
+            $params[$key] = $fileStore->getId();
         }
 
         $merchantDetail->fill($params);
@@ -122,6 +120,12 @@ class FileMigration extends Base\Service
                 {
                     $s3url = $merchantDetail[$key];
 
+                    // Its already an UFH, so we don't need to migrate it.
+                    if (strlen($s3url) <= 19)
+                    {
+                        continue;
+                    }
+
                     $fileName = explode($merchantId, $s3url)[1];
 
                     $fileExtension = explode('.', $fileName)[1];
@@ -136,7 +140,7 @@ class FileMigration extends Base\Service
                     $fileInfo[$key] = [
                         'bucket'         => $bucket,
                         'aws_key'        => $awsKey,
-                        'content_type'   => $fileExtension,
+                        'content_type'   => strtolower($fileExtension),
                         'content_length' => $result['ContentLength'],
 
                     ];
