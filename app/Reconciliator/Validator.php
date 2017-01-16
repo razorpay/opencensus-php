@@ -46,7 +46,7 @@ class Validator
         $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::HDFC];
 
         // HDFC also sends Corporate MPR emails, that should fail here
-        if ((preg_match($regex, $subject) !== 0) and
+        if ((preg_match($regex, $subject) === 1) and
             (strpos($subject, 'Corporate') === false))
         {
             return true;
