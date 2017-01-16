@@ -10,11 +10,11 @@ class Core extends Base\Core
 {
     public function create($input)
     {
+        $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
+
         $downWindow = (new Entity)->build($input);
 
         $this->repo->saveOrFail($downWindow);
-
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
         return $downWindow;
     }
@@ -82,5 +82,4 @@ class Core extends Base\Core
 
         return $formatted;
     }
-
 }

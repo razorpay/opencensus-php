@@ -23,7 +23,7 @@ class GatewayController extends Controller
     {
         $gateway = $this->app['gateway']->gateway($gateway);
 
-        // Some gateways may need some preprocessing on the input
+        // Some gateways may need some pre-processing on the input
         // to be able to call the next few methods.
         //
         // Eg: gateway request needs to be decrypted
@@ -195,8 +195,10 @@ class GatewayController extends Controller
 
     /**
      * Method to create a gateway absence entity
+     *
+     * @param Absence\Service $service
+     *
      * @return \Symfony\Component\HttpFoundation\Response
-     * @internal param string $gateway
      */
     public function postGatewayAbsence(Absence\Service $service)
     {
@@ -209,8 +211,10 @@ class GatewayController extends Controller
 
     /**
      * Method to update gateway absence entity
+     *
      * @param Absence\Service $service
      * @param string $id
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
     public function putGatewayAbsence(Absence\Service $service, string $id)
