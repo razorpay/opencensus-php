@@ -152,8 +152,7 @@ class CreatePayments  extends Migration
             $table->integer(Payment::CAPTURED_AT)
                   ->nullable();
 
-            $table->string(Payment::GATEWAY)
-                  ->default(null);
+            $table->string(Payment::GATEWAY);
 
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
                   ->nullable();

@@ -957,24 +957,53 @@ final class Route
         'merchant_methods',
     );
 
-    public static $routeNameToFeatureMap = array(
-        'feature_dummy'                 => Feature::DUMMY,
-        'merchant_sub_create'           => Feature::AGGREGATOR,
-        'customer_delete'               => Feature::TOKENS,
-        'customer_delete_token'         => Feature::TOKENS,
-        'customer_fetch_tokens'         => Feature::TOKENS,
-        'payment_create_wallet'         => Feature::S2SWALLET,
-        'payment_create_upi'            => Feature::S2SUPI,
-        'payment_create_recurring'      => Feature::RECURRING,
-        'payment_create_private_old'    => Feature::S2S,
-        'setl_combined_report'          => Feature::SETL_REPORT,
-        'reports_transaction_broking'   => Feature::BROKING_REPORT,
-        'customer_get_wallet_balance'   => Feature::OPENWALLET,
-        'customer_get_wallet_statement' => Feature::OPENWALLET,
-        'reports_transaction_broking'   => Feature::BROKING_REPORT,
-        'transfer_create'               => Feature::MARKETPLACE,
-        'transfer_create_reversal'      => Feature::MARKETPLACE,
-    );
+    public static $featureToAllowedRoutesMap = [
+        Feature::AGGREGATOR         => [
+            'merchant_sub_create',
+        ],
+        Feature::BROKING_REPORT     => [
+            'reports_transaction_broking',
+        ],
+        Feature::DUMMY              => [
+            'feature_dummy',
+        ],
+        Feature::MARKETPLACE        => [
+            'payment_transfer',
+            'payment_fetch_transfers',
+            'transfer_create',
+            'transfer_fetch',
+            'transfer_create_reversal',
+        ],
+        Feature::OPENWALLET         => [
+            'customer_get_wallet_balance',
+            'customer_get_wallet_statement',
+            'payment_transfer',
+            'payment_fetch_transfers',
+            'transfer_create',
+            'transfer_fetch',
+            'transfer_create_reversal',
+        ],
+        Feature::RECURRING          => [
+            'payment_create_recurring',
+        ],
+        Feature::S2S                => [
+            'payment_create_private_old',
+        ],
+        Feature::S2SUPI             => [
+            'payment_create_upi',
+        ],
+        Feature::S2SWALLET          => [
+            'payment_create_wallet',
+        ],
+        Feature::SETL_REPORT        => [
+            'setl_combined_report',
+        ],
+        Feature::TOKENS             => [
+            'customer_delete',
+            'customer_delete_token',
+            'customer_fetch_tokens',
+        ],
+    ];
 
     /*
      * Routes that can be accessed by other org admins.
@@ -1240,10 +1269,22 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function isCurrentRouteInFeatureMap()
+    public function getFeaturesForRoute()
     {
         $route = $this->getCurrentRouteName();
 
-        return (array_key_exists($route, self::$routeNameToFeatureMap));
+        $features = self::$featureToAllowedRoutesMap;
+
+        $routeFeatures = [];
+
+        foreach ($features as $feature => $routes)
+        {
+            if (in_array($route, $routes, true) === true)
+            {
+                $routeFeatures[] = $feature;
+            }
+        }
+
+        return $routeFeatures;
     }
 }

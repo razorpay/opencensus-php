@@ -493,15 +493,27 @@ class BasicAuth
     {
         $route = $this->getCurrentRouteName();
 
-        if ($this->route->isCurrentRouteInFeatureMap() === true)
+        // Get an array of $features assigned to a route name
+        // when current route is defined in $featureToAllowedRoutesMap
+        $features = $this->route->getFeaturesForRoute();
+
+        if (empty($features) === false)
         {
-            //
-            // Current route is in feature map list.
-            //
+            $allowed = false;
 
-            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            // If any of the features in $features array
+            // is enabled for merchant, allow the request
+            foreach ($features as $feature)
+            {
+                if ($this->merchant->isFeatureEnabled($feature) === true)
+                {
+                    $allowed = true;
 
-            if ($this->merchant->isFeatureEnabled($accessedFeature))
+                    break;
+                }
+            }
+
+            if ($allowed === true)
             {
                 return null;
             }

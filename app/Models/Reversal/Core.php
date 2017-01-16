@@ -22,6 +22,10 @@ class Core extends Base\Core
      */
     public function createForMarketplaceRefund(Transfer\Entity $transfer, Merchant\Entity $merchant, int $amount) : Entity
     {
+        $transfer->reverseAmount($amount);
+
+        $this->repo->saveOrFail($transfer);
+
         $reversal = $this->createEntity($amount, $transfer->getCurrency());
 
         $reversal->transfer()->associate($transfer);
@@ -33,10 +37,6 @@ class Core extends Base\Core
         $this->repo->saveOrFail($txn);
 
         $reversal->transaction()->associate($txn);
-
-        $transfer->reverseAmount($amount);
-
-        $this->repo->saveOrFail($transfer);
 
         $this->repo->saveOrFail($reversal);
 

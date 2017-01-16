@@ -622,8 +622,10 @@ trait Refund
             //
             $this->recordTransactionForRefund();
 
+            $processReversals = $this->shouldProcessReversals($this->payment, $input);
+
             // Record refund since it's refunded on gateway
-            $this->updatePaymentRefunded(true, $input);
+            $this->updatePaymentRefunded($processReversals, $input);
 
             $this->sendRefundNotification($payment, $refund);
         });
@@ -638,15 +640,8 @@ trait Refund
         return Payment\Gateway::supportsReverse($gateway);
     }
 
-    protected function updatePaymentRefunded($checkReversals = false, array $input = [])
+    protected function updatePaymentRefunded($processReversals = false, array $input = [])
     {
-        $processReversals = false;
-
-        if ($checkReversals === true)
-        {
-            $processReversals = $this->shouldProcessReversals($this->payment, $input);
-        }
-
         // Indicates buggy case where refund entity is already present
         if ($this->verifyRefundStatus === false)
         {
@@ -669,6 +664,7 @@ trait Refund
             }
 
             $this->repo->saveOrFail($this->payment);
+
             $this->repo->saveOrFail($this->refund);
         });
 
