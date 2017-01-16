@@ -334,7 +334,7 @@ class GatewayController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deleteGatewayPriority(string $method)
+    public function updateGatewayPriority(string $method)
     {
         $input = Request::all();
 
