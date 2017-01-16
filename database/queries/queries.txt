@@ -1551,4 +1551,5 @@ ALTER TABLE merchants
 
 ALTER TABLE gateway_status_absence 
     CHANGE `from` `downtime_from` int(11) NOT NULL,
-    CHANGE `to` `downtime_to` int(11) DEFAULT NULL;
+    CHANGE `to` `downtime_to` int(11) DEFAULT NULL,
+    ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`);

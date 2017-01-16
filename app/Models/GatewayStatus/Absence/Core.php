@@ -51,8 +51,8 @@ class Core extends Base\Core
             Entity::CARD_TYPE   => $absent->getCardType(),
             Entity::NETWORK     => $absent->getNetwork(),
             Entity::REASON_CODE => $absent->getReasonCode(),
-            Entity::PARTIAL     => $absent->getPartial(),
-            Entity::SCHEDULED   => $absent->getScheduled(),
+            Entity::PARTIAL     => $absent->isPartial(),
+            Entity::SCHEDULED   => $absent->isScheduled(),
         ];
 
         return array_filter($data);

@@ -100,12 +100,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
-    public function getPartial()
+    public function isPartial()
     {
         return $this->getAttribute(self::PARTIAL);
     }
 
-    public function getScheduled()
+    public function isScheduled()
     {
         return $this->getAttribute(self::SCHEDULED);
     }
