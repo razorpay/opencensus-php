@@ -286,8 +286,10 @@ trait Refund
 
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
 
+        $gatewayRefunded = $refund->isGatewayRefunded();
+
         if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false) or
+            ($supportsAuthAndCapture === false) or ($gatewayRefunded === true) or
             ($forceRefundTransaction === true))
         {
             if ($payment->transaction === null)
