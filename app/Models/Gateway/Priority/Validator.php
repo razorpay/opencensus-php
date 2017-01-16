@@ -24,7 +24,8 @@ class Validator extends Base\Validator
 
     public function validateMethod(string $method)
     {
-        if (in_array($method, static::$validPaymentMethods, true) === false) {
+        if (in_array($method, static::$validPaymentMethods, true) === false)
+        {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
             );
