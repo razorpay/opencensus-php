@@ -321,6 +321,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_TRANSFER_CURRENCY_MISMATCH                        = 'Transfer request currency must be same as payment currency';
     const BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT                = 'Payment cannot be transferred to the same account more than one time';
 
+    const BAD_REQUEST_TRANSFER_UNSUPPORTED_ACCOUNT_ID                           = 'Account ID provided for transfer is invalid';
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_TRANSFERRED         = 'The reversal amount provided is greater than amount transferred';
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_UNREVERSED          = 'The reversal amount provided is greater than the unreversed amount';
 

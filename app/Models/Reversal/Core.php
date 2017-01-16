@@ -58,22 +58,18 @@ class Core extends Base\Core
 
         (new Validator)->validateReversalAmount($transfer, $input);
 
-        // Reversals not coded yet for customer wallet transfer refunds
+        // Reversals not handled yet for customer wallet - transfer refunds
         // @todo: Change flow to create reversals for both customer/account transfers
         assert ($transfer->getToType() === E::MERCHANT);
 
-        $transferPayment = $this->repo
-                                ->payment
-                                ->findByTransferIdAndMerchant($transfer->getId(), $transfer->getToId());
-
-        // If amount not send in input,
+        // If amount not sent in input,
         // reverse the entire transfer amount pending
         $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
 
-        return $this->repo->transaction(function () use ($transfer, $transferPayment, $amount)
+        return $this->repo->transaction(function () use ($transfer, $amount)
         {
             $reversal = (new Payment\Processor\Processor($this->merchant))
-                            ->refundAndReverseTransferPayment($transferPayment, $transfer, $amount);
+                            ->refundPaymentAndReverseTransfer($transfer, $amount);
 
             return $reversal;
         });

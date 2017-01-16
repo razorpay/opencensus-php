@@ -18,6 +18,7 @@ class Repository extends Base\Repository
         Entity::TO_ID               => 'sometimes|alpha_num|min:14'
     ];
 
+    // Unused
     public function fetchByAccountIdAndMerchant(
         string $accountId,
         Merchant\Entity $marketplace,

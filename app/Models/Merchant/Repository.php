@@ -236,22 +236,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    /**
-     * Fetch the entity of a Marketplace linked-account
-     *
-     * @param  string               $accountId
-     * @param  Merchant\Entity      $marketplace   Parent Merchant Entity
-     * @return Merchant\Entity
-     */
-    public function fetchAccountByIdAndMerchant(string $accountId, Entity $marketplace) : Entity
+    public function fetchByAccountIdAndMerchant(string $accountId, Entity $marketplace)
     {
         AccountEntity::verifyIdAndStripSign($accountId);
 
         $account =  $this->newQuery()
                          ->where(Entity::PARENT_ID, $marketplace->getId())
-                         ->findOrFailPublic($accountId); //@todo: Should we throw a custom exception here?
+                         ->find($accountId);
 
-        $account->parent()->associate($marketplace);
+        if ($account !== null)
+        {
+            $account->parent()->associate($marketplace);
+        }
 
         return $account;
     }

@@ -117,17 +117,17 @@ class Validator extends Base\Validator
             return;
         }
 
-        $transferSum = 0;
+        $reversalSum = 0;
 
-        foreach ($input['reversals'] as $transfer)
+        foreach ($input['reversals'] as $reversal)
         {
-            $transferSum += $transfer['amount'];
+            $reversalSum += $reversal['amount'];
         }
 
-        if ($transferSum > $input['amount'])
+        if ($reversalSum > $input['amount'])
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Sum of transfers provided is greater than the refund amount value',
+                'Sum of reversals provided is greater than the refund amount value',
                 'amount');
         }
     }

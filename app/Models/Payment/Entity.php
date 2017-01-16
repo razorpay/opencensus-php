@@ -259,7 +259,6 @@ class Entity extends Base\PublicEntity
         self::RECURRING            => false,
         self::INTERNATIONAL        => null,
         self::VERIFY_BUCKET        => null,
-        self::GATEWAY              => null,
         self::TERMINAL_ID          => null,
         self::TRANSFER_ID          => null,
     ];
@@ -404,7 +403,7 @@ class Entity extends Base\PublicEntity
 
     public function setBaseAmount(int $amount)
     {
-        $this->setAttribute(self::BASE_AMOUNT, (int) $amount);
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
     }
 
     public function setAmountAuthorized()
@@ -668,11 +667,6 @@ class Entity extends Base\PublicEntity
     protected function getContactAttribute()
     {
         $contact = $this->attributes[self::CONTACT];
-
-        if ($contact === null)
-        {
-            return null;
-        }
 
         $phoneBook = new PhoneBook($contact, true);
 

@@ -224,7 +224,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant under a linked-account under marketplace
+    // Is the merchant a linked-account under Marketplace
     public function isAccount()
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
@@ -335,7 +335,7 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
-    // All linked-accounts belonging to the Marketplace merchant
+    // Linked-accounts belonging to the Marketplace
     public function accounts()
     {
         return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);

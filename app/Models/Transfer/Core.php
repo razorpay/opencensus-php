@@ -245,7 +245,9 @@ class Core extends Base\Core
 
         $to = $this->repo
                    ->merchant
-                   ->fetchAccountByIdAndMerchant($accountId, $this->merchant);
+                   ->fetchByAccountIdAndMerchant($accountId, $this->merchant);
+
+        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $this->merchant);
 
         if (($source instanceof Payment\Entity) === true)
         {

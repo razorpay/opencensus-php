@@ -306,7 +306,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateCurrency($input)
+    protected function validateCurrency($input)
     {
         $currency = $input['currency'];
 

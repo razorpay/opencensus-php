@@ -32,12 +32,12 @@ class Service extends Base\Service
     }
 
     /**
-     * Process a transfer payment
-     * (internal payments created on Marketplace transfer to accounts)
+     * Create and process a transfer payment
+     * (internal payments created on Marketplace transfer to linked-accounts)
      *
      * @param  Merchant\Entity $account
      * @param  array           $input
-     * @param  Payment\Entity  $originPayment
+     * @param  Payment\Entity  $originPayment (Origin payment entity, IF transferring funds from a captured payment)
      */
     public function processTransfer(Merchant\Entity $account, array $input, Payment\Entity $originPayment = null)
     {

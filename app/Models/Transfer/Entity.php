@@ -123,6 +123,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getSourceType()
+    {
+        return $this->getAttribute(self::SOURCE_TYPE);
+    }
+
+    public function getToType()
+    {
+        return $this->getAttribute(self::TO_TYPE);
+    }
+
     public function getSourceId()
     {
         return $this->getAttribute(self::SOURCE_ID);

@@ -143,13 +143,15 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantForMarketplaceTransfer(Entity $account, Entity $merchant)
+    public function validateMerchantForMarketplaceTransfer($account, Entity $merchant)
     {
-        if (($account->isAccount() === false) or
+        if (($account === null) or
+            ($account->isAccount() === false) or
             ($account->getParentId() !== $merchant->getId()))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Transfer is not supported to the provided account id'
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_UNSUPPORTED_ACCOUNT_ID,
+                'transfer_id'
             );
         }
     }

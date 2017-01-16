@@ -233,177 +233,24 @@ trait Refund
     }
 
     /**
-     * Check if the refund should be processed with Marketplace transfers/reversals
+     * Refund a payment that has Marketplace transfers
      *
      * @param  Payment\Entity   $payment
      * @param  array            $input
-     * @return bool
      */
-    protected function shouldRefundWithTransfers(Payment\Entity $payment, array & $input) : bool
-    {
-        if (($payment->isTransferred() === false) or
-            ($payment->isTransfer() === true) or
-            ($payment->getRefundStatus() === Payment\Refund\Status::FULL))
-        {
-            return false;
-        }
-
-        $transfers = null;
-
-        list($reverseAll, $reversalsReqd) = $this->checkReversalsOnRefundType(
-                                                                $payment,
-                                                                $input,
-                                                                $transfers);
-
-        if (isset($input['reversals']) === false)
-        {
-            if ($reversalsReqd === true)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'The reversals parameter is required for this refund request');
-            }
-
-            if ($reverseAll === true)
-            {
-                $this->implicitAddReversalsForFullRefund($transfers, $payment, $input);
-            }
-        }
-
-        return true;
-    }
-
-    protected function checkReversalsOnRefundType($payment, $input, & $transfers)
-    {
-        $refundType = $this->getPaymentRefundType($payment, $input);
-
-        $reverseAll = false;
-
-        $reversalsReqd = false;
-
-        if ($refundType === Payment\Refund\Status::FULL)
-        {
-            $reverseAll = true;
-        }
-        else if ($refundType === Payment\Refund\Status::PARTIAL)
-        {
-            $transfers = $this->repo
-                              ->transfer
-                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
-
-            assert (count($transfers) !== 0);
-
-            // Reversals need to be sent only if there are
-            // multiple transfers created on a payment.
-            if (count($transfers) > 1)
-            {
-                $reversalsReqd = true;
-            }
-            // When only a single transfer exists, we reverse
-            // the amount on it.
-            else if (count($transfers) === 1)
-            {
-                $reverseAll = true;
-            }
-        }
-
-        return [$reverseAll, $reversalsReqd];
-    }
-
-    /**
-     * For a full-refund, fetch and implicitly add reversals
-     *
-     * @param  [type] $transfers
-     * @param  [type] $payment
-     * @param  [type] $input
-     * @return [type]
-     */
-    protected function implicitAddReversalsForFullRefund($transfers, $payment, array & $input)
-    {
-
-        if ($transfers === null)
-        {
-            $transfers = $this->repo
-                              ->transfer
-                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant, true);
-        }
-
-        $reversals = [];
-
-        foreach ($transfers as $transfer)
-        {
-            $amountToReverse = $transfer->getAmountUnreversed();
-
-            $transferId = $transfer->getPublicId();
-
-            if ($amountToReverse === 0)
-            {
-                continue;
-            }
-
-            $reversals[] = [
-                'transfer'  => $transferId,
-                'amount'    => $amountToReverse,
-            ];
-        }
-
-        $input['reversals'] = $reversals;
-    }
-
-    /**
-     * Refund a payment that has Marketplace transfers
-     *
-     * @param  string $paymentId
-     * @param  array  $input
-     * @return null
-     */
-    public function refundPaymentWithTransfers(Payment\Entity $payment, array $input)
+    public function refundPaymentWithTransfers(array $input)
     {
         (new Payment\Refund\Validator)->validateReversalsRequired($input);
 
-        // Refund and reverse_transfer each transfer payment
+        // Refund each transfer payment and reverse the transfers
         foreach ($input['reversals'] as $reversal)
         {
             $transfer = $this->repo
                              ->transfer
                              ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
 
-            $this->refundAndReverseTransferPayment($payment, $transfer, $reversal['amount']);
+            $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
         }
-    }
-
-    /**
-     * Refund the transfer payment and create a reverse_transfer for the
-     * original payment transfer
-     *
-     * @param  Payment\Entity $payment
-     * @param  string         $accountId
-     * @param  int            $amount
-     * @return void
-     */
-    public function refundAndReverseTransferPayment(Payment\Entity $payment, Transfer\Entity $transfer, int $amount)
-    {
-        if ($transfer->getAmountUnreversed() === 0)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                        'Transfer ID: ' . $transfer->getPublicId() . 'has been fully reversed already'
-                    );
-        }
-
-        $accountId = $transfer->getToId();
-
-        $transferPayment = $this->repo
-                                ->payment
-                                ->findByTransferIdAndMerchant(
-                                    $transfer->getId(), $accountId);
-
-        // @todo: DB queried here
-        assert ($this->merchant->accounts->contains($accountId));
-
-        (new Processor($transferPayment->merchant))
-            ->refundTransferPayment($transferPayment, $amount);
-
-        return (new Reversal\Core)
-            ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
@@ -495,6 +342,13 @@ trait Refund
         return null;
     }
 
+    /**
+     * Get the type of refund being processed - FULL / PARTIAL,
+     * based on the amount input and amount already refunded
+     *
+     * @param  Payment\Entity $payment
+     * @param  array          $input
+     */
     protected function getPaymentRefundType(Payment\Entity $payment, array $input)
     {
         $type = Payment\Refund\Status::PARTIAL;
@@ -697,9 +551,9 @@ trait Refund
 
             $this->paymentRepo->lockForUpdate($payment->getKey());
 
-            if ($this->shouldRefundWithTransfers($payment, $input) === true)
+            if ($this->shouldProcessReversals($payment, $input) === true)
             {
-                $this->refundPaymentWithTransfers($payment, $input);
+                $this->refundPaymentWithTransfers($input);
             }
 
             $this->createTransactionForRefund($this->refund, $payment, $forceRefundTransaction);
@@ -721,7 +575,7 @@ trait Refund
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
-        $refund->merchant()->associate($payment->merchant);
+        $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
 

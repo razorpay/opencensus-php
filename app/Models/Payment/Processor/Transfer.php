@@ -9,8 +9,7 @@ use RZP\Models\Transaction;
 trait Transfer
 {
     /**
-     * Create a payment entity for marketplace transfer,
-     * create and process a payment transaction
+     * Create a transfer payment entity and a corresponding transaction
      *
      * @param  array           $input
      * @param  Payment\Entity  $originPayment
