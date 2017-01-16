@@ -9,6 +9,8 @@ use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
 {
+    const ALLOWED_METHODS = [Method::CARD, Method::NETBANKING];
+
     protected $store;
 
     // Namespace used for storing the data in store provider
@@ -34,11 +36,9 @@ class Core extends Base\Core
 
     public function fetchPriority()
     {
-        $methods = [Method::CARD, Method::NETBANKING];
-
         $result = new Base\PublicCollection;
 
-        foreach ($methods as $method)
+        foreach (self::ALLOWED_METHODS as $method)
         {
             $priority = new Store\PrioritySet(self::$storeNameSpace, $method);
 
