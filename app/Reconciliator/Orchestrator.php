@@ -6,10 +6,10 @@ use DirectoryIterator;
 
 use App;
 
-use RZP\Base\RuntimeManager;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 
 class Orchestrator extends Base\Core
 {
@@ -83,9 +83,9 @@ class Orchestrator extends Base\Core
 
     public function __construct()
     {
-        $this->increaseAllowedSystemLimits();
+        parent::__construct();
 
-        $this->app = App::getFacadeRoot();
+        $this->increaseAllowedSystemLimits();
 
         $this->messenger = new Messenger();
         $this->validator = new Validator;
@@ -108,7 +108,7 @@ class Orchestrator extends Base\Core
         $this->traceReconRequest($input);
 
         // Checks if it's manual call or mailgun call
-        if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
+        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
         {
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
@@ -141,14 +141,12 @@ class Orchestrator extends Base\Core
         if (empty($this->allFilesDetails) === true)
         {
             throw new Exception\ReconciliationException(
-                'File details are empty.'
-            );
+                'File details are empty.');
         }
 
         $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
-            $this->allFilesDetails
-        );
+            $this->allFilesDetails);
 
         return $this->orchestrate();
     }
@@ -170,8 +168,7 @@ class Orchestrator extends Base\Core
 
         $this->trace->info(
             TraceCode::RECON_REQUEST,
-            $input
-        );
+            $input);
     }
 
     /**
@@ -210,6 +207,7 @@ class Orchestrator extends Base\Core
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
+
         $this->validator->filterEmails($this->emailDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
@@ -421,8 +419,12 @@ class Orchestrator extends Base\Core
         if ($gateway === self::ADMIN)
         {
             $gateway = $this->emailDetails['subject'];
-            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING, true)),
-                    "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
+
+            assert(
+                in_array(
+                    $gateway,
+                    array_keys(self::GATEWAY_SENDER_MAPPING)),
+                '[Admin] Invalid/Unrecognized gateway sent in the subject line.');
         }
 
         $this->setGatewayReconciliatorObject($gateway);
@@ -438,8 +440,7 @@ class Orchestrator extends Base\Core
         {
             throw new Exception\ReconciliationException(
                 'Email ID not present in Sender-Gateway mapping.',
-                ['email_id' => $fromEmailId]
-            );
+                ['email_id' => $fromEmailId]);
         }
 
         if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
@@ -447,8 +448,7 @@ class Orchestrator extends Base\Core
         {
             throw new Exception\ReconciliationException(
                 'Email content is invalid.',
-                ['email_details' => $this->emailDetails]
-            );
+                ['email_details' => $this->emailDetails]);
         }
 
         return $gateway;
