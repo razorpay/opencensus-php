@@ -58,6 +58,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        // Uncomment later when required
+        // self::ITEM_ID,
         self::NAME,
         self::DESCRIPTION,
         self::AMOUNT,

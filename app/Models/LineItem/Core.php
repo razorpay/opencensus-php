@@ -18,17 +18,20 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_REQUEST,
-            $input
+            [
+                'input' => $input,
+                'entity_id' => $morphEntity->getId(),
+            ]
         );
 
-        $lineItem = (new Entity);
+        $lineItem = new Entity;
 
         //
         // If without ITEM_ID (template), no CURRENCY is send, we use invoice's
         // currency.
         //
-        if ((isset($input[Entity::ITEM_ID]) === false)
-            and (isset($input[Entity::CURRENCY]) === false))
+        if ((isset($input[Entity::ITEM_ID]) === false) and
+            (isset($input[Entity::CURRENCY]) === false))
         {
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
@@ -58,8 +61,10 @@ class Core extends Base\Core
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_CREATE_BULK_REQUEST,
-            $input
-        );
+            [
+                'input' => $input,
+                'entity_id' => $morphEntity->getId()
+            ]);
 
         (new Validator)->validateInput('create_many', [Entity::LINE_ITEMS => $input]);
 
@@ -82,8 +87,9 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::LINE_ITEM_UPDATE_REQUEST,
             [
-                'id'    => $lineItem->getId(),
-                'input' => $input,
+                'id'        => $lineItem->getId(),
+                'entity_id' => $morphEntity->getId(),
+                'input'     => $input,
             ]);
 
         $this->setItemAssociationAndUpdateInput(
@@ -101,12 +107,13 @@ class Core extends Base\Core
         return $lineItem;
     }
 
-    public function delete(Entity $lineItem)
+    public function delete(Entity $lineItem, Base\PublicEntity $morphEntity)
     {
         $this->trace->info(
             TraceCode::LINE_ITEM_DELETE_REQUEST,
             [
-                'id' => $lineItem->getId(),
+                'id'        => $lineItem->getId(),
+                'entity_id' => $morphEntity->getId()
             ]);
 
         return $this->repo->line_item->deleteOrFail($lineItem);
@@ -170,11 +177,15 @@ class Core extends Base\Core
      *
      * @return Core
      */
-    public function updateLineItems(
+    public function updateLineItemsAsPut(
         array $lineItemsDetails,
         Merchant\Entity $merchant,
         Base\PublicEntity $morphEntity)
     {
+        $this->trace->info(
+            TraceCode::LINE_ITEMS_UPDATE_PUT_REQUEST,
+            $lineItemsDetails);
+
         //
         // This must be done before creating the line items
         // since we delete all the line items which are present
@@ -231,11 +242,11 @@ class Core extends Base\Core
         $inputLineItemIds = collect($lineItemsDetails)->pluck('id')->all();
 
         $existingLineItems->map(
-            function($lineItem, $i) use ($inputLineItemIds)
+            function($existingLineItem, $i) use ($inputLineItemIds, $morphEntity)
             {
-                if (in_array($lineItem->getPublicId(), $inputLineItemIds, true) === false)
+                if (in_array($existingLineItem->getPublicId(), $inputLineItemIds, true) === false)
                 {
-                    $this->delete($lineItem);
+                    $this->delete($existingLineItem, $morphEntity);
                 }
             });
     }

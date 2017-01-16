@@ -28,17 +28,12 @@ class Validator extends Base\Validator
     {
         if ($item->lineItems()->count() > 0)
         {
-            $this->raiseOperationNotAllowed($item);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
+                null,
+                [
+                    'item_id' => $item->getId(),
+                ]);
         }
-    }
-
-    protected function raiseOperationNotAllowed(Entity $item)
-    {
-        throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED,
-            null,
-            [
-                'item_id' => $item->getId(),
-            ]);
     }
 }

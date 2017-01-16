@@ -6,6 +6,7 @@ use App;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
+use RZP\Models\Currency\Currency;
 
 class Entity extends Base\PublicEntity
 {
@@ -28,7 +29,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ACTIVE            => 1,
         self::DESCRIPTION       => null,
-        self::CURRENCY          => 'INR',
+        self::CURRENCY          => Currency::INR,
     ];
 
     protected $visible = [
@@ -99,7 +100,7 @@ class Entity extends Base\PublicEntity
         return ($this->isActive() === false);
     }
 
-    // -------------------------- Getters Ends --------------------------
+    // -------------------------- End Getters --------------------------
 
     // -------------------- Relations ---------------------------
 
