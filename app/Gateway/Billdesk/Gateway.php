@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     protected $tpv;
 
+    protected $accountType;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -855,8 +857,12 @@ class Gateway extends Base\Gateway
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
 
+        $merchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($merchantId);
+
         $content = [
-            'MerchantID'                => $input['terminal']['gateway_merchant_id'],
+            'MerchantID'                => $merchantId,
             'CustomerID'                => $input['payment']['id'],
             'AccountNumber'             => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
@@ -978,24 +984,36 @@ class Gateway extends Base\Gateway
 
     protected function getSecurityId()
     {
-        if ($this->isTPVEnabled())
-        {
-            return $this->config['live_access_code_sec'];
-        }
+        $accountType = $this->accountType;
 
-        return $this->config['live_access_code'];
+        switch($accountType)
+        {
+            case ACCOUNT_TYPE::PRIMARY:
+                return $this->config["live_access_code"];
+
+            case ACCOUNT_TYPE::SECONDARY:
+                return $this->config["live_access_code_sec"];
+
+            case 'default':
+                return $this->config["live_access_code"];
+        }
     }
 
     public function getSecret()
     {
-        if ($this->isTPVEnabled())
+        $accountType = $this->accountType;
+
+        switch($accountType)
         {
-            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+            case ACCOUNT_TYPE::PRIMARY:
+                return $this->config["live_hash_secret"];
 
-            return $this->config['live_hash_secret_sec'];
+            case ACCOUNT_TYPE::SECONDARY:
+                return $this->config["live_hash_secret_sec"];
+
+            case 'default':
+                return $this->config["live_hash_secret"];
         }
-
-        return $this->config['live_hash_secret'];
     }
 
     protected function isTPVEnabled()
@@ -1024,6 +1042,18 @@ class Gateway extends Base\Gateway
     protected function setTpv(Entity $gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    protected function setAccountType($merchantId)
+    {
+        $merchantIdKey = substr($merchantId, 0, 2);
+
+        if (in_array($MerchantIdKey, AccountType::ACCOUNT_MAP) === true)
+        {
+            $this->accountType = AccountType::ACCOUNT_MAP[$MerchantIdKey];
+        }
+
+        $this->accountType = AccountType::UNKNOWN;
     }
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
