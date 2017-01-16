@@ -269,37 +269,28 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldReceive('searchNotes')
+        $mockEs->shouldReceive('search')
                ->once()
                ->with(
                     Mockery::on(function ($data)
                     {
-                        $testData = array(
-                            'type' => 'payments',
-                            'body' => [
-                                'size' => 10,
-                                'query' => [
-                                    'filtered' => [
-                                        'query' => [
-                                            'multi_match' => [
-                                                'query' => 'es_random_1',
-                                                'type' => 'cross_fields',
-                                                'fields' => ['notes.*']
-                                            ]
-                                        ],
-                                        'filter' => [
-                                            'term' => [
-                                                'merchant_id' => "10000000000000"
-                                            ]
-                                        ]
-                                    ]
-                                ]
-                            ],
-                        );
-                        $this->assertArraySelectiveEquals($testData, $data);
+                        $expected = $this->getSampleNotesSearchQuery('es_random_1');
+
+                        $this->assertArraySelectiveEquals($expected, $data);
+
                         return true;
                     }))
-               ->andReturn([$paymentId]);
+               ->andReturn(
+                    [
+                        'hits' => [
+                            'total' => 1,
+                            'hits' => [
+                                [
+                                    '_id' => $paymentId,
+                                ],
+                            ],
+                        ]
+                    ]);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -315,7 +306,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldNotReceive('searchNotes');
+        $mockEs->shouldNotReceive('search');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -333,33 +324,60 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldReceive('searchNotes')
+        $mockEs->shouldReceive('search')
             ->once()
             ->with(
                 Mockery::on(function ($data)
                 {
-                    $testData = array(
-                        'type' => 'payments',
-                        'body' => [
+                    $expected = [
+                        'index' => 'test_payment',
+                        'type'  => 'test_payment',
+                        'body'  => [
+                            '_source' => false,
+                            'from'    => 0,
                             'size' => 1000,
                             'query' => [
-                                'filtered' => [
-                                    'query' => [
-                                        'multi_match' => [
-                                            'query' => 'es',
-                                            'type' => 'cross_fields',
-                                            'fields' => ['notes.*']
-                                        ]
+                                'bool' => [
+                                    'should' => [
+                                        [
+                                            'multi_match' => [
+                                                'query' => 'es',
+                                                'type' => "best_fields",
+                                                'fields' => "notes.*",
+                                                'boost' => 2,
+                                            ],
+                                        ],
                                     ],
-                                    'filter' => []
-                                ]
-                            ]
+                                    'minimum_should_match' => 1,
+                                    'filter' => [],
+                                ],
+                            ],
                         ],
-                    );
-                    $this->assertArraySelectiveEquals($testData, $data);
+                    ];
+
+                    $this->assertArraySelectiveEquals($expected, $data);
                     return true;
                 }))
-            ->andReturn($paymentIds);
+            ->andReturn(
+                [
+                    'hits' => [
+                        'total' => 1,
+                        'hits' => [
+                            [
+                                '_id' => $paymentIds[0],
+                            ],
+                            [
+                                '_id' => $paymentIds[1],
+                            ],
+                            [
+                                '_id' => $paymentIds[2],
+                            ],
+                            [
+                                '_id' => $paymentIds[3],
+                            ],
+                        ],
+                    ]
+                ]);
 
         $this->ba->appAuth();
 
@@ -374,7 +392,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldNotReceive('searchNotes');
+        $mockEs->shouldNotReceive('search');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -389,10 +407,18 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldReceive('searchNotes')
+        $mockEs->shouldReceive('search')
                ->once()
                ->with(Mockery::any())
-               ->andReturn(['rand_payment_id']);
+               ->andReturn(
+                [
+                    'hits' => [
+                        'total' => 1,
+                        'hits' => [
+                            'id' => '1000000payment',
+                        ],
+                    ],
+                ]);
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -407,7 +433,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldNotReceive('searchNotes');
+        $mockEs->shouldNotReceive('search');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -422,7 +448,7 @@ class PaymentRetrieveTest extends TestCase
 
         $mockEs = $this->mockEsClient();
 
-        $mockEs->shouldNotReceive('searchNotes');
+        $mockEs->shouldNotReceive('search');
 
         $testData = $this->testData[__FUNCTION__];
 
@@ -436,5 +462,42 @@ class PaymentRetrieveTest extends TestCase
         $this->app->instance('es', $clientBuilder);
 
         return $clientBuilder;
+    }
+
+    protected function getSampleNotesSearchQuery(string $query)
+    {
+        return [
+            'index' => 'test_payment',
+            'type'  => 'test_payment',
+            'body'  => [
+                '_source' => false,
+                'from'    => 0,
+                'size' => 10,
+                'query' => [
+                    'bool' => [
+                        'should' => [
+                            [
+                                'multi_match' => [
+                                    'query' => $query,
+                                    'type' => "best_fields",
+                                    'fields' => "notes.*",
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                        'minimum_should_match' => 1,
+                        'filter' => [
+                            [
+                                'term' => [
+                                    'merchant_id' => [
+                                        'value' => "10000000000000",
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ];
     }
 }

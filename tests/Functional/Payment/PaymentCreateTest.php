@@ -135,13 +135,21 @@ class PaymentCreateTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $mockEs->shouldReceive('update')
-               ->once()
+        //
+        // twice() because in the flow, payment entity is getting saved twice.
+        //
+
+        $mockEs->shouldReceive('indexExists')
+               ->twice()
+               ->with(['index' => 'test_payment']);
+
+        $mockEs->shouldReceive('bulkUpdate')
+               ->twice()
                ->with(
                    Mockery::on(function ($data) use ($testData)
                    {
-                       $this->assertArraySelectiveEquals($testData, json_decode(json_encode($data), true));
-                       return true;
+                        $this->assertArraySelectiveEquals($testData, $data, true);
+                        return true;
                    })
                );
 

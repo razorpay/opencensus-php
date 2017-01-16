@@ -149,8 +149,12 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $clauses = [];                       // Boolean query clauses
         $filters = [];                       // Filters
+
         $from    = ($params['skip']) ?? 0;
+        unset($params['skip']);
+
         $size    = ($params['count']) ?? 10;
+        unset($params['count']);
 
         $this->buildSearchQuery($params, $merchantId, $clauses, $filters);
 
@@ -195,7 +199,22 @@ class EsRepository extends \Razorpay\Spine\Repository
             return (new PublicCollection);
         }
 
-        $entities = $this->newQuery()->findOrFailPublic($ids, array('*'));
+        $entities = $this->newQuery()->findMany($ids, array('*'));
+
+        //
+        // We throw and error if there is mismatch between es & mysql count
+        // TODO: Should we not do that? Just log and error but return whatever
+        //       results found in mysql?
+        //
+        if (count($ids) !== $entities->count())
+        {
+            throw new Exception\ServerErrorException(
+                'Did not find corresponding entity data in MySQL',
+                ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
+                [
+                    'ids' => $ids,
+                ]);
+        }
 
         return $entities;
     }
