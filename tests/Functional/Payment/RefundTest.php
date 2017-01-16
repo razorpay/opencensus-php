@@ -215,7 +215,12 @@ class RefundTest extends TestCase
                 'invoice_id'      => '1000000invoice',
                 'late_authorized' => 1,
             ]);
-        $expectedRefundedPaymentIds = collect($payments)->map(function ($p, $i) { return $p->getId(); })->all();
+        $expectedRefundedPaymentIds = collect($payments)
+                                        ->map(function ($p, $i)
+                                            {
+                                                return $p->getPublicId();
+                                            })
+                                        ->all();
 
         // Following shouldn't get refunded
         $this->fixtures->create('payment:authorized',
@@ -274,13 +279,40 @@ class RefundTest extends TestCase
                 'invoice_id'      => '1000000invoice',
                 'late_authorized' => 1,
             ]);
-        $expectedRefundedPaymentIds[] = $payment->getId();
+        $expectedRefundedPaymentIds[] = $payment->getPublicId();
+
+        $expectedRefundedPaymentIds = collect($expectedRefundedPaymentIds)
+                                        ->sort()
+                                        ->values()
+                                        ->all();
+
 
         $this->ba->appAuth();
 
         $testData = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($testData);
+
+        $payments = $this->getEntities('payment', [], true);
+
+        $refundedPaymentIds = collect($payments['items'])
+                                ->filter(function ($p, $k)
+                                {
+
+                                    return ($p['status'] === 'refunded');
+                                })
+                                ->map(function ($p, $k)
+                                {
+
+                                    return $p['id'];
+                                })
+                                ->sort()
+                                ->values()
+                                ->all();
+
+
+
+        $this->assertEquals($expectedRefundedPaymentIds, $refundedPaymentIds);
     }
 
     public function testRefundCreateOnGatewayForMissingRefunds()

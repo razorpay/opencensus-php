@@ -676,7 +676,10 @@ class Repository extends Base\Repository
         $invoiceIdCol        = $invoiceMgr->getAttributeWithTableName(Invoice\Entity::ID);
         $invoiceStatusCol    = $invoiceMgr->getAttributeWithTableName(Invoice\Entity::STATUS);
 
+        $paymentColumns      = $this->getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($paymentColumns)
                     ->leftJoin(Table::INVOICE, $paymentInvoiceIdCol, '=', $invoiceIdCol)
                     ->whereNotNull($paymentInvoiceIdCol)
                     ->where($invoiceStatusCol, '=', Invoice\Status::EXPIRED)

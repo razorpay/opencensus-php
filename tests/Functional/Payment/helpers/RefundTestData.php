@@ -239,8 +239,7 @@ return [
         'response' => [
             'content' => [
                 'total_payments_for_refund'         => 3,
-                // TODO: Need to fix this
-                // 'payment_auto_refund_failure_count' => 0
+                'payment_auto_refund_failure_count' => 0
             ],
         ],
     ],
