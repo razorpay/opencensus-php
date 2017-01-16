@@ -4,7 +4,7 @@ namespace RZP\Models\Gateway\Priority;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\Store;
+use RZP\Models\DataStore;
 use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
@@ -20,12 +20,12 @@ class Core extends Base\Core
     {
         parent::__construct();
 
-        $this->store = $this->app['store'];
+        $this->store = $this->app['data_store'];
     }
 
     public function addPriorityForMethod(string $method, array $priorityData)
     {
-        $priority = new Store\PrioritySet(self::$storeNameSpace, $method);
+        $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
 
         $priority->setData($priorityData);
 
@@ -40,7 +40,7 @@ class Core extends Base\Core
 
         foreach (self::ALLOWED_METHODS as $method)
         {
-            $priority = new Store\PrioritySet(self::$storeNameSpace, $method);
+            $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
 
             $priority = $this->store->fetch($priority);
 
@@ -52,7 +52,7 @@ class Core extends Base\Core
 
     public function removePriorityForMethod(string $method, array $gateways)
     {
-         $priority = new Store\PrioritySet(self::$storeNameSpace, $method);
+         $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
 
          $priority->setData($gateways);
 
@@ -109,7 +109,7 @@ class Core extends Base\Core
      */
     protected function fetchOrderedGatewaysForMethod(string $method)
     {
-        $priority = new Store\PrioritySet(self::$storeNameSpace, $method);
+        $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
 
         $priority = $this->store->fetch($priority);
 

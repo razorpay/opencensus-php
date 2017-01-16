@@ -110,7 +110,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMorphRelationMaps();
 
-        $this->registerStoreProvider();
+        $this->registerDataStoreProvider();
     }
 
     /**
@@ -223,18 +223,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerStoreProvider()
+    protected function registerDataStoreProvider()
     {
-        $this->app->singleton('store', function ($app)
+        $this->app->singleton('data_store', function ($app)
         {
-            $storeMock = $app['config']->get('services.store.mock');
+            $storeMock = $app['config']->get('services.data_store.mock');
 
             if ($storeMock === true)
             {
-                return new Mock\StoreManager($app);
+                return new Mock\DataStoreManager($app);
             }
 
-            return new StoreManager($app);
+            return new DataStoreManager($app);
         });
     }
 

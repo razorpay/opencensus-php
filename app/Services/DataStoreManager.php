@@ -2,21 +2,21 @@
 
 namespace RZP\Services;
 
-use RZP\Models\Store;
+use RZP\Models\DataStore;
 use RZP\Exception;
 
-class StoreManager
+class DataStoreManager
 {
     protected $trace;
 
     /**
      * Saves given store object data to data store and throws exception if any
      *
-     * @param  Store\Base $store object to save
+     * @param  DataStore\Base $store object to save
      *
-     * @return Store\Base saved store object
+     * @return DataStore\Base saved store object
      */
-    public function saveOrFail(Store\Base $store)
+    public function saveOrFail(DataStore\Base $store)
     {
         return $store->saveOrFail();
     }
@@ -24,7 +24,7 @@ class StoreManager
     /**
      * Fetches data from store for given object
      */
-    public function fetch(Store\Base $store)
+    public function fetch(DataStore\Base $store)
     {
         try
         {
@@ -42,7 +42,7 @@ class StoreManager
     /**
      * Similar to fetch method but throws any exception instead of suppressing
      */
-    public function fetchOrFail(Store\Base $store)
+    public function fetchOrFail(DataStore\Base $store)
     {
         return $store->fetch();
     }
@@ -50,7 +50,7 @@ class StoreManager
     /**
      * Deletes store object data from store
      */
-    public function delete(Store\Base $store)
+    public function delete(DataStore\Base $store)
     {
         return $store->delete();
     }
