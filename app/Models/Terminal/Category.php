@@ -62,7 +62,7 @@ class Category
      * The terminals marked null or default will be filtered
      * out.
      */
-    const INCOMPATIBLE = [
+    const TPV = [
         Category::SECURITIES,
         Category::COMMODITIES,
     ];
@@ -90,11 +90,6 @@ class Category
             ],
         ]
     ];
-
-    public static function isMerchantCategoryIncompatible($category)
-    {
-        return in_array($category, Category::INCOMPATIBLE, true);
-    }
 
     public static function isMerchantCategoryValid($category)
     {
@@ -152,6 +147,28 @@ class Category
         }
 
         return $networkCategory;
+    }
+
+    public static function getTPVCategories()
+    {
+        return self::TPV;
+    }
+
+    public static function getIncompatibleCategories()
+    {
+        return array_merge(self::TPV, []);
+    }
+
+    public static function isMerchantCategoryTPV($category2)
+    {
+        return in_array($category2, self::TPV);
+    }
+
+    public static function isMerchantCategoryIncompatible($category)
+    {
+        $incompatibleCategories = self::getIncompatibleCategories();
+
+        return in_array($category, $incompatibleCategories);
     }
 
     protected static function getDefaultNetworkCategory($category2)
