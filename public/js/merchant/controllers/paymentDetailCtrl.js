@@ -29,28 +29,29 @@ app.controller('PaymentDetailCtrl', [
     $scope.getStateMerchant = getStateMerchant;
 
     // Keys currently added the to good-looking view
+    // Or ones we do not want to show (entity, id, refunds)
     var shownByDefault = [
       'amount',
       'amount_refunded',
-      'currency',
-      'status',
-      'captured',
-      'method',
       'bank',
-      'wallet',
-      'refund_status',
+      'captured',
+      'contact',
+      'created_at',
+      'currency',
       'description',
       'email',
-      'contact',
-      'fee',
-      'service_tax',
+      'entity',
       'error_code',
       'error_description',
+      'fee',
+      'id',
+      'method',
       'notes',
-      'created_at',
-      // Not much point of showing these 2 in payment view
-      'entity',
-      'id'
+      'refund_status',
+      'refunds',
+      'service_tax',
+      'status',
+      'wallet'
     ];
 
     /**
