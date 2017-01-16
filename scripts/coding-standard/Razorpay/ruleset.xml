@@ -11,13 +11,13 @@
 
     <!-- INDENTATION/WHITESPACES RULES START -->
     <!-- Code MUST use an indent of 4 spaces, and MUST NOT use tabs for indenting. -->
-    <rule ref="Generic.WhiteSpace.ScopeIndent">
+    <!--  <rule ref="Generic.WhiteSpace.ScopeIndent">
         <properties>
             <property name="ignoreIndentationTokens" type="array" value="T_COMMENT,T_DOC_COMMENT_OPEN_TAG"/>
             <property name="indent" value="4"/>
             <property name="exact" value="false"/>
         </properties>
-    </rule>
+    </rule> -->
     <!-- Code MUST not use tab for indentation -->
     <rule ref="Generic.WhiteSpace.DisallowTabIndent"/>
 
@@ -106,8 +106,8 @@
     <!-- Lines can be 80 chars long, show errors at 120 chars -->
     <rule ref="Generic.Files.LineLength">
         <properties>
-            <property name="lineLimit" value="120"/>
-            <property name="absoluteLineLimit" value="0"/>
+            <property name="lineLimit" value="80"/>
+            <property name="absoluteLineLimit" value="120"/>
         </properties>
     </rule>
 

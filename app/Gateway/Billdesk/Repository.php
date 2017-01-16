@@ -5,6 +5,9 @@ namespace RZP\Gateway\Billdesk;
 use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Base;
+use RZP\Models\Payment;
+
+use RZP\Constants\Table;
 
 class Repository extends Base\Repository
 {
@@ -61,5 +64,59 @@ class Repository extends Base\Repository
         }
 
         return $refundEntities;
+    }
+
+    public function fetchMissingBilldeskCancelledRefunds()
+    {
+        // SELECT *
+        // FROM billdesk
+        //     WHERE RefStatus = '0699'
+        //       AND refund_id NOT IN
+        //         (
+        //             SELECT refunds.id
+        //             FROM refunds
+        //             JOIN payments ON refunds.payment_id = payments.id
+        //             WHERE payments.gateway = 'billdesk'
+        //               AND payments.transaction_id IS NOT NULL
+        //         );
+
+        $refundTable = Table::REFUND;
+        $paymentTable = Table::PAYMENT;
+
+        $billdeskAttributes = $this->getAttributeWithTableName('*');
+
+        $billdeskRefundIdAttr = $this->getAttributeWithTableName('refund_id');
+
+        $refundIdAttr = $this->manager->refund->getAttributeWithTableName(Payment\Refund\Entity::ID);
+        $refundPaymentIdAttr = $this->manager->refund->getAttributeWithTableName(Payment\Refund\Entity::PAYMENT_ID);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
+        $response = $this->newQuery()
+                         ->select($billdeskAttributes)
+                         ->where('RefStatus', '=', RefundStatus::CANCELLED)
+                         ->whereNotIn(
+                             $billdeskRefundIdAttr,
+                             function($query)
+                             use($refundIdAttr,
+                                 $refundTable,
+                                 $paymentTable,
+                                 $refundPaymentIdAttr,
+                                 $paymentIdAttr,
+                                 $paymentGatewayAttr,
+                                 $paymentTransactionIdAttr)
+                             {
+                                 $query->select($refundIdAttr)
+                                       ->from($refundTable)
+                                       ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                                       ->where($paymentGatewayAttr, '=', Payment\Gateway::BILLDESK)
+                                       ->whereNotNull($paymentTransactionIdAttr);
+                             })
+                         ->get();
+
+        return $response;
+
     }
 }
