@@ -116,6 +116,10 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
+        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($gatewayMerchantId);
+
         $this->setTpv($gatewayPayment);
 
         $requestContent = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
@@ -161,6 +165,10 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($gatewayMerchantId);
 
         $verify = new Base\Verify($this->gateway, $input);
 
@@ -424,6 +432,10 @@ class Gateway extends Base\Gateway
      */
     protected function verifyIfRefunded(array $input)
     {
+        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($gatewayMerchantId);
+
         $verify = new Base\Verify($this->gateway, $input);
 
         $verify->payment = $this->repo->findByPaymentIdAndAction(
