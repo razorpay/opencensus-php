@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::DOWNTIME_FROM            => 'required|integer',
+        Entity::DOWNTIME_FROM   => 'required|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -23,7 +23,7 @@ class Validator extends Base\Validator
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::DOWNTIME_TO              => 'sometimes|integer',
+        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
     ];

@@ -35,6 +35,6 @@ class ReasonCode
 
     public static function isValidSource($source)
     {
-        return in_array(strtoupper($source), self::$sources);
+        return in_array(strtoupper($source), self::$sources, true);
     }
 }

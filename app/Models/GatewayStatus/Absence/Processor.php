@@ -15,22 +15,24 @@ class Processor extends Base\Core
         Entity::METHOD,
         Entity::DOWNTIME_FROM
     ];
-    
+
     public function createAction(array $input)
     {
+        //
         // Prevent duplicate creation of the same error model.
         // Basically, since we pass an empty 'to', it means, this is for an unscheduled
-        // maintanance. In case of a scheduled maintanance, the 'to' param is set
+        // maintenance. In case of a scheduled maintenance, the 'to' param is set
         // and this will return null. For an unscheduled one, in case there already
         // does exist a record for the same gateway, issuer and method, do not create
         // additional ones.
+        //
         $alreadyPresent = $this->verifyIfExists($input);
 
         if (empty($alreadyPresent) === false)
         {
             return $alreadyPresent->toArrayPublic();
         }
-        
+
         $downWindow = (new Absence\Core)->create($input);
 
         return $downWindow->toArrayPublic();
@@ -69,7 +71,7 @@ class Processor extends Base\Core
         }
 
         $absentees = $this->repo->gateway_absence->fetch($queryParams);
-        
+
         return $absentees->first();
     }
 
