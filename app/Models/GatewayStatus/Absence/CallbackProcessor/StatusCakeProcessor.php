@@ -69,8 +69,8 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
                 if (empty($absent) === false)
                 {
                     $editData = [
-                        Entity::FROM => $absent->getFrom(),
-                        Entity::TO   => time()
+                        Entity::DOWNTIME_FROM => $absent->getDowntimeFrom(),
+                        Entity::DOWNTIME_TO   => time()
                     ];
 
                     return $this->processor->editAction($absent->id, $editData);
@@ -233,13 +233,13 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
         if ($status === 1)
         {
-            $formatted[Entity::TO] = time();
+            $formatted[Entity::DOWNTIME_TO] = time();
         }
         else
         {
-            $formatted[Entity::FROM] = time();
+            $formatted[Entity::DOWNTIME_FROM] = time();
 
-            $formatted[Entity::TO] = null;
+            $formatted[Entity::DOWNTIME_TO] = null;
         }
 
         try

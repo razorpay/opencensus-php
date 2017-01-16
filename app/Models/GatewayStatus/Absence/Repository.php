@@ -12,8 +12,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY        => 'sometimes|string|max:255',
         Entity::ISSUER         => 'sometimes|string|max:50',
         Entity::METHOD         => 'sometimes|string|max:30',
-        Entity::FROM           => 'sometimes|integer',
-        Entity::TO             => 'sometimes|integer',
+        Entity::DOWNTIME_FROM  => 'sometimes|integer',
+        Entity::DOWNTIME_TO    => 'sometimes|integer',
         Entity::PARTIAL        => 'sometimes|bool',
         Entity::SOURCE         => 'sometimes|string|max:30'
     );
@@ -23,8 +23,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY        => 'sometimes|string|max:255',
         Entity::ISSUER         => 'sometimes|string|max:50',
         Entity::METHOD         => 'sometimes|string|max:30',
-        Entity::FROM           => 'sometimes|integer',
-        Entity::TO             => 'sometimes|integer',
+        Entity::DOWNTIME_FROM  => 'sometimes|integer',
+        Entity::DOWNTIME_TO    => 'sometimes|integer',
         Entity::PARTIAL        => 'sometimes|bool',
         Entity::SOURCE         => 'sometimes|string|max:30'
     );
@@ -34,41 +34,42 @@ class Repository extends Base\Repository
         Entity::ISSUER => '=',
         Entity::METHOD => '=',
         Entity::SOURCE => '=',
-        Entity::FROM => '<='
+        Entity::DOWNTIME_FROM => '<='
     ];
-    /**
-     * We are using a custom fetch function here since we do not want to override fetch function.
-     * @param array $input
-     * @return mixed
-     */
-    public function fetchAbsent(array $input)
-    {
-        $query = $this->newQuery();
 
-        // The default value for Entity::TO is null. This is because we do not necessarily know
+    public function isMerchantIdRequiredForFetch()
+    {
+        return false;
+    }
+
+    protected function buildFetchQueryAdditional($params, $query)
+    {
+        // The default value for Entity::DOWNTIME_TO is null. This is because we do not necessarily know
         // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
         // setting the $to value to $input['to'] if available or $input['from']. The essential
         // idea is to fetch the list of gateways/issuers at the current point in time.
-        $to = (isset($input[Entity::TO]) === true) ?? null;
+        $to = (isset($params[Entity::DOWNTIME_TO]) === true) ?? null;
 
-        if ((empty($to) === true) and (isset($input[Entity::FROM])))
+        if ((empty($to) === true) and (isset($params[Entity::DOWNTIME_FROM])))
         {
-            $to = $input[Entity::FROM];
+            $to = $params[Entity::DOWNTIME_FROM];
         }
-
-        $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
         if (empty($to) === false)
         {
             $query->where(function ($query) use ($to)
             {
-                $query->whereNull(Entity::TO);
-                $query->orWhere(Entity::TO, '>=', $to);
+                $query->whereNull(Entity::DOWNTIME_TO);
+                $query->orWhere(Entity::DOWNTIME_TO, '>=', $to);
             });
         }
-
-        return $query->get();
     }
+
+    protected function addQueryParamDowntimeFrom($query, $params)
+    {
+        $query->where(Entity::DOWNTIME_FROM, '<=', $params[Entity::DOWNTIME_FROM]);
+    }
+
 
     public function fetchMostRecentActive(array $input)
     {
@@ -76,7 +77,7 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
-        $query->whereNull(Entity::TO);
+        $query->whereNull(Entity::DOWNTIME_TO);
 
         return $query->latest();
     }

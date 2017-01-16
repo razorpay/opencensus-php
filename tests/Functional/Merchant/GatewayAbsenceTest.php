@@ -57,7 +57,7 @@ class GatewayAbsenceTest extends TestCase
                 'issuer' => 'HDFC',
                 'comment' => 'Test Reason',
                 'source' => 'statuscake',
-                'from' => time()
+                'downtime_from' => time()
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -113,9 +113,9 @@ class GatewayAbsenceTest extends TestCase
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
-        $from = $this->testData[__FUNCTION__]['request']['content']['from'];
+        $from = $this->testData[__FUNCTION__]['request']['content']['downtime_from'];
 
-        $this->testData[__FUNCTION__]['request']['content']['to'] = $from - 10;
+        $this->testData[__FUNCTION__]['request']['content']['downtime_to'] = $from - 10;
 
         $this->startTest();
     }
@@ -124,7 +124,7 @@ class GatewayAbsenceTest extends TestCase
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
-        unset($this->testData[__FUNCTION__]['request']['content']['to']);
+        unset($this->testData[__FUNCTION__]['request']['content']['downtime_to']);
 
         $this->startTest();
     }
@@ -204,7 +204,7 @@ class GatewayAbsenceTest extends TestCase
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
-                'from'  => time(),
+                'downtime_from'  => time(),
                 'method' => 'netbanking',
                 'terminal_id' => $tid,
                 'issuer' => 'HDFC',
@@ -227,7 +227,7 @@ class GatewayAbsenceTest extends TestCase
             'content' => [
                 'gateway' => 'netbanking_hdfc',
                 'reason_code'  => 'LOW_SUCCESS_RATE',
-                'from'  => time(),
+                'downtime_from'  => time(),
                 'method' => 'netbanking',
                 'terminal_id' => $tid,
                 'issuer' => 'HDFC',
@@ -261,8 +261,8 @@ class GatewayAbsenceTest extends TestCase
 
         $request = [
             'content' => [
-                'from' => $now,
-                'to' => $to
+                'downtime_from' => $now,
+                'downtime_to' => $to
             ],
             'method' => 'PUT',
             'url' => $url
@@ -270,9 +270,9 @@ class GatewayAbsenceTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['from'], $now);
+        $this->assertEquals($content['downtime_from'], $now);
 
-        $this->assertEquals($content['to'], $to);
+        $this->assertEquals($content['downtime_to'], $to);
     }
 
     //----- Delete Tests -----
@@ -297,10 +297,10 @@ class GatewayAbsenceTest extends TestCase
 
         $this->createGatewayAbsenceNullTo('netbanking_kotak');
 
-        $from = $content1['from'];
+        $from = $content1['downtime_from'];
 
         $request = [
-            'content' => ['from' => $from],
+            'content' => ['downtime_from' => $from],
             'url' => '/gateway/absence',
             'method' => 'GET'
         ];
@@ -315,7 +315,7 @@ class GatewayAbsenceTest extends TestCase
 
         $this->assertEquals($content['count'], 1);
 
-        $this->assertEquals($content['items'][0]['to'], null);
+        $this->assertEquals($content['items'][0]['downtime_to'], null);
     }
 
     public function testGatewayAbsenceFetch()
@@ -328,12 +328,12 @@ class GatewayAbsenceTest extends TestCase
 
         $content2 = $this->createGatewayAbsence('netbanking_kotak', $tid);
 
-        $from = $content1['from'];
+        $from = $content1['downtime_from'];
 
-        $to = $content2['to'];
+        $to = $content2['downtime_to'];
 
         $request = [
-            'content' => ['from' => $from, 'to' => $to],
+            'content' => ['downtime_from' => $from, 'downtime_to' => $to],
             'url' => '/gateway/absence',
             'method' => 'GET'
         ];
@@ -361,7 +361,7 @@ class GatewayAbsenceTest extends TestCase
         $from = Carbon::now()->timestamp;
 
         $request = [
-            'content' => ['from' => $from],
+            'content' => ['downtime_from' => $from],
             'url' => '/gateway/absence',
             'method' => 'GET'
         ];
@@ -456,7 +456,7 @@ class GatewayAbsenceTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(isset($response['to']), false);
+        $this->assertEquals(isset($response['downtime_to']), false);
 
         $content['Status'] = 'Up';
 
@@ -464,7 +464,7 @@ class GatewayAbsenceTest extends TestCase
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(isset($response['to']), true);
+        $this->assertEquals(isset($response['downtime_to']), true);
     }
 
     public function testStatusCakeWebHookMissingToken()
@@ -489,9 +489,9 @@ class GatewayAbsenceTest extends TestCase
 
         $to = $now + 100;
 
-        $this->testData[$functionName]['request']['content']['from'] = $now;
+        $this->testData[$functionName]['request']['content']['downtime_from'] = $now;
 
-        $this->testData[$functionName]['request']['content']['to'] = $to;
+        $this->testData[$functionName]['request']['content']['downtime_to'] = $to;
     }
 
     protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc', $terminalId = null)
@@ -522,8 +522,8 @@ class GatewayAbsenceTest extends TestCase
             'gateway' => $gatewayName,
             'reason_code'  => 'LOW_SUCCESS_RATE',
             'issuer'  => $bank,
-            'from'  => $from,
-            'to' => $to,
+            'downtime_from'  => $from,
+            'downtime_to' => $to,
             'method' => $method,
             'source' => 'other'
         ];
@@ -541,7 +541,7 @@ class GatewayAbsenceTest extends TestCase
 
         if ($to === null)
         {
-            unset($request['content']['to']);
+            unset($request['content']['downtime_to']);
         }
 
         $content = $this->makeRequestAndGetContent($request);
@@ -562,7 +562,7 @@ class GatewayAbsenceTest extends TestCase
                 'gateway' => $gatewayName,
                 'reason_code'  => 'LOW_SUCCESS_RATE',
                 'issuer'  => $bank,
-                'from'  => $from,
+                'downtime_from'  => $from,
                 'method' => $method,
                 'source' => 'other'
             ],
@@ -585,7 +585,7 @@ class GatewayAbsenceTest extends TestCase
             'content' => [
                 'gateway' => $gatewayName,
                 'reason_code'  => 'LOW_SUCCESS_RATE',
-                'from'  => $from,
+                'downtime_from'  => $from,
                 'method' => $method,
                 'card_type' => $cardType,
                 'network' => $network,

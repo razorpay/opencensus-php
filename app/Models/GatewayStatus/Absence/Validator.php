@@ -15,7 +15,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::FROM            => 'required|integer',
+        Entity::DOWNTIME_FROM            => 'required|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -23,18 +23,18 @@ class Validator extends Base\Validator
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::TO              => 'sometimes|integer',
+        Entity::DOWNTIME_TO              => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
     ];
 
     protected static $editRules = [
-        Entity::FROM            => 'required|integer',
-        Entity::TO              => 'required|integer',
+        Entity::DOWNTIME_FROM            => 'required|integer',
+        Entity::DOWNTIME_TO              => 'required|integer',
     ];
 
     protected static $createValidators = [
-        Entity::TO,
+        Entity::DOWNTIME_TO,
         Entity::METHOD,
         Entity::ISSUER,
         Entity::CARD_TYPE,
@@ -42,7 +42,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        Entity::TO
+        Entity::DOWNTIME_TO
     ];
 
     // Validation Notes:
@@ -83,16 +83,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTo(array $input)
+    public function validateDowntimeTo(array $input)
     {
-        if (empty($input[Entity::TO]) === true)
+        if (empty($input[Entity::DOWNTIME_TO]) === true)
         {
             return;
         }
 
-        $to = $input[Entity::TO];
+        $to = $input[Entity::DOWNTIME_TO];
 
-        $from = $input[Entity::FROM];
+        $from = $input[Entity::DOWNTIME_FROM];
 
         if ($to < $from)
         {

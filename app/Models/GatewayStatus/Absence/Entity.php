@@ -12,8 +12,8 @@ class Entity extends Base\PublicEntity
     const CARD_TYPE                     = 'card_type';
     const NETWORK                       = 'network';
     const METHOD                        = 'method';
-    const FROM                          = 'from';
-    const TO                            = 'to';
+    const DOWNTIME_FROM                 = 'downtime_from';
+    const DOWNTIME_TO                   = 'downtime_to';
     const TERMINAL_ID                   = 'terminal_id';
     const REASON_CODE                   = 'reason_code';
     const SOURCE                        = 'source';
@@ -25,8 +25,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::GATEWAY,
-        self::FROM,
-        self::TO,
+        self::DOWNTIME_FROM,
+        self::DOWNTIME_TO,
         self::COMMENT,
         self::REASON_CODE,
         self::ISSUER,
@@ -46,8 +46,8 @@ class Entity extends Base\PublicEntity
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
-        self::FROM,
-        self::TO,
+        self::DOWNTIME_FROM,
+        self::DOWNTIME_TO,
         self::TERMINAL_ID,
         self::REASON_CODE,
         self::COMMENT,
@@ -58,11 +58,12 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::FROM      => 'int',
-        self::TO        => 'int',
+        self::DOWNTIME_FROM => 'int',
+        self::DOWNTIME_TO   => 'int',
         self::SCHEDULED => 'bool',
         self::PARTIAL   => 'bool'
     ];
+
 
     const END_OF_TIME = 2147483647;
 
@@ -110,14 +111,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULED);
     }
 
-    public function getFrom()
+    public function getDowntimeFrom()
     {
-        return $this->getAttribute(self::FROM);
+        return $this->getAttribute(self::DOWNTIME_FROM);
     }
 
-    public function getTo()
+    public function getDowntimeTo()
     {
-        return $this->getAttribute(self::TO);
+        return $this->getAttribute(self::DOWNTIME_TO);
     }
 
     public function terminal()

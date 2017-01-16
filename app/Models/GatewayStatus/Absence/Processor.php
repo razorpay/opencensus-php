@@ -13,7 +13,7 @@ class Processor extends Base\Core
         Entity::GATEWAY,
         Entity::ISSUER,
         Entity::METHOD,
-        Entity::FROM
+        Entity::DOWNTIME_FROM
     ];
     
     public function createAction(array $input)
@@ -68,7 +68,7 @@ class Processor extends Base\Core
             }
         }
 
-        $absentees = $this->repo->gateway_absence->fetchAbsent($queryParams);
+        $absentees = $this->repo->gateway_absence->fetch($queryParams);
         
         return $absentees->first();
     }

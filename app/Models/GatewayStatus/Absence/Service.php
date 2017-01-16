@@ -33,7 +33,7 @@ class Service extends Base\Service
 
     public function findAbsentGateways(array $input)
     {
-        $absentGateways = $this->repo->gateway_absence->fetchAbsent($input);
+        $absentGateways = $this->repo->gateway_absence->fetch($input);
 
         return $absentGateways->toArrayPublic();
     }

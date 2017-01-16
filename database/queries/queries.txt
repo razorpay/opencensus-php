@@ -1543,3 +1543,7 @@ WHERE id='6gysDIemK9qx3W';
 
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
+
+ALTER TABLE gateway_status_absence 
+    CHANGE `from` `downtime_from` int(11) NOT NULL,
+    CHANGE `to` `downtime_to` int(11) DEFAULT NULL;
