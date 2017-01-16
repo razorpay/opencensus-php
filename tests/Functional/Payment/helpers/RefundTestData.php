@@ -240,4 +240,20 @@ return [
             'content'   => []
         ]
     ],
+
+    'testCreateMissingRefundTransaction' => [
+        'request' => [
+            'method'    => 'post',
+            'url'       => '/refunds/gateway_refunded/transaction',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'total_count' => 1,
+                'success_count' => 1,
+                'failures_count' => 0,
+                'failed_refunds' => [],
+            ]
+        ]
+    ],
 ];

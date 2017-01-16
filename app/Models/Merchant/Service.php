@@ -604,6 +604,12 @@ class Service extends Base\Service
     {
         $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
+        // licious has dependency on this field in their android app
+        if ($this->merchant->getId() === '5yZ76HWrvL9g2l')
+        {
+            $formattedMethods['http_status_code'] = 200;
+        }
+
         return $formattedMethods;
     }
 
@@ -905,7 +911,7 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndName($merchant->getId(),
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail($merchant->getId(),
                             $featureName);
             if ($feature !== null)
             {

@@ -24,6 +24,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'netbanking_kotak',
+        'netbanking_axis',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -48,6 +49,7 @@ return array(
     'mock_paytm'              => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -201,6 +203,11 @@ return array(
     'netbanking_kotak' => array(
         'live_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+    ),
+
+    'netbanking_axis' => array(
+        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
     ),
 
     'sharp' => array(

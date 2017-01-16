@@ -44,17 +44,18 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'                => '100000razorpay',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'Razorpay',
-                    'display_name'      => 'Razorpay Software Private Ltd',
-                    'email'             => 'admin@razorpay.com',
-                    'email_domains'     => 'razorpay.com',
-                    'allow_sign_up'     => true,
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => $currentTime,
-                    'updated_at'        => $currentTime,
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
                 ]
             );
 
@@ -844,6 +845,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1048,6 +1050,24 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
+    }
+
+    protected function createNetbankingAxisTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_axis',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),

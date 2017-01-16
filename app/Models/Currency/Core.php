@@ -1,14 +1,14 @@
 <?php
 
-namespace RZP\Models\Admin;
+namespace RZP\Models\Currency;
 
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment\Currency;
 
-class ExchangeRate extends Base\Core
+class Core extends Base\Core
 {
     protected $exchange;
+    protected $redis;
 
     const EXCHANGE_RATE_KEY = 'exchange_rates_';
 
@@ -23,13 +23,24 @@ class ExchangeRate extends Base\Core
 
     public function updateRates($currency)
     {
+        $currency = strtoupper($currency);
+
         $rates = $this->exchange->latest($currency);
 
-        $key = self::EXCHANGE_RATE_KEY . $currency;
+        $key = $this->getRedisKey($currency);
 
         $this->redis->forever($key, $rates);
 
         return ['success' => true];
+    }
+
+    public function getRates($currency)
+    {
+        $key = $this->getRedisKey($currency);
+
+        $rates = $this->redis->get($key);
+
+        return $rates;
     }
 
     public function getBaseAmount($amount, $currency)
@@ -54,12 +65,10 @@ class ExchangeRate extends Base\Core
         return $baseAmount;
     }
 
-    protected function getRates($currency)
+    protected function getRedisKey($currency)
     {
-        $key = self::EXCHANGE_RATE_KEY . $currency;
+        $key = self::EXCHANGE_RATE_KEY . strtoupper($currency);
 
-        $rates = $this->redis->get($key);
-
-        return $rates;
+        return $key;
     }
 }

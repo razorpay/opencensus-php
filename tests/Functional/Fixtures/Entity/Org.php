@@ -41,8 +41,10 @@ class Org extends Base
 
         // Default organisation to be used for tests
         $org = $this->fixtures->create('org', [
-            'id' => self::RZP_ORG,
+            'id'    => self::RZP_ORG,
             'email' => 'admin@razorpay.com',
+
+            'cross_org_access' => true,
         ]);
 
         $this->fixtures->create('org_hostname', [

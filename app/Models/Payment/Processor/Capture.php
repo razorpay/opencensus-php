@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -36,9 +37,9 @@ trait Capture
 
         // set the input currency if missing and payment currency is INR
         if ((isset($input['currency']) === false) and
-            ($payment->getCurrency() === Payment\Currency::INR))
+            ($payment->getCurrency() === Currency\Currency::INR))
         {
-            $input['currency'] = Payment\Currency::INR;
+            $input['currency'] = Currency\Currency::INR;
         }
 
         $payment->getValidator()->validateInput('capture', $input);
@@ -225,7 +226,7 @@ trait Capture
         if ($payment->getConvertCurrency() === true)
         {
             $data['amount'] = $payment->getBaseAmount();
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
         }
 
         $this->captureOnGateway($data);
@@ -563,7 +564,7 @@ trait Capture
                 'order_id'      => $order->getId(),
             ]);
 
-        if ($invoice->getStatus() === Invoice\Status::PAID)
+        if ($invoice->hasBeenPaid() === true)
         {
             throw new Exception\LogicException(
                 'The invoice is already paid for.',

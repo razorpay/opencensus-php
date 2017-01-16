@@ -9,6 +9,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
@@ -25,8 +26,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'required_unless:method,aeps|email',
-        'contact'                 =>  'required_unless:method,aeps|contact_syntax',
+        'email'                   =>  'sometimes|email',
+        'contact'                 =>  'sometimes|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -67,8 +68,19 @@ class Validator extends Base\Validator
         'currency',
         'description',
         'fee',
-        'contact'
+        'contact',
+        'email',
     ];
+
+    protected function validateEmail($input)
+    {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::EMAIL]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email field is required.', Entity::EMAIL);
+        }
+    }
 
     protected function validateMethod($attribute, $method)
     {
@@ -83,7 +95,8 @@ class Validator extends Base\Validator
     {
         $vpaParts = explode('@', $vpa);
 
-        if (count($vpaParts) !== 2)
+        if ((count($vpaParts) !== 2) or
+            (strlen($vpaParts[1]) > 50))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
@@ -221,6 +234,13 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::CONTACT]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The contact field is required.', Entity::CONTACT);
+        }
+
         if ($input['method'] === Payment\Method::WALLET)
         {
             $number = new PhoneBook($input['contact'], true);
@@ -284,7 +304,7 @@ class Validator extends Base\Validator
         $currency = $input['currency'];
 
         // Right now only INR and USD is supported.
-        if (in_array($currency, Payment\Currency::SUPPORTED_CURRENCIES, true) === false)
+        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,

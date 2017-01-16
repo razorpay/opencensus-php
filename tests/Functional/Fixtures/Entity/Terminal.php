@@ -18,6 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingAxisTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
@@ -663,6 +664,25 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAxisTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_AXIS_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_axis',
+            'gateway_merchant_id'       => 'test_pid',
+            'gateway_secure_secret'     => 'test_masterkey',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

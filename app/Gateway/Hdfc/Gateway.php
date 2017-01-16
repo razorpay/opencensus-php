@@ -58,8 +58,6 @@ class Gateway extends Base\Gateway
      */
     protected $model = null;
 
-    const INR_CODE = 356;
-
     /**
      * If during the payment flow, we detect an
      * error, or the payment fails for any reason,
@@ -394,6 +392,41 @@ class Gateway extends Base\Gateway
             // Verified to not require any refund
             return true;
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) ($refundEntity->getAmount() * 100);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function manualGatewayRefund(array $input)

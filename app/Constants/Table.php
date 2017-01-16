@@ -41,7 +41,7 @@ class Table
     const BANK_ACCOUNT          = 'bank_accounts';
     const MERCHANT_DETAIL       = 'merchant_details';
     const CUSTOMER_BALANCE      = 'customer_balance';
-    const DAILY_SETTLEMENT      = 'daily_settlements';
+    const BATCH_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const MERCHANT_TERMINAL     = 'merchant_terminal';

@@ -190,7 +190,9 @@ class MerchantController extends Controller
 
     public function getTerminals($mid)
     {
-        $data = (new Terminal\Service)->getTerminals($mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }
@@ -628,6 +630,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Detail\Service)->editMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantDetailMigrate()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\FileMigration)->migrateMerchantDocuments($input);
 
         return ApiResponse::json($response);
     }

@@ -38,7 +38,7 @@ class Inferno
     ];
 
     /**
-     * We keep it internally as 7 seconds
+     * We keep it internally as 20 seconds
      * but publicly we only say it's 5 seconds.
      */
     const WEBHOOK_TIMEOUT = 20;
@@ -121,6 +121,8 @@ class Inferno
 
         $data['event'] = $event['event'];
 
+        $data['payment_id'] = $this->getPaymentIdFromEventData($event);
+
         if ($type === 'failure')
         {
             $subject .= 'Webhook failed for ' . $subjectName;
@@ -147,11 +149,24 @@ class Inferno
         });
     }
 
+    protected function getPaymentIdFromEventData(array $eventData)
+    {
+        $paymentEvents = ['payment.authorized', 'payment.failed', 'payment.captured'];
+
+        if (in_array($eventData['event'], $paymentEvents, true) === true)
+        {
+            return $eventData['payload']['payment']['entity']['id'];
+        }
+
+        return null;
+    }
+
     public function getRequestHeaders($hmac)
     {
         $headers = array(
             'User-Agent'    => 'Razorpay-Webhook/v1',
-            'Content-Type'  => 'application/json'
+            'Content-Type'  => 'application/json',
+            'Expect'        => null,
         );
 
         if (empty($hmac) === false)

@@ -3,13 +3,14 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Merchant;
 use RZP\Constants\Table;
-use RZP\Models\Terminal;
-use RZP\Models\Terminal\Entity as Merchant_Terminal;
+use RZP\Models\Merchant\Entity as Merchant;
+use RZP\Models\Terminal\Entity as Terminal;
 
 class CreateMerchantTerminalTable extends Migration
 {
+    const MERCHANT_ID = 'merchant_id';
+    const TERMINAL_ID = 'terminal_id';
     /**
      * Run the migrations.
      *
@@ -21,20 +22,19 @@ class CreateMerchantTerminalTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Merchant_Terminal::MERCHANT_ID, Merchant_Terminal::ID_LENGTH);
+            $table->char(self::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(Merchant_Terminal::TERMINAL_ID, Merchant_Terminal::ID_LENGTH);
+            $table->char(self::TERMINAL_ID, Terminal::ID_LENGTH);
 
-            $table->foreign(Merchant_Terminal::MERCHANT_ID)
-                  ->references(Merchant\Entity::ID)
+            $table->foreign(self::MERCHANT_ID)
+                  ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->onDelete('cascade');
 
-            $table->foreign(Merchant_Terminal::TERMINAL_ID)
-                  ->references(Terminal\Entity::ID)
+            $table->foreign(self::TERMINAL_ID)
+                  ->references(Terminal::ID)
                   ->on(Table::TERMINAL)
                   ->onDelete('cascade');
-
         });
     }
 
@@ -48,10 +48,12 @@ class CreateMerchantTerminalTable extends Migration
         Schema::table(Table::MERCHANT_TERMINAL, function($table)
         {
             $table->dropForeign(
-                Table::MERCHANT_TERMINAL.'_'.MERCHANT_TERMINAL::MERCHANT_ID.'_foreign');
+                Table::MERCHANT_TERMINAL.'_'.self::MERCHANT_ID.'_foreign');
 
             $table->dropForeign(
-                Table::MERCHANT_TERMINAL.'_'.MERCHANT_TERMINAL::TERMINAL_ID.'_foreign');
+                Table::MERCHANT_TERMINAL.'_'.self::TERMINAL_ID.'_foreign');
         });
+
+        Schema::drop(Table::MERCHANT_TERMINAL);
     }
 }

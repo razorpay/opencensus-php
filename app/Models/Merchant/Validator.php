@@ -39,6 +39,7 @@ class Validator extends Base\Validator
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
+        Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         'groups'                            => 'sometimes|array',
         // max: 5 days (don't change max value without consult), min:60 minutes
@@ -75,7 +76,6 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'csv_email',
-        'features',
     ];
 
     protected static $featureValidators = [
@@ -157,11 +157,6 @@ class Validator extends Base\Validator
                 );
             }
         }
-    }
-
-    protected function validateFeatures($input)
-    {
-        Features::validateFeatures($input);
     }
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
