@@ -512,7 +512,7 @@ class InvoiceTest extends TestCase
 
         $testData['response']['content']['amount'] += 200000;
 
-        $response = $this->startTest($testData);
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testAddManyLineItemsToInvoice()

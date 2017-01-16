@@ -36,11 +36,7 @@ class Core extends Base\Core
             $input[Entity::CURRENCY] = $morphEntity->getCurrency();
         }
 
-        $this->setItemAssociationAndUpdateInput(
-            $lineItem,
-            $input,
-            $merchant,
-            $morphEntity);
+        $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
 
         $lineItem->build($input);
 
@@ -92,11 +88,7 @@ class Core extends Base\Core
                 'input'     => $input,
             ]);
 
-        $this->setItemAssociationAndUpdateInput(
-            $lineItem,
-            $input,
-            $merchant,
-            $morphEntity);
+        $this->setItemAssociationAndUpdateInput($lineItem, $input, $merchant);
 
         $lineItem->edit($input);
 
@@ -255,20 +247,18 @@ class Core extends Base\Core
      * If ITEM_ID is send in input, fetches that item and:
      * - Associates that item with line item
      * - Usages it's name, description, amount, currency to fill in line item
-     *   entity.
+     *   entity, if it's not already set in input with some value.
      *
      * @param Entity            $lineItem
      * @param array             $input
      * @param Merchant\Entity   $merchant
-     * @param Base\PublicEntity $morphEntity
      *
      * @return null
      */
     protected function setItemAssociationAndUpdateInput(
         Entity $lineItem,
         array & $input,
-        Merchant\Entity $merchant,
-        Base\PublicEntity $morphEntity)
+        Merchant\Entity $merchant)
     {
         if (isset($input[Entity::ITEM_ID]) === false)
         {
@@ -283,9 +273,13 @@ class Core extends Base\Core
 
         $lineItem->item()->associate($item);
 
-        $input[Entity::NAME]        = $item->getName();
-        $input[Entity::DESCRIPTION] = $item->getDescription();
-        $input[Entity::AMOUNT]      = $item->getAmount();
-        $input[Entity::CURRENCY]    = $item->getCurrency();
+        foreach (Entity::$itemFields as $field)
+        {
+            if (isset($input[$field]) === true) continue;
+
+            $accessor = 'get' . studly_case($field);
+
+            $input[$field] = $item->$accessor();
+        }
     }
 }

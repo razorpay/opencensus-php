@@ -29,7 +29,6 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ACTIVE            => 1,
         self::DESCRIPTION       => null,
-        self::CURRENCY          => Currency::INR,
     ];
 
     protected $visible = [

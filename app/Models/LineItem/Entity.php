@@ -37,7 +37,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::QUANTITY          => 1,
+        self::QUANTITY    => 1,
+        self::DESCRIPTION => null,
     ];
 
     protected $visible = [
@@ -84,6 +85,17 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
+    ];
+
+    //
+    // Fields which can be populated from item template, if item_id is provided
+    // in input.
+    //
+    public static $itemFields = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
     ];
 
     // -------------------------- Getters --------------------------
