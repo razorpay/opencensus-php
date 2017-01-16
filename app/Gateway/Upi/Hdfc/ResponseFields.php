@@ -22,6 +22,8 @@ class ResponseFields
     /**
      * These are the expected field orders
      * for the response we get from the API
+     *
+     * @see https://drive.google.com/drive/u/1/folders/0B1MTSXtR53PfN2dIWmE0REI3eWs
      */
     const COLLECT       = [
         self::PAYMENT_ID,

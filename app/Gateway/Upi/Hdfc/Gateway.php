@@ -23,6 +23,8 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    const ACQUIRER = 'hdfc';
+
     protected $gateway = 'upi_hdfc';
 
     const BANK = 'hdfc';
@@ -30,11 +32,12 @@ class Gateway extends Base\Gateway
     // Expiry timeout in minutes
     const EXPIRY_TIMEOUT = 5;
 
-    protected $map = array(
+    protected $map = [
+        Entity::VPA                       => Entity::VPA,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
-    );
+    ];
 
     /**
      * Authorizes a payment using UPI Gateway
@@ -91,7 +94,7 @@ class Gateway extends Base\Gateway
      * @param  array $input Request Input arrau
      * @return array
      */
-    public function preProcessS2SResponse($input)
+    public function preProcessCallbackResponse($input)
     {
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
@@ -106,6 +109,8 @@ class Gateway extends Base\Gateway
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
         $response = $this->decrypt($responseBody);
+
+        $type = strtoupper($type);
 
         $fields = constant(__NAMESPACE__ . "\ResponseFields::$type");
 
@@ -171,7 +176,7 @@ class Gateway extends Base\Gateway
      */
     protected function formatAmount($amount)
     {
-        return number_format($amount/100, 2, '.', '');
+        return number_format($amount / 100, 2, '.', '');
     }
 
     /**
@@ -228,12 +233,12 @@ class Gateway extends Base\Gateway
      */
     public function encrypt($data)
     {
-        $cipher = $this->getAESInstance();
+        $cipher = $this->getCipherInstance();
 
         return strtoupper(bin2hex($cipher->encrypt($data)));
     }
 
-    protected function getAESInstance()
+    protected function getCipherInstance()
     {
         $cipher = new AES(AES::MODE_ECB);
 
@@ -249,7 +254,7 @@ class Gateway extends Base\Gateway
      */
     public function decrypt($data)
     {
-        $cipher = $this->getAESInstance();
+        $cipher = $this->getCipherInstance();
 
         return $cipher->decrypt(hex2bin($data));
     }
@@ -258,13 +263,13 @@ class Gateway extends Base\Gateway
     {
         $str = '';
 
-        for($i=0;$i<strlen($hex);$i+=2)
+        for($i = 0; $i < strlen($hex); $i += 2)
         {
            $str .= chr(hexdec(substr($hex,$i,2)));
         }
 
         return $str;
-      }
+    }
 
     protected function getAuthorizeRequestArray($input)
     {
@@ -280,7 +285,7 @@ class Gateway extends Base\Gateway
             $this->formatAmount($payment['amount']),
             $this->getPaymentRemark($input),
             self::EXPIRY_TIMEOUT,
-            $this->getMCCCode($input),
+            $this->getMerchantCategoryCode($input),
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -305,7 +310,7 @@ class Gateway extends Base\Gateway
      * @return string 4 digit integer as string.
      *                  Default value is 6012, as per HDFC
      */
-    protected function getMCCCode(array $input)
+    protected function getMerchantCategoryCode(array $input)
     {
         if ($input['merchant']['category'])
         {
@@ -350,12 +355,11 @@ class Gateway extends Base\Gateway
                 'data'              => $data,
             ]);
 
-
         $msg = $this->encrypt($data);
 
         $json = [
-            'requestMsg'    =>  $msg,
-            'pgMerchantId'  =>  $this->getMerchantId(),
+            'requestMsg'    => $msg,
+            'pgMerchantId'  => $this->getMerchantId(),
         ];
 
         return json_encode($json);

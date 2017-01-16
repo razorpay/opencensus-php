@@ -27,7 +27,7 @@ class Entity extends Base\Entity
 
     protected $entity = 'upi';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
         self::ACTION,
         self::AMOUNT,
@@ -44,9 +44,9 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
-    );
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ACTION,
         self::AMOUNT,
         self::ACQUIRER,
@@ -62,11 +62,11 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::STATUS_CODE,
         self::VPA,
-    );
+    ];
 
-    protected $casts = array(
-        'amount'  =>  'int',
-    );
+    protected $casts = [
+        'amount' => 'int'
+    ];
 
     protected static $generators = [
         self::PROVIDER,
@@ -117,7 +117,7 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
-    protected function generateProvider(& $input)
+    protected function generateProvider(array &$input)
     {
         $vpa = $input[self::VPA];
 

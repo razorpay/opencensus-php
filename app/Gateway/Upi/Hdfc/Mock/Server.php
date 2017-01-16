@@ -52,67 +52,7 @@ class Server extends Base\Mock\Server
 
     public function verify($input)
     {
-        $input = $this->parseInput($input);
 
-        parent::verify($input);
-
-        $this->validateActionInput($input);
-
-        $app = App::getFacadeRoot();
-
-        $payment = $app['repo']->payment->find($input['merchantTranId']);
-
-        $status = 'SUCCESS';
-        $message = 'Transaction Successful';
-
-        if (isset($payment['notes']['status']) === true)
-        {
-            if ($payment['notes']['status'] === 'created')
-            {
-                $status = 'PENDING';
-                $message = 'Transaction Initiated';
-            }
-            else if ($payment['notes']['status'] === 'failed')
-            {
-                $status = 'FAILURE';
-                $message = 'Transaction failed';
-            }
-        }
-
-        $response = array(
-            'response'          => '0',
-            'merchantId'        => $input['merchantId'],
-            'subMerchantId'     => '1234',
-            'terminalId'        => '1234',
-            'success'           => 'true',
-            'message'           => $message,
-            'merchantTranId'    => $input['merchantTranId'],
-            'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
-            'status'            => $status
-        );
-
-        return $this->makeResponse($response);
-    }
-
-    /**
-     * We are testing if our gateway works
-     * with all possible values of error codes
-     * @return int response code
-     * @see HDFC Documentation:
-     *
-     * >All other values of response codes = Transaction has failed
-     */
-    protected function getResponseCode()
-    {
-        switch($this->input['payerVa'])
-        {
-            // Just make sure that this doesn't return 92
-            case 'unknownresponse@hdfcbank':
-                return mt_rand(93, 500);
-                break;
-            default:
-                return 92;
-        }
     }
 
     protected function makeResponse($data)
@@ -168,33 +108,7 @@ class Server extends Base\Mock\Server
         return base64_encode($encrypted);
     }
 
-    protected function S2SRequestContent(array $upiEntity, array $payment)
-    {
-        // Format is 20160830152240
-        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at'], 'Asia/Kolkata');
-        $completeDate = $initDate->copy()->addMinutes(1);
-
-        $response = [
-            'merchantId'        => $upiEntity['gateway_merchant_id'],
-            'subMerchantId'     => '1234',
-            'terminalId'        => '1234',
-            'BankRRN'           => $upiEntity['gateway_payment_id'],
-            'merchantTranId'    => $upiEntity['payment_id'],
-            'PayerName'         => 'payer name not available',
-            'PayerMobile'       => $payment['contact'],
-            'PayerVA'           => $upiEntity['vpa'],
-            'PayerAmount'       => number_format($payment['amount']/100, 2, '.', ''),
-            'TxnStatus'         => 'SUCCESS',
-            'TxnInitDate'       => $initDate->format('Ymdhis'),
-            'TxnCompletionDate' => $completeDate->format('Ymdhis'),
-        ];
-
-        $this->content($response);
-
-        return $response;
-    }
-
-    protected function getAESInstance()
+    protected function getCipherInstance()
     {
         $cipher = new AES(AES::MODE_ECB);
 
