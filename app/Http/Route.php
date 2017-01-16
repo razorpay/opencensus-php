@@ -991,6 +991,15 @@ final class Route
         'payment_redirect_callback',
     );
 
+    /**
+     * Sometimes we need to disable routes without deleting them temporarily.
+     * It could be that the route is deleted later on and is here during
+     * the transition period only.
+     */
+    const DISABLED_ROUTES = array(
+        'merchant_copy_terminal',
+    );
+
     public function __construct($app)
     {
         $this->app = $app;
