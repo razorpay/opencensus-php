@@ -77,6 +77,7 @@ app.controller('EntitiesCtrl', [
       'wallet_olamoney',
       'wallet_airtelmoney',
       'wallet_freecharge',
+      'wallet_openwallet'
     ];
     var walletList = [
       'all',
@@ -88,6 +89,7 @@ app.controller('EntitiesCtrl', [
       'airtelmoney',
       'freecharge',
       'ezeclick',
+      'openwallet'
     ];
     var upiBankList = [
       'all',
@@ -225,6 +227,20 @@ app.controller('EntitiesCtrl', [
         email: ['Email'],
         active: booleanList,
         contact: ['Contact']
+      },
+      customer_balance: {
+        merchant_id: ['Merchant ID'],
+        customer_id: ['Customer ID'],
+      },
+      customer_transaction: {
+        entity_id: ['Payment/Refund Id'],
+        merchant_id: ['Merchant ID'],
+        customer_id: ['Customer ID'],
+        type: [
+          'all',
+          'transfer',
+          'refund'
+        ]
       },
       cybersource: {
         payment_id: ['Payment ID'],
@@ -431,6 +447,12 @@ app.controller('EntitiesCtrl', [
           'settlement',
           'adjustment'
         ]
+      },
+      transfer: {
+        source_id: ['Payment/Merchant Id'],
+        to_id: ['Merchant/Customer Id'],
+        merchant_id: ['Merchant Id'],
+        transaction_id: ['Transaction Id'],
       },
       token: {
         bank: ['Bank Code'],
