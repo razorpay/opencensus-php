@@ -53,7 +53,7 @@ return [
         ],
         'response' => [
             'content' => [
-                "submitted" => 1,
+                "submitted" => true,
                 "verification" => [
                     "status" => "pending"
                 ],

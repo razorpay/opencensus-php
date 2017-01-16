@@ -70,6 +70,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
+    public function routeDisabled()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
+    }
+
     public function httpMethodNotAllowed()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
