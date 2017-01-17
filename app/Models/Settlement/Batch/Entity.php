@@ -8,7 +8,7 @@
  * We will need to update it manually via a route.
  */
 
-namespace RZP\Models\Settlement\Daily;
+namespace RZP\Models\Settlement\Batch;
 
 use RZP\Models\Base;
 use Carbon\Carbon;
@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
 
-    protected $entity = 'daily_settlement';
+    protected $entity = 'batch_settlement';
 
     protected $generateIdOnCreate = true;
 

@@ -357,32 +357,22 @@ class Generator extends Base\Core
     }
 
     /**
-     * Sets Elfin services.
+     * This has been put in place temporarily to test uptime of gimli and avoid
+     * extra latency in case gimli fails for some reason.
      *
-     * TO BE REMOVED.
+     * By default GIMLI is the first preferece. But for now overriding it to
+     * allow the same for only 30% of the traffic.
      *
-     * For testing purposes, it'll set services to:
-     * - gimli:       For one demo merchant account
-     * - gimli,bitly: For one other demo merchant account
-     * - bitly:       For others
+     * @return null
+     *
      */
     protected function setElfinServices()
     {
-        switch ($this->merchant->getId())
+        $randInt = mt_rand(0, 100);
+
+        if ($randInt >= 70)
         {
-            // harshit.marwah@razorpay.com
-            case '4izmfM9TFCAgFN':
-                $this->elfin->setServices([Elfin::GIMLI]);
-                break;
-
-            // harshilmathur@gmail.com
-            case '2aTeFCKTYWwfrF':
-                $this->elfin->setServices([Elfin::GIMLI, Elfin::BITLY]);
-                break;
-
-            default:
-                $this->elfin->setServices([Elfin::BITLY]);
-                break;
+            $this->elfin->setServices([Elfin::BITLY, Elfin::GIMLI]);
         }
     }
 }

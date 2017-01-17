@@ -87,7 +87,7 @@ class Entity extends Base\PublicEntity
 
     public function batchSettlement()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Daily\Entity');
+        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
     }
 
     public function isStatusCreated()

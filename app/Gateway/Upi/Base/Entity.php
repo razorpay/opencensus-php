@@ -106,7 +106,7 @@ class Entity extends Base\Entity
 
         $vpaParts = explode('@', $vpa);
 
-        return $vpaParts[1] ?? NULL;
+        return $vpaParts[1] ?? null;
     }
 
     public function getMerchantId()

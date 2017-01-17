@@ -84,7 +84,7 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
-    public function fetchRefundSummaryBetweenTimestamp($from , $to)
+    public function fetchRefundSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
@@ -114,6 +114,26 @@ class Repository extends Base\Repository
                     ->whereNull(Table::REFUND . '.' . Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
                     ->with('payment', 'merchant')
+                    ->get();
+    }
+
+    public function fetchGatewayRefundedRefundsWithoutTxns()
+    {
+        $refundAttrs = $this->getAttributeWithTableName('*');
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundGatewayRefundedAttr = $this->getAttributeWithTableName(Entity::GATEWAY_REFUNDED);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->select($refundAttrs)
+                    ->whereNull($refundTransactionIdAttr)
+                    ->whereNotNull($paymentTransactionIdAttr)
+                    ->where($refundGatewayRefundedAttr, '=', 1)
+                    ->with(['payment', 'merchant'])
                     ->get();
     }
 
@@ -215,5 +235,14 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
+    }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $paymentId = $params[Refund\Entity::PAYMENT_ID];
+
+        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
     }
 }

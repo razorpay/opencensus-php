@@ -71,9 +71,10 @@ class Processor extends Base\Core
 
     /**
      * This function process batch.
-     * @param  Batch\Entity $batch   Batch Entity
-     * @param  array       $entries  Entries in the batch file
-     * @return void
+     *
+     * @param  array $entries Entries in the batch file
+     *
+     * @internal param Entity $batch Batch Entity
      */
     protected function processBatch(& $entries)
     {
@@ -169,7 +170,7 @@ class Processor extends Base\Core
 
                 $this->processRefundRequest($payment, $entry);
             }
-            catch (\Exception $e)
+            catch (Exception\BaseException $e)
             {
                 $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
 
@@ -188,9 +189,9 @@ class Processor extends Base\Core
      * If it exists then we update the status as success and refund id
      * If the refund is successful then we update the entry with status success and refund id
      * If there is any exception occured, we mark the entry as failed.
+     *
      * @param  Payment\Entity $payment Payment Entity
-     * @param  Array          $entry   Single Entry in excel
-     * @return void
+     * @param array           $entry   Single Entry in excel
      */
     protected function processRefundRequest(Payment\Entity $payment, array & $entry)
     {

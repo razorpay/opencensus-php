@@ -352,34 +352,4 @@ class Gateway extends Base\Gateway
 
         return $this->getHashOfString($str);
     }
-
-    public function generateClaims($input)
-    {
-        $paymentIds = array_map(function($row)
-        {
-            return $row['payment']['id'];
-        }, $input['data']);
-
-        $gatewayPayments = $this->repo->fetchByPaymentIdsAndAction(
-                                $paymentIds, Action::AUTHORIZE);
-
-        $gatewayPayments = $gatewayPayments->getDictionaryByAttribute(Entity::PAYMENT_ID);
-
-        $input['data'] = array_map(function($row) use ($gatewayPayments)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayPayments[$paymentId]))
-            {
-                $row['gateway'] = $gatewayPayments[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $input['data']);
-
-        $ns = $this->getGatewayNamespace();
-        $class = $ns . '\\' . 'ClaimsFile';
-
-        return (new $class)->generate($input);
-    }
 }

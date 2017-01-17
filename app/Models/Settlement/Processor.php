@@ -11,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Daily\Entity as BatchSettlement;
+use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
@@ -162,10 +162,16 @@ class Processor extends Base\Core
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
+
+            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
         }
         else
         {
-            list($txns, $schedules) = $this->repo->transaction->fetchUnsettledTxnsAndSchedules($this->setlTime);
+            $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
+
+            $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
+
+            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
 
             $schedules->callOnEveryItem('updateNextRun');
 
@@ -174,10 +180,11 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        $this->trace->info(
-            TraceCode::SCHEDULE_UNSETTLED_TXNS,
-            ['count' => $txns->count()]);
+        return [$settlements, $settledTxnsCount];
+    }
 
+    protected function processUnsettledTransactions($txns, $channel)
+    {
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
         list($settlements, $settledTxnsCount) = $this->createSettlementsFromTxns($txns, $channel);
@@ -263,6 +270,12 @@ class Processor extends Base\Core
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
+                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant'   => $merchant->getId(),
+                        'setlAmount' => $setlAmount,
+                    ]);
+
                 continue;
             }
 
