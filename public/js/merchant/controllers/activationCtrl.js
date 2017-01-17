@@ -71,7 +71,7 @@ app.controller('ActivationCtrl', [
         });
         $scope.data.bank_account_number_confirmation = $scope.data.bank_account_number;
 
-        angular.forEach(data.data.files, function (value, key) {
+        angular.forEach(data.data.files, function (key) {
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
         if (data.data.submitted === true) {

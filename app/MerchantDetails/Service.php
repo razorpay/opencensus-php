@@ -72,6 +72,16 @@ class Service extends Base\Service
             'promoter_address_url' => 5,
     ];
 
+     const UPLOAD_KEYS = [
+         'business_proof_url'           => 'business_proof',
+         'business_operation_proof_url' => 'business_operation_proof',
+         'business_pan_url'             => 'business_pan_proof',
+         'address_proof_url'            => 'address_proof',
+         'promoter_proof_url'           => 'promoter_proof',
+         'promoter_pan_url'             => 'promoter_pan_proof',
+         'promoter_address_url'         => 'promoter_address_proof',
+    ];
+
     const STEP_FINISHED  = [1, 2, 3, 4, 5];
 
     public function __construct()
@@ -92,13 +102,18 @@ class Service extends Base\Service
 
         $stepFinished = $this->calculateSteps($merchantDetails);
 
-        $unfinishedSteps = array_unique($stepFinished);
+        if (count($stepFinished) !== 0)
+        {
+            $unfinishedSteps = array_unique($stepFinished);
 
-        $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
+            $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
 
-        $merchantDetails['steps_finished'] = json_encode($finishedSteps);
+            $merchantDetails['steps_finished'] = json_encode($finishedSteps);
 
-        $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+            $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+        }
+
+        $merchantDetails['files'] = $this->getFileDetails($merchantId);
 
         return $merchantDetails;
     }
@@ -450,6 +465,7 @@ class Service extends Base\Service
         unset($input['locked']);
         unset($input['activation_progress']);
         unset($input['agree_terms']);
+        unset($input['files']);
 
         if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
         {
@@ -479,9 +495,14 @@ class Service extends Base\Service
         $merchantDetails->saveOrFail();
     }
 
-    protected function calculateSteps(array $response)
+    protected function calculateSteps(array $response = null)
     {
         $stepFinished = [];
+
+        if ($response === null)
+        {
+            return $stepFinished;
+        }
 
         if (isset($response['verification']['required_fields']))
         {
@@ -495,5 +516,30 @@ class Service extends Base\Service
         }
 
         return $stepFinished;
+    }
+
+
+    protected function getFileDetails($merchantId)
+    {
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->id;
+        }
+
+        $merchantDetail = Entity::findorfail($merchantId);
+
+        $merchantDetailArr = $merchantDetail->toArray();
+
+        $fileResponse = [];
+
+        foreach (self::UPLOAD_KEYS as $key => $value)
+        {
+            if (isset($merchantDetailArr[$key]))
+            {
+                $fileResponse[] = $value;
+            }
+        }
+
+        return $fileResponse;
     }
 }
