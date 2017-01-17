@@ -262,7 +262,7 @@ class Gateway extends Base\Gateway
      */
     protected function encrypt(string $data): string
     {
-        $rsa = $this->getRSAInstance();
+        $rsa = $this->getCipherInstance();
 
         $rsa->loadKey($this->getPublicKey());
 
@@ -276,7 +276,7 @@ class Gateway extends Base\Gateway
      */
     protected function decrypt(string $data): string
     {
-        $rsa = $this->getRSAInstance();
+        $rsa = $this->getCipherInstance();
 
         $key = $this->getPrivateKey();
 
@@ -285,7 +285,7 @@ class Gateway extends Base\Gateway
         return $rsa->decrypt($data);
     }
 
-    protected function getRSAInstance(): RSA
+    protected function getCipherInstance(): RSA
     {
         /**
          * We need to do this to use PCCS 1.5 instead of 1.7
@@ -540,7 +540,7 @@ class Gateway extends Base\Gateway
      * @param  String $body Request body
      * @return array
      */
-    public function preProcessS2SResponse($body): array
+    public function preProcessServerCallback($body): array
     {
         $response = $this->parseGatewayResponse($body, true);
 
@@ -654,7 +654,7 @@ class Gateway extends Base\Gateway
      * requests. This is currently:
      *
      * - razorpay@icici on production
-     * - razorpay@easypay on UAT
+     * - razorpay@eazypay on UAT
      *
      * We are storing this value on the gateway_merchant_id2 parameter
      *
