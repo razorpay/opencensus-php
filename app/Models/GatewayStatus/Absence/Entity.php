@@ -64,6 +64,7 @@ class Entity extends Base\PublicEntity
         self::PARTIAL   => 'bool'
     ];
 
+
     const END_OF_TIME = 2147483647;
 
     protected $entity = 'gateway_absence';

@@ -10,10 +10,9 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
 use RZP\Models\GatewayStatus\Absence\Entity;
 use RZP\Models\GatewayStatus\Absence\ReasonCode;
-use RZP\Models\GatewayStatus\Absence\Processor;
-use RZP\Models\Base\Core;
+use RZP\Models\GatewayStatus\Absence\Core as AbsenceCore;
 
-class StatusCakeProcessor extends Core implements AbstractProcessorInterface
+class StatusCakeProcessor implements AbstractProcessorInterface
 {
     protected $processor;
 
@@ -21,11 +20,17 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
 
     const STATUS_DOWN = 'DOWN';
 
+    protected $app;
+
+    protected $trace;
+
     public function __construct()
     {
-        parent::__construct();
+        $this->app = App::getFacadeRoot();
 
-        $this->processor = new Processor();
+        $this->trace = $this->app['trace'];
+
+        $this->core = new AbsenceCore();
     }
 
     protected function fetchStatusCakeCredentials()
@@ -64,7 +69,7 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
             {
                 $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_EDIT, ['data' => $data]);
 
-                $absent = $this->processor->fetchMostRecentActive($data);
+                $absent = $this->core->fetchMostRecentActive($data);
 
                 if (empty($absent) === false)
                 {
@@ -73,7 +78,9 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
                         Entity::DOWNTIME_TO   => time()
                     ];
 
-                    return $this->processor->editAction($absent->id, $editData);
+                    $downWindow = $this->core->edit($absent, $editData);
+
+                    return $downWindow->toArrayPublic();
                 }
             }
             else
@@ -82,7 +89,9 @@ class StatusCakeProcessor extends Core implements AbstractProcessorInterface
                 
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
                 // events for the same url.
-                return $this->processor->createAction($data);
+                $downWindow = $this->core->create($data);
+
+                return $downWindow;
             }
         }
         catch(\Exception $e)

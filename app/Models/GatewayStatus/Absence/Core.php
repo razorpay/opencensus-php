@@ -8,8 +8,32 @@ use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
+    protected $uniqueCheckerKeys = [
+        Entity::GATEWAY,
+        Entity::ISSUER,
+        Entity::METHOD,
+        Entity::DOWNTIME_FROM
+    ];
+
     public function create($input)
     {
+        //
+        // Prevent duplicate creation of the same error model.
+        // Basically, since we pass an empty 'to', it means, this is for an unscheduled
+        // maintenance. In case of a scheduled maintenance, the 'to' param is set
+        // and this will return null. For an unscheduled one, in case there already
+        // does exist a record for the same gateway, issuer and method, do not create
+        // additional ones.
+
+        $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
+
+        $alreadyPresent = $this->verifyIfExists($input);
+
+        if (empty($alreadyPresent) === false)
+        {
+            return $alreadyPresent;
+        }
+
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
         $downWindow = (new Entity)->build($input);
@@ -28,6 +52,18 @@ class Core extends Base\Core
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_EDIT, $input);
 
         return $downWindow;
+    }
+
+    public function delete($downWindow)
+    {
+        $id = $downWindow->getId();
+
+        $this->repo->gateway_absence->deleteOrFail($downWindow);
+
+        $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
+
+        return $downWindow;
+
     }
 
     protected function getFormattedCheckoutDataRecord(Merchant\Entity $merchant, Entity $absent)
@@ -81,5 +117,40 @@ class Core extends Base\Core
         }
 
         return $formatted;
+    }
+
+    public function verifyIfExists(array $input)
+    {
+        $queryParams = [];
+
+        foreach ($this->uniqueCheckerKeys as $key)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $queryParams[$key] = $input[$key];
+            }
+        }
+
+        $absentees = $this->repo->gateway_absence->fetch($queryParams);
+
+        return $absentees->first();
+
+    }
+
+    public function fetchMostRecentActive(array $input)
+    {
+        $queryParams = [];
+
+        foreach ($this->uniqueCheckerKeys as $key)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $queryParams[$key] = $input[$key];
+            }
+        }
+
+        $activeAbsentees = $this->repo->gateway_absence->fetchMostRecentActive($queryParams);
+
+        return $activeAbsentees->first();
     }
 }

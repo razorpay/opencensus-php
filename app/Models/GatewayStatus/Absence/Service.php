@@ -13,22 +13,32 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->processor = new Processor();
+        $this->core = new Core();
     }
 
     public function create(array $input)
     {
-        return $this->processor->createAction($input);
+        $downWindow = $this->core->create($input);
+
+        return $downWindow->toArrayPublic();
     }
 
     public function edit($id, array $input)
     {
-        return $this->processor->editAction($id, $input);
+        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+
+        $downWindow = $this->core->edit($downWindow, $input);
+
+        return $downWindow->toArrayPublic();
     }
 
     public function delete($id)
     {
-        return $this->processor->deleteAction($id);
+        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+
+        $downWindow = $this->core->delete($downWindow);
+
+        return $downWindow->toArrayDeleted();
     }
 
     public function findAbsentGateways(array $input)
