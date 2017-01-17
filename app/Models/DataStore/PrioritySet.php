@@ -39,6 +39,30 @@ class PrioritySet extends Base
         return array_keys($this->data);
     }
 
+    /**
+     * Returns members with positive scores. If no such members are present
+     * then returns null
+     */
+    public function getSetMembersWithPositiveScore()
+    {
+        if (empty($this->data) === true)
+        {
+            return null;
+        }
+
+        $result = [];
+
+        foreach ($this->data as $member => $score)
+        {
+            if ($score > 0)
+            {
+                $result[] = $member;
+            }
+        }
+
+        return ((empty($result) === true) ? null : $result);
+    }
+
     public function saveOrFail()
     {
         $storeKey = $this->generateStoreKey();

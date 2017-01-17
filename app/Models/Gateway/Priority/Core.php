@@ -116,8 +116,12 @@ class Core extends Base\Core
         return $this->getGateways($priority);
     }
 
+    /**
+     * While fetching gateways we only fetcg gateways with positive scores.
+     * Gateways with zero scores are ignored
+     */
     protected function getGateways($priority)
     {
-        return $priority->getSetMembers();
+        return $priority->getSetMembersWithPositiveScore();
     }
 }
