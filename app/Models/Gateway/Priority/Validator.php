@@ -27,8 +27,7 @@ class Validator extends Base\Validator
         if (in_array($method, static::$validPaymentMethods, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
-            );
+                ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD);
         }
     }
 
@@ -53,8 +52,7 @@ class Validator extends Base\Validator
         if ($valid === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD
-            );
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD);
         }
     }
 
