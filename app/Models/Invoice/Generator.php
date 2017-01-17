@@ -370,7 +370,7 @@ class Generator extends Base\Core
     {
         $randInt = mt_rand(0, 100);
 
-        if ($randInt >= 30)
+        if ($randInt >= 70)
         {
             $this->elfin->setServices([Elfin::BITLY, Elfin::GIMLI]);
         }
