@@ -19,6 +19,14 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getTerminalById($type, $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Service)->fetchEntityById($type, $id, $input);
+
+        return ApiResponse::json($data);
+    }
     public function getEntityById($type, $id)
     {
         $data = (new Admin\Service)->fetchEntityById($type, $id);

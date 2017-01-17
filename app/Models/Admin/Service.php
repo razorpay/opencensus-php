@@ -9,7 +9,7 @@ use RZP\Exception;
 
 class Service extends Base\Service
 {
-    public function fetchEntityById($entity, $id)
+    public function fetchEntityById($entity, $id, $input = [])
     {
         Entity::validateEntityOrFailPublic($entity);
 
@@ -23,6 +23,11 @@ class Service extends Base\Service
         }
 
         $entity = $this->repo->$entity->findOrFailPublic($id);
+
+        if (($input['sub_merchant'] === true) and ($entity === Entity::TERMINAL))
+        {
+            return $entity->toArrayAdmin(true);
+        }
 
         return $entity->toArrayAdmin();
     }

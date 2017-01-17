@@ -536,4 +536,16 @@ class Entity extends Base\PublicEntity
 
         return $terminalData;
     }
+
+    public function toArrayAdmin($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayAdmin();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
+    }
 }
