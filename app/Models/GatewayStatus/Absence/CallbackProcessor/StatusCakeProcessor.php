@@ -133,7 +133,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
     }
     
-    protected function getNetbankingData($issuer, $input)
+    protected function getNetbankingData(string $issuer, array $input)
     {
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
         {
