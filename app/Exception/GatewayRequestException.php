@@ -5,11 +5,11 @@ namespace RZP\Exception;
 use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
-class GatewayRequestException extends RecoverableException
+class GatewayRequestException extends GatewayErrorException
 {
     protected $safeRetry;
 
-    public function __construct($curlErrorMessage, \Exception $previous = null, $safeRetry = false)
+    public function __construct($curlErrorMessage = null, \Exception $previous = null, $safeRetry = false)
     {
         $code = ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
 
