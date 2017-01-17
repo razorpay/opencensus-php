@@ -2,13 +2,11 @@
 
 namespace RZP\Models\DataStore;
 
-use App;
+use RZP\Models\Base\Core;
 
-class Base
+class Base extends Core
 {
     protected $redis;
-
-    protected $trace;
 
     protected $keyPrefix;
 
@@ -16,16 +14,16 @@ class Base
 
     protected $data;
 
-    // Used to construcy key for data store. To be overriden by child classes
+    /**
+     * Used to construct key for data store.
+     * To be overridden by child classes
+     * @var string
+     */
     protected static $delimiter = '';
 
-    public function __construct()
+    protected function init()
     {
-        $app = App::getFacadeRoot();
-
         $this->redis = $app['redis'];
-
-        $this->trace = $app['trace'];
     }
 
     public function getKey()
