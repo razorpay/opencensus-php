@@ -8,7 +8,6 @@ use RZP\Exception;
 use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Card;
 
 class Validator extends Base\Validator
 {
@@ -29,8 +28,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
-        Entity::DOWNTIME_FROM            => 'required|integer',
-        Entity::DOWNTIME_TO              => 'required|integer',
+        Entity::DOWNTIME_FROM   => 'sometimes|integer',
+        Entity::DOWNTIME_TO     => 'sometimes|integer',
     ];
 
     protected static $createValidators = [
@@ -75,7 +74,7 @@ class Validator extends Base\Validator
 
     public function validateSource(string $attribute, string $source)
     {
-        if (ReasonCode::isValidSource($source) === false)
+        if (Source::isValidSource($source) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Source : '. $source . ' is not valid'

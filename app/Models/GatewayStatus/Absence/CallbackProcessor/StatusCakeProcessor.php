@@ -10,6 +10,7 @@ use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
 use RZP\Models\GatewayStatus\Absence\Entity;
 use RZP\Models\GatewayStatus\Absence\ReasonCode;
+use RZP\Models\GatewayStatus\Absence\Source;
 use RZP\Models\GatewayStatus\Absence\Core as AbsenceCore;
 
 class StatusCakeProcessor implements AbstractProcessorInterface
@@ -235,7 +236,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     protected function formatInput(array $input, int $status)
     {
         $formatted = [
-            Entity::SOURCE      => ReasonCode::SOURCE_STATUSCAKE,
+            Entity::SOURCE      => Source::SOURCE_STATUSCAKE,
             Entity::REASON_CODE => ReasonCode::ISSUER_DOWN,
             Entity::PARTIAL     => false,
         ];
