@@ -21,33 +21,14 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     const QUERY            = 'q';
 
-    //
-    // Default mapping for most of the es fields
-    //
-    protected $defaultFieldMapping = [
-        'type'            => 'text',
-        'analyzer'        => 'edge_ngram_analyzer',
-        'search_analyzer' => 'standard',
-        'index_options'   => 'offsets',
-    ];
-
-    //
-    // Fields indexed in es and their mappings.
-    // These fields will be queried to db and will be indexed.
-    //
+    /**
+     * Fields indexed in es and their mappings.
+     * These fields will be queried to db and will be indexed.
+     */
     protected $fields         = [];
-    protected $fieldsMappings = [];
+    protected $fieldMappings  = [];
 
-    //
-    // TODO: Need to do something about this hack.
-    //
-    protected $hideFields     = [];
-
-    //
-    // These fields will be searched on 'q' (the query string).
-    // These can be different from all the fields(above) indexed.
-    //
-    protected $searchFields   = [];
+    protected $queryFields    = [];
 
     public function __construct()
     {
@@ -55,36 +36,16 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        //
-        // TODO: Fix this, how to get app mode?
-        //
+        // TODO: Fix this!
         $this->mode = 'test';
 
         $this->trace = $app['trace'];
 
         $this->indexName = $app['config']->get('database.es_index');
 
+        $this->setFieldMappings();
+
         $this->esDao = new EsDao();
-    }
-
-    public function getFields()
-    {
-        return $this->fields;
-    }
-
-    public function getFieldsMappings()
-    {
-        return $this->fieldsMappings;
-    }
-
-    public function getSearchFields()
-    {
-        return $this->searchFields;
-    }
-
-    public function getDefaultFieldMapping()
-    {
-        return $this->defaultFieldMapping;
     }
 
     public function setIndexName($indexName)
@@ -98,50 +59,14 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function createIndexIfNotExists()
     {
-        $settings = [
-            'analysis' => [
-                'analyzer' => [
-                    'edge_ngram_analyzer' => [
-                        'tokenizer' => 'edge_ngram_tokenizer',
-                        'filter'    => ['lowercase_filter'],
-                    ],
-                ],
-                'tokenizer' => [
-                    'edge_ngram_tokenizer' => [
-                        'type'        => 'edge_ngram',
-                        'min_gram'    => 2,
-                        'max_gram'    => 50,
-                        'token_chars' => [
-                            'letter',
-                            'digit',
-                        ],
-                    ],
-                ],
-                'filter' => [
-                    'lowercase_filter' => [
-                        'type' => 'lowercase',
-                    ],
-                ],
-            ]
-        ];
+        $settings = EsMappping::$defaultIndexSettings;
 
-        $mappings = [
-            '_default_' => [
-                'properties' => $this->getFieldsMappings(),
-                'dynamic_templates' => [
-                    [
-                        'default' => [
-                            'match' => '*',
-                            'match_mapping_type' => 'string',
-                            'mapping' => $this->getDefaultFieldMapping(),
-                        ],
-                    ],
-                ],
-            ],
-        ];
+        $mappings = EsMappping::mappings($this->fields, $this->fieldMappings);
 
         $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
     }
+
+    public function setFieldMappings() {}
 
     public function search(string $entity, array $params, string $merchantId = null)
     {
@@ -258,7 +183,7 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'multi_match' => [
                     'query'  => $params['q'],
                     'type'   => 'best_fields',
-                    'fields' => $this->getSearchFields(),
+                    'fields' => $this->queryFields,
                     'boost'  => 1,
                 ],
             ];
@@ -337,34 +262,28 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->delete($params);
     }
 
-    /**
-     * Fetches data from mysql for indexing the entity.
-     * If list of ids given then usage that to run findMany else will find all
-     * with given skip and take param.
-     *
-     * @param array|null  $ids
-     * @param int|integer $skip
-     * @param int|integer $take
-     *
-     * @return PublicCollection
-     */
-    public function fetchForIndex(array $ids = null, int $skip = 0, int $take = 100)
+    public function findForIndex(string $id)
     {
-        $query = $this->newQuery();
+        return array_only($this->find($id)->toArray(), $this->fields);
+    }
 
-        $fields = $this->getFields();
+    public function fetchForIndex(int $skip = 0, int $take = 100)
+    {
+        $collection = $this->newQuery()
+                           ->skip($skip)
+                           ->take($take)
+                           ->get();
 
-        if ($ids !== null)
-        {
-            return $query->findMany($ids, $fields)
-                         ->makeHidden($this->hideFields);
-        }
+        $serialized = $collection->toArray();
 
-        return $query->skip($skip)
-                     ->take($take)
-                     ->select($fields)
-                     ->get()
-                     ->makeHidden($this->hideFields);
+        $mapper = function($v)
+                  {
+                      $projected = array_only($v, $this->fields);
+
+                      return array_dot($projected);
+                  };
+
+        return array_map($mapper, $serialized);
     }
 
     /**
@@ -413,9 +332,9 @@ class EsRepository extends \Razorpay\Spine\Repository
         switch ($action) {
             case 'upsert':
 
-                $documents = $this->fetchForIndex([$id])->toArray();
+                $document = $this->findForIndex($id);
 
-                $this->bulkUpdate($documents);
+                $this->bulkUpdate([$document]);
 
                 break;
 

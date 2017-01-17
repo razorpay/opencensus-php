@@ -15,20 +15,16 @@ class EsRepository extends Base\EsRepository
         Entity::NOTES,
     ];
 
-    protected $hideFields = [
-        Entity::CAPTURED,
-    ];
-
-    protected $searchFields = [
+    protected $queryFields = [
         Entity::NOTES . '.*',
     ];
 
-    protected $fieldsMappings = [
-        Entity::NOTES => [
-            'type' => 'object',
-        ],
-        Entity::MERCHANT_ID => [
-            'type' => 'keyword',
-        ],
-    ];
+    public function setFieldMappings()
+    {
+        $this->fieldMappings = [
+            Entity::NOTES => [
+                'type' => 'object',
+            ],
+        ];
+    }
 }

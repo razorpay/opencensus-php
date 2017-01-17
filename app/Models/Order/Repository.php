@@ -15,6 +15,8 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
+        Entity::NOTES           => 'sometimes|string',
+        EsRepository::QUERY     => 'sometimes|string|min:1|max:100',
     ];
 
     protected $proxyFetchParamRules = [
@@ -28,7 +30,8 @@ class Repository extends Base\Repository
     ];
 
     protected $esWhitelistedParams = [
-        Entity::NOTES
+        Entity::NOTES,
+        EsRepository::QUERY,
     ];
 
     public function getOrderForPayment($payment)

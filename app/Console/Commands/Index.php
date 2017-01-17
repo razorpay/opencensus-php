@@ -72,16 +72,16 @@ class Index extends Command
         {
             $this->info('Offset: ' . $skip);
 
-            $collection = $this->esRepo->fetchForIndex(null, $skip, $take);
+            $documents = $this->esRepo->fetchForIndex($skip, $take);
 
-            if ($collection->count() === 0)
+            if (count($documents) === 0)
             {
                 break;
             }
 
             try
             {
-                $this->esRepo->bulkUpdate($collection->toArray());
+                $this->esRepo->bulkUpdate($documents);
             }
             catch(\Exception $e)
             {

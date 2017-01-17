@@ -13,14 +13,19 @@ class EsRepository extends Base\EsRepository
         Entity::ID,
         Entity::NAME,
         Entity::EMAIL,
-        Entity::WEBSITE,
     ];
 
-    protected $searchFields = [
+    protected $queryFields = [
         Entity::NAME,
         Entity::EMAIL,
-        Entity::WEBSITE,
     ];
 
-    protected $fieldsMappings = [];
+    public function setFieldMappings()
+    {
+        $this->fieldMappings = [
+            Entity::NOTES => [
+                'type' => 'object',
+            ],
+        ];
+    }
 }
