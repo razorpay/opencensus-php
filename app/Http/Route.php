@@ -889,6 +889,9 @@ final class Route
             'reconciliate'
         ),
 
+        'raven' => array(
+        ),
+
         'hosted' => array(
             'merchant_secret',
         ),
