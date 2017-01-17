@@ -39,7 +39,7 @@ class PublicCollection extends Collection
 
     public function toArrayReport()
     {
-        return $this->itemsToArrayReport();
+        return array_filter($this->itemsToArrayReport());
     }
 
     public function toArrayGateway()
