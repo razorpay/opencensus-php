@@ -241,6 +241,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putAction($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->action($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postBankAccount($id)
     {
         $input = Request::all();

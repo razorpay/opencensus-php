@@ -4,6 +4,8 @@ namespace RZP\Http;
 
 use ApiResponse;
 
+use RZP\Models\Admin\Permission\Name as Permission;
+
 final class Route
 {
     /*
@@ -12,6 +14,7 @@ final class Route
      | make sure to run the full test suite
      */
 
+    // @codingStandardsIgnoreStart
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
@@ -119,6 +122,7 @@ final class Route
         'merchant_activate'                       => ['post',     'merchants/{id}/activate',                        'MerchantController@postActivate'                                   ],
         'merchant_live_enable'                    => ['post',     'merchants/{id}/live/enable',                     'MerchantController@postLiveEnable'                                 ],
         'merchant_live_disable'                   => ['post',     'merchants/{id}/live/disable',                    'MerchantController@postLiveDisable'                                ],
+        'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
         'merchant_get_offers'                     => ['get',      'merchants/{mid}/offers',                         'MerchantController@getOffers'                                      ],
@@ -407,6 +411,7 @@ final class Route
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
     );
+    // @codingStandardsIgnoreEnd
 
     public static $public = array(
         'checkout',
@@ -559,6 +564,7 @@ final class Route
         'merchant_activate',
         'merchant_live_enable',
         'merchant_live_disable',
+        'merchant_actions',
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
@@ -790,57 +796,41 @@ final class Route
     ];
 
     public static $adminPermission = [
-        'group_create'               => ['create_group'],
-        'admin_create'               => ['create_admin'],
-        'group_get'                  => ['view_group'],
-        'group_get_multiple'         => ['view_all_group'],
-        'org_create'                 => ['create_org'],
-        'org_get_multiple'           => ['view_all_org'],
-        'org_edit'                   => ['edit_org'],
-        'org_delete'                 => ['delete_org'],
-        'org_get'                    => ['view_org'],
-        'role_create'                => ['create_role'],
-        'role_get_multiple'          => ['view_all_role'],
-        'role_get'                   => ['view_role'],
-        'role_edit'                  => ['edit_role'],
-        'role_delete'                => ['delete_role'],
-        'admin_get_multiple'         => ['view_all_admin'],
-        'admin_get'                  => ['view_admin'],
-        'admin_edit'                 => ['edit_admin'],
-        'admin_delete'               => ['delete_admin'],
-        'admin_roles_create'         => ['create_admin', 'create_role'],
-        'admin_roles_revoke'         => ['create_admin', 'create_role'],
-        'admin_merchants_create'     => ['create_admin', 'create_merchant'],
-        'admin_merchants_delete'     => ['delete_admin', 'delete_merchant'],
-        'group_edit'                 => ['edit_group'],
-        'group_delete'               => ['delete_group'],
-        'group_merchants_create'     => ['create_group', 'create_merchants'],
-        'group_admins_get'           => ['view_group', 'view_admins'],
-        'group_admins_create'        => ['create_group', 'create_admins'],
-        'group_roles_create'         => ['create_group', 'create_role'],
-        'group_admins_delete'        => ['delete_group', 'delete_admins'],
-        'permission_get_multiple'    => ['view_all_permission'],
-        'edit_activate_merchant'     => ['merchant_activate'],
-        'edit_merchant_enable_live'  => ['merchant_live_enable'],
-        'edit_merchant_disable_live' => ['merchant_live_disable'],
-        'edit_merchant_methods'      => ['merchant_put_payment_methods'],
-        'edit_merchant_pricing'      => ['merchant_assign_pricing'],
-        'add_merchant_adjustment'    => ['adj_add'],
-        'edit_merchant_email'        => ['merchant_edit_email'],
-        'group_get_allowed_groups'   => ['group_get_allowed_groups'],
-        'schedule_create'            => ['schedule_create'],
-        'schedule_fetch'             => ['schedule_fetch'],
-        'schedule_fetch_multiple'    => ['schedule_fetch_multiple'],
-        'schedule_delete'            => ['schedule_delete'],
-        'schedule_update'            => ['schedule_update'],
-        'schedule_assign'            => ['schedule_assign'],
-        'schedule_migration'         => ['schedule_migration'],
-        'admin_fetch_merchant_ids'   => ['view_all_merchants'],
-        'permission_create'          => ['create_permission'],
-        'permission_edit'            => ['edit_permission'],
-        'permission_get'             => ['get_permission'],
-        'permission_delete'          => ['delete_permission'],
-        'auditlog_search'            => ['view_auditlog'],
+        'group_create'               => [Permission::CREATE_GROUP],
+        'admin_create'               => [Permission::CREATE_ADMIN],
+        'group_get'                  => [Permission::VIEW_GROUP],
+        'group_get_multiple'         => [Permission::VIEW_ALL_GROUP],
+        'org_create'                 => [Permission::CREATE_ORG],
+        'org_get_multiple'           => [Permission::VIEW_ALL_ORG],
+        'org_edit'                   => [Permission::EDIT_ORG],
+        'org_delete'                 => [Permission::DELETE_ORG],
+        'org_get'                    => [Permission::VIEW_ORG],
+        'role_create'                => [Permission::CREATE_ROLE],
+        'role_get_multiple'          => [Permission::VIEW_ALL_ROLE],
+        'role_get'                   => [Permission::VIEW_ROLE],
+        'role_edit'                  => [Permission::EDIT_ROLE],
+        'role_delete'                => [Permission::DELETE_ROLE],
+        'admin_get_multiple'         => [Permission::VIEW_ALL_ADMIN],
+        'admin_get'                  => [Permission::VIEW_ADMIN],
+        'admin_edit'                 => [Permission::EDIT_ADMIN],
+        'admin_delete'               => [Permission::DELETE_ADMIN],
+        'group_edit'                 => [Permission::EDIT_GROUP],
+        'group_delete'               => [Permission::DELETE_GROUP],
+        'permission_get_multiple'    => [Permission::VIEW_ALL_PERMISSION],
+        'group_get_allowed_groups'   => [Permission::GROUP_GET_ALLOWED_GROUPS],
+        'schedule_create'            => [Permission::SCHEDULE_CREATE],
+        'schedule_fetch'             => [Permission::SCHEDULE_FETCH],
+        'schedule_fetch_multiple'    => [Permission::SCHEDULE_FETCH_MULTIPLE],
+        'schedule_delete'            => [Permission::SCHEDULE_DELETE],
+        'schedule_update'            => [Permission::SCHEDULE_UPDATE],
+        'schedule_assign'            => [Permission::SCHEDULE_ASSIGN],
+        'schedule_migration'         => [Permission::SCHEDULE_MIGRATION],
+        'admin_fetch_merchant_ids'   => [Permission::VIEW_ALL_MERCHANTS],
+        'permission_create'          => [Permission::CREATE_PERMISSION],
+        'permission_edit'            => [Permission::EDIT_PERMISSION],
+        'permission_get'             => [Permission::GET_PERMISSION],
+        'permission_delete'          => [Permission::DELETE_PERMISSION],
+        'auditlog_search'            => [Permission::VIEW_AUDITLOG],
         'admin_logout'               => ['*'],
     ];
 
@@ -991,6 +981,15 @@ final class Route
         'payment_redirect_callback',
     );
 
+    /**
+     * Sometimes we need to disable routes without deleting them temporarily.
+     * It could be that the route is deleted later on and is here during
+     * the transition period only.
+     */
+    const DISABLED_ROUTES = array(
+        'merchant_copy_terminal',
+    );
+
     public function __construct($app)
     {
         $this->app = $app;
@@ -1129,6 +1128,7 @@ final class Route
         return [$schema, $host];
     }
 
+    // @codingStandardsIgnoreStart
     public function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
@@ -1149,6 +1149,7 @@ final class Route
 
         return $doNotLogUrls;
     }
+    // @codingStandardsIgnoreEnd
 
     public static function isJsonpRoute($route)
     {
