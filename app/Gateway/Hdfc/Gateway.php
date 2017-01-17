@@ -691,7 +691,7 @@ class Gateway extends Base\Gateway
         $this->trace->addRecord($level, $message, $context);
     }
 
-// -------------------------Exceptions -----------------------------------------
+    // -------------------------Exceptions -----------------------------------------
 
     protected function throwException($error, $safeRetry = false)
     {

@@ -8,7 +8,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
-use RZP\Gateway;
+use RZP\Gateway\Utility;
 
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -384,7 +384,7 @@ class Gateway
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (Gateway\Utility::checkActualTimeout($e))
+            if (Utility::checkActualTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
