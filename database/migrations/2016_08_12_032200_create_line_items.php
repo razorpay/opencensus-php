@@ -39,10 +39,9 @@ class CreateLineItems extends Migration
 
             $table->char(Entity::CURRENCY, 3);
 
-            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH)
-                  ->nullable();
-            $table->string(Entity::ENTITY_TYPE, 32)
-                  ->nullable();
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
+
+            $table->string(Entity::ENTITY_TYPE, 32);
 
             $table->integer(Entity::QUANTITY);
 
