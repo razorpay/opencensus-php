@@ -489,7 +489,7 @@ class Gateway extends Base\Gateway
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
                 // We're only interested in the preauth transaction state, so loop to that one, and check status.
-                if ($type === TxnType::AUTH)
+                if (in_array($type, [TxnType::AUTH, TxnType::SALE], true) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
                 }
