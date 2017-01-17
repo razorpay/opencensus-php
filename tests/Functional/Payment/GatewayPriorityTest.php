@@ -51,7 +51,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
             ->andReturnUsing(function ()
             {
                 return [
@@ -65,7 +65,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:netbanking', [0, -1, 'WITHSCORES'])
             ->andReturnUsing(function ()
             {
                 return [
@@ -84,7 +84,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
             ->andReturnUsing(function ()
             {
                 return [
@@ -98,7 +98,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
                 ->once()
-                ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
+                ->with('gateway_priority:netbanking', [0, -1, 'WITHSCORES'])
                 ->andReturnUsing(function()
                 {
                     throw new \Predis\Response\ServerException('Internal Error');
@@ -119,7 +119,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
             ->andReturnUsing(function ()
             {
                 return [

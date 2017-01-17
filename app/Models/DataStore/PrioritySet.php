@@ -50,15 +50,7 @@ class PrioritySet extends Base
             return null;
         }
 
-        $result = [];
-
-        foreach ($this->data as $member => $score)
-        {
-            if ($score > 0)
-            {
-                $result[] = $member;
-            }
-        }
+        $result = array_filter($this->data);
 
         return ((empty($result) === true) ? null : $result);
     }
@@ -76,10 +68,9 @@ class PrioritySet extends Base
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error saving to redis sorted set with key: $storeKey",
-                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
-
+                    'Error saving to redis sorted set',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $this->toArray());
         }
 
         return $this;
@@ -89,23 +80,24 @@ class PrioritySet extends Base
     {
         $storeKey = $this->generateStoreKey();
 
-        $fetchOptions = array_values([
-            'startIndex' => 0,
-            'endIndex'   => -1,                 // end index is -1 to denote we want to fetch all members
-            'withScores' => 'WITHSCORES'        // option to tell redis to return sorted set data with scores
-        ]);
+        $fetchOptions = [
+            0,              // starting index from where to fetch
+            -1,             // ending index till which to fetch. -1 to denote we want to fetch all members
+            'WITHSCORES'    // option to tell redis to return sorted set data with scores
+        ];
 
         try
         {
-            $this->data = $this->redis->zrevrange($storeKey, ...$fetchOptions);
+            $this->data = $this->redis->zrevrange($storeKey, $fetchOptions);
         }
         catch (PredisException $e)
         {
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error fetching from redis sorted set with key: $storeKey",
-                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION);
+                    'Error fetching from redis sorted set',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $this->key);
         }
 
         return $this;
@@ -124,9 +116,9 @@ class PrioritySet extends Base
             $this->trace->traceException($e);
 
             throw new Exception\ServerErrorException(
-                        "Error removing data from sorted set with key: $storeKey",
-                        ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                        $this->data);
+                    'Error removing data from sorted set',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $this->toArray());
         }
 
         return $this;
