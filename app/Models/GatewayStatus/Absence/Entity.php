@@ -64,6 +64,17 @@ class Entity extends Base\PublicEntity
         self::PARTIAL   => 'bool'
     ];
 
+    protected $defaults = [
+        self::ISSUER        => null,
+        self::TERMINAL_ID   => null,
+        self::CARD_TYPE     => null,
+        self::NETWORK       => null,
+        self::DOWNTIME_TO   => null,
+        self::COMMENT       => null,
+        self::SCHEDULED     => 1,
+        self::PARTIAL       => 0,
+    ];
+
 
     const END_OF_TIME = 2147483647;
 
