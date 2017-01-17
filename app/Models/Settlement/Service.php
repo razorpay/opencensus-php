@@ -27,11 +27,11 @@ class Service extends Base\Service
 
     public function generateSettlementFile($input)
     {
-        $to = Carbon::now('Asia/Kolkata')->timestamp;
+        (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
-        $from = Carbon::now('Asia/Kolkata')->subDay(1)->timestamp;
+        $batchSettlementId = $input['batch_settlement_id'];
 
-        $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
+        $setls = $this->repo->settlement->getSettlementsByBatchSettlementId($batchSettlementId);
 
         $urls = (new Kotak\Service)->generateSettlementFile($setls);
 

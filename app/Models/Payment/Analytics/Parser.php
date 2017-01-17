@@ -167,19 +167,28 @@ class Parser extends Base\Core
     {
         $osFromUa = $this->uAgent->platform();
 
-        if (isset($osFromUa) === true)
+        if (isset($osFromUa) === false)
         {
-            switch (strtolower($osFromUa))
-            {
-                case 'os x':
-                    return Metadata::MACOS;
+            return;
+        }
 
-                case 'androidos':
-                    return Metadata::ANDROID;
+        $osFromUa = strtolower($osFromUa);
 
-                default:
-                    return null;
-            }
+        if (Metadata::isValidOs($osFromUa))
+        {
+            return $osFromUa;
+        }
+
+        switch ($osFromUa)
+        {
+            case 'os x':
+                return Metadata::MACOS;
+
+            case 'androidos':
+                return Metadata::ANDROID;
+
+            default:
+                return null;
         }
     }
 
@@ -232,6 +241,7 @@ class Parser extends Base\Core
                 if (empty($metadata[$metadataKey]) === false)
                 {
                     $functionName = 'set' . studly_case($key);
+
                     $log->$functionName($metadata[$key]);
                 }
             }

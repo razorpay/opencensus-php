@@ -693,6 +693,11 @@ class Gateway
         return $code;
     }
 
+    protected function getLiveMerchantId()
+    {
+        return $this->input['terminal']['gateway_merchant_id'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];

@@ -280,20 +280,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         // Set the payment transaction for the row.
         $this->paymentTransaction = $this->payment->transaction;
 
-        if ($this->paymentTransaction === null)
+        if ($this->paymentTransaction !== null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Transaction is null after verifying and authorizing the payment.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
-
-            return false;
+            return true;
         }
 
-        return true;
+        $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
+
+        if ($createTransactionSuccess === true)
+        {
+            $this->paymentTransaction = $this->payment->reload()->transaction;
+
+            return true;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_FAILURE,
+                'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                'message'       => 'Unable to create payment transaction after verifying',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => get_called_class()
+            ]);
+
+        return false;
     }
 
     protected function persistReconciliationData($rowDetails)

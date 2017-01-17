@@ -163,6 +163,13 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
+            // Hard-coding a test merchant, to test if Maestro cards
+            // are working correctly on a FirstData terminal
+            if ($input['merchant']->getId() === '5ubLZpACTmD8D4')
+            {
+                return true;
+            }
+
             // Only shared terminals support Maestro on Live mode.
             if (($network === Network::MAES) and
                 ($input['mode'] === Mode::LIVE))

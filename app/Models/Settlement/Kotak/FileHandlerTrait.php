@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement\Kotak;
 use AWS;
 use Excel;
 use Config;
+use RZP\Trace\Trace;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
@@ -364,7 +365,20 @@ trait FileHandlerTrait
         fwrite($file, $txt);
         fclose($file);
 
-        chmod($fullpath, 0777);  // keep it 0777. This step is important.
+        try
+        {
+            chmod($fullpath, 0777);  // keep it 0777. This step is important
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                [
+                    'path' => $fullpath
+                ]);
+        }
 
         return $fullpath;
     }

@@ -18,7 +18,6 @@ class Service extends Base\Service
 
             if (isset($input['hostname']) === true)
             {
-                // create hostname
                 $hostnames = explode(',', $input['hostname']);
 
                 foreach ($hostnames as $hostname)
@@ -105,14 +104,14 @@ class Service extends Base\Service
 
                 $hostnamesToDelete = array_diff($existingHostnames, $newHostnames);
 
+                foreach ($hostnamesToDelete as $hostname)
+                {
+                    (new Hostname\Core)->delete($org, $hostname);
+                }
+
                 foreach ($hostnamesToCreate as $hostname)
                 {
                     (new Hostname\Core)->create($org, $hostname);
-                }
-
-                foreach ($hostnamesToDelete as $hostname)
-                {
-                    (new Hostname\Core)->delete($hostname);
                 }
             }
 
