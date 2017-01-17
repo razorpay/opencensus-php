@@ -165,6 +165,11 @@ class Repository extends Base\Repository
 
     public function fetchMerchantFromEntity($entity)
     {
+        if ($entity->hasRelation('merchant'))
+        {
+            return $entity->merchant;
+        }
+
         $merchantId = $entity->getMerchantId();
 
         $merchant = $this->findOrFail($merchantId);

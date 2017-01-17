@@ -35,6 +35,7 @@ class Repository extends Base\Repository
         if ($invoice !== null)
         {
             $order->setRelation('invoice', $invoice);
+
             $invoice->order()->associate($order);
         }
 

@@ -31,6 +31,11 @@ class Repository extends Base\Repository
 
     public function fetchByAppToken($appToken)
     {
+        if ($appToken->hasRelation('customer'))
+        {
+            return $appToken->customer;
+        }
+
         $custId = $appToken->getCustomerId();
 
         $customer = $this->findOrFail($custId);

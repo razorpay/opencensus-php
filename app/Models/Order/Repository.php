@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Order;
 
-use DB;
-
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
@@ -33,6 +30,11 @@ class Repository extends Base\Repository
 
     public function fetchForPayment($payment)
     {
+        if ($payment->hasRelation('order'))
+        {
+            return $payment->order;
+        }
+
         $orderId = $payment->getApiOrderId();
 
         $order = $this->findOrFail($orderId);
@@ -59,10 +61,11 @@ class Repository extends Base\Repository
         $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
         $orderId = $this->getAttributeWithTableName(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
+        $pTable = $this->manager->payment->getTableName();
 
         $results = $this->newQuery()
             ->join(
-                Table::PAYMENT,
+                $pTable,
                 $paymentOrderId, '=', $orderId)
             ->selectRaw('count(*), ' . $orderId)
             ->whereIn($paymentStatus, $paymentStatusArray)
