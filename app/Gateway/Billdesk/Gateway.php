@@ -116,9 +116,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
-
-        $this->setAccountType($gatewayMerchantId);
+        $this->setAccountType($input['terminal']);
 
         $this->setTpv($gatewayPayment);
 
@@ -168,7 +166,7 @@ class Gateway extends Base\Gateway
 
         $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
 
-        $this->setAccountType($gatewayMerchantId);
+        $this->setAccountType($input['terminal']);
 
         $verify = new Base\Verify($this->gateway, $input);
 
@@ -434,7 +432,7 @@ class Gateway extends Base\Gateway
     {
         $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
 
-        $this->setAccountType($gatewayMerchantId);
+        $this->setAccountType($input['terminal']);
 
         $verify = new Base\Verify($this->gateway, $input);
 
@@ -869,12 +867,10 @@ class Gateway extends Base\Gateway
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
 
-        $merchantId = $input['terminal']['gateway_merchant_id'];
-
-        $this->setAccountType($merchantId);
+        $this->setAccountType($input['terminal']);
 
         $content = [
-            'MerchantID'                => $merchantId,
+            'MerchantID'                => $input['terminal']['gateway_merchant_id'],
             'CustomerID'                => $input['payment']['id'],
             'AccountNumber'             => 'NA',
             'TxnAmount'                 => $input['payment']['amount'] / 100,
@@ -1056,8 +1052,10 @@ class Gateway extends Base\Gateway
         $this->tpv = $gatewayPayment->isTpv();
     }
 
-    protected function setAccountType($merchantId)
+    protected function setAccountType($terminal)
     {
+        $merchantId = $terminal['gateway_merchant_id'];
+
         $merchantIdKey = substr($merchantId, 0, 2);
 
         if (in_array($merchantIdKey, AccountType::ACCOUNT_MAP) === true)
