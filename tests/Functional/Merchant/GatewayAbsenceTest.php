@@ -29,9 +29,9 @@ class GatewayAbsenceTest extends TestCase
 
         parent::setUp();
 
-        $statusCakeUserName = $this->app['config']->get('gateway.absence.statuscake.username');
+        $statusCakeUserName = $this->app['config']->get('applications.gateway_absence.statuscake.username');
 
-        $statusCakeApiKey = $this->app['config']->get('gateway.absence.statuscake.api_key');
+        $statusCakeApiKey = $this->app['config']->get('applications.gateway_absence.statuscake.api_key');
 
         $this->statusCakeToken = md5($statusCakeUserName . $statusCakeApiKey);
 

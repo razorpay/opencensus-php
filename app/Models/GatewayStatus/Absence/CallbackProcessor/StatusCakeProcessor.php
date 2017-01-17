@@ -35,9 +35,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
     protected function fetchStatusCakeCredentials()
     {
-        $uname = $this->app['config']->get('gateway.absence.statuscake.username');
+        $uname = $this->app['config']->get('applications.gateway_absence.statuscake.username');
         
-        $apiKey = $this->app['config']->get('gateway.absence.statuscake.api_key');
+        $apiKey = $this->app['config']->get('applications.gateway_absence.statuscake.api_key');
         
         return [$uname, $apiKey];
     }

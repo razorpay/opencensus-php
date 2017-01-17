@@ -84,4 +84,11 @@ return array(
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
     ],
+
+    'gateway_absence' => [
+        'statuscake' => [
+            'username' => env('STATUSCAKE_USERNAME'),
+            'api_key'  => env('STATUSCAKE_API_KEY')
+        ]
+    ],
 );
