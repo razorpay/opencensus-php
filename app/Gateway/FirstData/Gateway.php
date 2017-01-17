@@ -506,7 +506,7 @@ class Gateway extends Base\Gateway
 
             $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
 
-            $verify->gatewaySuccess = ($authGatewayStatus === Status::AUTHORIZED);
+            $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
