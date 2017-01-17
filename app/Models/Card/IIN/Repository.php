@@ -21,17 +21,17 @@ class Repository extends Base\Repository
         Entity::ISSUER          => 'sometimes|string',
     );
 
-    protected function addQueryInternational($query, $params)
+    protected function addQueryParamInternational($query, $params)
     {
         $international = $params[Entity::INTERNATIONAL];
 
         if ($international === '1')
         {
-            $query->where(Entity::COUNTRY, '=', 'IN');
+            $query->where(Entity::COUNTRY, '!=', 'IN');
         }
         else
         {
-            $query->where(Entity::COUNTRY, '!=', 'IN');
+            $query->where(Entity::COUNTRY, '=', 'IN');
         }
     }
 
