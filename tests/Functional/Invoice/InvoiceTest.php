@@ -142,7 +142,7 @@ class InvoiceTest extends TestCase
     public function testCreateDraftInvoiceWithNoData()
     {
         //
-        // This asserts Invoice.getPaymentIdAttribute is workign fine.
+        // This asserts Invoice.getPaymentIdAttribute is working fine.
         //
         $this->fixtures->create('payment:captured');
 

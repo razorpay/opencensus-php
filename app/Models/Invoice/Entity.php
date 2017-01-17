@@ -485,6 +485,10 @@ class Entity extends Base\PublicEntity
     {
         $orderId = $this->getOrderId();
 
+        //
+        // Order gets created when invoice moves in ISSUED state.
+        // Order Id will be null for invoices in draft status.
+        //
         if ($orderId === null)
         {
             return null;
