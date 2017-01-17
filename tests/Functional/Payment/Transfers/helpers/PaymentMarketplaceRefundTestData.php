@@ -5,6 +5,22 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testRefundTransferPayment' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED
+        ],
+    ],
+
     'testTransferToInvalidOrUnlinkedId' => [
         'request' => [
             'content' => [
@@ -31,6 +47,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
         ],
     ],
+
     'testPartialRefundMultipleTransfersReversalsNotDefined' => [
         'response'  => [
             'content'     => [
@@ -45,6 +62,5 @@ return [
             'class'               => 'RZP\Exception\BadRequestValidationFailureException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
         ],
-
     ],
 ];

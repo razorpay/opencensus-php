@@ -745,6 +745,12 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
+        if ($payment->isTransfer() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
+        }
+
         return $this->refund($payment, $input, $batch);
     }
 

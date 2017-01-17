@@ -28,21 +28,21 @@ class Service extends Base\Service
 
     public function create(array $input) : array
     {
-        $transfer = $this->core->createForMerchant($input);
+        $transfer = $this->core->createForMerchant($input, $this->merchant);
 
         return $transfer->toArrayPublic();
     }
 
     public function reverse(string $id, array $input) : array
     {
-        $reversal = (new Reversal\Core)->reverse($id, $input);
+        $reversal = (new Reversal\Core)->reverse($id, $input, $this->merchant);
 
         return $reversal->toArrayPublic();
     }
 
     public function edit(string $id, array $input) : array
     {
-        $transfer = $this->core->edit($id, $input);
+        $transfer = $this->core->edit($id, $input, $this->merchant);
 
         return $transfer->toArrayPublic();
     }

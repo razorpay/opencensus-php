@@ -29,6 +29,32 @@ class PaymentMarketplaceRefundTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    public function testRefundTransferPayment()
+    {
+        // Enable with Account Auth
+        $this->markTestSkipped('Enable and run on Account Auth, when implemented');
+
+        $transfers[0] = [
+            'account' => 'acc_10000000000001',
+            'amount'  => 1000,
+            'currency'=> 'INR',
+        ];
+        $transfers[1] = [
+            'account' => 'acc_10000000000002',
+            'amount'  => 500,
+            'currency'=> 'INR',
+        ];
+
+        $this->transferPayment($this->payment['id'], $transfers);
+
+        $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transferPayment)
+        {
+            $this->refundPayment($transferPayment['id']);
+        });
+    }
+
     public function testRefundAmountGreaterThanTransferred()
     {
         ; // ?

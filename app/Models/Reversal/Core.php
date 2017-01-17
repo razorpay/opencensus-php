@@ -48,13 +48,14 @@ class Core extends Base\Core
      *
      * @param  string           $id
      * @param  array            $input
+     * @param  Merchant\Entity  $merchant
      * @return Reversal\Entity
      */
-    public function reverse(string $id, array $input)
+    public function reverse(string $id, array $input, Merchant\Entity $merchant)
     {
         $transfer = $this->repo
                          ->transfer
-                         ->findByPublicIdAndMerchant($id, $this->merchant);
+                         ->findByPublicIdAndMerchant($id, $merchant);
 
         (new Validator)->validateReversalAmount($transfer, $input);
 
@@ -66,9 +67,9 @@ class Core extends Base\Core
         // reverse the entire transfer amount pending
         $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
 
-        return $this->repo->transaction(function () use ($transfer, $amount)
+        return $this->repo->transaction(function () use ($transfer, $amount, $merchant)
         {
-            $reversal = (new Payment\Processor\Processor($this->merchant))
+            $reversal = (new Payment\Processor\Processor($merchant))
                             ->refundPaymentAndReverseTransfer($transfer, $amount);
 
             return $reversal;

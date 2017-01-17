@@ -48,7 +48,7 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit($transfer, int $amount, string $customerId) : Entity
+    public function createFromCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant) : Entity
     {
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
 
@@ -61,7 +61,7 @@ class Core extends Base\Core
         $balance = $this->repo
                         ->customer_balance
                         ->findByIdAndMerchant(
-                            $customerId, $this->merchant);
+                            $customerId, $merchant);
 
         $customerTxn->setBalance($balance->getBalance());
 

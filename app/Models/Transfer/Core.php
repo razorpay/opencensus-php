@@ -27,13 +27,14 @@ class Core extends Base\Core
      * Create a direct transfer from Merchant balance
      *
      * @param  array                    $input
+     * @param  Merchant\Entity          $merchant
      * @return Transfer\Entity
      */
-    public function createForMerchant(array $input) : Entity
+    public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
     {
-        return $this->repo->transaction(function () use ($input)
+        return $this->repo->transaction(function () use ($input, $merchant)
         {
-            $transfer = $this->makeTransfer($input, $this->merchant);
+            $transfer = $this->makeTransfer($input, $merchant, $merchant);
 
             return $transfer;
         });
@@ -44,13 +45,14 @@ class Core extends Base\Core
      *
      * @param   Payment\Entity          $payment
      * @param   array                   $input
+     * @param   Merchant\Entity         $merchant
      * @return  Base\PublicCollection
      */
-    public function createForPayment(Payment\Entity $payment, array $input)
+    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant)
     {
         $transfers = new Base\PublicCollection;
 
-        $merchantBalance = $this->repo->balance->getMerchantBalance($this->merchant);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
         (new Validator)->validateTransfers($payment, $merchantBalance, $input);
 
@@ -58,7 +60,7 @@ class Core extends Base\Core
 
         foreach ($input as $transfer)
         {
-            $transfer = $this->makeTransfer($transfer, $payment);
+            $transfer = $this->makeTransfer($transfer, $payment, $merchant);
 
             $totalTransferAmount += $transfer['amount'];
 
@@ -78,9 +80,9 @@ class Core extends Base\Core
      * @param  array            $input
      * @return Transfer\Entity
      */
-    public function edit(string $id, array $input) : Entity
+    public function edit(string $id, array $input, Merchant\Entity $merchant) : Entity
     {
-        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $this->merchant);
+        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $merchant);
 
         $transfer->edit($input);
 
@@ -107,7 +109,7 @@ class Core extends Base\Core
      * @param  int                $amount
      * @return Transfer\Entity
      */
-    protected function createTransfer(Base\Entity $source, Base\Entity $to, array $input) : Entity
+    protected function createTransfer(Base\Entity $source, Base\Entity $to, array $input, Merchant\Entity $merchant) : Entity
     {
         $transferData = [
             Entity::TO_ID           => $to->getId(),
@@ -126,7 +128,7 @@ class Core extends Base\Core
 
         $transfer->generateId();
 
-        $transfer->merchant()->associate($this->merchant);
+        $transfer->merchant()->associate($merchant);
 
         $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
 
@@ -173,9 +175,10 @@ class Core extends Base\Core
      *
      * @param  array                $input
      * @param  Base\Entity          $source
+     * @param  Merchant\Entity      $merchant
      * @return Transfer\Entity
      */
-    protected function makeTransfer(array $input, Base\Entity $source) : Entity
+    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant) : Entity
     {
         $validator = new Validator;
 
@@ -187,26 +190,28 @@ class Core extends Base\Core
         {
             $id = $input[ToType::CUSTOMER];
 
-            return $this->customerTransfer($id, $source, $input);
+            return $this->customerTransfer($id, $source, $input, $merchant);
         }
         else if (isset($input[ToType::ACCOUNT]) === true)
         {
             $id = $input[ToType::ACCOUNT];
 
-            return $this->accountTransfer($id, $source, $input);
+            return $this->accountTransfer($id, $source, $input, $merchant);
         }
     }
 
     /**
      * Transfer to a customer account
      *
+     * @param  string               $customerId
      * @param  Base\Entity          $source
      * @param  array                $input
+     * @param  Merchant\Entity      $merchant
      * @return Transfer\Entity
      */
-    protected function customerTransfer(string $customerId, Base\Entity $source, array $input) : Entity
+    protected function customerTransfer(string $customerId, Base\Entity $source, array $input, Merchant\Entity $merchant) : Entity
     {
-        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET);
+        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
@@ -214,12 +219,12 @@ class Core extends Base\Core
 
         $to = $this->repo
                    ->customer
-                   ->findByPublicIdAndMerchant($customerId, $this->merchant);
+                   ->findByPublicIdAndMerchant($customerId, $merchant);
 
-        $transfer = $this->createTransfer($source, $to, $input);
+        $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
         $customerTxn = (new Customer\Transaction\Core)
-                            ->createFromCustomerCredit($transfer, $input['amount'], $to->getId());
+                            ->createFromCustomerCredit($transfer, $input['amount'], $to->getId(), $merchant);
 
         $this->repo->saveOrFail($customerTxn);
 
@@ -229,13 +234,15 @@ class Core extends Base\Core
     /**
      * Transfer to a Marketplace account
      *
-     * @param  Base\Entity      $source
-     * @param  array            $input
+     * @param  string               $customerId
+     * @param  Base\Entity          $source
+     * @param  array                $input
+     * @param  Merchant\Entity      $merchant
      * @return Transfer\Entity
      */
-    protected function accountTransfer(string $accountId, Base\Entity $source, array $input) : Entity
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant) : Entity
     {
-        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE);
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
@@ -245,22 +252,22 @@ class Core extends Base\Core
 
         $to = $this->repo
                    ->merchant
-                   ->fetchByAccountIdAndMerchant($accountId, $this->merchant);
+                   ->fetchByAccountIdAndMerchant($accountId, $merchant);
 
-        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $this->merchant);
+        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $merchant);
 
         if (($source instanceof Payment\Entity) === true)
         {
             $originPayment = $source;
 
-            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId);
+            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId, $merchant);
 
             $input['contact'] = $originPayment->getContact();
 
             $input['email']   = $originPayment->getEmail();
         }
 
-        $transfer = $this->createTransfer($source, $to, $input);
+        $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
         $transferPayment = (new Payment\Service)->processTransfer($to, $input, $originPayment);
 
@@ -271,9 +278,9 @@ class Core extends Base\Core
         return $transfer;
     }
 
-    protected function verifyFeatureAllowed(string $feature)
+    protected function verifyFeatureAllowed(string $feature, Merchant\Entity $merchant)
     {
-        if ($this->merchant->isFeatureEnabled($feature) === false)
+        if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                     "$feature is not supported");
@@ -288,14 +295,14 @@ class Core extends Base\Core
      * @param  string           $accountId
      * @throws Exception\BadRequestException
      */
-    protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId)
+    protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId, Merchant\Entity $merchant)
     {
         Merchant\AccountEntity::verifyIdAndStripSign($accountId);
 
         $transfers = $this->repo
                           ->transfer
                           ->fetchBySourcePaymentToAccountAndMerchant(
-                            $paymentId, $accountId, $this->merchant);
+                            $paymentId, $accountId, $merchant);
 
         if (count($transfers) !== 0)
         {

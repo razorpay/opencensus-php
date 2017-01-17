@@ -315,8 +315,8 @@ class Processor
         {
             $transfers = (new TransferCore)->createForPayment(
                             $payment,
-                            $this->merchant,
-                            $input['transfers']);
+                            $input['transfers'],
+                            $this->merchant);
 
             return $transfers;
         });
