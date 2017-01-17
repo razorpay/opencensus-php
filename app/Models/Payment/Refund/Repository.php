@@ -84,7 +84,7 @@ class Repository extends Base\Repository
                         $merchantId, $from, $to, ['payment']);
     }
 
-    public function fetchRefundSummaryBetweenTimestamp($from , $to)
+    public function fetchRefundSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
@@ -239,10 +239,10 @@ class Repository extends Base\Repository
 
     protected function addQueryParamPaymentId($query, $params)
     {
-        $id = $params[Payment\Entity::ID];
+        $paymentId = $params[Refund\Entity::PAYMENT_ID];
 
-        Payment\Entity::verifyIdAndSilentlyStripSign($id);
+        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 
-        $query->where(Refund\Entity::PAYMENT_ID, '=', $id);
+        $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
     }
 }
