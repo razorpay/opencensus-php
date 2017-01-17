@@ -2,16 +2,17 @@
 
 namespace RZP\Services;
 
-use RZP\Constants\Mode;
-use GuzzleHttp\Client;
+use Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Terminal;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\Trace;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Analytics\Entity as Analytics;
+
+use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
@@ -19,29 +20,29 @@ class EventTrackerClient extends Base\Core
 
     protected $mock;
 
-    protected $events;
-
-    protected $defaults;
-
     protected $request;
 
     protected $ljConfig;
 
-    protected $paymentContext;
+    protected $events = array();
+
+    protected $defaults = array();
+
+    protected $paymentContext = array();
 
     const CONTEXT_KEYS = [
-        AnalyticsEntity::IP,
-        AnalyticsEntity::CHECKOUT_ID,
-        AnalyticsEntity::USER_AGENT,
-        AnalyticsEntity::LIBRARY,
-        AnalyticsEntity::LIBRARY_VERSION,
-        AnalyticsEntity::PLATFORM,
-        AnalyticsEntity::PLATFORM_VERSION,
-        AnalyticsEntity::REFERER,
-        AnalyticsEntity::BROWSER,
-        AnalyticsEntity::OS,
-        AnalyticsEntity::OS_VERSION,
-        AnalyticsEntity::DEVICE,
+        Analytics::IP,
+        Analytics::CHECKOUT_ID,
+        Analytics::USER_AGENT,
+        Analytics::LIBRARY,
+        Analytics::LIBRARY_VERSION,
+        Analytics::PLATFORM,
+        Analytics::PLATFORM_VERSION,
+        Analytics::REFERER,
+        Analytics::BROWSER,
+        Analytics::OS,
+        Analytics::OS_VERSION,
+        Analytics::DEVICE,
     ];
 
     /**
@@ -75,13 +76,6 @@ class EventTrackerClient extends Base\Core
         $this->key = $this->ljConfig['key'];
 
         $this->mock = $this->ljConfig['is_mock'];
-
-        $this->events = array();
-
-        $this->defaults = array();
-
-        $this->paymentContext = array();
-
     }
 
     /**
@@ -197,7 +191,7 @@ class EventTrackerClient extends Base\Core
         {
             $terminal = $payment->terminal;
 
-            $terminalDetails = $this->fetchTerminalData($terminal, $payment);
+            $terminalDetails = $this->fetchTerminalData($terminal);
         }
 
         if (count($terminalDetails) > 0)
@@ -218,7 +212,7 @@ class EventTrackerClient extends Base\Core
 
         $event = array(
             'event'         => $eventName,
-            'timestamp'     => UniqueIdEntity::getNanotimeInteger(),
+            'timestamp'     => time(),
             'properties'    => $properties,
         );
 
@@ -312,32 +306,27 @@ class EventTrackerClient extends Base\Core
     * Gets data of terminal associated
     * with a payment entitity
     *
-    * @param $payment Payment\Entity
     * @param $terminal Terminal\Entity
     * @return $data array
     *
     */
-    protected function fetchTerminalData(Terminal\Entity $terminal, Payment\Entity $payment)
+    protected function fetchTerminalData(Terminal\Entity $terminal)
     {
         try
         {
-            $data = [];
 
-            $data['id'] = $terminal->getPublicId();
+            $data = [
+                'id'        => $terminal->getPublicId(),
+                'gateway'   => $terminal->getGateway(),
+                'acquirer'  => $terminal->getGatewayAcquirer(),
+                'category'  => $terminal->getCategory(),
+                'shared'    => $terminal->getShared(),
+                'recurring' => $terminal->getRecurring(),
 
-            $data['gateway'] = $terminal->getGateway();
-
-            $data['acquirer'] = $terminal->getGatewayAcquirer();
-
-            $data['category'] = $terminal->getCategory();
-
-            $data['shared'] = $terminal->getShared();
-
-            $data['recurring'] = $terminal->getRecurring();
+            ];
 
             return $data;
         }
-
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);
@@ -372,7 +361,7 @@ class EventTrackerClient extends Base\Core
             // filter metadata for required keys
             foreach (self::CONTEXT_KEYS as $key)
             {
-                if (array_key_exists($key, $metadata) === true)
+                if (isset($key, $metadata) === true)
                 {
                     $analytics[$key] = $metadata[$key];
                 }
@@ -414,16 +403,18 @@ class EventTrackerClient extends Base\Core
                 $analytics['order_id'] = $payment->getOrderId();
             }
 
-            $pa = $this->repo->payment_analytics->findForPayment($paymentId, true);
+            $pa = $this->repo->payment_analytics->findForPaymentRecent($paymentId);
 
             foreach (self::CONTEXT_KEYS as $key)
             {
                 // generates getter function
                 $getterName = 'get'.studly_case($key);
 
-                if (empty($pa->$getterName()) === false)
+                $getterValue = $pa->$getterName();
+
+                if (empty($getterValue) === false)
                 {
-                    $analytics[$key] = $pa->$getterName();
+                    $analytics[$key] = $getterValue;
                 }
             }
 
@@ -446,7 +437,6 @@ class EventTrackerClient extends Base\Core
 
             $this->getEventContext($payment);
         }
-
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
