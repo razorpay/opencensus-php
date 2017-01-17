@@ -16,10 +16,8 @@ class Core extends Base\Core
     // Namespace used for storing the data in store provider
     protected static $storeNameSpace = 'gateway_priority';
 
-    public function __construct()
+    protected function init()
     {
-        parent::__construct();
-
         $this->store = $this->app['data_store'];
     }
 
