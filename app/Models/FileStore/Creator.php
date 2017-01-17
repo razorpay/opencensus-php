@@ -53,7 +53,8 @@ class Creator extends Base\Core
      */
     protected $storageHandler;
 
-    const DEFAULT_STORE = 's3';
+    const DEFAULT_STORE    = 's3';
+    const DEFAULT_METADATA = [];
 
     public function __construct()
     {
@@ -67,6 +68,8 @@ class Creator extends Base\Core
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
+
+        $this->file->setMetadata(self::DEFAULT_METADATA);
     }
 
     /**
