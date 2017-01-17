@@ -377,12 +377,13 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
+
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\RZP\Gateway\Utility::checkTimeout($e))
+            if (\RZP\Gateway\Utility::checkActualTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
