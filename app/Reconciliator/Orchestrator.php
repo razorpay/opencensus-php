@@ -165,6 +165,7 @@ class Orchestrator extends Base\Core
         unset($input['body-plain']);
         unset($input['stripped-html']);
         unset($input['stripped-text']);
+        unset($input['message-headers']);
 
         $this->trace->info(
             TraceCode::RECON_REQUEST,
@@ -261,7 +262,8 @@ class Orchestrator extends Base\Core
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                        'message'      => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
+                        'message'      => 'Skipping file because not able to convert file content to array. -> ' .
+                                            $ex->getMessage(),
                         'file_details' => $fileDetails,
                         //'gateway'      => get_class($this->gatewayReconciliator),
                         'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
@@ -361,8 +363,17 @@ class Orchestrator extends Base\Core
 
     protected function getEmailDetails($input)
     {
+        // Sender info is picked from the 'X-Original-Sender' header, instead
+        // of 'sender' or 'from' headers.
+        //
+        // 'sender' will contain "settlement+{hash}@googlegroups.com", as the
+        // mail is being forwarded to Mailgun through our settlements group.
+        // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
+        // formatted by the sender's email client.
+        // 'X-Original-Sender' always contains just the email address.
+
         $emailDetails = [
-            'from'      => $input['sender'],
+            'from'      => $input['X-Original-Sender'],
             'subject'   => $input['subject'],
             'to'        => $input['recipient'],
             'timestamp' => $input['timestamp'],
@@ -525,8 +536,9 @@ class Orchestrator extends Base\Core
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                            'message'      => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
-                            'file_details' => !empty($extractedFileDetails) ?  $extractedFileDetails : null,
+                            'message'      => 'Skipping file because unzip file caused an exception -> ' .
+                                                $ex->getMessage(),
+                            'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
                             'gateway'      => get_class($this->gatewayReconciliator),
                         ]);
 
