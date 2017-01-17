@@ -141,6 +141,11 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceWithNoData()
     {
+        //
+        // This asserts Invoice.getPaymentIdAttribute is workign fine.
+        //
+        $this->fixtures->create('payment:captured');
+
         $this->startTest();
 
         $order = $this->getLastEntity('order', true);

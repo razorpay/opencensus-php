@@ -483,9 +483,16 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
+        $orderId = $this->getOrderId();
+
+        if ($orderId === null)
+        {
+            return null;
+        }
+
         $repo = App::getFacadeRoot()['repo'];
 
-        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+        $payment = $repo->payment->getCapturedPaymentForOrder($orderId);
 
         if ($payment !== null)
         {

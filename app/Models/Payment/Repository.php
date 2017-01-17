@@ -542,7 +542,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getCapturedPaymentForOrder($orderId)
+    public function getCapturedPaymentForOrder(string $orderId)
     {
         return $this->newQuery()
                     ->whereNotNull(Entity::CAPTURED_AT)
