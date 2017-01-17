@@ -7,6 +7,7 @@ use Lib\PhoneBook;
 
 use RZP\Models\Base;
 use RZP\Models\Wallet;
+Use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Exception;
@@ -18,9 +19,10 @@ class Core extends Base\Core
      * Create and save a new customer_balance wallet account linked to merchant
      *
      * @param  Customer\Entity $customer
+     * @param  Merchant\Entity $merchant
      * @return Entity              Balance Entity
      */
-    protected function create(Customer\Entity $customer) : Entity
+    protected function create(Customer\Entity $customer, Merchant\Entity $merchant) : Entity
     {
         $number = new PhoneBook($customer->getContact(), true);
 
@@ -36,7 +38,7 @@ class Core extends Base\Core
 
         $balance->customer()->associate($customer);
 
-        $balance->merchant()->associate($this->merchant);
+        $balance->merchant()->associate($merchant);
 
         $balance->build();
 
@@ -54,7 +56,7 @@ class Core extends Base\Core
      */
     public function debit(Entity $balance, int $amount) : Entity
     {
-        $balance->getValidator()->validateBalanceForDebit($balance, $amount);
+        $balance->getValidator()->validateBalanceForDebit($amount);
 
         $balance->deductBalance($amount);
 
@@ -72,7 +74,7 @@ class Core extends Base\Core
      */
     public function credit(Entity $balance, int $amount, bool $isRefund = false) : Entity
     {
-        $balance->getValidator()->validateBalanceForCredit($balance, $amount);
+        $balance->getValidator()->validateBalanceForCredit($amount);
 
         $balance->addBalance($amount);
 
@@ -93,13 +95,14 @@ class Core extends Base\Core
      * Fetches, or creates and returns, a customer_balance entity for a merchant
      *
      * @param  Customer\Entity $customer
+     * @param  Merchant\Entity $merchant
      * @return Entity
      */
-    public function fetchOrCreate(Customer\Entity $customer) : Entity
+    public function fetchOrCreate(Customer\Entity $customer, Merchant\Entity $merchant) : Entity
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerAndMerchantSilent($customer, $this->merchant);
+                        ->findByCustomerAndMerchantSilent($customer, $merchant);
 
         if ($balance !== null)
         {
@@ -108,7 +111,7 @@ class Core extends Base\Core
 
         // No existing wallet found for the customer ID linked
         // to the current merchant, create one instead
-        return $this->create($customer);
+        return $this->create($customer, $merchant);
     }
 
     /**

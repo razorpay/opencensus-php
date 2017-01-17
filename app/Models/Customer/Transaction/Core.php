@@ -3,11 +3,12 @@
 namespace RZP\Models\Customer\Transaction;
 
 use Carbon\Carbon;
+
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Constants;
 
 class Core extends Base\Core
 {
@@ -18,14 +19,13 @@ class Core extends Base\Core
      * @param  Payment\Entity   $payment
      * @return Customer\Transaction\Entity
      */
-    public function createForCustomerDebit(array $input) : Entity
+    public function createForCustomerDebit(array $input, Merchant\Entity $merchant) : Entity
     {
         $amount = $input['payment']['amount'];
 
         $customerId = $input['payment']['customer_id'];
 
-        $customerTxn = $this->createEntityForType(
-                        Entity::DEBIT, $this->merchant, $amount, $customerId);
+        $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
 
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
@@ -75,7 +75,7 @@ class Core extends Base\Core
      * @param  int    $amount
      * @return Entity
      */
-    public function createFromCustomerRefund(array $input) : Entity
+    public function createFromCustomerRefund(array $input, Merchant\Entity $merchant) : Entity
     {
         $amount = $input['amount'];
 
@@ -83,7 +83,7 @@ class Core extends Base\Core
 
         $refundId = $input['refund']['id'];
 
-        $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
+        $customerTxn = $this->createEntityForType(Entity::CREDIT, $merchant, $amount, $customerId);
 
         $customerTxn->setType(Type::REFUND);
 
@@ -137,13 +137,13 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    public function getStatement(Customer\Balance\Entity $customerBalance, array $input = [])
+    public function getStatement(Customer\Balance\Entity $customerBalance, Merchant\Entity $merchant, array $input = [])
     {
         $input[Entity::CUSTOMER_ID] = $customerBalance->getCustomerId();
 
         $entities = $this->repo
                          ->customer_transaction
-                         ->fetch($input, $this->merchant->getId());
+                         ->fetch($input, $merchant->getId());
 
         return $entities;
     }

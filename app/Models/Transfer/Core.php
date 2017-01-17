@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
@@ -59,14 +60,15 @@ class Core extends Base\Core
      * Create and process a payment transfer
      *
      * @param   Payment\Entity          $payment
+     * @param   Merchant\Entity         $merchant
      * @param   array                   $input
      * @return  Base\PublicCollection
      */
-    public function createForPayment(Payment\Entity $payment, array $input)
+    public function createForPayment(Payment\Entity $payment, Merchant\Entity $merchant, array $input)
     {
         $transfers = new Base\PublicCollection;
 
-        $merchantBalance = $this->repo->balance->getMerchantBalance($this->merchant);
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
         (new Validator)->validateTransfers($payment, $merchantBalance, $input);
 
@@ -78,7 +80,7 @@ class Core extends Base\Core
         {
             if (isset($transfer[ToType::CUSTOMER]) === true)
             {
-                $transfer = $this->customerTransfer($payment, $transfer);
+                $transfer = $this->customerTransfer($payment, $merchant, $transfer);
 
                 $transfers->push($transfer);
             }
@@ -109,11 +111,11 @@ class Core extends Base\Core
         });
     }
 
-    protected function customerTransfer($payment, $transfer)
+    protected function customerTransfer($payment, $merchant, $transfer)
     {
         $to = $this->repo
                    ->customer
-                   ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $this->merchant);
+                   ->findByPublicIdAndMerchant($transfer[ToType::CUSTOMER], $merchant);
 
         $transfer = $this->createTransfer($to, $payment, $transfer['amount']);
 

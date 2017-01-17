@@ -8,11 +8,11 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    public function validateBalanceForCredit(Entity $wallet, int $amount, bool $isRefund = false)
+    public function validateBalanceForCredit(int $amount, bool $isRefund = false)
     {
-        $newBalance = $wallet->getBalance() + $amount;
+        $newBalance = $this->entity->getBalance() + $amount;
 
-        $maxBalance = $wallet->getMaxBalance();
+        $maxBalance = $this->entity->getMaxBalance();
 
         if ($newBalance > $maxBalance)
         {
@@ -23,25 +23,24 @@ class Validator extends Base\Validator
         // Check usage limits for wallet credits except for refunds
         if ($isRefund === false)
         {
-            $this->checkMonthlyUsageLimits($wallet, $newBalance);
+            $this->checkMonthlyUsageLimits($newBalance);
         }
-
     }
 
-    protected function checkMonthlyUsageLimits(Entity $wallet, int $newBalance)
+    protected function checkMonthlyUsageLimits(int $newBalance)
     {
-        $monthlyUsage = $wallet->getMonthlyUsage();
+        $monthlyUsage = $this->entity->getMonthlyUsage();
 
-        if (($newBalance + $monthlyUsage) > $wallet->getMaxBalance())
+        if (($newBalance + $monthlyUsage) > $this->entity->getMaxBalance())
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_PER_MONTH_LIMIT_EXCEEDED);
         }
     }
 
-    public function validateBalanceForDebit(Entity $wallet, int $amount)
+    public function validateBalanceForDebit(int $amount)
     {
-        $newBalance = $wallet->getBalance() - $amount;
+        $newBalance = $this->entity->getBalance() - $amount;
 
         if ($newBalance < 0)
         {

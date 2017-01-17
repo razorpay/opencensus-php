@@ -37,7 +37,7 @@ class Service extends Base\Service
      */
     public function credit(Customer\Entity $customer, int $amount)
     {
-        $balance = $this->core->fetchOrCreate($customer);
+        $balance = $this->core->fetchOrCreate($customer, $this->merchant);
 
         return $this->core->credit($balance, $amount);
     }

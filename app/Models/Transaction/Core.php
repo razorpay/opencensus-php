@@ -649,9 +649,9 @@ class Core extends Base\Core
 
     public function creditCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
     {
-        $balance = $this->getCustomerBalanceLockForUpdate($customer);
+        $balance = $this->getCustomerBalanceLockForUpdate($customer, $txn->merchant);
 
-        $balance = (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
+        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
     }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
@@ -764,7 +764,7 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer)
+    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer, Merchant\Entity $merchant)
     {
         if ($this->customerBalance !== null)
         {
@@ -774,9 +774,10 @@ class Core extends Base\Core
         $customerId = $customer->getId();
 
         // Try to create the customer_balance entity first - if not already exists
-        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer);
+        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer, $merchant);
 
-        $balance = $this->repo->customer_balance
+        $balance = $this->repo
+                        ->customer_balance
                         ->getCustomerBalanceLockForUpdate($customerId);
 
         $this->customerBalance = $balance;

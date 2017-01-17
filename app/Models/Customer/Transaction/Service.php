@@ -19,7 +19,7 @@ class Service extends Base\Service
         return $this->repo->transaction(function () use ($input)
         {
             $customerTxn = $this->core
-                                ->createFromCustomerRefund($input);
+                                ->createFromCustomerRefund($input, $this->merchant);
 
             return $customerTxn->getId();
         });
@@ -30,7 +30,7 @@ class Service extends Base\Service
         return $this->repo->transaction(function () use ($input)
         {
             $customerTxn = $this->core
-                                ->createForCustomerDebit($input);
+                                ->createForCustomerDebit($input, $this->merchant);
 
             return $customerTxn->getId();
         });

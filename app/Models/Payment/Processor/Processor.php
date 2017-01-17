@@ -312,6 +312,7 @@ class Processor
         {
             $transfers = (new Transfer\Core)->createForPayment(
                             $payment,
+                            $this->merchant,
                             $input['transfers']);
 
             return $transfers;
