@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Icici;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Exception;
@@ -120,6 +121,11 @@ class Service extends Base\Service
     public function getSettlementCombinedReport($input)
     {
         return (new Base\Report)->getReport($input, 'transaction');
+    }
+
+    public function postInitiateTransfer($input)
+    {
+        return (new Icici\NodalAccount)->generateSettlementFile($input['amount']);
     }
 
     public function calculatePrevousSettlementFees()

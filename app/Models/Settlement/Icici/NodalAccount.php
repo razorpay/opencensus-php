@@ -13,9 +13,25 @@ use RZP\Models\FileStore;
 class NodalAccount extends Base\Core
 {
     // used in icici AES encrypter tool
-    CONST ENCRYPTION_KEY = "1836204826394167";
+    const ENCRYPTION_KEY = "1836204826394167";
+
+    const HEADINGS = [
+        "Payment Mode",
+        "Beneficiary Name",
+        "Beneficiary Bank A/c No",
+        "Beneficiary Bank IFSC Code",
+        "Instrument Amount",
+        "Payment Date",
+        "Debit Account No",
+        "Credit Narration",
+        "Instrument Reference",
+        "Dummy",
+        "Dummy2",
+    ];
 
     protected $date = null;
+
+    protected $data = null;
 
     protected $queue = null;
 
@@ -43,6 +59,8 @@ class NodalAccount extends Base\Core
         $filePath = $this->createFile($encryptedText);
 
         $this->sendIciciSettlementMail($filePath);
+
+        return ['file' => $filePath];
     }
 
     protected function getPlainText($amount)
@@ -60,6 +78,8 @@ class NodalAccount extends Base\Core
             "",
             ""
         ];
+
+        $this->data = array_combine(self::HEADINGS, $values);
 
         $csv = implode(',', $values);
 
@@ -111,7 +131,7 @@ class NodalAccount extends Base\Core
     protected function sendIciciSettlementMail(string $fullPath)
     {
         $data['file'] = $fullPath;
-        $data['body'] = 'Please find attached settlement file for icici';
+        $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
 
         $this->mail->queue('emails.message', $data, function ($message) use ($fullPath)
         {
