@@ -236,4 +236,13 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
     }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $id = $params[Payment\Entity::ID];
+
+        Payment\Entity::verifyIdAndSilentlyStripSign($id);
+
+        $query->where(Refund\Entity::PAYMENT_ID, '=', $params[$id]);
+    }
 }
