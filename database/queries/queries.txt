@@ -1555,3 +1555,4 @@ ALTER TABLE gateway_status_absence
     ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
     ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
     ADD KEY `gateway_status_absence_source` (`source`);
+ALTER TABLE gateway_status_absence ALTER COLUMN scheduled SET DEFAULT 0;

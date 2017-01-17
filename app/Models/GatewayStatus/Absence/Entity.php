@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
         self::NETWORK       => null,
         self::DOWNTIME_TO   => null,
         self::COMMENT       => null,
-        self::SCHEDULED     => 1,
+        self::SCHEDULED     => 0,
         self::PARTIAL       => 0,
     ];
 
@@ -130,6 +130,11 @@ class Entity extends Base\PublicEntity
     public function getDowntimeTo()
     {
         return $this->getAttribute(self::DOWNTIME_TO);
+    }
+
+    public function getSource()
+    {
+        return $this->getAttribute(self::SOURCE);
     }
 
     public function terminal()

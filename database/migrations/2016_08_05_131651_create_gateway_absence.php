@@ -51,7 +51,7 @@ class CreateGatewayAbsence extends Migration
                   ->nullable();
 
             $table->tinyInteger(AbsenceEntity::SCHEDULED)
-                  ->default(1);
+                  ->default(0);
 
             $table->tinyInteger(AbsenceEntity::PARTIAL)
                   ->default(0);

@@ -20,18 +20,28 @@ class Core extends Base\Core
         //
         // Prevent duplicate creation of the same error model.
         // Basically, since we pass an empty 'to', it means, this is for an unscheduled
-        // maintenance. In case of a scheduled maintenance, the 'to' param is set
-        // and this will return null. For an unscheduled one, in case there already
-        // does exist a record for the same gateway, issuer and method, do not create
-        // additional ones.
+        // maintenance. In case of a scheduled maintenance, the 'to' param is set.
+        // For an unscheduled one, in case there already does exist a record for the
+        // same gateway, issuer and method, update the unscheduled with scheduled. In
+        // case there already does exist a scheduled one, and the current one is unscheduled,
+        // do not replace. Essentially, the scheduled one precedes the unscheduled.
 
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
-        $alreadyPresent = $this->verifyIfExists($input);
+        $alreadyAvailable = $this->verifyIfExists($input);
 
-        if (empty($alreadyPresent) === false)
+        if (empty($alreadyAvailable) === false)
         {
-            return $alreadyPresent;
+            $needsUpdate = $this->verifyIfNeedsUpdate($alreadyAvailable, $input);
+
+            if ($needsUpdate === true)
+            {
+                $editInput = $this->buildEditInput($input);
+
+                return $this->edit($alreadyAvailable, $editInput);
+            }
+
+            return $alreadyAvailable;
         }
 
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
@@ -135,6 +145,57 @@ class Core extends Base\Core
 
         return $absentees->first();
 
+    }
+
+    public function verifyIfNeedsUpdate($alreadyScheduled, $input)
+    {
+        $scheduled = 0;
+
+        if ((isset($input[Entity::SCHEDULED]) === true) and
+            ($input[Entity::SCHEDULED] === "1"))
+        {
+            $scheduled = 1;
+        }
+
+        if ($alreadyScheduled->isScheduled() === $scheduled)
+        {
+            return false;
+        }
+
+        if (($alreadyScheduled->isScheduled() === true) and
+           ($scheduled === 0))
+        {
+            return false;
+        }
+
+        if (($alreadyScheduled->isScheduled() === false) and
+            ($scheduled === 1))
+        {
+            return true;
+        }
+    }
+
+    public function buildEditInput(array $input)
+    {
+        $editInput = [
+            Entity::SCHEDULED       => $input[Entity::SCHEDULED],
+            Entity::DOWNTIME_FROM   => $input[Entity::DOWNTIME_FROM],
+            Entity::DOWNTIME_TO     => $input[Entity::DOWNTIME_TO]
+        ];
+
+        if (isset($input[Entity::COMMENT]))
+        {
+            $editInput[Entity::COMMENT] = $input[Entity::COMMENT];
+        }
+
+        if (isset($input[Entity::PARTIAL]))
+        {
+            $editInput[Entity::PARTIAL] = $input[Entity::PARTIAL];
+        }
+
+        $editInput[Entity::SOURCE] = $input[Entity::SOURCE];
+
+        return $editInput;
     }
 
     public function fetchMostRecentActive(array $input)

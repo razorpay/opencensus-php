@@ -76,7 +76,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 {
                     $editData = [
                         Entity::DOWNTIME_FROM => $absent->getDowntimeFrom(),
-                        Entity::DOWNTIME_TO   => time()
+                        Entity::DOWNTIME_TO   => time(),
+                        Entity::SOURCE => $absent->getSource()
                     ];
 
                     $downWindow = $this->core->edit($absent, $editData);

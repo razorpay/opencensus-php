@@ -57,12 +57,12 @@ class GatewayAbsenceTest extends TestCase
                 'issuer' => 'HDFC',
                 'comment' => 'Test Reason',
                 'source' => 'statuscake',
-                'downtime_from' => time()
+                'downtime_from' => Carbon::now()->subMinutes(60)->timestamp
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
         ];
-        
+
         $response = $this->makeRequestAndGetContent($request);
         
         $request['content']['reason_code'] = 'ISSUER_DOWN';
@@ -72,6 +72,88 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($response['id'], $response2['id']);
         
         $this->assertEquals($response['reason_code'], $response2['reason_code']);
+    }
+
+    public function testGatewayAbsenceDuplicateWithUpdatedScheduled()
+    {
+        $request = [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'statuscake',
+                'downtime_from' => Carbon::now()->subMinutes(60)->timestamp,
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $request['content']['reason_code'] = 'ISSUER_DOWN';
+
+        $request['content']['scheduled'] = true;
+
+        $downtimeTo = Carbon::now()->addMinutes(60)->timestamp;
+
+        $request['content']['downtime_to'] = $downtimeTo;
+
+        $request['content']['source'] = 'other';
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['id'], $response2['id']);
+
+        $this->assertEquals($response['reason_code'], $response2['reason_code']);
+
+        $this->assertEquals($response2['downtime_to'], $downtimeTo);
+
+        $this->assertEquals($response2['scheduled'], true);
+
+        $absenceEntity = $this->getLastEntity('gateway_absence', true);
+
+        $this->assertEquals($absenceEntity['source'], 'other');
+
+    }
+
+    public function testGatewayAbsenceDuplicateWithoutScheduled()
+    {
+        $request = [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'statuscake',
+                'scheduled' => true,
+                'downtime_from' => Carbon::now()->subMinutes(60)->timestamp,
+                'downtime_to'  => Carbon::now()->addMinutes(60)->timestamp
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $request['content']['reason_code'] = 'ISSUER_DOWN';
+
+        $request['content']['source'] = 'other';
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response['id'], $response2['id']);
+
+        $this->assertEquals($response2['reason_code'], 'LOW_SUCCESS_RATE');
+
+        $this->assertEquals($response2['scheduled'], true);
+
+        $absenceEntity = $this->getLastEntity('gateway_absence', true);
+
+        $this->assertEquals($absenceEntity['source'], 'statuscake');
+
     }
 
     public function testGatewayCreateAbsenceNetbankingPartial()
@@ -255,14 +337,17 @@ class GatewayAbsenceTest extends TestCase
 
         $url = '/gateway/absence/'. $content['id'];
 
-        $now = time();
+        $now = Carbon::now()->timestamp;
 
-        $to = $now + 100;
+        $to = Carbon::now()->addMinutes(100)->timestamp;
 
+        $lastEntity = $this->getLastEntity('gateway_absence', true);
         $request = [
             'content' => [
                 'downtime_from' => $now,
-                'downtime_to' => $to
+                'downtime_to' => $to,
+                'source' => $lastEntity['source'],
+                'comment' => 'SOME_COMMENT'
             ],
             'method' => 'PUT',
             'url' => $url
@@ -273,6 +358,8 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($content['downtime_from'], $now);
 
         $this->assertEquals($content['downtime_to'], $to);
+
+        $this->assertEquals($content['comment'], 'SOME_COMMENT');
     }
 
     //----- Delete Tests -----

@@ -30,6 +30,11 @@ class Validator extends Base\Validator
     protected static $editRules = [
         Entity::DOWNTIME_FROM   => 'sometimes|integer',
         Entity::DOWNTIME_TO     => 'sometimes|integer',
+        Entity::SCHEDULED       => 'sometimes|bool',
+        Entity::COMMENT         => 'sometimes|string|max:500',
+        Entity::PARTIAL         => 'sometimes|bool',
+        Entity::SOURCE          => 'required|string|max:30|custom',
+        Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
     ];
 
     protected static $createValidators = [
@@ -165,7 +170,8 @@ class Validator extends Base\Validator
             );
         }
 
-        if (($method === Method::WALLET) and (in_array($issuer, Gateway::$methodMap[Method::WALLET], true) === false))
+        if (($method === Method::WALLET) and
+            (in_array($issuer, Gateway::$methodMap[Method::WALLET], true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Issuer: '. $issuer. ' is not a valid Wallet'
@@ -218,7 +224,8 @@ class Validator extends Base\Validator
 
         $cardNetWork = Gateway::$cardNetworkMap[$gateway];
 
-        if ((strtolower($method) === Method::CARD) and (in_array($network, $cardNetWork, true) === false))
+        if ((strtolower($method) === Method::CARD)
+            and (in_array($network, $cardNetWork, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
                   'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: '.$gateway
