@@ -243,6 +243,6 @@ class Repository extends Base\Repository
 
         Payment\Entity::verifyIdAndSilentlyStripSign($id);
 
-        $query->where(Refund\Entity::PAYMENT_ID, '=', $params[$id]);
+        $query->where(Refund\Entity::PAYMENT_ID, '=', $id);
     }
 }
