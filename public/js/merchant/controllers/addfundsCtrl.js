@@ -59,8 +59,10 @@ app.controller('AddfundsCtrl', [
     fetchKey();
     function fetchUser() {
       user.identity().then(function (data) {
-        $scope.options.name = data.name;
-        $scope.options.prefill.email = data.email;
+        $scope.options.prefill = {};
+        $scope.options.prefill.name = data.user.name;
+        $scope.options.prefill.email = data.user.email;
+        $scope.options.prefill.contact = data.user.contact_mobile;
       });
     }
 

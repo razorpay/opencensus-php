@@ -38,6 +38,18 @@ angular.module('app.filters', []).filter('fromNow', function () {
     return function(input) {
       return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
     };
+}).filter('propercurrency', function($filter) {
+    return function(input, currency) {
+      switch (currency) {
+        case 'USD':
+          return $filter('currency')(input, '$', 2);
+        case 'INR':
+          return $filter('rupee')(input);
+        // This is if you want two decimal places
+        case '':
+          return $filter('currency')(input, '', 2);
+      }
+    };
 }).filter('roletoname', function() {
     return function(role, helptext) {
       var rolesLabels = {

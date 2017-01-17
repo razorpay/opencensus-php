@@ -814,8 +814,12 @@ angular.module('app.services', [])
 ])
 .factory('displayValue', [
   'getType',
-  function (getType) {
-    return function (key, value) {
+  '$filter',
+  function (getType, $filter) {
+    return function (key, value, entity) {
+      if (typeof entity === "undefined") {
+        entity = {};
+      }
       var type = getType(key, value);
       // Set timezone to IST
       moment().utcOffset(5.5);
@@ -823,7 +827,11 @@ angular.module('app.services', [])
       case 'timestamp':
         return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
       case 'amount':
-        return 'INR ' + (value / 100).toFixed(2);
+        var currency = 'INR';
+        if (entity.hasOwnProperty('currency')) {
+          currency = entity.currency;
+        }
+        return $filter('propercurrency')(value, currency);
       default:
         if (value === null) {
           return 'null';

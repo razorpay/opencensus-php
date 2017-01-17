@@ -181,16 +181,16 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
-    public function capturePayment($id, $amount, $mode)
+    public function capturePayment(string $id, string $mode, array $input)
     {
-        $error = array();
+        $error = [];
 
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
             $data = $this->api->payment
                                 ->fetch($id)
-                                ->capture(array('amount' => $amount))
+                                ->capture($input)
                                 ->toArray();
         }
         catch(\Razorpay\Api\Errors\BadRequestError $e)
@@ -200,7 +200,9 @@ class Service extends Base\Service
         }
 
         if (isset($data['error']) === true or isset($data['status']) === false or $data['status'] !== "captured")
+        {
             $error[] = "Capture Failed";
+        }
 
         return $error;
     }

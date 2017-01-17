@@ -16,11 +16,11 @@
       <div class="row wrapper">
         <div class="list-group">
           <div class="list-group-item">
-            <span class="pull-right">{{entity.amount/100 | rupee:""}}</span>
+            <span class="pull-right">{{entity.amount/100 | propercurrency: entity.currency}}</span>
             Amount
           </div>
           <div class="list-group-item">
-            <span class="pull-right">{{entity.amount_refunded/100 | rupee:""}}</span>
+            <span class="pull-right">{{entity.amount_refunded/100 | propercurrency: entity.currency}}</span>
             Amount Refunded
           </div>
           <div class="list-group-item">
@@ -76,24 +76,35 @@
             <span class="pull-right"><a href="tel:{{entity.contact}}">{{entity.contact}}</a></span>
             Contact
           </div>
+          <!-- Note: Fees/Service Tax etc will always be in INR -->
           <div class="list-group-item">
-            <span class="pull-right">{{(entity.fee - entity.service_tax)/100 | rupee:""}}</span>
+            <span class="pull-right">{{(entity.fee - entity.service_tax)/100 | rupee}}</span>
             Fees
           </div>
           <div class="list-group-item">
-            <span class="pull-right">{{entity.service_tax/100 | rupee:""}}</span>
+            <span class="pull-right">{{entity.service_tax/100 | rupee}}</span>
             Service Tax
           </div>
           <div class="list-group-item" tooltip="Total Fees is inclusive of Service Tax charges">
-            <span class="pull-right">{{entity.fee/100 | rupee:""}}</span>
+            <span class="pull-right">{{entity.fee/100 | rupee}}</span>
             Total Fees
+          </div>
+          <div class="list-group-item" tooltip="Base Amount in INR, in case the currency was not INR" ng-show="entity.hasOwnProperty('base_amount')">
+            <span class="pull-right">{{entity.base_amount/100 | rupee}}</span>
+            Base Amount
+          </div>
+          <div class="list-group-item" ng-show="entity.hasOwnProperty('international')">
+            <span class="pull-right" tooltip="{{entity.international ? 'Yes' : 'No'}}">
+              <i class="fa" ng-class="{' fa-check text-success': entity.international, ' fa-times text-danger':!entity.international}"></i>
+            </span>
+            International
           </div>
           <!-- These are the extra fields that were not nicely formatted above -->
           <div class="list-group-item" ng-repeat="key in keysNotShown()"
             ng-init="value = entity[key];valueType = getType(key, value);state=getStateMerchant(key, value);" ui-sref="{{state}}"
             ng-show="value!==null">
             <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
-              {{displayValue(key, value)}}
+              {{displayValue(key, value, entity)}}
             </span>
             {{key|titlecase}}
           </div>
@@ -175,7 +186,7 @@
         <label class="col-lg-3 control-label" for="refund_amount">Refund Amount</label>
         <div class="col-lg-9">
           <div class="input-group">
-            <span class="input-group-addon">INR</span>
+            <span class="input-group-addon">{{currency}}</span>
             <input type="text" class="form-control m-b" name="amount" ng-model="refund_amount" placeholder="{{amount}}">
           </div>
         </div>
@@ -197,7 +208,7 @@
         The payment will be
           <span ng-show="partial">partially</span>
           <span ng-show="!partial">completely</span>
-        refunded with the refund amount set to {{refund_amount}} INR.
+        refunded with the refund amount set to {{refund_amount}} {{currency}}.
       </div>
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary" ng-click="ok(refund_amount, comment)" ng-confirm-click="Are you sure you want to refund this payment?">OK</button>
@@ -210,7 +221,7 @@
   </div>
   <div class="modal-body">
       Are you sure you want to capture this payment?<br><br>
-      The payment amount is <strong>{{amount/100|rupee:"INR "}}</strong>.
+      The payment amount is <strong>{{amount/100|propercurrency: currency}}</strong>.
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
