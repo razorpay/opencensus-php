@@ -74,7 +74,7 @@ app.controller('ActivationCtrl', [
         angular.forEach(data.data.files, function (key) {
           $scope.fileAlerts[key].addAlert('success', 'File already uploaded');
         });
-        if (data.data.submitted === true) {
+        if (data.data.submitted === 1) {
           user.identity().then(function (data) {
             if (data.activated == 1) {
               $scope.formAlerts.addAlert('info', 'Your account is already activated');
@@ -82,7 +82,7 @@ app.controller('ActivationCtrl', [
               $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');
           });
         }
-        if (data.data.locked === true) {
+        if (data.data.locked === 1) {
           $scope.locked = true;
         }
 

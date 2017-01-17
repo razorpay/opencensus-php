@@ -100,17 +100,40 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
-        $stepFinished = $this->calculateSteps($merchantDetails);
-
-        if (count($stepFinished) !== 0)
+        if ($merchantDetails !== null)
         {
-            $unfinishedSteps = array_unique($stepFinished);
+            if ($merchantDetails['can_submit'] === true)
+            {
+                $merchantDetails['steps_finished'] = json_encode([1, 2, 3, 4, 5]);
 
-            $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
+                $merchantDetails['activation_progress'] = 100;
+            }
+            else
+            {
+                $stepFinished = $this->calculateSteps($merchantDetails);
 
-            $merchantDetails['steps_finished'] = json_encode($finishedSteps);
+                if (count($stepFinished) !== 0)
+                {
+                    $unfinishedSteps = array_unique($stepFinished);
 
-            $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+                    $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
+
+                    $merchantDetails['steps_finished'] = json_encode($finishedSteps);
+
+                    $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+                }
+
+            }
+        }
+
+        // Hack: Have to change the submitted and locked to int instead of boolean
+        if (isset($merchantDetails['submitted']))
+        {
+            $merchantDetails['submitted'] = ($merchantDetails['submitted'] === true)? 1 : 0;
+        }
+        if (isset($merchantDetails['locked']))
+        {
+            $merchantDetails['locked'] = ($merchantDetails['locked'] === true) ? 1: 0;
         }
 
         $merchantDetails['files'] = $this->getFileDetails($merchantId);
