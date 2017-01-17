@@ -56,14 +56,6 @@ class ItemTest extends TestCase
         $this->assertUpdateResponseWithLastEntity('item', __FUNCTION__);
     }
 
-    public function testUpdateItemHavingLineItemsAssociated()
-    {
-        $this->fixtures->create('item');
-        $this->fixtures->create('line_item');
-
-        $this->startTest();
-    }
-
     public function testDeleteItem()
     {
         $this->fixtures->create('item');
