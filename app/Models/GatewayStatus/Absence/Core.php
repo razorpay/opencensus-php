@@ -15,7 +15,7 @@ class Core extends Base\Core
         Entity::DOWNTIME_FROM
     ];
 
-    public function create($input)
+    public function create(array $input)
     {
         //
         // Prevent duplicate creation of the same error model.
@@ -53,7 +53,7 @@ class Core extends Base\Core
         return $downWindow;
     }
 
-    public function edit($downWindow, $input)
+    public function edit(Entity $downWindow, array $input)
     {
         $downWindow->edit($input);
 
@@ -64,7 +64,7 @@ class Core extends Base\Core
         return $downWindow;
     }
 
-    public function delete($downWindow)
+    public function delete(Entity $downWindow)
     {
         $id = $downWindow->getId();
 
@@ -147,7 +147,7 @@ class Core extends Base\Core
 
     }
 
-    public function verifyIfNeedsUpdate($alreadyScheduled, $input)
+    public function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)
     {
         $scheduled = 0;
 
