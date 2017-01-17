@@ -27,8 +27,8 @@ class Core extends Base\Core
         $lineItem = new Entity;
 
         //
-        // If without ITEM_ID (template), no CURRENCY is send, we use invoice's
-        // currency.
+        // If without ITEM_ID (template), no CURRENCY is sent,
+        // we use invoice's currency.
         //
         if ((isset($input[Entity::ITEM_ID]) === false) and
             (isset($input[Entity::CURRENCY]) === false))
@@ -244,10 +244,10 @@ class Core extends Base\Core
     }
 
     /**
-     * If ITEM_ID is send in input, fetches that item and:
-     * - Associates that item with line item
-     * - Usages it's name, description, amount, currency to fill in line item
-     *   entity, if it's not already set in input with some value.
+     * If item_id is sent in the input,
+     * - associate that item with the line_item
+     * - fill up the missing attributes in line_item using
+     *   the item attributes
      *
      * @param Entity            $lineItem
      * @param array             $input
@@ -262,7 +262,7 @@ class Core extends Base\Core
     {
         if (isset($input[Entity::ITEM_ID]) === false)
         {
-            return $input;
+            return;
         }
 
         $item = $this->repo->item
@@ -275,7 +275,10 @@ class Core extends Base\Core
 
         foreach (Entity::$itemFields as $field)
         {
-            if (isset($input[$field]) === true) continue;
+            if (isset($input[$field]) === true)
+            {
+                continue;
+            }
 
             $accessor = 'get' . studly_case($field);
 
