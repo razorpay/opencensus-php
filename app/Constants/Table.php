@@ -38,7 +38,7 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const DAILY_SETTLEMENT      = 'daily_settlements';
+    const BATCH_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';

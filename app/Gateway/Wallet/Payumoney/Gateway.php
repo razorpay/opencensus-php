@@ -401,10 +401,10 @@ class Gateway extends Base\Gateway
 
             // We are caching user wallet balance for 30 mins for
             // optimization purpose.
-            // Optimization: Suppose user already has 50 ruppee in
-            // his wallet and is making a payment of 100 rupppee.
+            // Optimization: Suppose user already has 50 rupee in
+            // his wallet and is making a payment of 100 rupee.
             // With this optimization, user will only have to add
-            // 50 ruppee instead of 100.
+            // 50 rupee instead of 100.
             Cache::put($key, $content['result'], self::PAYMENT_TTL);
 
             return [(int) ($content['result']['availableBalance'] * 100),

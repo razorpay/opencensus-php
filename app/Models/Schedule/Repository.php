@@ -24,7 +24,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchDailySettlementSchedulesByDelay($delay)
+    public function getDailySettlementScheduleByDelay($delay)
     {
         return $this->newQuery()
                     ->where(Entity::TYPE, '=', Type::SETTLEMENT)

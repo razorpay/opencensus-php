@@ -90,6 +90,8 @@ class ErrorCode
     const GATEWAY_ERROR_INVALID_CALLBACK_URL                                        = 'GATEWAY_ERROR_INVALID_CALLBACK_URL';
 // Generic bad requests
     const BAD_REQUEST_INVALID_ID                                                    = 'BAD_REQUEST_INVALID_ID';
+    const BAD_REQUEST_INVALID_IDS                                                   = 'BAD_REQUEST_INVALID_IDS';
+    const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
@@ -267,8 +269,6 @@ class ErrorCode
     const BAD_REQUEST_CARD_BILL_SHIP_MISMATCH                                       = 'BAD_REQUEST_CARD_BILL_SHIP_MISMATCH';
     const BAD_REQUEST_INVALID_PARAMETERS                                            = 'BAD_REQUEST_INVALID_PARAMETERS';
     const BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE                                    = 'BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE';
-    const BAD_REQUEST_BITLY_LONG_URL_EMPTY                                          = 'BAD_REQUEST_BITLY_LONG_URL_EMPTY';
-    const BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT                                 = 'BAD_REQUEST_INVOICE_INPUT_CUSTOMER_ABSENT';
     const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                       = 'BAD_REQUEST_INVALID_MESSAGE_KEYWORD';
     const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                        = 'BAD_REQUEST_MISSING_FIELDS_MESSAGE';
 
@@ -295,6 +295,7 @@ class ErrorCode
     const BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS                           = 'BAD_REQUEST_BATCH_ANOTHER_OPERATION_IN_PROGRESS';
 
     const BAD_REQUEST_URL_NOT_FOUND                                                 = 'BAD_REQUEST_URL_NOT_FOUND';
+    const BAD_REQUEST_ROUTE_DISABLED                                                = 'BAD_REQUEST_ROUTE_DISABLED';
     const BAD_REQUEST_NOTES_SHOULD_BE_ARRAY                                         = 'BAD_REQUEST_NOTES_SHOULD_BE_ARRAY';
     const BAD_REQUEST_NOTES_TOO_MANY_KEYS                                           = 'BAD_REQUEST_NOTES_TOO_MANY_KEYS';
     const BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY                                   = 'BAD_REQUEST_NOTES_VALUE_CANNOT_BE_ARRAY';
@@ -326,6 +327,13 @@ class ErrorCode
     const BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED                     = 'BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED';
     const BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED                                    = 'BAD_REQUEST_MERCHANT_ALREADY_ACTIVATED';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED                                        = 'BAD_REQUEST_MERCHANT_NOT_ACTIVATED';
+    const BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED                                     = 'BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED';
+    const BAD_REQUEST_MERCHANT_NOT_ARCHIVED                                         = 'BAD_REQUEST_MERCHANT_NOT_ARCHIVED';
+    const BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED                                   = 'BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED';
+    const BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED                                    = 'BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED';
+    const BAD_REQUEST_MERCHANT_NOT_SUSPENDED                                        = 'BAD_REQUEST_MERCHANT_NOT_SUSPENDED';
+    const BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED                                 = 'BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED';
+    const BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS                               = 'BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS';
     const BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED                                 = 'BAD_REQUEST_MERCHANT_NO_TERMINAL_ASSIGNED';
     const BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED                                  = 'BAD_REQUEST_MERCHANT_KEY_ALREADY_CREATED';
     const BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED                      = 'BAD_REQUEST_MERCHANT_NOT_ACTIVATED_KEY_CREATE_FAILED';
@@ -410,9 +418,12 @@ class ErrorCode
 
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
+
+    const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
+    const BAD_REQUEST_ITEM_INACTIVE                                                 = 'BAD_REQUEST_ITEM_INACTIVE';
     const BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED                                         = 'BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED';
 
-    const BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID                                      = 'BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID';
+    const BAD_REQUEST_INVALID_ADMIN_EMAIL                                           = 'BAD_REQUEST_INVALID_ADMIN_EMAIL';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 

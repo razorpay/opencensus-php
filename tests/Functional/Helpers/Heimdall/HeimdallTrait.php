@@ -70,4 +70,22 @@ trait HeimdallTrait
 
         return $adminToken->getToken();
     }
+
+    public function adminForgotPassword($orgId, $email)
+    {
+        $request = [
+            'url'     => '/orgs/' . $orgId . '/admin/forgot_password',
+            'method'  => 'POST',
+            'content' => [
+                'email' => $email,
+                'reset_password_url' => 'hello.com',
+            ],
+        ];
+
+        $this->ba->appAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 }

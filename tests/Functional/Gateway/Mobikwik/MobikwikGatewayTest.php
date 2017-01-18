@@ -74,7 +74,8 @@ class MobikwikGatewayTest extends TestCase
 
         $this->setOtp(Otp::INCORRECT);
 
-        $this->runRequestResponseFlow($data, function() use ($payment) {
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
             $this->doAuthPayment($payment);
         });
 
@@ -106,12 +107,12 @@ class MobikwikGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => 'mobikwik',
-                            'gateway'       => 'mobikwik',
-                            'otp_attempts'  => 3,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => 'mobikwik',
+            'gateway'       => 'mobikwik',
+            'otp_attempts'  => 3,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -127,14 +128,14 @@ class MobikwikGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => 'mobikwik',
-                            'gateway'       => 'mobikwik',
-                            'contact'       => '9111111111',
-                            'otp_attempts'  => 2,
-                            'otp_count'     => 1,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => 'mobikwik',
+            'gateway'       => 'mobikwik',
+            'contact'       => '9111111111',
+            'otp_attempts'  => 2,
+            'otp_count'     => 1,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -175,7 +176,7 @@ class MobikwikGatewayTest extends TestCase
         $response = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->doWalletTopupViaAjaxRoute($response['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($response['data']['payment_id']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -189,6 +190,7 @@ class MobikwikGatewayTest extends TestCase
         $this->payment = $this->doAuthAndCapturePayment($this->payment);
         $id = $this->payment['id'];
         $this->payment = $this->verifyPayment($id);
+
         $this->assertEquals($this->payment['payment']['verified'], 1);
     }
 
@@ -215,15 +217,15 @@ class MobikwikGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => 'mobikwik',
-                            'gateway'       => 'mobikwik',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->getId()
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'mobikwik',
+            'gateway'       => 'mobikwik',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->getId()
+        ]);
 
         $id = $payment->getPublicId();
 
@@ -244,15 +246,15 @@ class MobikwikGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            'email'         => 'a@b.com',
-                            'amount'        => 50000,
-                            'contact'       => '9918899029',
-                            'method'        => 'wallet',
-                            'wallet'        => 'mobikwik',
-                            'gateway'       => 'mobikwik',
-                            'card_id'       => null,
-                            'terminal_id'   => $this->sharedTerminal->getId()
-                        ]);
+            'email'         => 'a@b.com',
+            'amount'        => 50000,
+            'contact'       => '9918899029',
+            'method'        => 'wallet',
+            'wallet'        => 'mobikwik',
+            'gateway'       => 'mobikwik',
+            'card_id'       => null,
+            'terminal_id'   => $this->sharedTerminal->getId()
+        ]);
 
         $url = $this->getOtpResendUrl($payment->getPublicId());
 

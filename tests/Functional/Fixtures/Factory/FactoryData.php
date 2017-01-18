@@ -285,33 +285,38 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Invoice\Entity::class, [
-            'id' => '1000000invoice',
-            'merchant_id' => '10000000000000',
-            'customer_id' => '100000customer',
-            'order_id' => '100000000order',
-            'customer_email' => 'test@razorpay.com',
+            'id'               => '1000000invoice',
+            'merchant_id'      => '10000000000000',
+            'customer_id'      => '100000customer',
+            'order_id'         => '100000000order',
+            'customer_email'   => 'test@razorpay.com',
             'customer_contact' => '1234567890',
-            'customer_name' => 'test',
+            'customer_name'    => 'test',
             'customer_address' => null,
-            'short_url' => 'http://bitly.dev/2eZ11Vn',
-            'view_less' => 1,
-            'sms_status' => 'sent',
-            'email_status' => 'sent',
-            'notes' => null,
-            'status' => 'issued',
-            'due_by' => $faker->timestamp,
-            'scheduled_at' => $faker->timestamp,
-            'amount' => 100000,
-            'currency' => 'INR',
+            'short_url'        => 'http://bitly.dev/2eZ11Vn',
+            'type'             => 'invoice',
+            'view_less'        => 1,
+            'sms_status'       => 'sent',
+            'email_status'     => 'sent',
+            'notes'            => null,
+            'status'           => 'issued',
+            'due_by'           => $faker->timestamp,
+            'scheduled_at'     => $faker->timestamp,
+            'amount'           => 100000,
+            'currency'         => 'INR',
         ]);
 
         $factory(\RZP\Models\LineItem\Entity::class, [
-            'id' => '100000lineitem',
+            'id'          => '100000lineitem',
             'merchant_id' => '10000000000000',
-            'entity_id' => '1000000invoice',
+            'entity_id'   => '1000000invoice',
             'entity_type' => 'invoice',
-            'item_id' => '1000000000item',
-            'quantity' => 1,
+            'item_id'     => '1000000000item',
+            'name'        => 'Some item name',
+            'description' => 'Some item description',
+            'amount'      => 100000,
+            'currency'    => 'INR',
+            'quantity'    => 1,
         ]);
 
         $factory(\RZP\Gateway\FirstData\Entity::class, [
@@ -435,7 +440,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Admin\Admin\Token\Entity::class, [
-            'id'            => $faker->randomNumber(6),
+            'id'            => $faker->uniqueid,
             'admin_id'      => 'RazorpayUserId',
             'token'         => $faker->name(20),
             'created_at'    => $faker->timestamp,

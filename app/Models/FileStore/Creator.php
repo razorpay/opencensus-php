@@ -4,6 +4,8 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -323,7 +325,20 @@ class Creator extends Base\Core
         fwrite($file, $this->content);
         fclose($file);
 
-        chmod($fullPath, 0777);  // keep it 0777. This step is important
+        try
+        {
+            chmod($fullPath, 0777);  // keep it 0777. This step is important
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                [
+                    'path' => $fullPath
+                ]);
+        }
 
         $this->createUploadedFile($fullPath, $fileName);
     }

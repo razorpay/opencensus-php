@@ -324,25 +324,13 @@ trait Capture
             throw $ex;
         }
 
-        $curlMessage = strtolower($ex->getData()['message']);
-
-        //
-        // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
-        // We want to mark the payment as successful only if the error
-        // message says that the operation timed out.
-        //
-        if (strpos($curlMessage, 'operation timed out') === false)
-        {
-            throw $ex;
-        }
-
         $this->trace->traceException($ex);
 
         $data['mode'] = $this->mode;
 
         $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
-        );
+            TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
+            ['payment_id' => $this->payment->getId()]);
 
         // We will be removing this piece of code once the capture queue is written
         // for Cybersource to handle. Being tracked in the issue #1842
@@ -564,7 +552,7 @@ trait Capture
                 'order_id'      => $order->getId(),
             ]);
 
-        if ($invoice->getStatus() === Invoice\Status::PAID)
+        if ($invoice->hasBeenPaid() === true)
         {
             throw new Exception\LogicException(
                 'The invoice is already paid for.',

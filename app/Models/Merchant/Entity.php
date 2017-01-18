@@ -42,6 +42,8 @@ class Entity extends Base\PublicEntity
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
     const AUTO_REFUND_DELAY         = 'auto_refund_delay';
     const CONVERT_CURRENCY          = 'convert_currency';
+    const ARCHIVED_AT               = 'archived_at';
+    const SUSPENDED_AT              = 'suspended_at';
 
     /**
      * Category for particular methods or gateways
@@ -53,6 +55,7 @@ class Entity extends Base\PublicEntity
      */
     const METHODS                   = 'methods';
     const ORIGINAL_SIZE             = 'original';
+    const ACTION                    = 'action';
 
     protected $entity = 'merchant';
 
@@ -153,6 +156,8 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY      => null,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::CONVERT_CURRENCY       => null,
+        self::ARCHIVED_AT            => null,
+        self::SUSPENDED_AT           => null,
     );
 
     protected $publicSetters = array(
@@ -184,6 +189,16 @@ class Entity extends Base\PublicEntity
     public function isActivated()
     {
         return $this->getAttribute(self::ACTIVATED);
+    }
+
+    public function isSuspended()
+    {
+        return ($this->getAttribute(self::SUSPENDED_AT) !== null);
+    }
+
+    public function isArchived()
+    {
+        return ($this->getAttribute(self::ARCHIVED_AT) !== null);
     }
 
     public function isInternational()
@@ -231,6 +246,20 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVATED_AT, time());
     }
 
+    public function suspend()
+    {
+        $this->setAttribute(self::SUSPENDED_AT, time());
+        $this->setAttribute(self::LIVE, false);
+        $this->setAttribute(self::HOLD_FUNDS, true);
+    }
+
+    public function unsuspend()
+    {
+        $this->setAttribute(self::SUSPENDED_AT, null);
+        $this->setAttribute(self::LIVE, true);
+        $this->setAttribute(self::HOLD_FUNDS, false);
+    }
+
     public function liveEnable()
     {
         $this->setAttribute(self::LIVE, true);
@@ -239,6 +268,16 @@ class Entity extends Base\PublicEntity
     public function liveDisable()
     {
         $this->setAttribute(self::LIVE, false);
+    }
+
+    public function archive()
+    {
+        $this->setAttribute(self::ARCHIVED_AT, time());
+    }
+
+    public function unarchive()
+    {
+        $this->setAttribute(self::ARCHIVED_AT, null);
     }
 
     public function hasSchedule()
@@ -337,6 +376,11 @@ class Entity extends Base\PublicEntity
     public function setPricingPlan($planId)
     {
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
+    }
+
+    public function setSettlementSchedule($settlementSchedule)
+    {
+        $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
     }
 
     protected function setBrandColorAttribute($brandColor)
