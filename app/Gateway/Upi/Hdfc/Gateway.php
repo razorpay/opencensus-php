@@ -409,8 +409,15 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
         $data = [
-            // TODO
+            $this->getMerchantId(),
+            $input['payment']['id'],
+            $gatewayPayment->getGatewayPaymentId(),
+            $gatewayPayment->getGatewayPaymentId(),
         ];
 
         $content = $this->transformRequestArrayToContent($data);

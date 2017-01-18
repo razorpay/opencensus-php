@@ -17,7 +17,7 @@
 
 - action: Uses `$this->action`
 - amount: Amount given to us via gateway response (2 decimal places)
-- bank: `icici`
+- bank: `hdfc`
 - contact: Filled by the bank response
 - name: Filled by the bank response
 - received: Filled as soon as we get a response
