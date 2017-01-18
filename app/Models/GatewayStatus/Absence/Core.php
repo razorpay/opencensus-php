@@ -143,7 +143,7 @@ class Core extends Base\Core
 
         $absentees = $this->repo->gateway_absence->fetch($queryParams);
 
-        return $absentees->first();
+        return $absentees->firstOrFail();
 
     }
 
