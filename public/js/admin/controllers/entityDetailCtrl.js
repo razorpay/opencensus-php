@@ -121,7 +121,7 @@ app.controller('EntityDetailCtrl', [
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an error while adding the merchant to the terminal');
+          $scope.alerts.addAlert('danger', 'There was an error while adding the merchant to the terminal');
         });
       },
       changePrimaryMerchant: function (terminal_id, merchant_id) {
@@ -132,7 +132,7 @@ app.controller('EntityDetailCtrl', [
 
         request.success(function (data) {
           if (data.success) {
-            alert('Primary merchant changed successfully');
+            $scope.alerts.addAlert('success', 'Primary merchant changed successfully');
 
             // Page refresh
             window.location.reload();
@@ -141,7 +141,7 @@ app.controller('EntityDetailCtrl', [
             alert(data.errors);
           }
         }).error(function () {
-          alert('There was an issue while changing the primary merchant');
+          $scope.alerts.addAlert('danger', 'There was an issue while changing the primary merchant');
         });
       }
     };
@@ -366,13 +366,13 @@ app.controller('EntityDetailCtrl', [
             $scope.subMerchants.splice(index, 1);
           }
 
-          alert('Merchant terminal unassigned successfully');
+          $scope.alerts.addAlert('success', 'Sub merchant unassigned from the terminal successfully');
         }
         else {
           alert(data.errors);
         }
       }).error(function () {
-        alert('There was an error while editing the terminal');
+        $scope.alerts.addAlert('danger', 'There was an error while removing the merchant from the terminal');
       });
     };
 
