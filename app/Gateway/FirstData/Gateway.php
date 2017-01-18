@@ -1032,7 +1032,7 @@ class Gateway extends Base\Gateway
         $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
 
         if (($username === null) or
-            ($password === ''))
+            ($password === null))
         {
             $username = $this->config['live_user_id'];
             $password = $this->config['live_password'];
@@ -1105,7 +1105,7 @@ class Gateway extends Base\Gateway
     {
         $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
-        if ($password === null)
+        if ($password === '')
         {
             $password = $this->config['live_client_certificate_password'];
         }
