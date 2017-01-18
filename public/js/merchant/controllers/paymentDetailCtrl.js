@@ -232,8 +232,10 @@ app.controller('PaymentDetailCtrl', [
   'amount',
   'currency',
   function ($scope, $modalInstance, amount, currency) {
+
     $scope.amount = amount;
     $scope.currency = currency;
+
     $scope.ok = function (amount) {
       $modalInstance.close(amount);
     };
