@@ -33,7 +33,6 @@ app.controller('PaymentDetailCtrl', [
     var shownByDefault = [
       'amount',
       'amount_refunded',
-      'base_amount',
       'bank',
       'captured',
       'contact',

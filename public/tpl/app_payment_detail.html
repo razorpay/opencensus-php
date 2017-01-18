@@ -89,10 +89,6 @@
             <span class="pull-right">{{entity.fee/100 | rupee}}</span>
             Total Fees
           </div>
-          <div class="list-group-item" tooltip="Base Amount in INR, in case the currency was not INR" ng-show="entity.hasOwnProperty('base_amount')">
-            <span class="pull-right">{{entity.base_amount/100 | rupee}}</span>
-            Base Amount
-          </div>
           <div class="list-group-item" ng-show="entity.hasOwnProperty('international')">
             <span class="pull-right" tooltip="{{entity.international ? 'Yes' : 'No'}}">
               <i class="fa" ng-class="{' fa-check text-success': entity.international, ' fa-times text-danger':!entity.international}"></i>

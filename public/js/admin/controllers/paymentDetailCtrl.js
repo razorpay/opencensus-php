@@ -26,7 +26,6 @@ app.controller('PaymentDetailCtrl', [
       'authorized_at',
       'authorized_at',
       'bank',
-      'base_amount_refunded',
       'captured_at',
       'card_id',
       'contact',
