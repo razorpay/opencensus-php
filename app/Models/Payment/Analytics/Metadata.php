@@ -126,6 +126,11 @@ class Metadata
 
     public static function getValueForIntegration($integration)
     {
+        if ($integration === null)
+        {
+            return;
+        }
+
         $integration = strtolower($integration);
 
         if (self::isValidIntegration($integration))
@@ -143,6 +148,11 @@ class Metadata
 
     public static function getValueForPlatform($platform)
     {
+        if ($platform === null)
+        {
+            return;
+        }
+
         $platform = strtolower($platform);
 
         if (self::isValidPlatform($platform))
@@ -160,6 +170,11 @@ class Metadata
 
     public static function getValueForOs($os)
     {
+        if ($os === null)
+        {
+            return;
+        }
+
         $os = strtolower($os);
 
         if (self::isValidOs($os))
@@ -177,6 +192,11 @@ class Metadata
 
     public static function getValueForLibrary($library)
     {
+        if ($library === null)
+        {
+            return;
+        }
+
         $library = strtolower($library);
 
         if (self::isValidLibrary($library))
@@ -194,6 +214,11 @@ class Metadata
 
     public static function getValueForBrowser($browser)
     {
+        if ($browser === null)
+        {
+            return;
+        }
+
         $browser = strtolower($browser);
 
         if (self::isValidBrowser($browser))
@@ -211,6 +236,11 @@ class Metadata
 
     public static function getValueForDevice($device)
     {
+        if ($device === null)
+        {
+            return;
+        }
+
         $device = strtolower($device);
 
         if (self::isValidDevice($device))
