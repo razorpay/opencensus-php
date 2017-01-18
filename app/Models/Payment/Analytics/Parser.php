@@ -140,7 +140,7 @@ class Parser extends Base\Core
      */
     protected function setHttpRequestData(Entity $pa)
     {
-        $pa->setBrowser($this->uAgent->browser());
+        $pa->setBrowser($this->getBrowser());
 
         if ($pa->getBrowser() !== null)
         {
@@ -163,11 +163,37 @@ class Parser extends Base\Core
         }
     }
 
+    protected function getBrowser()
+    {
+        $browserFromUa = $this->uAgent->browser();
+
+        if ($browserFromUa === false)
+        {
+            return;
+        }
+
+        $browserFromUa = strtolower($browserFromUa);
+
+        if (Metadata::isValidBrowser($browserFromUa) === true)
+        {
+            return $browserFromUa;
+        }
+
+        switch ($browserFromUa)
+        {
+            case 'mozilla':
+                return Metadata::FIREFOX;
+
+            default:
+                return $browserFromUa;
+        }
+    }
+
     protected function getOs()
     {
         $osFromUa = $this->uAgent->platform();
 
-        if (isset($osFromUa) === false)
+        if ($osFromUa === false)
         {
             return;
         }
@@ -188,7 +214,7 @@ class Parser extends Base\Core
                 return Metadata::ANDROID;
 
             default:
-                return null;
+                return $osFromUa;
         }
     }
 
