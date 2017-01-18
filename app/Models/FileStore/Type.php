@@ -20,7 +20,7 @@ class Type
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
 
-    const ICICI_NODAL_SETTLEMENT            = 'icici_nodal_settlement';
+    const ICICI_NODAL_TRANSFER              = 'icici_nodal_transfer';
 
     const BATCH_INPUT                       = 'batch_input';
 
@@ -40,7 +40,7 @@ class Type
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
-            self::ICICI_NODAL_SETTLEMENT,
+            self::ICICI_NODAL_TRANSFER,
         ],
 
         Constants\Entity::BATCH => [
@@ -69,7 +69,7 @@ class Type
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
-        self::ICICI_NODAL_SETTLEMENT,
+        self::ICICI_NODAL_TRANSFER,
     ];
 
     /**

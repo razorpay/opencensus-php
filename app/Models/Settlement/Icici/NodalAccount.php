@@ -50,7 +50,7 @@ class NodalAccount extends Base\Core
         $this->id = Base\UniqueIdEntity::generateUniqueId();
     }
 
-    public function generateSettlementFile($amount)
+    public function generateTransferFile($amount)
     {
         $plainText = $this->getPlainText($amount);
 
@@ -58,7 +58,7 @@ class NodalAccount extends Base\Core
 
         $filePath = $this->createFile($encryptedText);
 
-        $this->sendIciciSettlementMail($filePath);
+        $this->sendIciciTransferMail($filePath);
 
         return ['file' => $filePath];
     }
@@ -109,7 +109,7 @@ class NodalAccount extends Base\Core
                         ->content($text)
                         ->name($fileName)
                         ->store(FileStore\Store::S3)
-                        ->type(FileStore\Type::ICICI_NODAL_SETTLEMENT)
+                        ->type(FileStore\Type::ICICI_NODAL_TRANSFER)
                         ->id($this->id)
                         ->metadata($metadata)
                         ->save()
@@ -128,7 +128,7 @@ class NodalAccount extends Base\Core
         ];
     }
 
-    protected function sendIciciSettlementMail(string $fullPath)
+    protected function sendIciciTransferMail(string $fullPath)
     {
         $data['file'] = $fullPath;
         $data['body'] = json_encode($this->data, JSON_PRETTY_PRINT);
@@ -137,11 +137,11 @@ class NodalAccount extends Base\Core
         {
             $emails = ['settlements@razorpay.com'];
 
-            $message->from('settlements@razorpay.com', 'ICICI Settlement File');
+            $message->from('settlements@razorpay.com', 'ICICI Transfer File');
 
             $today = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-            $message->subject("Icici Settlement files for $today");
+            $message->subject("Icici Transfer files for $today");
 
             $message->to($emails);
 

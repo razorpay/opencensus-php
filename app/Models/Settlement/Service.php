@@ -125,7 +125,11 @@ class Service extends Base\Service
 
     public function postInitiateTransfer($input)
     {
-        return (new Icici\NodalAccount)->generateSettlementFile($input['amount']);
+        (new Settlement\Validator)->validateInput('nodal_transfer', $input);
+
+        $amount = $input['amount']/100;
+
+        return (new Icici\NodalAccount)->generateTransferFile($input['amount']);
     }
 
     public function calculatePrevousSettlementFees()
