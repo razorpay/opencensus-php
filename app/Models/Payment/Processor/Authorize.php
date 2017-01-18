@@ -526,10 +526,14 @@ trait Authorize
 
     protected function runInternationalChecks($payment)
     {
+        if ($payment->getMethod() !== Method::CARD)
+        {
+            return;
+        }
+
         // return if method is not card or card is not international
         if (($payment->getMerchantId() !== '2aTeFCKTYWwfrF') and
-            (($payment->getMethod() !== Method::CARD) or
-             ($payment->card->isInternational() === false)))
+            ($payment->card->isInternational() === false))
         {
             return;
         }
