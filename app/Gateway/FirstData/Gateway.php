@@ -467,7 +467,7 @@ class Gateway extends Base\Gateway
 
             $authTdate              = null;
 
-            $authGatewayPaymentId   = null;
+            $authGatewayPaymntId    = null;
 
             $authGatewayStatus      = Status::FAILED;
         }
@@ -502,7 +502,7 @@ class Gateway extends Base\Gateway
             // namespaces, their parsing logic is also distinct.
             $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
 
-            $authGatewayPaymentId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
+            $authGatewayPaymntId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
 
             $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
 
@@ -516,7 +516,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId,
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymntId,
                                                     $authGatewayStatus, $authTdate);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -1018,7 +1018,7 @@ class Gateway extends Base\Gateway
     {
         $liveSecret = $this->input['terminal']['gateway_secure_secret'];
 
-        if ($liveSecret === null)
+        if ($liveSecret === '')
         {
             $liveSecret = $this->config['live_hash_secret'];
         }
@@ -1105,7 +1105,7 @@ class Gateway extends Base\Gateway
     {
         $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
-        if ($password === null)
+        if ($password === '')
         {
             $password = $this->config['live_client_certificate_password'];
         }
