@@ -2,11 +2,6 @@
 
 namespace RZP\Models\DataStore;
 
-use Predis\PredisException;
-
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-
 /**
  * This class is used to store a sorted set data type in redis
  * More info about sorted set here https://redis.io/topics/data-types-intro
@@ -55,23 +50,11 @@ class PrioritySet extends Base
         return ((empty($result) === true) ? null : $result);
     }
 
-    public function saveOrFail()
+    public function save()
     {
         $storeKey = $this->generateStoreKey();
 
-        try
-        {
-            $this->redis->zadd($storeKey, $this->data);
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-
-            throw new Exception\ServerErrorException(
-                    'Error saving to redis sorted set',
-                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                    $this->toArray());
-        }
+        $this->redis->zadd($storeKey, $this->data);
 
         return $this;
     }
@@ -86,19 +69,7 @@ class PrioritySet extends Base
             'WITHSCORES'    // option to tell redis to return sorted set data with scores
         ];
 
-        try
-        {
-            $this->data = $this->redis->zrevrange($storeKey, $fetchOptions);
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-
-            throw new Exception\ServerErrorException(
-                    'Error fetching from redis sorted set',
-                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                    $this->key);
-        }
+        $this->data = $this->redis->zrevrange($storeKey, ...$fetchOptions);
 
         return $this;
     }
@@ -107,19 +78,7 @@ class PrioritySet extends Base
     {
         $storeKey = $this->generateStoreKey();
 
-        try
-        {
-            $this->redis->zrem($storeKey, $this->data);
-        }
-        catch (PredisException $e)
-        {
-            $this->trace->traceException($e);
-
-            throw new Exception\ServerErrorException(
-                    'Error removing data from sorted set',
-                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
-                    $this->toArray());
-        }
+        $this->redis->zrem($storeKey, $this->data);
 
         return $this;
     }

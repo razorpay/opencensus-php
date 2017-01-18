@@ -18,6 +18,15 @@ class Core extends Base\Core
 
     protected function init()
     {
+        $storeMock = $this->app['config']->get('app.data_store.mock');
+
+        if ($storeMock === true)
+        {
+            $this->store = new DataStore\Mock\Manager;
+
+            return;
+        }
+
         $this->store = new DataStore\Manager;
     }
 
@@ -40,7 +49,7 @@ class Core extends Base\Core
         {
             $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
 
-            $priority = $this->store->fetch($priority);
+            $priority = $this->store->fetchOrFail($priority);
 
             $result->push($priority->toArray());
         }
@@ -54,46 +63,27 @@ class Core extends Base\Core
 
          $priority->setData($gateways);
 
-         $priority = $this->store->delete($priority);
+         $priority = $this->store->deleteOrFail($priority);
 
-         $priority = $this->store->fetch($priority);
+         $priority = $this->store->fetchOrFail($priority);
 
          return $priority;
     }
 
     public function getGatewaysForMethod(string $method)
     {
-        $gateways = [];
+        $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
+                    Defaults::GATEWAY_ORDER[$method][Mode::LIVE];
 
-        switch ($method)
+        if ($this->mode === Mode::TEST)
         {
-            case Method::CARD:
-                $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
-                            Defaults::$directCardGatewaysOrder;
+            $gateways = array_merge($gateways, Defaults::GATEWAY_ORDER[$method][Mode::TEST]);
+        }
 
-                if ($this->mode === Mode::TEST)
-                {
-                    $gateways = array_merge($gateways, Defaults::$directCardGatewaysInTestOrder);
-                }
-
-                break;
-
-            case Method::NETBANKING:
-                $gateways = $this->fetchOrderedGatewaysForMethod($method) ??
-                            Defaults::$directNetbankingGatewaysOrder;
-
-                if ($this->mode === Mode::TEST)
-                {
-                    $gateways = array_merge($gateways, Defaults::$directNetbankingGatewaysInTestOrder);
-                }
-
-                // Adds direct netbanking to have highest priority
-                array_unshift($gateways, 'direct');
-
-                break;
-
-            default:
-                break;
+        if ($method === Method::NETBANKING)
+        {
+            // For netbanking we boost direct netbanking gateways
+            array_unshift($gateways, 'direct');
         }
 
         return $gateways;

@@ -2,9 +2,11 @@
 
 namespace RZP\Models\DataStore;
 
+use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Base\Core;
 
-class Manager
+class Manager extends Core
 {
     /**
      * Saves given store object data to data store and throws exception if any
@@ -15,7 +17,21 @@ class Manager
      */
     public function saveOrFail(Base $store)
     {
-        return $store->saveOrFail();
+        try
+        {
+            $store = $store->save();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                    'Error saving to redis',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $store->toArray());
+        }
+
+        return $store;
     }
 
     /**
@@ -27,8 +43,10 @@ class Manager
         {
             $store = $store->fetch();
         }
-        catch(Exception\ServerErrorException $e)
+        catch(\Exception $e)
         {
+            $this->trace->traceException($e);
+
             // Suppress any storage exception and set data as null
             $store->setData(null);
         }
@@ -41,14 +59,42 @@ class Manager
      */
     public function fetchOrFail(Base $store)
     {
-        return $store->fetch();
+        try
+        {
+            $store = $store->fetch();
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                    'Error fetching from redis',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $store->getKey());
+        }
+
+        return $store;
     }
 
     /**
      * Deletes store object data from store
      */
-    public function delete(Base $store)
+    public function deleteOrFail(Base $store)
     {
-        return $store->delete();
+        try
+        {
+            $store = $store->delete();
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+
+            throw new Exception\ServerErrorException(
+                    'Error removing data from redis',
+                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
+                    $store->toArray());
+        }
+
+        return $store;
     }
 }

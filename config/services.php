@@ -32,8 +32,4 @@ return [
     'mutex' => [
         'mock' => env('MUTEX_MOCK', false)
     ],
-
-    'data_store' => [
-        'mock' => env('DATA_STORE_MOCK', false)
-    ]
 ];

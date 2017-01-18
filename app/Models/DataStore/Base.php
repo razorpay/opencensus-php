@@ -2,6 +2,8 @@
 
 namespace RZP\Models\DataStore;
 
+use RZP\Models\Base\Core;
+
 class Base extends Core
 {
     protected $redis;

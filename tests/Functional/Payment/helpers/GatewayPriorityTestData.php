@@ -29,6 +29,7 @@ return [
             ]
         ]
     ],
+
     'testSaveGatewayPriorityWithException' => [
         'request' => [
             'content' => [
@@ -55,6 +56,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_REDIS_EXCEPTION
         ]
     ],
+
     'testFetchGatewayPriority' => [
         'request' => [
             'url' => '/gateway/priorities',
@@ -76,6 +78,7 @@ return [
             ]
         ]
     ],
+
     'testFetchGatewayPriorityWithException' => [
         'request' => [
             'url' => '/gateway/priorities',
@@ -83,17 +86,19 @@ return [
         ],
         'response' => [
             'content' => [
-                'card' => [
-                    'hdfc'        => '50',
-                    'axis_migs'   => '40',
-                    'amex'        => '30',
-                    'cybersource' => '20',
-                    'first_data'  => '10'
-                ],
-                'netbanking' => null
-            ]
+                'error' => [
+                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'description' => PublicErrorDescription::SERVER_ERROR
+                ]
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\ServerErrorException',
+            'internal_error_code' => ErrorCode::SERVER_ERROR_REDIS_EXCEPTION
         ]
     ],
+
     'testRemoveGatewayPriority' => [
         'request' => [
             'content' => ['hdfc'],
@@ -111,6 +116,7 @@ return [
             ]
         ]
     ],
+
     'testRemoveGatewayPriorityWithException' => [
         'request' => [
             'content' => ['hdfc'],
@@ -131,6 +137,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_REDIS_EXCEPTION
         ]
     ],
+
     'testUnsupportedPaymentMethod' => [
         'request' => [
             'content' => [
@@ -157,6 +164,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_PAYMENT_METHOD
         ]
     ],
+
     'testInvalidGatewayForMethod' => [
         'request' => [
             'content' => [

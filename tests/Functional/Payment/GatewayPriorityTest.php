@@ -47,11 +47,11 @@ class GatewayPriorityTest extends TestCase
     public function testFetchGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.data_store.mock' => false]);
+        config(['app.data_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -65,7 +65,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:netbanking', [0, -1, 'WITHSCORES'])
+            ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -80,11 +80,11 @@ class GatewayPriorityTest extends TestCase
     public function testFetchGatewayPriorityWithException()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.data_store.mock' => false]);
+        config(['app.data_store.mock' => false]);
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [
@@ -98,7 +98,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
                 ->once()
-                ->with('gateway_priority:netbanking', [0, -1, 'WITHSCORES'])
+                ->with('gateway_priority:netbanking', 0, -1, 'WITHSCORES')
                 ->andReturnUsing(function()
                 {
                     throw new \Predis\Response\ServerException('Internal Error');
@@ -110,7 +110,7 @@ class GatewayPriorityTest extends TestCase
     public function testRemoveGatewayPriority()
     {
         // Setting the config to false here so that real service is used for fetch
-        config(['services.data_store.mock' => false]);
+        config(['app.data_store.mock' => false]);
 
         Redis::shouldReceive('zrem')
             ->once()
@@ -119,7 +119,7 @@ class GatewayPriorityTest extends TestCase
 
         Redis::shouldReceive('zrevrange')
             ->once()
-            ->with('gateway_priority:card', [0, -1, 'WITHSCORES'])
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
             ->andReturnUsing(function ()
             {
                 return [

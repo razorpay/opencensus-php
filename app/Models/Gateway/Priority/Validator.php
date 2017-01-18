@@ -3,10 +3,11 @@
 namespace RZP\Models\Gateway\Priority;
 
 use RZP\Base;
-use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Models\Payment\Method;
+use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 
 class Validator extends Base\Validator
 {
@@ -60,18 +61,19 @@ class Validator extends Base\Validator
     {
         $inputGateways = array_keys($input);
 
-        $cardGateways = Defaults::$directCardGatewaysOrder;
+        $cardGateways = Defaults::GATEWAY_ORDER[Method::CARD][Mode::LIVE];
 
         // Validates that all gateways exist in card gateways list.
-        return (count($inputGateways) === count(array_intersect($inputGateways, $cardGateways)));
+        return (empty(array_diff($inputGateways, $cardGateways)) === true);
     }
 
     protected function validNetBankingGateways(array $input)
     {
         $inputGateways = array_keys($input);
 
-        $netbankingGateways = Defaults::$directNetbankingGatewaysOrder;
+        $netbankingGateways = Defaults::GATEWAY_ORDER[Method::NETBANKING][Mode::LIVE];
 
-        return (count($inputGateways) === count(array_intersect($inputGateways, $netbankingGateways)));
+        // Validates that all gateways exist in netbanking gateways list.
+        return (empty(array_diff($inputGateways, $netbankingGateways)) === true);
     }
 }
