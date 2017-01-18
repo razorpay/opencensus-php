@@ -259,18 +259,9 @@ class Entity extends Base\PublicEntity
         return $metadata;
     }
 
-    protected function setMetadataAttribute($metadata)
+    protected function setMetadataAttribute(array $metadata = [])
     {
-        if ($metadata === null)
-        {
-            $this->attributes[self::METADATA] = [];
-        }
-        else
-        {
-            $this->attributes[self::METADATA] = json_encode($metadata);
-        }
-
-        return $metadata;
+        $this->attributes[self::METADATA] = json_encode($metadata);
     }
 
 }
