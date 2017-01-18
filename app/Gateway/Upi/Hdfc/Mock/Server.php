@@ -30,8 +30,11 @@ class Server extends Base\Mock\Server
             // Amount
             $input[3],
             'SUCCESS',
+            // Description
             'Transaction Collect request initiated successfully',
-            'nemomobile@imobile',
+            // Payer VA
+            'nemorazorpay@hdfcbank',
+            // Payee VA
             'razorpay@hdfcbank',
             'NA',
             'NA',
@@ -85,14 +88,14 @@ class Server extends Base\Mock\Server
 
     public function decrypt($data)
     {
-        $cipher = $this->getAESInstance();
+        $cipher = $this->getCipherInstance();
 
         return $cipher->decrypt(hex2bin($data));
     }
 
     protected function encrypt($plaintext)
     {
-        $cipher = $this->getAESInstance();
+        $cipher = $this->getCipherInstance();
 
         return $cipher->encrypt($plaintext);
     }
