@@ -80,6 +80,9 @@ add_cron "2-57/5 * * * *"  "payment_timeout_prod_live" POST "$BASE_URL/payments/
 add_cron "0 18 * * *"      "merch_holiday_add_emails"  POST "$BASE_URL/merchants/notify/holiday"         "action=add_to_list&lists=live" $LIVE_AUTH
 add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants/notify/holiday"         "action=email&lists=live"       $LIVE_AUTH
 
+# Migration
+add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+
 # Refund
 add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH
 add_cron "10 * * * *"       "authorized_old_refund"          POST "$BASE_URL/payments/refund/authorized"                 ""                              $LIVE_AUTH
