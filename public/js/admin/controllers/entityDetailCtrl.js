@@ -450,12 +450,12 @@ app.controller('EntityDetailCtrl', [
 
       request.success(function (data) {
         if (data.success) {
-          alert('Merchant terminal unassigned successfully');
-
           var index = $scope.subMerchants.indexOf(merchantId);
           if (index > -1) {
             $scope.subMerchants.splice(index, 1);
           }
+
+          alert('Merchant terminal unassigned successfully');
         }
         else {
           alert(data.errors);
@@ -467,7 +467,7 @@ app.controller('EntityDetailCtrl', [
 
     $scope.terminal = {
         id: current.id,
-        merchant_id : current.merchant_id
+        merchant_id : ''
     };
     $scope.ok = function (terminal) {
         $modalInstance.close(terminal);
