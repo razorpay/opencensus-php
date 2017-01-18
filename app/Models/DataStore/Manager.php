@@ -45,10 +45,9 @@ class Manager extends Core
         }
         catch(\Exception $e)
         {
-            $this->trace->traceException($e);
+            // Suppress any storage exception
 
-            // Suppress any storage exception and set data as null
-            $store->setData(null);
+            $this->trace->traceException($e);
         }
 
         return $store;

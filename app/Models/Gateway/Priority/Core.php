@@ -32,7 +32,7 @@ class Core extends Base\Core
 
     public function addPriorityForMethod(string $method, array $priorityData)
     {
-        $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
+        $priority = $this->getPrioritySet($method);
 
         $priority->setData($priorityData);
 
@@ -47,7 +47,7 @@ class Core extends Base\Core
 
         foreach (self::ALLOWED_METHODS as $method)
         {
-            $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
+            $priority = $this->getPrioritySet($method);
 
             $priority = $this->store->fetchOrFail($priority);
 
@@ -59,7 +59,7 @@ class Core extends Base\Core
 
     public function removePriorityForMethod(string $method, array $gateways)
     {
-         $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
+         $priority = $this->getPrioritySet($method);
 
          $priority->setData($gateways);
 
@@ -97,7 +97,7 @@ class Core extends Base\Core
      */
     protected function fetchOrderedGatewaysForMethod(string $method)
     {
-        $priority = new DataStore\PrioritySet(self::$storeNameSpace, $method);
+        $priority = $this->getPrioritySet($method);
 
         $priority = $this->store->fetch($priority);
 
@@ -111,5 +111,10 @@ class Core extends Base\Core
     protected function getGateways($priority)
     {
         return $priority->getSetMembersWithPositiveScore();
+    }
+
+    protected function getPrioritySet(string $method)
+    {
+        return (new DataStore\PrioritySet(self::$storeNameSpace, $method));
     }
 }
