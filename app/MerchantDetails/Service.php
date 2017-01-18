@@ -39,9 +39,6 @@ class Service extends Base\Service
             'business_operation_city' => 2,
             'business_operation_pin' => 2,
             'business_doe' => 2,
-            'company_cin' => 2,
-            'company_pan' => 2,
-            'company_pan_name' => 2,
             'transaction_volume' => 2,
             'transaction_value' => 2,
             'promoter_pan' => 2,
@@ -147,9 +144,22 @@ class Service extends Base\Service
 
         list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
 
-        if (empty($error) and ($merchantDetails['can_submit'] === false))
+        if (empty($error))
         {
-            $error = [ "Some mandatory fields are required" ];
+            if ($merchantDetails['can_submit'] === false)
+            {
+                $error = [ "Some mandatory fields are required" ];
+            }
+            else
+            {
+                $merchantDetails = $this->merchantDetails;
+
+                $merchantDetails->markSubmitted();
+
+                $merchantDetails->saveOrFail();
+
+                $this->fireActivationTrigger($merchantDetails);
+            }
         }
 
         return $error;
