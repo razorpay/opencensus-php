@@ -207,13 +207,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
         );
 
         $refund = $this->getApiRefundEntityFromRow($row);
-        $refundId = $refund->getId();
 
         // If we cannot get the refund, return. No point of evaluating the row.
         if ($refund === null)
         {
             return null;
         }
+
+        $refundId = $refund->getId();
 
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
