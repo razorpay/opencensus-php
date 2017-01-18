@@ -2,12 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\AppResponse;
+
 use Input;
 use Password;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\Facades\Lang;
 use DB;
 use Hash;
+use App\Merchant;
+use App\Generic;
+use App\Admin;
 
 class PasswordController extends Controller
 {
@@ -18,6 +23,14 @@ class PasswordController extends Controller
      */
     public function postRemind()
     {
+        list($error, $org) = (new Admin\Service)->getOrg(Input::get('hostname'));
+
+        view()->composer('emails.auth.reminder', function($view) use($org) {
+            $view->with([
+                'org'   =>  $org
+            ]);
+        });
+
         $response = Password::sendResetLink(Input::only('email'), function($message){
             $message->subject('Razorpay - Password Reset Request');
         });
@@ -72,6 +85,24 @@ class PasswordController extends Controller
             case Password::PASSWORD_RESET:
                 return Response::json(array('success' => true));
         }
+    }
+
+    public function forgotAdminPassword()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->forgotPassword($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function resetAdminPassword()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->resetPassword($input);
+
+        return AppResponse::jsonResponse($error, $data);
     }
 
 }

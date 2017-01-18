@@ -9,18 +9,71 @@ app.controller('PaymentDetailCtrl', [
   'transformRequestAsFormPost',
   'statusClass',
   'user',
-  function ($scope, $http, $stateParams, $modal, alertsFactory, transformRequestAsFormPost, getStatusClass, user) {
+  'displayClass',
+  'displayValue',
+  'getState',
+  'getType',
+  'getStateMerchant',
+  function ($scope, $http, $stateParams, $modal, alertsFactory,
+      transformRequestAsFormPost, getStatusClass, user, displayClass, displayValue, getState, getType, getStateMerchant) {
 
     $scope.tags = [];
 
     $scope.card = null;
     $scope.showCardDetails = false;
 
+    $scope.displayValue = displayValue;
+    $scope.displayClass = displayClass;
+    $scope.getState = getState;
+    $scope.getType = getType;
+    $scope.getStateMerchant = getStateMerchant;
+
+    // Keys currently added the to good-looking view
+    // Or ones we do not want to show (entity, id, refunds)
+    var shownByDefault = [
+      'amount',
+      'amount_refunded',
+      'bank',
+      'captured',
+      'contact',
+      'created_at',
+      'currency',
+      'description',
+      'email',
+      'entity',
+      'error_code',
+      'error_description',
+      'fee',
+      'id',
+      'method',
+      'notes',
+      'refund_status',
+      'refunds',
+      'service_tax',
+      'status',
+      'wallet'
+    ];
+
+    /**
+     * Returns the keys not present in the default view
+     */
+    $scope.keysNotShown = function() {
+      var keys = [];
+      for (var key in $scope.entity) {
+        // If the entity has that key and its not currently shown
+        if ($scope.entity.hasOwnProperty(key) && shownByDefault.indexOf(key)<0) {
+          keys.push(key);
+        }
+      }
+      return keys;
+    };
+
     user.identity(true).then(function (data) {
       $scope.tags = data.tags;
     });
 
     $scope.getStatusClass = getStatusClass;
+
     $scope.openRefundModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'refundModalContent.html',
@@ -139,6 +192,7 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
     $scope.showRefunds = function () {
       if ($scope.isRefundsCollapsed === false) {
         $scope.isRefundsCollapsed = true;
@@ -193,7 +247,7 @@ app.controller('PaymentDetailCtrl', [
       } else {
         this.refund_amount = $scope.amount;
       }
-    }
+    };
 
     $scope.ok = function (amount, comment) {
       // We get amount in INR

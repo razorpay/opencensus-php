@@ -7,8 +7,11 @@ app.controller('SigninCtrl', [
   'alertsFactory',
   'admin',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $state, $stateParams, alertsFactory, admin, transformRequestAsFormPost, organization) {
     $scope.data = {};
+    $scope.login_logo = '';
+
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     if ($stateParams.username) {
@@ -40,5 +43,10 @@ app.controller('SigninCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+    });
   }
 ]);

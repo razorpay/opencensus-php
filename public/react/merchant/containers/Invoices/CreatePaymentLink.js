@@ -150,6 +150,17 @@ export default class CreatePaymentLink extends Component {
             </div>
 
             <div class='form-group'>
+              <label class='col-md-3 control-label help-label'>Receipt</label>
+              <div class='col-md-8'>
+                <Field
+                  name='receipt'
+                  component={InputField}
+                  class='form-control'
+                />
+              </div>
+            </div>
+
+            <div class='form-group'>
               <label class='col-md-3 control-label'>Notify Customer</label>
               <div class='col-md-8'>
                 <label class='checkbox-inline'>

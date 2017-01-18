@@ -11,11 +11,16 @@ app.controller('RegisterCtrl', [
   '$location',
   '$window',
   '$cookies',
-  function ($scope, $http, $state, alertsFactory, user, transformRequestAsFormPost, $analytics, $location, $window, $cookies) {
+  'organization',
+  function ($scope, $http, $state, alertsFactory, user,
+    transformRequestAsFormPost, $analytics, $location, $window, $cookies,
+    organization) {
     $scope.data = {};
+    $scope.yo = true;
+    $scope.login_logo;
+    $scope.invite = $location.search().merchant_invitation;
 
     if ($location.search().email) {
-      
       $scope.data.email = $location.search().email;
 
       // XHR to save this email in a generic table
@@ -36,8 +41,28 @@ app.controller('RegisterCtrl', [
       });
     }
 
-    if($location.search().invitation) {
+    if ($location.search().invitation) {
       $scope.data.invitation = $location.search().invitation;
+    }
+    // heimdall specific
+    else if ($location.search().merchant_invitation) {
+      $scope.data.merchant_invitation = $location.search().merchant_invitation;
+
+      // Get invitation details
+      $http.get('/invitation/' + $scope.data.merchant_invitation).success(function (data) {
+        if (data.success) {
+          var form_data = JSON.parse(data.data.form_data);
+
+          $scope.data.email = data.data.email;
+
+          // lock email if the invite is being sent for heimdall
+          $scope.lock_email = data.data.email ? true : false;
+          $scope.data.business_name = form_data.merchant_name;
+          $scope.data.name = form_data.contact_name;
+        }
+      }).error(function () {
+
+      });
     }
     // We only track referers if they are registering a business
     else {
@@ -110,5 +135,12 @@ app.controller('RegisterCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+
+      $scope.organization = data;
+    });
   }
 ]);

@@ -6,11 +6,50 @@ angular.module('app.controllers', [
   '$scope',
   '$localStorage',
   '$window',
-  function ($scope, $localStorage, $window) {
+  'theme',
+  'organization',
+  function ($scope, $localStorage, $window, theme, organization) {
     // add 'ie' classes to html
     var isIE = !!navigator.userAgent.match(/MSIE/i);
     isIE && angular.element($window.document.body).addClass('ie');
     isSmartDevice($window) && angular.element($window.document.body).addClass('smart');
+
+    var baseTheme = {
+      transparent : 'rgba(0,0,0,0.2)',
+      transparentDark : 'rgba(0,0,0,0.4)',
+      textLight : 'rgba(255,255,255,0.9)',
+      primaryLight : '#e1f3ff',
+      primaryTransparent : 'rgba(225,243,252,0.3)',
+      errorBackground : 'rgba(234,33,45,0.1)',
+      secondary : '#ea212d',
+      tertiary : '#ffffff'
+    }
+
+    organization.fetchCurrentOrg().then(function (data) {
+      if (data.custom_code) {
+        switch (data.custom_code) {
+          case 'hdfc':
+            theme.apply(angular.extend(baseTheme, {
+              primary : '#084c8d',
+            }));
+            break;
+
+          case 'icici':
+            theme.apply(angular.extend(baseTheme, {
+              navBg : '#F07937',
+              primary: '#0A3D6B',
+            }));
+            break;
+
+          case 'baroda':
+            theme.apply(angular.extend(baseTheme, {
+              primary : '#F04E00',
+            }));
+            break;
+        }
+      }
+    });
+
     // config
     $scope.app = {
       name: 'Razorpay',

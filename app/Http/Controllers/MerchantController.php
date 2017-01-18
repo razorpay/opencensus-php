@@ -146,6 +146,7 @@ class MerchantController extends Controller
         else
         {
             $error = (new MerchantDetails\Service)->checkUploads();
+
         }
 
         return AppResponse::jsonResponse($error);
@@ -414,6 +415,13 @@ class MerchantController extends Controller
         $this->checkMode($mode);
 
         list($error, $response) = (new Api\Service)->retryBatchFile($mode, $id);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getInvitationDetails($token)
+    {
+        list($error, $response) = (new Merchant\Service)->getInvitationDetails($token);
 
         return AppResponse::jsonResponse($error, $response);
     }

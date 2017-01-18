@@ -10,14 +10,11 @@ class CustomDatabaseSessionHandler extends \Illuminate\Session\DatabaseSessionHa
     {
         $payload = parent::getDefaultPayload($data);
 
-        // Add admin to $payload
-        if (Auth::guard('admin')->user() !== null)
+        $payload['admin_id'] = null;
+
+        if (Auth::guard('api')->user() !== null)
         {
-            $payload['admin_id'] = Auth::guard('admin')->user()->id;
-        }
-        else
-        {
-            $payload['admin_id'] = null;
+            $payload['admin_id'] = Auth::guard('api')->user()->id;
         }
 
         return $payload;

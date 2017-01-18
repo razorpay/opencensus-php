@@ -41,7 +41,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'remember_token', 'confirm_token'];
 
     /**
      * The attributes that are mass assignable.
@@ -56,6 +56,8 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      * @var array
      */
     protected static $generators = array('id','confirm_token');
+
+    protected $appends = ['confirmed'];
 
     /**
      * Generates Uuid ID
@@ -78,14 +80,14 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     /**
      * Get all of the merchants that the user belongs to.
      */
-    public function merchants($archivedAlso = false)
+    public function merchants($suspendedAlso = false)
     {
         $query = $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
             ->withPivot(['role']);
 
-        if ($archivedAlso === false)
+        if ($suspendedAlso === false)
         {
-            $query = $query->whereNull('archived_at');
+            $query = $query->whereNull('suspended_at');
         }
 
         return $query->orderBy('name', 'asc');
@@ -120,6 +122,11 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function getCurrentMerchantAttribute()
     {
         return $this->currentMerchant();
+    }
+
+    public function getConfirmToken()
+    {
+        return $this->confirm_token;
     }
 
     /**
@@ -346,5 +353,15 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function setEmailAttribute($value)
     {
         $this->attributes['email'] = mb_strtolower($value);
+    }
+
+    public static function getUserForConfirmation($token)
+    {
+        return self::where('confirm_token', '=', $token)->first();
+    }
+
+    public function getConfirmedAttribute()
+    {
+        return ($this->confirm_token === null);
     }
 }

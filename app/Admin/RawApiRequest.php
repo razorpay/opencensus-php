@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use Config;
 use Input;
+use Auth;
 
 use GuzzleHttp\Client as Guzzle;
 use GuzzleHttp\Post\PostFile;
@@ -33,29 +34,41 @@ class RawApiRequest
      * @param array $auth of auth (proxy|admin)
      * @param string $path relative path of the request
      */
-    function __construct($input, $path)
+    function __construct($input, $path, $autoBuildQuery = true)
     {
         // Increase the time limit
         set_time_limit(600);
 
-        // Create the guzzle client
-        $this->client = new Guzzle([
+        $options = [
             'base_url' => Config::get('api.url'),
             // We already have a few headers initialized for this class
             // including the X-Dashboard and Razorpay-API Header
             'headers'   =>  ApiRequest::getHeaders() + [
-                'X-Dashboard' => 'true',
-                'User-Agent'  => 'Razorpay-PHP/guzzle6'
+                'X-Dashboard'   => 'true',
+                'User-Agent'    => 'Razorpay-PHP/guzzle6'
             ]
-        ]);
+        ];
+
+        // Create the guzzle client
+        $this->client = new Guzzle($options);
 
         $this->setupCredentials($input);
         $this->input = $input;
         $this->path = $path;
 
-        if (!empty(Request::query()))
+        // Setting these in $options above wasn't working (not passing to API)
+        $this->params['headers']['X-User-Agent'] = Request::header('User-Agent');
+        $this->params['headers']['X-IP-Address'] = Request::ip();
+
+        if (!empty(Request::query()) and $autoBuildQuery)
         {
             $this->path .= '?' . http_build_query(Request::query());
+        }
+        else if (!empty(Request::query('query_params')))
+        {
+            $queryParams = json_decode(Request::query('query_params'), true);
+
+            $this->path .= '?' . http_build_query($queryParams);
         }
     }
 
@@ -69,9 +82,19 @@ class RawApiRequest
                 break;
 
             case 'admin':
+                $token = Auth::guard('api')->user()->token;
+                $this->setAdminCredentials($token, $input['mode']);
+                break;
+
+            case 'internal':
                 $this->setApiCredentials($input['mode']);
                 break;
         }
+    }
+
+    protected function setAdminCredentials($token, $mode = 'live')
+    {
+        $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }
 
     protected function setApiCredentials($mode, $merchantId='')
@@ -166,8 +189,12 @@ class RawApiRequest
         try
         {
             $this->prepareRequest();
+
             $method = $this->input['method'];
+
             $response = $this->client->$method($this->path, $this->params)->json();
+
+            return [null, $response];
         }
         // This captures all the errors that might happen for now
         catch(\GuzzleHttp\Exception\ConnectException $e)
@@ -192,6 +219,7 @@ class RawApiRequest
         {
             $errors = [$e->getMessage()];
         }
-        return [$errors, $response];
+
+        return [$errors, null];
     }
 }

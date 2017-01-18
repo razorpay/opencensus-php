@@ -361,4 +361,26 @@ angular.module('app.directives', ['ui.load']).directive('uiModule', [
     }
   };
   }
-);
+).directive('asyncBtnClick', function() {
+  return {
+    restrict: 'A',
+    scope: {
+      onClick: '&asyncBtnClick'
+    },
+    link: function(scope, element, attrs) {
+      element.parents('form:first').on('submit', function(event) {
+        event.preventDefault()
+
+        if (typeof scope.onClick === 'function') {
+          var returnFn = scope.onClick()
+          if (returnFn.then) {
+            element.attr('disabled', true)
+            returnFn.then(function() {
+              element.attr('disabled', false)
+            })
+          }
+        }
+      })
+    }
+  }
+});

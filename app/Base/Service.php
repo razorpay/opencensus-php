@@ -7,12 +7,30 @@ use Razorpay\Api\Errors\BadRequestError;
 use Config;
 use App\RZP\Api;
 use Slack;
+use Auth;
 
 class Service
 {
-    public function setApiCredentials($merchant_id = null, $mode = 'live')
+    private function setHeaders()
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
+        ApiRequest::addHeader('X-User-Agent', \Request::header('User-Agent'));
+        ApiRequest::addHeader('X-IP-Address', \Request::ip());
+    }
+
+    public function setAdminCredentials($mode = 'live')
+    {
+        $this->setHeaders();
+
+        $token = Auth::guard('api')->user()->token;
+
+        $this->api = new Api("rzp_{$mode}_admin", $token);
+    }
+
+    public function setApiCredentials($merchant_id = null, $mode = 'live')
+    {
+        $this->setHeaders();
+
         $id = 'rzp_' . $mode;
 
         if ($merchant_id)

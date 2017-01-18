@@ -8,9 +8,17 @@ app.controller('MerchantDetailCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'riskMap',
+  'admin',
   '$upload',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, $upload) {
+  'organization',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization) {
+    admin.identity().then(function (data) {
+      $scope.admin = data;
+    });
+
     $scope.riskMap = riskMap;
+    // 5 Lac INR
+    $scope.DEFAULT_MAX_PAYMENT_AMOUNT = 50000000;
     $scope.alerts = alertsFactory.getHandler();
     $scope.merchant = {
       id: $stateParams.id,
@@ -19,6 +27,11 @@ app.controller('MerchantDetailCtrl', [
         live: 0
       }
     };
+
+    organization.fetchGroups().then(function (groups) {
+      $scope.groups = groups;
+    });
+    $scope.selected_groups = {};
 
     generateMerchant();
     $scope.lockForm = function () {
@@ -360,7 +373,7 @@ app.controller('MerchantDetailCtrl', [
         data: terminal
       };
       if (typeof terminal.gateway_client_certificate !== 'undefined') {
-        requestData['file'] = terminal.gateway_client_certificate;
+        requestData.file = terminal.gateway_client_certificate;
       }
       var request = $upload.upload(requestData);
       request.success(function (data) {
@@ -430,7 +443,17 @@ app.controller('MerchantDetailCtrl', [
      * Sends the final edit merchant ajax call
      * @param  Object merchant
      */
-    $scope.editMerchant = function (merchant) {
+    $scope.editMerchant = function (merchant, selected_groups) {
+
+      // If the second parameter was not provided
+      // we don't try to edit the groups and don't
+      // send the field instead.
+      if (typeof selected_groups === 'undefined') {
+        selected_groups = {};
+      }
+      else {
+        merchant.groups = Object.keys(selected_groups);
+      }
 
       var dropUnchangedFields = function(merchant) {
         for (var i in merchant) {
@@ -566,7 +589,41 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
- 
+    $scope.suspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/suspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant suspended successfully', true);
+          $scope.merchant.details.suspended_at = Date.now() / 1000;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.unsuspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unsuspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant unsuspended successfully', true);
+          $scope.merchant.details.suspended_at = null;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+
     // Assign pricing modal
     $scope.openAssignPricing = function () {
       var currentPlan = $scope.merchant.pricing_plan.id || '';
@@ -697,11 +754,17 @@ app.controller('MerchantDetailCtrl', [
             // Return a copy of current merchant details
             // instead of returning a reference
             return jQuery.extend({}, $scope.merchant.details);
-          }
+          },
+          groups: function () {
+            return jQuery.extend({}, $scope.groups);
+          },
+          selected_groups: function () {
+            return $scope.selected_groups;
+          },
         }
       });
       modalInstance.result.then(function (merchant) {
-        $scope.editMerchant(merchant);
+        $scope.editMerchant(merchant, $scope.selected_groups);
       }, $.noop);
     };
     $scope.openEditMerchantEmail = function () {
@@ -883,7 +946,7 @@ app.controller('MerchantDetailCtrl', [
           });
         }
       });
-    }
+    };
 
     function generateMerchant() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
@@ -892,9 +955,13 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
-          $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
+          $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
           $scope.merchant.details.international = data.data.details.international;
+          var merchantGroups = data.data.groups || [];
+          merchantGroups.map(function(group){
+            $scope.selected_groups[group.id] = true;
+          });
           fetchBalance();
           getMerchantFeatures();
 
@@ -963,7 +1030,7 @@ app.controller('MerchantDetailCtrl', [
           });
         }
       });
-    }
+    };
 
     function fetchBalance() {
       var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/balance');
@@ -1089,10 +1156,9 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('assignTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
-  '$upload',
-  function ($scope, $modalInstance, $upload) {
+  function ($scope, $modalInstance) {
     $scope.terminal = {gateway:'hdfc', mode:'live', card:1};
-    $scope.onFileSelect = function ($files, fieldname) {
+    $scope.onFileSelect = function ($files) {
       var file = $files[0];
       if ($scope.terminal.gateway === 'first_data' && file.type !== 'application/x-pkcs12') {
         $scope.alerts.addAlert('danger', 'Invalid certificate file', true);
@@ -1158,9 +1224,13 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   'riskMap',
-  function ($scope, $modalInstance, current, riskMap) {
+  'groups',
+  'selected_groups',
+  function ($scope, $modalInstance, current, riskMap, groups, selected_groups) {
 
     $scope.riskMap = riskMap;
+    $scope.groups = groups;
+    $scope.selected_groups = selected_groups;
 
     if (!current.website) {
       current.website = current.merchant_details.business_website;
@@ -1171,9 +1241,15 @@ app.controller('MerchantDetailCtrl', [
     if (!current.transaction_report_email) {
       current.transaction_report_email = current.merchant_details.transaction_report_email;
     }
+    angular.forEach(current.groups, function (group) {
+      $scope.selected_groups[group.id] = true;
+    });
 
     $scope.current = current;
     $scope.ok = function (merchant) {
+
+      // We convert it back from INR to paise.
+      merchant.max_payment_amount = merchant.max_payment_amount * 100;
       $modalInstance.close(merchant);
     };
     $scope.cancel = function () {
@@ -1402,7 +1478,7 @@ app.controller('MerchantDetailCtrl', [
             contract_software: '',
             contract_govt: '',
             contract_other: 'Y',
-            contract_specify: merchant_details.bussiness_model || '',
+            contract_specify: merchant_details.business_model || '',
             mercreg_company: merchant_details.business_name || '',
             mercreg_contact: merchant_details.contact_name || '',
             mercreg_tel_business: merchant_details.contact_mobile || '',
@@ -1494,9 +1570,7 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('openCredits', [
   '$scope',
   '$modalInstance',
-  '$http',
-  'modeFactory',
-  function ($scope, $modalInstance, $http, modeFactory) {
+  function ($scope, $modalInstance) {
     $scope.ok = function (credits) {
       $modalInstance.close(credits);
     };
@@ -1540,4 +1614,4 @@ app.controller('MerchantDetailCtrl', [
 
 function removeLineBreaks(str) {
   return str.replace(/[\n|\r]/g, ' ')
-}
+};

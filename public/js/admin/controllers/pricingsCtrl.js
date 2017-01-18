@@ -23,7 +23,7 @@ app.controller('PricingsCtrl', [
         payment_issuer: "",
         international: "0",
         amount_range_active: "0",
-        amount_range: "low",
+        amount_range: "0-100000",
         amount_range_min: 0,
         amount_range_max: 0,
         percent_rate: 200,
@@ -236,11 +236,17 @@ app.controller('PricingsCtrl', [
     function getDefaultAmountRange(input) {
 
       var range = [];
-      if (input.amount_range == 'high') {
+      if (input.amount_range == '0-200000') {
+        range = [0,200000];
+      }
+      else if (input.amount_range == '100000-200000') {
+        range = [100000,200000];
+      }
+      else if (input.amount_range == '200000-1000000000') {
         range = [200000,1000000000];
       }
       else {
-        range = [0,  200000];
+        range = [0,100000];
       }
 
       return range;

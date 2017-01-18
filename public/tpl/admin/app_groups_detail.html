@@ -1,0 +1,36 @@
+<div class="bg-light lter b-b wrapper-md">
+  <h1 class="m-n font-thin h3">
+    Group Detail
+    <spinner class="inline"></spinner>
+  </h1>
+  <div class="wrapper-md" ng-controller="GroupDetailCtrl">
+    <div class="panel panel-default col-sm-2 col-sm-offset-2">
+      <div class="panel-heading m-t m-b">
+        Actions
+      </div>
+    </div>
+    <div class="panel panel-default col-sm-6">
+      <div class="row wrapper">
+        <div class="list-group">
+          <a href class="list-group-item">
+            <span class="pull-right">{{group.id}}</span>
+            Id
+          </a>
+        </div>
+        <div class="list-group">
+          <a href class="list-group-item">
+            <span class="pull-right">{{group.name}}</span>
+            Name
+          </a>
+        </div>
+        <div class="list-group">
+          <a href class="list-group-item">
+            <span class="pull-right">{{group.description}}</span>
+            Description
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+

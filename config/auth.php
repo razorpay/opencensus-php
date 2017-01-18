@@ -16,6 +16,11 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'api' => [
+            'driver' => 'api',
+            'provider' => 'api',
+            'session_key' => 'api_admin',
+        ]
     ],
 
     //User Providers
@@ -27,6 +32,10 @@ return [
         'admins' => [
             'driver' => 'eloquent',
             'model' => App\Admin\Entity::class,
+        ],
+        'api' => [
+            'driver' => 'api',
+            'model' => Illuminate\Auth\GenericUser::class
         ]
     ],
 

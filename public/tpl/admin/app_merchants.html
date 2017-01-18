@@ -23,10 +23,10 @@
             <option value="0">All</option>
             <option value="1">Activated</option>
             <option value="2">Not Activated</option>
-            <option value="3">Pending Activation</option>
-            <option value="4">Confirmed</option>
+            <!-- <option value="3">Pending Activation</option> -->
             <option value="5">Dead</option>
             <option value="6">Archived</option>
+            <option value="7">Suspended</option>
           </select>
           <span class="input-group-btn">
             <button class="btn btn-sm btn-default merchant_go" type="button" ng-click="filter()" busy="...">Go!</button>
@@ -35,30 +35,28 @@
         </div>
       </div>
     </div>
-    <div>
+    <div class="table-responsive">
       <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
+            <th>Referrer</th>
             <th>Name</th>
             <th>Email</th>
-            <th data-type="numeric">Confirmed</th>
-            <th data-hide="phone,tablet" data-type="numeric">Activation Progress (%)</th>
+            <th data-type="numeric">Activation Progress (%)</th>
             <th data-type="numeric">Activated</th>
-            <th data-hide="phone,tablet" data-type="numeric">Registration Date</th>
-            <th data-hide="phone,tablet" data-type="numeric">Submission Date</th>
-            <th ng-show="merchant_type==6" data-hide="phone,tablet" data-type="numeric">Archival Date</th>
-            <th data-hide="phone,tablet">Tags</th>
+            <th data-type="numeric">Registration Date</th>
+            <th data-type="numeric">Submission Date</th>
+            <th ng-show="merchant_type==6" data-type="numeric">Archival Date</th>
+            <th>Tags</th>
           </tr>
         </thead>
         <tbody>
           <tr ng-repeat="row in merchants" class="merchants-table-body">
             <td><a ui-sref="app.merchants.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
+            <td>{{row.referrer}}</td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
-            <td data-value="{{row.confirm_token == null ? 1 : 0}}">
-              <i class="fa" ng-class="{'fa-check text-success': row.confirm_token == null, 'fa-times text-danger':row.confirm_token != null}"></i>
-            </td>
             <td data-value="{{row.activation_progress}}">
               <b class="badge bg-success dk">{{row.activation_progress}}%</b>
             </td>

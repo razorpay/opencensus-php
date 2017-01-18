@@ -6,7 +6,8 @@ app.controller('ResetPasswordCtrl', [
   '$stateParams',
   'alertsFactory',
   'transformRequestAsFormPost',
-  function ($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost) {
+  'organization',
+  function ($scope, $http, $state, $stateParams, alertsFactory, transformRequestAsFormPost, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.success = false;
@@ -39,5 +40,10 @@ app.controller('ResetPasswordCtrl', [
         $scope.alerts.addAlert('danger');
       });
     };
+
+    // Change logo
+    organization.fetchCurrentOrg().then(function (data) {
+      $scope.login_logo = data.login_logo_url || 'img/logo_black.png';
+    });
   }
 ]);

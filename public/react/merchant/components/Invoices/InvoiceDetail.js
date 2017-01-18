@@ -65,6 +65,11 @@ export default (props) => {
                 </div>
 
                 <div class='list-group-item'>
+                  <span class='pull-right'>{invoice.receipt}</span>
+                  Receipt
+                </div>
+
+                <div class='list-group-item'>
                   <span class='pull-right'>{invoice.short_url}</span>
                   Payment Link
                 </div>
