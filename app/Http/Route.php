@@ -538,6 +538,7 @@ final class Route
 
     public static $internal = array(
         'admin_fetch_entity_multiple',
+        'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
         'merchant_secret',
         'merchant_create',

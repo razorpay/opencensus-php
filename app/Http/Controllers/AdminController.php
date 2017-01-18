@@ -19,11 +19,13 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getTerminalById($type, $id)
+    public function getTerminalById($id)
     {
         // For Single Terminal fetch we want to display sub merchants
         // Setting sub_merchant will give sub_merchant associated with terminal
         $subMerchantFlag = true;
+
+        $type = 'terminal';
 
         $data = (new Admin\Service)->fetchEntityByIdWithFlag($type, $id, $subMerchantFlag);
 
