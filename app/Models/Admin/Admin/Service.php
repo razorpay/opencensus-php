@@ -2,25 +2,35 @@
 
 namespace RZP\Models\Admin\Admin;
 
+use App;
+use Cache;
+use Carbon\Carbon;
 use Hash;
 use Mail;
 use Event;
+use Str;
+
+use RZP\Constants\HashAlgo;
 use RZP\Error;
-use Carbon\Carbon;
-use RZP\Exception;
-use RZP\Models\Base;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org\AuthPolicy;
-use RZP\Models\Admin\Action;
-use RZP\Models\Merchant;
+use RZP\Error\ErrorCode;
 use RZP\Events\AuditLogEntry;
-use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Models\Admin\Action;
+use RZP\Models\Admin\Group;
+use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Base;
 use RZP\Models\Base\EsDao;
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 
 class Service extends Base\Service
 {
+    const ADMIN_PASSWORD_RESET_TOKEN_KEY = 'password_reset_token_org_%s_admin_%s';
+
+    const TOKEN = 'token';
+
     public function authenticate(string $orgId, array $input)
     {
         \Database\DefaultConnection::set('live');
@@ -100,11 +110,123 @@ class Service extends Base\Service
         event(new AuditLogEntry($admin, $action, $customProperties));
     }
 
-    public function passwordReset(string $orgId, array $input)
+    public function forgotPassword(string $orgId, array $input)
     {
-        $this->core()->passwordReset($orgId, $input);
+        $validator = new Validator();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
+
+        $validator->validateInput('forgot', $input);
+
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
+
+        $this->setPasswordResetToken($admin, $input);
+
+        $this->sendAdminForgotPasswordEmail($admin, $input);
 
         return ['success' => true];
+    }
+
+    protected function sendAdminForgotPasswordEmail(Entity $admin, $input)
+    {
+        $org = $admin->org;
+
+        $from       = 'support@razorpay.com';
+        $replyTo    = 'support@razorpay.com';
+        $fromHeader = 'Team Razorpay';
+        $to         = $admin->getEmail();
+        $subject    = 'Reset your password for' . $org->getDisplayName() . ' dashboard';
+
+        $view = 'emails.auth.admin_password_reset';
+
+        $template = [
+            'firstName' => $admin->getFirstName(),
+            'resetUrl'  => $input['reset_password_url'] . '/' . $input[self::TOKEN],
+            'orgName'   => $org->getDisplayName(),
+        ];
+
+        Mail::queue(
+            $view,
+            $template,
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo)
+            {
+                $message->to($to);
+                $message->from($from, $fromHeader);
+                $message->subject($subject);
+                $message->replyTo($replyTo);
+            }
+        );
+    }
+
+    protected function generateToken()
+    {
+        $app = App::getFacadeRoot();
+
+        $secret = $app->config->get('app.key');
+
+        $token = hash_hmac(HashAlgo::SHA256, Str::random(40), $secret);
+
+        return $token;
+    }
+
+    protected function setPasswordResetToken(Entity $admin, array & $input)
+    {
+        $key = $this->getCacheKeyForResetToken($admin->org->getId(), $admin->getId());
+
+        $expiresAt = Carbon::now()->addHours(1);
+
+        $token = $this->generateToken($input);
+
+        Cache::put($key, $token, $expiresAt);
+
+        $input[self::TOKEN] = $token;
+    }
+
+    public function resetPassword(string $orgId, array $input)
+    {
+        $validator = new Validator();
+
+        $org = $this->repo->org->findByPublicId($orgId);
+
+        $input[Org\Entity::AUTH_TYPE] = $org->getAuthType();
+
+        $validator->validateInput('reset', $input);
+
+        // Get admin
+        $admin = $this->getAdminFromEmail($orgId, $input['email']);
+
+        $key = $this->getCacheKeyForResetToken($org->getId(), $admin->getId());
+
+        $resetToken = Cache::get($key);
+
+        if (($resetToken === null) or
+            ($resetToken !== $input['token']))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN);
+        }
+
+        $this->core()->updatePassword($admin, $input, true);
+
+        // Flush the key so that the link cannot be used again.
+        Cache::forget($key);
+
+        return ['success' => true];
+    }
+
+    protected function getAdminFromEmail($orgId, $email)
+    {
+        $admin = $this->repo->admin->findByOrgIdAndEmail($orgId, $email);
+
+        if ($admin === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL);
+        }
+
+        return $admin;
     }
 
     public function loginWithOAuth($input)
@@ -470,5 +592,12 @@ class Service extends Base\Service
         (new Token\Service)->deleteToken($adminToken);
 
         return ['success' => true];
+    }
+
+    protected function getCacheKeyForResetToken(string $orgId, string $adminId)
+    {
+        return  sprintf(
+            self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
+            $orgId, $adminId);
     }
 }

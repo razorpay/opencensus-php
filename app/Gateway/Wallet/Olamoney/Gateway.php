@@ -68,6 +68,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
+        $request['headers'] = $this->getRequestHeaders();
+
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->parseResponseBody($response);
@@ -289,7 +291,7 @@ class Gateway extends Base\Gateway
         if (($content[ResponseFields::STATUS] === Status::SUCCESS) and
             (isset($content[ResponseFields::AMOUNT]) === true))
         {
-            $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
+            $userBalance = (int) (($content[ResponseFields::AMOUNT]) * 100);
 
             $key = $this->getBalanceKeyForCache($input['payment']);
 
@@ -858,8 +860,6 @@ class Gateway extends Base\Gateway
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
         $request = $this->getStandardRequestArray(json_encode($content));
-
-        $request['headers'] = $this->getRequestHeaders();
 
         return $request;
     }

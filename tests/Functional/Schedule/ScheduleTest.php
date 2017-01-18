@@ -139,6 +139,17 @@ class ScheduleTest extends TestCase
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }
 
+    public function testMerchantSettlementScheduleSync()
+    {
+        $request = $this->testData[__FUNCTION__];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $scheduleDelay = $request['content']['delay'];
+
+        $this->assertEquals($response['settlement_schedule'], $scheduleDelay);
+    }
+
     private function createAndAssignSchedule()
     {
         $schedule = $this->createSchedule();

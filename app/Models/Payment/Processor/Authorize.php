@@ -27,7 +27,6 @@ use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
 use RZP\Models\Payment\Analytics;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Status;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Models\Payment\TerminalAnalytics;
 use RZP\Models\Pricing;
@@ -527,8 +526,13 @@ trait Authorize
 
     protected function runInternationalChecks($payment)
     {
+        if ($payment->getMethod() !== Method::CARD)
+        {
+            return;
+        }
+
         // return if method is not card or card is not international
-        if (($payment->getMethod() !== Method::CARD) or
+        if (($payment->getMerchantId() !== '2aTeFCKTYWwfrF') and
             ($payment->card->isInternational() === false))
         {
             return;

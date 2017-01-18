@@ -70,6 +70,11 @@ class Response
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_URL_NOT_FOUND);
     }
 
+    public function routeDisabled()
+    {
+        return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_ROUTE_DISABLED);
+    }
+
     public function httpMethodNotAllowed()
     {
         return $this->generateErrorResponse(ErrorCode::BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED);
@@ -181,8 +186,11 @@ class Response
 
     protected function isResponseJsonp($route)
     {
+        $callback = $this->app['request']->input('callback');
+
         return (($this->jsonp === null) and
-                ($this->isJsonpRoute($route)));
+                ($this->isJsonpRoute($route)) and
+                ($callback !== null));
     }
 
     protected function stopBrowserCaching($response)
@@ -274,6 +282,7 @@ class Response
             'merchant_public_get_banks',
             'payment_cancel',
             'payment_create_jsonp',
+            'payment_get_status'
         );
 
         return (in_array($route, $jsonpRoutes));

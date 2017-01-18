@@ -760,8 +760,6 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   => Gateway::FIRST_DATA,
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
-                'gateway_terminal_id'       => 'shared_terminal_first_data',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 )
@@ -843,6 +841,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -1046,6 +1045,24 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
+    }
+
+    protected function createNetbankingAxisTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_axis',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
