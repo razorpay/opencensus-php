@@ -22,11 +22,6 @@ class RoutesTest extends TestCase
         // Route::enableFilters();
     }
 
-    public function testJSONPRoute()
-    {
-        ;
-    }
-
     public function testAuthGroupsAreDisjoint()
     {
         $groups = [
@@ -42,13 +37,17 @@ class RoutesTest extends TestCase
 
         $uniqueRoutes = [];
 
+        // Loop through every route in the auth groups and
+        // add them to a hash set. isset checks if the route
+        // has already been added, in constant time.
+
         foreach ($groups as $group)
         {
             foreach ($group as $route)
             {
                 $this->assertEquals(
-                    array_key_exists($route, $uniqueRoutes),
                     false,
+                    isset($uniqueRoutes[$route]),
                     "$route route appears in two distinct auth groups"
                 );
 
