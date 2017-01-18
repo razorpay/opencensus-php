@@ -13,13 +13,13 @@ use RZP\Exception;
  */
 class PrioritySet extends Base
 {
-    public function __construct(string $keyPrefix, string $key)
+    public function __construct(string $prefix, string $key)
     {
         parent::__construct();
 
         $this->key = $key;
 
-        $this->keyPrefix = $keyPrefix;
+        $this->prefix = $prefix;
     }
 
     protected static $delimiter = ':';
@@ -50,7 +50,7 @@ class PrioritySet extends Base
             return null;
         }
 
-        $result = array_filter($this->data);
+        $result = array_keys(array_filter($this->data));
 
         return ((empty($result) === true) ? null : $result);
     }

@@ -62,6 +62,7 @@ class Validator extends Base\Validator
 
         $cardGateways = Defaults::$directCardGatewaysOrder;
 
+        // Validates that all gateways exist in card gateways list.
         return (count($inputGateways) === count(array_intersect($inputGateways, $cardGateways)));
     }
 

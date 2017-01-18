@@ -109,8 +109,6 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
-
-        $this->registerDataStoreProvider();
     }
 
     /**
@@ -137,7 +135,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-            'store'
         );
     }
 
@@ -220,21 +217,6 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new Mutex($app);
-        });
-    }
-
-    protected function registerDataStoreProvider()
-    {
-        $this->app->singleton('data_store', function ($app)
-        {
-            $storeMock = $app['config']->get('services.data_store.mock');
-
-            if ($storeMock === true)
-            {
-                return new Mock\DataStoreManager($app);
-            }
-
-            return new DataStoreManager($app);
         });
     }
 

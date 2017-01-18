@@ -19,7 +19,8 @@ class Service extends Base\Service
 
     public function addPriorityForMethod(string $method, array $data)
     {
-        $this->trace->info(TraceCode::ADD_GATEWAY_PRIORITY_REQUEST, [$method => $data]);
+        $this->trace->info(
+            TraceCode::ADD_GATEWAY_PRIORITY_REQUEST, [$method => $data]);
 
         $this->validator->validateMethod($method);
 

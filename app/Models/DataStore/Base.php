@@ -2,30 +2,31 @@
 
 namespace RZP\Models\DataStore;
 
-use App;
-
-class Base
+class Base extends Core
 {
     protected $redis;
 
-    protected $trace;
-
-    protected $keyPrefix;
+    /**
+     * Stores the prefix with which the keys of a particular
+     * store object are generated. Defined by child classes
+     * @var [type]
+     */
+    protected $prefix;
 
     protected $key;
 
     protected $data;
 
-    // Used to construcy key for data store. To be overriden by child classes
+    /**
+     * Used to construct key for data store.
+     * To be overridden by child classes
+     * @var string
+     */
     protected static $delimiter = '';
 
-    public function __construct()
+    protected function init()
     {
-        $app = App::getFacadeRoot();
-
-        $this->redis = $app['redis'];
-
-        $this->trace = $app['trace'];
+        $this->redis = $this->app['redis'];
     }
 
     public function getKey()
@@ -33,14 +34,14 @@ class Base
         return $this->key;
     }
 
-    public function getKeyPrefix()
+    public function getPrefix()
     {
-        return $this->keyPrefix;
+        return $this->prefix;
     }
 
     public function generateStoreKey()
     {
-        return $this->keyPrefix . static::$delimiter . $this->key;
+        return $this->prefix . static::$delimiter . $this->key;
     }
 
     public function getData()
