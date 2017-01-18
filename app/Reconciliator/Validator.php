@@ -13,6 +13,11 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
+        'xlsb'  => [
+            'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
+            'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
+        ],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
