@@ -2,16 +2,17 @@
 
 namespace RZP\Services;
 
-use RZP\Constants\Mode;
-use GuzzleHttp\Client;
+use Exception;
 use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Payment\Method;
-use RZP\Models\Terminal;
-use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Trace\Trace;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Analytics\Entity as Analytics;
+
+use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
@@ -19,29 +20,29 @@ class EventTrackerClient extends Base\Core
 
     protected $mock;
 
-    protected $events;
-
-    protected $defaults;
-
     protected $request;
 
     protected $ljConfig;
 
-    protected $paymentContext;
+    protected $events = array();
+
+    protected $defaults = array();
+
+    protected $paymentContext = array();
 
     const CONTEXT_KEYS = [
-        'ip',
-        'checkout_id',
-        'user_agent',
-        'library',
-        'library_version',
-        'platform',
-        'platform_version',
-        'referer',
-        'browser',
-        'os',
-        'os_version',
-        'device',
+        Analytics::IP,
+        Analytics::CHECKOUT_ID,
+        Analytics::USER_AGENT,
+        Analytics::LIBRARY,
+        Analytics::LIBRARY_VERSION,
+        Analytics::PLATFORM,
+        Analytics::PLATFORM_VERSION,
+        Analytics::REFERER,
+        Analytics::BROWSER,
+        Analytics::OS,
+        Analytics::OS_VERSION,
+        Analytics::DEVICE,
     ];
 
     /**
@@ -75,15 +76,12 @@ class EventTrackerClient extends Base\Core
         $this->key = $this->ljConfig['key'];
 
         $this->mock = $this->ljConfig['is_mock'];
-
-        $this->events = array();
-
-        $this->defaults = array();
-
-        $this->paymentContext = array();
-
     }
 
+    /**
+    * constructs headers and fetches url
+    * to be sent to lumberjack
+    */
     public function buildRequestAndSend()
     {
         if (count($this->events) === 0)
@@ -100,6 +98,15 @@ class EventTrackerClient extends Base\Core
         $this->sendLumberjackRequest($headers, $url);
     }
 
+    /**
+    * Sends POST request to Lumberjack
+    * url_pattern = /v1/track
+    *
+    * Sets events and defaults null after request
+    *
+    * @param $headers array
+    * @param $url string
+    */
     protected function sendLumberjackRequest($headers, $url)
     {
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
@@ -128,7 +135,14 @@ class EventTrackerClient extends Base\Core
         $this->defaults = [];
     }
 
-    protected function getDefaults(Payment\Entity $payment)
+    /**
+    *
+    * Gets metadata and key
+    * sets in the default array for event
+    *
+    * @param $payment Payment\Entity
+    */
+    protected function getEventContext(Payment\Entity $payment)
     {
         if (empty($this->events) === true)
         {
@@ -156,15 +170,36 @@ class EventTrackerClient extends Base\Core
         }
     }
 
+    /**
+    *
+    * Forms an event object with properites
+    * appends it to $this->events array
+    *
+    * @param $payment Payment\Entity
+    * @param $eventName string
+    * @param $customProperties array
+    */
     protected function appendEvent(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        $properties = $this->fillEventProperties($payment);
+        // payment-related properties
+        $properties = $this->getPaymentProperties($payment);
 
-        $event = array(
-            'event'         => $eventName,
-            'timestamp'     => UniqueIdEntity::getNanotimeInteger(),
-        );
+        // terminal-related properties
+        $terminalDetails = [];
 
+        if ($payment->getTerminalId() !== null)
+        {
+            $terminal = $payment->terminal;
+
+            $terminalDetails = $this->fetchTerminalData($terminal);
+        }
+
+        if (count($terminalDetails) > 0)
+        {
+            $properties['terminal'] = $terminalDetails;
+        }
+
+        // custom properties
         if (empty($customProperties) === false)
         {
             $customProperties = $this->removeCommonProperties($customProperties);
@@ -172,9 +207,14 @@ class EventTrackerClient extends Base\Core
             $properties = array_merge($properties, $customProperties);
         }
 
+        // cleaning properties of sensitive data
         $this->removeSensitiveInformation($properties);
 
-        $event['properties'] = $properties;
+        $event = array(
+            'event'         => $eventName,
+            'timestamp'     => time(),
+            'properties'    => $properties,
+        );
 
         array_push($this->events, $event);
     }
@@ -196,86 +236,101 @@ class EventTrackerClient extends Base\Core
         }
     }
 
-    protected function fillEventProperties(Payment\Entity $payment)
+    /**
+    *
+    * Gets data related to a particular payment
+    * appends it to the properties of the event
+    *
+    * @param $payment Payment\Entity
+    * @return $properties array
+    */
+    protected function getPaymentProperties(Payment\Entity $payment)
     {
-        $isInternational = null;
-
-        if ($payment->getCardId() !== null)
+        try
         {
-            $isInternational = $payment->isInternational();
+            $isInternational = null;
+
+            if ($payment->getCardId() !== null)
+            {
+                $isInternational = $payment->isInternational();
+            }
+
+            $properties = [
+                'payment_id'        => $payment->getPublicId(),
+                'mode'              => $this->mode,
+                'merchant_id'       => $payment->merchant->getId(),
+                'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
+                'amount'            => $payment->getAmount(),
+                'method'            => $payment->getMethod(),
+                'requestId'         => $this->request->getId(),
+                'international'     => $isInternational,
+                'version'           => self::VERSION,
+            ];
+
+            $method = $payment->getMethod();
+
+            $properties['method'] = $method;
+
+            // note: using individual here instead of getMethodWithDetail
+            // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
+            if ($method === Method::NETBANKING)
+            {
+                $properties['bank']  = $payment->getBankName();
+            }
+
+            if ($method === Method::WALLET)
+            {
+                $properties['wallet'] = ucfirst($payment->getWallet());
+            }
+
+            if ($method === Method::UPI)
+            {
+                $properties['vpa'] = $payment->getVpa();
+            }
+
+            $merchant = $payment->merchant;
+
+            $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
+
+            return $properties;
         }
 
-        $properties = [
-            'payment_id'        => $payment->getPublicId(),
-            'mode'              => $this->mode,
-            'merchant_id'       => $payment->merchant->getId(),
-            'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
-            'amount'            => $payment->getAmount(),
-            'method'            => $payment->getMethod(),
-            'requestId'         => $this->request->getId(),
-            'international'     => $isInternational,
-            'version'           => self::VERSION,
-        ];
-
-        $terminalDetails = [];
-
-        if ($payment->getTerminalId() !== null)
+        catch (Exception $e)
         {
-            $terminal = $payment->terminal;
-
-            $terminalDetails = $this->fetchTerminalData($terminal, $payment);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);
         }
-
-        if (count($terminalDetails) > 0)
-        {
-            $properties['terminal'] = $terminalDetails;
-        }
-
-        $merchant = $payment->merchant;
-
-        $properties['fee_bearer'] = $merchant->isFeeBearerCustomer();
-
-        return $properties;
     }
 
-    protected function fetchTerminalData(Terminal\Entity $terminal, Payment\Entity $payment)
+    /**
+    *
+    * Gets data of terminal associated
+    * with a payment entitity
+    *
+    * @param $terminal Terminal\Entity
+    * @return $data array
+    *
+    */
+    protected function fetchTerminalData(Terminal\Entity $terminal)
     {
-        $data = [];
-
-        $data['id'] = $terminal->getPublicId();
-
-        $data['gateway'] = $terminal->getGateway();
-
-        $data['acquirer'] = $terminal->getGatewayAcquirer();
-
-        $data['category'] = $terminal->getCategory();
-
-        $data['shared'] = $terminal->getShared();
-
-        $data['recurring'] = $terminal->getRecurring();
-
-        $method = $payment->getMethod();
-
-        $data['method'] = $method;
-
-        // note: using individual here instead of getMethodWithDetail
-        // as PaymentCancelTest fails on Payment\Entity::getFormattedCard
-        if ($method === Method::NETBANKING)
+        try
         {
-            $data['bank']  = $payment->getBankName();
-        }
 
-        if ($method === Method::WALLET)
+            $data = [
+                'id'        => $terminal->getPublicId(),
+                'gateway'   => $terminal->getGateway(),
+                'acquirer'  => $terminal->getGatewayAcquirer(),
+                'category'  => $terminal->getCategory(),
+                'shared'    => $terminal->getShared(),
+                'recurring' => $terminal->getRecurring(),
+
+            ];
+
+            return $data;
+        }
+        catch (Exception $e)
         {
-            $data['wallet'] = ucfirst($payment->getWallet());
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);
         }
-
-        if ($method === Method::UPI)
-        {
-            $data['vpa'] = $payment->getVpa();
-        }
-
-        return $data;
     }
 
     /**
@@ -306,7 +361,7 @@ class EventTrackerClient extends Base\Core
             // filter metadata for required keys
             foreach (self::CONTEXT_KEYS as $key)
             {
-                if (array_key_exists($key, $metadata) === true)
+                if (isset($key, $metadata) === true)
                 {
                     $analytics[$key] = $metadata[$key];
                 }
@@ -348,16 +403,18 @@ class EventTrackerClient extends Base\Core
                 $analytics['order_id'] = $payment->getOrderId();
             }
 
-            $pa = $this->repo->payment_analytics->findForPayment($paymentId, true);
+            $pa = $this->repo->payment_analytics->findForPaymentRecent($paymentId);
 
             foreach (self::CONTEXT_KEYS as $key)
             {
                 // generates getter function
                 $getterName = 'get'.studly_case($key);
 
-                if (empty($pa->$getterName()) === false)
+                $getterValue = $pa->$getterName();
+
+                if (empty($getterValue) === false)
                 {
-                    $analytics[$key] = $pa->$getterName();
+                    $analytics[$key] = $getterValue;
                 }
             }
 
@@ -378,9 +435,8 @@ class EventTrackerClient extends Base\Core
         {
             $this->appendEvent($payment, $eventName, $customProperties);
 
-            $this->getDefaults($payment);
+            $this->getEventContext($payment);
         }
-
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
