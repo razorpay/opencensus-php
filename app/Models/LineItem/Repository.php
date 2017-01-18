@@ -14,10 +14,10 @@ class Repository extends Base\Repository
 
         $entity::verifyIdAndStripSign($id);
 
-        return $this->findByIdAndMorphEntity($id, $morphEntity);
+        return $this->findByIdAndMorphEntityOrFail($id, $morphEntity);
     }
 
-    public function findByIdAndMorphEntity($id, Base\PublicEntity $morphEntity)
+    public function findByIdAndMorphEntityOrFail($id, Base\PublicEntity $morphEntity)
     {
         return $this->newQuery()
                     ->where(Entity::ENTITY_ID, '=', $morphEntity->getId())

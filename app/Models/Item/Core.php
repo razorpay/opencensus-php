@@ -35,8 +35,6 @@ class Core extends Base\Core
                 'input'   => $input,
             ]);
 
-        $item->getValidator()->validateEditOperation($item, $input);
-
         $item->edit($input);
 
         $this->repo->saveOrFail($item);

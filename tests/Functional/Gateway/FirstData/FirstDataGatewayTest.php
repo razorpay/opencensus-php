@@ -40,6 +40,19 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'captured');
     }
 
+    public function testMaestroCard()
+    {
+        $payment = $this->payment;
+
+        $payment['card']['number'] = '5081597022059105';
+
+        $this->doAuthAndCapturePayment($payment);
+
+        $paymentRes = $this->getLastPayment(true);
+
+        $this->assertEquals($paymentRes['gateway'], 'first_data');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

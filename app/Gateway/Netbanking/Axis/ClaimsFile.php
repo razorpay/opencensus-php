@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = '-IConnect_Claim_Razorpay';
+    protected static $fileToWriteName = '-IConnect_Claims_Razorpay';
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
 

@@ -111,7 +111,7 @@ class AnalyticsTest extends TestCase
         $payment = $this->getDefaultPaymentArray();
 
         $requestServer = [
-            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        'HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
             'HTTP_REFERER'    => 'https://pay.com/demo'
         ];
 
@@ -131,7 +131,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForNonOtpBasedPayment');
     }
 
     public function testHttpRequestDataForOtpBasedPayment()

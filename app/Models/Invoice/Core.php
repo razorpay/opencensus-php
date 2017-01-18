@@ -194,7 +194,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($lineItem, $invoice)
             {
-                $this->lineItemCore->delete($lineItem);
+                $this->lineItemCore->delete($lineItem, $invoice);
 
                 $this->recomputeInvoiceAmount($invoice);
                 $this->repo->saveOrFail($invoice);
