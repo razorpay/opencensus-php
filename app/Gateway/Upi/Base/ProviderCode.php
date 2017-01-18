@@ -6,40 +6,90 @@ use RZP\Models\Bank\IFSC;
 
 class ProviderCode
 {
-    const AXISBANK         = 'axisbank';
-    const CNRB             = 'cnrb';
-    const DCB              = 'dcb';
-    const HDFCBANK         = 'hdfcbank';
-    const ICICI            = 'icici';
-    const KBL              = 'kbl';
-    const MAHB             = 'mahb';
-    const PNB              = 'pnb';
-    const POCKETS          = 'pockets';
-    const SIB              = 'sib';
-    const TJSB             = 'tjsb';
-    const UNIONBANK        = 'unionbank';
-    const UNIONBANKOFINDIA = 'unionbankofindia';
-    const UTBI             = 'utbi';
-    const VIJB             = 'vijb';
-    const YBL              = 'ybl';
+    /**
+     * This is based on data from
+     * @cashlessconsumer
+     *
+     * See http://bit.ly/UPIApps
+     * for a spreadsheet
+     *
+     * These are all the providers we know of
+     * This appears after @ in the VPA
+     */
+    const ALLBANK           = 'allbank';
+    const ANDB              = 'andb';
+    const AXISBANK          = 'axisbank';
+    const BARODAMPAY        = 'barodampay';
+    const CNRB              = 'cnrb';
+    const CSBPAY            = 'csbpay';
+    const DCB               = 'dcb';
+    const DENABANK          = 'denabank';
+    const FEDERAL           = 'federal';
+    const HDFCBANK          = 'hdfcbank';
+    const ICICI             = 'icici';
+    const IDFCBANK          = 'idfcbank';
+    const INDIANBANK        = 'indianbank';
+    const INDUS             = 'indus';
+    const KAYPAY            = 'kaypay';
+    const KBL               = 'kbl';
+    const MAHAB             = 'mahab';
+    const MAHB              = 'mahb';
+    const OBC               = 'obc';
+    const PNB               = 'pnb';
+    const POCKETS           = 'pockets';
+    const RBL               = 'rbl';
+    const SBI               = 'sbi';
+    const SIB               = 'sib';
+    const TJSB              = 'tjsb';
+    const UBI               = 'ubi';
+    const UBOI              = 'uboi';
+    const UCO               = 'uco';
+    const UNIONBANK         = 'unionbank';
+    const UNIONBANKOFINDIA  = 'unionbankofindia';
+    const UNITED            = 'united';
+    const UPI               = 'upi';
+    const UTBI              = 'utbi';
+    const VIJB              = 'vijb';
+    const YBL               = 'ybl';
+    const YESBANK           = 'yesbank';
 
     protected static $bankCodes = [
+        self::ALLBANK           => IFSC::ALLA,
+        self::ANDB              => IFSC::ANDB,
         self::AXISBANK          => IFSC::UTIB,
+        self::BARODAMPAY        => IFSC::BARB,
         self::CNRB              => IFSC::CNRB,
+        self::CSBPAY            => IFSC::CSBK,
         self::DCB               => IFSC::DCBL,
+        self::DENABANK          => IFSC::BKDN,
+        self::FEDERAL           => IFSC::FDRL,
         self::HDFCBANK          => IFSC::HDFC,
         self::ICICI             => IFSC::ICIC,
+        self::IDFCBANK          => IFSC::IDFB,
+        self::INDUS             => IFSC::INDB,
+        self::INDIANBANK        => IFSC::IDIB,
+        self::KAYPAY            => IFSC::KKBK,
         self::KBL               => IFSC::KARB,
+        self::MAHAB             => IFSC::MAHB,
         self::MAHB              => IFSC::MAHB,
+        self::OBC               => IFSC::ORBC,
         self::PNB               => IFSC::PUNB,
         self::POCKETS           => IFSC::ICIC,
+        self::RBL               => IFSC::RATN,
+        self::SBI               => IFSC::SBIN,
         self::SIB               => IFSC::SIBL,
         self::TJSB              => IFSC::TJSB,
+        self::UBI               => IFSC::UTBI,
+        self::UBOI              => IFSC::UBIN,
+        self::UCO               => IFSC::UCBA,
         self::UNIONBANK         => IFSC::UBIN,
         self::UNIONBANKOFINDIA  => IFSC::UBIN,
+        self::UNITED            => IFSC::UTBI,
+        self::UPI               => 'NPCI',
         self::UTBI              => IFSC::UTBI,
         self::VIJB              => IFSC::VIJB,
-        self::YBL               => IFSC::YESB
+        self::YBL               => IFSC::YESB,
+        self::YESBANK           => IFSC::YESB,
     ];
 
     public static function getBankCode($provider)
