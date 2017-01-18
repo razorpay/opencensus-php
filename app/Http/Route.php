@@ -852,7 +852,6 @@ final class Route
         'invoice_view_live_post',
         'invoice_view_test_post',
         'sms_callback',
-        'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
@@ -864,7 +863,6 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
-        'auditlog_search'
     );
 
     public static $internalApps = array(
@@ -910,6 +908,9 @@ final class Route
 
         'mailgun' => array(
             'reconciliate'
+        ),
+
+        'raven' => array(
         ),
 
         'hosted' => array(
