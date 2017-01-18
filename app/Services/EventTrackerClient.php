@@ -16,8 +16,6 @@ use GuzzleHttp\Client;
 
 class EventTrackerClient extends Base\Core
 {
-    protected $key;
-
     protected $mock;
 
     protected $request;
@@ -73,8 +71,6 @@ class EventTrackerClient extends Base\Core
 
         $this->ljConfig = $app['config']->get('applications.lumberjack');
 
-        $this->key = $this->ljConfig['key'];
-
         $this->mock = $this->ljConfig['is_mock'];
     }
 
@@ -92,7 +88,9 @@ class EventTrackerClient extends Base\Core
         $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
 
         $headers = [
-            'content-type' => 'application/json',
+            'content-type'  => 'application/json',
+            'x-signature'   =>  $this->generateSignature(),
+            'x-identifier'  =>  $this->ljConfig['identifier'],
         ];
 
         $this->sendLumberjackRequest($headers, $url);
@@ -135,6 +133,17 @@ class EventTrackerClient extends Base\Core
         $this->defaults = [];
     }
 
+    protected function generateSignature()
+    {
+        $key = $this->ljConfig['key'];
+
+        $secret = $this->ljConfig['secret'];
+
+        $signature = hash_hmac('sha1', $key, $secret);
+
+        return $signature;
+    }
+
     /**
     *
     * Gets metadata and key
@@ -154,7 +163,7 @@ class EventTrackerClient extends Base\Core
             if (empty($this->defaults) === true)
             {
                 $defaults = array(
-                    'key'           => $this->key,
+                    'key'           => $this->ljConfig['key'],
                     'context'       => $this->fetchAndFilterMetadata($payment),
                 );
 
