@@ -136,7 +136,7 @@ app.controller('EntityDetailCtrl', [
 
         request.success(function (data) {
           if (data.success) {
-            alert('Sub Merchant added successfully');
+            $scope.alerts.addAlert('success', 'Sub Merchant added successfully');
 
             $scope.entity.sub_merchants.unshift(merchant_id);
           } else {
