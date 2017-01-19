@@ -1232,5 +1232,211 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_UNEDITABLE_FEATURE,
         ],
-    ]
+    ],
+
+    'testMerchantArchive' => [
+        'request' => [
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+            ]
+        ]
+    ],
+
+    'testMerchantArchiveWithNoMerchantDetails' => [
+        'request' => [
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS,
+        ],
+    ],
+
+    'testMerchantArchiveForAlreadyArchivedMerchant' => [
+        'request' => [
+            'content' => [
+                'action' => 'archive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED,
+        ],
+    ],
+
+    'testMerchantUnarchive' => [
+        'request' => [
+            'content' => [
+                'action' => 'unarchive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+            ]
+        ]
+    ],
+
+    'testMerchantUnarchiveForNonArchived' => [
+        'request' => [
+            'content' => [
+                'action' => 'unarchive'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_ARCHIVED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED,
+        ],
+    ],
+
+    'testMerchantSuspend' => [
+        'request' => [
+            'content' => [
+                'action' => 'suspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+                'live' => false,
+                'hold_funds' => true,
+            ]
+        ]
+    ],
+
+    'testMerchantSuspendForAlreadySuspendedMerchant' => [
+        'request' => [
+            'content' => [
+                'action' => 'suspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED,
+        ],
+    ],
+
+    'testMerchantUnSuspend' => [
+        'request' => [
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'merchant',
+                'activated' => false,
+                'live' => true,
+                'hold_funds' => false,
+            ]
+        ]
+    ],
+
+    'testMerchantUnSuspendForAlreadyUnSuspendedMerchant' => [
+        'request' => [
+            'content' => [
+                'action' => 'unsuspend'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_NOT_SUSPENDED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED,
+        ],
+    ],
+
+    'testMerchantUndefinedAction' => [
+        'request' => [
+            'content' => [
+                'action' => 'hello123'
+            ],
+            'url' => '/merchants/1cXSLlUU8V9sXl/action',
+            'method' => 'PUT',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
+        ],
+    ],
 ];

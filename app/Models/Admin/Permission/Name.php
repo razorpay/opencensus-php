@@ -86,6 +86,15 @@ class Name
     const SEND_NEWSLETTER                 = 'send_newsletter';
     const TRIGGER_DUMMY_ERROR             = 'trigger_dummy_error';
     const MAKE_API_CALL                   = 'make_api_call';
+    const SCHEDULE_CREATE                 = 'schedule_create';
+    const SCHEDULE_FETCH                  = 'schedule_fetch';
+    const SCHEDULE_FETCH_MULTIPLE         = 'schedule_fetch_multiple';
+    const SCHEDULE_DELETE                 = 'schedule_delete';
+    const SCHEDULE_UPDATE                 = 'schedule_update';
+    const SCHEDULE_ASSIGN                 = 'schedule_assign';
+    const SCHEDULE_MIGRATION              = 'schedule_migration';
+    const VIEW_ACTIONS                    = 'view_actions';
+    const VIEW_MERCHANT_STATS             = 'view_merchant_stats';
     const VIEW_ALL_ENTITY                 = 'view_all_entity';
     const VIEW_ALL_ORG                    = 'view_all_org';
     const VIEW_ORG                        = 'view_org';
@@ -108,5 +117,10 @@ class Name
     const CREATE_ADMIN                    = 'create_admin';
     const EDIT_ADMIN                      = 'edit_admin';
     const DELETE_ADMIN                    = 'delete_admin';
+    const VIEW_AUDITLOG                   = 'view_auditlog';
     const VIEW_ALL_PERMISSION             = 'view_all_permission';
+    const GET_PERMISSION                  = 'get_permission';
+    const DELETE_PERMISSION               = 'delete_permission';
+    const CREATE_PERMISSION               = 'create_permission';
+    const EDIT_PERMISSION                 = 'edit_permission';
 }

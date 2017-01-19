@@ -232,13 +232,13 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $refundsFileLine1 = explode('~~', $refundsFileContents[1]);
 
-        // Each line should have 9 columns
-        assert(count($refundsFileLine1) === 9);
-
-        $claimsFileLine1 = explode('~~', $refundsFileContents[1]);
-
         // Each line should have 8 columns
-        assert(count($claimsFileLine1) === 9);
+        assert(count($refundsFileLine1) === 8);
+
+        $claimsFileLine1 = explode('~~', $claimsFileContents[1]);
+
+        // Each line should have 7 columns
+        assert(count($claimsFileLine1) === 7);
     }
 
     protected function mockPaymentFailure()

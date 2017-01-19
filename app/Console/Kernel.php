@@ -16,7 +16,6 @@ class Kernel extends ConsoleKernel
         Commands\Inspire::class,
         Commands\AddDbData::class,
         Commands\GenerateEmailTemplates::class,
-        Commands\MigrateLineItemsToItem::class,
         Commands\RzpDbRefresh::class,
         Commands\IinImport::class,
         Commands\UidCheckDigitVerify::class,

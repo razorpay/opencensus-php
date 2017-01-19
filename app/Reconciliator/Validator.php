@@ -13,7 +13,16 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
+        'xlsb'  => [
+            'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
+            'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
+        ],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+    ];
+
+    const GATEWAY_SUBJECT_REGEX = [
+        Orchestrator::HDFC => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -33,6 +42,22 @@ class Validator
                 'The sender email ID is not whitelisted.', ['email_details' => $emailDetails]
             );
         }
+    }
+
+    public function validateHdfcEmail($emailDetails)
+    {
+        $subject = $emailDetails['subject'];
+
+        $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::HDFC];
+
+        // HDFC also sends Corporate MPR emails, that should fail here
+        if ((preg_match($regex, $subject) === 1) and
+            (strpos($subject, 'Corporate') === false))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     public function validateAttachments(& $input)
