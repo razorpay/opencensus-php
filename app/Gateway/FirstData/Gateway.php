@@ -1018,7 +1018,7 @@ class Gateway extends Base\Gateway
     {
         $liveSecret = $this->input['terminal']['gateway_secure_secret'];
 
-        if ($liveSecret === '')
+        if ($this->isChildStoreId() === true)
         {
             $liveSecret = $this->config['live_hash_secret'];
         }
@@ -1031,8 +1031,7 @@ class Gateway extends Base\Gateway
         $username = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
         $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
 
-        if (($username === null) or
-            ($password === null))
+        if ($this->isChildStoreId() === true)
         {
             $username = $this->config['live_user_id'];
             $password = $this->config['live_password'];
@@ -1061,7 +1060,14 @@ class Gateway extends Base\Gateway
 
     public function getClientCertificateName()
     {
-        return $this->config['client_certificate'];
+        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+
+        if ($this->isChildStoreId() === true)
+        {
+            $certName = $this->config['client_certificate'];
+        }
+
+        return $certName;
     }
 
     protected function getClientCertificate()
@@ -1077,7 +1083,7 @@ class Gateway extends Base\Gateway
 
             $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
 
-            if ($encodedCert === null)
+            if ($this->isChildStoreId() === true)
             {
                 $encodedCert = $this->config['live_client_certificate'];
             }
@@ -1105,7 +1111,7 @@ class Gateway extends Base\Gateway
     {
         $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
-        if ($password === '')
+        if ($this->isChildStoreId() === true)
         {
             $password = $this->config['live_client_certificate_password'];
         }
@@ -1116,5 +1122,15 @@ class Gateway extends Base\Gateway
         }
 
         return $password;
+    }
+
+    protected function isChildStoreId()
+    {
+        // Older creds needed a separate value to access
+        // FirstData API and web portal.
+        // New FirstData creds are child ids, and do not
+        // have a merchantId2 value of their own.
+
+        return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
     }
 }

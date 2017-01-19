@@ -99,7 +99,7 @@ class NodalAccount extends Base\Core
 
     protected function createFile($text)
     {
-        $fileName = 'icici/outgoing/Payout_' . $this->date->format('dmY') . '_' . $this->id;
+        $fileName = 'icici/outgoing/NRPSS_NRPSSUPLDNEW_' . $this->id;
 
         $metadata = $this->getH2HMetadata();
 
