@@ -13,7 +13,7 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new Core();
+        $this->core = new Core;
     }
 
     public function create(array $input)
@@ -50,7 +50,8 @@ class Service extends Base\Service
 
     public function processStatusCakeCallback(array $input)
     {
-        //TODO: remove return from here probably. This is initiated via statuscak webhook post
-        return (new CallbackProcessor\StatusCakeProcessor)->process($input);
+        $data = (new CallbackProcessor\StatusCakeProcessor)->process($input);
+
+        return $data;
     }
 }

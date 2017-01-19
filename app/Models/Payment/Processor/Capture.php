@@ -426,6 +426,11 @@ trait Capture
 
         if ($payment->getApiOrderId() !== null)
         {
+            $this->trace->info(
+                TraceCode::ORDER_PAID_EVENT,
+                $payment
+            );
+            
             $this->app['events']->fire('api.order.paid', array($payment));
         }
     }
@@ -464,6 +469,11 @@ trait Capture
 
     protected function eventInvoicePaid($payment)
     {
+        $this->trace->info(
+            TraceCode::INVOICE_PAID_EVENT,
+            $payment
+        );
+        
         $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 

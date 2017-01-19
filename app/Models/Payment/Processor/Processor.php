@@ -542,6 +542,11 @@ class Processor
 
     protected function eventPaymentFailed()
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_FAILED_EVENT,
+            $this->payment
+        );
+        
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 

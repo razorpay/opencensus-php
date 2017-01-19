@@ -1327,6 +1327,11 @@ trait Authorize
 
     protected function eventPaymentAuthorized()
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_AUTHORIZED_EVENT,
+            $this->payment
+        );
+        
         $this->app['events']->fire('api.payment.authorized', array($this->payment));
     }
 
