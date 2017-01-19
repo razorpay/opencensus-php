@@ -34,8 +34,6 @@ class Validator extends Base\Validator
 
     public function validateGatewaysForMethod(string $method, array $input)
     {
-        $valid = true;
-
         switch ($method) {
             case Method::CARD:
                 $valid = $this->validCardGateways($input);
