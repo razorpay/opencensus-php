@@ -35,10 +35,16 @@ return [
         'amount' => 500,
         'bank' => 'KKBK',
         'received' => true,
-//        'client_code' => 'a@b.com',
         'merchant_code' => 'OSTEST',
-//        'bank_payment_id' => null,
-//        'error_message' => '',
+        'entity' => 'netbanking',
+    ],
+
+    'testPaymentTpvNetbankingEntity' => [
+        'action' => 'authorize',
+        'amount' => 500,
+        'bank' => 'KKBK',
+        'received' => true,
+        'merchant_code' => 'OTTEST',
         'entity' => 'netbanking',
     ],
 

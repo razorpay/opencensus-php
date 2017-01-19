@@ -216,14 +216,15 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkRefundTextData($data)
     {
-        $this->assertTrue(file_exists($data['netbanking_axis'][0]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['refundsFile']));
 
-        $this->assertTrue(file_exists($data['netbanking_axis'][1]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['claimsFile']));
 
-        $refundsFileContents = file($data['netbanking_axis'][0]);
+        $refundsFileContents = file($data['netbanking_axis']['refundsFile']);
 
-        $claimsFileContents = file($data['netbanking_axis'][1]);
+        $claimsFileContents = file($data['netbanking_axis']['claimsFile']);
 
+        sd($refundsFileContents, $claimsFileContents);
         // 2 refunds + 1 initial line
         assert(count($refundsFileContents) === 3);
 
