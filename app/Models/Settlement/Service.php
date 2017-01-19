@@ -129,7 +129,7 @@ class Service extends Base\Service
 
         $amount = $input['amount']/100;
 
-        return (new Icici\NodalAccount)->generateTransferFile($input['amount']);
+        return (new Icici\NodalAccount)->generateTransferFile($amount);
     }
 
     public function calculatePrevousSettlementFees()
