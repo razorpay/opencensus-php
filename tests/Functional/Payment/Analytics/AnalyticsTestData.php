@@ -1,5 +1,6 @@
 <?php
 
+// @codingStandardsIgnoreStart
 return [
 
     'testPaymentAnalytics' => [
@@ -30,6 +31,19 @@ return [
         'integration_version' => '0.1.2',
     ],
 
+    'testHttpRequestDataForS2sPayments' => [
+        'user_agent' => null,
+        'browser' => null,
+        'os' => null,
+        'device' => 'desktop',
+        'library' => 'direct',
+        'library_version' => null,
+        'platform' => null,
+        'platform_version' => null,
+        'integration' => null,
+        'integration_version' => null,
+    ],
+
     'testPaymentAnalyticsOtp' => [
         'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
         'referer' => 'https://pay.com/demo',
@@ -55,7 +69,7 @@ return [
     ],
 
     'testHttpRequestDataForInvalidData' => [
-        'browser' => 'others',
+        'browser' => null,
         'os' => 'others',
         'device' => 'others',
         'library' => 'others',
@@ -63,3 +77,4 @@ return [
         'integration' => 'others',
     ]
 ];
+// @codingStandardsIgnoreEnd

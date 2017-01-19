@@ -24,7 +24,7 @@ return array(
         'url'       =>  'razorpay.com',
         'key'       =>  env('MAILGUN_SECRET'),
         'mock'      =>  env('MAILGUN_MOCK'),
-        'secret'    =>  '',
+        'secret'    =>  env('APP_MAILGUN_SECRET'),
         'from_name' =>  'Team Razorpay',
         'from_email' => 'support@razorpay.com'
     ),

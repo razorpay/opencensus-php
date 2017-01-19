@@ -64,6 +64,11 @@ class GatewayErrorException extends RecoverableException
         return false;
     }
 
+    public function setGatewayErrorCodeAndDesc($code, $desc)
+    {
+        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
+    }
+
     protected function isTwoFaError($errorCode)
     {
         return in_array($errorCode, $this->twoFaErrorCodes);

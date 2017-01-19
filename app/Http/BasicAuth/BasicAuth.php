@@ -103,7 +103,7 @@ class BasicAuth
      *
      * @var  Device\Entity
      */
-    private $device;
+    private $device = null;
 
     /**
      * Whether an internal app is doing an authentication

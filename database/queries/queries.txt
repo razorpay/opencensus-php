@@ -1509,6 +1509,31 @@ ALTER TABLE admin_tokens
 
 TRUNCATE TABLE admin_tokens;
 
+--- Queries to be run before deploying invoices-schema-fixes-2
+
+ALTER TABLE line_items ADD COLUMN name varchar(512) DEFAULT NULL AFTER entity_type;
+ALTER TABLE line_items ADD COLUMN description varchar(2048) DEFAULT NULL AFTER name;
+ALTER TABLE line_items ADD COLUMN amount int(11) DEFAULT NULL AFTER description;
+ALTER TABLE line_items ADD COLUMN currency char(3) DEFAULT NULL AFTER amount;
+
+ALTER TABLE line_items MODIFY COLUMN item_id char(14) DEFAULT NULL;
+
+UPDATE line_items li
+    JOIN items i on li.item_id = i.id
+SET
+    li.name = i.name,
+    li.description = i.description,
+    li.amount = i.amount,
+    li.currency = i.currency;
+
+--- Queries to be run after deploying invoices-schema-fixes-2
+
+ALTER TABLE line_items MODIFY COLUMN name varchar(512) NOT NULL;
+ALTER TABLE line_items MODIFY COLUMN amount int(11) NOT NULL;
+ALTER TABLE line_items MODIFY COLUMN currency char(3) NOT NULL;
+
+---
+
 ## Queries for PR:1978
 ALTER TABLE org_hostname
     DROP COLUMN deleted_at;

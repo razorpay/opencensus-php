@@ -198,6 +198,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'batch_setl_calc_previous_fees'           => ['post',     'batchsettlements/fees/previous',                 'SettlementController@postBatchSettlementCalculatePreviousFees'     ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -610,6 +611,7 @@ final class Route
         'setl_post_details_old',
         'setl_fixer',
         'settlement_compute_tax',
+        'nodal_initiate_transfer',
         'batch_setl_calc_previous_fees',
         'batch_settlement_compute_tax',
         'payment_verify',
@@ -847,7 +849,6 @@ final class Route
         'invoice_view_live_post',
         'invoice_view_test_post',
         'sms_callback',
-        'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
@@ -906,6 +907,9 @@ final class Route
 
         'mailgun' => array(
             'reconciliate'
+        ),
+
+        'raven' => array(
         ),
 
         'hosted' => array(
