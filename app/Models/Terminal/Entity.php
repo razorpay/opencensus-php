@@ -210,7 +210,22 @@ class Entity extends Base\PublicEntity
 
     protected function getSubMerchants()
     {
-        return $this->merchants()->pluck(self::ID);
+        $subMerchants = $this->merchants()->get();
+
+        $subMerchants->transform(
+            function ($item, $key)
+            {
+                return [
+                    $item[Merchant\Entity::ID] =>
+                    [
+                        Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                        Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                        Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
+                    ]
+                ];
+            });
+
+        return $subMerchants->all();
     }
 
     public function isEnabled()
