@@ -27,7 +27,7 @@ class AdminController extends Controller
 
         $type = 'terminal';
 
-        $data = (new Admin\Service)->fetchEntityByIdWithFlag($type, $id, $subMerchantFlag);
+        $data = (new Admin\Service)->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
 
         return ApiResponse::json($data);
     }

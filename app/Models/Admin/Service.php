@@ -16,7 +16,7 @@ class Service extends Base\Service
         return $entity->toArrayAdmin();
     }
 
-    public function fetchEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
+    public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
     {
         $entity = $this->fetchEntityByNameAndId($entity, $id);
 
