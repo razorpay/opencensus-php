@@ -27,7 +27,6 @@ services:
       MYSQL_DATABASE: api_live
       MYSQL_USER: api_live
       MYSQL_PASSWORD: 123
-
   db_test:
     image: mysql:5.6
     ports:
