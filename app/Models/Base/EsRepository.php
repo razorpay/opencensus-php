@@ -68,6 +68,8 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function setFieldMappings() {}
 
+    public function updateQuery(& $query) {}
+
     public function search(string $entity, array $params, string $merchantId = null)
     {
         $this->setIndexName($this->mode . '_' . $entity);
@@ -85,9 +87,8 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $query = [
             'bool' => [
-                'should'               => $clauses,
-                'minimum_should_match' => 1,
-                'filter'               => $filters
+                'must'   => $clauses,
+                'filter' => $filters
             ],
         ];
 
@@ -160,6 +161,8 @@ class EsRepository extends \Razorpay\Spine\Repository
         array & $clauses,
         array & $filters)
     {
+        $params = array_dot($params);
+
         //
         // If merchand id is available, add it to filters
         //
@@ -264,23 +267,34 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function findForIndex(string $id)
     {
-        return array_only($this->find($id)->toArray(), $this->fields);
+        $query = $this->newQuery();
+
+        $this->updateQuery($query);
+
+        $entity = $query->find($id);
+
+        $serialized = array_dot($entity->toArray());
+
+        return array_only($serialized, $this->fields);
     }
 
     public function fetchForIndex(int $skip = 0, int $take = 100)
     {
-        $collection = $this->newQuery()
-                           ->skip($skip)
-                           ->take($take)
-                           ->get();
+        $query = $this->newQuery();
+
+        $this->updateQuery($query);
+
+        $collection = $query->skip($skip)
+                            ->take($take)
+                            ->get();
 
         $serialized = $collection->toArray();
 
         $mapper = function($v)
                   {
-                      $projected = array_only($v, $this->fields);
+                      $projected = array_only(array_dot($v), $this->fields);
 
-                      return array_dot($projected);
+                      return $projected;
                   };
 
         return array_map($mapper, $serialized);

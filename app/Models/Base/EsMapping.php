@@ -15,6 +15,14 @@ class EsMappping
         'index_options'   => 'offsets',
     ];
 
+    public static $booleanFieldMapping = [
+        'type' => 'boolean',
+    ];
+
+    public static $dateFieldMapping = [
+        'type' => 'date',
+    ];
+
     public static $defaultIndexSettings = [
         'analysis' => [
             'analyzer' => [

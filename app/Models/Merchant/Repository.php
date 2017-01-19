@@ -34,10 +34,13 @@ class Repository extends Base\Repository
         Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
         Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
         EsRepository::QUERY             => 'sometimes|string|min:1|max:100',
+        'merchant_detail'               => 'sometimes|array',
+        'merchant_detail.created_at'    => 'sometimes|string',
     );
 
     protected $esWhitelistedParams = [
         EsRepository::QUERY,
+        'merchant_detail',
     ];
 
     public function getSharedAccount()
