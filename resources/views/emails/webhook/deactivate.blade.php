@@ -24,8 +24,8 @@ To help you debug this further, here are a few more details about the failure ev
 
 <b>Timestamp:</b> {!! $date !!}<br>
 <b>Event:</b> {!! $event !!}<br>
-@if (isset($payment_id) === true)
-    <b>Payment Id:</b> {!! $payment_id !!}<br>
+@if (isset($entity_id) === true)
+    <b> {!! $field_description !!}:</b> {!! $entity_id !!}<br>
 @endif
 <br>
 

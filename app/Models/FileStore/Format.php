@@ -7,6 +7,7 @@ use RZP\Exception;
 class Format
 {
     const CSV   = 'csv';
+    const ENC   = 'enc';
     const JPG   = 'jpg';
     const JPEG  = 'jpeg';
     const PDF   = 'pdf';
@@ -20,6 +21,7 @@ class Format
 
     const SUPPORTED_EXTENSION_TYPES = [
         self::CSV,
+        self::ENC,
         self::JPG,
         self::JPEG,
         self::PDF,
@@ -32,6 +34,7 @@ class Format
 
     const VALID_EXTENSION_MIME_MAP = [
         self::CSV   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
+        self::ENC   => ['application/octet-stream'],
         self::JPG   => ['image/jpeg'],
         self::JPEG  => ['image/jpeg'],
         self::PDF   => ['application/pdf', 'application/x-pdf'],
@@ -44,6 +47,7 @@ class Format
 
     const VALID_LOCAL_EXTENSIONS = [
         self::CSV,
+        self::ENC,
         self::TXT,
         self::XLSX,
     ];
