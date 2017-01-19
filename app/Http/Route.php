@@ -14,7 +14,6 @@ final class Route
      | make sure to run the full test suite
      */
 
-    // @codingStandardsIgnoreStart
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
@@ -412,7 +411,6 @@ final class Route
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
     );
-    // @codingStandardsIgnoreEnd
 
     public static $public = array(
         'checkout',
@@ -1029,7 +1027,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -1046,7 +1044,7 @@ final class Route
         return $url;
     }
 
-    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
         if ($key === '')
         {
@@ -1056,7 +1054,7 @@ final class Route
         return $this->getUrl($routeName, $parameters, $key);
     }
 
-    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = [])
     {
         $key = $this->ba->getPublicKey();
 
@@ -1069,7 +1067,7 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
     {
         if ($key === '')
         {
