@@ -40,6 +40,8 @@ class BasicAuth
 
     const HMAC_ALGO = 'sha256';
 
+    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
+
     /**
      * The application instance.
      *
@@ -52,10 +54,12 @@ class BasicAuth
      * basic auth.
      * @var array
      */
-    private $creds = array(
-        'key' => '',
-        'public_key' => '',
-        'secret' => '');
+    private $creds = [
+        'key'           => '',
+        'public_key'    => '',
+        'secret'        => '',
+        'account_key'   => '',
+    ];
 
     /**
      * Key used for authentication
@@ -195,6 +199,8 @@ class BasicAuth
 
         $secret = $this->request->getPassword();
 
+        $linkedAccId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
+
         if (($key === null) and
             ($secret === null))
         {
@@ -202,7 +208,15 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+
         $this->creds['public_key'] = $key;
+
+        $account = $this->checkAndSetAccountKey($linkedAccId);
+
+        if ($account !== null)
+        {
+            return $account;
+        }
 
         return $this->checkAndSetKeyId($key);
     }
@@ -225,6 +239,23 @@ class BasicAuth
         }
 
         $this->creds['key'] = $keyId;
+    }
+
+    protected function checkAndSetAccountKey($accountKey)
+    {
+        if ($accountKey === null)
+        {
+            $this->creds['account_key'] = '';
+
+            return;
+        }
+
+        if ($this->verifyAccountKey($accountKey) === false)
+        {
+            return $this->invalidAccountKey();
+        }
+
+        $this->creds['account_key'] = $accountKey;
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -493,7 +524,7 @@ class BasicAuth
     {
         $route = $this->getCurrentRouteName();
 
-        // Get an array of $features assigned to a route name
+        // Get an array of $features assigned to a route
         // when current route is defined in $featureToAllowedRoutesMap
         $features = $this->route->getFeaturesForRoute();
 
@@ -534,6 +565,26 @@ class BasicAuth
     protected function verifyKeyPrefix($key)
     {
         return (substr($key, 0, 4) === 'rzp_');
+    }
+
+    protected function verifyAccountKey($key)
+    {
+        $delimiter = Merchant\AccountEntity::getDelimiter();
+
+        $sign = Merchant\AccountEntity::getSign();
+
+        $idLength = Merchant\AccountEntity::ID_LENGTH;
+
+        $parts = explode($delimiter, $key);
+
+        if ((count($parts) !== 2) or
+            ($parts[0] !== $sign) or
+            (strlen($parts[1]) !== $idLength))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     protected function verifyAndSetMode($key)
@@ -617,6 +668,19 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($keyEntity);
+
+        $accountKey = $this->getAccountKey();
+
+        // If the linked-account header was sent, find and set that as the merchant
+        if ($accountKey !== '')
+        {
+            $account = $this->fetchAccountForMerchant($accountKey, $this->merchant);
+
+            if ($account !== null)
+            {
+                return $this->invalidAccountKey();
+            }
+        }
 
         return true;
     }
@@ -814,6 +878,11 @@ class BasicAuth
         return $this->creds['secret'];
     }
 
+    protected function getAccountKey()
+    {
+        return $this->creds['account_key'];
+    }
+
     public function getMode()
     {
         return $this->mode;
@@ -1001,6 +1070,18 @@ class BasicAuth
         return $this->merchant;
     }
 
+    protected function fetchAccountForMerchant(string $accountId, Merchant\Entity $merchant)
+    {
+        $merchant = $this->repo->merchant->fetchByAccountIdAndMerchant($accountId, $merchant);
+
+        if ($merchant === null)
+        {
+            return $this->invalidAccountKey();
+        }
+
+        $this->merchant = $merchant;
+    }
+
     protected function fetchAdminToken($token)
     {
         $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
@@ -1028,6 +1109,15 @@ class BasicAuth
     {
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
+
+        return ApiResponse::unauthorized(
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+    }
+
+    protected function invalidAccountKey()
+    {
+        // $this->trace->info(
+        //     TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
 
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
