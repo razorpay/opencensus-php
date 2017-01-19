@@ -483,9 +483,20 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
+        $orderId = $this->getOrderId();
+
+        //
+        // Order gets created when invoice moves in ISSUED state.
+        // Order Id will be null for invoices in draft status.
+        //
+        if ($orderId === null)
+        {
+            return null;
+        }
+
         $repo = App::getFacadeRoot()['repo'];
 
-        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+        $payment = $repo->payment->getCapturedPaymentForOrder($orderId);
 
         if ($payment !== null)
         {

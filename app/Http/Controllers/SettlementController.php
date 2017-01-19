@@ -180,4 +180,13 @@ class SettlementController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postInitiateTransfer()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->postInitiateTransfer($input);
+
+        return ApiResponse::json($data);
+    }
 }
