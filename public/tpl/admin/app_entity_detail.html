@@ -240,15 +240,17 @@
     <table class="table table-striped b-t b-light" ui-jq="footable">
       <thead>
         <tr>
-          <th>Merchant ID</th>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Website</th>
           <th data-sort-ignore="true">&nbsp;</th>
         </tr>
       </thead>
       <tbody>
-        <tr ng-repeat="merchantId in subMerchants">
-          <td>
-            {{ merchantId }}
-          </td>
+        <tr ng-repeat="subMerchant in subMerchants">
+          <td>{{ subMerchant.id }}</td>
+          <td>{{ subMerchant.name }}</td>
+          <td><a href="{{ subMerchant.website }}" target="_blank">{{ subMerchant.website }}</a></td>
           <td>
             <button class="btn btn-danger btn-xs" ng-click="deleteSubMerchant(merchantId)">
               Delete
