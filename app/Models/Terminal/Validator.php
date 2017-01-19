@@ -81,11 +81,11 @@ class Validator extends Base\Validator
     protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string|min:5',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|string|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:5',
-        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     ];
@@ -284,7 +284,7 @@ class Validator extends Base\Validator
                 'Category provided invalid for gateway',
                 Entity::NETWORK_CATEGORY,
                 [$input[Entity::NETWORK_CATEGORY]]);
-            }
+        }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)

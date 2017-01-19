@@ -754,7 +754,8 @@ class Gateway extends Base\Gateway
 
         $exception->setGatewayErrorCodeAndDesc($gatewayErrorCode, $gatewayErrorDesc);
 
-        if ($safeRetry)
+        if (($safeRetry === true) and
+            ($exception instanceof Exception\GatewayRequestException))
         {
             $exception->markSafeRetryTrue();
         }
