@@ -163,8 +163,10 @@
             <td>
               <select class="form-control" name="amount_range" ng-model="new_rule.amount_range"
                 ng-show="new_rule.amount_range_active">
-                <option value='low'>0-200000</option>
-                <option value='high'>200000-1000000000</option>
+                <option value='0-100000'>0-100000</option>
+                <option value='100000-200000'>100000-200000</option>
+                <option value='0-200000'>0-200000</option>
+                <option value='200000-1000000000'>200000-1000000000</option>
               </select>
             </td>
             <td>
@@ -209,7 +211,9 @@
             <td>{{new_plan.payment_issuer || 'Any'}}</td>
             <td>{{new_plan.international === "1" ? 'True' : 'False'}}</td>
             <td>{{new_plan.amount_range_active === "1" ? 'True' : 'False'}}</td>
-            <td>{{new_plan.amount_range === "0" ? '0-200000' : '200000-1000000000'}}</td>
+              <span ng-show="new_plan.amount_range_active == '1'">
+                {{new_plan.amount_range}}
+              </span>
             <td>{{new_plan.percent_rate/100}} %</td>
             <td>{{new_plan.fixed_rate/100 | rupee:"INR "}}</td>
           </tr>
@@ -259,9 +263,11 @@
               </select>
             </td>
             <td>
-              <select class="form-control" name="amount_range" ng-model="new_plan.amount_range">
-                <option value='low'>0-200000</option>
-                <option value='high'>200000-1000000000</option>
+              <select class="form-control" name="amount_range" ng-model="new_plan.amount_range" ng-show="new_plan.amount_range_active">
+                <option value='0-100000'>0-100000</option>
+                <option value='100000-200000'>100000-200000</option>
+                <option value='0-200000'>0-200000</option>
+                <option value='200000-1000000000'>200000-1000000000</option>
               </select>
             </td>
             <td>

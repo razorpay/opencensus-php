@@ -17,6 +17,70 @@ use Trace;
 
 class Service extends Base\Service
 {
+    const STEP_MAP = [
+            'contact_name' => 1,
+            'contact_email' => 1,
+            'transaction_report_email' => 1,
+            'contact_mobile' => 1,
+            'contact_landline' => 1,
+
+            'business_type' => 2,
+            'business_name' => 2,
+            'business_dba' => 2,
+            'business_international' => 2,
+            'business_paymentdetails' => 2,
+            'business_model' => 2,
+            'business_registered_address' => 2,
+            'business_registered_state' => 2,
+            'business_registered_city' => 2,
+            'business_registered_pin' => 2,
+            'business_operation_address' => 2,
+            'business_operation_state' => 2,
+            'business_operation_city' => 2,
+            'business_operation_pin' => 2,
+            'business_doe' => 2,
+            'transaction_volume' => 2,
+            'transaction_value' => 2,
+            'promoter_pan' => 2,
+            'promoter_pan_name' => 2,
+
+            'business_website' => 3,
+            'website_about' => 3,
+            'website_contact' => 3,
+            'website_privacy' => 3,
+            'website_terms' => 3,
+            'website_refund' => 3,
+            'website_pricing' => 3,
+
+            'bank_branch_ifsc' => 4,
+            'bank_account_number' => 4,
+            'bank_account_type' => 4,
+            'bank_account_name' => 4,
+            'bank_beneficiary_address1' => 4,
+            'bank_beneficiary_address2' => 4,
+            'bank_beneficiary_address3' => 4,
+            'bank_beneficiary_city' => 4,
+            'bank_beneficiary_state' => 4,
+            'bank_beneficiary_pin' => 4,
+
+            'business_proof_url' => 5,
+            'business_pan_url' => 5,
+            'address_proof_url' => 5,
+            'promoter_address_url' => 5,
+    ];
+
+     const UPLOAD_KEYS = [
+         'business_proof_url'           => 'business_proof',
+         'business_operation_proof_url' => 'business_operation_proof',
+         'business_pan_url'             => 'business_pan_proof',
+         'address_proof_url'            => 'address_proof',
+         'promoter_proof_url'           => 'promoter_proof',
+         'promoter_pan_url'             => 'promoter_pan_proof',
+         'promoter_address_url'         => 'promoter_address_proof',
+    ];
+
+    const STEP_FINISHED  = [1, 2, 3, 4, 5];
+
     public function __construct()
     {
         $user = Auth::user();
@@ -29,57 +93,72 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchDetails()
+    public function fetchDetails($merchantId = null)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
-        $details = $merchantDetails->filterForAjax();
+        if ($merchantDetails !== null)
+        {
+            if ($merchantDetails['can_submit'] === true)
+            {
+                $merchantDetails['steps_finished'] = json_encode([1, 2, 3, 4, 5]);
 
-        $details['data'] = Validator::sortDataInSteps($details['data']);
+                $merchantDetails['activation_progress'] = 100;
+            }
+            else
+            {
+                $stepFinished = $this->calculateSteps($merchantDetails);
 
-        return $details;
+                if (count($stepFinished) !== 0)
+                {
+                    $unfinishedSteps = array_unique($stepFinished);
+
+                    $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
+
+                    $merchantDetails['steps_finished'] = json_encode($finishedSteps);
+
+                    $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
+                }
+
+            }
+        }
+
+        // Hack: Have to change the submitted and locked to int instead of boolean
+        if (isset($merchantDetails['submitted']))
+        {
+            $merchantDetails['submitted'] = ($merchantDetails['submitted'] === true)? 1 : 0;
+        }
+        if (isset($merchantDetails['locked']))
+        {
+            $merchantDetails['locked'] = ($merchantDetails['locked'] === true) ? 1: 0;
+        }
+
+        $merchantDetails['files'] = $this->getFileDetails($merchantId);
+
+        return $merchantDetails;
     }
 
     public function submitDetails()
     {
-        $error = array();
-        $data = array();
+        $input = ['submit' => true];
 
-        $merchantDetails = $this->merchantDetails;
+        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
 
-        if ($merchantDetails->isLocked())
+        if (empty($error))
         {
-            return $this->isLockedError();
-        }
-
-        if ((int)$merchantDetails->submitted === 0)
-        {
-            $missingSteps = $merchantDetails->getStepsNotFinished();
-
-            //
-            // No missing steps means all details succesfully submitted
-            // Mark submitted true
-            //
-            if (empty($missingSteps))
+            if ($merchantDetails['can_submit'] === false)
             {
-                $merchantDetails->markSubmitted();
-
-                // Updating the model
-                $merchantDetails->saveOrFail();
-
-                // Save to API
-                $input = ['submit' => true]; // mark submitted
-                $this->saveDetailsOnAPI($input);
-
-                $this->fireActivationTrigger($merchantDetails);
+                $error = [ "Some mandatory fields are required" ];
             }
             else
             {
-                foreach ($missingSteps as $step)
-                {
-                    $error[] = 'Step ' . $step . ' has not been saved or contains errors. ' .
-                               'Please save all steps before submission.';
-                }
+                $merchantDetails = $this->merchantDetails;
+
+                $merchantDetails->markSubmitted();
+
+                $merchantDetails->saveOrFail();
+
+                $this->fireActivationTrigger($merchantDetails);
             }
         }
 
@@ -136,7 +215,7 @@ class Service extends Base\Service
 
         if (empty($error))
         {
-            $merchantDetails->addStepToStepsFinished(5);
+            // $merchantDetails->addStepToStepsFinished(5);
 
             $merchantDetails->saveOrFail();
         }
@@ -319,8 +398,39 @@ class Service extends Base\Service
         return $error;
     }
 
+    public function getDetailsFromAPI($merchantId = null)
+    {
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->id;
+        }
+
+        Trace::debug('MISC_TRACE_CODE', [
+            'info'     => "Fetching merchant details from API",
+            'merchant' => $merchantId,
+        ]);
+
+        $this->setApiCredentials($merchantId);
+
+        list($error, $merchantDetails) = $this->api
+                                              ->merchantDetail
+                                              ->fetchDetails();
+
+        if (empty($error) === false)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while fetching merchant details from API",
+                    'exception' => $error,
+            ]);
+        }
+
+        return $merchantDetails;
+    }
+
     public function saveDetailsOnAPI(array $input, $merchantId = null)
     {
+        $input = $this->unsetExtraValues($input);
+
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
@@ -339,6 +449,8 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
+
+        return [$error, $merchantDetails];
     }
 
     public function updateMerchantByAdminOnAPI(array $input, $merchantId)
@@ -365,5 +477,102 @@ class Service extends Base\Service
         $response = $this->api
                          ->merchantDetail
                          ->uploadActivationFile($this->merchant['id'], $input);
+    }
+
+    protected function unsetExtraValues(array $input)
+    {
+        unset($input['1']);
+        unset($input['2']);
+        unset($input['3']);
+        unset($input['4']);
+        unset($input['5']);
+        unset($input['6']);
+        unset($input['steps_finished']);
+        unset($input['submitted']);
+        unset($input['submitted_at']);
+        unset($input['created_at']);
+        unset($input['updated_at']);
+        unset($input['verification']);
+        unset($input['can_submit']);
+        unset($input['bank_account_number_confirmation']);
+        unset($input['locked']);
+        unset($input['activation_progress']);
+        unset($input['agree_terms']);
+        unset($input['files']);
+
+        if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
+        {
+            unset($input['transaction_volume']);
+        }
+
+        if (isset($input['transaction_value']) && $input['transaction_value'] === '')
+        {
+            unset($input['transaction_value']);
+        }
+
+        if (isset($input['business_international']))
+        {
+            $input['business_international'] = intval($input['business_international']);
+        }
+
+        return $input;
+
+    }
+
+    public function saveMerchantDetails(array $input)
+    {
+        $merchantDetails = $this->merchantDetails;
+
+        $merchantDetails->fill($input);
+
+        $merchantDetails->saveOrFail();
+    }
+
+    protected function calculateSteps(array $response = null)
+    {
+        $stepFinished = [];
+
+        if ($response === null)
+        {
+            return $stepFinished;
+        }
+
+        if (isset($response['verification']['required_fields']))
+        {
+            foreach ($response['verification']['required_fields'] as $key)
+            {
+                if (array_key_exists($key, self::STEP_MAP))
+                {
+                    $stepFinished[] = self::STEP_MAP[$key];
+                }
+            }
+        }
+
+        return $stepFinished;
+    }
+
+
+    protected function getFileDetails($merchantId)
+    {
+        if ($merchantId === null)
+        {
+            $merchantId = $this->merchant->id;
+        }
+
+        $merchantDetail = Entity::findorfail($merchantId);
+
+        $merchantDetailArr = $merchantDetail->toArray();
+
+        $fileResponse = [];
+
+        foreach (self::UPLOAD_KEYS as $key => $value)
+        {
+            if (isset($merchantDetailArr[$key]))
+            {
+                $fileResponse[] = $value;
+            }
+        }
+
+        return $fileResponse;
     }
 }

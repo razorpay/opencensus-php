@@ -17,7 +17,7 @@ class Entity extends Base\Entity
 
     protected $table = 'merchants';
 
-    protected $hidden = array('password', 'remember_token');
+    protected $hidden = ['password', 'remember_token', 'confirm_token'];
 
     protected $fillable = array(
         'id',
@@ -25,7 +25,8 @@ class Entity extends Base\Entity
         'email',
         'password',
         'activated',
-        'archived_at'
+        'archived_at',
+        'suspended_at'
     );
 
     protected $appends = ['referrer', 'tags'];
@@ -558,6 +559,12 @@ class Entity extends Base\Entity
     public function archive()
     {
         $this->archived_at = time();
+        $this->save();
+    }
+
+    public function suspend()
+    {
+        $this->suspended_at = time();
         $this->save();
     }
 }

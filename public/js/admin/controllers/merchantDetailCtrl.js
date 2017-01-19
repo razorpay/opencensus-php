@@ -589,6 +589,40 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    $scope.suspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/suspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant suspended successfully', true);
+          $scope.merchant.details.suspended_at = Date.now() / 1000;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.unsuspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unsuspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant unsuspended successfully', true);
+          $scope.merchant.details.suspended_at = null;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
 
     // Assign pricing modal
     $scope.openAssignPricing = function () {
@@ -921,7 +955,7 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
-          $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
+          $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
           $scope.merchant.details.international = data.data.details.international;
           var merchantGroups = data.data.groups || [];

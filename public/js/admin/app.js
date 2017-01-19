@@ -64,7 +64,7 @@ var app = angular.module('app', [
     // $urlRouterProvider.otherwise('/app/dashboard');
 
     $stateProvider  //Logged in routes
-.state('app', {
+    .state('app', {
       abstract: true,
       url: '/app',
       templateUrl: 'tpl/admin/app.html',
@@ -201,8 +201,10 @@ var app = angular.module('app', [
     }).state('app.invitations.list', {
       url: '/list',
       templateUrl: 'tpl/admin/app_invitations_list.html'
-    }) //Guest Routes
-.state('access', {
+    })
+
+    //Guest Routes
+    .state('access', {
       url: '/access',
       template: '<div ui-view class="fade-in-right-big smooth"></div>',
       resolve: {

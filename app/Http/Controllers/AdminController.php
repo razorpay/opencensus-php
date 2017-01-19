@@ -216,9 +216,9 @@ class AdminController extends Controller
 
     public function getLogout()
     {
-        Auth::guard('api')->logout();
+        list($error, $data) = (new Admin\Service)->logout();
 
-        return AppResponse::jsonResponse([]);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getKeepAlive()
@@ -332,8 +332,14 @@ class AdminController extends Controller
 
     public function getMerchantArchive($id)
     {
-
         $error = (new Admin\Service)->archiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantSuspend($id)
+    {
+        $error = (new Admin\Service)->suspendMerchant($id);
 
         return AppResponse::jsonResponse($error);
     }
@@ -369,8 +375,14 @@ class AdminController extends Controller
 
     public function getMerchantUnarchive($id)
     {
-
         $error = (new Admin\Service)->unarchiveMerchant($id);
+
+        return AppResponse::jsonResponse($error);
+    }
+
+    public function getMerchantUnsuspend($id)
+    {
+        $error = (new Admin\Service)->unsuspendMerchant($id);
 
         return AppResponse::jsonResponse($error);
     }

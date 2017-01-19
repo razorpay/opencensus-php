@@ -20,6 +20,8 @@ class Actions
     const LIVE_DISABLED         = 'Live transactions disabled';
     const ARCHIVED              = 'Archived';
     const UNARCHIVED            = 'Unarchived';
+    const SUSPENDED             = 'Suspended';
+    const UNSUSPENDED           = 'Unsuspended';
     const FREE_CREDITS_EDIT     = 'Free Credits Edited';
     const TAGGED                = 'Tagged';
     const CONFIRMED             = 'Confirmed';

@@ -290,8 +290,9 @@ class Service extends Base\Service
         $user->merchants()->attach($merchant, ['role' => 'owner']);
 
         // Only send the confirmation email if the user isn't already confirmed
-        if ($user->confirm_token != NULL)
+        if ($user->getConfirmToken() != NULL)
         {
+            $user->token = $user->getConfirmToken();
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 

@@ -25,6 +25,9 @@ Route::group(['prefix' => 'admin'], function () {
     Route::get('/org', 'AdminController@getOrg');
     Route::get('/google_oauth_url', 'AdminController@getGoogleOAuthUrl');
     Route::post('/signin', 'AdminController@postSignin');
+
+    Route::post('/password/reset', 'PasswordController@forgotAdminPassword');
+    Route::post('/password/reset/{token}', 'PasswordController@resetAdminPassword');
 });
 
 Route::group([], function()
@@ -242,6 +245,8 @@ Route::group(['middleware'  =>  'admin'], function()
     Route::get('/admin/merchant/{id}/live/disable', 'AdminController@getMerchantLiveDisable');
     Route::get('/admin/merchant/{id}/archive', 'AdminController@getMerchantArchive');
     Route::get('/admin/merchant/{id}/unarchive', 'AdminController@getMerchantUnarchive');
+    Route::get('/admin/merchant/{id}/suspend', 'AdminController@getMerchantSuspend');
+    Route::get('/admin/merchant/{id}/unsuspend', 'AdminController@getMerchantUnsuspend');
     Route::post('/admin/merchant/{id}/methods', 'AdminController@postEditMethods');
     Route::put('/admin/merchants/{id}/credits', 'AdminController@editCredits');
     Route::post('/admin/merchants/{id}/international', 'AdminController@postSetMerchantInternational');

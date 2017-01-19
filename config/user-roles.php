@@ -14,9 +14,9 @@ $allButSellerApp = array_diff($all, ['sellerapp']);
 return [
     'dashboard'                 => $readers,
     'edit_webhooks'             => ['owner', 'manager', 'admin'],
-    'batch_fetch_multiple'      => $allButSellerApp,
-    'batch_fetch_single'        => $allButSellerApp,
-    'batch_download'            => $allButSellerApp,
+    'batch_fetch_multiple'      => $readers,
+    'batch_fetch_single'        => $readers,
+    'batch_download'            => $readers,
     'batch_upload'              => $writers,
     'batch_retry'               => $writers,
     'payment_get_single'        => $allButSellerApp,
