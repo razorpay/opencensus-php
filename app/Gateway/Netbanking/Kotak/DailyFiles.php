@@ -14,18 +14,25 @@ class DailyFiles extends Base\DailyFiles
         // separate mail we will have to send them separately
         $tpvTerminals = $this->repo->terminal->getTpvTerminalIdsForGateway($this->gateway);
 
+        $tpvTerminals = $tpvTerminals->map(function($item){return $item->getId();})->all();
+
         $nonTpvTerminals = $this->repo->terminal->getTerminalIdsForGateway($this->gateway, $tpvTerminals);
 
-        $this->generateMail($from, $to, $tpvTerminals);
+        $nonTpvTerminals = $nonTpvTerminals->map(function($item){return $item->getId();})->all();
 
-        $this->generateMail($from, $to, $nonTpvTerminals);
+        $tpvFiles = $this->generateMail($from, $to, $tpvTerminals);
+
+        $nonTpvFiles = $this->generateMail($from, $to, $nonTpvTerminals);
+
+        return ['refundsFile' => [ 'tpv' => $tpvFiles[0], 'nonTpv' => $nonTpvFiles[0]],
+                'claimsFile' => [ 'tpv' => $tpvFiles[1], 'nonTpv' => $nonTpvFiles[1]]];
     }
 
     public function generateMail($from, $to, $terminalIds)
     {
-        list($refundAmount, $refundsFile) = $this->getRefundsData($from, $to, $terminalIds);
+        list($refundAmount, $refundsFile) = $this->getRefundsDataForTerminals($from, $to, $terminalIds);
 
-        list($claimAmount, $claimsFile) = $this->getClaimsData($from, $to, $terminalIds);
+        list($claimAmount, $claimsFile) = $this->getClaimsDataForTerminals($from, $to, $terminalIds);
 
         $amount = [];
         $amount['claims'] = $claimAmount;
@@ -41,8 +48,13 @@ class DailyFiles extends Base\DailyFiles
         return [$refundsFile, $claimsFile];
     }
 
-    protected function getRefundsData($from, $to, $terminalIds)
+    protected function getRefundsDataForTerminals($from, $to, $terminalIds)
     {
+        if (empty($terminalIds) === true)
+        {
+            return;
+        }
+
         $refunds = $this->repo->refund->fetchRefundsForTerminalsBetweenTimestamps(
                                             Payment\Entity::BANK,
                                             $this->bankCode,
@@ -81,8 +93,13 @@ class DailyFiles extends Base\DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function getClaimsData($from, $to, $terminalIds)
+    protected function getClaimsDataForTerminals($from, $to, $terminalIds)
     {
+        if (empty($terminalIds) === true)
+        {
+            return;
+        }
+
         $status = [
             Payment\Status::AUTHORIZED,
             Payment\Status::CAPTURED,
