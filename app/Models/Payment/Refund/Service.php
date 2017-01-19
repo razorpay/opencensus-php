@@ -6,7 +6,8 @@ use Config;
 use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
-use RZP\Gateway\Netbanking;
+use RZP\Constants;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -111,10 +112,12 @@ class Service extends Base\Service
     protected function generateRefundFileForGateway($type, $gatewayCode, $from, $to, $gateway)
     {
         // Handling netbanking kotak using seperate file.
-        if (($gatewayCode === IFSC::KKBK) and
+        if ((in_array($gatewayCode, Payment\Gateway::$claimsFileToBank)) and
             ($type === Payment\Entity::BANK))
         {
-            $result = (new Netbanking\Kotak\DailyFiles)->generate($from, $to);
+            $class = $this->getDailyFilesNamespace($gatewayCode);
+
+            $result = (new $class($gatewayCode))->generate($from, $to);
 
             return $result;
         }
@@ -125,6 +128,13 @@ class Service extends Base\Service
 
             return $this->generateRefundFile($refunds);
         }
+    }
+
+    protected function getDailyFilesNamespace($gatewayCode)
+    {
+        $entity = Payment\Gateway::$netbankingToGatewayMap[$gatewayCode];
+
+        return Constants\Entity::$namespace[$entity] . '\\DailyFiles';
     }
 
     protected function generateRefundFile($refunds)
@@ -309,59 +319,42 @@ class Service extends Base\Service
         $totalCount = count($refundsWithoutTransaction);
 
         $this->trace->info(
-            TraceCode::TRANSACTION_REFUND_TRACE,
-            ['total_count' => $totalCount]
-        );
+            TraceCode::REFUNDED_TRANSACTIONS_MISSING,
+            [
+                'total_count' => $totalCount,
+                'refund_ids' => $refundsWithoutTransaction->pluck('id')->toArray(),
+            ]);
 
-        $successes = $failures = 0;
-        $failureRefundIds = [];
+        $summary = $this->createAllRefundsMissingTransaction($refundsWithoutTransaction, true);
 
-        foreach ($refundsWithoutTransaction as $refundWithoutTransaction)
+        return $summary;
+    }
+
+    public function createMissingTransactionsForGatewayRefunded()
+    {
+        $gatewayRefundedWithoutTxns = $this->repo->refund->fetchGatewayRefundedRefundsWithoutTxns();
+
+        $totalCount = count($gatewayRefundedWithoutTxns);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUNDED_TXNS_MISSING,
+            [
+                'total_count' => $totalCount,
+                'refund_ids' => $gatewayRefundedWithoutTxns->pluck('id')->toArray(),
+            ]);
+
+        $summary = $this->createAllRefundsMissingTransaction($gatewayRefundedWithoutTxns);
+
+        if ($totalCount === 0)
         {
-            $this->trace->info(
-                TraceCode::TRANSACTION_REFUND_TRACE,
-                $refundWithoutTransaction->toArray());
-
-            try
-            {
-                $payment = $refundWithoutTransaction->payment;
-
-                $this->repo->transaction(function() use($refundWithoutTransaction, $payment)
-                {
-                    $transaction = $this->getNewProcessor($refundWithoutTransaction->merchant)
-                                        ->createTransactionForRefund(
-                                            $refundWithoutTransaction, $payment);
-
-                    $this->repo->saveOrFail($refundWithoutTransaction);
-
-                    if ($transaction === null)
-                    {
-                        throw new Exception\LogicException('Should not have reached here.');
-                    }
-                });
-
-                $successes += 1;
-            }
-            catch (\Exception $ex)
-            {
-                $failures += 1;
-                $failureRefundIds[] = $refundWithoutTransaction->getId();
-
-                $this->trace->error(
-                    TraceCode::REFUND_TRANSACTION_FAILED,
-                    $refundWithoutTransaction->toArray()
-                );
-
-                $this->trace->traceException($ex);
-            }
+            return $summary;
         }
 
-        return [
-            'total_count'       => $totalCount,
-            'success_count'     => $successes,
-            'failure_count'     => $failures,
-            'failed_refund_ids' => $failureRefundIds,
-        ];
+        $message = 'Transactions created for gateways refunded refunds ' . $totalCount;
+
+        $this->slack->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
     }
 
     public function createGatewayRefundRecords($gateway)
@@ -416,7 +409,139 @@ class Service extends Base\Service
         $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $summary;
-     }
+    }
+
+    protected function createAllRefundsMissingTransaction(
+        Base\PublicCollection $refundsWithoutTxn,
+        bool $forceRefundTransaction = false)
+    {
+        $totalCount = count($refundsWithoutTxn);
+
+        $successes = $failures = 0;
+        $failureRefundIds = [];
+
+        foreach ($refundsWithoutTxn as $refundWithoutTxn)
+        {
+            $success = $this->createMissingRefundTransaction($refundWithoutTxn, $forceRefundTransaction);
+
+            if ($success === true)
+            {
+                $successes += 1;
+            }
+            else
+            {
+                $failures += 1;
+                $failureRefundIds[] = $refundWithoutTxn->getId();
+            }
+        }
+
+        return [
+            'total_count'       => $totalCount,
+            'success_count'     => $successes,
+            'failures_count'    => $failures,
+            'failed_refunds'    => $failureRefundIds
+        ];
+    }
+
+    protected function createMissingRefundTransaction(Entity $refundWithoutTxn, bool $forceRefundTransaction = false)
+    {
+        $this->trace->info(
+            TraceCode::REFUND_TRANSACTION_CREATE_REQUEST,
+            $refundWithoutTxn->toArray());
+
+        try
+        {
+            $payment = $refundWithoutTxn->payment;
+
+            $this->repo->transaction(
+                function()
+                use($refundWithoutTxn, $payment, $forceRefundTransaction)
+                {
+                    $transaction = $this->getNewProcessor($refundWithoutTxn->merchant)
+                                        ->createTransactionForRefund($refundWithoutTxn, $payment, $forceRefundTransaction);
+
+                    if ($transaction === null)
+                    {
+                        throw new Exception\LogicException('Transaction did not get created');
+                    }
+
+                    //
+                    // This needs to be saved here because of the association with
+                    // transaction which is set in the createTransactionForRefund function.
+                    //
+                    $this->repo->saveOrFail($refundWithoutTxn);
+                });
+
+            return true;
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::REFUND_TRANSACTION_CREATE_FAILED,
+                $refundWithoutTxn->toArray()
+            );
+
+            return false;
+        }
+    }
+
+    public function createBilldeskCancelledRefunds()
+    {
+        $cancelledBilldeskRefunds = $this->repo->billdesk->fetchMissingBilldeskCancelledRefunds();
+
+        $successes = $failures = 0;
+        $failureRefunds = [];
+
+        // We get all the Billdesk refunds. We return back data for applicable and if success.
+
+        foreach ($cancelledBilldeskRefunds as $cancelledBilldeskRefund)
+        {
+            $paymentId = $cancelledBilldeskRefund->getPaymentId();
+            $refundId = $cancelledBilldeskRefund->getRefundId();
+            $refundAmount = (int) ($cancelledBilldeskRefund->getRefundAmount() * 100);
+
+            $payment = $this->repo->payment->findOrFailPublic($paymentId);
+
+            $merchant = $payment->merchant;
+
+            try
+            {
+                $this->getNewProcessor($merchant)
+                     ->createRefundOnApiForCancelledBilldeskRefund($payment, $refundId, $refundAmount);
+
+                $successes += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failures += 1;
+
+                $failureRefunds[] = $refundId;
+
+                $this->trace->traceException($ex);
+            }
+        }
+
+        $total = count($cancelledBilldeskRefunds);
+
+        $summary = [
+            'total'             => $total,
+            'success'           => $successes,
+            'failures'          => $failures,
+            'failed_refunds'    => $failureRefunds,
+        ];
+
+        $this->trace->info(
+            TraceCode::MISSING_BILLDESK_CANCELLED_REFUNDS,
+            $summary);
+
+        $message = 'Missing billdesk cancelled refunds created';
+
+        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
+    }
 
     protected function getNewProcessor($merchant)
     {

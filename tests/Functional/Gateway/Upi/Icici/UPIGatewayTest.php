@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Cache;
 use Closure;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
@@ -136,6 +137,22 @@ EOT;
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testUpiVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'nemo@upi';
+
+        Cache::forever('excluded_psps', '["upi"]');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -450,6 +467,7 @@ EOT;
             'razorpay_payment_id',
             'razorpay_order_id',
             'razorpay_signature'],
+
         array_keys($response));
     }
 }

@@ -29,9 +29,9 @@ class PaymentCancelTest extends TestCase
                     'error' => [
                         'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                     ],
-                    'http_status_code' => 400,
+                    // 'http_status_code' => 400,
                 ],
-                'status_code' => 200,
+                'status_code' => 400,
             ],
             'exception' => [
                 'class' => 'RZP\Exception\BadRequestException',

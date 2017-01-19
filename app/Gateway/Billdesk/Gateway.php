@@ -27,6 +27,8 @@ class Gateway extends Base\Gateway
 
     protected $tpv;
 
+    protected $accountType;
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -114,6 +116,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
+        $this->setAccountType($input['terminal']);
+
         $this->setTpv($gatewayPayment);
 
         $requestContent = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
@@ -159,6 +163,10 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($input['terminal']);
 
         $verify = new Base\Verify($this->gateway, $input);
 
@@ -265,6 +273,48 @@ class Gateway extends Base\Gateway
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
         assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) ($refundEntity->getRefundAmount() * 100);
+        $processStatus = $refundEntity->getProcessStatus();
+        $refundStatus = $refundEntity->getRefStatus();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'process_status' => $processStatus,
+                'refund_status' => $refundStatus,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($processStatus !== 'Y') or
+            (($refundStatus !== RefundStatus::REFUNDED) and
+             ($refundStatus !== RefundStatus::CANCELLED)))
+        {
+            return false;
+        }
 
         return true;
     }
@@ -380,6 +430,10 @@ class Gateway extends Base\Gateway
      */
     protected function verifyIfRefunded(array $input)
     {
+        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
+
+        $this->setAccountType($input['terminal']);
+
         $verify = new Base\Verify($this->gateway, $input);
 
         $verify->payment = $this->repo->findByPaymentIdAndAction(
@@ -787,6 +841,17 @@ class Gateway extends Base\Gateway
 
         $content = explode('|', $responseBody);
 
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+        }
+
         $content = array_combine($fields, $content);
 
         $this->trace->info(
@@ -801,6 +866,8 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestContentArray($input)
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
+
+        $this->setAccountType($input['terminal']);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
@@ -925,24 +992,36 @@ class Gateway extends Base\Gateway
 
     protected function getSecurityId()
     {
-        if ($this->isTPVEnabled())
-        {
-            return $this->config['live_access_code_sec'];
-        }
+        $accountType = $this->accountType;
 
-        return $this->config['live_access_code'];
+        switch($accountType)
+        {
+            case AccountType::PRIMARY:
+                return $this->config["live_access_code"];
+
+            case AccountType::SECONDARY:
+                return $this->config["live_access_code_sec"];
+
+            case 'default':
+                return $this->config["live_access_code"];
+        }
     }
 
     public function getSecret()
     {
-        if ($this->isTPVEnabled())
+        $accountType = $this->accountType;
+
+        switch($accountType)
         {
-            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+            case AccountType::PRIMARY:
+                return $this->config["live_hash_secret"];
 
-            return $this->config['live_hash_secret_sec'];
+            case AccountType::SECONDARY:
+                return $this->config["live_hash_secret_sec"];
+
+            case 'default':
+                return $this->config["live_hash_secret"];
         }
-
-        return $this->config['live_hash_secret'];
     }
 
     protected function isTPVEnabled()
@@ -971,6 +1050,22 @@ class Gateway extends Base\Gateway
     protected function setTpv(Entity $gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    protected function setAccountType($terminal)
+    {
+        $merchantId = $terminal['gateway_merchant_id'];
+
+        $merchantIdKey = substr($merchantId, 0, 2);
+
+        if (in_array($merchantIdKey, array_keys(AccountType::ACCOUNT_MAP)) === true)
+        {
+            $this->accountType = AccountType::ACCOUNT_MAP[$merchantIdKey];
+        }
+        else
+        {
+            $this->accountType = AccountType::UNKNOWN;
+        }
     }
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)

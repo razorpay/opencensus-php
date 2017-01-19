@@ -16,6 +16,8 @@ class Entity
     // Core entities
     //
 
+    const P2P                   = 'p2p';
+    const VPA                   = 'vpa';
     const IIN                   = 'iin';
     const KEY                   = 'key';
     const CARD                  = 'card';
@@ -25,6 +27,7 @@ class Entity
     const ORDER                 = 'order';
     const TOKEN                 = 'token';
     const BATCH                 = 'batch';
+    const DEVICE                = 'device';
     const REFUND                = 'refund';
     const ADDRESS               = 'address';
     const BALANCE               = 'balance';
@@ -53,7 +56,7 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const BATCH_SETTLEMENT      = 'batch_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const ORG                   = 'org';
@@ -82,21 +85,26 @@ class Entity
     const WALLET                = 'wallet';
     const BILLDESK              = 'billdesk';
     const MOBIKWIK              = 'mobikwik';
+    const UPI_NPCI              = 'upi_npci';
     const AXIS_MIGS             = 'axis_migs';
     const FIRST_DATA            = 'first_data';
     const AXIS_GENIUS           = 'axis_genius';
     const NETBANKING            = 'netbanking';
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
+    const UPI_IDFC              = 'upi_idfc';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const NETBANKING_AXIS       = 'netbanking_axis';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
 
     public static $namespace = array(
+        self::P2P                   => \RZP\Models\P2p::class,
+        self::VPA                   => \RZP\Models\Upi\Vpa::class,
         self::UPI                   => \RZP\Gateway\Upi\Base::class,
         self::IIN                   => \RZP\Models\Card\IIN::class,
         self::EBS                   => \RZP\Gateway\Ebs::class,
@@ -122,7 +130,9 @@ class Entity
         self::OFFER                 => \RZP\Models\Offer::class,
         self::COUPON                => \RZP\Models\Offer\Coupon::class,
         self::MOBIKWIK              => \RZP\Gateway\Mobikwik::class,
+        self::UPI_NPCI              => \RZP\Gateway\Upi\Npci::class,
         self::UPI_ICICI             => \RZP\Gateway\Upi\Icici::class,
+        self::UPI_IDFC              => \RZP\Gateway\Upi\Idfc::class,
         self::AXIS_MIGS             => \RZP\Gateway\AxisMigs::class,
         self::FILE_STORE            => \RZP\Models\FileStore::class,
         self::FIRST_DATA            => \RZP\Gateway\FirstData::class,
@@ -137,8 +147,9 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
+        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
@@ -157,9 +168,12 @@ class Entity
     );
 
     protected static $repository = array(
+        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,

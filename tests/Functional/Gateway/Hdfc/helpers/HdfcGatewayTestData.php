@@ -69,7 +69,7 @@ return [
         'balance' => 1048850,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048850,
+//        'escrow_balance' => 1048850,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,

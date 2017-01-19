@@ -44,17 +44,18 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'                => '100000razorpay',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'Razorpay',
-                    'display_name'      => 'Razorpay Software Private Ltd',
-                    'email'             => 'admin@razorpay.com',
-                    'email_domains'     => 'razorpay.com',
-                    'allow_sign_up'     => true,
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => $currentTime,
-                    'updated_at'        => $currentTime,
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
                 ]
             );
 
@@ -76,6 +77,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I3fMI9AGKROX',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -85,6 +87,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I47LP6lyPYJR',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'beta-dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6GMmOpMJp40',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.dev',
                     'created_at'        => $currentTime,
@@ -103,6 +107,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6bfuaPQ72xa',
                     'org_id'            => '6dLbNSpv5XbCOG',
                     'hostname'          => 'dashboard-hdfc.razorpay.dev',
                     'created_at'        => $currentTime,
@@ -297,6 +302,12 @@ class DatabaseSeeder extends Seeder
                 $this->createTestTerminals();
 
                 $this->createLocalCustomer();
+
+                $this->createGlobalCustomer();
+
+                $this->createVpas();
+
+                $this->createDevice();
             }
 
             DB::table(Table::METHODS)->insert(
@@ -543,6 +554,68 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createGlobalCustomer()
+    {
+        DB::table(Table::CUSTOMER)->insert(
+            array(
+                'id'                    => 'TestGloblCstmr',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'name'                  => 'Global Citizen',
+                'contact'               => '+919876543210',
+                'email'                 => 'test4@razorpay.com',
+                'notes'                 => '{}',
+                'active'                => true,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createVpas()
+    {
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestSenderVpa',
+                'username'              => 'sender',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestReceivrVpa',
+                'username'              => 'receiver',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createDevice()
+    {
+        DB::table(Table::DEVICE)->insert(
+            array(
+                'id'                    => 'TestNokia3310',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'customer_id'           => 'TestGloblCstmr',
+                'imei'                  => 'TestImeiValue',
+                'status'                => 'verified',
+                'auth_token'            => 'auth_to_be_okay',
+                'verification_token'    => 'verin_this_together',
+                'upi_token'             => 'upi_dont_need_to',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
     protected function createTestTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -687,8 +760,6 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   => Gateway::FIRST_DATA,
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
-                'gateway_terminal_id'       => 'shared_terminal_first_data',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 )
@@ -770,6 +841,7 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
@@ -973,6 +1045,24 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_netbanking_kotak',
                 'gateway_terminal_id'   => 'demo_terminal_netbanking_kotak',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_netbanking_kotak_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
+    }
+
+    protected function createNetbankingAxisTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_axis',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),

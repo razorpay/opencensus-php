@@ -8,7 +8,7 @@ use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Card;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Currency\Currency;
 
 trait Enroll
 {

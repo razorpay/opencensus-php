@@ -21,9 +21,4 @@ class BadRequestException extends RecoverableException
 
         parent::__construct($message, $code);
     }
-
-    public function setData($data)
-    {
-        $this->data = $data;
-    }
 }

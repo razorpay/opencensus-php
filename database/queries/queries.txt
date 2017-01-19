@@ -1,4 +1,5 @@
-alter table cards add merchant_id varchar(14) after id;
+Alter table cards
+    add merchant_id varchar(14) after id;
 
 update cards, payments
     set cards.merchant_id = payments.merchant_id where cards.id = payments.card_id;
@@ -8,8 +9,10 @@ ALTER TABLE cards MODIFY COLUMN merchant_id VARCHAR(14) NOT NULL,
     REFERENCES merchants(id) ON DELETE RESTRICT;
 ALTER TABLE `cards` ADD INDEX `cards_network_index` (`network`);
 
-alter table transactions add channel VARCHAR(8) NOT NULL after escrow_balance;
-ALTER TABLE transactions ADD INDEX transactions_channel_index (`channel`);
+alter table transactions
+    add channel VARCHAR(8) NOT NULL after escrow_balance;
+ALTER TABLE transactions
+    ADD INDEX transactions_channel_index (`channel`);
 
 ALTER TABLE bank_accounts
     ADD COLUMN beneficiary_code VARCHAR(6) UNIQUE NOT NULL after account_number,
@@ -650,8 +653,10 @@ ALTER TABLE transactions
 
 ## These payments were successful and had transactions but were erroneously marked as failed
 ## due to lack of checks
-UPDATE payments SET status="captured", error_code=null, error_description=null WHERE id = "3pATJGnQjn8mTr";
-UPDATE payments SET status="captured", error_code=null, error_description=null WHERE id = "2mKynpq6sUkSmc";
+UPDATE payments
+    SET status="captured", error_code=null, error_description=null WHERE id = "3pATJGnQjn8mTr";
+UPDATE payments
+    SET status="captured", error_code=null, error_description=null WHERE id = "2mKynpq6sUkSmc";
 
 SELECT count(*) FROM transactions, payments, billdesk
     WHERE transactions.entity_id = payments.id AND
@@ -660,10 +665,14 @@ SELECT count(*) FROM transactions, payments, billdesk
         billdesk.RefStatus = "0699" AND
         payments.status = "refunded";
 
-UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5uvPsXKAB4Pl03"; # Only on live-prod
-UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w7PTSGM2iPQJg"; # Only on live-prod
+UPDATE payments
+    SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5uvPsXKAB4Pl03"; # Only on live-prod
 
-UPDATE payments SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w5mYVbtBu14oT"; # Only on live-prod
+UPDATE payments
+    SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w7PTSGM2iPQJg"; # Only on live-prod
+
+UPDATE payments
+    SET status = "captured", error_code=NULL, error_description=NULL, internal_error_code=NULL WHERE id = "5w5mYVbtBu14oT"; # Only on live-prod
 
 ALTER TABLE payments
     ADD COLUMN global_token VARCHAR(14) AFTER token;
@@ -671,61 +680,61 @@ ALTER TABLE payments
 ALTER TABLE mobikwik
     MODIFY COLUMN merchantname VARCHAR(255);
 
-###    1. Saved payments with app token set but global_customer_id null
-    UPDATE payments
+# 1. Saved payments with app token set but global_customer_id null
+
+UPDATE payments
     JOIN customer_apps as appTokens ON payments.app_token = appTokens.id
     SET payments.global_customer_id=appTokens.customer_id
     WHERE payments.app_token IS NOT NULL
-      AND payments.global_customer_id IS NULL
-      AND payments.method='card';
+        AND payments.global_customer_id IS NULL
+        AND payments.method='card';
 
-###    2. Token to global token
-    UPDATE payments
+# 2. Token to global token
+UPDATE payments
     JOIN tokens on tokens.token = payments.token
     SET payments.global_token = payments.token
     Where payments.app_token is not null
-    And payments.token is not null and payments.method='card'
-    AND tokens.merchant_id = "100000Razorpay";
+        And payments.token is not null and payments.method='card'
+        AND tokens.merchant_id = "100000Razorpay";
 
-    UPDATE payments
+UPDATE payments
     JOIN tokens on tokens.token = payments.token
     SET payments.token = null
     Where payments.app_token is not null
-    And payments.token is not null and payments.method='card'
-    AND tokens.merchant_id = "100000Razorpay";
+        And payments.token is not null and payments.method='card'
+        AND tokens.merchant_id = "100000Razorpay";
 
-###    3. Token not set for first time card save
-
+# 3. Token not set for first time card save
 ## For global card save
-    UPDATE payments
-        JOIN cards ON payments.card_id = cards.id
-        Join tokens on tokens.card_id = cards.global_card_id
-        SET payments.global_token=tokens.token
-        WHERE payments.save='1'
-          AND payments.method='card'
-          AND payments.app_token IS NOT NULL
-          AND payments.token IS NULL
-          AND payments.global_token IS NULL;
+UPDATE payments
+    JOIN cards ON payments.card_id = cards.id
+    Join tokens on tokens.card_id = cards.global_card_id
+    SET payments.global_token=tokens.token
+    WHERE payments.save='1'
+      AND payments.method='card'
+      AND payments.app_token IS NOT NULL
+      AND payments.token IS NULL
+      AND payments.global_token IS NULL;
 
-## For local card save
-    UPDATE payments
-        Join tokens on tokens.card_id=payments.card_id and payments.customer_id=tokens.customer_id
-        SET payments.token=tokens.token
-        WHERE payments.save='1'
-          AND payments.method='card'
-          AND payments.customer_id IS NOT NULL
-          AND payments.token IS NULL;
+# For local card save
+UPDATE payments
+    Join tokens on tokens.card_id=payments.card_id and payments.customer_id=tokens.customer_id
+    SET payments.token=tokens.token
+    WHERE payments.save='1'
+      AND payments.method='card'
+      AND payments.customer_id IS NOT NULL
+      AND payments.token IS NULL;
 
-### 4. Global Token not set for payumoney
-    UPDATE payments
-        JOIN tokens ON tokens.customer_id=payments.global_customer_id
-        SET payments.global_token=tokens.token
-        WHERE payments.method='wallet'
-            AND payments.wallet='payumoney'
-            AND payments.global_token IS NULL
-            AND payments.global_customer_id is not null
-            AND tokens.method='wallet'
-            AND tokens.wallet='payumoney';
+# 4. Global Token not set for payumoney
+UPDATE payments
+    JOIN tokens ON tokens.customer_id=payments.global_customer_id
+    SET payments.global_token=tokens.token
+    WHERE payments.method='wallet'
+        AND payments.wallet='payumoney'
+        AND payments.global_token IS NULL
+        AND payments.global_customer_id is not null
+        AND tokens.method='wallet'
+        AND tokens.wallet='payumoney';
 
 
 UPDATE payments
@@ -740,13 +749,13 @@ WHERE id = "5vm1q5UUkMNCYH";
 
 # Only on prod-live
 UPDATE payments
-SET status='captured'
-WHERE id in ('5vkfFk2gMAsQQ6', '5vkhhaXpfnIP2P', '5voX4wVLTQL4Ah', '5vzwGGrIQDC1zq', '5vzy5jSwfkWT9p', '5wEya72LCrdJZt', '5wRxKnISzqvGHo');
+    SET status='captured'
+    WHERE id in ('5vkfFk2gMAsQQ6', '5vkhhaXpfnIP2P', '5voX4wVLTQL4Ah', '5vzwGGrIQDC1zq', '5vzy5jSwfkWT9p', '5wEya72LCrdJZt', '5wRxKnISzqvGHo');
 
 # Only on prod-live
 UPDATE payments
-SET captured_at = null
-WHERE id IN ('5wXvl50HNO3ASS', '5wd8gmtfNsbCxt', '5wFT796oZC1XYo', '5wcYDQIp8N69Xh');
+    SET captured_at = null
+    WHERE id IN ('5wXvl50HNO3ASS', '5wd8gmtfNsbCxt', '5wFT796oZC1XYo', '5wcYDQIp8N69Xh');
 
 ALTER TABLE cybersource
     ADD INDEX cybersource_ref_index (ref),
@@ -1070,10 +1079,10 @@ ALTER TABLE `payments`
     ADD INDEX `payments_verify_bucket_index` (`verify_bucket`),
     ADD INDEX `payments_gateway_index` (`gateway`);
 
----
-Following query is run because even though HDFC said the rupay payment
-was not captured, we marked the payment as authorized on our end.
-Hence, updating the payment status and deleting the corresponding transaction.
+
+# Following query is run because even though HDFC said the rupay payment
+# was not captured, we marked the payment as authorized on our end.
+# Hence, updating the payment status and deleting the corresponding transaction.
 
 UPDATE payments
 SET status = "failed",
@@ -1112,12 +1121,10 @@ DELETE FROM transactions WHERE id = "5vm2jUB8ckfcEW";
 
 # Escrow balance in the transaction and also merchant balance may get messed up
 # because of this. Since these are updated on authorize itself and not on capture, for rupay and maestro.
----
 
----
-Following query is run because even though HDFC said the maestro payment
-was not captured (purchased), we marked the payment as authorized on our end.
-Hence, updating the payment status and deleting the corresponding transaction.
+# Following query is run because even though HDFC said the maestro payment
+# was not captured (purchased), we marked the payment as authorized on our end.
+# Hence, updating the payment status and deleting the corresponding transaction.
 
 UPDATE payments
 SET status = "failed",
@@ -1153,61 +1160,64 @@ WHERE id = "525287";
 # their values are null in their entities.
 
 DELETE FROM transactions WHERE id = "5vlNg9WR5sOMrL";
----
 
----
-# The following two queries are run because transaction was created (via recon) and not associated with the payment.
-
-UPDATE payments
-SET transaction_id = '6YiwamKY8KrUao'
-WHERE id = '5MYZCAx3Is9RND';
+# The following two queries are run because transaction was created (via recon)
+# and not associated with the payment.
 
 UPDATE payments
-SET transaction_id = '6YizQlgBsrXxSb'
-WHERE id = '5b7Szpk8AU9ahw';
----
+    SET transaction_id = '6YiwamKY8KrUao'
+    WHERE id = '5MYZCAx3Is9RND';
 
----
+UPDATE payments
+    SET transaction_id = '6YizQlgBsrXxSb'
+    WHERE id = '5b7Szpk8AU9ahw';
+
 # These queries need to be run because these payments were done on an
 # authAndCapture Axis terminal and was not handled. We are not able to refund
 # them now because of that. And since these are in authorized state, they can be refunded
 # on our system without having to refund on the gateway (since it's on authAndCapture).
 
 UPDATE payments
-SET transaction_id = null
-WHERE id = "4SQ02CGsicBfB5";
+    SET transaction_id = null
+    WHERE id = "4SQ02CGsicBfB5";
 
-DELETE FROM transactions WHERE id = "4SQ1dr1zWn17nv";
-
-UPDATE payments
-SET transaction_id = null
-WHERE id = "4bxsGqsHFeV6Rw";
-
-DELETE FROM transactions WHERE id = "4bxuQq1asbow3U";
+DELETE FROM transactions
+    WHERE id = "4SQ1dr1zWn17nv";
 
 UPDATE payments
-SET transaction_id = null
-WHERE id = "4bztqiuhehhrGF";
+    SET transaction_id = null
+    WHERE id = "4bxsGqsHFeV6Rw";
 
-DELETE FROM transactions WHERE id = "4bzvEo2dECqAfN";
-
-UPDATE payments
-SET transaction_id = null
-WHERE id = "4lH7ZQDJow6hUC";
-
-DELETE FROM transactions WHERE id = "4lH9VU8axyicbn";
+DELETE FROM transactions
+    WHERE id = "4bxuQq1asbow3U";
 
 UPDATE payments
-SET transaction_id = null
-WHERE id = "4lQGbrSKA9Oasi";
+    SET transaction_id = null
+    WHERE id = "4bztqiuhehhrGF";
 
-DELETE FROM transactions WHERE id = "4lQHmjF5PLqryZ";
+DELETE FROM transactions
+    WHERE id = "4bzvEo2dECqAfN";
 
 UPDATE payments
-SET transaction_id = null
-WHERE id = "4lrNkMC1VI5F6v";
+    SET transaction_id = null
+    WHERE id = "4lH7ZQDJow6hUC";
 
-DELETE FROM transactions WHERE id = "4lrOqsJGzOLAxk";
+DELETE FROM transactions
+    WHERE id = "4lH9VU8axyicbn";
+
+UPDATE payments
+    SET transaction_id = null
+    WHERE id = "4lQGbrSKA9Oasi";
+
+DELETE FROM transactions
+    WHERE id = "4lQHmjF5PLqryZ";
+
+UPDATE payments
+    SET transaction_id = null
+    WHERE id = "4lrNkMC1VI5F6v";
+
+DELETE FROM transactions
+    WHERE id = "4lrOqsJGzOLAxk";
 
 ALTER TABLE payments
     ADD COLUMN cancellation_reason VARCHAR(255) AFTER error_description;
@@ -1222,19 +1232,16 @@ ALTER TABLE adjustment
 ALTER TABLE payments
     ADD COLUMN two_factor_auth VARCHAR(20) AFTER status;
 
-=======
 ALTER TABLE upi
     ADD COLUMN provider VARCHAR(50) DEFAULT NULL AFTER bank,
-    ADD COLUMN acquirer  VARCHAR(20) AFTER amount,
+    ADD COLUMN acquirer VARCHAR(20) AFTER amount,
     MODIFY COLUMN bank  VARCHAR(5) DEFAULT NULL;
-
-----
 
 ALTER TABLE payment_analytics
     ADD COLUMN merchant_id VARCHAR(14) AFTER payment_id,
     ADD CONSTRAINT payment_analytics_merchant_id_foreign FOREIGN KEY (merchant_id) REFERENCES merchants (id);
 
--- Queries around "invoices" prs deployment
+# Queries around "invoices" prs deployment
 
 ALTER TABLE `invoices` ADD COLUMN `ref_num`    char(14) DEFAULT NULL AFTER `id`;
 ALTER TABLE `invoices` ADD COLUMN `issued_at`  int(11)  DEFAULT NULL AFTER `scheduled_at`;
@@ -1255,7 +1262,7 @@ CREATE INDEX `line_items_entity_id_index`   ON `line_items` (`entity_id`);
 CREATE INDEX `line_items_entity_type_index` ON `line_items` (`entity_type`);
 
 
--- Run these queries post https://github.com/razorpay/api/pull/1575/ 's code deployment
+# Run these queries post https://github.com/razorpay/api/pull/1575/ 's code deployment
 
 ALTER TABLE `line_items` DROP FOREIGN KEY `line_items_invoice_id_foreign`;
 DROP INDEX `line_items_amount_index` ON `line_items`;
@@ -1269,42 +1276,44 @@ ALTER TABLE `line_items` MODIFY COLUMN `item_id`     char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_id`   char(14)    NOT NULL;
 ALTER TABLE `line_items` MODIFY COLUMN `entity_type` varchar(32) NOT NULL;
 
------
-
-
--- Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
+# Run these queries post https://github.com/razorpay/api/pull/1638 's code deployment
 
 alter table fees_breakup add unique fees_breakup_name_transaction_id_unique (name, transaction_id);
 
---Queries for updating credit_card, debit_card method
+# Queries for updating credit_card, debit_card method
 UPDATE merchant_banks SET credit_card = 0 WHERE card = 0;
 UPDATE merchant_banks SET debit_card = 0 WHERE card = 0;
 
---- Pre code deployment / https://github.com/razorpay/api/pull/1697
+# Pre code deployment / https://github.com/razorpay/api/pull/1697
 
 ALTER TABLE invoices ADD COLUMN description TEXT DEFAULT NULL AFTER customer_contact;
 ALTER TABLE invoices MODIFY COLUMN customer_id CHAR(14) DEFAULT NULL;
 
----
-
+# adds invoice id to payments
 ALTER TABLE payments
     ADD COLUMN invoice_id VARCHAR(14) AFTER order_id;
 ALTER TABLE payments
     ADD CONSTRAINT payments_invoice_id_foreign FOREIGN KEY (invoice_id) REFERENCES invoices(id);
 
---- Pre code deployment / Branch: invoices_rename_column
+# Pre code deployment / Branch: invoices_rename_column
 
-ALTER TABLE invoices ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
-ALTER TABLE invoices ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
---- UPDATE invoices SET receipt = ref_num LIMIT 1000;
+ALTER TABLE invoices
+    ADD COLUMN receipt VARCHAR(40) DEFAULT NULL AFTER id;
 
---- Post code deployment / Branch: invoices_rename_column
+ALTER TABLE invoices
+    ADD UNIQUE INDEX invoices_merchant_id_receipt_unique (merchant_id, receipt);
 
-ALTER TABLE invoices DROP INDEX invoices_merchant_id_ref_num_unique;
-ALTER TABLE invoices DROP COLUMN ref_num;
+UPDATE invoices
+    SET receipt = ref_num LIMIT 1000;
 
----
+# Post code deployment / Branch: invoices_rename_column
+ALTER TABLE invoices
+    DROP INDEX invoices_merchant_id_ref_num_unique;
 
+ALTER TABLE invoices
+    DROP COLUMN ref_num;
+
+# adds account number to billdesk
 ALTER TABLE billdesk
     ADD COLUMN AccountNumber VARCHAR(50) AFTER BankID;
 
@@ -1314,19 +1323,27 @@ UPDATE billdesk
 SET
     billdesk.AccountNumber = orders.account_number;
 
---- Pre deployment https://github.com/razorpay/api/pull/910
+# Pre code deployment / PR: https://github.com/razorpay/api/pull/1620
+
+ALTER TABLE invoices MODIFY COLUMN order_id CHAR(14) DEFAULT NULL;
+ALTER TABLE invoices MODIFY COLUMN amount BIGINT(20) DEFAULT NULL;
+ALTER TABLE invoices ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX invoices_deleted_at_index ON invoices (deleted_at);
+
+ALTER TABLE line_items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX line_items_deleted_at_index ON line_items (deleted_at);
+
+ALTER TABLE items ADD COLUMN deleted_at INT(11) DEFAULT NULL;
+CREATE INDEX items_deleted_at_index ON items (deleted_at);
+
+# Pre deployment https://github.com/razorpay/api/pull/910
 ALTER TABLE payments
     ADD COLUMN gateway_captured TINYINT AFTER auto_captured
     ADD INDEX payments_gateway_captured_index (gateway_captured);
----
 
---- Post code deployment / https://github.com/razorpay/api/pull/1732
-
+# Post code deployment / https://github.com/razorpay/api/pull/1732
 UPDATE invoices SET date = created_at WHERE date IS NULL LIMIT 3000;
 
----
-
-----
 # Following queries are executed for altering cybersource table
 # These changes have arised because of cybersource refactoring
 ALTER TABLE cybersource
@@ -1353,13 +1370,13 @@ ALTER TABLE cybersource
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
 
-----
+# Adds column tpv to terminals
 ALTER TABLE terminals
     ADD COLUMN tpv TINYINT(1) DEFAULT 0 AFTER shared;
 
 UPDATE terminals SET tpv = true WHERE id IN ('6ILLNfapHFQygK', '6GjFUas4Aqs26l');
 
-----
+# Adds auto refund delay column to merchant
 ALTER TABLE merchants
     ADD COLUMN auto_refund_delay INT DEFAULT NULL AFTER max_payment_amount;
 
@@ -1414,3 +1431,120 @@ ALTER TABLE payments
 
 ALTER TABLE refunds
     ADD COLUMN base_amount INTEGER UNSIGNED AFTER currency;
+
+ALTER TABLE bank_accounts
+    ADD COLUMN mobile_banking_enabled TINYINT(1) AFTER beneficiary_address4,
+    ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
+    MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
+
+ALTER TABLE payments
+    MODIFY contact VARCHAR(20);
+
+ALTER TABLE org_hostname
+    MODIFY COLUMN id CHAR(14);
+
+UPDATE org_hostname
+    SET id = '70I3fMI9AGKROX' WHERE hostname = 'dashboard.razorpay.com';
+
+UPDATE org_hostname
+    SET id = '70I47LP6lyPYJR' WHERE hostname = 'beta-dashboard.razorpay.com';
+
+UPDATE org_hostname
+    SET id = '70I6GMmOpMJp40' WHERE hostname = 'dashboard.razorpay.dev';
+
+UPDATE org_hostname
+    SET id = '70I6bfuaPQ72xa' WHERE hostname = 'dashboard-hdfc.razorpay.dev';
+
+# Queries to add Role and Department in merchant_details for new signup flow
+ALTER TABLE merchant_details
+    ADD COLUMN role VARCHAR (255) AFTER transaction_report_email,
+    ADD COLUMN department VARCHAR (255) AFTER role;
+
+# Queries to remove redundant features column in merchants table
+ALTER TABLE merchants
+    DROP COLUMN features;
+DELETE FROM features WHERE name='cardsaving';
+
+# Queries for PR:1943
+ALTER TABLE merchants
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer;
+ALTER TABLE transactions
+    ADD COLUMN fee_bearer TINYINT(1) NOT NULL DEFAULT 0 AFTER channel,
+    ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
+    ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
+UPDATE transactions SET credit_type = 'amount' WHERE gratis is true;
+UPDATE transactions SET credit_type = 'fee' WHERE fee_credits > 0;
+
+# Adds cross org access control via flag
+ALTER TABLE orgs
+    ADD COLUMN cross_org_access boolean default 0 NOT NULL AFTER ALLOW_SIGN_UP;
+
+UPDATE orgs
+    SET cross_org_access=1 WHERE id='100000razorpay';
+
+ALTER TABLE refunds
+    ADD COLUMN gateway_refunded TINYINT AFTER base_amount;
+ALTER TABLE refunds
+    ADD INDEX refunds_gateway_refunded_index (gateway_refunded);
+
+ALTER TABLE transactions
+    MODIFY COLUMN fee_bearer TINYINT(1) DEFAULT -1,
+    MODIFY COLUMN fee_model TINYINT(1) DEFAULT -1;
+
+UPDATE transactions
+    SET fee_bearer = '-1' WHERE type != 'payment';
+
+UPDATE transactions
+    SET fee_model = '-1' WHERE type != 'payment';
+
+# Changes Primary key to alpha numeric for amdin_tokens entity
+ALTER TABLE admin_tokens
+    MODIFY COLUMN id char(14);
+
+TRUNCATE TABLE admin_tokens;
+
+# Queries to be run before deploying invoices-schema-fixes-2
+ALTER TABLE line_items ADD COLUMN name varchar(512) DEFAULT NULL AFTER entity_type;
+ALTER TABLE line_items ADD COLUMN description varchar(2048) DEFAULT NULL AFTER name;
+ALTER TABLE line_items ADD COLUMN amount int(11) DEFAULT NULL AFTER description;
+ALTER TABLE line_items ADD COLUMN currency char(3) DEFAULT NULL AFTER amount;
+
+ALTER TABLE line_items MODIFY COLUMN item_id char(14) DEFAULT NULL;
+
+UPDATE line_items li
+    JOIN items i on li.item_id = i.id
+SET
+    li.name = i.name,
+    li.description = i.description,
+    li.amount = i.amount,
+    li.currency = i.currency;
+
+# Queries to be run after deploying invoices-schema-fixes-2
+ALTER TABLE line_items MODIFY COLUMN name varchar(512) NOT NULL;
+ALTER TABLE line_items MODIFY COLUMN amount int(11) NOT NULL;
+ALTER TABLE line_items MODIFY COLUMN currency char(3) NOT NULL;
+
+# Queries for PR:1978
+ALTER TABLE org_hostname
+    DROP COLUMN deleted_at;
+
+# Set of queries to change org_id column's length from 255 to 14
+ALTER TABLE org_hostname
+    DROP FOREIGN KEY org_hostname_org_id_foreign,
+    MODIFY COLUMN org_id char(14) NOT NULL;
+
+ALTER TABLE org_hostname
+    ADD CONSTRAINT org_hostname_org_id_foreign FOREIGN KEY(`org_id`) REFERENCES orgs(`id`) ON DELETE RESTRICT;
+
+# Adds batch id for daily settlement in settlement entity
+ALTER TABLE settlements
+    ADD COLUMN batch_settlement_id CHAR(14) AFTER bank_account_id,
+    ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE billdesk
+    ADD INDEX billdesk_refstatus_index (RefStatus);
+
+ALTER TABLE merchants
+    ADD COLUMN archived_at INT DEFAULT NULL AFTER activated_at,
+    ADD COLUMN suspended_at INT DEFAULT NULL AFTER archived_at;

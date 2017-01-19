@@ -47,7 +47,7 @@ return [
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048562,
+//        'escrow_balance' => 1048562,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => null,
@@ -68,7 +68,7 @@ return [
         'balance' => 1048562,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048562,
+//        'escrow_balance' => 1048562,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -198,9 +198,8 @@ return [
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'fee' => 0,
         'service_tax' => 0,
-        'escrow_balance' => 998562,
+//        'escrow_balance' => 998562,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => null,
@@ -255,6 +254,22 @@ return [
                 'success_count' => 1,
                 'failure_count' => 0,
             ],
+        ],
+    ],
+
+    'testPaymentVerifyError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => 'GATEWAY_ERROR_UNKNOWN_ERROR',
         ],
     ],
 

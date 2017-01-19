@@ -14,7 +14,6 @@ class Constants
     const S2SWALLET       = 's2swallet';
     const S2SUPI          = 's2supi';
     const SETL_REPORT     = 'setl_report';
-    const CARD_SAVING     = 'cardsaving';
     const NOFLASHCHECKOUT = 'noflashcheckout';
     const RECURRING       = 'recurring';
     const S2S             = 's2s';
@@ -31,7 +30,6 @@ class Constants
         self::S2SWALLET,
         self::S2SUPI,
         self::SETL_REPORT,
-        self::CARD_SAVING,
         self::NOFLASHCHECKOUT,
         self::RECURRING,
         self::S2S,
@@ -41,7 +39,7 @@ class Constants
         self::BROKING_REPORT,
     ];
 
-    // TODO: Use this instead of al;Features once in final code change pr
+    // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY           => true,
         self::WEBHOOKS        => true,
@@ -50,7 +48,6 @@ class Constants
         self::S2SWALLET       => true,
         self::S2SUPI          => true,
         self::SETL_REPORT     => true,
-        self::CARD_SAVING     => true,
         self::NOFLASHCHECKOUT => true,
         self::RECURRING       => true,
         self::S2S             => true,
@@ -61,17 +58,9 @@ class Constants
     ];
 
     public static $visibleFeaturesMap = [
-        'flashcheckout' => [
-            'feature'      => self::CARD_SAVING,
-            'display_name' => 'Flash Checkout'
-        ],
         'noflashcheckout' => [
             'feature'      => self::NOFLASHCHECKOUT,
             'display_name' => 'No Flash Checkout'
-        ],
-        'brokingreport' => [
-            'feature'       => self::BROKING_REPORT,
-            'display_name'  => 'Broking Report'
         ]
     ];
 

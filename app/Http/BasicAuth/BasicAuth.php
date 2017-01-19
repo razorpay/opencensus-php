@@ -30,6 +30,9 @@ class BasicAuth
      * Application proxy -
      * rzp_mode_merchantId:app_secret
      *
+     * Device -
+     * rzp_mode_keyId:device_token
+     *
      * Admin Auth
      * rzp_mode_admin:auth_token
      *
@@ -96,6 +99,13 @@ class BasicAuth
     private $type;
 
     /**
+     * Device being used in device auth routes
+     *
+     * @var  Device\Entity
+     */
+    private $device = null;
+
+    /**
      * Whether an internal app is doing an authentication
      * proxy to perform some action on merchant's
      * behalf
@@ -149,14 +159,14 @@ class BasicAuth
 
     /**
      * Contains valid lengths of key.
-     * rzp_mode - 3 + 1 + 4
-     * 3 + 1 + 4 + 1 + 24
-     * 3 + 1 + 4 + 1 + 14
-     * 3 + 1 + 4 + 1 + 5 (rzp_$mode_admin)
+     * rzp_mode            = 3 + 1 + 4
+     * rzp_mode_admin      = 3 + 1 + 4 + 1 + 5
+     * rzp_mode_keyId      = 3 + 1 + 4 + 1 + 24
+     * rzp_mode_merchantId = 3 + 1 + 4 + 1 + 14
      * @var array
      */
     protected static $validKeyLengths = [
-        8, 23, 33, 14
+        8, 14, 23, 33
     ];
 
     public function __construct($app)
@@ -176,6 +186,7 @@ class BasicAuth
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
         $this->merchant = null;
+        $this->device = null;
     }
 
     public function setCredentials()
@@ -395,6 +406,34 @@ class BasicAuth
         return ApiResponse::routeNotFound();
     }
 
+    public function deviceAuth()
+    {
+        $this->setType(Type::DEVICE_AUTH);
+
+        $res = $this->setCredentials();
+
+        if ($res !== null)
+        {
+            return $res;
+        }
+
+        if ($this->verifyKeyExistence() === true)
+        {
+            $this->fetchMerchantOfKey($this->key);
+
+            $response = $this->verifyDeviceToken();
+
+            if ($response === true)
+            {
+                return;
+            }
+
+            return $response;
+        }
+
+        return $this->invalidApiKey();
+    }
+
     /**
      * Allows requests with public keys to get through.
      * Also allows private key based requests too
@@ -571,6 +610,43 @@ class BasicAuth
     }
 
     /**
+     * Used for device verification. Checks
+     * that the device exists and belongs
+     * to the calling merchant
+     * @return boolean/Response
+     */
+    protected function verifyDeviceToken()
+    {
+        $keyEntity = $this->key;
+
+        $deviceToken = $this->getSecret();
+
+        if ($deviceToken === '')
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_API_SECRET_NOT_PROVIDED, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED);
+        }
+
+        $device = $this->repo->device->findByAuthToken($deviceToken);
+
+        $this->device = $device;
+
+
+        if (($device === null) or
+            ($keyEntity->merchant->getId() !== $device->merchant->getId()))
+        {
+            $this->trace->info(
+                TraceCode::BAD_REQUEST_INVALID_API_SECRET, ['key_id' => $this->getKey()]);
+
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET);
+        }
+    }
+
+    /**
      * Matches the secret provided against the list of
      * applications secrets with us. If any matches, then
      * that  particular app is allowed to continue
@@ -736,6 +812,11 @@ class BasicAuth
         return $this->merchant;
     }
 
+    public function getDevice()
+    {
+        return $this->device;
+    }
+
     public function getAdminToken()
     {
         return $this->adminToken;
@@ -850,6 +931,11 @@ class BasicAuth
     public function isPrivilegeAuth()
     {
         return ($this->type === Type::PRIVILEGE_AUTH);
+    }
+
+    public function isDeviceAuth()
+    {
+        return ($this->type === Type::DEVICE_AUTH);
     }
 
     public function isProxyOrPrivilegeAuth()

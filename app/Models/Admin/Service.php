@@ -11,6 +11,20 @@ class Service extends Base\Service
 {
     public function fetchEntityById($entity, $id)
     {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin();
+    }
+
+    public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
+    {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin($subMerchantFlag);
+    }
+
+    protected function fetchEntityByNameAndId($entity, $id)
+    {
         Entity::validateEntityOrFailPublic($entity);
 
         $entityClass = Entity::getEntityClass($entity);
@@ -24,7 +38,7 @@ class Service extends Base\Service
 
         $entity = $this->repo->$entity->findOrFailPublic($id);
 
-        return $entity->toArrayAdmin();
+        return $entity;
     }
 
     public function fetchMultipleEntities($entity, $input)
@@ -75,14 +89,5 @@ class Service extends Base\Service
         $validator->validateInput('mailgun_webhook', $input);
 
         return (new Mailgun)->processCallback($type, $input);
-    }
-
-    public function postInternationalRates($currency)
-    {
-        $currency = strtoupper($currency);
-
-        $data = (new ExchangeRate)->updateRates($currency);
-
-        return $data;
     }
 }

@@ -39,7 +39,13 @@ class PublicCollection extends Collection
 
     public function toArrayReport()
     {
-        return $this->itemsToArrayReport();
+        $data = $this->itemsToArrayReport();
+
+        // remove nulls
+        $data = array_filter($data);
+
+        // return the values (array_filter adds indexes for in between nulls)
+        return array_values($data);
     }
 
     public function toArrayGateway()
@@ -176,6 +182,6 @@ class PublicCollection extends Collection
 
     public static function isPublicCollection($object)
     {
-        return get_class($object) === static::class;
+        return (get_class($object) === static::class);
     }
 }

@@ -45,37 +45,46 @@ class Authenticate
 
         $ret = null;
 
-        if (in_array($route, Route::$internal))
+        if (in_array($route, Route::DISABLED_ROUTES, true))
+        {
+            return ApiResponse::routeDisabled();
+        }
+
+        if (in_array($route, Route::$internal, true))
         {
             $ret = $ba->appAuth();
         }
-        else if (in_array($route, Route::$private))
+        else if (in_array($route, Route::$private, true))
         {
             $ret = $ba->privateAuth();
         }
-        else if (in_array($route, Route::$public))
+        else if (in_array($route, Route::$public, true))
         {
             $ret = $ba->publicAuth();
         }
-        else if (in_array($route, Route::$publicCallback))
+        else if (in_array($route, Route::$publicCallback, true))
         {
             $ret = $ba->publicCallbackAuth();
         }
-        else if (in_array($route, Route::$proxy))
+        else if (in_array($route, Route::$proxy, true))
         {
             $ret = $ba->proxyAuth();
         }
-        else if (in_array($route, Route::$admin))
+        else if (in_array($route, Route::$device, true))
+        {
+            $ret = $ba->deviceAuth();
+        }
+        else if (in_array($route, Route::$admin, true))
         {
             $ret = $ba->adminAuth();
         }
-        else if (in_array($route, Route::$direct))
+        else if (in_array($route, Route::$direct, true))
         {
             ; // $ret = $ba->proxyAuth();
         }
         else
         {
-            return ApiResponse::routeNotFound();
+            $ret = ApiResponse::routeNotFound();
         }
 
         if ($ret !== null)

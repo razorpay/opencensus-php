@@ -91,11 +91,16 @@ class ApiServiceProvider extends BaseServiceProvider
             return new SegmentClient($app);
         });
 
+        $this->app->singleton('upi.client', function($app)
+        {
+            return new \Razorpay\UPI\Client;
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
 
-        $this->registerBitly();
+        $this->registerElfin();
 
         $this->registerExchange();
 
@@ -114,19 +119,21 @@ class ApiServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return array(
-            'mailgun',
-            'instance',
+            'api.mutex',
+            'bitly',
+            'card.tokenex',
+            'es',
             'exception.handler',
             'gateway',
-            'webhook.inferno',
-            'card.tokenex',
-            'api.mutex',
+            'instance',
+            'mailgun',
+            'maxmind',
             'raven',
             'repo',
-            'es',
-            'maxmind',
-            'bitly',
+            'elfin',
             'segment',
+            'upi.client',
+            'webhook.inferno',
             'exchange',
         );
     }
@@ -168,18 +175,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerBitly()
+    protected function registerElfin()
     {
-        $this->app->singleton('bitly', function($app)
+        $this->app->singleton('elfin', function($app)
         {
-            $bitlyMock = $app['config']->get('applications.bitly.mock');
+            $mock = $app['config']->get('applications.elfin.mock');
 
-            if ($bitlyMock === true)
+            if ($mock)
             {
-                return new Mock\Bitly($app);
+                return new Elfin\Mock\Service($app['config'], $app['trace']);
             }
 
-            return new Bitly($app);
+            return new Elfin\Service($app['config'], $app['trace']);
         });
     }
 

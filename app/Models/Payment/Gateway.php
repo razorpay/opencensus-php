@@ -18,24 +18,26 @@ class Gateway
     const AXIS_GENIUS        = 'axis_genius';
     const AXIS_MIGS          = 'axis_migs';
     const BILLDESK           = 'billdesk';
+    const CYBERSOURCE        = 'cybersource';
     const EBS                = 'ebs';
+    const FIRST_DATA         = 'first_data';
     const HDFC               = 'hdfc';
     const MOBIKWIK           = 'mobikwik';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_AXIS    = 'netbanking_axis';
+    const PAYTM              = 'paytm';
+    const SHARP              = 'sharp';
     const UPI_ICICI          = 'upi_icici';
-    const WALLET_OLAMONEY    = 'wallet_olamoney';
-    const WALLET_PAYZAPP     = 'wallet_payzapp';
-    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const UPI_IDFC           = 'upi_idfc';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
-    const CYBERSOURCE        = 'cybersource';
-    const FIRST_DATA         = 'first_data';
+    const WALLET_OLAMONEY    = 'wallet_olamoney';
+    const WALLET_PAYUMONEY   = 'wallet_payumoney';
+    const WALLET_PAYZAPP     = 'wallet_payzapp';
 
-    const NOT_SUPPORTED     = 'not_supported';
-    const SUPPORTED         = 'supported';
+    const NOT_SUPPORTED      = 'not_supported';
+    const SUPPORTED          = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -65,6 +67,7 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
@@ -99,6 +102,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
+            self::NETBANKING_AXIS,
         ),
 
         Method::WALLET => array(
@@ -118,7 +122,8 @@ class Gateway
         ),
 
         Method::UPI => array(
-            self::UPI_ICICI
+            self::UPI_ICICI,
+            self::UPI_IDFC,
         ),
     );
 
@@ -135,7 +140,9 @@ class Gateway
         self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
-        self::FIRST_DATA => [],
+        self::FIRST_DATA => [
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
+        ],
     ];
 
     /**
@@ -158,7 +165,8 @@ class Gateway
      * @var array
      */
     public static $asynchronous = array(
-        self::UPI_ICICI
+        self::UPI_ICICI,
+        self::UPI_IDFC,
     );
 
     /**
@@ -203,7 +211,10 @@ class Gateway
             Network::VISA),
         self::FIRST_DATA => array(
             Network::MC,
-            Network::VISA),
+            Network::VISA,
+            Network::MAES,
+            Network::RUPAY,
+        ),
     );
 
     public static $walletToGatewayMap = array(
@@ -218,6 +229,7 @@ class Gateway
 
     public static $upiToGatewayMap = array(
         Upi::ICICI  => Gateway::UPI_ICICI,
+        Upi::IDFC   => Gateway::UPI_IDFC,
     );
 
     /**
@@ -236,6 +248,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_AXIS,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -244,6 +257,7 @@ class Gateway
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
         self::UPI_ICICI,
+        self::UPI_IDFC,
     );
 
     /**
@@ -272,6 +286,16 @@ class Gateway
     );
 
     /**
+     * For the banks that need a claims file to be generated,
+     * we have a list of banks that support this feature
+     * @var array
+     */
+    public static $claimsFileToBank = [
+        IFSC::KKBK,
+        IFSC::UTIB,
+    ];
+
+    /**
      * Card gateways which support domestic payments in live mode.
      *
      * @var array
@@ -294,8 +318,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -329,8 +351,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -353,6 +373,7 @@ class Gateway
      */
     public static $netbankingToGatewayMap = array(
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK);
 
     /**

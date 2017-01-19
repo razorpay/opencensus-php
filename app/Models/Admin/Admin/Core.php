@@ -28,7 +28,7 @@ class Core extends Base\Core
         $this->associateRelevantEntitiesToAdmin($admin, $input);
 
         $admin = $this->repo->admin->findByIdAndOrgIdWithRelations(
-            $admin->getId(), $org->getId(), ['roles', 'groups']);
+            $admin->getId(), $org->getId(), [Entity::ROLES, Entity::GROUPS]);
 
         return $admin;
     }
@@ -37,11 +37,13 @@ class Core extends Base\Core
     {
         $token = new Token\Entity;
 
+        $token->generateId();
+
         $token->build($input);
 
         $token->admin()->associate($admin);
 
-        $token->saveOrFail();
+        $this->repo->saveOrFail($token);
 
         return $token;
     }
@@ -90,8 +92,8 @@ class Core extends Base\Core
         }
     }
 
-    public function passwordReset(
-        string $orgId,
+    public function updatePassword(
+        Entity $admin,
         array $input,
         bool $forgotPassword = true)
     {
@@ -99,18 +101,11 @@ class Core extends Base\Core
 
         $validator->validateInput('reset', $input);
 
-        $email = $input['email'];
-
-        $admin = $this->repo->admin->findByOrgIdAndEmail(
-            $orgId, $email, ['org']);
-
-        $admin->getValidator()->validateOrgSupportsPasswordReset(
-            $admin->org->getAuthType());
-
         $admin->setAuditAction(Action::RESET_PASSWORD);
 
         // Check if the pwd follows the auth policy guidelines
         $authPolicy = new AuthPolicy\Service;
+
         $authPolicy->validate($admin, $input['password']);
 
         // In case of forgotten passwords, oldPassword is not present.
@@ -123,7 +118,7 @@ class Core extends Base\Core
             $admin->setAuditAction(
                 Action::RESET_PASSWORD_INVALID_OLD_PASSWORD);
 
-            if($admin->matchPassword($oldPassword) === false)
+            if ($admin->matchPassword($oldPassword) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Old Password is incorrect');

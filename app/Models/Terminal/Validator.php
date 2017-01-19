@@ -46,6 +46,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
     ];
 
+    protected static $reassignRules = [
+        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
+    ];
+
     protected static $hdfcTerminalRules = [
         Entity::GATEWAY                     => 'required|in:hdfc',
         Entity::GATEWAY_MERCHANT_ID         => 'required|integer|digits_between:5,8',
@@ -77,11 +81,11 @@ class Validator extends Base\Validator
     protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|min:5',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|string|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:5',
-        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
     ];
@@ -177,6 +181,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
+    protected static $netbankingAxisTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_axis',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
     protected function validateGateway($input)
     {
         if (Payment\Gateway::isValidGateway($input['gateway']) === false)
@@ -258,8 +268,9 @@ class Validator extends Base\Validator
      * to decide validity.
      *
      * @param array $input
-     * @return void
-     * */
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateNetworkCategory($input)
     {
         if (empty($input[Entity::NETWORK_CATEGORY]) === true)
@@ -272,8 +283,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::NETWORK_CATEGORY,
-                [$input]);
-            }
+                [$input[Entity::NETWORK_CATEGORY]]);
+        }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)
@@ -297,7 +308,7 @@ class Validator extends Base\Validator
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();
-            $this->validateInput($gateway.'_edit_terminal', $input);
+            $this->validateInput($gateway . '_edit_terminal', $input);
         }
         else
         {

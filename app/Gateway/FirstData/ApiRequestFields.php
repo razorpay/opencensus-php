@@ -20,6 +20,7 @@ class ApiRequestFields
 
     const V1_CREDIT_CARD_TX_TYPE = 'v1:CreditCardTxType';
     const V1_TYPE                = 'v1:Type';
+    const V1_STORE_ID            = 'v1:StoreId';
     const V1_PAYMENT             = 'v1:Payment';
     const V1_CHARGE_TOTAL        = 'v1:ChargeTotal';
     const V1_CURRENCY            = 'v1:Currency';
@@ -31,4 +32,5 @@ class ApiRequestFields
     const A1_ACTION              = 'a1:Action';
     const A1_INQUIRY_ORDER       = 'a1:InquiryOrder';
     const A1_ORDER_ID            = 'a1:OrderId';
+    const A1_STORE_ID            = 'a1:StoreId';
 }
