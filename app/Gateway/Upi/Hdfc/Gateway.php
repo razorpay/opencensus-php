@@ -124,7 +124,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            TraceCode::GATEWAY_RESPONSE,
             [
                 'body'              => $responseBody,
                 'decrypted'         => $response,
@@ -396,7 +396,7 @@ class Gateway extends Base\Gateway
 
         $this->response = $response;
 
-        $content = $this->parseGatewayResponse($response->body);
+        $content = $this->parseGatewayResponse($response->body, Action::VERIFY);
 
         $verify->verifyResponse = $this->response;
 
@@ -417,7 +417,10 @@ class Gateway extends Base\Gateway
             $this->getMerchantId(),
             $input['payment']['id'],
             $gatewayPayment->getGatewayPaymentId(),
-            $gatewayPayment->getGatewayPaymentId(),
+            // This is the Reference ID field
+            // which is supposed to be empty for now
+            // Non-empty values give error
+            '',
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -443,14 +446,6 @@ class Gateway extends Base\Gateway
         $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
-        if ($content['success'] !== 'true')
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
-                $content['success'],
-                $content['message']);
-        }
-
         $status = VerifyResult::STATUS_MATCH;
 
         $verify->apiSuccess = true;
@@ -458,7 +453,7 @@ class Gateway extends Base\Gateway
 
         $attr = [];
 
-        if ($content['status'] === Status::SUCCESS)
+        if ($content[ResponseFields::STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }

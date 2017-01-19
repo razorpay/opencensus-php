@@ -23,10 +23,14 @@ class Validator extends Base\Validator
         'required|integer|max:9999|min:0'
     ];
 
-    protected static $verifyRules = array(
-        'merchantId'        => 'numeric|max:9999999999',
-        'merchantTranId'    => 'required|alpha_num|max:20',
-        'subMerchantId'     => 'sometimes|alpha_num|max:10',
-        'terminalId'        => 'sometimes|digits_between:1,10'
-    );
+    protected static $verifyRules = [
+        // Bank side Merchant Id
+        'required|alpha_num',
+        // RZP API Payment Id
+        'required|alpha_num|max:50',
+        // UPI Transaction Reference Id
+        'required|digits_between:3,18',
+        // Reference Id (Optional, empty string as of now)
+        'sometimes'
+    ];
 }

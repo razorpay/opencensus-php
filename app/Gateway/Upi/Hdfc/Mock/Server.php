@@ -5,18 +5,27 @@ namespace RZP\Gateway\Upi\Hdfc\Mock;
 use App;
 use Carbon\Carbon;
 use Gateway\Upi\Hdfc;
+use RZP\Gateway\Upi\Hdfc\Action;
 use phpseclib\Crypt\AES;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Upi\Base\Entity as UPIEntity;
 use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
+    /**
+     * How many legit (not "NA") fields
+     * are expected to be parsed from the
+     * incoming request
+     */
+    const REQUEST_FIELD_COUNT = [
+        Action::COLLECT     => 7,
+        Action::VERIFY      => 4
+    ];
     public function authorize($input)
     {
-        $input = $this->parseInput($input);
+        $input = $this->parseInput($input, Action::COLLECT);
 
         parent::authorize($input);
 
@@ -53,11 +62,6 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
-    public function verify($input)
-    {
-
-    }
-
     protected function makeResponse($data)
     {
         $content = implode('|', $data);
@@ -73,7 +77,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function parseInput($input)
+    protected function parseInput($input, $action = Action::COLLECT)
     {
         $input = json_decode($input, true);
 
@@ -83,7 +87,7 @@ class Server extends Base\Mock\Server
 
         $arr = explode('|', $res);
 
-        return array_slice($arr, 0, 7);
+        return array_slice($arr, 0, self::REQUEST_FIELD_COUNT[$action]);
     }
 
     public function decrypt($data)
@@ -109,6 +113,80 @@ class Server extends Base\Mock\Server
         $encrypted = $this->encrypt($json);
 
         return base64_encode($encrypted);
+    }
+
+    protected function getDefaultVerifyResponse(array $input, $payment): array
+    {
+        return [
+            'status'        => 'SUCCESS',
+            'message'       => 'Transaction success',
+            'resp_code'     => '00',
+            'npci_txn_id'   => random_int(100000000000, 999999999999),
+            'cust_ref_id'   => random_int(100000000000, 999999999999),
+            'payment_id'    => $input[1],
+            'txn_id'        => $input[2],
+            'payer_va'      => $payment['vpa'],
+            'approval_num'  => random_int(100000, 999999),
+            // "2017:01:19 01:39:03" am/pm is not specified
+            // The date is actually not the date of authorization, but the
+            // timestamp when the collect request was raised
+            'auth_time'     => date('Y:m:d h:i:s', $payment['created_at']),
+            'amount'        => ($payment['amount'] / 100),
+        ];
+    }
+
+    public function verify($input)
+    {
+        $input = $this->parseInput($input, Action::VERIFY);
+
+        parent::verify($input);
+
+        $this->validateActionInput($input);
+
+        $app = App::getFacadeRoot();
+
+        $paymentId = $input[1];
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultVerifyResponse($input, $payment);
+
+        if (isset($payment['notes']['status']) === true)
+        {
+            $response['resp_code'] = 'NA';
+
+            $response['approval_num'] = 'NA';
+
+            switch ($payment['notes']['status'])
+            {
+                case 'created':
+                    $response['status'] = 'PENDING';
+                    $response['message'] = 'Collect request sent to NPCI, waiting for approval.';
+                    break;
+
+                case 'failed':
+                    $status = 'FAILED';
+                    $message = 'Transaction fail';
+                    break;
+            }
+        }
+
+        $res = [
+            $response['txn_id'],
+            $response['payment_id'],
+            $response['amount'],
+            $response['auth_time'],
+            $response['status'],
+            $response['message'],
+            $response['resp_code'],
+            $response['approval_num'],
+            $response['payer_va'],
+            $response['cust_ref_id'],
+            // The Reference Id field always holds NA for now
+            'NA'
+        ];
+
+        return $this->makeResponse($res);
     }
 
     protected function getCipherInstance()

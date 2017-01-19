@@ -10,6 +10,6 @@ class Url
     const AUTHORIZE    = '/upi/meTransCollectSvc';
 
     // TODO: placeholders for now
-    const VERIFY       = '/status';
+    const VERIFY       = '/upi/transactionStatusQuery';
     const REFUND       = '/refund';
 }

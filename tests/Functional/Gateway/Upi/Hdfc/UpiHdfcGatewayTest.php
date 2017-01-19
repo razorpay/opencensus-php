@@ -60,6 +60,20 @@ class UpiHdfcGatewayTest extends TestCase
         return $paymentId;
     }
 
+    public function testVerifyPayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
     protected function checkPaymentStatus($id, $expectedStatus)
     {
         $response = $this->getPaymentStatus($id);
