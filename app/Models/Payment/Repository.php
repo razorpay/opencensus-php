@@ -56,10 +56,6 @@ class Repository extends Base\Repository
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
     );
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
         $timestamp = time() - Entity::PAYMENT_WINDOW;

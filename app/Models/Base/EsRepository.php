@@ -17,8 +17,8 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected static $table;
 
     const MAX_JOB_ATTEMPTS = 10;
-    const JOB_RELEASE_WAIT = 120; // In seconds
-
+    // This is in seconds
+    const JOB_RELEASE_WAIT = 120;
     const QUERY            = 'q';
 
     /**
@@ -36,7 +36,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        // TODO: Fix this!
+        /**
+         * TODO: Fix this!
+         */
         $this->mode = 'test';
 
         $this->trace = $app['trace'];
@@ -46,6 +48,115 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->setFieldMappings();
 
         $this->esDao = new EsDao();
+    }
+
+    protected function setFieldMappings() {}
+    protected function updateQuery(& $query) {}
+
+    public function getFields()
+    {
+        return $this->fields;
+    }
+
+    public function fetch($params, $merchantId)
+    {
+        $entities = new Base\PublicCollection;
+
+        if (isset($params['notes']))
+        {
+            $entities = $this->fetchNotes(static::$table, $params, $merchantId);
+        }
+
+        return $entities;
+    }
+
+    public function fetchNotes($typeName, $params, $merchantId)
+    {
+        $params['merchant_id'] = $merchantId;
+
+        $entities = new PublicCollection;
+
+        // Returns all the entity IDs matching the notes search.
+        $entityIds = $this->esDao->getNotes($typeName, $params);
+
+       if (empty($entityIds) === false)
+        {
+            // Get the entity data from MySQL.
+            $entities = $this->newQuery()->findOrFailPublic($entityIds, array('*'));
+
+            // MySQL should contain all entities present in ES.
+            if ($entities->count() !== count($entityIds))
+            {
+                throw new Exception\ServerErrorException(
+                    'Did not find corresponding entity data in MySQL' ,
+                    ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
+                    ['es_entity_ids' => $entityIds]);
+            }
+        }
+
+        return $entities;
+    }
+
+    // Currently storing only notes and merchant ID.
+    public function storeEntity($typeName, $entityArray, $esDao = null)
+    {
+        $params['notes'] = $entityArray['notes'];
+        $params['merchant_id'] = $entityArray['merchant_id'];
+        $params['entity_id'] = $entityArray['id'];
+
+        if ($esDao === null)
+        {
+            $esDao = $this->esDao;
+        }
+
+        $esDao->storeNotes($typeName, $params);
+    }
+
+    // Called through queue
+    // Called through the entity repository
+    public function fireStoreEntity($job, $data)
+    {
+        $esType = $data['es_type'];
+        $entityArray = $data['entity'];
+        $mode = $data['mode'];
+
+        try
+        {
+            $this->trace->info(
+                TraceCode::ES_SAVE_REQUEST,
+                $data);
+
+            // Creating a new EsDao object because,
+            // in the queue flow, the mode needs to be passed
+            // to the constructor.
+            $esDao = new EsDao($mode);
+            // Calls the entity es repository
+            $this->storeEntity($esType, $entityArray, $esDao);
+
+            $job->delete();
+        }
+        catch (\Exception $ex)
+        {
+            $data['job_attempts'] = $job->attempts();
+
+            $this->trace->error(
+                TraceCode::ES_SAVE_FAILED,
+                [
+                    $data
+                ]
+            );
+
+            $this->trace->traceException($ex);
+
+            if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
+            {
+                $job->delete();
+            }
+            else
+            {
+                $job->release(self::JOB_RELEASE_WAIT);
+            }
+        }
     }
 
     public function setIndexName($indexName)
@@ -66,10 +177,6 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
     }
 
-    public function setFieldMappings() {}
-
-    public function updateQuery(& $query) {}
-
     public function search(string $entity, array $params, string $merchantId = null)
     {
         $this->setIndexName($this->mode . '_' . $entity);
@@ -87,8 +194,9 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $query = [
             'bool' => [
-                'must'   => $clauses,
-                'filter' => $filters
+                'should'               => $clauses,
+                'minimum_should_match' => 1,
+                'filter'               => $filters
             ],
         ];
 
@@ -161,8 +269,6 @@ class EsRepository extends \Razorpay\Spine\Repository
         array & $clauses,
         array & $filters)
     {
-        $params = array_dot($params);
-
         //
         // If merchand id is available, add it to filters
         //
@@ -284,17 +390,13 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->updateQuery($query);
 
-        $collection = $query->skip($skip)
-                            ->take($take)
-                            ->get();
+        $collection = $query->skip($skip)->take($take)->get();
 
         $serialized = $collection->toArray();
 
         $mapper = function($v)
                   {
-                      $projected = array_only(array_dot($v), $this->fields);
-
-                      return $projected;
+                      return array_only(array_dot($v), $this->fields);
                   };
 
         return array_map($mapper, $serialized);

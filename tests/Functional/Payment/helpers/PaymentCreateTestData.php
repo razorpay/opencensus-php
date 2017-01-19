@@ -71,20 +71,20 @@ return [
    ],
 
    'testCreatePaymentInEs' => [
-      'body' => [
-          [
-              'index' => [
-                  '_index' => "test_payment",
-                  '_type'  => "test_payment",
-              ],
-          ],
-          [
-              'merchant_id' => "10000000000000",
-              'notes' => [
-                  'merchant_order_id' => "random order id",
-              ],
-          ],
-      ]
+       'type' => 'payments',
+       'body' => [
+           'doc' => [
+               'notes' => [
+                   'merchant_order_id' => 'random order id'
+               ],
+           ],
+           'upsert' => [
+               'merchant_id' => '10000000000000',
+               'notes' => [
+                   'merchant_order_id' => 'random order id'
+               ]
+           ],
+       ],
    ],
 
    'testPaymentCreateCallingCallbackRouteTwiceForError' => [

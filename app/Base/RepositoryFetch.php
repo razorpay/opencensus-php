@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Base\EsRepository;
 
 trait RepositoryFetch
 {
@@ -16,6 +17,15 @@ trait RepositoryFetch
         'skip'          => 'integer');
 
     protected $originalFetchParamRules;
+
+    /**
+     * Temporary
+     */
+    protected $entitiesInOldFlow = [
+        Constants\Entity::ORDER,
+        Constants\Entity::PAYMENT,
+        Constants\Entity::REFUND,
+    ];
 
       // Merchant allowed
 //    protected $entityFetchParamRules = array();
@@ -83,26 +93,31 @@ trait RepositoryFetch
 
 
     /*
-     * Returns `false` if esWhitelistedParams are not set for the entity.
+     * Returns `false` if there is no es repo for the entity.
      * If default params such as 'from', 'to', 'skip' are present, it removes
      * them before checking. It also removes default params set for the entity, before checking.
-     * If the remaining params, after removing the default params, are present in esWhitelistedParams,
+     * If the remaining params, after removing the default params, are present in esFields,
      * ES Fetch is used.
      * Example : If query params contain notes and count, ES fetch is used, since count is part of default param
      * and is hence removed.
      * If query params contain notes and contact, ES fetch is not used, since contact is not part of either
-     * default param or esWhitelistedParams. For ES fetch to be used, all the params remaining after removing
-     * default params should be part of esWhitelistedParams.
-     * If query params contain status, ES fetch is not used, since it's not part of esWhitelistedParams.
+     * default param or esFields. For ES fetch to be used, all the params remaining after removing
+     * default params should be part of esFields.
+     * If query params contain status, ES fetch is not used, since it's not part of esFields.
      * If after removing the default params, no params are left, ES fetch is not used.
      */
     protected function isEsFetch($params)
     {
-        // Checks if esWhitelistedParams has been set for the entity.
-        if (isset($this->esWhitelistedParams) === false)
+        if ($this->doesEsRepoExists() === false)
         {
             return false;
         }
+
+        $this->setEsRepo();
+
+        $esFields = $this->esRepo->getFields();
+
+        $esFields[] = EsRepository::QUERY;
 
         // Gets the query param list without the default params
         $rawParams = array_diff_key($params, $this->originalFetchParamRules);
@@ -120,10 +135,10 @@ trait RepositoryFetch
             return false;
         }
 
-        // Checks if the raw query params are present in the esWhitelistedParams list.
-        // ($params - $esWhitelistedParams) should be 0.
+        // Checks if the raw query params are present in the esFields list.
+        // ($params - $esFields) should be 0.
         // Currently, not supporting ES+MySQL search through query params.
-        if (empty(array_diff_key($rawParams, array_flip($this->esWhitelistedParams))) === true)
+        if (empty(array_diff_key($rawParams, array_flip($esFields))) === true)
         {
             return true;
         }
@@ -133,9 +148,19 @@ trait RepositoryFetch
 
     protected function runEsFetch($params, $merchantId)
     {
-        $esRepo = $this->getEsRepoClass();
+        $entity = $this->entity;
 
-        return $esRepo->search($this->entity, $params, $merchantId);
+        if ($this->isEntityInOldEsFlow($entity) === false)
+        {
+            return $this->esRepo->search($entity, $params);
+        }
+
+        return $this->esRepo->fetch($params, $merchantId);
+    }
+
+    protected function isEntityInOldEsFlow(string $entity)
+    {
+        return in_array($entity, $this->entitiesInOldFlow, true);
     }
 
     protected function getEsRepoClass()
@@ -227,14 +252,13 @@ trait RepositoryFetch
 
     protected function customEsValidations($params)
     {
-        $esRepo = new $this->getEsRepoClass();
         foreach ($params as $key => $value)
         {
             $func = 'validateParam' . studly_case($key);
 
-            if (method_exists($esRepo, $func))
+            if (method_exists($this->esRepo, $func))
             {
-                $esRepo->$func([$key => $value]);
+                $this->esRepo->$func([$key => $value]);
             }
         }
     }

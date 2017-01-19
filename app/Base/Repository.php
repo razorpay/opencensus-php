@@ -26,6 +26,8 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected $manager;
 
+    protected $esRepo;
+
     public function __construct()
     {
         parent::__construct();
@@ -103,16 +105,20 @@ class Repository extends \Razorpay\Spine\Repository
         // Saves the entity in MySql.
         $entity->saveOrFail($options);
 
-        // [Queue] Saves in ES if certain conditions are met.
-        $this->syncToEs($entity, $dirty);
+        // [Queue] saves in ES if certain conditions are met.
+        $this->saveInEs($entity, $dirty);
+
+        /**
+         * Above one should be removed later, once we migrate notes to the new flow.
+         */
+        $this->syncToEs($entity);
     }
 
     public function deleteOrFail($entity)
     {
         parent::deleteOrFail($entity);
 
-        // [Queue] Removes documetn from ES
-        $this->syncToEs($entity, [], 'delete');
+        $this->syncToEs($entity, 'delete');
     }
 
     public function sync($entity, $relation, $ids = [])
@@ -228,9 +234,54 @@ class Repository extends \Razorpay\Spine\Repository
                     ->merchantId($merchantId);
     }
 
-    protected function syncToEs($entity, $dirty = [], $action = 'upsert')
+    protected function saveInEs($entity, $dirty)
     {
-        if (isset($this->esWhitelistedParams) === false)
+        if ($this->doesEsRepoExists() === false)
+        {
+            return;
+        }
+
+        $this->setEsRepo();
+
+        try
+        {
+            if (empty(array_intersect(array_keys($dirty), $this->esRepo->getFields())) === false)
+            {
+                $esRepoClassPath = $this->getEsRepoClassPath();
+
+                $esType = $this->getEsType();
+
+                $queueData = [
+                    'es_type'           => $esType,
+                    // This entity object is converted into an array because Queue::push
+                    // decodes and encodes it with assoc array flag set to true.
+                    'entity'            => $entity->toArray(),
+                    'mode'              => $this->app['rzp.mode'],
+                ];
+
+                // Saving the entity in ES.
+                $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
+            }
+        }
+        catch (\Exception $ex)
+        {
+            // Shouldn't fail for any reason
+            $this->trace->error(
+                TraceCode::ES_SAVE_FAILED,
+                $entity->toArray());
+
+            $this->trace->traceException($ex);
+        }
+    }
+
+    protected function syncToEs($entity, $action = 'upsert')
+    {
+        if ($this->isEntityInOldEsFlow($entity->getEntity()))
+        {
+            return;
+        }
+
+        if ($this->doesEsRepoExists() === false)
         {
             return;
         }
@@ -265,11 +316,18 @@ class Repository extends \Razorpay\Spine\Repository
         return $esRepoClassPath;
     }
 
-    protected function getEsRepo()
+    protected function doesEsRepoExists()
     {
         $esRepoClassPath = $this->getEsRepoClassPath();
 
-        return (new $esRepoClassPath);
+        return class_exists($esRepoClassPath);
+    }
+
+    protected function setEsRepo()
+    {
+        $esRepoClassPath = $this->getEsRepoClassPath();
+
+        $this->esRepo = (new $esRepoClassPath);
     }
 
     protected function getParentNamespace()
@@ -277,6 +335,28 @@ class Repository extends \Razorpay\Spine\Repository
         // get_called_class gives the (namespace+classname)
         // removing the last element to get only the namespace.
         return join('\\', explode('\\', get_called_class(), -1));
+    }
+
+    /**
+     * Override this method in entity/repository in case the type name is
+     * different for that entity.
+     *
+     * @return string
+     */
+    protected function getEsType()
+    {
+        $parentNamespace = $this->getParentNamespace();
+
+        $parentNamespaceArray = explode('\\', $parentNamespace);
+
+        // Constant names are all uppercase.
+        // Table constant class has the same name as the entity class name.
+        $className = strtoupper(end($parentNamespaceArray));
+
+        // The ES type name is the same as the table name for the entity in MySQL.
+        $typeName = constant("RZP\\Constants\\Table::$className");
+
+        return $typeName;
     }
 
     protected function getAttributeWithTableName($col)

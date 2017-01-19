@@ -38,11 +38,6 @@ class Repository extends Base\Repository
         'merchant_detail.created_at'    => 'sometimes|string',
     );
 
-    protected $esWhitelistedParams = [
-        EsRepository::QUERY,
-        'merchant_detail',
-    ];
-
     public function getSharedAccount()
     {
         if ($this->sharedMerchant === null)

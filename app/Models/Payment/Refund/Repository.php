@@ -27,10 +27,6 @@ class Repository extends Base\Repository
         Entity::NOTES           => 'sometimes|string|max:500',
     );
 
-    protected $esWhitelistedParams = [
-        Entity::NOTES
-    ];
-
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
         $query = $this->newQuery()->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);

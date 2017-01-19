@@ -71,8 +71,83 @@ class EsDao
     public function setIndexNameByValue($indexName)
     {
         $this->indexName = $indexName;
+    }
 
-        return $this;
+    public function bulkUpdate(array $params)
+    {
+        $this->es->bulkUpdate($params);
+    }
+
+    public function delete(array $params)
+    {
+        $this->es->delete($params);
+    }
+
+    public function search(array $params)
+    {
+        return $this->es->search($params);
+    }
+
+    // If a document with entity ID is already present, only the notes key is updated.
+    // Otherwise, creates a new document.
+    // Currently storing only notes and merchant id of the entity.
+    public function storeNotes($typeName, $entityData)
+    {
+        $entityId = $entityData['entity_id'];
+        $merchantId = $entityData['merchant_id'];
+        // Converting to object because sequential arrays cannot be stored in the ES schema designed.
+        // Hence, using an object instead to get proper key-values.
+        $notes = (object) $entityData['notes'];
+        $created = time();
+
+        // Using payment ID as the doc ID.
+        $params = [
+            'index' => $this->indexName,
+            'type'  => $typeName,
+            'id'    => $entityId,
+            'body'  => [
+                'upsert' => [
+                    'created' => $created,
+                    'merchant_id' => $merchantId,
+                    'notes' => $notes
+                ],
+                'doc' => [
+                    'notes' => $notes,
+                ]
+            ]
+        ];
+
+        $updateReponse = $this->es->update($params);
+    }
+
+    public function storeNotesInBulk($typeName, $entities)
+    {
+        $params = [];
+        foreach ($entities as $entityData)
+        {
+            $entityId = $entityData->getId();
+            $merchantId = $entityData->getMerchantId();
+            $notes = $entityData->getNotes();
+            $created = $entityData->getCreatedAt();
+
+            $params['body'][] = [
+                'index' => [
+                    '_index' => $this->indexName,
+                    '_type'  => $typeName,
+                    '_id'    => $entityId,
+                ]
+            ];
+
+            $params['body'][] = [
+                'created'     => $created,
+                'merchant_id' => $merchantId,
+                'notes'       => $notes,
+            ];
+        }
+
+        $bulkUpdateResponse = $this->es->bulkUpdate($params);
+
+        return $bulkUpdateResponse;
     }
 
     public function getNotes($typeName, $params)
@@ -141,6 +216,49 @@ class EsDao
         return $this->es->multiGet($params);
     }
 
+    public function getPaymentById($typeName, $documentId)
+    {
+        $params = [
+            'index'  => $this->indexName,
+            'type'   => $typeName,
+            'id'     => $documentId,
+        ];
+
+        return $this->es->get($params);
+    }
+
+    public function getPaymentsByDateRange($typeName, $fromDate, $toDate="now")
+    {
+        $params = [
+            'index' => $this->indexName,
+            'type' => $typeName,
+            'body' => [
+                'filter' => [
+                    'range' => [
+                        'created_at' => [
+                            'gte' => $fromDate,
+                            'lte' => $toDate
+                        ]
+                    ]
+                ]
+            ]
+        ];
+        return $this->es->search($params);
+    }
+
+
+    public function deletePaymentById($typeName, $paymentId)
+    {
+        //Payment ID is the doc ID.
+        $params = [
+            'index' => $this->indexName,
+            'type' => $typeName,
+            'id' => $paymentId
+        ];
+
+        return $this->es->delete($params);
+    }
+
     //This method should not be used on prod. We should create the indices on prod directly.
     public function createIndex($indexName, $settings, $mappings) {
         $params = [
@@ -152,39 +270,6 @@ class EsDao
         ];
 
         return $this->es->createIndex($params);
-    }
-
-    public function createIndexIfNotExistsSane($indexName, $settings, $mappings)
-    {
-        $indexExists = $this->es->indexExists(['index' => $indexName]);
-
-        if ($indexExists)
-        {
-            return;
-        }
-
-        $this->createIndex($indexName, $settings, $mappings);
-
-        return $this;
-    }
-
-    public function bulkUpdate(array $params)
-    {
-        $this->es->bulkUpdate($params);
-
-        return $this;
-    }
-
-    public function delete(array $params)
-    {
-        $this->es->delete($params);
-
-        return $this;
-    }
-
-    public function search(array $params)
-    {
-        return $this->es->search($params);
     }
 
 
@@ -235,6 +320,15 @@ class EsDao
         {
             $client->indices()->create($params);
         }
+    }
+
+    public function createIndexIfNotExistsSane($indexName, $settings, $mappings)
+    {
+        $indexExists = $this->es->indexExists(['index' => $indexName]);
+
+        if ($indexExists) return;
+
+        $this->createIndex($indexName, $settings, $mappings);
     }
 
     public function searchAuditLogs($orgId, $options = [])

@@ -70,6 +70,50 @@ class EsClient
         return $this->client->search($params);
     }
 
+    public function indexExists(array $params)
+    {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
+        return $this->client->indices()->exists($params);
+    }
+
+    public function searchNotes($params)
+    {
+        // If ES mock is set to true.
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
+        /**
+         * TODO:
+         * RESOLVE THIS BEFORE MERGE.
+         * Confirm what version of elasticsearch is there on prod.
+         * I have upgraded the library in this pr.
+         * With my combination, following query doesn't work.
+         * Ref: http://stackoverflow.com/questions/40519806/no-query-registered-for-filtered
+         */
+
+        $searchResponse = $this->client->search($params);
+
+        if ($searchResponse['hits']['total'] === 0)
+        {
+            return null;
+        }
+
+        $entityResults = $searchResponse['hits']['hits'];
+        $entityIds = [];
+        foreach ($entityResults as $_ => $entityData)
+        {
+            $entityIds[] = $entityData['_id'];
+        }
+
+        return $entityIds;
+    }
+
     public function get($params)
     {
         return $this->client->get($params);
@@ -83,16 +127,6 @@ class EsClient
     public function delete($params)
     {
         return $this->client->delete($params);
-    }
-
-    public function indexExists(array $params)
-    {
-        if ($this->esMock === true)
-        {
-            return null;
-        }
-
-        return $this->client->indices()->exists($params);
     }
 
     public function createIndex($params)
