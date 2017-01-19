@@ -185,6 +185,19 @@ trait Callback
             $this->processPaymentCallbackException($e);
         }
 
+        $this->repo->reload($this->payment);
+
+        //
+        // This is to ensure that we don't fire multiple webhooks
+        // or send multiple emails to the customer for the same payment.
+        // Due to race conditions in callbacks, it's possible that we would
+        // send `payment.authorized` webhook with `status=captured`.
+        //
+        if ($this->payment->hasBeenAuthorized())
+        {
+            return;
+        }
+
         $this->updateAndNotifyPaymentAuthorized();
     }
 
