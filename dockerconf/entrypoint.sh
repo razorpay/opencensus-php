@@ -15,7 +15,10 @@ sed -i 's/dev/testing/g' ./environment/env.php
 
 # DB Migrate
 echo  "DB Migrate"
-cd /app/ && php artisan migrate --force
+cd /app/ && \
+php artisan migrate --force && \
+php artisan rzp:dbr --install --seed && \
+APP_ENV=testing php artisan rzp:dbr --install
 
 # start httpd
 mkdir /tmp/run
