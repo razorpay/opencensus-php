@@ -8,6 +8,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 
@@ -100,7 +101,9 @@ class Orchestrator extends Base\Core
      * Mailgun to attempt retrying the same request.
      *
      * @param array $input The input received from the route
+     *
      * @return array Summary of reconciliation
+     * @throws \Exception
      */
     public function initiateReconciliationProcess(array $input)
     {
@@ -112,12 +115,8 @@ class Orchestrator extends Base\Core
         }
         catch (\Exception $e)
         {
-            $this->trace->error(
-                TraceCode::RECON_ALERT,
-                (array) json_decode($e->getMessage())
-            );
-
-            $this->trace->traceException($e);
+            $this->trace->traceException(
+                $e, Trace::ERROR, TraceCode::RECON_ALERT, (array) json_decode($e->getMessage()));
 
             if ($this->isManualRequest($input) === true)
             {
