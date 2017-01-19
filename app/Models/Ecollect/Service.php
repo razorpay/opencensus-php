@@ -22,22 +22,18 @@ class Service extends Base\Service
             $input
         );
 
+        $this->validator->validateInput('validate', $input);
+
         $data = [
             'valid'   => true,
             'message' => null,
         ];
 
-        try
+        if (substr($input['payee_account'], 0, 3) !== 'RZP')
         {
-            $this->validator->validateInput('validate', $input);
-        }
-        catch (BadRequestValidationFailureException $e)
-        {
-            $this->trace->traceException($e);
-
             $data = [
                 'valid'   => false,
-                'message' => $e->getMessage(),
+                'message' => 'Invalid account number',
             ];
         }
 
