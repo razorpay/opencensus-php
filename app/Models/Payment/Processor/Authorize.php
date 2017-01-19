@@ -1207,6 +1207,18 @@ trait Authorize
         // Updates payment entity to authorized and adds a transaction.
         $this->updatePaymentAuthorized($wasFailed);
 
+        //
+        // This is to ensure that we don't fire a second webhook
+        // if it's already captured.
+        // We are okay with sending multiple webhooks if the payment
+        // is still in authorized state.
+        // We are also okay with sending multiple emails to the customer.
+        //
+        if ($this->payment->hasBeenCaptured())
+        {
+            return;
+        }
+
         $this->eventPaymentAuthorized();
 
         $this->notifyIfCardSaved();
