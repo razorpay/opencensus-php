@@ -1058,9 +1058,9 @@ class Gateway extends Base\Gateway
 
         $merchantIdKey = substr($merchantId, 0, 2);
 
-        if (in_array($merchantIdKey, AccountType::ACCOUNT_MAP) === true)
+        if (in_array($merchantIdKey, array_keys(AccountType::ACCOUNT_MAP)) === true)
         {
-            $this->accountType = AccountType::ACCOUNT_MAP[$MerchantIdKey];
+            $this->accountType = AccountType::ACCOUNT_MAP[$merchantIdKey];
         }
         else
         {
