@@ -71,6 +71,8 @@ class CreateGatewayAbsence extends Migration
 
             $table->index(AbsenceEntity::DOWNTIME_FROM);
 
+            $table->index(AbsenceEntity::DOWNTIME_TO);
+
             $table->index(AbsenceEntity::METHOD);
 
             $table->index(AbsenceEntity::CREATED_AT);

@@ -25,6 +25,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
     protected $trace;
 
+    protected $core;
+
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -37,9 +39,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     protected function fetchStatusCakeCredentials()
     {
         $uname = $this->app['config']->get('applications.gateway_absence.statuscake.username');
-        
+
         $apiKey = $this->app['config']->get('applications.gateway_absence.statuscake.api_key');
-        
+
         return [$uname, $apiKey];
     }
 
@@ -50,7 +52,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             $this->validateRequest($input);
 
             $scStatus = strtoupper($input['Status']);
-            
+
             $status = null;
 
             if (in_array($scStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
@@ -84,11 +86,13 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                     return $downWindow->toArrayPublic();
                 }
+
+                return [];
             }
             else
             {
                 $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_CREATE, ['data' => $data]);
-                
+
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
                 // events for the same url.
                 $downWindow = $this->core->create($data);
@@ -118,7 +122,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     protected function validateToken(array $input)
     {
         $token = $input['Token'];
-        
+
         list($uname, $apiKey) = $this->fetchStatusCakeCredentials();
 
         $key = $uname.$apiKey;
@@ -132,7 +136,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             throw new Exception\BadRequestValidationFailureException('StatusCake Token Validation Failure');
         }
     }
-    
+
     protected function getNetbankingData(string $issuer, array $input)
     {
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
