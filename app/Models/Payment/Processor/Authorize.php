@@ -1205,16 +1205,16 @@ trait Authorize
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $this->updatePaymentAuthorized($wasFailed);
+        $updated = $this->updatePaymentAuthorized($wasFailed);
 
         //
-        // This is to ensure that we don't fire a second webhook
-        // if it's already captured.
-        // We are okay with sending multiple webhooks if the payment
-        // is still in authorized state.
-        // We are also okay with sending multiple emails to the customer.
+        // If payment has not been updated to authorized, we don't fire the webhook
+        // or send an email to customer/merchant.
+        // This can happen due to race conditions where this function will be called
+        // twice. The first time it gets called, it would fire the webhook and notify.
+        // We don't need to do that, the second time it gets called.
         //
-        if ($this->payment->hasBeenCaptured())
+        if ($updated === false)
         {
             return;
         }
@@ -1774,7 +1774,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment, $wasFailed)
+        $updated = $this->repo->transaction(function() use ($payment, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -1784,7 +1784,7 @@ trait Authorize
             // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
-                return;
+                return false;
             }
 
             $payment->setErrorNull();
@@ -1839,7 +1839,11 @@ trait Authorize
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
+
+            return true;
         });
+
+        return $updated;
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)
