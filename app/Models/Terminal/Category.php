@@ -161,14 +161,14 @@ class Category
 
     public static function isMerchantCategoryTPV($category2)
     {
-        return in_array($category2, self::TPV);
+        return in_array($category2, self::TPV, true);
     }
 
     public static function isMerchantCategoryIncompatible($category)
     {
         $incompatibleCategories = self::getIncompatibleCategories();
 
-        return in_array($category, $incompatibleCategories);
+        return in_array($category, $incompatibleCategories, true);
     }
 
     protected static function getDefaultNetworkCategory($category2)

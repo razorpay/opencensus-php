@@ -178,7 +178,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY, $gateway)
                     ->whereIn(Terminal\Entity::NETWORK_CATEGORY, $tpvCategories)
                     ->enabled()
-                    ->get([Terminal\Entity::ID]);
+                    ->get([Entity::ID]);
     }
 
     public function getTerminalIdsForGateway($gateway, $exclude = [])
@@ -187,7 +187,7 @@ class Repository extends Base\Repository
                     ->where(Terminal\Entity::GATEWAY, $gateway)
                     ->whereNotIn(Terminal\Entity::ID, $exclude)
                     ->enabled()
-                    ->get([Terminal\Entity::ID]);
+                    ->get([Entity::ID]);
     }
 
     public function deleteOrFail($entity)
