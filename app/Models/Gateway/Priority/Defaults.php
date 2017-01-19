@@ -41,22 +41,22 @@ class Defaults
             ]
         ],
         Method::NETBANKING => [
-                /**
-                * Gateways which support netbanking in live mode
-                */
-                Mode::LIVE => [
-                    Gateway::BILLDESK,
-                    Gateway::EBS
-                ],
-                /**
-                * Gateways which support netbanking in test mode
-                * Paytm can support live mode as well but we do not want to use
-                * it in live for netbanking.
-                */
-                Mode::TEST => [
-                    Gateway::PAYTM,
-                    Gateway::ATOM
-                ]
+            /**
+            * Gateways which support netbanking in live mode
+            */
+            Mode::LIVE => [
+                Gateway::BILLDESK,
+                Gateway::EBS
+            ],
+            /**
+            * Gateways which support netbanking in test mode
+            * Paytm can support live mode as well but we do not want to use
+            * it in live for netbanking.
+            */
+            Mode::TEST => [
+                Gateway::PAYTM,
+                Gateway::ATOM
+            ]
         ]
     ];
 }

@@ -11,7 +11,7 @@ class Base extends Core
     /**
      * Stores the prefix with which the keys of a particular
      * store object are generated. Defined by child classes
-     * @var [type]
+     * @var string
      */
     protected $prefix;
 

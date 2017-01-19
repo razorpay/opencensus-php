@@ -90,7 +90,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Fetches the gateways ordered by priority socre
+     * Fetches the gateways ordered by priority score
      *
      * @param  string $method Method to fetch gateway s for
      * @return [type]         [description]
@@ -108,7 +108,7 @@ class Core extends Base\Core
      * While fetching gateways we only fetcg gateways with positive scores.
      * Gateways with zero scores are ignored
      */
-    protected function getGateways($priority)
+    protected function getGateways(DataStore\PrioritySet $priority)
     {
         return $priority->getSetMembersWithPositiveScore();
     }
