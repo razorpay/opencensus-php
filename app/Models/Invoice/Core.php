@@ -256,6 +256,12 @@ class Core extends Base\Core
 
     public function expireInvoice(Entity $invoice)
     {
+        $this->trace->info(
+            TraceCode::EXPIRE_INVOICE,
+            [
+                'invoice_id' => $invoice->getId(),
+            ]);
+
         $this->repo->transaction(
             function () use ($invoice)
             {
@@ -263,12 +269,6 @@ class Core extends Base\Core
 
                 $this->expireInvoiceAfterChecks($invoice);
             });
-
-        $this->trace->info(
-            TraceCode::EXPIRE_INVOICE,
-            [
-                'invoice_id' => $invoice->getId(),
-            ]);
 
         return $invoice;
     }
@@ -290,7 +290,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function ()
             {
-                $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvocies();
+                $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
 
                 $this->expireInvoicesSummary['count'] = $invoices->count();
                 $this->expireInvoicesSummary['ids']   = $invoices->getIds();

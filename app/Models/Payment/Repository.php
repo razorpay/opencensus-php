@@ -649,23 +649,18 @@ class Repository extends Base\Repository
      * Gets all  payments which have an expired invoices associated and are
      * late authorized (and authorized, not captured).
      *
-     * @return RZP\Models\Base\PublicCollection
+     * @return \RZP\Models\Base\PublicCollection
      */
     public function getLateAuthPaymentsOfExpiredInvoices()
     {
-        // Raw sql:
         //
-        // SELECT
-        //     *
-        // FROM
-        //     payments
-        // LEFT JOIN
-        //     invoices ON payments.invoice_id = invoices.id
-        // WHERE
-        //     payments.invoice_id IS NOT NULL
-        //     AND invoices.status = 'expired'
-        //     AND payments.status = 'authorized'
-        //     AND payments.late_authorized = 1
+        // SELECT *
+        // FROM payments
+        // LEFT JOIN invoices ON payments.invoice_id = invoices.id
+        // WHERE payments.invoice_id IS NOT NULL
+        //   AND invoices.status = 'expired'
+        //   AND payments.status = 'authorized'
+        //   AND payments.late_authorized = 1
         //
 
         $paymentInvoiceIdCol = $this->getAttributeWithTableName(Entity::INVOICE_ID);

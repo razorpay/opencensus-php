@@ -214,18 +214,19 @@ class Repository extends \Razorpay\Spine\Repository
     }
 
     /**
-     * Selcts entity with FOR UPDATE lock.
+     * Selects entity with FOR UPDATE lock.
      * - Locks entity for update.
      * - Avoids bad read if other session has already locked the entity for update.
      *
      * @param string $id
      *
-     * @return Entity
+     * @return Models\Base\PublicEntity
+     * @throws Exception\LogicException
      */
     public function lockForUpdate($id)
     {
         //
-        // Transaction must be active when aquiring this lock, otherwise it will
+        // Transaction must be active when acquiring this lock, otherwise it will
         // just not work.
         //
         if ($this->isTransactionActive() === false)

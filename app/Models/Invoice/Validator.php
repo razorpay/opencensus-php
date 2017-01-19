@@ -397,8 +397,9 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        $minExpiredBy = Carbon::now('Asia/Kolkata')->addDays(self::MIN_EXPIRY_DAYS)
-                                                   ->timestamp;
+        $minExpiredBy = Carbon::now('Asia/Kolkata')
+                              ->addDays(self::MIN_EXPIRY_DAYS)
+                              ->timestamp;
 
         if ($invoice->getExpiredBy() < $minExpiredBy)
         {

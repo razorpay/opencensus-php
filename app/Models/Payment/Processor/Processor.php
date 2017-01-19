@@ -150,13 +150,17 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        //
         // Creates a payment entity in DB with the input values given.
         // Also takes care of fee-bearer customer flow.
+        //
+        // This is in a transaction because we perform
+        // lockForUpdate on invoice in this flow.
+        //
+
         $this->repo->transaction(function() use ($input)
         {
-            $payment = $this->createPaymentEntity($input);
-
-            $this->setPayment($payment);
+            $this->createPaymentEntity($input);
         });
 
         $payment = $this->payment;
@@ -773,12 +777,12 @@ class Processor
             return;
         }
 
-        if ($this->order->invoice === null)
+        $invoice = $this->order->invoice;
+
+        if ($invoice === null)
         {
             return;
         }
-
-        $invoice = $this->order->invoice;
 
         $invoice = $this->repo->invoice->lockForUpdate($invoice->getId());
 
@@ -1007,22 +1011,32 @@ class Processor
         // associated with an invoice also.
         if ($payment->hasInvoice())
         {
-            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
 
         return false;
     }
 
-    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
+    /**
+     * Invoice related checks
+     *   - Check if invoice status is ISSUED
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
     {
-        //
-        // Invoice related checks
-        // - Check if invoice status is ISSUED
-        //
-
         $invoice = $payment->invoice;
 
         $this->repo->invoice->lockForUpdate($invoice->getId());
+
+        //
+        // There could be a case where the current time is greater
+        // than the expire_by of the invoice. But, if we haven't
+        // yet marked the invoice as expired, we still go ahead
+        // and capture the payment.
+        //
 
         if ($invoice->isIssued() === false)
         {

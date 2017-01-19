@@ -37,9 +37,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getIssuedAndPastExpiredByInvocies()
+    public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        //
+        // Here, we are doing a select lock for update to ensure that
+        // we get the latest data of the invoices, in case these invoices
+        // are locked by another transaction and are getting updated.
+        //
 
         return $this->newQuery()
                     ->lockForUpdate()
