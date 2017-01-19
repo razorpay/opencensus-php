@@ -15,29 +15,17 @@ services:
       - db_test
     environment:
       DB_LIVE_HOST: db_live
-      DB_LIVE_DATABASE: api
-      DB_LIVE_USERNAME: api
-      DB_LIVE_PASSWORD: 123
       SLAVE_DB_LIVE_HOST: db_live
-      SLAVE_DB_LIVE_DATABASE: api
-      SLAVE_DB_LIVE_USERNAME: api
-      SLAVE_DB_LIVE_PASSWORD: 123
       DB_TEST_HOST: db_test
-      DB_TEST_DATABASE: api-test
-      DB_TEST_USERNAME: api-test
-      DB_TEST_PASSWORD: 123
       SLAVE_DB_TEST_HOST: db_test
-      SLAVE_DB_TEST_DATABASE: api-test
-      SLAVE_DB_TEST_USERNAME: api-test
-      SLAVE_DB_TEST_PASSWORD: 123
   db_live:
     image: mysql:5.6
     ports:
       - 13306:3306
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: api
-      MYSQL_USER: api
+      MYSQL_DATABASE: api_live
+      MYSQL_USER: api_live
       MYSQL_PASSWORD: 123
 
   db_test:
@@ -46,6 +34,6 @@ services:
       - 13307:3306
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: api-test
-      MYSQL_USER: api-test
+      MYSQL_DATABASE: api_test
+      MYSQL_USER: api_test
       MYSQL_PASSWORD: 123
