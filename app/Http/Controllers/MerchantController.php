@@ -237,7 +237,7 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function putInvoice(Request $request, $mode, $id)
+    public function patchInvoice(Request $request, $mode, $id)
     {
         $this->checkMode($mode);
 
@@ -501,9 +501,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $input = array('skip' => 0, 'count' => 100);
-
-        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($input, $mode, 'customer');
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'customer');
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -554,9 +552,7 @@ class MerchantController extends Controller
     {
         $this->checkMode($mode);
 
-        $input = array('skip' => 0, 'count' => 100);
-
-        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($input, $mode, 'item');
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'item');
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -572,7 +568,7 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function putItem(Request $request, $mode, $id)
+    public function patchItem(Request $request, $mode, $id)
     {
         $this->checkMode($mode);
 

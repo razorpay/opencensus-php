@@ -19,7 +19,6 @@ class Item extends Entity
         return parent::request('PATCH', $this->getEntityUrl() . $id, $params);
     }
 
-
     public function delete($id)
     {
       return parent::request('DELETE', $this->getEntityUrl() . $id);

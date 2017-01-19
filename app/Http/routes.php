@@ -143,7 +143,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
     Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
     Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create');
-    Route::patch('/{mode}/invoices/{id}', 'MerchantController@putInvoice')->name('invoice_edit');
+    Route::patch('/{mode}/invoices/{id}', 'MerchantController@patchInvoice')->name('invoice_edit');
     Route::delete('/{mode}/invoices/{id}', 'MerchantController@deleteInvoice')->name('invoice_delete');
     Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
     Route::post('/{mode}/invoices/{invoiceId}/issue', 'MerchantController@markInvoiceAsIssued')->name('invoice_issue');
@@ -157,7 +157,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/{mode}/items', 'MerchantController@getItems')->name('item_fetch_all');
     Route::get('/{mode}/items/autocomplete', 'MerchantController@getItemsForAutocomplete')->name('item_autocomplete');
     Route::post('/{mode}/items', 'MerchantController@postItem')->name('item_create');
-    Route::patch('/{mode}/items/{id}', 'MerchantController@putItem')->name('item_edit');
+    Route::patch('/{mode}/items/{id}', 'MerchantController@patchItem')->name('item_edit');
     Route::delete('/{mode}/items/{id}', 'MerchantController@deleteItem')->name('item_delete');
 
 

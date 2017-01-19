@@ -83,33 +83,34 @@ class Service extends Base\Service
         return $this->fetchEntityCollection($input, $mode, $entity);
     }
 
-    public function fetchCollectionForAutocomplete(array $input, $mode, $entity)
+    public function fetchCollectionForAutocomplete($mode, $entity)
     {
-        $collection = array(
+        $error = null;
+        $count = 100;
+        $collection = [
             'entity' => 'collection',
             'count'  => 0,
             'items'  => [],
-        );
+        ];
 
-        $fetchAutocompleteList = function ($input) use ($mode, $entity, &$collection, &$fetchAutocompleteList)
+        for ($i = 0; $i < 5; $i++)
         {
+            $input = [
+                'skip' => $i * $count,
+                'count' => $count
+            ];
+
             list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
             $collection['count'] = $collection['count'] + $list['count'];
             $collection['items'] = array_merge($collection['items'], $list['items']);
 
-            if ($list['count'] >= $input['count'])
+            if ($list['count'] < $count)
             {
-                $incrementedInputParams = array(
-                    'skip' => $input['skip'] + $input['count'],
-                    'count' => $input['count'],
-                );
-                return $fetchAutocompleteList($incrementedInputParams);
+                break;
             }
+        }
 
-            return array($error, $collection);
-        };
-
-        return $fetchAutocompleteList($input);
+        return array($error, $collection);
     }
 
     protected function fetchEntityCollection(array $input, $mode, $entity)
