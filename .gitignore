@@ -2,7 +2,8 @@
 /vendor
 .env
 .env.*
-!.env.wercker
+!environment/.env.wercker
+!environment/.env.docker
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta
