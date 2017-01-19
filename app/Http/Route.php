@@ -147,6 +147,8 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
+        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -228,6 +230,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
+        'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
@@ -540,6 +543,7 @@ final class Route
 
     public static $internal = array(
         'admin_fetch_entity_multiple',
+        'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
         'merchant_secret',
         'merchant_create',
@@ -631,6 +635,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
+        'ecollect_validate',
+        'ecollect_pay',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -898,6 +904,11 @@ final class Route
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
+        ),
+
+        'kotak' => array(
+            'ecollect_validate',
+            'ecollect_pay',
         ),
 
         'mailgun' => array(
