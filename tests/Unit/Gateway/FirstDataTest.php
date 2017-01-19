@@ -23,11 +23,9 @@ class FirstDataTest extends TestCase
 
         $certDir = $this->gateway->getGatewayCertDirPath();
 
-        $storeId = $this->gateway->getStoreId();
+        $certName = $this->gateway->getClientCertificateName();
 
-        $ext = $this->gateway::CERTIFICATE_FORMAT_P12;
-
-        $certPath = $certDir . '/' . $storeId . '.' . $ext;
+        $certPath = $certDir . '/' . $certName;
 
         if (file_exists($certPath) === true)
         {

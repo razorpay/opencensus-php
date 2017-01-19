@@ -399,6 +399,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::PRICING_PLAN_ID, $planId);
     }
 
+    public function setSettlementSchedule($settlementSchedule)
+    {
+        $this->setAttribute(self::SETTLEMENT_SCHEDULE, $settlementSchedule);
+    }
+
     protected function setBrandColorAttribute($brandColor)
     {
         $this->attributes[self::BRAND_COLOR] = $brandColor ? strtoupper($brandColor) : null;

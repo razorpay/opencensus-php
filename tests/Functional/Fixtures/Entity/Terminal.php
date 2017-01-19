@@ -192,7 +192,6 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
-            'gateway_secure_secret'     => 'secret',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);

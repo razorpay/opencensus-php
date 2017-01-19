@@ -762,8 +762,6 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   => Gateway::FIRST_DATA,
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
-                'gateway_terminal_id'       => 'shared_terminal_first_data',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 )

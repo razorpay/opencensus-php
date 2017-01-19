@@ -125,6 +125,8 @@ class Service extends Base\Service
             $input['groups'] = $groupIds;
         }
 
+        $this->setSettlementScheduleIdIfNeeded($merchant, $input);
+
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
         return $merchant->toArrayPublic();
@@ -339,11 +341,36 @@ class Service extends Base\Service
 
         $merchant->schedule()->associate($schedule);
 
+        $this->setSettlementScheduleIfNeeded($merchant, $schedule);
+
         $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function setSettlementScheduleIfNeeded($merchant, $schedule)
+    {
+        if (($schedule->getPeriod() === Schedule\Period::DAILY) and
+            ($schedule->getInterval() === 1))
+        {
+            $delay = $schedule->getDelay();
+
+            $merchant->setSettlementSchedule($delay);
+        }
+    }
+
+    protected function setSettlementScheduleIdIfNeeded($merchant, $input)
+    {
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE]) === true)
+        {
+            $requiredDelay = $input[Entity::SETTLEMENT_SCHEDULE];
+
+            $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
+
+            $merchant->schedule()->associate($schedule);
+        }
     }
 
     protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
@@ -392,16 +419,7 @@ class Service extends Base\Service
 
             try
             {
-                $schedule = $this->repo->schedule->fetchDailySettlementSchedulesByDelay($requiredDelay);
-
-                if (is_null($schedule) === true)
-                {
-                    $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
-
-                    $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
-
-                    $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-                }
+                $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
 
                 $merchant->schedule()->associate($schedule);
 
@@ -429,6 +447,22 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
 
         return $migrationSummary;
+    }
+
+    protected function getOrCreateDailySettlementSchedule($requiredDelay)
+    {
+        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($requiredDelay);
+
+        if (is_null($schedule) === true)
+        {
+            $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
+
+            $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        return $schedule;
     }
 
     protected function getRequiredScheduleData($requiredDelay)

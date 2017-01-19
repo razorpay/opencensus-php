@@ -145,7 +145,9 @@ class Gateway
         self::AXIS_MIGS             => [],
         self::AMEX                  => [],
         self::CYBERSOURCE           => [],
-        self::FIRST_DATA            => [],
+        self::FIRST_DATA            => [
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
+        ],
         self::WALLET_OPENWALLET     => [],
     ];
 
@@ -216,7 +218,10 @@ class Gateway
             Network::VISA),
         self::FIRST_DATA => array(
             Network::MC,
-            Network::VISA),
+            Network::VISA,
+            Network::MAES,
+            Network::RUPAY,
+        ),
     );
 
     public static $walletToGatewayMap = array(
