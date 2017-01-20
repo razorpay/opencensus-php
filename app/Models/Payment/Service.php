@@ -345,9 +345,7 @@ class Service extends Base\Service
 
     public function fetchTransactionByPaymentId($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
 

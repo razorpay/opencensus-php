@@ -41,9 +41,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
-
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
     }
@@ -79,9 +77,7 @@ class Service extends Base\Service
 
     public function getSettlementTransactions($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
-
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         $txns = $this->repo->transaction->fetchBySettlementId($id);
 
