@@ -8,6 +8,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 
@@ -96,21 +97,55 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Determines whether the reconciliation request is manual or
-     * via MailGun and gets the files details accordingly.
+     * Determines whether the request is manual or via Mailgun, and
+     * either throws or suppresses the exception accordingly.
+     * Exception is suppressed in the latter case, as we do not want
+     * Mailgun to attempt retrying the same request.
      *
-     * @param array $input The input received from the route.
-     * @return int Status code. Currently, always returns a 200.
-     *             Will raise alerts in case of issues.
-     * @throws Exception\ReconciliationException Raised when there are no
-     *                                           files to reconcile.
+     * @param array $input The input received from the route
+     *
+     * @return array Summary of reconciliation
+     * @throws \Exception
      */
     public function initiateReconciliationProcess(array $input)
     {
         $this->traceReconRequest($input);
 
+        try
+        {
+            $summary = $this->processReconciliationRequest($input);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e, Trace::ERROR, TraceCode::RECON_ALERT, (array) json_decode($e->getMessage()));
+
+            if ($this->isManualRequest($input) === true)
+            {
+                throw $e;
+            }
+
+            // We do not throw an exception as route is hit via Mailgun,
+            // and Mailgun will attempt retrying, which we don't want.
+            return [];
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Determines whether the reconciliation request is manual or
+     * via MailGun and gets the files details accordingly.
+     *
+     * @param array $input The input received from the route.
+     * @return array Summary of reconciliation
+     * @throws Exception\ReconciliationException Raised when there are no
+     *                                           files to reconcile.
+     */
+    protected function processReconciliationRequest(array $input)
+    {
         // Checks if it's manual call or mailgun call
-        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        if ($this->isManualRequest($input) === true)
         {
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
@@ -118,25 +153,9 @@ class Orchestrator extends Base\Core
         }
         else
         {
-            try
-            {
-                // Sets the gateway reconciliator object and
-                // Gets all the file details from the input.
-                $this->allFilesDetails = $this->mailGunEntry($input);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->error(
-                    TraceCode::RECON_ALERT,
-                    (array) json_decode($e->getMessage())
-                );
-
-                $this->trace->traceException($e);
-
-                // We do not throw an exception as route is hit via Mailgun,
-                // and Mailgun will attempt retrying, which we don't want.
-                return [];
-            }
+            // Sets the gateway reconciliator object and
+            // Gets all the file details from the input.
+            $this->allFilesDetails = $this->mailGunEntry($input);
         }
 
         // There must be at least one file. Otherwise, error.
@@ -172,6 +191,22 @@ class Orchestrator extends Base\Core
         $this->trace->info(
             TraceCode::RECON_REQUEST,
             $input);
+    }
+
+    /**
+     * Checks if request is manual or via Mailgun.
+     *
+     * @param array $input The input received from the route.
+     * @return boolean Flag to indicate manual request
+     */
+    protected function isManualRequest(array $input)
+    {
+        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
