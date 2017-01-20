@@ -36,7 +36,7 @@
             <th>Role</th>
             <th>Employee / Department / Branch / Location / Supervisor Code</th>
             <th>Locked</th>
-            <th>Disabled</th>
+            <th>Enabled</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -59,7 +59,7 @@
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
             </td>
-            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
+            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 0 , 'fa-times text-danger':row.disabled == 1}"></i></td>
             <td>
               <div class="btn-group">
                 <a class="btn btn-default btn-xs" ui-sref="app.users.edit({ id: row.id })">
