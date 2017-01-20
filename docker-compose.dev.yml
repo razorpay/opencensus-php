@@ -4,13 +4,14 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.dev
+    image: razorpay:api
     volumes:
       - .:/app
     links:
       - db_live
       - db_test
     ports:
-      - "8090:80"
+      - 28080:80
     depends_on:
       - db_live
       - db_test
@@ -19,12 +20,13 @@ services:
       SLAVE_DB_LIVE_HOST: db_live
       DB_TEST_HOST: db_test
       SLAVE_DB_TEST_HOST: db_test
-      REDIS_HOST:
-      SECURE_REDIS_HOST:
+      REDIS_HOST: cache
+      SECURE_REDIS_HOST: cache
+      QUEUE_REDIS_HOST: cache
   db_live:
     image: mysql:5.6
     ports:
-      - 13306:3306
+      - 23306:3306
     environment:
       MYSQL_ROOT_PASSWORD: 123
       MYSQL_DATABASE: api_live
@@ -33,7 +35,7 @@ services:
   db_test:
     image: mysql:5.6
     ports:
-      - 13307:3306
+      - 23307:3306
     environment:
       MYSQL_ROOT_PASSWORD: 123
       MYSQL_DATABASE: api_test
@@ -42,4 +44,4 @@ services:
   cache:
     image: redis:2.8
     ports:
-      - 6379:6379
+      - 26379:6379
