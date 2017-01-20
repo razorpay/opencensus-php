@@ -8,8 +8,6 @@ class Url
     const LIVE_DOMAIN       = 'https://upitest.hdfcbank.com';
 
     const AUTHORIZE    = '/upi/meTransCollectSvc';
-
-    // TODO: placeholders for now
     const VERIFY       = '/upi/transactionStatusQuery';
-    const REFUND       = '/refund';
+    const REFUND       = '/upi/refundReqSvc';
 }

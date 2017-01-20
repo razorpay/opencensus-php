@@ -29,6 +29,10 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
+    // Transaction Types
+    const P2P = 'P2P';
+    const P2M = 'P2M';
+
     // Expiry timeout in minutes
     const EXPIRY_TIMEOUT = 5;
 
@@ -37,6 +41,7 @@ class Gateway extends Base\Gateway
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
+        ResponseFields::NPCI_UPI_TXN_ID   => Entity::NPCI_REFERENCE_ID,
     ];
 
     /**
@@ -81,10 +86,12 @@ class Gateway extends Base\Gateway
      * @param  array  $input
      * @return Array
      */
-    protected function getGatewayEntityAttributes(array $input)
+    protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
     {
         return [
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA     => $input['payment']['vpa'],
+            Entity::ACTION  => $action,
         ];
     }
 
@@ -94,7 +101,7 @@ class Gateway extends Base\Gateway
      * @param  array $input Request Input arrau
      * @return array
      */
-    public function preProcessCallbackResponse($input)
+    public function preProcessServerCallback($input): array
     {
         $encryptedResponse = $input[ResponseFields::CALLBACK_RESPONSE_KEY];
 
@@ -331,6 +338,26 @@ class Gateway extends Base\Gateway
 
         $remark = ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
 
+        // Since | is used for padding, it can't be present in the remark
+
+        return str_replace('|', ' ', $remark);
+    }
+
+    /**
+     * Returns a refund description, capped to 50 chars
+     * @param  array  $input
+     * @return string
+     */
+    protected function getRefundRemark(array $input): string
+    {
+        $description = $input['merchant']->getBillingLabelElseName();
+
+        $description = $description ?? 'Razorpay';
+
+        $remark = "Refund for " . substr($description, 0, 36);
+
+        // TODO: Shift the pipe replace to the request generator instead
+
         return str_replace('|', ' ', $remark);
     }
 
@@ -377,6 +404,23 @@ class Gateway extends Base\Gateway
         $payment->saveOrFail();
     }
 
+    public function refund(array $input)
+    {
+        parent::refund($input);
+
+        $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
+
+        $refund = $this->createGatewayPaymentEntity($attributes);
+
+        $request =  $this->getRefundRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $response = $this->parseGatewayResponse($response->body);
+
+        // TODO: Process Refund
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -405,6 +449,48 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $content;
 
         return $content;
+    }
+
+    protected function getRefundRequestArray(array $input): array
+    {
+        $repo = $this->getRepository();
+
+        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+
+        // The order is defined in the docs
+        // See README.md
+
+        $data = [
+            $this->getMerchantId(),
+            $input['refund']['id'],
+            $input['payment']['id'],
+            $gatewayPayment->getGatewayPaymentId(),
+            'NA',
+            $this->getRefundRemark($input),
+            $this->formatAmount($input['refund']['amount']),
+            $input['refund']['currency'],
+            $this->getPaymentRemark($input),
+            // Transaction Type
+            self::P2P,
+            // Type of Payment (Pay or Collect)
+            Action::COLLECT,
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'payment_id'        => $input['payment']['id'],
+                'refund_id'         => $input['refund']['id'],
+            ]);
+
+        return $request;
     }
 
     protected function getPaymentVerifyRequestArray($input)
