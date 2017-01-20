@@ -215,30 +215,33 @@ class Repository extends \Razorpay\Spine\Repository
 
     /**
      * Selects entity with FOR UPDATE lock.
-     * - Locks entity for update.
-     * - Avoids bad read if other session has already locked the entity for update.
+     * - If other sessions have already acquired LOCK FOR UPDATE on this entity,
+     *   this will wait till that gets free and so avoids bad reads.
+     * - If this session has acquired the lock first, others will wait (Same as
+     *   above).
      *
-     * @param string $id
+     * Also, setRawAttributes is being used because of the way PHP handles pass
+     * by reference for objects. If the passed object is ASSIGNED to another
+     * object/value, the original object from the calling function remains
+     * unaffected. Any change ON the passed object will affect the original
+     * object too.
      *
-     * @return Models\Base\PublicEntity
+     * @param Models\Base\PublicEntity $entity
+     *
+     * @return null
+     *
      * @throws Exception\LogicException
      */
+    public function lockForUpdateAndReload($entity)
+    {
+        $lockedEntity = $this->lockForUpdate($entity->getId());
+
+        $entity->setRawAttributes($lockedEntity->getAttributes(), true);
+    }
+
     public function lockForUpdate($id)
     {
-        //
-        // Transaction must be active when acquiring this lock, otherwise it will
-        // just not work.
-        //
-        if ($this->isTransactionActive() === false)
-        {
-            throw new Exception\LogicException(
-                'lockForUpdate called when not in transaction.',
-                null,
-                [
-                    'id'     => $id,
-                    'entity' => $this->getEntityName(),
-                ]);
-        }
+        assert($this->isTransactionActive());
 
         return $this->newQuery()->lockForUpdate()->findOrFail($id);
     }

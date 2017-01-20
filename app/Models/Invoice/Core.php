@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Config;
+
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
@@ -14,12 +16,6 @@ use RZP\Error\ErrorCode;
 class Core extends Base\Core
 {
     protected $lineItemCore;
-
-    //
-    // Class property to accumulate summary of bulk invoice expiration
-    // and send as api response.
-    //
-    protected $expireInvoicesSummary;
 
     public function __construct()
     {
@@ -265,7 +261,7 @@ class Core extends Base\Core
         $this->repo->transaction(
             function () use ($invoice)
             {
-                $this->repo->invoice->lockForUpdate($invoice->getId());
+                $this->repo->invoice->lockForUpdateAndReload($invoice);
 
                 $this->expireInvoiceAfterChecks($invoice);
             });
@@ -275,44 +271,55 @@ class Core extends Base\Core
 
     /**
      * Called from cron.
-     * Expires all invoices which are issued and past expired_by.
+     * Expires all invoices which are issued and past expire_by.
      *
      * @return array
      */
     public function expireInvoices()
     {
-        $this->expireInvoicesSummary = [
-            'count'      => 0,
-            'ids'        => [],
-            'failed_ids' => [],
+        $time = time();
+
+        $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
+
+        $summary = [
+            'total_invoices_count' => $invoices->count(),
+            'invoice_ids'          => $invoices->getIds(),
+            'failed_invoice_ids'   => [],
         ];
 
-        $this->repo->transaction(
-            function ()
+        foreach ($invoices as $invoice)
+        {
+            try
             {
-                $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
+                $this->expireInvoice($invoice);
+            }
+            catch (\Exception $e)
+            {
+                $summary['failed_invoice_ids'][] = $invoice->getId();
 
-                $this->expireInvoicesSummary['count'] = $invoices->count();
-                $this->expireInvoicesSummary['ids']   = $invoices->getIds();
+                $this->trace->traceException(
+                    $e,
+                    null,
+                    TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
+                    [
+                        'id' => $invoice->getId(),
+                    ]);
+            }
+        }
 
-                foreach ($invoices as $invoice)
-                {
-                    try
-                    {
-                        $this->expireInvoiceAfterChecks($invoice);
-                    }
-                    catch (\Exception $e)
-                    {
-                        $this->trace->traceException($e);
+        $time = time() - $time;
 
-                        $this->expireInvoicesSummary['failed_ids'][] = $invoice->getId();
-                    }
-                }
-            });
+        $summary['time_taken'] = $time . ' secs';
 
-        $this->trace->info(TraceCode::EXPIRE_INVOICES_CRON, $this->expireInvoicesSummary);
+        $this->trace->debug(TraceCode::INVOICES_EXPIRE_CRON_SUMMARY, $summary);
 
-        return $this->expireInvoicesSummary;
+        $slack   = $this->app['slack'];
+        $channel = Config::get('slack.channels.tech_logs');
+        $message = 'Invoices past expire_by, marked expired via cron.';
+
+        $slack->queue($message, $summary, ['channel' => $channel]);
+
+        return $summary;
     }
 
     public function fetchStatus(Entity $invoice)
@@ -451,42 +458,9 @@ class Core extends Base\Core
 
     protected function expireInvoiceAfterChecks(Entity $invoice)
     {
-        $this->raiseErrorIfInvoiceCannotBeExpired($invoice);
+        $paymentsCount = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
 
-        $invoice->setStatus(Status::EXPIRED);
-
-        $this->repo->saveOrFail($invoice);
-    }
-
-    /**
-     * Raises BadRequestException if invoice cannot be expired.
-     * If invoice has any created/authorized/captured/refunded payments associated
-     * then we don't expire those invoices.
-     *
-     * This method gets called after aquiring FOR UPDATE lock on invoice, and so
-     * avoids bad reads from other flows (eg. payment creation/ auto capture of
-     * late authorized payments via cron, there we check for invoice status.)
-     *
-     * @param Entity $invoice
-     *
-     * @return null
-     *
-     * @throws Exception\BadRequestException
-     */
-    protected function raiseErrorIfInvoiceCannotBeExpired(Entity $invoice)
-    {
-        $payments = $invoice->payments()
-                            ->whereIn(
-                                    Payment\Entity::STATUS,
-                                    [
-                                        Payment\Status::CREATED,
-                                        Payment\Status::AUTHORIZED,
-                                        Payment\Status::CAPTURED,
-                                        Payment\Status::REFUNDED,
-                                    ])
-                            ->get();
-
-        if ($payments->count() !== 0)
+        if ($paymentsCount !== 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
@@ -495,5 +469,9 @@ class Core extends Base\Core
                     'invoice_id' => $invoice->getId(),
                 ]);
         }
+
+        $invoice->setStatus(Status::EXPIRED);
+
+        $this->repo->saveOrFail($invoice);
     }
 }

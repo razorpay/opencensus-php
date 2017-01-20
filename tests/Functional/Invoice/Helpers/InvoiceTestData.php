@@ -914,14 +914,14 @@ return [
                     ]
                 ],
                 'currency'      => 'INR',
-                'expired_by'    => 1484512480,
+                'expire_by'     => 1484512480,
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'expired_by should be at least 1 days in future at the time of issue.',
+                    'description' => 'expire_by should be at least 1 day after the time of issue.',
                 ],
             ],
             'status_code' => 400,
@@ -2247,7 +2247,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice expiry failed as payment exists or is in progress.',
+                    'description' => 'Invoice expiry failed as payment exists for this invoice or is in progress.',
                 ],
             ],
             'status_code' => 400,
@@ -2291,11 +2291,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'count'      => 1,
-                'ids'        => [
-                    '1000001invoice',
-                ],
-                'failed_ids' => [],
+                'total_invoices_count' => 1,
+                'invoice_ids'          => ['1000001invoice'],
+                'failed_invoice_ids'   => [],
             ],
         ],
     ],

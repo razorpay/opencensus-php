@@ -41,17 +41,17 @@ class Repository extends Base\Repository
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        //
-        // Here, we are doing a select lock for update to ensure that
-        // we get the latest data of the invoices, in case these invoices
-        // are locked by another transaction and are getting updated.
-        //
-
         return $this->newQuery()
-                    ->lockForUpdate()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::EXPIRED_BY, '<', $currentTime)
+                    ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    public function getNonFailedPaymentsCount(Entity $invoice)
+    {
+        return $invoice->payments()
+                       ->where(Payment\Entity::STATUS, '!=', Payment\Status::FAILED)
+                       ->count();
     }
 
     protected function addQueryParamPaymentId($query, $params)

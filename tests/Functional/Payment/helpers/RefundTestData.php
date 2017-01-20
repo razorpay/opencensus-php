@@ -230,20 +230,6 @@ return [
         ],
     ],
 
-    'testRefundOfLateAuthPaymentsOfExpiredInvoices' => [
-        'request' => [
-            'method'    => 'post',
-            'url'       => '/invoices/payments/refund_late_auth',
-            'content'   => [],
-        ],
-        'response' => [
-            'content' => [
-                'total_payments_for_refund'         => 3,
-                'payment_auto_refund_failure_count' => 0
-            ],
-        ],
-    ],
-
     'testRefundCreateOnGatewayForMissingRefunds' => [
         'request' => [
             'method'    => 'post',

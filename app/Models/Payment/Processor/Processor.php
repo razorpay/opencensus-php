@@ -784,7 +784,7 @@ class Processor
             return;
         }
 
-        $invoice = $this->repo->invoice->lockForUpdate($invoice->getId());
+        $this->repo->invoice->lockForUpdateAndReload($invoice);
 
         $invoice->getValidator()->validateInvoiceNotExpired();
 
@@ -1029,7 +1029,7 @@ class Processor
     {
         $invoice = $payment->invoice;
 
-        $this->repo->invoice->lockForUpdate($invoice->getId());
+        $this->repo->invoice->lockForUpdateAndReload($invoice);
 
         //
         // There could be a case where the current time is greater

@@ -88,7 +88,6 @@ add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/ord
 add_cron "48 3-21/6 * * *"  "batch_processor_prod"           POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
 add_cron "7 10,22 * * *"    "gateway_create_refund_rec"      POST "$BASE_URL/refunds/billdesk/create_record"             ""                              $LIVE_AUTH
 add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
-add_cron "*/15 * * * *"     "invoice_expired_late_auth"      POST "$BASE_URL/invoices/payments/refund_late_auth"         ""                              $LIVE_AUTH
 add_cron "*/15 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
 # Install the generated crontab

@@ -266,13 +266,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function refundLateAuthPaymentsOfExpiredInvoice()
-    {
-        $response = $this->payment->refundLateAuthPaymentsOfExpiredInvoice();
-
-        return ApiResponse::json($response);
-    }
-
     public function postAuthorizeLockTimeOut($paymentIds)
     {
         $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);

@@ -1529,8 +1529,8 @@ WHERE id='6gysDIemK9qx3W';
 
 -- Queries to be run before deployment of invoices-expired-by branch
 
-ALTER TABLE invoices ADD COLUMN expired_by int(11) DEFAULT NULL;
-ALTER TABLE invoices ADD INDEX invoices_expired_by_index (expired_by);
+ALTER TABLE invoices ADD COLUMN expire_by int(11) DEFAULT NULL;
+ALTER TABLE invoices ADD INDEX invoices_expire_by_index (expire_by);
 
 --
 

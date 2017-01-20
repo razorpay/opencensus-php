@@ -42,9 +42,9 @@ class InvoiceTest extends TestCase
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
 
-        $this->assertNotNull($response['expired_by']);
-        $this->assertInternalType('int', $response['expired_by']);
-        $this->assertEquals(5184000, $response['expired_by'] - $response['issued_at']);
+        // $this->assertNotNull($response['expire_by']);
+        // $this->assertInternalType('int', $response['expire_by']);
+        // $this->assertEquals(5184000, $response['expire_by'] - $response['issued_at']);
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -1029,28 +1029,28 @@ class InvoiceTest extends TestCase
         $this->createOrder();
         $this->fixtures->create('invoice');
 
-        // Issued invoice and past expired_by
+        // Issued invoice and past expire_by
         $this->createOrder(['id' => '100000001order']);
         $this->fixtures->create('invoice',
             [
                 'id'         => '1000001invoice',
                 'order_id'   => '100000001order',
-                'expired_by' => 1484519217,
+                'expire_by'  => 1484519217,
             ]);
 
-        // Draft invoice and past expired_by
+        // Draft invoice and past expire_by
         $this->createDraftInvoice([
                 'id'         => '1000002invoice',
-                'expired_by' => 1484519217
+                'expire_by'  => 1484519217
             ]);
 
-        // Issued invoice, past expired_by but paid
+        // Issued invoice, past expire_by but paid
         $this->createOrder(['id' => '100000003order']);
         $this->fixtures->create('invoice',
             [
                 'id'         => '1000003invoice',
                 'order_id'   => '100000003order',
-                'expired_by' => 1484519217,
+                'expire_by'  => 1484519217,
                 'status'     => 'paid',
             ]);
 

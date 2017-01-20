@@ -32,7 +32,7 @@ class Validator extends Base\Validator
     //
     // A minimum of 1 days of gap must exist between invoice issue and expired by
     //
-    const MIN_EXPIRY_DAYS = 1;
+    const MIN_EXPIRY_SECS = 86400;
 
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRED_BY          => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|integer',
     ];
 
     //
@@ -94,7 +94,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRED_BY          => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|integer',
     ];
 
     protected static $createIssuedRules = [
@@ -115,7 +115,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
-        Entity::EXPIRED_BY          => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|integer',
     ];
 
     protected static $editDraftRules  = [
@@ -134,7 +134,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::EXPIRED_BY          => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|integer',
     ];
 
     protected static $editIssuedRules  = [
@@ -395,19 +395,9 @@ class Validator extends Base\Validator
      */
     public function validateInvoiceIssue()
     {
+        $this->validateInvoiceIssueExpireBy();
+
         $invoice = $this->entity;
-
-        $minExpiredBy = Carbon::now('Asia/Kolkata')
-                              ->addDays(self::MIN_EXPIRY_DAYS)
-                              ->timestamp;
-
-        if ($invoice->getExpiredBy() < $minExpiredBy)
-        {
-            $message = 'expired_by should be at least ' . self::MIN_EXPIRY_DAYS
-                        . ' days in future at the time of issue.';
-
-            throw new BadRequestValidationFailureException($message);
-        }
 
         $type = $invoice->getType();
 
@@ -420,6 +410,22 @@ class Validator extends Base\Validator
             default:
                 $this->validateInvoiceIssueForOtherTypes($invoice);
                 break;
+        }
+    }
+
+    public function validateInvoiceIssueExpireBy()
+    {
+        $invoice = $this->entity;
+
+        $now         = Carbon::now('Asia/Kolkata');
+        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+
+        if ($invoice->getExpireBy() < $minExpireBy->timestamp)
+        {
+            $message = 'expire_by should be at least ' .
+                        $minExpireBy->diffForHumans($now) . ' the time of issue.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 

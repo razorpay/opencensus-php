@@ -643,57 +643,6 @@ class Service extends Base\Service
         ];
     }
 
-    /**
-     * Refunds all late authorized and not captured payments associated with
-     * expired invoices.
-     *
-     * Invoice's payments be it late authorized or not, are auto captured.
-     * But late authorized paymetns for expired invoices are not captured.
-     * This method gets triggered by a cron and refunds all such paymetns.
-     *
-     * @return array
-     */
-    public function refundLateAuthPaymentsOfExpiredInvoice()
-    {
-        $paymentsForRefund = $this->repo->payment->getLateAuthPaymentsOfExpiredInvoices();
-
-        $failCount = 0;
-
-        foreach ($paymentsForRefund as $paymentForRefund)
-        {
-            $merchant = $paymentForRefund->merchant;
-
-            try
-            {
-                $this->getNewProcessor($merchant)
-                     ->refundAuthorizedPayment($paymentForRefund);
-
-                $this->trace->info(
-                    TraceCode::EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND,
-                    [
-                        'payment_id' => $paymentForRefund->getId(),
-                    ]);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException(
-                    $e,
-                    null,
-                    TraceCode::EXPIRED_INVOICE_LATE_AUTH_PAY_REFUND_FAIL,
-                    [
-                        'payment_id' => $paymentForRefund->getId(),
-                    ]);
-
-                ++$failCount;
-            }
-        }
-
-        return [
-            'total_payments_for_refund'         => $paymentsForRefund->count(),
-            'payment_auto_refund_failure_count' => $failCount,
-        ];
-    }
-
     public function refundOldAuthorizedPayments()
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
