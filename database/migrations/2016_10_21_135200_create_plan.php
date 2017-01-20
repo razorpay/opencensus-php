@@ -27,7 +27,8 @@ class CreatePlan extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
-            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
+            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->integer(Entity::AMOUNT);
 
