@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Models\Base;
+use RZP\Constants\Entity;
 use RZP\Exception;
+use RZP\Models\Base;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -17,6 +18,10 @@ class Event
     const PAYMENT_CAPTURED          = 'payment.captured';
     const ORDER_PAID                = 'order.paid';
     const INVOICE_PAID              = 'invoice.paid';
+    const VPA_EDITED                = 'vpa.edited';
+    const P2P_CREATED               = 'p2p.created';
+    const P2P_REJECTED              = 'p2p.rejected';
+    const P2P_TRANSFERRED           = 'p2p.transferred';
 
     protected static $events = array(
         self::PAYMENT_AUTHORIZED,
@@ -24,6 +29,10 @@ class Event
         self::PAYMENT_CAPTURED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
+        self::VPA_EDITED,
+        self::P2P_CREATED,
+        self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
 
     protected static $bitMap = array(
@@ -32,6 +41,9 @@ class Event
         self::PAYMENT_CAPTURED      => 0x3,
         self::ORDER_PAID            => 0x4,
         self::INVOICE_PAID          => 0x5,
+        self::VPA_EDITED            => 0x6,
+        self::P2P_CREATED           => 0x7,
+        self::P2P_REJECTED          => 0x8,
     );
 
     /**
@@ -44,6 +56,10 @@ class Event
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
+        self::VPA_EDITED,
+        self::P2P_CREATED,
+        self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
 
     protected static $bitPosition = array(
@@ -52,6 +68,10 @@ class Event
         self::PAYMENT_CAPTURED      => 3,
         self::ORDER_PAID            => 4,
         self::INVOICE_PAID          => 5,
+        self::VPA_EDITED            => 6,
+        self::P2P_CREATED           => 7,
+        self::P2P_REJECTED          => 8,
+        self::P2P_TRANSFERRED       => 9,
     );
 
     /**
@@ -64,7 +84,21 @@ class Event
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
         self::INVOICE_PAID,
+        self::VPA_EDITED,
+        self::P2P_CREATED,
+        self::P2P_REJECTED,
+        self::P2P_TRANSFERRED,
     );
+
+    // Defines the mapping to entity for respective envent and also
+    // the field description to be set in mail content for webhook related mails
+    public static $eventsToEntityMap = [
+        self::PAYMENT_AUTHORIZED => Entity::PAYMENT,
+        self::PAYMENT_CAPTURED   => Entity::PAYMENT,
+        self::PAYMENT_FAILED     => Entity::PAYMENT,
+        self::INVOICE_PAID       => Entity::INVOICE,
+        self::ORDER_PAID         => Entity::ORDER,
+    ];
 
     /**
      * Takes the hex value and merges it

@@ -168,11 +168,12 @@ class Notify
         $replyTo    = $this->getCompleteEmail('support');
         $domain     = $this->domain;
         $fromHeader = 'Team Razorpay';
+        $paymentId  = $this->payment->getPublicId();
 
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -181,6 +182,10 @@ class Notify
                 {
                     $from = "reports@$domain";
                 }
+
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader('x-mailgun-tag', $paymentId);
 
                 // to might be an array
                 if (is_array($to))

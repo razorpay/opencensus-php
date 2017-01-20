@@ -3,6 +3,7 @@
 // *********************
 // START OF MAIN PROGRAM
 // *********************
+require_once('./helpers.php');
 
 // Define Constants
 // ----------------
@@ -84,17 +85,6 @@ function getStatusDescription($statusResponse) {
     return $result;
 }
 
-//  -----------------------------------------------------------------------------
-
-// If input is null, returns string "No Value Returned", else returns input
-function null2unknown($data) {
-    if ($data == "") {
-        return "No Value Returned";
-    } else {
-        return $data;
-    }
-}
-
 //  ----------------------------------------------------------------------------
 
 // If there has been a merchant secret set then sort and loop through all the
@@ -117,19 +107,15 @@ $errorExists = false;
 
 if (strlen($SECURE_SECRET) > 0 && $_GET["vpc_TxnResponseCode"] != "7" && $_GET["vpc_TxnResponseCode"] != "No Value Returned") {
 
-    $md5HashData = $SECURE_SECRET;
+    $hashData = getStringToHash($_GET);
 
-    foreach($_GET as $key => $value) {
-        if ($key != "vpc_SecureHash" or strlen($value) > 0) {
-            $md5HashData .= $value;
-        }
-    }
+    $checksum = getHashOfString($hashData, $SECURE_SECRET);
 
     // Validate the Secure Hash (remember MD5 hashes are not case sensitive)
 	// This is just one way of displaying the result of checking the hash.
 	// In production, you would work out your own way of presenting the result.
 	// The hash check is all about detecting if the data has changed in transit.
-    if (strtoupper($vpc_Txn_Secure_Hash) == strtoupper(md5($md5HashData))) {
+    if (strtoupper($vpc_Txn_Secure_Hash) == $checksum) {
         // Secure Hash validation succeeded, add a data field to be displayed
         // later.
         $hashValidated = "<FONT color='#00AA00'><strong>CORRECT</strong></FONT>";
@@ -150,21 +136,21 @@ if (strlen($SECURE_SECRET) > 0 && $_GET["vpc_TxnResponseCode"] != "7" && $_GET["
 // If not present then let the value be equal to 'No Value Returned'
 
 // Standard Receipt Data
-$amount          = null2unknown($_GET["vpc_Amount"]);
-$locale          = null2unknown($_GET["vpc_Locale"]);
-$batchNo         = null2unknown($_GET["vpc_BatchNo"]);
-$command         = null2unknown($_GET["vpc_Command"]);
-$message         = null2unknown($_GET["vpc_Message"]);
-$version         = null2unknown($_GET["vpc_Version"]);
-$cardType        = null2unknown($_GET["vpc_Card"]);
-$orderInfo       = null2unknown($_GET["vpc_OrderInfo"]);
-$receiptNo       = null2unknown($_GET["vpc_ReceiptNo"]);
-$merchantID      = null2unknown($_GET["vpc_Merchant"]);
-$authorizeID     = null2unknown($_GET["vpc_AuthorizeId"]);
-$merchTxnRef     = null2unknown($_GET["vpc_MerchTxnRef"]);
-$transactionNo   = null2unknown($_GET["vpc_TransactionNo"]);
-$acqResponseCode = null2unknown($_GET["vpc_AcqResponseCode"]);
-$txnResponseCode = null2unknown($_GET["vpc_TxnResponseCode"]);
+$amount          = $_GET["vpc_Amount"] ?? 'No Value Returned';
+$locale          = $_GET["vpc_Locale"] ?? 'No Value Returned';
+$batchNo         = $_GET["vpc_BatchNo"] ?? 'No Value Returned';
+$command         = $_GET["vpc_Command"] ?? 'No Value Returned';
+$message         = $_GET["vpc_Message"] ?? 'No Value Returned';
+$version         = $_GET["vpc_Version"] ?? 'No Value Returned';
+$cardType        = $_GET["vpc_Card"] ?? 'No Value Returned';
+$orderInfo       = $_GET["vpc_OrderInfo"] ?? 'No Value Returned';
+$receiptNo       = $_GET["vpc_ReceiptNo"] ?? 'No Value Returned';
+$merchantID      = $_GET["vpc_Merchant"] ?? 'No Value Returned';
+$authorizeID     = $_GET["vpc_AuthorizeId"] ?? 'No Value Returned';
+$merchTxnRef     = $_GET["vpc_MerchTxnRef"] ?? 'No Value Returned';
+$transactionNo   = $_GET["vpc_TransactionNo"] ?? 'No Value Returned';
+$acqResponseCode = $_GET["vpc_AcqResponseCode"] ?? 'No Value Returned';
+$txnResponseCode = $_GET["vpc_TxnResponseCode"] ?? 'No Value Returned';
 
 
 // 3-D Secure Data

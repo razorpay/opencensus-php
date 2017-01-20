@@ -336,6 +336,18 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::LIVE);
 
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_sec'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_sec'];
+            }
+        }
+
         return $this->config['live_hash_secret'];
     }
 
@@ -351,35 +363,5 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
-    }
-
-    public function generateClaims($input)
-    {
-        $paymentIds = array_map(function($row)
-        {
-            return $row['payment']['id'];
-        }, $input['data']);
-
-        $gatewayPayments = $this->repo->fetchByPaymentIdsAndAction(
-                                $paymentIds, Action::AUTHORIZE);
-
-        $gatewayPayments = $gatewayPayments->getDictionaryByAttribute(Entity::PAYMENT_ID);
-
-        $input['data'] = array_map(function($row) use ($gatewayPayments)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayPayments[$paymentId]))
-            {
-                $row['gateway'] = $gatewayPayments[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $input['data']);
-
-        $ns = $this->getGatewayNamespace();
-        $class = $ns . '\\' . 'ClaimsFile';
-
-        return (new $class)->generate($input);
     }
 }

@@ -103,13 +103,13 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        $merchantTerminalCategory = $input['merchant']->getCategory2();
+        $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
         $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
-                                                                        $merchantTerminalCategory);
+                                                                        $category2);
 
         return ($category === $merchantTerminalCategory);
     }

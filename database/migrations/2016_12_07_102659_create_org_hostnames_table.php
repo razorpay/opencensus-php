@@ -20,9 +20,10 @@ class CreateOrgHostnamesTable extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->increments('id');
+            $table->char(OrgHost::ID, OrgHost::ID_LENGTH)
+                  ->primary();
 
-            $table->char(OrgHost::ORG_ID);
+            $table->char(OrgHost::ORG_ID, Org::ID_LENGTH);
 
             $table->string(OrgHost::HOSTNAME)
                   ->unique();
@@ -31,14 +32,10 @@ class CreateOrgHostnamesTable extends Migration
 
             $table->integer(OrgHost::UPDATED_AT);
 
-            $table->integer(OrgHost::DELETED_AT)
-                  ->unsigned()
-                  ->nullable();
-
             $table->foreign(OrgHost::ORG_ID)
                   ->references(Org::ID)
                   ->on(Table::ORG)
-                  ->on_delete('cascade');
+                  ->on_delete('restrict');
         });
     }
 

@@ -2,15 +2,18 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use RZP\Models\Payment;
 use RZP\Reconciliator\Base;
+use RZP\Trace\TraceCode;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID = 'merchant_trans_ref';
-    const COLUMN_RRN = 'rrn_no';
+    const COLUMN_PAYMENT_ID     = ['merchant_trans_ref', 'merchant_tran_ref'];
+    const COLUMN_RRN            = 'rrn_no';
+    const COLUMN_REFUND_AMOUNT  = 'txn_amount';
 
     /**
      * Axis reconciliation files only send us the rrn which is mapped
@@ -28,5 +31,18 @@ class RefundReconciliate extends Base\RefundReconciliate
         $refundId = $axisMigsRepo->findByRrn($rrn)->getRefundId();
 
         return $refundId;
+    }
+
+    protected function getPaymentId(array $row)
+    {
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
+        {
+            if (isset($row[$cpi]) === true)
+            {
+                return $row[$cpi];
+            }
+        }
+
+        return null;
     }
 }

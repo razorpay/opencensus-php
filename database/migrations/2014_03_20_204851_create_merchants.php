@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\FeeModel;
 
 class CreateMerchants extends Migration
 {
@@ -25,6 +26,9 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ID, Merchant::ID_LENGTH)
                   ->primary();
 
+            $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Merchant::NAME);
 
             $table->string(Merchant::EMAIL, 255);
@@ -33,6 +37,12 @@ class CreateMerchants extends Migration
                   ->default(0);
 
             $table->integer(Merchant::ACTIVATED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::SUSPENDED_AT)
                   ->nullable();
 
             $table->tinyInteger(Merchant::LIVE)
@@ -67,6 +77,9 @@ class CreateMerchants extends Migration
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
+            $table->tinyInteger(Merchant::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
+
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
 
@@ -85,12 +98,13 @@ class CreateMerchants extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->tinyInteger(Merchant::CONVERT_CURRENCY)
+                  ->nullable();
+
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
 
-            $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
-                  ->nullable();
 
             $table->integer(Merchant::CREATED_AT);
 

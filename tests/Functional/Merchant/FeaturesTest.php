@@ -56,6 +56,11 @@ class FeaturesTest extends TestCase
         $this->assertArraySelectiveEquals($resultData, $content);
     }
 
+    public function testDeleteNonExistentFeatureFromMerchant()
+    {
+        $this->startTest();
+    }
+
     public function testMultiAssignFeature()
     {
         $merch1 = $this->fixtures->create('merchant', ['id' => '10000000000001']);

@@ -89,6 +89,33 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute('AuthStatus');
     }
+    
+    public function getProcessStatus()
+    {
+        return $this->getAttribute('ProcessStatus');
+    }
+    
+    public function getRefStatus()
+    {
+        return $this->getAttribute('RefStatus');
+    }
+
+    public function isTpv()
+    {
+        $accountNumber = $this->getAttribute('AccountNumber');
+
+        if ((empty($accountNumber) === true) or ($accountNumber === 'NA'))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function getBankReferenceNo()
+    {
+        return $this->getAttribute('BankReferenceNo');
+    }
 
     protected function getStatusAttribute()
     {
@@ -112,17 +139,5 @@ class Entity extends Base\Entity
         }
 
         return RefundStatus::$statusMap[$code];
-    }
-
-    public function isTpv()
-    {
-        $accountNumber = $this->getAttribute('AccountNumber');
-
-        if ((empty($accountNumber) === true) or ($accountNumber === 'NA'))
-        {
-            return false;
-        }
-
-        return true;
     }
 }

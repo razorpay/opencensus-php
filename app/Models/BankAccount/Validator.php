@@ -19,12 +19,14 @@ class Validator extends Base\Validator
         'beneficiary_address2'  => 'sometimes|max:30',
         'beneficiary_address3'  => 'sometimes|max:30',
         'beneficiary_address4'  => 'sometimes|max:30',
+        'mobile_banking_enabled'=> 'sometimes|in:0,1',
+        'mpin'                  => 'sometimes|max:6',
         'beneficiary_city'      => 'required|max:30',
         'beneficiary_state'     => 'required|max:2',
         'beneficiary_pin'       => 'required|integer|digits:6',
         'beneficiary_country'   => 'sometimes|in:IN',
         'beneficiary_email'     => 'required|email',
-        'beneficiary_mobile'    => 'required|numeric|digits_between:10,11',
+        'beneficiary_mobile'    => 'required|numeric|digits_between:10,12',
     );
 
     protected static $addBankAccountValidators = array(
@@ -48,7 +50,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIfscCode($mode)
+    public function validateIfscCode($mode = 'test')
     {
         $ifsc = $this->entity->getIfscCode();
 
@@ -74,7 +76,8 @@ class Validator extends Base\Validator
      */
     protected function isSpecialIfscCode($ifsc, $mode)
     {
-        return (($mode === Mode::TEST) and
-                ($ifsc === Entity::SPECIAL_IFSC_CODE));
+        return ((($mode === Mode::TEST) or ($mode === null)) and
+                (($ifsc === Entity::SPECIAL_IFSC_CODE) or
+                 ($ifsc === 'RAZR0000001')));
     }
 }

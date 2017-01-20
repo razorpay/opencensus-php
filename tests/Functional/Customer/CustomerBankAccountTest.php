@@ -43,6 +43,6 @@ class CustomerBankAccountTest extends TestCase
 
         $accounts = $this->testGetCustomerBankAccounts();
 
-        $this->assertEquals(count($accounts['items']), 2);
+        $this->assertEquals($accounts['count'], 3);
     }
 }

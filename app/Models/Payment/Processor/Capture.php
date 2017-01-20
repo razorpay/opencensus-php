@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Currency;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -34,9 +35,16 @@ trait Capture
 
         $payment = $this->retrieve($id);
 
+        // set the input currency if missing and payment currency is INR
+        if ((isset($input['currency']) === false) and
+            ($payment->getCurrency() === Currency\Currency::INR))
+        {
+            $input['currency'] = Currency\Currency::INR;
+        }
+
         $payment->getValidator()->validateInput('capture', $input);
 
-        return $this->capturePayment($payment, $input['amount']);
+        return $this->capturePayment($payment, $input['amount'], $input['currency']);
     }
 
     /**
@@ -64,9 +72,11 @@ trait Capture
 
         $this->app['segment']->trackPayment($payment, TraceCode::PAYMENT_AUTO_CAPTURE);
 
+        $currency = $payment->getCurrency();
+
         try
         {
-            $payment = $this->capturePayment($payment, $amount);
+            $payment = $this->capturePayment($payment, $amount, $currency);
         }
         catch (Exception\RecoverableException $e)
         {
@@ -94,21 +104,29 @@ trait Capture
     }
 
     /**
-     * We check if the capture status on the gateway is successful and on the api, it's not captured.
-     * If it's successful on the gateway side, we create a transaction on the api side.
+     * We check if the capture status on the gateway is successful (by checking on gateway and gateway_captured
+     * flag in the payment entity) and on the api, it's not captured.
+     * If it's successful on the gateway side, we create a transaction on the api side from authorized state.
      * This does not follow the convention where all authAndCapture supported gateways should have
      * the payment in captured state for a transaction to be created. But, these are edge cases where capture
      * succeeded on gateway and failed on api side due to some reason. This should ideally never happen.
      * We cannot create a transaction by capturing it because, the merchant may not actually want to capture
      * this payment anymore. Hence, we just create a transaction and leave it at that.
      *
-     * If the merchant wants to capture the payment later, he can capture it and the process would
-     * be like how it is for not AuthAndCapture supported gateways. [THIS NEEDS TO BE CHECKED].
+     * If the merchant wants to capture the payment later, he can capture it. We will not send a request
+     * to the gateway for capture (since gateway captured flag would be set). We will just record the capture
+     * in our system and update the existing transaction for the payment, as applicable.
+     *
+     * NOTE: This function is not really needed now since we have gateway_captured flag in the payment entity.
+     * If it is set, we just record the capture in our system (without calling gateway) and go through the normal flow.
+     *
      * TODO: add segment here
-     * @param $payment
+     *
+     * @param Payment\Entity $payment
+     *
      * @return array
      */
-    public function verifyCapture($payment)
+    public function verifyCapture(Payment\Entity $payment)
     {
         $this->setPayment($payment);
 
@@ -121,30 +139,26 @@ trait Capture
         // The payment should be in authorized or refunded state only.
         assert ($payment->isStatusCreatedOrFailed() === false);
 
-        // Currently going to do this only for HDFC. If we find issues with other gateways too,
-        // we will add the support for them.
-        assert ($payment->getGateway() === Payment\Gateway::HDFC);
+        $gatewayCaptured = $payment->isGatewayCaptured();
 
-        $data = [
-            'payment'   => $payment->toArray(),
-        ];
+        //
+        // This is not really required and is here for a more robust check. Can be removed anytime.
+        //
+        if (($payment->getGateway() === Payment\Gateway::HDFC) and
+            ($gatewayCaptured === true))
+        {
+            $gatewayCaptured = $this->callGatewayForVerifyCapture(['payment' => $payment->toArray()]);
+        }
 
-        $verify = $this->callGatewayForVerifyCapture($data);
-
-        // Here, verify=true means that the payment is captured on the gateway side.
-        if ($verify === true)
+        if ($gatewayCaptured)
         {
             $this->recordTransactionForFailedApiCapture();
 
             $msg = 'Has been captured on gateway and hence creating a transaction in api.';
         }
-        else if ($verify === false)
-        {
-            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
-        }
         else
         {
-            $msg = 'Could not perform verify capture.';
+            $msg = 'Has not been captured on gateway. Not doing anything on the api side.';
         }
 
         return ['verify_capture' => $msg];
@@ -171,11 +185,13 @@ trait Capture
     /**
      * Captures the payment.
      *
-     * @param  Payment\Entity   $payment
-     * @param  integer          $amount
+     * @param  Payment\Entity $payment
+     * @param  integer        $amount
+     * @param                 $currency
+     *
      * @return Payment\Entity
      */
-    protected function capturePayment($payment, $amount)
+    protected function capturePayment($payment, $amount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -189,22 +205,29 @@ trait Capture
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
                     'payment_id' => $payment->getId(),
-                    'amount' => $amount,
-                    'message' => 'Adds fee to the amount because fee bearer is customer',
+                    'amount'     => $amount,
+                    'message'    => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
-        $payment->getValidator()->captureValidate($payment, $amount);
+        $payment->getValidator()->captureValidate($payment, $amount, $currency);
 
         $data = array(
-            'payment'   => $payment->toArray(),
-            'amount'    => $amount
+            'payment'   => $payment->toArrayGateway(),
+            'amount'    => $amount,
+            'currency'  => $payment->getCurrency()
         );
 
         if ($payment->isMethodCardOrEmi())
         {
             $card = $this->repo->card->fetchForPayment($payment);
             $data['card'] = $card->toArray();
+        }
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $data['amount'] = $payment->getBaseAmount();
+            $data['currency'] = Currency\Currency::INR;
         }
 
         $this->captureOnGateway($data);
@@ -223,53 +246,41 @@ trait Capture
     {
         $this->verifyOrderUnpaid($this->payment);
 
-        $paymentCopy = clone $this->payment;
+        $this->mutex->acquireAndRelease(
+            $this->payment->getId(),
+            function() use($data)
+            {
+                try
+                {
+                    $this->callAndHandleCaptureOnGateway($data);
+                }
+                catch (Exception\BaseException $ex)
+                {
+                    $this->trace->traceException($ex);
 
-        try
-        {
-            $this->acquireMutexOnPayment($this->payment);
+                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex);
+                }
 
-            $this->callAndHandleCaptureOnGateway($data);
-
-            $this->recordCapture();
-        }
-        catch (Exception\BaseException $ex)
-        {
-            $this->updatePaymentIfApplicableOnCaptureFailure($ex, $paymentCopy);
-        }
-        finally
-        {
-            $this->releaseMutexOnPayment($this->payment);
-        }
+                // In case of a failure (marking the payment as failed),
+                // we won't record this capture since we throw the exception
+                // after marking the payment as failed.
+                $this->recordCapture();
+            });
     }
 
-    protected function updatePaymentIfApplicableOnCaptureFailure(
-        Exception\BaseException $ex,
-        Payment\Entity $paymentCopy)
+    protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
+        Exception\BaseException $ex)
     {
-        // For validation failures, we shouldn't mark capture as failed ever.
+        //
+        // For validation failures from the gateway or
+        // request exceptions, we shouldn't mark capture as failed ever.
+        //
         if (($ex instanceof Exception\BadRequestValidationFailureException) or
             ($ex instanceof Exception\BadRequestException) or
             ($ex instanceof Exception\GatewayRequestException))
         {
             throw $ex;
         }
-
-        if ($ex->getCode() === ErrorCode::SERVER_ERROR_PRICING_RULE_ABSENT)
-        {
-            // If pricing rule is not found, we should not mark capture as failed ever.
-            throw $ex;
-        }
-
-        $this->trace->traceException($ex);
-
-        //
-        // We need to use the old payment
-        // because the recordCapture would have made some changes
-        // to payment entity but not committed due to which payment
-        // entity will have corrupted data
-        //
-        $this->payment = $paymentCopy;
 
         $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
 
@@ -314,25 +325,13 @@ trait Capture
             throw $ex;
         }
 
-        $curlMessage = strtolower($ex->getData()['message']);
-
-        //
-        // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
-        // We want to mark the payment as successful only if the error
-        // message says that the operation timed out.
-        //
-        if (strpos($curlMessage, 'operation timed out') === false)
-        {
-            throw $ex;
-        }
-
         $this->trace->traceException($ex);
 
         $data['mode'] = $this->mode;
 
         $this->trace->info(
-            TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE, ['payment_id' => $this->payment->getId()]
-        );
+            TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
+            ['payment_id' => $this->payment->getId()]);
 
         // We will be removing this piece of code once the capture queue is written
         // for Cybersource to handle. Being tracked in the issue #1842
@@ -558,7 +557,7 @@ trait Capture
                 'order_id'      => $order->getId(),
             ]);
 
-        if ($invoice->getStatus() === Invoice\Status::PAID)
+        if ($invoice->hasBeenPaid() === true)
         {
             throw new Exception\LogicException(
                 'The invoice is already paid for.',

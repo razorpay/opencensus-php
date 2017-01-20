@@ -9,9 +9,7 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $org = new Entity;
-
-        $org->generateId();
+        $org = (new Entity)->generateId();
 
         $org->setAuditAction(Action::CREATE_ORG);
 
@@ -52,7 +50,9 @@ class Core extends Base\Core
 
         $org->setAuditAction(Action::DELETE_ORG);
 
-        $this->repo->deleteOrFail($org);
+        (new Hostname\Core)->deleteHostnamesOfOrg($id);
+
+        $this->repo->org->deleteOrFail($org);
 
         return $org->toArrayDeleted();
     }

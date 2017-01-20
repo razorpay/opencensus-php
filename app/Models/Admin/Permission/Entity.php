@@ -3,9 +3,9 @@
 namespace RZP\Models\Admin\Permission;
 
 use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use RevisionableTrait;
 

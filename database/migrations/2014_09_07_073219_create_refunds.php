@@ -33,6 +33,12 @@ class CreateRefunds extends Migration
 
             $table->char(Refund::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
 
+            $table->integer(Refund::BASE_AMOUNT)
+                  ->unsigned();
+
+            $table->tinyInteger(Refund::GATEWAY_REFUNDED)
+                  ->nullable();
+
             $table->text(Refund::NOTES);
 
             $table->char(Refund::TRANSACTION_ID, Refund::ID_LENGTH)

@@ -6,11 +6,11 @@ use RZP\Base;
 use RZP\Gateway\FirstData\ConnectRequestFields;
 use RZP\Gateway\FirstData\PaymentMode;
 use RZP\Gateway\FirstData\PaymentMethod;
-use RZP\Gateway\FirstData\Currency;
 use RZP\Gateway\FirstData\TxnType;
 use RZP\Gateway\FirstData\Codes;
 use RZP\Constants\HashAlgo;
 use RZP\Exception;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -38,7 +38,7 @@ class Validator extends Base\Validator
         ConnectRequestFields::STORE_NAME                => 'required|size:10|string',
         ConnectRequestFields::TIME_ZONE                 => 'required|string',
         ConnectRequestFields::TXN_DATE_TIME             => 'required|string',
-        ConnectRequestFields::TXN_TYPE                  => 'required|in:preauth',
+        ConnectRequestFields::TXN_TYPE                  => 'required|in:preauth,sale',
     ];
 
     protected static $authValidators = [

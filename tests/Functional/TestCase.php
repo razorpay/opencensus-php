@@ -84,4 +84,28 @@ class TestCase extends ParentTestCase
     {
         $this->app['env'] = 'production';
     }
+
+    /**
+     * After update api call, only response is asserted for update via base code.
+     * This method helps in asserting the same expected response with db's last
+     * entity.
+     * This ensures following failing case: If entity is build but saveOrFail()
+     * is not called, response will have expected updated data but in db it'll
+     * be old data still.
+     *
+     * @param string $entity
+     * @param string $methodName
+     *
+     * @return null
+     */
+    protected function assertUpdateResponseWithLastEntity(
+        string $entity,
+        string $methodName)
+    {
+        $entity   = $this->getLastEntity($entity);
+
+        $expected = $this->testData[$methodName]['response']['content'];
+
+        $this->assertArraySelectiveEquals($expected, $entity);
+    }
 }

@@ -343,6 +343,17 @@ class Service extends Base\Service
         return $refunds->toArrayPublic();
     }
 
+    public function fetchTransactionByPaymentId($id)
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+
+        $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $transaction->toArrayPublic();
+    }
+
     /**
      * Captures a payment
      *
@@ -962,7 +973,7 @@ class Service extends Base\Service
         Mail::send(
             'emails.merchant.authorized_reminder',
             $data,
-            function ($message) use ($subject, $emails, $name)
+            function ($message) use ($subject, $emails, $name, $data)
             {
 
                 foreach ($emails as $email)
@@ -975,6 +986,12 @@ class Service extends Base\Service
                 $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
                 $message->subject($subject);
+
+                $headers = $message->getHeaders();
+
+                foreach ($data['payments'] as $payment) {
+                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                }
             });
     }
 

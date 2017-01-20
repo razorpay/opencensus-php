@@ -75,7 +75,7 @@ return [
         'balance'           => 1048850,
         'gateway_fee'       => 0,
         'api_fee'           => 0,
-        'escrow_balance'    => 1048850,
+//        'escrow_balance'    => 1048850,
         'channel'           => 'kotak',
         'settled'           => false,
         'settlement_id'     => null,
@@ -260,7 +260,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
                 ],
             ],
             'status_code' => 500,
@@ -276,7 +276,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
                 ],
             ],
             'status_code' => 500,
@@ -308,7 +308,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins',
+                    'description' => 'The server encountered an error. The incident has been reported to admins.',
                 ],
             ],
             'status_code' => 500,

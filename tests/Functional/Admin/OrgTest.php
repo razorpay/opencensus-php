@@ -27,11 +27,30 @@ class OrgTest extends TestCase
     {
         $org = $this->fixtures->create('org');
 
+        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
         $authToken = $this->getAuthTokenForOrg($org);
 
         $this->ba->adminAuth('test', $authToken);
 
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testEditOtherOrg()
+    {
+        $org = $this->fixtures->create('org', ['cross_org_access' => true]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $otherOrg = $this->fixtures->create('org');
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $otherOrg->getPublicId();
 
         $this->startTest();
     }
@@ -44,9 +63,23 @@ class OrgTest extends TestCase
 
         $this->ba->adminAuth('test', $authToken);
 
+        $firstOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
+        $secondOrgHost = $this->fixtures->create('org_hostname', ['org_id' => $org->getId()]);
+
         $this->testData[__FUNCTION__]['request']['url'] .= '/' . $org->getPublicId();
 
         $this->startTest();
+
+        $data = $this->testData['deleteOrgException'];
+
+        $this->runRequestResponseFlow($data, function() use ($org) {
+            $this->getEntityById('org', $org->getPublicId(), true);
+        });
+
+        $this->runRequestResponseFlow($data, function() use ($org) {
+            $this->getEntityById('org', $org->getPublicId(), true, 'live');
+        });
     }
 
     public function testfetchMultipleOrg()
@@ -66,7 +99,12 @@ class OrgTest extends TestCase
 
     public function testCreateOrgNotUniqueHostname()
     {
-        $this->startTest();
+        $org = $this->fixtures->create('org');
+
+        $firstOrgHost = $this->fixtures->create('org_hostname',
+            ['org_id' => $org->getId(), 'hostname' => 'test1.com']);
+
+        $res = $this->startTest();
     }
 
     public function testGetOrg()
@@ -89,6 +127,25 @@ class OrgTest extends TestCase
         $hostnames = explode(',', $result['hostname']);
 
         $this->assertEquals(2, count($hostnames));
+    }
+
+    public function testGetOtherOrg()
+    {
+        $org = $this->fixtures->create('org', [
+            'cross_org_access' => true,
+        ]);
+
+        $authToken = $this->getAuthTokenForOrg($org);
+
+        $this->ba->adminAuth('test', $authToken);
+
+        $otherOrg = $this->fixtures->create('org', [
+            'email' => 'testotherrzp@gmail.com',
+        ]);
+
+        $this->testData[__FUNCTION__]['request']['url'] .= '/' . $otherOrg->getPublicId();
+
+        $result = $this->startTest();
     }
 
     public function testGetOrgByHostname()

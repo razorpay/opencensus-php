@@ -17,7 +17,7 @@ return [
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
-                'custom_code' => 'hdfc',
+                'custom_code' => 'test custom code',
                 'admin' => [
                     'name' => 'superadmin',
                     'branch_code' => 'a',
@@ -35,10 +35,11 @@ return [
                     'fbapi.com'
                 ],
                 'allow_sign_up' => false,
-                'email' => 'test@hdfc.com',
-                'display_name' => 'HDFC Bank',
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
-                'auth_type' => 'password',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code'
             ],
             'status_code' => 200,
         ],
@@ -50,12 +51,13 @@ return [
             'method' => 'put',
             'content' => [
                 'email_domains' => ['fbapi.com'],
+                'hostname' => 'test1.com, test2.com',
                 'email' => 'test@hdfc.com',
                 'allow_sign_up' => true,
                 'display_name' => 'HDFC Bank',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
-                'custom_code' => 'hdfc',
+                'custom_code' => 'test custom code',
             ],
         ],
         'response' => [
@@ -64,8 +66,36 @@ return [
                     'fbapi.com'
                 ],
                 'allow_sign_up' => true,
+                'email'         => 'test@hdfc.com',
+                'display_name'  => 'HDFC Bank',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type'     => 'password',
+                'custom_code'   => 'test custom code',
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testEditOtherOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'email_domains' => ['fbapi.com'],
                 'email' => 'test@hdfc.com',
-                'display_name' => 'HDFC Bank',
+                'allow_sign_up' => true,
+                'display_name' => 'HDFC Bank Edited By RZP',
+                'business_name' => 'HDFC Bank Public Limited',
+                'auth_type' => 'password',
+                'custom_code' => 'hdfc',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'email_domains' => ['fbapi.com'],
+                'allow_sign_up' => true,
+                'email' => 'test@hdfc.com',
+                'display_name' => 'HDFC Bank Edited By RZP',
                 'business_name' => 'HDFC Bank Public Limited',
                 'auth_type' => 'password',
             ],
@@ -130,6 +160,22 @@ return [
         ],
     ],
 
+    'deleteOrgException' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The id provided does not exist',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_ID
+        ],
+    ],
+
     'testGetOrg' => [
         'request' => [
             'url' => '/orgs',
@@ -138,6 +184,19 @@ return [
         'response' => [
             'content' => [
                 'email' => 'sreeram12@gmail.com'
+            ],
+            'status_code' => 200,
+        ],
+    ],
+
+    'testGetOtherOrg' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'get',
+        ],
+        'response' => [
+            'content' => [
+                'email' => 'testotherrzp@gmail.com'
             ],
             'status_code' => 200,
         ],
@@ -211,7 +270,7 @@ return [
             'url' => '/orgs',
             'method' => 'post',
             'content' => [
-                'hostname'  => 'dashboard.razorpay.com',
+                'hostname'  => 'test1.com',
                 'email_domains' => ['hdfc.com', 'fbapi.com'],
                 'allow_sign_up' => 0,
                 'email' => 'test@hdfc.com',
@@ -241,6 +300,20 @@ return [
         'exception' => [
             'class'               => Exception\BadRequestValidationFailureException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testCreateOrgHostnameSameAsDeletedHostname' => [
+        'request' => [
+            'url' => '/orgs',
+            'method' => 'put',
+            'content' => [
+                'allow_sign_up' => 0,
+            ],
+        ],
+        'response' => [
+            'content' => [],
+            'status_code' => 200,
         ],
     ],
 

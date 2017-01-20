@@ -29,8 +29,8 @@ trait Verify
         $refunds = $this->repo->refund->findForPayment($payment);
 
         $data = [
-            'payment' => $payment->toArray(),
-            'refunds' => $refunds->toArray(),
+            'payment' => $payment->toArrayGateway(),
+            'refunds' => $refunds->toArrayGateway(),
             'merchant' => $this->merchant,
         ];
 

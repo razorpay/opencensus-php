@@ -34,6 +34,11 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        if (isset($attributes['amount']))
+        {
+            $attributes['base_amount'] = $attributes['amount'];
+        }
+
         return parent::create($attributes);
     }
 
@@ -190,7 +195,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
         $merchant = (new \RZP\Models\Merchant\Repository)->find($attributes['merchant_id']);
 
         $payment->merchant()->associate($merchant);
@@ -233,7 +238,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:purchased',
             array(
@@ -262,7 +267,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         return $payment;
     }
@@ -277,7 +282,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         return $payment;
     }

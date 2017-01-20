@@ -7,13 +7,13 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App;
 use Hash;
 use Carbon\Carbon;
-use RZP\Models\Base\Traits\RevisionableTrait;
-use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Admin\Org;
+use RZP\Models\Admin\Base;
+use RZP\Models\Base\Traits\RevisionableTrait;
 
-class Entity extends Base\PublicEntity
+class Entity extends Base\Entity
 {
     use SoftDeletes;
     // enable revisioning on this entity
@@ -44,6 +44,9 @@ class Entity extends Base\PublicEntity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
+    const ROLES                 = 'roles';
+    const MERCHANTS             = 'merchants';
+    const GROUPS                = 'groups';
     const ALLOW_ALL_MERCHANTS   = 'allow_all_merchants';
 
     protected $dontKeepRevisionOf = [
@@ -93,9 +96,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::EMAIL,
-        self::PASSWORD,
         self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
         self::USER_TYPE,
         self::EMPLOYEE_CODE,
@@ -107,14 +108,12 @@ class Entity extends Base\PublicEntity
         self::LOCKED,
         self::LAST_LOGIN_AT,
         self::FAILED_ATTEMPTS,
-        self::OLD_PASSWORDS,
-        self::PASSWORD_CHANGED_AT,
         self::EXPIRED_AT,
         self::DELETED_AT,
         self::ALLOW_ALL_MERCHANTS,
-        'roles',
-        'groups',
-        'merchants',
+        self::ROLES,
+        self::GROUPS,
+        self::MERCHANTS,
     ];
 
     protected $public = [
@@ -124,7 +123,6 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::USERNAME,
         self::REMEMBER_TOKEN,
-        self::OAUTH_ACCESS_TOKEN,
         self::OAUTH_PROVIDER_ID,
         self::ORG_ID,
         self::USER_TYPE,
@@ -138,9 +136,9 @@ class Entity extends Base\PublicEntity
         self::DELETED_AT,
         self::LAST_LOGIN_AT,
         self::ALLOW_ALL_MERCHANTS,
-        'roles',
-        'groups',
-        'merchants',
+        self::ROLES,
+        self::GROUPS,
+        self::MERCHANTS,
     ];
 
     protected $casts = [
@@ -180,7 +178,7 @@ class Entity extends Base\PublicEntity
         });
     }
 
-
+    // -------------- Relations -------------
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
@@ -205,16 +203,6 @@ class Entity extends Base\PublicEntity
     public function tokens()
     {
         return $this->hasMany('RZP\Models\Admin\Admin\Token\Entity');
-    }
-
-    public function setPublicOrgIdAttribute(array & $attributes)
-    {
-        $orgId = $this->getAttribute(self::ORG_ID);
-
-        if ($orgId !== null)
-        {
-            $attributes[self::ORG_ID] = Org\Entity::getSignedId($orgId);
-        }
     }
 
     public function getPermissionsList()
@@ -286,6 +274,26 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILED_ATTEMPTS);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getFirstName()
+    {
+        return explode(' ', $this->getName())[0];
+    }
+
+    public function getOAuthAccessToken()
+    {
+        return $this->getAttribute(self::OAUTH_ACCESS_TOKEN);
+    }
+
+    public function getOAuthProviderId()
+    {
+        return $this->getAttribute(self::OAUTH_PROVIDER_ID);
+    }
+
     public function incrementFailedAttempts()
     {
         $attempts = $this->getAttribute(self::FAILED_ATTEMPTS) + 1;
@@ -308,7 +316,9 @@ class Entity extends Base\PublicEntity
         // $policy = $this->org->policy;
         $policy = new Org\AuthPolicy\Entity;
 
-        $maxPasswordsToRetain = $policy->getMaxPasswordToRetain();
+        $policy = $policy->toArray();
+
+        $maxPasswordsToRetain = $policy[Org\AuthPolicy\Entity::MAX_PASSWORD_RETAIN];
 
         $oldPasswords = $this->getAttribute(self::OLD_PASSWORDS);
 
@@ -351,7 +361,6 @@ class Entity extends Base\PublicEntity
     {
         $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
-
 
     /*
      * Setters
@@ -415,12 +424,11 @@ class Entity extends Base\PublicEntity
     public function isSuperAdmin()
     {
         $roles = $this->roles;
-        $app = App::getFacadeRoot();
 
-        foreach($roles as $role)
+        foreach ($roles as $role)
         {
             // default role is SuperAdmin
-            if($role->isSuperAdminRole() === true)
+            if ($role->isSuperAdminRole() === true)
             {
                 return true;
             }
@@ -431,9 +439,9 @@ class Entity extends Base\PublicEntity
 
     public function matchPassword(string $password)
     {
-        $expectedPwdHash = $this->getPassword(self::PASSWORD);
+        $expectedPassword = $this->getPassword(self::PASSWORD);
 
-        return Hash::check($password, $expectedPwdHash);
+        return Hash::check($password, $expectedPassword);
     }
 
     public function getPublicOrgId()

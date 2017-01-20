@@ -187,6 +187,12 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
+            $table->string(MerchantDetail::ROLE)
+                  ->nullable();
+
+            $table->string(MerchantDetail::DEPARTMENT)
+                  ->nullable();
+
             $table->string(MerchantDetail::COMMENT)
                   ->nullable();
 

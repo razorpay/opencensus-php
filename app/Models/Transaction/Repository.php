@@ -6,10 +6,10 @@ use RZP\Constants\Table;
 use RZP\Exception;
 use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Repository as MerchantRepo;
 use RZP\Models\Payment;
-use RZP\Models\Schedule\Repository as ScheduleRepo;
+use RZP\Models\Merchant;
 use RZP\Models\Settlement;
+use RZP\Models\Schedule;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -53,39 +53,50 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactions($timestamp)
     {
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
+        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
+        $transactionData = $this->getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
+                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
                     ->with('merchant')
-                    ->orderBy(Transaction\Entity::MERCHANT_ID)
-                    ->orderBy(Transaction\Entity::ID)
+                    ->orderBy($transactionMerchantId)
+                    ->orderBy($transactionId)
                     ->get();
     }
 
-    public function fetchUnsettledTxnsAndSchedules($timestamp)
+    public function fetchUnsettledTxnsForDueSchedules($timestamp)
     {
-        $schedules = (new ScheduleRepo)->fetchSchedulesWithDueRun($timestamp);
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
 
-        $merchants = (new MerchantRepo)->fetchBySettlementScheduleId($schedules->getIds());
+        $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
 
-        $txns = $this->newQuery()
-                     ->whereIn(Entity::MERCHANT_ID, $merchants->getIds())
-                     ->where(Entity::SETTLED_AT, '<', $timestamp)
-                     ->where(Entity::SETTLED, '=', 0)
-                     ->where(Entity::TYPE, '!=', Type::SETTLEMENT)
-                     ->with('merchant')
-                     ->orderBy(Entity::MERCHANT_ID)
-                     ->orderBy(Entity::ID)
-                     ->get();
+        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
+        $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionData = $this->getAttributeWithTableName('*');
 
-        $this->trace->info(TraceCode::SCHEDULE_UNSETTLED_TXNS_FETCH, [
-            'transactions' => $txns->getIds(),
-            'schedules'    => $schedules->getIds(),
-            'merchants'    => $merchants->getIds(),
-        ]);
-
-        return array($txns, $schedules);
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                    ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
+                    ->where(Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Entity::SETTLED, '=', 0)
+                    ->where($transactionType, '!=', Type::SETTLEMENT)
+                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
+                    ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
+                    ->with('merchant')
+                    ->orderBy($transactionMerchantId)
+                    ->orderBy($transactionId)
+                    ->get();
     }
 
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
@@ -127,6 +138,70 @@ class Repository extends Base\Repository
         $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
+    }
+
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    {
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->betweenTime($from, $to)
+                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
+                     ->with('merchant', 'feesBreakup')
+                     ->latest()
+                     ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source');
+
+        return $txns;
+    }
+
+    public function fetchAssociatedRelationsWithLoadedEntities(
+        $entities,
+        $relation,
+        $idCol = 'entity_id',
+        $typeCol = 'type')
+    {
+        $relationships = array();
+        $objects = array();
+
+        foreach ($entities as $entity)
+        {
+            $relationships[$entity->$typeCol][] = $entity->$idCol;
+        }
+
+        foreach ($relationships as $type => $ids)
+        {
+            $eagerLoadRelations = [];
+
+            if ($type === 'payment')
+            {
+                $eagerLoadRelations = ['netbanking', 'billdesk', 'order'];
+            }
+            else if ($type === 'refund')
+            {
+                $eagerLoadRelations = ['payment', 'payment.netbanking', 'payment.billdesk'];
+            }
+
+            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
+        }
+
+        foreach ($entities as $entity)
+        {
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
+        }
+
+        return $entities;
     }
 
     public function fetchDataForInvoice($merchantId, $from, $to)
@@ -241,10 +316,11 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function findByEntityId($entityId, $fail = false)
+    public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
                     ->first();
 
         if (($txn === null) and

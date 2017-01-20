@@ -155,19 +155,18 @@ return array(
         'test' => env('ES_TEST_INDEX')
     ],
 
-    // TODO MAKE BOTH USE DIFFERENT INDEX
-    'es_heimdall' => [
-        'live' => env('ES_HEIMDALL_LIVE_INDEX'),
-        'test' => env('ES_HEIMDALL_LIVE_INDEX')
+    'es_audit' => [
+        'live' => env('ES_AUDIT_LIVE_INDEX'),
+        'test' => env('ES_AUDIT_TEST_INDEX')
     ],
 
     'es_host'  => env('ES_HOST'),
 
-    'es_heimdall_host' => env('ES_HEIMDALL_HOST'),
+    'es_audit_host' => env('ES_AUDIT_HOST'),
 
     'es_mock'  => env('ES_MOCK'),
 
-    'es_heimdall_mock' => env('ES_HEIMDALL_MOCK'),
+    'es_audit_mock' => env('ES_AUDIT_MOCK'),
 
 
 );
