@@ -84,6 +84,10 @@ class Service extends Impl\Base
             {
                 return $this->driver($service)->shorten($url);
             }
+            /**
+             * Catching \Throwable as it is the base most interface and covers
+             * Error as well as Exceptions of any kind.
+             */
             catch (\Throwable $e)
             {
                 $data = ['service' => $service, 'url' => $url];
