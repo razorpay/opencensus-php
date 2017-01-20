@@ -333,10 +333,10 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlementId($setlId)
+    public function fetchBySettlement($setl)
     {
         return $this->newQuery()
-                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
                     ->get();
     }
 

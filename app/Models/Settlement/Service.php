@@ -79,7 +79,7 @@ class Service extends Base\Service
     {
         $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $txns = $this->repo->transaction->fetchBySettlementId($id);
+        $txns = $this->repo->transaction->fetchBySettlement($setl);
 
         return $txns->toArrayPublic();
     }

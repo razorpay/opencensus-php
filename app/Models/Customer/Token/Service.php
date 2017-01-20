@@ -64,12 +64,12 @@ class Service extends Base\Service
      * @param  string $customerId
      * @return entity tokens
      */
-    public function fetchMultiple($customerId)
+    public function fetchMultiple($id)
     {
         // This is needed to ensure that the merchant is getting only HIS customer's details
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $tokens = $this->repo->token->getByCustomerId($customerId);
+        $tokens = $this->repo->token->getByCustomer($customer);
 
         return $tokens->toArrayPublic();
     }

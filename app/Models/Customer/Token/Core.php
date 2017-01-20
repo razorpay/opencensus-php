@@ -76,7 +76,7 @@ class Core extends Base\Core
 
     public function fetchTokensByCustomer($customer)
     {
-        $tokens = $this->repo->token->getByCustomerId($customer->getId());
+        $tokens = $this->repo->token->getByCustomer($customer);
 
         return $tokens;
     }

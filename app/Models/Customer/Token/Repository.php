@@ -22,10 +22,10 @@ class Repository extends Base\Repository
         Entity::WALLET          => 'sometimes|alpha',
     );
 
-    public function getByCustomerId($id)
+    public function getByCustomer($customer)
     {
         return $this->newQuery()
-                    ->where(Token\Entity::CUSTOMER_ID, '=', $id)
+                    ->where(Token\Entity::CUSTOMER_ID, '=', $customer->getId())
                     ->orderBy(Entity::ID, 'desc')
                     ->get();
     }
