@@ -177,28 +177,17 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
     }
 
-    public function search(string $entity, array $params, string $merchantId = null)
+    public function search(string $entity, array $params, string $merchantId = null, array $groups = [])
     {
         $this->setIndexName($this->mode . '_' . $entity);
 
-        $clauses = [];                       // Boolean query clauses
-        $filters = [];                       // Filters
+        $query = [];
 
-        $from    = ($params['skip']) ?? 0;
-        unset($params['skip']);
+        list($from, $size) = $this->getFromAndSizeValue($params);
 
-        $size    = ($params['count']) ?? 10;
-        unset($params['count']);
+        $this->buildQuery($query, $params);
 
-        $this->buildSearchQuery($params, $merchantId, $clauses, $filters);
-
-        $query = [
-            'bool' => [
-                'should'               => $clauses,
-                'minimum_should_match' => 1,
-                'filter'               => $filters
-            ],
-        ];
+        $this->addAclFilters($query, $merchantId, $groups);
 
         $searchParams = [
             'index' => $this->indexName,
@@ -208,25 +197,14 @@ class EsRepository extends \Razorpay\Spine\Repository
                 'from'    => $from,
                 'size'    => $size,
                 'query'   => $query,
-                'highlight' => [
-                    'fields' => [
-                        '*' => new \stdClass,
-                    ],
-                ],
             ],
         ];
 
         $searchResult = $this->esDao->search($searchParams);
 
-        //
-        // TODO:
-        // What to do about highlights, Need to discuss in what format those will be
-        // returned in the api respose.
-        //
-
-        $hits = $searchResult['hits']['hits'];
-
-        $ids = collect($hits)->pluck('_id')->all();
+        $ids = collect($searchResult['hits']['hits'])
+                    ->pluck('_id')
+                    ->all();
 
         if (count($ids) === 0)
         {
@@ -235,46 +213,62 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $entities = $this->newQuery()->findMany($ids, array('*'));
 
-        //
-        // We throw and error if there is mismatch between es & mysql count
-        // TODO: Should we not do that? Just log and error but return whatever
-        //       results found in mysql?
-        //
         if (count($ids) !== $entities->count())
         {
-            throw new Exception\ServerErrorException(
-                'Did not find corresponding entity data in MySQL',
-                ErrorCode::SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND,
+            $this->trace->error(
+                TraceCode::ES_MYSQL_RESULTS_MISMATCH,
                 [
                     'ids' => $ids,
-                ]);
+                ]
+            );
         }
 
         return $entities;
     }
 
-    /**
-     * Builds search clauses(should) and filters for forming the query.
-     *
-     * @param array  $params
-     * @param string $merchantId
-     * @param array  $clauses
-     * @param array  $filters
-     *
-     * @return null
-     */
-    public function buildSearchQuery(
-        array   $params = [],
-        string  $merchantId = null,
-        array & $clauses,
-        array & $filters)
+    protected function getFromAndSizeValue(array & $params)
     {
-        //
-        // If merchand id is available, add it to filters
-        //
+        $from = ($params['skip']) ?? 0;
+        $size = ($params['count']) ?? 10;
+
+        unset($params['skip']);
+        unset($params['count']);
+
+        return [$from, $size];
+    }
+
+    protected function buildQuery(array & $query, array $params)
+    {
+        $mustClauses = [];
+
+        foreach ($params as $field => $value)
+        {
+            $func = 'addMustClauseFor' . studly_case($field);
+
+            if (method_exists($this, $func))
+            {
+                $this->$func($mustClauses, $value);
+            }
+            else
+            {
+                $this->addMustClauseDefault($mustClauses, $field, $value);
+            }
+        }
+
+        $query = [
+            'bool' => [
+                'must'   => $mustClauses,
+            ],
+        ];
+    }
+
+    protected function addAclFilters(array & $query, $merchantId, array $groups)
+    {
+        $filterMustClauses = [];
+
         if ($merchantId !== null)
         {
-            $filters[] = [
+            $filterMustClauses[] = [
                 'term' => [
                     'merchant_id' => [
                         'value' => $merchantId,
@@ -283,54 +277,47 @@ class EsRepository extends \Razorpay\Spine\Repository
             ];
         }
 
-        //
-        // If 'q' is set, form a multi_match clause on search fields
-        //
-        if (empty($params['q']) === false)
-        {
-            $clauses[] = [
-                'multi_match' => [
-                    'query'  => $params['q'],
-                    'type'   => 'best_fields',
-                    'fields' => $this->queryFields,
-                    'boost'  => 1,
+        $query['bool']['filter'] = [
+            'bool' => [
+                'must' => $filterMustClauses,
+            ],
+        ];
+    }
+
+    protected function addMustClauseDefault(array & $mustClauses, string $field, $value)
+    {
+        $mustClauses[] = [
+            'term' => [
+                $field => [
+                    'value' => $value,
+                    'boost' => 3,
                 ],
-            ];
+            ],
+        ];
+    }
 
-            unset($params['q']);
-        }
+    protected function addMustClauseForQ(array & $mustClauses, $value)
+    {
+        $mustClauses[] = [
+            'multi_match' => [
+                'query'  => $value,
+                'type'   => 'best_fields',
+                'fields' => $this->queryFields,
+                'boost'  => 1,
+            ],
+        ];
+    }
 
-        //
-        // If notes is set, form a multi_match clause on notes.* fields
-        //
-        if (empty($params['notes']) === false)
-        {
-            $clauses[] = [
-                'multi_match' => [
-                    'query'  => $params['notes'],
-                    'type'   => 'best_fields',
-                    'fields' => 'notes.*',
-                    'boost'  => 2,
-                ],
-            ];
-
-            unset($params['notes']);
-        }
-
-        //
-        // For all other params add a term clause
-        //
-        foreach ($params as $key => $value)
-        {
-            $clauses[] = [
-                'term' => [
-                    $key => [
-                        'value' => $value,
-                        'boost' => 3,
-                    ],
-                ]
-            ];
-        }
+    protected function addMustClauseForNotes(array & $mustClauses, $value)
+    {
+        $mustClauses[] = [
+            'multi_match' => [
+                'query'  => $value,
+                'type'   => 'best_fields',
+                'fields' => 'notes.*',
+                'boost'  => 2,
+            ],
+        ];
     }
 
     /**

@@ -489,6 +489,8 @@ class TraceCode
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
 
+    const ES_MYSQL_RESULTS_MISMATCH                 = 'ES_MYSQL_RESULTS_MISMATCH';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',

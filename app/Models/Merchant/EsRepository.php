@@ -40,5 +40,11 @@ class EsRepository extends Base\EsRepository
     public function updateQuery(& $query)
     {
         $query->with('merchantDetail');
+
+        /**
+         * TODO
+         * Get merchant's group results to be indexed too.
+         * That will be used for acl.
+         */
     }
 }

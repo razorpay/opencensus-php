@@ -152,7 +152,7 @@ trait RepositoryFetch
 
         if ($this->isEntityInOldEsFlow($entity) === false)
         {
-            return $this->esRepo->search($entity, $params);
+            return $this->esRepo->search($entity, $params, $merchantId);
         }
 
         return $this->esRepo->fetch($params, $merchantId);
