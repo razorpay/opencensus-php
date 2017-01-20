@@ -161,9 +161,9 @@ class TransactionController extends Controller
 
         $id = Input::get('razorpay_payment_id');
 
-        $amount = Input::get('amount');
+        $input = Input::except('razorpay_payment_id');
 
-        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
+        $error = (new Api\Service)->capturePayment($id, $mode, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -187,9 +187,9 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $amount = Input::get('amount');
+        $input = Input::all();
 
-        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
+        $error = (new Api\Service)->capturePayment($id, $mode, $input);
 
         return AppResponse::jsonResponse($error);
     }

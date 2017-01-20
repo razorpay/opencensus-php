@@ -45,6 +45,7 @@ app.controller('PaymentDetailCtrl', [
       'error_description',
       'fee',
       'id',
+      'international',
       'method',
       'notes',
       'refund_status',
@@ -81,6 +82,9 @@ app.controller('PaymentDetailCtrl', [
         resolve: {
           amount: function () {
             return $scope.entity.amount - $scope.entity.amount_refunded;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
@@ -125,21 +129,27 @@ app.controller('PaymentDetailCtrl', [
             }
 
             return baseAmount;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
       modalInstance.result.then(function (amount) {
-        $scope.capture(amount);
+        $scope.capture(amount, $scope.entity.currency);
       }, function () {
       });
     };
-    $scope.capture = function (amount) {
+    $scope.capture = function (amount, currency) {
       var captureAmount = parseInt(amount);
       if (!captureAmount) {
         $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
         return;
       }
-      var data = { amount: captureAmount };
+      var data = {
+        amount: captureAmount,
+        currency: currency
+      };
       var request = $http({
         method: 'post',
         url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/capture',
@@ -219,8 +229,12 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  function ($scope, $modalInstance, amount, currency) {
+
     $scope.amount = amount;
+    $scope.currency = currency;
+
     $scope.ok = function (amount) {
       $modalInstance.close(amount);
     };
@@ -233,10 +247,13 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  '$filter',
+  function ($scope, $modalInstance, amount, currency, $filter) {
 
-    // This is stored in INR
-    $scope.amount = (amount/100).toFixed(2);
+    // This is displayed with 2 decimal places
+    $scope.amount = $filter('propercurrency')(amount/100, '');
+    $scope.currency = currency;
     $scope.notes = {
       comment: null
     };
@@ -250,7 +267,9 @@ app.controller('PaymentDetailCtrl', [
     };
 
     $scope.ok = function (amount, comment) {
-      // We get amount in INR
+      // We get amount with 2 decimal places
+      // Note: If we ever do a currency with more or less than 2 decimal places
+      // refunds will break
       var data = {
         amount: amount*100
       };

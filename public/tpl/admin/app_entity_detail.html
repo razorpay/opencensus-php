@@ -18,7 +18,7 @@
           ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
         >
           <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
-            {{displayValue(key, value)}}
+            {{displayValue(key, value, entity)}}
           </span>
           {{key|titlecase}}
         </div>
