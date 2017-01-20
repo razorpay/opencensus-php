@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use Requests;
-use RZP\Trace\TraceCode;
-use Mail;
-use RZP\Models\Merchant;
 use App;
+use Mail;
+use Requests;
+
+use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 
 class Inferno
 {
@@ -97,29 +98,31 @@ class Inferno
 
     public function sendEmail($webhook, $type)
     {
-        $data = array();
+        $mailData = array();
 
         $toEmails = $webhook->merchant->getTransactionReportEmail();
 
-        $data['to_emails'] = $toEmails;
+        $mailData['to_emails'] = $toEmails;
 
         $subjectName = $webhook->merchant->getBillingLabelElseName();
 
         $subject = 'Razorpay | ';
 
-        $data['url'] = $webhook->getUrl();
-        $data['error_message'] = $this->errorMessage;
+        $mailData['url'] = $webhook->getUrl();
+        $mailData['error_message'] = $this->errorMessage;
 
-        if (empty($data['error_message']))
+        if (empty($mailData['error_message']))
         {
-            $data['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
+            $mailData['error_message'] = 'Internal Server Error. Please contact the Razorpay team for more details.';
         }
 
-        $data['date'] = date('d-M-Y H:m:s T');
+        $mailData['date'] = date('d-M-Y H:m:s T');
 
-        $event = json_decode($this->event, true);
+        $eventData = json_decode($this->event, true);
 
-        $data['event'] = $event['event'];
+        $mailData['event'] = $eventData['event'];
+
+        $this->setEntityData($mailData, $eventData);
 
         if ($type === 'failure')
         {
@@ -130,21 +133,36 @@ class Inferno
             $subject .= 'Webhook deactivated after 24 hours from last successful delivery for ' . $subjectName;
         }
 
-        $data['subject'] = $subject;
-        $data['mode'] = $this->mode;
+        $mailData['subject'] = $subject;
+        $mailData['mode'] = $this->mode;
 
-        Mail::send('emails.webhook.'.$type, $data, function($message) use ($data)
+        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData)
         {
-            $emails = $data['to_emails'];
+            $emails = $mailData['to_emails'];
 
             $message->from('alerts@razorpay.com', 'Razorpay Webhook Support');
 
             $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
-            $message->subject($data['subject']);
+            $message->subject($mailData['subject']);
 
             $message->to($emails);
         });
+    }
+
+    protected function setEntityData(array & $mailData, array $eventData)
+    {
+        $event = $eventData['event'];
+
+        if (isset(Event::$eventsToEntityMap[$event]) === false)
+        {
+            return;
+        }
+
+        $entityType = Event::$eventsToEntityMap[$event];
+
+        $mailData['entity_id'] = $eventData['payload'][$entityType]['entity']['id'];
+        $mailData['field_description'] = (studly_case($entityType) . " " . "Id");
     }
 
     public function getRequestHeaders($hmac)

@@ -308,12 +308,16 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\LineItem\Entity::class, [
-            'id' => '100000lineitem',
+            'id'          => '100000lineitem',
             'merchant_id' => '10000000000000',
-            'entity_id' => '1000000invoice',
+            'entity_id'   => '1000000invoice',
             'entity_type' => 'invoice',
-            'item_id' => '1000000000item',
-            'quantity' => 1,
+            'item_id'     => '1000000000item',
+            'name'        => 'Some item name',
+            'description' => 'Some item description',
+            'amount'      => 100000,
+            'currency'    => 'INR',
+            'quantity'    => 1,
         ]);
 
         $factory(\RZP\Gateway\FirstData\Entity::class, [

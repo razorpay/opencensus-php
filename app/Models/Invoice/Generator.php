@@ -138,7 +138,7 @@ class Generator extends Base\Core
             return;
         }
 
-        $this->lineItemCore->updateLineItems(
+        $this->lineItemCore->updateLineItemsAsPut(
             $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
@@ -273,7 +273,7 @@ class Generator extends Base\Core
             return;
         }
 
-        $this->lineItemCore->updateLineItems(
+        $this->lineItemCore->updateLineItemsAsPut(
             $input[Entity::LINE_ITEMS],
             $this->merchant,
             $this->invoice);
@@ -370,7 +370,7 @@ class Generator extends Base\Core
     {
         $randInt = mt_rand(0, 100);
 
-        if ($randInt >= 30)
+        if ($randInt >= 70)
         {
             $this->elfin->setServices([Elfin::BITLY, Elfin::GIMLI]);
         }

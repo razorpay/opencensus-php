@@ -1080,7 +1080,7 @@ return [
                         'id'          => 'li_100001lineitem',
                         'quantity'    => 1,
                         'name'        => 'Very new item 3',
-                        'description' => null,
+                        'description' => 'Some item description',
                         'amount'      => 500,
                         'currency'    => 'INR',
                     ],
@@ -1557,7 +1557,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required.',
+                    'description' => 'The amount field is required when item id is not present.',
                 ],
             ],
             'status_code' => 400,
@@ -1584,7 +1584,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required.',
+                    'description' => 'The amount field is required when item id is not present.',
                 ],
             ],
             'status_code' => 400,
@@ -1601,6 +1601,7 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'quantity'    => 1000,
+                'description' => 'Some different description from item template'
             ],
         ],
         'response' => [
@@ -1619,7 +1620,7 @@ return [
                     [
                         'quantity'         => 1000,
                         'name'             => 'Some item name',
-                        'description'      => 'Some item description',
+                        'description'      => 'Some different description from item template',
                         'amount'           => 100000,
                         'currency'         => 'INR'
                     ]
@@ -1627,46 +1628,6 @@ return [
                 'payment_id'       => null,
                 'status'           => 'draft',
                 'amount'           => 100000000,
-                'currency'         => 'INR',
-            ]
-        ]
-    ],
-
-    'testUpdateLineItemOfInvoiceWithNewItemData' => [
-        'request' => [
-            'url'       => '/invoices/inv_1000000invoice/line_items/li_100000lineitem',
-            'method'    => 'patch',
-            'content'   => [
-                'name'        => 'Item New',
-                'description' => 'Item New Description',
-                'quantity'    => 10,
-                'amount'      => 2000,
-            ],
-        ],
-        'response' => [
-            'content' => [
-                'entity'           => 'invoice',
-                'receipt'          => null,
-                'customer_id'      => 'cust_100000customer',
-                'customer_details' => [
-                    'customer_name'    => 'test',
-                    'customer_email'   => 'test@razorpay.com',
-                    'customer_contact' => '1234567890',
-                    'customer_address' => null
-                ],
-                'order_id'         => null,
-                'line_items'       => [
-                    [
-                        'quantity'         => 10,
-                        'name'             => 'Item New',
-                        'description'      => 'Item New Description',
-                        'amount'           => 2000,
-                        'currency'         => 'INR'
-                    ]
-                ],
-                'payment_id'       => null,
-                'status'           => 'draft',
-                'amount'           => 20000,
                 'currency'         => 'INR',
             ]
         ]
@@ -1697,7 +1658,7 @@ return [
                 'line_items'       => [
                     [
                         'quantity'         => 5,
-                        'name'             => 'Some item name',
+                        'name'             => 'A different item',
                         'description'      => 'Some item description',
                         'amount'           => 5000,
                         'currency'         => 'INR'
@@ -1717,14 +1678,15 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'quantity'    => 5,
-                'name'        => 'New item'
+                'name'        => 'New item',
+                'currency'    => 'USD',
             ],
         ],
         'response' => [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The amount field is required.',
+                    'description' => 'The selected currency is invalid.',
                 ],
             ],
             'status_code' => 400,

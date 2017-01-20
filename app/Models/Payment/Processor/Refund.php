@@ -286,8 +286,10 @@ trait Refund
 
         $supportsAuthAndCapture = Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
 
+        $gatewayRefunded = $refund->isGatewayRefunded();
+
         if ((($supportsAuthAndCapture === true) and ($payment->getCaptureTimestamp() !== null)) or
-            ($supportsAuthAndCapture === false) or
+            ($supportsAuthAndCapture === false) or ($gatewayRefunded === true) or
             ($forceRefundTransaction === true))
         {
             if ($payment->transaction === null)
@@ -405,19 +407,6 @@ trait Refund
             //
 
             if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
-            {
-                throw $ex;
-            }
-
-            $curlMessage = strtolower($ex->getData()['message']);
-
-            //
-            // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
-            // We want to mark the refund as successful only if the error
-            // message says that the operation timed out.
-            //
-
-            if (strpos($curlMessage, 'operation timed out') === false)
             {
                 throw $ex;
             }

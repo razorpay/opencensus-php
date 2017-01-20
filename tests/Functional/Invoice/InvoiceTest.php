@@ -78,8 +78,15 @@ class InvoiceTest extends TestCase
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(2, $lineItems['count']);
 
+        //
+        // Now, item wouldn't be getting created via line_items. line_items has
+        // item related fields and the sent input will be consumed there. item_id
+        // for all such line_items will be null.
+        // Keeping this one test to just ensure that, as preeviously it used
+        // to happen.
+        //
         $items = $this->getEntities('item', [], true);
-        $this->assertEquals(2, $items['count']);
+        $this->assertEquals(0, $items['count']);
 
         $invoice = $this->getLastEntity('invoice', true);
 
@@ -101,9 +108,6 @@ class InvoiceTest extends TestCase
 
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(2, $lineItems['count']);
-
-        $items = $this->getEntities('item', [], true);
-        $this->assertEquals(2, $items['count']);
 
         $invoice = $this->getLastEntity('invoice', true);
 
@@ -141,6 +145,11 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceWithNoData()
     {
+        //
+        // This asserts Invoice.getPaymentIdAttribute is working fine.
+        //
+        $this->fixtures->create('payment:captured');
+
         $this->startTest();
 
         $order = $this->getLastEntity('order', true);
@@ -214,6 +223,10 @@ class InvoiceTest extends TestCase
 
     public function testCreateInvoiceWithMultipleLineItemsAndDifferentCurrency()
     {
+        $skipReason = 'Only allowed currency is INR in validators of invoice, line_item and item for now.';
+
+        $this->markTestSkipped($skipReason);
+
         $this->createOrder();
 
         $this->fixtures->create('item', ['currency' => 'USD']);
@@ -524,7 +537,7 @@ class InvoiceTest extends TestCase
 
         $testData['response']['content']['amount'] += 200000;
 
-        $response = $this->startTest($testData);
+        $this->runRequestResponseFlow($testData);
     }
 
     public function testAddManyLineItemsToInvoice()
@@ -642,33 +655,6 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(1, $lineItems['count']);
-
-        $items = $this->getEntities('item', [], true);
-        $this->assertEquals(1, $items['count']);
-
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
-    }
-
-    public function testUpdateLineItemOfInvoiceWithNewItemData()
-    {
-        $this->createDraftInvoice();
-
-        $this->fixtures->create('item');
-        $this->fixtures->create('line_item');
-
-        $this->startTest();
-
-        // Above creates new item and associates new one with exisitng line item
-        // Asserting if it's success
-
-        $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(1, $lineItems['count']);
-
-        $items = $this->getEntities('item', [], true);
-        $this->assertEquals(2, $items['count']);
-
         $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
@@ -683,17 +669,12 @@ class InvoiceTest extends TestCase
             'item',
             [
                 'id'     => '1000000001item',
-                'amount' => 5000
+                'amount' => 5000,
+                'name'   => 'A different item',
             ]
         );
 
         $this->startTest();
-
-        $lineItems = $this->getEntities('line_item', [], true);
-        $this->assertEquals(1, $lineItems['count']);
-
-        $items = $this->getEntities('item', [], true);
-        $this->assertEquals(2, $items['count']);
 
         $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
