@@ -24,6 +24,15 @@ class TransferController extends Controller
         return ApiResponse::json($transfer);
     }
 
+    public function getTransfers()
+    {
+        $input = Request::all();
+
+        $transfers = $this->service->fetchMultiple($input);
+
+        return ApiResponse::json($transfers);
+    }
+
     public function postTransfer()
     {
         $input = Request::all();

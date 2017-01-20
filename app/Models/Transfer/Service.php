@@ -26,6 +26,15 @@ class Service extends Base\Service
         return $transfer->toArrayPublic();
     }
 
+    public function fetchMultiple(array $input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $transfers = $this->repo->transfer->fetch($input, $merchantId);
+
+        return $transfers->toArrayPublic();
+    }
+
     public function create(array $input) : array
     {
         $transfer = $this->core->createForMerchant($input, $this->merchant);

@@ -11,6 +11,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'transfer';
 
+    protected $entityFetchParamRules = [
+        Entity::SOURCE_ID           => 'sometimes|alpha_num|max:14',
+    ];
+
     protected $appFetchParamRules = [
         Entity::TRANSACTION_ID      => 'sometimes|alpha_num|size:14',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
