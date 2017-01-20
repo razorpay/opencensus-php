@@ -18,6 +18,8 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
+        $input = InputFormatter::format($input);
+
         $downWindow = $this->core->create($input);
 
         return $downWindow->toArrayPublic();

@@ -28,13 +28,17 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+        Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
         Entity::DOWNTIME_FROM   => 'sometimes|integer',
+        Entity::SOURCE          => 'required|string|max:30|custom',
+        Entity::ISSUER          => 'sometimes|string|max:50',
+        Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
+        Entity::CARD_TYPE       => 'sometimes|string|max:10',
+        Entity::NETWORK         => 'sometimes|string|max:10',
+        Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
-        Entity::COMMENT         => 'sometimes|string|max:500',
         Entity::PARTIAL         => 'sometimes|bool',
-        Entity::SOURCE          => 'required|string|max:30|custom',
-        Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
     ];
 
     protected static $createValidators = [
@@ -46,7 +50,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        Entity::DOWNTIME_TO
+        Entity::DOWNTIME_TO,
+        Entity::ISSUER,
+        Entity::CARD_TYPE,
+        Entity::NETWORK
     ];
 
     // Validation Notes:
@@ -122,20 +129,21 @@ class Validator extends Base\Validator
 
     public function validateIssuer(array $input)
     {
-        $issuer = $input[Entity::ISSUER] ?? null;
+        $issuer = $input[Entity::ISSUER] ?? $this->entity->getIssuer();
 
-        $method = $input[Entity::METHOD];
+        $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
         $this->validateIssuerNetbanking($gateway, $method, $issuer);
 
-        if ($issuer === null)
+        if (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
         {
             return;
         }
 
         $this->validateIssuerWallet($method, $issuer);
+
     }
 
     protected function validateIssuerNetbanking(string $gateway, string $method, string $issuer = null)
@@ -183,12 +191,12 @@ class Validator extends Base\Validator
     {
         $cardType = $input[Entity::CARD_TYPE] ?? null;
 
-        if (empty($cardType) === true)
+        $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
+
+        if (in_array($cardType, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
         {
             return;
         }
-
-        $method = $input[Entity::METHOD];
 
         // card type is not applicable for netbanking
         if ((strtolower($method) === Method::CARD) and
@@ -202,9 +210,9 @@ class Validator extends Base\Validator
 
     public function validateNetwork(array $input)
     {
-        $network = $input[Entity::NETWORK] ?? null;
+        $network = $input[Entity::NETWORK] ?? $this->entity->getNetwork();
 
-        if (empty($network) === true)
+        if (in_array($network, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
         {
             return;
         }
@@ -214,13 +222,13 @@ class Validator extends Base\Validator
         if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Network: '. $input[Entity::NETWORK] . ' is not a valid network'
+                'Network: '. $network . ' is not a valid network'
             );
         }
 
-        $method = $input[Entity::METHOD];
+        $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
 
-        $gateway = $input[Entity::GATEWAY];
+        $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
         $cardNetWork = Gateway::$cardNetworkMap[$gateway];
 

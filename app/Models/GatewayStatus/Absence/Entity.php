@@ -23,6 +23,14 @@ class Entity extends Base\PublicEntity
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
+    // the following 3 are for network, issuer and card_type
+    // for the appropriate default values instead of storing
+    // null
+    const NA = 'NA';
+    const UNKNOWN = 'UNKNOWN';
+    const ALL = 'ALL';
+
+
     protected $fillable = [
         self::GATEWAY,
         self::DOWNTIME_FROM,
@@ -65,18 +73,38 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::ISSUER        => null,
+        self::ISSUER        => self::UNKNOWN,
         self::TERMINAL_ID   => null,
-        self::CARD_TYPE     => null,
-        self::NETWORK       => null,
+        self::CARD_TYPE     => self::UNKNOWN,
+        self::NETWORK       => self::UNKNOWN,
         self::DOWNTIME_TO   => null,
         self::COMMENT       => null,
         self::SCHEDULED     => 0,
         self::PARTIAL       => 0,
     ];
 
+    protected $visible = [
+        self::ID,
+        self::GATEWAY,
+        self::ISSUER,
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::METHOD,
+        self::SOURCE,
+        self::DOWNTIME_FROM,
+        self::DOWNTIME_TO,
+        self::TERMINAL_ID,
+        self::REASON_CODE,
+        self::COMMENT,
+        self::PARTIAL,
+        self::SCHEDULED,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    ];
+
 
     const END_OF_TIME = 2147483647;
+
 
     protected $entity = 'gateway_absence';
 
@@ -135,6 +163,11 @@ class Entity extends Base\PublicEntity
     public function getSource()
     {
         return $this->getAttribute(self::SOURCE);
+    }
+
+    public function getGateway()
+    {
+        return $this->getAttribute(self::GATEWAY);
     }
 
     public function terminal()

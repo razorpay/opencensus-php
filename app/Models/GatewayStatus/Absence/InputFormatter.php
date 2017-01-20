@@ -1,0 +1,74 @@
+<?php
+
+namespace RZP\Models\GatewayStatus\Absence;
+
+use RZP\Models\Payment\Method;
+
+class InputFormatter
+{
+    public static function format(array $input)
+    {
+        switch($input[Entity::METHOD])
+        {
+            // for netbanking, the issuer needs to be
+            // available. This is part of the validation rule
+            // Note: wallets and netbanking have the same
+            // applicability as far as network and card_type
+            // are concerned
+            case Method::NETBANKING:
+            case Method::WALLET:
+                if ((isset($input[Entity::NETWORK]) === false) or
+                    (empty($input[Entity::NETWORK]) === true))
+                {
+                    $input[Entity::NETWORK] = Entity::NA;
+                }
+
+                if ((isset($input[Entity::CARD_TYPE]) === false) or
+                    (empty($input[Entity::CARD_TYPE]) === true))
+                {
+                    $input[Entity::CARD_TYPE] = Entity::NA;
+                }
+
+                // for all wallets, the issuer is the gateway itself
+                if (($input[Entity::METHOD] == Method::WALLET) and
+                    (empty($input[Entity::ISSUER]) === true))
+                {
+                    $input[Entity::ISSUER] = strtolower($input[Entity::GATEWAY]);
+                }
+
+                break;
+
+            case Method::CARD:
+                // we would assume in this case, that we aren't
+                // aware of the affected networks, cards or issuers
+                // we could also assume all. But we are playing
+                // safe here
+                if ((isset($input[Entity::NETWORK]) === false) or
+                    (empty($input[Entity::NETWORK]) === true))
+                {
+                    $input[Entity::NETWORK] = Entity::UNKNOWN;
+                }
+                if ((isset($input[Entity::CARD_TYPE]) === false) or
+                    (empty($input[Entity::CARD_TYPE]) === true))
+                {
+                    $input[Entity::CARD_TYPE] = Entity::UNKNOWN;
+                }
+                if ((isset($input[Entity::ISSUER]) === false) or
+                    (empty($input[Entity::ISSUER]) === true))
+                {
+                    $input[Entity::ISSUER] = Entity::UNKNOWN;
+                }
+                break;
+        }
+
+        return $input;
+    }
+
+    public static function editFormat(array $input, Entity $downWindow)
+    {
+        $input[Entity::METHOD] = $downWindow->getMethod();
+
+        return self::format($input);
+    }
+
+}

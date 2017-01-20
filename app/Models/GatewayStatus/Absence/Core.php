@@ -5,6 +5,7 @@ namespace RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
 {
@@ -12,7 +13,21 @@ class Core extends Base\Core
         Entity::GATEWAY,
         Entity::ISSUER,
         Entity::METHOD,
-        Entity::DOWNTIME_FROM
+        Entity::DOWNTIME_FROM,
+    ];
+
+    protected $editableForDuplicate = [
+        Entity::DOWNTIME_FROM,
+        Entity::DOWNTIME_TO,
+        Entity::SOURCE
+    ];
+
+    protected $unsetForDuplicate = [
+        Entity::ID,
+        Entity::CREATED_AT,
+        Entity::UPDATED_AT,
+        Entity::GATEWAY,
+        Entity::METHOD
     ];
 
     /**
@@ -36,11 +51,11 @@ class Core extends Base\Core
 
         if (empty($alreadyAvailable) === false)
         {
-            $needsUpdate = $this->verifyIfNeedsUpdate($alreadyAvailable, $input);
+            list($needsUpdate, $fieldsToBeUpdated) = $this->verifyIfNeedsUpdate($alreadyAvailable, $input);
 
             if ($needsUpdate === true)
             {
-                $editInput = $this->buildEditInput($input);
+                $editInput = $this->buildEditInput($input, $alreadyAvailable, $fieldsToBeUpdated);
 
                 return $this->edit($alreadyAvailable, $editInput);
             }
@@ -136,7 +151,7 @@ class Core extends Base\Core
 
         $absentees = $this->repo->gateway_absence->fetch($queryParams);
 
-        return $absentees->firstOrFail();
+        return $absentees->first();
     }
 
     protected function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)
@@ -149,33 +164,71 @@ class Core extends Base\Core
             $scheduled = 1;
         }
 
-        if ($alreadyScheduled->isScheduled() === $scheduled)
-        {
-            return false;
-        }
+        $returnStatus = false;
 
-        if (($alreadyScheduled->isScheduled() === true) and
-            ($scheduled === 0))
+        $fieldsToBeUpdated = [];
+
+        // check for card methods. create a new one if needed right away
+        // for netbanking and wallet, issuer is already taken care of by validator. Others
+        // are irrelevant
+
+        if ($alreadyScheduled->getMethod() === Method::CARD)
         {
-            return false;
+            $network = $alreadyScheduled->getNetwork();
+
+            $cardType = $alreadyScheduled->getCardType();
+
+            $issuer = $alreadyScheduled->getIssuer();
+
+            if ((in_array($network, [Entity::UNKNOWN, Entity::ALL], true) === true) and
+                (empty($input[Entity::NETWORK]) === false))
+            {
+                $fieldsToBeUpdated [] = Entity::NETWORK;
+
+                $returnStatus = true;
+            }
+
+            if ((in_array($cardType, [Entity::UNKNOWN, Entity::ALL], true) === true) and
+                (empty($input[Entity::CARD_TYPE]) === false))
+            {
+                $fieldsToBeUpdated [] = Entity::CARD_TYPE;
+
+                $returnStatus = true;
+            }
+
+            if ((in_array($issuer, [Entity::UNKNOWN, Entity::ALL], true) === true) and
+                (empty($input[Entity::ISSUER]) === false))
+            {
+                $fieldsToBeUpdated [] = Entity::ISSUER;
+
+                $returnStatus = true;
+            }
         }
 
         if (($alreadyScheduled->isScheduled() === false) and
             ($scheduled === 1))
         {
-            return true;
+            $fieldsToBeUpdated [] = Entity::SCHEDULED;
+
+            $returnStatus = true;
         }
 
-        return false;
+        return [$returnStatus, $fieldsToBeUpdated];
     }
 
-    protected function buildEditInput(array $input)
+    protected function buildEditInput(array $input, Entity $alreadyAvailable, array $fieldsToBeUpdated)
     {
-        $editInput = [
-            Entity::SCHEDULED       => $input[Entity::SCHEDULED],
-            Entity::DOWNTIME_FROM   => $input[Entity::DOWNTIME_FROM],
-            Entity::DOWNTIME_TO     => $input[Entity::DOWNTIME_TO]
-        ];
+        $editInput = $alreadyAvailable->toArray();
+
+        foreach($this->editableForDuplicate as $key)
+        {
+            $editInput[$key] = $input[$key];
+        }
+
+        foreach($fieldsToBeUpdated as $key)
+        {
+            $editInput[$key] = $input[$key];
+        }
 
         if (isset($input[Entity::COMMENT]))
         {
@@ -187,7 +240,20 @@ class Core extends Base\Core
             $editInput[Entity::PARTIAL] = $input[Entity::PARTIAL];
         }
 
-        $editInput[Entity::SOURCE] = $input[Entity::SOURCE];
+        if (isset($input[Entity::TERMINAL_ID]))
+        {
+            $editInput[Entity::TERMINAL_ID] = $input[Entity::TERMINAL_ID];
+        }
+
+        if ($alreadyAvailable->getReasonCode() !== $input[Entity::REASON_CODE])
+        {
+            $editInput[Entity::REASON_CODE] = $input[Entity::REASON_CODE];
+        }
+
+        foreach($this->unsetForDuplicate as $key)
+        {
+            unset($editInput[$key]);
+        }
 
         return $editInput;
     }

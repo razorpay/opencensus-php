@@ -4,6 +4,7 @@ namespace RZP\Models\GatewayStatus\Absence\CallbackProcessor;
 
 use App;
 use RZP\Exception;
+use RZP\Models\GatewayStatus\Absence\InputFormatter;
 use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
@@ -77,9 +78,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (empty($absent) === false)
                 {
                     $editData = [
-                        Entity::DOWNTIME_FROM => $absent->getDowntimeFrom(),
-                        Entity::DOWNTIME_TO   => time(),
-                        Entity::SOURCE => $absent->getSource()
+                        Entity::DOWNTIME_FROM   => $absent->getDowntimeFrom(),
+                        Entity::DOWNTIME_TO     => time(),
+                        Entity::SOURCE          => $absent->getSource()
                     ];
 
                     $downWindow = $this->core->edit($absent, $editData);
@@ -210,9 +211,6 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 $formatted[Entity::GATEWAY] = $issuer;
 
-                // issuer here does not make any sense. So, remove if it exists.
-                unset($formatted[Entity::ISSUER]);
-
                 break;
 
             case Method::WALLET:
@@ -226,8 +224,6 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 $formatted[Entity::GATEWAY] = $gateway;
 
-                unset($formatted[Entity::ISSUER]);
-
                 break;
 
             default:
@@ -236,6 +232,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 throw new Exception\BadRequestValidationFailureException('StatusCake invalid data', $method, $input);
         }
+
+        $formatted = InputFormatter::format($formatted);
     }
 
     protected function formatInput(array $input, int $status)

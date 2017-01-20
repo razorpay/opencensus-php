@@ -24,7 +24,7 @@ class CreateGatewayAbsence extends Migration
             $table->string(AbsenceEntity::GATEWAY, 255);
 
             $table->string(AbsenceEntity::ISSUER, 50)
-                  ->nullable();
+                  ->default(AbsenceEntity::UNKNOWN);
 
             $table->string(AbsenceEntity::REASON_CODE, 30);
 
@@ -34,10 +34,10 @@ class CreateGatewayAbsence extends Migration
                   ->nullable();
 
             $table->string(AbsenceEntity::CARD_TYPE, 10)
-                  ->nullable();
+                ->default(AbsenceEntity::UNKNOWN);
 
             $table->string(AbsenceEntity::NETWORK, 10)
-                  ->nullable();
+                ->default(AbsenceEntity::UNKNOWN);
 
             $table->string(AbsenceEntity::METHOD, 30);
 

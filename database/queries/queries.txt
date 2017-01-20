@@ -1574,10 +1574,14 @@ ALTER TABLE merchants
     ADD COLUMN archived_at INT DEFAULT NULL AFTER activated_at,
     ADD COLUMN suspended_at INT DEFAULT NULL AFTER archived_at;
 
+
 ALTER TABLE gateway_status_absence 
     CHANGE `from` `downtime_from` int(11) NOT NULL,
     CHANGE `to` `downtime_to` int(11) DEFAULT NULL,
     ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
     ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
-    ADD KEY `gateway_status_absence_source` (`source`);
-ALTER TABLE gateway_status_absence ALTER COLUMN scheduled SET DEFAULT 0;
+    ADD KEY `gateway_status_absence_source` (`source`),
+   ALTER COLUMN scheduled SET DEFAULT 0,
+   ALTER COLUMN issuer SET DEFAULT 'UNKNOWN',
+   ALTER COLUMN card_type SET DEFAULT 'UNKNOWN',
+  ALTER COLUMN network SET DEFAULT 'UNKNOWN';

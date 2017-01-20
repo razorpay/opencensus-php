@@ -106,8 +106,6 @@ class GatewayAbsenceTest extends TestCase
 
         $this->assertEquals($response['id'], $response2['id']);
 
-        $this->assertEquals($response['reason_code'], $response2['reason_code']);
-
         $this->assertEquals($response2['downtime_to'], $downtimeTo);
 
         $this->assertEquals($response2['scheduled'], true);
@@ -155,6 +153,42 @@ class GatewayAbsenceTest extends TestCase
         $this->assertEquals($absenceEntity['source'], 'statuscake');
 
     }
+
+    // tests with 2 inputs, one having minimal input while
+    // the other having max input. We need to create 2 entries
+    // for this
+    public function testGatewayAbsenceDuplicateWithCreate()
+    {
+        $request = [
+            'content' => [
+                'downtime_from' => Carbon::now()->subMinutes(60)->timestamp,
+                'gateway' => 'axis_migs',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'card',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ];
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        $request['content']['network'] = 'visa';
+
+        $request['content']['card_type'] = 'debit';
+
+        $request['content']['reason_code'] = 'OTHER';
+
+        $request['content']['downtime_to']  = Carbon::now()->addMinutes(60)->timestamp;
+
+        $response2 = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($response2['reason_code'], 'OTHER');
+
+        $this->assertEquals($response2['network'], 'visa');
+
+    }
+
 
     public function testGatewayCreateAbsenceNetbankingPartial()
     {
