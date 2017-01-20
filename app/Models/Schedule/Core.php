@@ -3,17 +3,29 @@
 namespace RZP\Models\Schedule;
 
 use RZP\Models\Base;
-use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
-    public function createSchedule($input)
+    /**
+     * @param array           $input
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function createSchedule(array $input, Merchant\Entity $merchant = null)
     {
         $schedule = (new Entity)->build($input);
 
         $schedule->generateId();
 
-        $schedule->setMerchantId(Account::SHARED_ACCOUNT);
+        if ($merchant === null)
+        {
+            $merchant = $this->repo->merchant->getSharedAccount();
+        }
+
+        $schedule->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($schedule);
 

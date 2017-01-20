@@ -10,7 +10,6 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID          = 'id';
     const NAME        = 'name';
     const MERCHANT_ID = 'merchant_id';
     const TYPE        = 'type';
@@ -22,8 +21,7 @@ class Entity extends Base\PublicEntity
 
     const DELETED_AT  = 'deleted_at';
 
-    protected $fillable = array(
-        self::ID,
+    protected $fillable = [
         self::NAME,
         self::TYPE,
         self::PERIOD,
@@ -31,9 +29,9 @@ class Entity extends Base\PublicEntity
         self::ANCHOR,
         self::DELAY,
         self::NEXT_RUN,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::NAME,
         self::MERCHANT_ID,
@@ -43,12 +41,12 @@ class Entity extends Base\PublicEntity
         self::ANCHOR,
         self::DELAY,
         self::NEXT_RUN,
-    );
+    ];
 
-    protected static $modifiers = array(
+    protected static $modifiers = [
         self::ANCHOR,
         self::NEXT_RUN,
-    );
+    ];
 
     protected $casts = [
         self::INTERVAL => 'int',
@@ -90,8 +88,7 @@ class Entity extends Base\PublicEntity
 
     public function merchant()
     {
-        return $this->belongsTo(
-            'RZP\Models\Merchant\Entity', self::MERCHANT_ID);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
     // ----------------------- Modifiers -------------------------------------------
@@ -172,10 +169,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->setAttribute(self::NEXT_RUN, $nextRun);
     }
-
-    public function setMerchantId($merchantId)
-    {
-        return $this->setAttribute(self::MERCHANT_ID, $merchantId);
-    }
-
 }

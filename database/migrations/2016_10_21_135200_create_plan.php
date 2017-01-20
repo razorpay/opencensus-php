@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Plan\Entity;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Schedule;
 
 class CreatePlan extends Migration
 {
@@ -22,17 +23,19 @@ class CreatePlan extends Migration
             $table->engine = 'InnoDB';
 
             $table->char(Entity::ID, Entity::ID_LENGTH)
-                ->primary();
+                  ->primary();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
+            $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::AMOUNT);
 
             $table->char(Entity::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
 
-            $table->string(Entity::INTERVAL, 16);
+            // $table->string(Entity::INTERVAL, 16);
 
-            $table->integer(Entity::INTERVAL_COUNT);
+            //$table->integer(Entity::INTERVAL_COUNT);
 
             $table->string(Entity::NAME, 256);
 
@@ -48,6 +51,11 @@ class CreatePlan extends Migration
                   ->references(Merchant\Entity::ID)
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
+
+            $table->foreign(Entity::SCHEDULE_ID)
+                  ->references(Schedule\Entity::ID)
+                  ->on(Table::SCHEDULE)
+                  ->on_delete('restrict');
         });
     }
 
@@ -61,6 +69,8 @@ class CreatePlan extends Migration
         Schema::table(Table::PLAN, function($table)
         {
             $table->dropForeign(Table::PLAN . '_' . Entity::MERCHANT_ID . '_foreign');
+
+            $table->dropForeign(Table::PLAN . '_' . Entity::SCHEDULE_ID . '_foreign');
         });
 
         Schema::drop(Table::PLAN);

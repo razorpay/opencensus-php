@@ -10,8 +10,8 @@ return [
             'content' => [
                 'amount'            => 2000,
                 'currency'          => 'INR',
-                'interval'          => 'month',
-                'interval_count'    => 1,
+                'period'            => 'monthly-date',
+                'interval'          => 2,
                 'name'              => 'test plan',
             ],
         ],
@@ -19,8 +19,6 @@ return [
             'content' => [
                 'amount' =>  2000,
                 'currency' => 'INR',
-                'interval' => 'month',
-                'interval_count' => 1,
                 'name' => 'test plan',
                 'notes' => [],
             ],
@@ -42,7 +40,7 @@ return [
             ],
         ],
     ],
-    
+
     'testSubscriptionCharge' => [
         'request' => [
             'url' => '/subscriptions/charge',

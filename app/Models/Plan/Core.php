@@ -2,8 +2,10 @@
 
 namespace RZP\Models\Plan;
 
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Schedule;
 
 class Core extends Base\Core
 {
@@ -11,10 +13,43 @@ class Core extends Base\Core
     {
         $plan = (new Entity)->build($input);
 
-        $plan->merchant()->associate($merchant);
+        //
+        // Transaction on live and test is required because
+        // schedule is created in both live and test.
+        //
+        $this->repo->transactionOnLiveAndTest(
+            function()
+            use ($plan, $merchant, $input)
+            {
+                $plan->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($plan);
+                $this->createSchedule($plan, $input);
+
+                // We need to do this because `createSchedule` will change the
+                // connection to live.
+                $plan->setConnection($this->mode);
+
+                $this->repo->saveOrFail($plan);
+            });
 
         return $plan;
+    }
+
+    protected function createSchedule(Entity $plan, array $input)
+    {
+        // TODO: Decide on the name for the schedule.
+
+        $scheduleInput = [
+            Schedule\Entity::NAME       => $input[Entity::NAME],
+            Schedule\Entity::PERIOD     => $input[Entity::PERIOD],
+            Schedule\Entity::INTERVAL   => $input[Entity::INTERVAL],
+            // TODO: Make delay nullable in the schedule entity
+            Schedule\Entity::DELAY      => 0,
+            Schedule\Entity::TYPE       => Schedule\Type::PLAN,
+        ];
+
+        $schedule = (new Schedule\Core)->createSchedule($scheduleInput, $plan->merchant);
+
+        $plan->schedule()->associate($schedule);
     }
 }

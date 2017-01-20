@@ -307,6 +307,7 @@ class Charge
     {
         $intervalFunc = $this->getIntervalFunction($plan);
 
+        // TODO: Fix this. There's no `getIntervalCount`
         $intervalCount = $plan->getIntervalCount();
 
         if ($subscription->getPaidCount() === 0)
@@ -419,6 +420,7 @@ class Charge
 
     protected function getIntervalFunction(Plan\Entity $plan)
     {
+        // TODO: Fix this. There's no `getInterval` function.
         $interval = $plan->getInterval();
 
         return 'add' . $interval . 's';

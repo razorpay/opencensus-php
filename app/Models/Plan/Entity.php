@@ -12,10 +12,13 @@ class Entity extends Base\PublicEntity
 
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
+    const PERIOD            = 'period';
     const INTERVAL          = 'interval';
-    const INTERVAL_COUNT    = 'interval_count';
+    //const INTERVAL_COUNT    = 'interval_count';
     const NAME              = 'name';
     const NOTES             = 'notes';
+    const MERCHANT_ID       = 'merchant_id';
+    const SCHEDULE_ID       = 'schedule_id';
 
     protected static $sign = 'plan';
 
@@ -32,9 +35,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
-        // TODO: Use schedule instead
-        self::INTERVAL,
-        self::INTERVAL_COUNT,
+        // self::INTERVAL,
+        // self::INTERVAL_COUNT,
         self::NAME,
         self::NOTES,
     ];
@@ -42,8 +44,8 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::AMOUNT,
         self::CURRENCY,
-        self::INTERVAL,
-        self::INTERVAL_COUNT,
+        // self::INTERVAL,
+        // self::INTERVAL_COUNT,
         self::NAME,
         self::NOTES,
         self::CREATED_AT
@@ -51,7 +53,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT            => 'int',
-        self::INTERVAL_COUNT    => 'int',
+        // self::INTERVAL_COUNT    => 'int',
     ];
 
     // --------------------- GETTERS ---------------------
@@ -61,15 +63,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getInterval()
-    {
-        return $this->getAttribute(self::INTERVAL);
-    }
-
-    public function getIntervalCount()
-    {
-        return $this->getAttribute(self::INTERVAL_COUNT);
-    }
+    // public function getInterval()
+    // {
+    //     return $this->getAttribute(self::INTERVAL);
+    // }
+    //
+    // public function getIntervalCount()
+    // {
+    //     return $this->getAttribute(self::INTERVAL_COUNT);
+    // }
 
     // --------------------- END GETTERS ---------------------
 
@@ -78,6 +80,11 @@ class Entity extends Base\PublicEntity
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function schedule()
+    {
+        return $this->belongsTo('RZP\Models\Schedule\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------
