@@ -22,6 +22,10 @@ class Validator extends Base\Validator
         Entity::EXPIRED_AT      => 'sometimes|integer',
     );
 
+    protected static $editRules = array(
+        Entity::RECURRING       => 'sometimes|boolean',
+    );
+
     protected static function validateBank($attribute, $value)
     {
         if (Bank\IFSC::exists($value) === false)
