@@ -430,6 +430,23 @@ class SettlementTest extends TestCase
         $this->assertNotEquals($content, null);
     }
 
+    public function testIciciNodalTransfer()
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/nodal/transfer/icici',
+            'method'  => 'POST',
+            'content' => [
+                'amount' => 1076
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content['file']);
+    }
+
     protected function createAndAssignSchedule()
     {
         $request = array(

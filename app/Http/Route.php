@@ -4,6 +4,8 @@ namespace RZP\Http;
 
 use ApiResponse;
 
+use RZP\Models\Admin\Permission\Name as Permission;
+
 final class Route
 {
     /*
@@ -145,6 +147,8 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
+        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -195,6 +199,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'batch_setl_calc_previous_fees'           => ['post',     'batchsettlements/fees/previous',                 'SettlementController@postBatchSettlementCalculatePreviousFees'     ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -225,6 +230,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
+        'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
@@ -537,6 +543,7 @@ final class Route
 
     public static $internal = array(
         'admin_fetch_entity_multiple',
+        'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
         'merchant_secret',
         'merchant_create',
@@ -605,6 +612,7 @@ final class Route
         'setl_post_details_old',
         'setl_fixer',
         'settlement_compute_tax',
+        'nodal_initiate_transfer',
         'batch_setl_calc_previous_fees',
         'batch_settlement_compute_tax',
         'payment_verify',
@@ -627,6 +635,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
+        'ecollect_validate',
+        'ecollect_pay',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -792,57 +802,41 @@ final class Route
     ];
 
     public static $adminPermission = [
-        'group_create'               => ['create_group'],
-        'admin_create'               => ['create_admin'],
-        'group_get'                  => ['view_group'],
-        'group_get_multiple'         => ['view_all_group'],
-        'org_create'                 => ['create_org'],
-        'org_get_multiple'           => ['view_all_org'],
-        'org_edit'                   => ['edit_org'],
-        'org_delete'                 => ['delete_org'],
-        'org_get'                    => ['view_org'],
-        'role_create'                => ['create_role'],
-        'role_get_multiple'          => ['view_all_role'],
-        'role_get'                   => ['view_role'],
-        'role_edit'                  => ['edit_role'],
-        'role_delete'                => ['delete_role'],
-        'admin_get_multiple'         => ['view_all_admin'],
-        'admin_get'                  => ['view_admin'],
-        'admin_edit'                 => ['edit_admin'],
-        'admin_delete'               => ['delete_admin'],
-        'admin_roles_create'         => ['create_admin', 'create_role'],
-        'admin_roles_revoke'         => ['create_admin', 'create_role'],
-        'admin_merchants_create'     => ['create_admin', 'create_merchant'],
-        'admin_merchants_delete'     => ['delete_admin', 'delete_merchant'],
-        'group_edit'                 => ['edit_group'],
-        'group_delete'               => ['delete_group'],
-        'group_merchants_create'     => ['create_group', 'create_merchants'],
-        'group_admins_get'           => ['view_group', 'view_admins'],
-        'group_admins_create'        => ['create_group', 'create_admins'],
-        'group_roles_create'         => ['create_group', 'create_role'],
-        'group_admins_delete'        => ['delete_group', 'delete_admins'],
-        'permission_get_multiple'    => ['view_all_permission'],
-        'edit_activate_merchant'     => ['merchant_activate'],
-        'edit_merchant_enable_live'  => ['merchant_live_enable'],
-        'edit_merchant_disable_live' => ['merchant_live_disable'],
-        'edit_merchant_methods'      => ['merchant_put_payment_methods'],
-        'edit_merchant_pricing'      => ['merchant_assign_pricing'],
-        'add_merchant_adjustment'    => ['adj_add'],
-        'edit_merchant_email'        => ['merchant_edit_email'],
-        'group_get_allowed_groups'   => ['group_get_allowed_groups'],
-        'schedule_create'            => ['schedule_create'],
-        'schedule_fetch'             => ['schedule_fetch'],
-        'schedule_fetch_multiple'    => ['schedule_fetch_multiple'],
-        'schedule_delete'            => ['schedule_delete'],
-        'schedule_update'            => ['schedule_update'],
-        'schedule_assign'            => ['schedule_assign'],
-        'schedule_migration'         => ['schedule_migration'],
-        'admin_fetch_merchant_ids'   => ['view_all_merchants'],
-        'permission_create'          => ['create_permission'],
-        'permission_edit'            => ['edit_permission'],
-        'permission_get'             => ['get_permission'],
-        'permission_delete'          => ['delete_permission'],
-        'auditlog_search'            => ['view_auditlog'],
+        'group_create'               => [Permission::CREATE_GROUP],
+        'admin_create'               => [Permission::CREATE_ADMIN],
+        'group_get'                  => [Permission::VIEW_GROUP],
+        'group_get_multiple'         => [Permission::VIEW_ALL_GROUP],
+        'org_create'                 => [Permission::CREATE_ORG],
+        'org_get_multiple'           => [Permission::VIEW_ALL_ORG],
+        'org_edit'                   => [Permission::EDIT_ORG],
+        'org_delete'                 => [Permission::DELETE_ORG],
+        'org_get'                    => [Permission::VIEW_ORG],
+        'role_create'                => [Permission::CREATE_ROLE],
+        'role_get_multiple'          => [Permission::VIEW_ALL_ROLE],
+        'role_get'                   => [Permission::VIEW_ROLE],
+        'role_edit'                  => [Permission::EDIT_ROLE],
+        'role_delete'                => [Permission::DELETE_ROLE],
+        'admin_get_multiple'         => [Permission::VIEW_ALL_ADMIN],
+        'admin_get'                  => [Permission::VIEW_ADMIN],
+        'admin_edit'                 => [Permission::EDIT_ADMIN],
+        'admin_delete'               => [Permission::DELETE_ADMIN],
+        'group_edit'                 => [Permission::EDIT_GROUP],
+        'group_delete'               => [Permission::DELETE_GROUP],
+        'permission_get_multiple'    => [Permission::VIEW_ALL_PERMISSION],
+        'group_get_allowed_groups'   => [Permission::GROUP_GET_ALLOWED_GROUPS],
+        'schedule_create'            => [Permission::SCHEDULE_CREATE],
+        'schedule_fetch'             => [Permission::SCHEDULE_FETCH],
+        'schedule_fetch_multiple'    => [Permission::SCHEDULE_FETCH_MULTIPLE],
+        'schedule_delete'            => [Permission::SCHEDULE_DELETE],
+        'schedule_update'            => [Permission::SCHEDULE_UPDATE],
+        'schedule_assign'            => [Permission::SCHEDULE_ASSIGN],
+        'schedule_migration'         => [Permission::SCHEDULE_MIGRATION],
+        'admin_fetch_merchant_ids'   => [Permission::VIEW_ALL_MERCHANTS],
+        'permission_create'          => [Permission::CREATE_PERMISSION],
+        'permission_edit'            => [Permission::EDIT_PERMISSION],
+        'permission_get'             => [Permission::GET_PERMISSION],
+        'permission_delete'          => [Permission::DELETE_PERMISSION],
+        'auditlog_search'            => [Permission::VIEW_AUDITLOG],
         'admin_logout'               => ['*'],
     ];
 
@@ -858,7 +852,6 @@ final class Route
         'invoice_view_live_post',
         'invoice_view_test_post',
         'sms_callback',
-        'reconciliate',
         'checkout_public',
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
@@ -870,7 +863,6 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
-        'auditlog_search'
     );
 
     public static $internalApps = array(
@@ -914,8 +906,16 @@ final class Route
             'billdesk_create_cancelled_refunds',
         ),
 
+        'kotak' => array(
+            'ecollect_validate',
+            'ecollect_pay',
+        ),
+
         'mailgun' => array(
             'reconciliate'
+        ),
+
+        'raven' => array(
         ),
 
         'hosted' => array(
@@ -1038,7 +1038,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -1055,7 +1055,7 @@ final class Route
         return $url;
     }
 
-    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
         if ($key === '')
         {
@@ -1065,7 +1065,7 @@ final class Route
         return $this->getUrl($routeName, $parameters, $key);
     }
 
-    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = [])
     {
         $key = $this->ba->getPublicKey();
 
@@ -1078,7 +1078,7 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
     {
         if ($key === '')
         {
@@ -1140,6 +1140,7 @@ final class Route
         return [$schema, $host];
     }
 
+    // @codingStandardsIgnoreStart
     public function getDoNotLogURLs()
     {
         $doNotLogUrls = array(
@@ -1160,6 +1161,7 @@ final class Route
 
         return $doNotLogUrls;
     }
+    // @codingStandardsIgnoreEnd
 
     public static function isJsonpRoute($route)
     {

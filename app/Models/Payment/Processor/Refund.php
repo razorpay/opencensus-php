@@ -411,19 +411,6 @@ trait Refund
                 throw $ex;
             }
 
-            $curlMessage = strtolower($ex->getData()['message']);
-
-            //
-            // GatewayTimeoutException is thrown for various reasons (`checkTimeout`).
-            // We want to mark the refund as successful only if the error
-            // message says that the operation timed out.
-            //
-
-            if (strpos($curlMessage, 'operation timed out') === false)
-            {
-                throw $ex;
-            }
-
             $this->trace->traceException($ex);
 
             //

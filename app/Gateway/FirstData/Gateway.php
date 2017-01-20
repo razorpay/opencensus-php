@@ -467,7 +467,7 @@ class Gateway extends Base\Gateway
 
             $authTdate              = null;
 
-            $authGatewayPaymentId   = null;
+            $authGatewayPaymntId    = null;
 
             $authGatewayStatus      = Status::FAILED;
         }
@@ -489,7 +489,7 @@ class Gateway extends Base\Gateway
 
                 // Verify response contains separate states for all transactions, possibly multiple for refund/capture.
                 // We're only interested in the preauth transaction state, so loop to that one, and check status.
-                if ($type === TxnType::AUTH)
+                if (in_array($type, [TxnType::AUTH, TxnType::SALE], true) === true)
                 {
                     $verifyAuthResponse = $transactionValue;
                 }
@@ -502,11 +502,11 @@ class Gateway extends Base\Gateway
             // namespaces, their parsing logic is also distinct.
             $authTdate  = $verifyAuthResponse->children('v1', true)->TransactionDetails->TDate->__toString();
 
-            $authGatewayPaymentId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
+            $authGatewayPaymntId = $verifyAuthResponse->children('v1', true)->TransactionDetails->OrderId->__toString();
 
             $authGatewayStatus  = $verifyAuthResponse->children('a1', true)->TransactionState->__toString();
 
-            $verify->gatewaySuccess = ($authGatewayStatus === Status::AUTHORIZED);
+            $verify->gatewaySuccess = in_array($authGatewayStatus, [Status::AUTHORIZED, Status::CAPTURED], true);
         }
 
         $verify->apiSuccess = $this->getVerifyApiStatus($gatewayPayment, $input['payment']);
@@ -516,7 +516,7 @@ class Gateway extends Base\Gateway
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymentId,
+        $verify->payment = $this->saveVerifyContent($gatewayPayment, $authGatewayPaymntId,
                                                     $authGatewayStatus, $authTdate);
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
@@ -829,9 +829,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestOptions()
     {
-        $auth = $this->getCredentials();
-
-        $options['auth'] = [$auth['username'], $auth['password']];
+        $options['auth'] = $this->getCredentials();
 
         $hooks = new Requests_Hooks();
 
@@ -995,14 +993,14 @@ class Gateway extends Base\Gateway
         }
     }
 
-    // FirstData terminal attributes to Terminal Entity mapping
+    // FirstData creds
     //
-    // Store ID              => GATEWAY_MERCHANT_ID
-    // Shared Secret         => GATEWAY_SECURE_SECRET
-    // User ID               => GATEWAY_MERCHANT_ID
-    // Password              => GATEWAY_ACCESS_CODE
-    // Client Cert           => GATEWAY_CLIENT_CERTIFICATE (base64 encoded)
-    // Client Cert Password  => GATEWAY_TERMINAL_PASSWORD
+    // Store ID              => Terminal attr (GATEWAY_MERCHANT_ID)
+    // Shared Secret         => env(FIRST_DATA_LIVE_HASH_SECRET)
+    // User ID               => env(FIRST_DATA_LIVE_USER_ID)
+    // Password              => env(FIRST_DATA_LIVE_PASSWORD)
+    // Client Cert           => env(FIRST_DATA_LIVE_CLIENT_CERTIFICATE)
+    // Client Cert Password  => env(FIRST_DATA_LIVE_CLIENT_CERTIFICATE_PASSWORD)
 
     public function getStoreId()
     {
@@ -1016,22 +1014,36 @@ class Gateway extends Base\Gateway
         return $storeId;
     }
 
+    protected function getLiveSecret()
+    {
+        $liveSecret = $this->input['terminal']['gateway_secure_secret'];
+
+        if ($this->isChildStoreId() === true)
+        {
+            $liveSecret = $this->config['live_hash_secret'];
+        }
+
+        return $liveSecret;
+    }
+
     protected function getCredentials()
     {
-        $auth = [
-            'username' => $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2],
-            'password' => $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE]
-        ];
+        $username = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2];
+        $password = $this->terminal[Terminal\Entity::GATEWAY_ACCESS_CODE];
+
+        if ($this->isChildStoreId() === true)
+        {
+            $username = $this->config['live_user_id'];
+            $password = $this->config['live_password'];
+        }
 
         if ($this->mode === Mode::TEST)
         {
-            $auth = [
-                'username' => $this->config['test_user_id'],
-                'password' => $this->config['test_password']
-            ];
+            $username = $this->config['test_user_id'];
+            $password = $this->config['test_password'];
         }
 
-        return $auth;
+        return [$username, $password];
     }
 
     protected function getGatewayCertDirName()
@@ -1046,17 +1058,35 @@ class Gateway extends Base\Gateway
         return $gatewayCertPath . '/' . $this->config['server_certificate'];
     }
 
+    public function getClientCertificateName()
+    {
+        $certName = $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+
+        if ($this->isChildStoreId() === true)
+        {
+            $certName = $this->config['client_certificate'];
+        }
+
+        return $certName;
+    }
+
     protected function getClientCertificate()
     {
         $gatewayCertPath = $this->getGatewayCertDirPath();
 
-        $clientCertPath = $gatewayCertPath . '/' . $this->getStoreId() . '.' . self::CERTIFICATE_FORMAT_P12;
+        $clientCertPath = $gatewayCertPath . '/' .
+                          $this->getClientCertificateName();
 
         if (file_exists($clientCertPath) === false)
         {
             $clientCertFile = fopen($clientCertPath, 'w');
 
             $encodedCert = $this->terminal[Terminal\Entity::GATEWAY_CLIENT_CERTIFICATE];
+
+            if ($this->isChildStoreId() === true)
+            {
+                $encodedCert = $this->config['live_client_certificate'];
+            }
 
             if ($this->mode === Mode::TEST)
             {
@@ -1081,11 +1111,26 @@ class Gateway extends Base\Gateway
     {
         $password = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_PASSWORD];
 
+        if ($this->isChildStoreId() === true)
+        {
+            $password = $this->config['live_client_certificate_password'];
+        }
+
         if ($this->mode === Mode::TEST)
         {
             $password = $this->config['test_client_certificate_password'];
         }
 
         return $password;
+    }
+
+    protected function isChildStoreId()
+    {
+        // Older creds needed a separate value to access
+        // FirstData API and web portal.
+        // New FirstData creds are child ids, and do not
+        // have a merchantId2 value of their own.
+
+        return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
     }
 }

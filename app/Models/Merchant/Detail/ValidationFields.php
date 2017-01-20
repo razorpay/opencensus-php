@@ -35,8 +35,6 @@ class ValidationFields
             Entity::BUSINESS_REGISTERED_STATE,
             Entity::BUSINESS_TYPE,
             Entity::BUSINESS_WEBSITE,
-            Entity::COMPANY_PAN,
-            Entity::COMPANY_PAN_NAME,
             Entity::CONTACT_EMAIL,
             Entity::CONTACT_MOBILE,
             Entity::CONTACT_NAME,

@@ -218,7 +218,7 @@ class Validator extends Base\Validator
         switch ($duration)
         {
             case 'mins':
-                $min = 60;
+                $min = 30;
                 $max = 7200;
                 break;
 

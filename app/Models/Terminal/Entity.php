@@ -210,7 +210,20 @@ class Entity extends Base\PublicEntity
 
     protected function getSubMerchants()
     {
-        return $this->merchants()->pluck(self::ID);
+        $subMerchants = $this->merchants()->get();
+
+        $subMerchants->transform(
+            function ($item, $key)
+            {
+                return [
+                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
+                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
+                ];
+            });
+
+        return $subMerchants->all();
     }
 
     public function isEnabled()
@@ -528,6 +541,18 @@ class Entity extends Base\PublicEntity
     public function toArrayPublic($subMerchantFlag = false)
     {
         $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
+    }
+
+    public function toArrayAdmin($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayAdmin();
 
         if ($subMerchantFlag === true)
         {

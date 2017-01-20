@@ -270,6 +270,12 @@ class Processor extends Base\Core
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
+                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant'   => $merchant->getId(),
+                        'setlAmount' => $setlAmount,
+                    ]);
+
                 continue;
             }
 
