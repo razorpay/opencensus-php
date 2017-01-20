@@ -305,28 +305,27 @@ class Charge
      */
     protected function setCurrentPeriod(Entity $subscription, Plan\Entity $plan)
     {
-        $intervalFunc = $this->getIntervalFunction($plan);
+        $periodFunc = $this->getPeriodFunction($plan);
 
-        // TODO: Fix this. There's no `getIntervalCount`
-        $intervalCount = $plan->getIntervalCount();
+        $interval = $plan->getInterval();
 
         if ($subscription->getPaidCount() === 0)
         {
             $currentStart = $subscription->getStartAt();
             $subscription->setCurrentStart($currentStart);
 
-            $currentEnd = Carbon::createFromTimestamp($currentStart)->$intervalFunc($intervalCount);
+            $currentEnd = Carbon::createFromTimestamp($currentStart)->$periodFunc($interval);
             $subscription->setCurrentEnd($currentEnd->timestamp);
         }
         else
         {
             $currentStart = Carbon::createFromTimestamp($subscription->getCurrentStart());
 
-            $currentStart->$intervalFunc($intervalCount)->timestamp;
+            $currentStart->$periodFunc($interval)->timestamp;
             $subscription->setCurrentStart($currentStart);
 
-            // To get $currentEnd, we need to add the same interval to $currentStart (new $currentStart).
-            $currentStart->$intervalFunc($intervalCount)->timestamp;
+            // To get $currentEnd, we need to add the same period to $currentStart (new $currentStart).
+            $currentStart->$periodFunc($interval)->timestamp;
             $subscription->setCurrentEnd($currentStart);
         }
     }
@@ -418,11 +417,10 @@ class Charge
         return $settings;
     }
 
-    protected function getIntervalFunction(Plan\Entity $plan)
+    protected function getPeriodFunction(Plan\Entity $plan)
     {
-        // TODO: Fix this. There's no `getInterval` function.
-        $interval = $plan->getInterval();
+        $period = $plan->getPeriod();
 
-        return 'add' . $interval . 's';
+        return 'add' . $period . 's';
     }
 }

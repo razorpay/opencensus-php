@@ -43,7 +43,6 @@ class Core extends Base\Core
             Schedule\Entity::NAME       => $input[Entity::NAME],
             Schedule\Entity::PERIOD     => $input[Entity::PERIOD],
             Schedule\Entity::INTERVAL   => $input[Entity::INTERVAL],
-            // TODO: Make delay nullable in the schedule entity
             Schedule\Entity::DELAY      => 0,
             Schedule\Entity::TYPE       => Schedule\Type::PLAN,
         ];

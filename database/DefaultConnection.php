@@ -36,7 +36,6 @@ class DefaultConnection
         }
     }
 
-
     public static function setMasterConnection($mode)
     {
         if ($mode === Mode::TEST)

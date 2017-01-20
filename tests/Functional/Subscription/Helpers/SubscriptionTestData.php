@@ -10,7 +10,7 @@ return [
             'content' => [
                 'amount'            => 2000,
                 'currency'          => 'INR',
-                'period'            => 'monthly-date',
+                'period'            => 'monthly',
                 'interval'          => 2,
                 'name'              => 'test plan',
             ],

@@ -99,6 +99,8 @@ class Library
 
     protected static function checkAnchor($time, $schedule)
     {
+        $period = $schedule->getPeriod();
+
         // -1 is used to denote 'last', for example the last day of month.
         if ($schedule->getAnchor() !== -1)
         {
@@ -106,7 +108,7 @@ class Library
             $check = Anchor::CHECKS[$schedule->getPeriod()];
 
             // For monthly-week periods, ensure that weekday is Monday
-            if (($schedule->getPeriod() === Period::MONTHLY_WEEK) and
+            if (($period === Period::MONTHLY_WEEK) and
                 ($time->dayOfWeek !== Carbon::MONDAY))
             {
                 return false;
@@ -117,12 +119,13 @@ class Library
         else
         {
             // Last date of the month
-            if ($schedule->getPeriod() === Period::MONTHLY_DATE)
+            if (($period === Period::MONTHLY_DATE) or
+                ($period === Period::MONTHLY))
             {
                 return ($time->day === $time->copy()->lastOfMonth()->day);
             }
             // Last week of the month
-            else if ($schedule->getPeriod() === Period::MONTHLY_WEEK)
+            else if ($period === Period::MONTHLY_WEEK)
             {
                 return ($time->day === $time->copy()->lastOfMonth(Carbon::MONDAY)->day);
             }

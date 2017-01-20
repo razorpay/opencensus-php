@@ -7,6 +7,7 @@ class Anchor
     const CHECKS = [
         Period::WEEKLY       => 'dayOfWeek',
         Period::MONTHLY_DATE => 'day',
+        Period::MONTHLY      => 'monthly',
         Period::MONTHLY_WEEK => 'weekOfMonth',
     ];
 }

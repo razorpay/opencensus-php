@@ -14,7 +14,6 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const PERIOD            = 'period';
     const INTERVAL          = 'interval';
-    //const INTERVAL_COUNT    = 'interval_count';
     const NAME              = 'name';
     const NOTES             = 'notes';
     const MERCHANT_ID       = 'merchant_id';
@@ -35,8 +34,8 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::AMOUNT,
         self::CURRENCY,
-        // self::INTERVAL,
-        // self::INTERVAL_COUNT,
+        self::INTERVAL,
+        self::PERIOD,
         self::NAME,
         self::NOTES,
     ];
@@ -44,8 +43,8 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::AMOUNT,
         self::CURRENCY,
-        // self::INTERVAL,
-        // self::INTERVAL_COUNT,
+        self::INTERVAL,
+        self::PERIOD,
         self::NAME,
         self::NOTES,
         self::CREATED_AT
@@ -53,7 +52,7 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::AMOUNT            => 'int',
-        // self::INTERVAL_COUNT    => 'int',
+        self::INTERVAL          => 'int',
     ];
 
     // --------------------- GETTERS ---------------------
@@ -63,15 +62,15 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
-    // public function getInterval()
-    // {
-    //     return $this->getAttribute(self::INTERVAL);
-    // }
-    //
-    // public function getIntervalCount()
-    // {
-    //     return $this->getAttribute(self::INTERVAL_COUNT);
-    // }
+    public function getInterval()
+    {
+        return $this->getAttribute(self::INTERVAL);
+    }
+
+    public function getPeriod()
+    {
+        return $this->getAttribute(self::PERIOD);
+    }
 
     // --------------------- END GETTERS ---------------------
 

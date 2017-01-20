@@ -10,44 +10,42 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT          => 'required|integer|min:1',
         Entity::CURRENCY        => 'required|string|size:3|in:INR',
-        //Entity::INTERVAL        => 'required|string|custom',
-        //Entity::INTERVAL_COUNT  => 'required|integer|min:1|max:365',
         Entity::INTERVAL        => 'required|integer|min:1|max:365',
-        Entity::PERIOD          => 'required|string',
+        Entity::PERIOD          => 'required|string|custom',
         Entity::NAME            => 'required|string|min:1|max:256',
         Entity::NOTES           => 'sometimes|notes'
     ];
 
     protected static $createValidators = [
-        // Entity::INTERVAL_COUNT
+        Entity::INTERVAL
     ];
 
-    // protected function validateInterval($attribute, $value)
-    // {
-    //     if (Interval::isIntervalValid($value) === false)
-    //     {
-    //         throw new Exception\BadRequestValidationFailureException(
-    //             'Invalid argument for interval passed', null, ['interval' => $value]);
-    //     }
-    // }
+    protected function validatePeriod($attribute, $value)
+    {
+        if (Cycle::isPeriodValid($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid argument for interval passed', null, ['interval' => $value]);
+        }
+    }
 
-    // protected function validateIntervalCount($input)
-    // {
-    //     $interval = $input[Entity::INTERVAL];
-    //     $intervalCount = $input[Entity::INTERVAL_COUNT];
-    //
-    //     $maxAllowedIntervalCount = Interval::getMaxAllowedIntervalCount($interval);
-    //
-    //     if ($intervalCount > $maxAllowedIntervalCount)
-    //     {
-    //         throw new Exception\BadRequestValidationFailureException(
-    //             'Exceeds the maximum interval count allowed for the given interval',
-    //             null,
-    //             [
-    //                 'interval'          => $interval,
-    //                 'interval_count'    => $intervalCount,
-    //                 'max_allowed'       => $maxAllowedIntervalCount
-    //             ]);
-    //     }
-    // }
+    protected function validateInterval($input)
+    {
+        $period = $input[Entity::PERIOD];
+        $interval = $input[Entity::INTERVAL];
+
+        $maxAllowedInterval = Cycle::getMaxAllowedInterval($period);
+
+        if ($interval > $maxAllowedInterval)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exceeds the maximum interval allowed for the given interval',
+                null,
+                [
+                    'interval'      => $interval,
+                    'period'        => $period,
+                    'max_allowed'   => $maxAllowedInterval
+                ]);
+        }
+    }
 }

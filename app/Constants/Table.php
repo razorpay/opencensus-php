@@ -9,6 +9,7 @@ class Table
     const VPA                   = 'vpa';
     const IIN                   = 'iins';
     const KEY                   = 'keys';
+    const RUN                   = 'runs';
     const CARD                  = 'cards';
     const PLAN                  = 'plans';
     const ITEM                  = 'items';

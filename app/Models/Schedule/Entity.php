@@ -77,21 +77,21 @@ class Entity extends Base\PublicEntity
         $this->setNextRun($nextRun->timestamp);
     }
 
-    // -------------------------- Checks -------------------------------------------
+    // -------------------------- Checks -----------------------
 
     public function isHourly()
     {
         return ($this->getPeriod() === Period::HOURLY);
     }
 
-    // ----------------------- Associations ----------------------------------------
+    // ----------------------- Relations -----------------------
 
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    // ----------------------- Modifiers -------------------------------------------
+    // ----------------------- Modifiers -----------------------
 
     public function modifyAnchor(& $input)
     {
@@ -121,7 +121,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Getters -----------------------
 
     public function getName()
     {
@@ -163,7 +163,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::NEXT_RUN);
     }
 
-    // ----------------------- Setters ---------------------------------------------
+    // ----------------------- Setters -----------------------
 
     public function setNextRun($nextRun)
     {
