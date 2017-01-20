@@ -22,23 +22,6 @@ class Constants
     const REVERSE         = 'reverse';
     const BROKING_REPORT  = 'broking_report';
 
-    public static $allFeatures = [
-        self::DUMMY,
-        self::WEBHOOKS,
-        self::AGGREGATOR,
-        self::TOKENS,
-        self::S2SWALLET,
-        self::S2SUPI,
-        self::SETL_REPORT,
-        self::NOFLASHCHECKOUT,
-        self::RECURRING,
-        self::S2S,
-        self::INVOICE,
-        self::NOZEROPRICING,
-        self::REVERSE,
-        self::BROKING_REPORT,
-    ];
-
     // TODO: Use this instead of allFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY           => true,
