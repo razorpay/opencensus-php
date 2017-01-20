@@ -61,6 +61,10 @@ return array(
         'secret'    => env('MAXMIND_SECRET')
     ),
 
+    'kotak' => array(
+        'secret'    => env('KOTAK_SECRET'),
+    ),
+
     'lumberjack' => array(
         'url'       => env('LUMBERJACK_URL'),
         'secret'    => env('LUMBERJACK_SECRET')
