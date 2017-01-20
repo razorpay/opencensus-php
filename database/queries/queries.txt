@@ -2200,6 +2200,7 @@ ALTER TABLE pricing
 ALTER TABLE virtual_accounts
     ADD COLUMN description TEXT AFTER notes;
 
+<<<<<<< HEAD
 ALTER TABLE customers
     ADD global_customer_id VARCHAR(14) AFTER id,
     ADD CONSTRAINT customers_global_customer_id_foreign FOREIGN KEY (global_customer_id) REFERENCES customers(id);
@@ -2210,3 +2211,10 @@ ALTER TABLE pricing
 
 ALTER TABLE netbanking
     ADD COLUMN credit_account_number varchar(255) DEFAULT NULL AFTER account_number;
+
+# Add new column to upi table for storing npci reference ids
+
+ALTER TABLE `upi`
+    ADD `npci_reference_id` VARCHAR(255) NULL DEFAULT NULL AFTER `gateway_payment_id`;
+ALTER TABLE `upi`
+    ADD INDEX `upi_npci_reference_id_index` `npci_reference_id`;

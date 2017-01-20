@@ -17,6 +17,7 @@ class Entity extends Base\Entity
     const CONTACT               = 'contact';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
+    const NPCI_REFERENCE_ID     = 'npci_reference_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const RECEIVED              = 'received';
@@ -39,6 +40,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
+        self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
@@ -57,6 +59,7 @@ class Entity extends Base\Entity
         self::NAME,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
+        self::NPCI_REFERENCE_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
