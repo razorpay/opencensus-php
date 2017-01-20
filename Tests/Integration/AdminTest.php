@@ -14,6 +14,7 @@ use Exception;
 use Mockery;
 use App;
 use PHPUnit_Extensions_Selenium2TestCase_Keys as Keys;
+use App\Generic;
 
 class AdminTest extends TestCase
 {
@@ -44,15 +45,14 @@ class AdminTest extends TestCase
          */
         try
         {
-            $this->admin = Admin\Entity::firstorfail();
+            $input = ['method' => 'get'];
+            $adminGetRoute = 'admins/get-multiple-app-auth?email=testoauth@testcases.com';
+            list($error, $this->admin) = (new Generic\Service)->makeRawApiCallInternal($input, $adminGetRoute);
             $this->merchant_details = MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant();
-            s($this->merchant->id);
         }
         catch(Exception $e)
         {
-            $this->admin = $this->createEntity('admin');
-
             $user = $this->createEntity('user');
             $user->saveOrFail();
 
@@ -71,6 +71,7 @@ class AdminTest extends TestCase
             ]);
 
             $user->merchants()->attach($this->merchant, ['role' => 'owner']);
+            \DB::table('admin_leads')->insert(['id' => $this->merchant->id, 'admin_id' => $this->admin['id'], 'email' => $this->merchant->email, 'token' => str_random(40)]);
             try
             {
                 $error = (new Merchant\Service)
@@ -108,8 +109,6 @@ class AdminTest extends TestCase
      */
     public function testLogin()
     {
-        $this->markTestSkipped("Heimdall");
-
         $this->waitUntilContainsByCss('h1', 'Pending Activations');
     }
 
@@ -119,6 +118,7 @@ class AdminTest extends TestCase
     public function testPricing()
     {
         // Check opening of pricing page from dashboard
+        $this->waitUntilDisplayedById('pricingNav');
         $this->clickById('pricingNav');
         $this->waitUntilContainsByCss('body', 'List of all Plans');
 
@@ -184,7 +184,7 @@ class AdminTest extends TestCase
         $this->clickByLinkText($this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
-        $this->waitUntilContainsByCss('body', $this->merchant->id);
+        $this->waitUntilContainsByCss('body', $this->merchant->email);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
 
         // Lock Activation Form
@@ -253,17 +253,11 @@ class AdminTest extends TestCase
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
-        $this->waitUntilContainsByCss('body', $this->merchant->id);
+        $this->waitUntilContainsByCss('body', $this->merchant->email);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->clickByLinkText('Login as Merchant');
         $this->window($this->windowHandles()[2]);
         $this->waitUntilContainsByCss('body', 'Welcome to Razorpay');
-
-        // Logout is currently broken
-        // TODO: Uncomment this
-        // $this->browser
-        //         ->open(URL::to('/user/logout'))
-        //         ->waitForPageToLoad(20000);
     }
 
     /**
@@ -280,10 +274,10 @@ class AdminTest extends TestCase
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
         $this->assertTrue($this->displayedByClassName('merchants-table-body'));
-        $this->clickByXPath('a','text',$this->merchant->id);
+        $this->clickByXPath('a','text', $this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
-        $this->waitUntilContainsByCss('body', $this->merchant->id);
+        $this->waitUntilContainsByCss('body', $this->merchant->email);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->execScript('$(".see-activation-form").click()');
         $this->waitUntilDisplayedByClassName('activation-wrapper');
@@ -314,7 +308,7 @@ class AdminTest extends TestCase
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
-        $this->waitUntilContainsByCss('body', $this->merchant->id);
+        $this->waitUntilContainsByCss('body', $this->merchant->email);
         $this->waitUntilContainsByCss('body', 'Merchant Detail');
         $this->keys(Keys::PAGEDOWN);
         $this->execScript('$(".tag-merchant").click()');
@@ -333,37 +327,28 @@ class AdminTest extends TestCase
           'height' => 1600,
         ));
         // Testing admins display
-        $this->waitUntilDisplayedById('adminsNav');
-        $this->clickById('adminsNav');
-        $this->waitUntilDisplayedByClassName('admins-table');
-        $this->waitUntilContainsByCss('body', $this->admin->name);
-        $this->waitUntilContainsByCss('body', $this->admin->username);
+        $this->waitUntilDisplayedById('usersNav');
+        $this->clickById('usersNav');
+        $this->waitUntilDisplayedByClassName('users-table');
 
         // Test Add Admin
-        $this->clickByLinkText('Add new Admin');
-        $this->waitUntilDisplayedByClassName('new-admin-modal');
+        $this->clickByLinkText('Add new User');
+        $this->waitUntilDisplayedByClassName('new-user');
         $this->setValueByName('name', 'Tester');
         $this->setValueByName('username', static::generateRandomString(7));
-        $this->setValueByName('email', static::generateMerchantEmail());
-        $this->setValueByName('password', '1234567');
-        $this->setValueByName('password_confirmation', '1234567');
-        $this->clickByXPath('button','text','OK');
+        $this->setValueByName('email', static::generateRandomString(7).'@testcases.com');
+        $this->setValueByName('password', '12345xx!!AA');
+        $this->setValueByName('password_confirmation', '12345xx!!AA');
+        $this->setValueByName('employee_code', str_random(4));
+        $this->setValueByName('department_code', '1234');
+        $this->setValueByName('branch_code', '1234');
+        $this->setValueByName('location_code', '1234');
+        $this->setValueByName('supervisor_code', '1234');
+        $this->clickByXPath('button','text','Save');
         $this->waitUntilAbsentByCss('.new-admin-modal');
         $this->waitUntilContainsByCss('body', 'Admin created successfully');
 
-        // Test Promote Admin
-        $this->execScript('$("a[class=\"btn-admin-promote\"]").click()');
-        //$this->clickByClassName('btn-admin-promote');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByCss('.confirm-modal');
-        $this->waitUntilContainsByCss('body', 'Admin promoted successfully');
-
-        $this->execScript('$("a[class=\"btn-admin-delete\"]").click()');
-        $this->waitUntilDisplayedByClassName('confirm-ok');
-        $this->clickByClassName('confirm-ok');
-        $this->waitUntilAbsentByCss('.confirm-modal');
-        $this->waitUntilContainsByCss('body', 'Admin deleted successfully');
+        // TODO: Enable admin delete when the execScript works.
     }
 
     /**

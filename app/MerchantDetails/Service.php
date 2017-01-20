@@ -264,7 +264,7 @@ class Service extends Base\Service
             $error = $this->uploadFileToS3($data);
 
             // If there is error while uploading, we dont send it to API
-            if (empty($error) and env('S3_MOCK') === false)
+            if (empty($error))
             {
                 $params = [ $data['field'] => $data['file'] ];
                 $this->uploadFileToAPI($params);

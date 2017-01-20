@@ -89,6 +89,7 @@ app.controller('OrgsUsersCtrl', [
             return x.id !== id
           });
           $scope.count = $scope.users.length;
+          $scope.alerts.addAlert('success', 'Admin deleted successfully', true);
         }
       });
     }

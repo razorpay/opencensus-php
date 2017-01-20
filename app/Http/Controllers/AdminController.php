@@ -65,9 +65,9 @@ class AdminController extends Controller
 
         $code = Input::get('code');
 
-        if (! empty($code))
+        if (! empty($code) || env('OAUTH_MOCK'))
         {
-            $oauth = $this->triggerGoogleOAuth($code);
+            $oauth = $this->triggerGoogleOAuth($code, $org);
 
             if (! empty($oauth))
             {
@@ -101,25 +101,13 @@ class AdminController extends Controller
         return (string) $googleService->getAuthorizationUri();
     }
 
-    public function triggerGoogleOAuth($code)
+    public function triggerGoogleOAuth($code, $org)
     {
         $googleService = OAuthFacade::consumer('Google');
 
         // if code is provided get user data and sign in
-        if ($code !== null or env('OAUTH_MOCK') === true)
+        if ($code !== null or (env('OAUTH_MOCK') === true))
         {
-            // Get Current Org first
-            $org = $this->getOrg()->getData(true);
-
-            if ($org['success'])
-            {
-                $org = $org['data'];
-            }
-            else
-            {
-                return AppResponse::jsonResponse(['Organization not found'], null);
-            }
-
             $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
             if (empty($error))
