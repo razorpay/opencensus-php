@@ -240,7 +240,7 @@ class Gateway extends Base\Gateway
 
         $crypto = new AESCrypto($masterKey);
 
-        $decryptedString = $crypto->decryptString(urldecode($encryptedString));
+        $decryptedString = $crypto->decryptString($encryptedString);
 
         parse_str($decryptedString, $response);
 
