@@ -408,7 +408,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
-
             //
             // It's possible that the payment is in failed state and hence the transaction
             // is not present. While validating the payment status, we check for failed status

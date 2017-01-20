@@ -177,7 +177,6 @@ class Converter
         $columnHeadersCount = count($columnHeaders);
 
         $handle = fopen($filePath, 'r');
-
         if ($handle === false)
         {
             throw new Exception\RuntimeException(

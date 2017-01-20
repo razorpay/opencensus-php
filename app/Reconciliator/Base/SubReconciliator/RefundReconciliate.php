@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
+use Config;
 
 use App;
 use RZP\Trace\TraceCode;
@@ -254,7 +255,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function getApiRefundEntityFromRow(array $row)
     {
         $refundId = $this->getRefundId($row);
-
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {
@@ -277,10 +277,15 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
+            sd(Config::get('database.default'));
+
             $this->refund = $this->repo->refund->findOrFail($refundId);
+
+
         }
         catch (\Exception $ex)
         {
+            sd($ex->getMessage());
             $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
 
             if ($refundSuccess === false)

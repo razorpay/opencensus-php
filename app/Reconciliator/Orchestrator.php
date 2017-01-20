@@ -36,6 +36,7 @@ class Orchestrator extends Base\Core
     const MOBIKWIK = 'Mobikwik';
     const PAYTM    = 'Paytm';
     const OLAMONEY = 'Olamoney';
+    const FREECHARGE = 'Freecharge';
     const ADMIN    = 'admin';
 
     /**
@@ -50,6 +51,7 @@ class Orchestrator extends Base\Core
         self::PAYTM    => ['prashanth@razorpay.com'],
         self::KOTAK    => ['giri@razorpay.com'],
         self::OLAMONEY => ['prashanth@razorpay.com'],
+        self::FREECHARGE => ['prashanth@razorpay.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN    => ['prashanth.yv@razorpay.com'],
@@ -705,7 +707,6 @@ class Orchestrator extends Base\Core
         $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders);
 
         $this->setExtraDetails($csvArray, $fileDetails);
-
         $this->allFilesContents[] = $csvArray;
     }
 
