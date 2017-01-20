@@ -190,7 +190,10 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
-        // TODO: Add TPV to the request array
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::BANK_ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
 
         $data = array_merge($defaultData, $data);
 

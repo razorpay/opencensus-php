@@ -46,6 +46,29 @@ class NetbankingAxisGatewayTest extends TestCase
             FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], '100NbAxisTpvTl');
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
