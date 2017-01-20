@@ -20,4 +20,19 @@ class Type
             throw new \InvalidArgumentException('Not a valid type: ' . $type);
         }
     }
+
+    public static function getLabel($type)
+    {
+        self::checkType($type);
+
+        switch ($type)
+        {
+            case self::LINK:
+            case self::ECOD:
+                return 'payment link';
+
+            case self::INVOICE:
+                return 'invoice';
+        }
+    }
 }

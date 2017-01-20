@@ -1132,7 +1132,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount cannot be updated if invoice has line_items',
+                    'description' => 'amount cannot be updated if payment link has line_items',
                 ],
             ],
             'status_code' => 400,

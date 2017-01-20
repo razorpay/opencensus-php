@@ -376,6 +376,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getTypeLabel()
+    {
+        return Type::getLabel($this->getType());
+    }
+
     public function hasBeenPaid()
     {
         return ($this->getPaidAt() !== null);

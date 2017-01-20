@@ -54,7 +54,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -88,7 +88,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -109,7 +109,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -154,7 +154,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $createIssuedValidators = [
-        Entity::LINE_ITEMS,
         Entity::CURRENCY,
     ];
 
@@ -201,34 +200,6 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
-            );
-        }
-    }
-
-    public function validateLineItems(array $input)
-    {
-        if (isset($input[Entity::LINE_ITEMS]) === false)
-        {
-            return;
-        }
-
-        $lineItemsCount = count($input[Entity::LINE_ITEMS]);
-
-        if ($lineItemsCount === 0)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice must contain at least one line item.'
-            );
-        }
-
-        //
-        // We are currently not allowing more than 10 line items
-        // in the input. There's no concrete reason for this though.
-        //
-        if ($lineItemsCount > 10)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice cannot have more than 10 line items.'
             );
         }
     }
@@ -281,9 +252,10 @@ class Validator extends Base\Validator
 
         if ($invoice->lineItems()->count() > 0)
         {
-            throw new BadRequestValidationFailureException(
-                'amount cannot be updated if invoice has line_items'
-            );
+            $message = 'amount cannot be updated if ' .
+                       $invoice->getTypeLabel() .  ' has line_items';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 
@@ -343,7 +315,9 @@ class Validator extends Base\Validator
 
     public function validateOperation(string $operation)
     {
-        assert(in_array($operation, $this->entity->getValidOperations(), true));
+        $invoice = $this->entity;
+
+        assert(in_array($operation, $invoice->getValidOperations(), true));
 
         switch ($operation)
         {
@@ -376,13 +350,14 @@ class Validator extends Base\Validator
                 ];
         }
 
-        $invoiceStatus = $this->entity->getStatus();
+        $invoiceStatus = $invoice->getStatus();
 
         if (in_array($invoiceStatus, $allowedStatuses, true) === false)
         {
-            throw new BadRequestValidationFailureException(
-                'Operation not allowed for invoice in ' . $invoiceStatus . ' status.'
-            );
+            $message = 'Operation not allowed for ' . $invoice->getTypeLabel() .
+                       ' in ' . $invoiceStatus . ' status.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 
@@ -395,8 +370,6 @@ class Validator extends Base\Validator
      */
     public function validateInvoiceIssue()
     {
-        $this->validateInvoiceIssueExpireBy();
-
         $invoice = $this->entity;
 
         $type = $invoice->getType();
@@ -411,6 +384,8 @@ class Validator extends Base\Validator
                 $this->validateInvoiceIssueForOtherTypes($invoice);
                 break;
         }
+
+        $this->validateInvoiceIssueExpireBy();
     }
 
     public function validateInvoiceIssueExpireBy()
@@ -435,7 +410,8 @@ class Validator extends Base\Validator
 
         if ($invoice->isExpired())
         {
-            throw new BadRequestValidationFailureException('Invoice is expired.');
+            throw new BadRequestValidationFailureException(
+                $invoice->getTypeLabel() . ' is expired');
         }
     }
 
