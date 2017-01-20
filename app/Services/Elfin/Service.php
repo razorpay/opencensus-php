@@ -71,7 +71,7 @@ class Service extends Impl\Base
      * @param bool|boolean $fail - If fail is passed as true it'll bubble up ex.
      *
      * @return string
-     * @throws \Exception
+     * @throws \Throwable
      * @throws null
      */
     public function shorten(string $url, bool $fail = false)
@@ -84,7 +84,7 @@ class Service extends Impl\Base
             {
                 return $this->driver($service)->shorten($url);
             }
-            catch (\Exception $e)
+            catch (\Throwable $e)
             {
                 $data = ['service' => $service, 'url' => $url];
 
