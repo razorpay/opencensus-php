@@ -43,9 +43,7 @@ class Service extends Base\Service
      */
     public function edit($id, $tokenId, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
