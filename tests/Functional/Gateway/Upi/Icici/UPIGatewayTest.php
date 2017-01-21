@@ -14,6 +14,8 @@ class UPIGatewayTest extends TestCase
 
     public function setUp()
     {
+        $this->markTestSkipped();
+
         $this->testDataFilePath = __DIR__.'/UPIGatewayTestData.php';
 
         parent::setUp();
