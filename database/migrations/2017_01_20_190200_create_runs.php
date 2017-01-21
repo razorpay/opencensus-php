@@ -25,6 +25,8 @@ class CreateRuns extends Migration
 
             $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH);
 
+            $table->char(Entity::ENTITY_ID, Entity::ID_LENGTH);
+
             $table->integer(Entity::LAST_RUN_AT)
                   ->nullable();
 

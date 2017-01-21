@@ -222,7 +222,6 @@ class Generator extends Base\Core
         // without saving the invoice. Also, to generate a shortUrl,
         // we need the invoice ID.
         //
-
         $invoice->generateId();
 
         $this->invoice = $invoice;

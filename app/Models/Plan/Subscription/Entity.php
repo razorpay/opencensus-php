@@ -14,7 +14,6 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     const PLAN_ID           = 'plan_id';
-    const RUN_ID            = 'run_id';
     const CUSTOMER_ID       = 'customer_id';
     const CURRENT_START     = 'current_start';
     const CURRENT_END       = 'current_end';
@@ -66,6 +65,7 @@ class Entity extends Base\PublicEntity
         self::QUANTITY,
         self::NOTES,
         self::START_AT,
+        self::TOTAL_COUNT,
         self::END_AT,
     ];
 
@@ -154,6 +154,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ERROR_STATUS);
     }
 
+    public function getTotalCount()
+    {
+        return $this->getAttribute(self::TOTAL_COUNT);
+    }
+
     public function getPaidCount()
     {
         return $this->getAttribute(self::PAID_COUNT);
@@ -182,6 +187,11 @@ class Entity extends Base\PublicEntity
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
+
+    public function setEndAt($endAt)
+    {
+        $this->setAttribute(self::END_AT, $endAt);
+    }
 
     public function setChargeAt($chargeAt)
     {
@@ -285,7 +295,7 @@ class Entity extends Base\PublicEntity
 
     public function run()
     {
-        return $this->hasOne('RZP\Models\Run\Entity');
+        return $this->hasOne('RZP\Models\Schedule\Run\Entity', 'entity_id');
     }
 
     // --------------------- END RELATIONS ---------------------

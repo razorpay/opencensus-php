@@ -3,6 +3,7 @@
 namespace RZP\Models\Plan\Subscription;
 
 use RZP\Base;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use Carbon\Carbon;
 
@@ -17,13 +18,80 @@ class Validator extends Base\Validator
         // Entity::TOKEN_ID    => 'required|string|size:20',
         Entity::QUANTITY    => 'required|integer|max:500',
         Entity::NOTES       => 'sometimes|notes',
+        Entity::TOTAL_COUNT => 'required_without:end_at|integer|max:365',
         Entity::START_AT    => 'required|integer|custom',
-        Entity::END_AT      => 'required|integer',
+        Entity::END_AT      => 'required_without:total_count|integer',
     ];
 
     protected static $createValidators = [
-          Entity::END_AT,
+        Entity::TOTAL_COUNT,
+        Entity::END_AT,
     ];
+
+    public function validateEndAtAfterGenerating()
+    {
+        $subscription = $this->entity;
+
+        $endAt = $subscription->getEndAt();
+        $startAt = $subscription->getStartAt();
+
+        $this->validateEndAtWithStartAt($startAt, $endAt);
+    }
+
+    protected function validateEndAtWithStartAt(int $startAt, int $endAt)
+    {
+        if ($endAt < $startAt)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'end_at cannot be greater than start_at.',
+                null,
+                [
+                    'start_at'  => $startAt,
+                    'end_at'    => $endAt,
+                ]);
+        }
+
+        $oneYearFromStartAt = $startAt + self::ONE_YEAR;
+
+        if ($endAt > $oneYearFromStartAt)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'end_at should be within one year of start_at',
+                null,
+                [
+                    'start_at'  => $startAt,
+                    'end_at'    => $endAt,
+                    'one_year'  => $oneYearFromStartAt,
+                ]);
+        }
+    }
+
+    protected function validateEndAt($input)
+    {
+        //
+        // This is possible when total_count is sent in the input.
+        //
+        if (empty($input[Entity::END_AT]) === true)
+        {
+            return;
+        }
+
+        if (empty($input[Entity::TOTAL_COUNT]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
+                null,
+                [
+                    'end_at'        => $input[Entity::END_AT],
+                    'total_count'   => $input[Entity::TOTAL_COUNT],
+                ]);
+        }
+
+        $startAt = $input[Entity::START_AT];
+        $endAt = $input[Entity::END_AT];
+
+        $this->validateEndAtWithStartAt($startAt, $endAt);
+    }
 
     protected function validateStartAt($attribute, $value)
     {
@@ -54,34 +122,28 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateEndAt($input)
+    protected function validateTotalCount($input)
     {
-        $startAt = $input[Entity::START_AT];
-        $endAt = $input[Entity::END_AT];
+        //
+        // This is possible when end_at is sent in the input.
+        //
+        if (empty($input[Entity::TOTAL_COUNT]) === true)
+        {
+            return;
+        }
 
-        if ($endAt < $startAt)
+        if (empty($input[Entity::END_AT]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at cannot be greater than start_at.',
+                ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
                 null,
                 [
-                    'start_at'  => $startAt,
-                    'end_at'    => $endAt,
+                    'end_at'        => $input[Entity::END_AT],
+                    'total_count'   => $input[Entity::TOTAL_COUNT],
                 ]);
         }
 
-        $oneYearFromStartAt = $startAt + self::ONE_YEAR;
-
-        if ($endAt > $oneYearFromStartAt)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within one year of start_at',
-                null,
-                [
-                    'start_at'  => $startAt,
-                    'end_at'    => $endAt,
-                    'one_year'  => $oneYearFromStartAt,
-                ]);
-        }
+        // TODO: Add more validations around the maximum value of
+        // total_count depending on the interval and period of the plan.
     }
 }

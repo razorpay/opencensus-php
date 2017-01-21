@@ -41,6 +41,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $public = [
+        self::ID,
         self::AMOUNT,
         self::CURRENCY,
         self::INTERVAL,

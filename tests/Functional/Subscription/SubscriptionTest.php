@@ -29,6 +29,7 @@ class SubscriptionTest extends TestCase
     }
 
     // TODO: Add test cases for total_count.
+    // TODO: Add test cases for calculation of end_at.
 
     public function testCreatePlan()
     {

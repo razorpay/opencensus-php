@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
@@ -30,7 +32,10 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($subscription, $plan, $customer, $input)
             {
-                $this->calculateAndSetTotalCount($subscription, $plan);
+                // This is being done for the `run` association.
+                $subscription->generateId();
+
+                $this->fillEndAtAndTotalCount($subscription, $plan, $input);
 
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
@@ -40,6 +45,44 @@ class Core extends Base\Core
             });
 
         return $subscription;
+    }
+
+    protected function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan, array $input)
+    {
+        if ($subscription->getTotalCount() === null)
+        {
+            $this->calculateAndSetTotalCount($subscription, $plan);
+        }
+        else if ($subscription->getEndAt() === null)
+        {
+            $this->calculateAndSetEndAt($subscription, $plan);
+
+            $subscription->getValidator()->validateEndAtAfterGenerating();
+        }
+        else
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'plan_id'           => $plan->getId(),
+                    'total_count'       => $subscription->getTotalCount(),
+                    'end_at'            => $subscription->getEndAt(),
+                ]);
+        }
+    }
+
+    protected function calculateAndSetEndAt(Entity $subscription, Plan\Entity $plan)
+    {
+        //validate end_At from create_validators for end_at
+
+        $startAt = $subscription->getStartAt();
+        $totalCount = $subscription->getTotalCount();
+
+        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($plan, $startAt, $totalCount);
+
+        $subscription->setEndAt($endAt);
     }
 
     protected function calculateAndSetTotalCount(Entity $subscription, Plan\Entity $plan)
@@ -143,7 +186,7 @@ class Core extends Base\Core
         // TODO: Remove this once we start using schedules properly.
         if ($schedule === null)
         {
-            return;
+            return null;
         }
 
         // TODO: Will need fixes later.
@@ -151,9 +194,9 @@ class Core extends Base\Core
             Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
         ];
 
-        $run = (new Run\Core)->createRun($schedule, $runInput);
+        $run = (new Run\Core)->createRun($schedule, $subscription, $runInput);
 
-        $subscription->run()->associate($run);
+        return $run;
     }
 
     protected function constructRecurringPayload(Entity $subscription)

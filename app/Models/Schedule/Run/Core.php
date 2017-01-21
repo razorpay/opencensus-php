@@ -8,7 +8,14 @@ use RZP\Models\Schedule;
 
 class Core extends Base\Core
 {
-    public function createRun(Schedule\Entity $schedule, array $input)
+    /**
+     * @param Schedule\Entity   $schedule
+     * @param Base\PublicEntity $parentEntity
+     * @param array             $input
+     *
+     * @return Entity
+     */
+    public function createRun(Schedule\Entity $schedule, Base\PublicEntity $parentEntity, array $input)
     {
         $this->trace->info(
             TraceCode::RUN_CREATE_REQUEST,
@@ -20,6 +27,8 @@ class Core extends Base\Core
         $run = (new Entity)->build($input);
 
         $run->schedule()->associate($schedule);
+
+        $parentEntity->run()->save($run);
 
         $this->repo->saveOrFail($run);
 
