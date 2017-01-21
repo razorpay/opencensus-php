@@ -47,25 +47,19 @@ class Validator
 
     public function validateHdfcEmail($emailDetails)
     {
-        $subject = $emailDetails['subject'];
-
-        $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::HDFC];
-
-        // HDFC also sends Corporate MPR emails, that should fail here
-        if ((preg_match($regex, $subject) === 1) and
-            (strpos($subject, 'Corporate') === false))
-        {
-            return true;
-        }
-
-        return false;
+        return $this->validateEmailSubject($emailDetails, Orchestrator::HDFC);
     }
 
     public function validateKotakEmail($emailDetails)
     {
+        return $this->validateEmailSubject($emailDetails, Orchestrator::KOTAK);
+    }
+
+    protected function validateEmailSubject($emailDetails, $bank)
+    {
         $subject = $emailDetails['subject'];
 
-        $regex = self::GATEWAY_SUBJECT_REGEX[Orchestrator::KOTAK];
+        $regex = self::GATEWAY_SUBJECT_REGEX[$bank];
 
         if (preg_match($regex, $subject) === 1)
         {
