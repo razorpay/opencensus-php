@@ -28,6 +28,8 @@ class SubscriptionTest extends TestCase
         $this->mockTokenex();
     }
 
+    // TODO: Add test cases for total_count.
+
     public function testCreatePlan()
     {
         $this->startTest();
@@ -44,10 +46,10 @@ class SubscriptionTest extends TestCase
 
         $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__, $plan->getPublicId());
 
-        $response = $this->startTest($requestContent);
+        // $requestContent['request']['content']['start_at'] = 1485109800;
+        // $requestContent['request']['content']['end_at'] = 1512153000;
 
-        $this->assertEquals($response['charge_at'], $response['start_at']);
-        $this->assertEquals(($response['start_at'] + 86000), $response['end_at']);
+        $this->startTest($requestContent);
 
         $subscription = $this->getLastEntity('subscription', true);
 

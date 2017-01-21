@@ -1365,7 +1365,7 @@ trait Authorize
         }
 
         $subscription->token()->associate($paymentToken);
-        $subscription->setStatus(Subscription\Status::ACTIVE);
+        $subscription->setStatus(Subscription\Status::ACTIVATED);
 
         $this->repo->saveOrFail($subscription);
     }

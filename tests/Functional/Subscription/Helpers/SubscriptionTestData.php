@@ -46,6 +46,7 @@ return [
                 'quantity' => 1,
                 'token_id' => null,
                 'notes' => [],
+                'total_count' => 1,
                 'paid_count' => 0
             ],
         ],

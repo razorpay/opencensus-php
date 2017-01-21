@@ -8,7 +8,9 @@ use Carbon\Carbon;
 
 class Validator extends Base\Validator
 {
-    const ONE_YEAR = 86400;
+    // Number of seconds in 365 days.
+    // TODO: We may have to take into consideration leap years also.
+    const ONE_YEAR = 31536000;
 
     protected static $createRules = [
         Entity::CUSTOMER_ID => 'required|string|size:19',

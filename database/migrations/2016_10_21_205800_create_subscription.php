@@ -45,6 +45,8 @@ class CreateSubscription extends Migration
             $table->integer(Entity::QUANTITY)
                   ->default(1);
 
+            $table->integer(Entity::TOTAL_COUNT);
+
             $table->integer(Entity::PAID_COUNT)
                   ->default(0);
 
@@ -65,6 +67,10 @@ class CreateSubscription extends Migration
                   ->nullable();
 
             $table->integer(Entity::PROCESSED_AT)
+                  ->nullable();
+            $table->integer(Entity::CANCELLED_AT)
+                  ->nullable();
+            $table->integer(Entity::ACTIVATED_AT)
                   ->nullable();
 
             $table->integer(Entity::ENDED_AT)

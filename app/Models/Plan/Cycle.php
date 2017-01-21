@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan;
 
+use Carbon\Carbon;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Cycle
@@ -14,6 +15,7 @@ class Cycle
     const ONE_YEAR          = 1;
     const MONTHS_IN_YEAR    = 12;
     const WEEKS_IN_YEAR     = 52;
+    // TODO: This can be 366 too. Fix.
     const DAYS_IN_YEAR      = 365;
 
     protected static $validPeriods = [
@@ -30,7 +32,14 @@ class Cycle
         self::DAILY   => self::DAYS_IN_YEAR,
     ];
 
-    public static function isPeriodValid($period)
+    protected static $carbonFunctionMapping = [
+        self::YEARLY    => 'years',
+        self::MONTHLY   => 'months',
+        self::WEEKLY    => 'weeks',
+        self::DAILY     => 'days',
+    ];
+
+    public static function isPeriodValid(string $period)
     {
         if (in_array($period, self::$validPeriods) === true)
         {
@@ -40,7 +49,7 @@ class Cycle
         return false;
     }
 
-    public static function getMaxAllowedInterval($period)
+    public static function getMaxAllowedInterval(string $period)
     {
         if (self::isPeriodValid($period) === false)
         {
@@ -50,5 +59,37 @@ class Cycle
         }
 
         return self::$allowedMaxInterval[$period];
+    }
+
+    public static function getTotalCountForGivenInterval(Entity $plan, int $start, int $end)
+    {
+        $interval = $plan->getInterval();
+        $period = $plan->getPeriod();
+
+        $start = Carbon::createFromTimestamp($start, 'Asia/Kolkata');
+        $end = Carbon::createFromTimestamp($end, 'Asia/Kolkata');
+
+        $diffFunction = self::getCarbonDiffFunction($period);
+
+        $diffInPeriod = $end->$diffFunction($start);
+
+        //
+        // We are adding one to the interval_count because
+        // we would be charging on the start date also.
+        //
+        // (int) will always floor the value.
+        //
+        $totalCycles = (int) (($diffInPeriod/$interval) + 1);
+
+        return $totalCycles;
+    }
+
+    protected static function getCarbonDiffFunction(string $period)
+    {
+        $carbonPeriod = self::$carbonFunctionMapping[$period];
+
+        $diffFunction = 'diffIn' . $carbonPeriod;
+
+        return $diffFunction;
     }
 }

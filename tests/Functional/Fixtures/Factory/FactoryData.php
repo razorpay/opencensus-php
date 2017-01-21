@@ -459,7 +459,7 @@ final class FactoryData
         $factory(\RZP\Models\Plan\Entity::class, [
             'merchant_id'       => '10000000000000',
             'name'              => 'test plan',
-            'period'            => 'month',
+            'period'            => 'monthly',
             'interval'          => 1,
             'schedule_id'       => null,
             'amount'            => 2000,

@@ -30,6 +30,8 @@ class Core extends Base\Core
         $this->repo->transaction(
             function() use ($subscription, $plan, $customer, $input)
             {
+                $this->calculateAndSetTotalCount($subscription, $plan);
+
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
                 $this->createRun($subscription, $plan, $input);
@@ -40,24 +42,14 @@ class Core extends Base\Core
         return $subscription;
     }
 
-    protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
+    protected function calculateAndSetTotalCount(Entity $subscription, Plan\Entity $plan)
     {
-        $schedule = $plan->schedule;
+        $startAt = $subscription->getStartAt();
+        $endAt = $subscription->getEndAt();
 
-        // TODO: Remove this once we start using schedules properly.
-        if ($schedule === null)
-        {
-            return;
-        }
+        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($plan, $startAt, $endAt);
 
-        // TODO: Will need fixes later.
-        $runInput = [
-            Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
-        ];
-
-        $run = (new Run\Core)->createRun($schedule, $runInput);
-
-        $subscription->run()->associate($run);
+        $subscription->setTotalCount($totalCount);
     }
 
     public function charge(Entity $subscription)
@@ -142,6 +134,26 @@ class Core extends Base\Core
         }
 
         return false;
+    }
+
+    protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
+    {
+        $schedule = $plan->schedule;
+
+        // TODO: Remove this once we start using schedules properly.
+        if ($schedule === null)
+        {
+            return;
+        }
+
+        // TODO: Will need fixes later.
+        $runInput = [
+            Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
+        ];
+
+        $run = (new Run\Core)->createRun($schedule, $runInput);
+
+        $subscription->run()->associate($run);
     }
 
     protected function constructRecurringPayload(Entity $subscription)

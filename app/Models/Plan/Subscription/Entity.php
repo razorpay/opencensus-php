@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Plan\Subscription;
 
+use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
@@ -26,10 +27,13 @@ class Entity extends Base\PublicEntity
     const CHARGE_AT         = 'charge_at';
     const START_AT          = 'start_at';
     const END_AT            = 'end_at';
+    const TOTAL_COUNT       = 'total_count';
     const PAID_COUNT        = 'paid_count';
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
     const FAILED_AT         = 'failed_at';
+    const ACTIVATED_AT      = 'activated_at';
+    const CANCELLED_AT      = 'cancelled_at';
 
     protected static $sign = 'sub';
 
@@ -78,6 +82,7 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT,
         self::START_AT,
         self::END_AT,
+        self::TOTAL_COUNT,
         self::PAID_COUNT,
     ];
 
@@ -90,9 +95,12 @@ class Entity extends Base\PublicEntity
         self::QUANTITY          => 'int',
         self::CURRENT_START     => 'int',
         self::CURRENT_END       => 'int',
+        self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
         self::AUTH_ATTEMPTS     => 'int',
         self::FAILED_AT         => 'int',
+        self::ACTIVATED_AT      => 'int',
+        self::CANCELLED_AT      => 'int',
     ];
 
     protected $publicSetters = [
@@ -187,7 +195,18 @@ class Entity extends Base\PublicEntity
 
     public function setStatus($status)
     {
+        Status::checkStatus($status);
+
         $this->setAttribute(self::STATUS, $status);
+
+        if (in_array($status, Status::$timestampedStatuses, true))
+        {
+            $timestampKey = $status . '_at';
+
+            $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+            $this->setAttribute($timestampKey, $currentTime);
+        }
     }
 
     public function setCurrentStart($currentStart)
@@ -203,6 +222,11 @@ class Entity extends Base\PublicEntity
     public function setProcessedAt($processedAt)
     {
         $this->setAttribute(self::PROCESSED_AT, $processedAt);
+    }
+
+    public function setTotalCount($totalCount)
+    {
+        $this->setAttribute(self::TOTAL_COUNT, $totalCount);
     }
 
     public function incrementPaidCount()
@@ -258,7 +282,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
     }
-    
+
     public function run()
     {
         return $this->hasOne('RZP\Models\Run\Entity');
