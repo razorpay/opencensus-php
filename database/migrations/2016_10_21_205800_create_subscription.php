@@ -32,6 +32,9 @@ class CreateSubscription extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH);
             $table->char(Entity::TOKEN_ID, Entity::ID_LENGTH)
                   ->nullable();
+            // TODO: Make this not nullable when we start using schedules properly.
+            $table->char(Entity::RUN_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->string(Entity::STATUS, 16)
                   ->default(Status::CREATED);

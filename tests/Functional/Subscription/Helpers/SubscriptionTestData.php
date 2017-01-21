@@ -19,6 +19,8 @@ return [
             'content' => [
                 'amount' =>  2000,
                 'currency' => 'INR',
+                'period' => 'monthly',
+                'interval' => 2,
                 'name' => 'test plan',
                 'notes' => [],
             ],
@@ -36,7 +38,15 @@ return [
         ],
         'response' => [
             'content' => [
+                'customer_id' => 'cust_100000customer',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
                 'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'paid_count' => 0
             ],
         ],
     ],

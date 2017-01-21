@@ -2,11 +2,11 @@
 
 namespace RZP\Models\Plan\Subscription;
 
-use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
+use RZP\Models\Schedule\Run;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Payment;
@@ -27,13 +27,37 @@ class Core extends Base\Core
     {
         $subscription = (new Entity)->build($input);
 
-        // $this->associateEntitiesToSubscription($subscription, $plan, $token);
+        $this->repo->transaction(
+            function() use ($subscription, $plan, $customer, $input)
+            {
+                $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
-        $this->associateEntitiesToSubscription($subscription, $plan, $customer);
+                $this->createRun($subscription, $plan, $input);
 
-        $this->repo->saveOrFail($subscription);
+                $this->repo->saveOrFail($subscription);
+            });
 
         return $subscription;
+    }
+
+    protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
+    {
+        $schedule = $plan->schedule;
+
+        // TODO: Remove this once we start using schedules properly.
+        if ($schedule === null)
+        {
+            return;
+        }
+
+        // TODO: Will need fixes later.
+        $runInput = [
+            Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
+        ];
+
+        $run = (new Run\Core)->createRun($schedule, $runInput);
+
+        $subscription->run()->associate($run);
     }
 
     public function charge(Entity $subscription)

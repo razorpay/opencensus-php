@@ -27,6 +27,7 @@ class CreatePlan extends Migration
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
+            // TODO: Make this not nullable when we start using schedules properly.
             $table->char(Entity::SCHEDULE_ID, Entity::ID_LENGTH)
                   ->nullable();
 

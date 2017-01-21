@@ -26,12 +26,12 @@ class Service extends Base\Service
         // itself and associate that with the subscription
         // $tokenId = $input[Entity::TOKEN_ID];
 
-        Customer\Entity::verifyIdAndStripSign($customerId);
+        //Customer\Entity::verifyIdAndStripSign($customerId);
         // Token\Entity::verifyIdAndStripSign($tokenId);
-        Plan\Entity::verifyIdAndStripSign($planId);
+        //Plan\Entity::verifyIdAndStripSign($planId);
 
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
-        $plan = $this->repo->plan->findByIdAndMerchant($planId, $this->merchant);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
+        $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
         // $token = $this->repo->token->findByIdAndCustomer($tokenId, $customer);
 
         // $subscription = $this->core->create($input, $plan, $token);

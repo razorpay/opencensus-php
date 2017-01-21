@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     use NotesTrait;
 
     const PLAN_ID           = 'plan_id';
+    const RUN_ID            = 'run_id';
     const CUSTOMER_ID       = 'customer_id';
     const CURRENT_START     = 'current_start';
     const CURRENT_END       = 'current_end';
@@ -256,6 +257,11 @@ class Entity extends Base\PublicEntity
     public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+    
+    public function run()
+    {
+        return $this->hasOne('RZP\Models\Run\Entity');
     }
 
     // --------------------- END RELATIONS ---------------------

@@ -31,10 +31,33 @@ class SubscriptionTest extends TestCase
     public function testCreatePlan()
     {
         $this->startTest();
+
+        $plan = $this->getLastEntity('plan', true);
+        $schedule = $this->getLastEntity('schedule', true);
+
+        $this->assertEquals($schedule['id'], $plan['schedule_id']);
     }
 
     public function testCreateSubscription()
     {
+        $plan = $this->fixtures->create('plan');
+
+        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__, $plan->getPublicId());
+
+        $response = $this->startTest($requestContent);
+
+        $this->assertEquals($response['charge_at'], $response['start_at']);
+        $this->assertEquals(($response['start_at'] + 86000), $response['end_at']);
+
+        $subscription = $this->getLastEntity('subscription', true);
+
+        $this->assertEquals($subscription['plan_id'], $plan->getPublicId());
+    }
+
+    public function testCreateSubscription1()
+    {
+        $this->markTestSkipped();
+
         $plan = $this->fixtures->create('plan');
 
         $this->ba->publicAuth();
@@ -104,7 +127,7 @@ class SubscriptionTest extends TestCase
         return $subscription;
     }
 
-    protected function getCreateSubscriptionRequestContent($function, $planId, $tokenId)
+    protected function getCreateSubscriptionRequestContent($function, $planId, $tokenId = null)
     {
         $requestContent = $this->testData[$function];
 
