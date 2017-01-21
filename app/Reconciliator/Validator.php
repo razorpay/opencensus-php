@@ -32,7 +32,7 @@ class Validator
     // Max allowed file size - 20M (20*1024*1024).
     const MAX_FILE_SIZE = 20971520;
 
-    public function filterEmails($emailDetails)
+    public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails['from'];
         $validEmailIds = Orchestrator::GATEWAY_SENDER_MAPPING;
@@ -45,20 +45,18 @@ class Validator
         }
     }
 
-    public function validateHdfcEmail($emailDetails)
+    public function validateHdfcEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails, Orchestrator::HDFC);
+        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
     }
 
-    public function validateKotakEmail($emailDetails)
+    public function validateKotakEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails, Orchestrator::KOTAK);
+        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
     }
 
-    protected function validateEmailSubject($emailDetails, $bank)
+    protected function validateEmailSubject(string $subject, string $bank)
     {
-        $subject = $emailDetails['subject'];
-
         $regex = self::GATEWAY_SUBJECT_REGEX[$bank];
 
         if (preg_match($regex, $subject) === 1)
@@ -69,7 +67,7 @@ class Validator
         return false;
     }
 
-    public function validateAttachments(& $input)
+    public function validateAttachments(array & $input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
@@ -138,7 +136,7 @@ class Validator
         return false;
     }
 
-    public function validateExtensionMimeType($extension, $mimeType)
+    public function validateExtensionMimeType(string $extension, string $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
 
@@ -151,7 +149,7 @@ class Validator
         return true;
     }
 
-    public function validateFileSize($fileSize)
+    public function validateFileSize(int $fileSize)
     {
         if ($fileSize > self::MAX_FILE_SIZE)
         {
