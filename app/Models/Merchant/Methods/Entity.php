@@ -152,13 +152,7 @@ class Entity extends Base\PublicEntity
 
     public function isUpiEnabled()
     {
-        // Leaving this for test merchant.
-        if ($this->getMerchantId() === '6c8G0gmswoEMh4')
-        {
-            return $this->getAttribute(self::UPI);
-        }
-
-        return false;
+        return $this->getAttribute(self::UPI);
     }
 
     public function isWalletEnabled($wallet = null)
@@ -295,11 +289,6 @@ class Entity extends Base\PublicEntity
     public function getEmi()
     {
         return $this->getAttribute(self::EMI);
-    }
-
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
     }
 
     public function setWallets($wallets)
