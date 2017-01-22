@@ -318,8 +318,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -353,8 +351,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**

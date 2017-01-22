@@ -216,12 +216,10 @@ class Entity extends Base\PublicEntity
             function ($item, $key)
             {
                 return [
-                    $item[Merchant\Entity::ID] =>
-                    [
-                        Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
-                        Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
-                        Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
-                    ]
+                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
+                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
                 ];
             });
 
