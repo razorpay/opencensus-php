@@ -23,7 +23,7 @@ class Validator extends Base\Validator
     );
 
     protected static $editRules = array(
-        Entity::RECURRING       => 'sometimes|boolean',
+        Entity::RECURRING       => 'sometimes|in:0',
     );
 
     protected static function validateBank($attribute, $value)
