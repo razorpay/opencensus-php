@@ -57,6 +57,8 @@ class Entity extends Base\PublicEntity
         self::CURRENT_START     => null,
         self::CURRENT_END       => null,
         self::TOKEN_ID          => null,
+        self::START_AT          => null,
+        self::END_AT            => null,
     ];
 
     protected static $generators = [
@@ -197,7 +199,7 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::START_AT, $startAt);
     }
-    
+
     public function setEndAt($endAt)
     {
         $this->setAttribute(self::END_AT, $endAt);
@@ -356,7 +358,7 @@ class Entity extends Base\PublicEntity
         }
         else
         {
-            $chargeAt = $input[Entity::START_AT];
+            $chargeAt = (int) $input[Entity::START_AT];
         }
 
         $this->setAttribute(self::CHARGE_AT, $chargeAt);

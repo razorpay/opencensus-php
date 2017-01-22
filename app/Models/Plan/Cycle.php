@@ -107,7 +107,7 @@ class Cycle
         return $end;
     }
 
-    protected static function getCarbonFunction(string $period, string $operation)
+    public static function getCarbonFunction(string $period, string $operation)
     {
         switch ($operation)
         {

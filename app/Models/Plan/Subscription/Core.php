@@ -142,28 +142,28 @@ class Core extends Base\Core
         $status = $subscription->getStatus();
         $errorStatus = $subscription->getErrorStatus();
 
-        if ($status === Status::ON_HOLD)
+        if ($status !== Status::ON_HOLD)
         {
-            if ($errorStatus === Status::CAPTURE_FAILURE)
-            {
-                return true;
-            }
-            else
-            {
-                $this->trace->error(
-                    TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
-                    [
-                        'payment_id'        => $capturedPayment->getId(),
-                        'subscription_id'   => $subscription->getId(),
-                        'status'            => $subscription->getStatus(),
-                        'error_status'      => $subscription->getErrorStatus(),
-                    ]);
-
-                return false;
-            }
+            return false;
         }
 
-        return false;
+        if ($errorStatus === Status::CAPTURE_FAILURE)
+        {
+            return true;
+        }
+        else
+        {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_STATE_UNEXPECTED,
+                [
+                    'payment_id'        => $capturedPayment->getId(),
+                    'subscription_id'   => $subscription->getId(),
+                    'status'            => $subscription->getStatus(),
+                    'error_status'      => $subscription->getErrorStatus(),
+                ]);
+
+            return false;
+        }
     }
 
     public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId)

@@ -583,8 +583,7 @@ trait Capture
             return;
         }
 
-        $subscriptionCore = new Subscription\Core;
-        $updateSubscription = $subscriptionCore->shouldUpdateSubscriptionOnCapture($subscription, $payment);
+        $updateSubscription = (new Subscription\Core)->shouldUpdateSubscriptionOnCapture($subscription, $payment);
 
         if ($updateSubscription === true)
         {
@@ -595,8 +594,7 @@ trait Capture
                     'subscription_id'   => $subscription->getId(),
                 ]);
 
-            $subscriptionCharge = new Subscription\Charge;
-            $subscriptionCharge->handleCaptureSuccess($subscription, $payment);
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
         }
     }
 }

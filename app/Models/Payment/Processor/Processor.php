@@ -898,11 +898,9 @@ class Processor
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
         //
-        // We do an auto capture only if payment is either
-        // associated with an order or a subscription.
+        // We do an auto capture only if payment is associated with an order.
         //
-        if (($payment->getApiOrderId() === null) and
-            ($payment->getSubscriptionId() === null))
+        if ($payment->getApiOrderId() === null)
         {
             return false;
         }
@@ -924,14 +922,7 @@ class Processor
             return false;
         }
 
-        if ($payment->getApiOrderId() !== null)
-        {
-            return $this->shouldAutoCaptureOrder($payment);
-        }
-        else
-        {
-            return $this->shouldAutoCaptureSubscription($payment);
-        }
+        return $this->shouldAutoCaptureOrder($payment);
     }
 
     protected function shouldAutoCaptureSubscription(Payment\Entity $payment)

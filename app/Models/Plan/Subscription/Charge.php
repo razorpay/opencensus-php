@@ -204,6 +204,19 @@ class Charge
         $this->repo->saveOrFail($subscription);
     }
 
+    public function handleCaptureSuccessAfterFirstTransaction(Entity $subscription)
+    {
+        $plan = $subscription->plan;
+
+        // TODO: Add concept of sub_status?
+
+        $this->setCurrentPeriod($subscription, $plan);
+
+        $this->setNextChargeAt($subscription, $plan);
+
+        $this->incrementPaidCount($subscription);
+    }
+
     protected function resetErrorStatusForSuccessfulCapture(Entity $subscription, Payment\Entity $capturedPayment)
     {
         $errorStatus = $subscription->getErrorStatus();
@@ -305,7 +318,9 @@ class Charge
      */
     protected function setCurrentPeriod(Entity $subscription, Plan\Entity $plan)
     {
-        $periodFunc = $this->getPeriodFunction($plan);
+        $period = $plan->getPeriod();
+
+        $carbonAddFunc = Plan\Cycle::getCarbonFunction($period, 'add');
 
         $interval = $plan->getInterval();
 
@@ -314,18 +329,19 @@ class Charge
             $currentStart = $subscription->getStartAt();
             $subscription->setCurrentStart($currentStart);
 
-            $currentEnd = Carbon::createFromTimestamp($currentStart)->$periodFunc($interval);
+            $currentEnd = Carbon::createFromTimestamp($currentStart)
+                                ->$carbonAddFunc($interval);
             $subscription->setCurrentEnd($currentEnd->timestamp);
         }
         else
         {
             $currentStart = Carbon::createFromTimestamp($subscription->getCurrentStart());
 
-            $currentStart->$periodFunc($interval)->timestamp;
+            $currentStart->$carbonAddFunc($interval)->timestamp;
             $subscription->setCurrentStart($currentStart);
 
             // To get $currentEnd, we need to add the same period to $currentStart (new $currentStart).
-            $currentStart->$periodFunc($interval)->timestamp;
+            $currentStart->$carbonAddFunc($interval)->timestamp;
             $subscription->setCurrentEnd($currentStart);
         }
     }

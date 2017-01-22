@@ -19,7 +19,7 @@ class Validator extends Base\Validator
         Entity::QUANTITY        => 'required|integer|max:500',
         Entity::NOTES           => 'sometimes|notes',
         Entity::TOTAL_COUNT     => 'required_without:end_at|integer|max:365',
-        Entity::START_AT        => 'required|integer|custom',
+        Entity::START_AT        => 'sometimes|integer|custom',
         Entity::END_AT          => 'required_without:total_count|integer',
         Entity::UPFRONT_AMOUNT  => 'sometimes|integer|max:50000000',
     ];
@@ -33,8 +33,8 @@ class Validator extends Base\Validator
     {
         $subscription = $this->entity;
 
-        $endAt = $subscription->getEndAt();
         $startAt = $subscription->getStartAt();
+        $endAt = $subscription->getEndAt();
 
         $this->validateEndAtWithStartAt($startAt, $endAt);
     }
@@ -71,7 +71,7 @@ class Validator extends Base\Validator
         if ($endAt < $startAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at cannot be greater than start_at.',
+                'end_at cannot be lesser than start_at.',
                 null,
                 [
                     'start_at'  => $startAt,
@@ -84,7 +84,7 @@ class Validator extends Base\Validator
         if ($endAt > $oneYearFromStartAt)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'end_at should be within one year of start_at',
+                'end_at should be within one year of start_at.',
                 null,
                 [
                     'start_at'  => $startAt,
@@ -162,7 +162,7 @@ class Validator extends Base\Validator
 
         if (empty($input[Entity::END_AT]) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
                 null,
                 [

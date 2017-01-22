@@ -1392,26 +1392,42 @@ trait Authorize
             return;
         }
 
+        //
+        // We don't do this in the normal auth and capture flow because we need
+        // to do some things after authorization and before capture.
+        // And some more things after capture.
+        //
+        if ($this->shouldAutoCaptureSubscription($payment) === true)
+        {
+            $this->autoCapturePayment($payment);
+        }
+
+        //
+        // This signifies that the auth transaction include the first charge also.
+        //
+        if ($subscription->getStartAt() === null)
+        {
+            $this->updateSubscriptionDetails($subscription, $payment);
+        }
+
         $this->updateSubscriptionToken($payment, $subscription);
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
 
-        $this->updateSubscriptionDetails($payment, $subscription);
+        $this->repo->saveOrFail($subscription);
     }
 
-    protected function updateSubscriptionDetails(Payment\Entity $payment, Subscription\Entity $subscription)
+    protected function updateSubscriptionDetails(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        // TODO: These things will be done in the capture flow.
-        // Fix them. `updateSubscriptionStatus`
+        $plan = $subscription->plan;
 
         $subscription->setStartAt($payment->getCreatedAt());
 
-        $plan = $subscription->plan;
-
         (new Subscription\Core)->fillEndAtAndTotalCount($subscription, $plan);
 
-        // todo: set status
-        // todo: set charge_at
+        $subscription->setStatus(Subscription\Status::ACTIVATED);
+
+        (new Subscription\Charge)->handleCaptureSuccessAfterFirstTransaction($subscription);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -1444,7 +1460,8 @@ trait Authorize
 
     protected function updateSubscriptionToken(Payment\Entity $payment, Subscription\Entity $subscription)
     {
-        $paymentToken = $payment->token;
+        // TODO: This will have to be fixed when we bring in global for subscriptions
+        $paymentToken = $payment->localToken;
 
         $this->trace->info(
             TraceCode::SUBSCRIPTION_TOKEN_ASSOCIATE,

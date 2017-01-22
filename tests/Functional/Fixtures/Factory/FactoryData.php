@@ -460,11 +460,20 @@ final class FactoryData
             'merchant_id'       => '10000000000000',
             'name'              => 'test plan',
             'period'            => 'monthly',
-            'interval'          => 1,
+            'interval'          => 2,
             'schedule_id'       => null,
             'amount'            => 2000,
             'currency'          => 'INR',
             'notes'             => null,
+        ]);
+
+        $factory(\RZP\Models\Plan\Subscription\Entity::class, [
+            'merchant_id'   => '10000000000000',
+            'customer_id'   => '100000customer',
+            'status'        => 'created',
+            'quantity'      => 1,
+            'total_count'   => 6,
+            'notes'         => null,
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
