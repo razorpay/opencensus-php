@@ -14,13 +14,14 @@ class Validator extends Base\Validator
     const ONE_YEAR = 31536000;
 
     protected static $createRules = [
-        Entity::CUSTOMER_ID => 'required|string|size:19',
-        // Entity::TOKEN_ID    => 'required|string|size:20',
-        Entity::QUANTITY    => 'required|integer|max:500',
-        Entity::NOTES       => 'sometimes|notes',
-        Entity::TOTAL_COUNT => 'required_without:end_at|integer|max:365',
-        Entity::START_AT    => 'required|integer|custom',
-        Entity::END_AT      => 'required_without:total_count|integer',
+        Entity::CUSTOMER_ID     => 'required|string|size:19',
+        // Entity::TOKEN_ID     => 'required|string|size:20',
+        Entity::QUANTITY        => 'required|integer|max:500',
+        Entity::NOTES           => 'sometimes|notes',
+        Entity::TOTAL_COUNT     => 'required_without:end_at|integer|max:365',
+        Entity::START_AT        => 'required|integer|custom',
+        Entity::END_AT          => 'required_without:total_count|integer',
+        Entity::UPFRONT_AMOUNT  => 'sometimes|integer|max:50000000',
     ];
 
     protected static $createValidators = [
@@ -36,6 +37,33 @@ class Validator extends Base\Validator
         $startAt = $subscription->getStartAt();
 
         $this->validateEndAtWithStartAt($startAt, $endAt);
+    }
+
+    public function validateStartAtForAuthTransaction()
+    {
+        $subscription = $this->entity;
+
+        $startAt = $subscription->getStartAt();
+
+        if ($startAt === null)
+        {
+            return;
+        }
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        // TODO: Add a cron to expire all subscriptions which have gone past the start_at.
+        if ($startAt < $currentTime)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME,
+                null,
+                [
+                    'start_at' => $startAt,
+                    'current_time' => $currentTime,
+                    'subscription_id' => $subscription->getId(),
+                ]);
+        }
     }
 
     protected function validateEndAtWithStartAt(int $startAt, int $endAt)
@@ -78,7 +106,7 @@ class Validator extends Base\Validator
 
         if (empty($input[Entity::TOTAL_COUNT]) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT,
                 null,
                 [

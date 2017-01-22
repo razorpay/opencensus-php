@@ -89,6 +89,19 @@ class SubscriptionTest extends TestCase
         // $this->assertEquals(true, $tokenEntity['recurring']);
     }
 
+    public function testSubscriptionAuthTransaction()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->createSubscription($plan);
+
+        $paymentRequest = $this->getDefaultRecurringPaymentArray();
+        $paymentRequest['subscription_id'] = $subscription['id'];
+        $paymentRequest['amount'] = 500;
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+    }
+
     public function testSubscriptionCharge()
     {
         $plan = $this->fixtures->create('plan');

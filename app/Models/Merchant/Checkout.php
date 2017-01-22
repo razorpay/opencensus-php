@@ -10,6 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Emi;
+use RZP\Models\Plan\Subscription;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
@@ -47,6 +48,8 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        $this->checkAndAddDetailsForSubscription($input, $merchant, $data);
+
         $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
@@ -80,6 +83,20 @@ class Checkout
                 $data['customer'] = $invoiceData['customer'];
             }
         }
+    }
+
+    protected function checkAndAddDetailsForSubscription(array $input, Merchant\Entity $merchant, array & $data)
+    {
+        // TODO: Figure out the implications of exposing subscription_id publicly.
+        if (empty($input['subscription_id']) === true)
+        {
+            return;
+        }
+
+        $subscriptionId = $input['subscription_id'];
+
+        // TODO: Should we also ask the checkout to send plan_id, since subscription is always associated with a plan?
+        $data['subscription'] = (new Subscription\Core)->getFormattedSubscriptionData($merchant, $subscriptionId);
     }
 
     protected function tracePreferencesRequest(Entity $merchant, $mode, array $input)

@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const PAID_COUNT        = 'paid_count';
     const AUTH_ATTEMPTS     = 'auth_attempts';
     const ERROR_STATUS      = 'error_status';
+    const UPFRONT_AMOUNT    = 'upfront_amount';
     const FAILED_AT         = 'failed_at';
     const ACTIVATED_AT      = 'activated_at';
     const CANCELLED_AT      = 'cancelled_at';
@@ -43,18 +44,19 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::NOTES         => [],
-        self::QUANTITY      => 1,
-        self::ENDED_AT      => null,
-        self::STATUS        => Status::CREATED,
-        self::PAID_COUNT    => 0,
-        self::AUTH_ATTEMPTS => 0,
-        self::ERROR_STATUS  => null,
-        self::PROCESSED_AT  => null,
-        self::FAILED_AT     => null,
-        self::CURRENT_START => null,
-        self::CURRENT_END   => null,
-        self::TOKEN_ID      => null,
+        self::NOTES             => [],
+        self::QUANTITY          => 1,
+        self::ENDED_AT          => null,
+        self::STATUS            => Status::CREATED,
+        self::PAID_COUNT        => 0,
+        self::AUTH_ATTEMPTS     => 0,
+        self::UPFRONT_AMOUNT    => null,
+        self::ERROR_STATUS      => null,
+        self::PROCESSED_AT      => null,
+        self::FAILED_AT         => null,
+        self::CURRENT_START     => null,
+        self::CURRENT_END       => null,
+        self::TOKEN_ID          => null,
     ];
 
     protected static $generators = [
@@ -64,12 +66,14 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::QUANTITY,
         self::NOTES,
+        self::UPFRONT_AMOUNT,
         self::START_AT,
         self::TOTAL_COUNT,
         self::END_AT,
     ];
 
     protected $public = [
+        self::ID,
         self::PLAN_ID,
         self::CUSTOMER_ID,
         self::STATUS,
@@ -82,6 +86,7 @@ class Entity extends Base\PublicEntity
         self::CHARGE_AT,
         self::START_AT,
         self::END_AT,
+        self::UPFRONT_AMOUNT,
         self::TOTAL_COUNT,
         self::PAID_COUNT,
     ];
@@ -89,18 +94,11 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::START_AT          => 'int',
         self::END_AT            => 'int',
-        self::CHARGE_AT         => 'int',
-        self::ENDED_AT          => 'int',
-        self::PROCESSED_AT      => 'int',
         self::QUANTITY          => 'int',
         self::CURRENT_START     => 'int',
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
-        self::AUTH_ATTEMPTS     => 'int',
-        self::FAILED_AT         => 'int',
-        self::ACTIVATED_AT      => 'int',
-        self::CANCELLED_AT      => 'int',
     ];
 
     protected $publicSetters = [
@@ -110,6 +108,8 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
         self::PLAN_ID,
     ];
+
+    const DEFAULT_AUTH_AMOUNT = 500;
 
     // --------------------- GETTERS ---------------------
 
@@ -184,10 +184,20 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getUpfrontAmount()
+    {
+        return $this->getAttribute(self::UPFRONT_AMOUNT);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------
 
+    public function setStartAt($startAt)
+    {
+        $this->setAttribute(self::START_AT, $startAt);
+    }
+    
     public function setEndAt($endAt)
     {
         $this->setAttribute(self::END_AT, $endAt);
@@ -340,9 +350,16 @@ class Entity extends Base\PublicEntity
     // TODO: This will need to move to schedule's getNextRunAt
     public function generateChargeAt($input)
     {
-        $startAt = $input[Entity::START_AT];
+        if (empty($input[Entity::START_AT]) === true)
+        {
+            $chargeAt = null;
+        }
+        else
+        {
+            $chargeAt = $input[Entity::START_AT];
+        }
 
-        $this->setAttribute(self::CHARGE_AT, $startAt);
+        $this->setAttribute(self::CHARGE_AT, $chargeAt);
     }
 
     // --------------------- END GENERATORS ---------------------

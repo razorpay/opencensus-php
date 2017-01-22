@@ -47,8 +47,17 @@ class Core extends Base\Core
         return $subscription;
     }
 
-    protected function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan, array $input)
+    public function fillEndAtAndTotalCount(Entity $subscription, Plan\Entity $plan)
     {
+        $startAt = $subscription->getStartAt();
+
+        // We get the start_at at the time of first charge.
+        // We fill end_at and total_count at that time.
+        if ($startAt === null)
+        {
+            return;
+        }
+
         if ($subscription->getTotalCount() === null)
         {
             $this->calculateAndSetTotalCount($subscription, $plan);
@@ -71,28 +80,6 @@ class Core extends Base\Core
                     'end_at'            => $subscription->getEndAt(),
                 ]);
         }
-    }
-
-    protected function calculateAndSetEndAt(Entity $subscription, Plan\Entity $plan)
-    {
-        //validate end_At from create_validators for end_at
-
-        $startAt = $subscription->getStartAt();
-        $totalCount = $subscription->getTotalCount();
-
-        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($plan, $startAt, $totalCount);
-
-        $subscription->setEndAt($endAt);
-    }
-
-    protected function calculateAndSetTotalCount(Entity $subscription, Plan\Entity $plan)
-    {
-        $startAt = $subscription->getStartAt();
-        $endAt = $subscription->getEndAt();
-
-        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($plan, $startAt, $endAt);
-
-        $subscription->setTotalCount($totalCount);
     }
 
     public function charge(Entity $subscription)
@@ -179,6 +166,64 @@ class Core extends Base\Core
         return false;
     }
 
+    public function getFormattedSubscriptionData(Merchant\Entity $merchant, string $subscriptionId)
+    {
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $merchant);
+
+        $authAmount = $this->getAuthTransactionAmount($subscription);
+
+        return [
+            'auth_amount' => $authAmount,
+        ];
+    }
+
+    /**
+     * upfront_amount | start_at | charge_amount
+     * ----------------------------------------------------------
+     * yes            | no       | upfront_amount + plan_amount
+     * no             | yes      | default_auth_amount (5rs)
+     * yes            | yes      | upfront_amount
+     * no             | no       | plan_amount
+     *
+     * @param Entity $subscription
+     *
+     * @return int
+     */
+    public function getAuthTransactionAmount(Entity $subscription)
+    {
+        $plan = $subscription->plan;
+
+        $upfrontAmount = $subscription->getUpfrontAmount();
+        $planAmount = $plan->getAmount();
+        $startAt = $subscription->getStartAt();
+        $defaultAuthAmount = Entity::DEFAULT_AUTH_AMOUNT;
+
+        if (empty($upfrontAmount) === true)
+        {
+            if (empty($startAt) === true)
+            {
+                $authAmount = $planAmount;
+            }
+            else
+            {
+                $authAmount = $defaultAuthAmount;
+            }
+        }
+        else
+        {
+            if (empty($startAt) === true)
+            {
+                $authAmount = $upfrontAmount + $planAmount;
+            }
+            else
+            {
+                $authAmount = $upfrontAmount;
+            }
+        }
+
+        return $authAmount;
+    }
+
     protected function createRun(Entity $subscription, Plan\Entity $plan, array $input)
     {
         $schedule = $plan->schedule;
@@ -189,7 +234,7 @@ class Core extends Base\Core
             return null;
         }
 
-        // TODO: Will need fixes later.
+        // TODO: Will need fixes later. This may also be null in some cases.
         $runInput = [
             Run\Entity::NEXT_RUN_AT => $subscription->getStartAt(),
         ];
@@ -232,5 +277,25 @@ class Core extends Base\Core
         $subscription->plan()->associate($plan);
         $subscription->customer()->associate($customer);
         //$subscription->token()->associate($token);
+    }
+
+    protected function calculateAndSetEndAt(Entity $subscription, Plan\Entity $plan)
+    {
+        $startAt = $subscription->getStartAt();
+        $totalCount = $subscription->getTotalCount();
+
+        $endAt = Plan\Cycle::getEndTimeForGivenTotalCount($plan, $startAt, $totalCount);
+
+        $subscription->setEndAt($endAt);
+    }
+
+    protected function calculateAndSetTotalCount(Entity $subscription, Plan\Entity $plan)
+    {
+        $startAt = $subscription->getStartAt();
+        $endAt = $subscription->getEndAt();
+
+        $totalCount = Plan\Cycle::getTotalCountForGivenInterval($plan, $startAt, $endAt);
+
+        $subscription->setTotalCount($totalCount);
     }
 }

@@ -1177,6 +1177,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INVOICE_ID);
     }
 
+    public function getSubscriptionId()
+    {
+        return $this->getAttribute(self::SUBSCRIPTION_ID);
+    }
+
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;

@@ -284,6 +284,26 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function doAuthPaymentForSubscription(array $payment)
+    {
+        $request = [
+            'method' => 'POST',
+            'url' => '/payments/create/recurring',
+            'content' => $payment
+        ];
+
+        if (isset($server))
+        {
+            $request['server'] = $server;
+        }
+
+        $this->ba->publicAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function doS2SRecurringPayment($payment = null)
     {
         if ($payment === null)

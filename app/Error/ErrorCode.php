@@ -274,6 +274,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MESSAGE_KEYWORD                                       = 'BAD_REQUEST_INVALID_MESSAGE_KEYWORD';
     const BAD_REQUEST_MISSING_FIELDS_MESSAGE                                        = 'BAD_REQUEST_MISSING_FIELDS_MESSAGE';
     const BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT                                   = 'BAD_REQUEST_END_AT_AND_TOTAL_COUNT_SENT';
+    const BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME                     = 'BAD_REQUEST_SUBSCRIPTION_CURRENT_TIME_PAST_START_TIME';
 
     const BAD_REQUEST_UNSUPPORTED_CHARACTER_SET                                     = 'BAD_REQUEST_UNSUPPORTED_CHARACTER_SET';
 
@@ -307,6 +308,7 @@ class ErrorCode
     const BAD_REQUEST_NOTES_VALUE_TOO_LARGE                                         = 'BAD_REQUEST_NOTES_VALUE_TOO_LARGE';
     const BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING                                  = 'BAD_REQUEST_DESCRIPTION_SHOULD_BE_STRING';
     const BAD_REQUEST_DESCRIPTION_TOO_LARGE                                         = 'BAD_REQUEST_DESCRIPTION_TOO_LARGE';
+    const BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT                               = 'BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT';
 
     const BAD_REQUEST_UNKNOWN_SCHEDULE                                              = 'BAD_REQUEST_UNKNOWN_SCHEDULE';
     const BAD_REQUEST_INVALID_SCHEDULE                                              = 'BAD_REQUEST_INVALID_SCHEDULE';

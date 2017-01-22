@@ -150,14 +150,11 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
-        // Creates a payment entity in DB with the input values given.
-        // Also takes care of fee-bearer customer flow.
         $payment = $this->createPaymentEntity($input);
 
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
 
-        // The first step in talking to the respective gateway.
         return $this->authorize($payment, $input);
     }
 
@@ -900,15 +897,21 @@ class Processor
 
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
-        // We do an auto capture only if payment is associated with an order.
-        if ($payment->getApiOrderId() === null)
+        //
+        // We do an auto capture only if payment is either
+        // associated with an order or a subscription.
+        //
+        if (($payment->getApiOrderId() === null) and
+            ($payment->getSubscriptionId() === null))
         {
             return false;
         }
 
+        //
         // The payment should always be in authorized if it has reached this point.
         // Ideally, this should throw an exception. But, we do not want to fail
         // the payment because of an internal issue.
+        //
         if ($payment->isAuthorized() === false)
         {
             $this->trace->error(
@@ -921,6 +924,49 @@ class Processor
             return false;
         }
 
+        if ($payment->getApiOrderId() !== null)
+        {
+            return $this->shouldAutoCaptureOrder($payment);
+        }
+        else
+        {
+            return $this->shouldAutoCaptureSubscription($payment);
+        }
+    }
+
+    protected function shouldAutoCaptureSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        $this->repo->reload($subscription);
+
+        $startAt = $subscription->getStartAt();
+        $upfrontAmount = $subscription->getUpfrontAmount();
+
+        //
+        // We auto capture a subscription only if start_at is absent,
+        // which means that the first transaction is being used as the
+        // first charge also.
+        // OR we auto capture if upfront_amount is present.
+        //
+        if (($startAt !== null) and
+            ($upfrontAmount === null))
+        {
+            return false;
+        }
+
+        // For now, we are not going to auto capture any late authorized payments.
+        // TODO: Fix this flow.
+        if ($payment->isLateAuthorized())
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureOrder(Payment\Entity $payment)
+    {
         $order = $payment->order;
 
         //

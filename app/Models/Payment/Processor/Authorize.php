@@ -50,10 +50,10 @@ trait Authorize
 
         $gatewayInput = [];
 
-        // $gatewayInput is being passed by reference.
-        // Adds callback url, payment and card info to $gatewayInput
         $this->processCurrencyConversions($payment);
 
+        // $gatewayInput is being passed by reference.
+        // Adds callback url, payment and card info to $gatewayInput
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
@@ -75,6 +75,7 @@ trait Authorize
 
         $retry = false;
 
+        //
         // We are attempting to rotate across multiple terminals to get a successful payment here.
         // For each of the terminals tried, we want to record the terminal metrics using recordTerminalAudit()
         // At the end of a successful/failed payment, we want to record the payment details
@@ -82,6 +83,7 @@ trait Authorize
         // In the above scenario, we will have 2 records in terminal analytics, but only one record
         // for the entire payment in payment analytics. The terminal chosen here in payment analytics
         // will be the last terminal tried.
+        //
 
         while ($retryAttempts < $maxRetryAttempts)
         {
@@ -411,9 +413,16 @@ trait Authorize
                 ]);
         }
 
-        Subscription\Entity::verifyIdAndStripSign($subscriptionId);
-        $subscription = $this->repo->subscription->findByIdAndMerchant($subscriptionId, $this->merchant);
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
+        $this->validateSubscriptionAmount($subscription, $input[Payment\Entity::AMOUNT]);
+
+        $subscription->getValidator()->validateStartAtForAuthTransaction();
+
+        //
+        // For the first transaction, the subscription should be in created state
+        // and should not have any token associated with it already.
+        //
         if (($subscription->getStatus() !== Subscription\Status::CREATED) or
             ($subscription->token !== null))
         {
@@ -429,21 +438,42 @@ trait Authorize
         }
     }
 
+    protected function validateSubscriptionAmount(Subscription\Entity $subscription, int $paymentAmount)
+    {
+        $expectedAmount = (new Subscription\Core)->getAuthTransactionAmount($subscription);
+
+        if ($paymentAmount !== $expectedAmount)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT,
+                null,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                    'payment_amount'    => $paymentAmount,
+                    'expected_amount'   => $expectedAmount
+                ]);
+        }
+    }
+
     protected function validateS2SIfApplicable(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
 
+        //
         // We need to check if S2S is enabled only if the payment create
         // call has been made via private auth.
+        //
         if ($this->app['basicauth']->isPrivateAuth() === false)
         {
             return;
         }
 
+        //
         // For first recurring payments, if it's coming via private auth, the merchant
         // should have S2S enabled, along with recurring.
         // For second recurring payments, if it's coming via private auth, the merchant
         // need not have S2S enabled. The merchant needs to be enabled only for recurring.
+        //
         if ($payment->isSecondRecurring() === true)
         {
             return;
@@ -487,12 +517,14 @@ trait Authorize
         // Validate that the card supports recurring
         $this->validateRecurringCard($payment);
 
+        //
         // The first recurring will be on public auth for non-S2S enabled merchants.
         // The second recurring MUST always be via private auth.
         // But, if token IS PRESENT, it could just mean a different recurring payment
         // with the same token. It need not necessarily be the initial recurring payment
         // for which the token was created in the first place. Hence, here, second recurring
         // is not really second recurring and could be in fact first recurring only.
+        //
         if ((empty($input[Payment\Entity::TOKEN]) === false) and
             ($payment->isSecondRecurring() === true))
         {
@@ -725,14 +757,27 @@ trait Authorize
                 ($merchant->isFeeBearerCustomer() === true))
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'convert_on_api'        => $merchant->convertOnApi(),
+                        'fee_bearer_customer'   => $merchant->isFeeBearerCustomer(),
+                        'payment_id'            => $payment->getId(),
+                        'currency'              => $currency,
+                    ]);
             }
 
             // mcc is supported only for card payments
             if ($payment->isCard() === false)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+                    ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
+                    null,
+                    [
+                        'card'          => $payment->isCard(),
+                        'payment_id'    => $payment->getId(),
+                        'currency'      => $currency,
+                    ]);
 
             }
         }
@@ -745,7 +790,7 @@ trait Authorize
 
         if ($payment->isCard() === true)
         {
-            $payment->setConvertCurrency($payment->merchant->convertOnApi());
+            $payment->setConvertCurrency($merchant->convertOnApi());
         }
     }
 
@@ -756,6 +801,8 @@ trait Authorize
      */
     protected function runPaymentMethodRelatedPreProcessing(Payment\Entity $payment, & $input, array & $gatewayInput)
     {
+        // TODO: Get the customer_id from the subscription and fill it in the input.
+
         //
         // Either the customer ID or the app token ID is required to get the customer.
         // Hence, fill the app token in the input if customer ID is not present.
@@ -809,9 +856,7 @@ trait Authorize
 
         $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
 
-        Subscription\Entity::verifyIdAndStripSign($subscriptionId);
-
-        $subscription = $this->repo->subscription->findByIdAndMerchant($subscriptionId, $this->merchant);
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
         $this->trace->info(
             TraceCode::PAYMENT_SUBSCRIPTION_ASSOCIATE,
@@ -1322,8 +1367,8 @@ trait Authorize
     /**
      * This function is just meant for preparing the return value
      * after payment authorize processing and auto capturing, if applicable.
+     *
      * @param Payment\Entity $payment
-     * @param array $input Payment create request
      * @return array
      */
     protected function postPaymentAuthorizeProcessing(Payment\Entity $payment)
@@ -1331,13 +1376,15 @@ trait Authorize
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
 
-        $this->updateSubscriptionTokenIfApplicable($payment);
+        $this->postPaymentAuthorizeSubscriptionProcessing($payment);
 
         return $this->processAuthorizeResponse($payment);
     }
 
-    protected function updateSubscriptionTokenIfApplicable(Payment\Entity $payment)
+    protected function postPaymentAuthorizeSubscriptionProcessing(Payment\Entity $payment)
     {
+        // TODO: Need to do proper exception handling in this flow.
+
         $subscription = $payment->subscription;
 
         if ($subscription === null)
@@ -1345,6 +1392,58 @@ trait Authorize
             return;
         }
 
+        $this->updateSubscriptionToken($payment, $subscription);
+
+        $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
+
+        $this->updateSubscriptionDetails($payment, $subscription);
+    }
+
+    protected function updateSubscriptionDetails(Payment\Entity $payment, Subscription\Entity $subscription)
+    {
+        // TODO: These things will be done in the capture flow.
+        // Fix them. `updateSubscriptionStatus`
+
+        $subscription->setStartAt($payment->getCreatedAt());
+
+        $plan = $subscription->plan;
+
+        (new Subscription\Core)->fillEndAtAndTotalCount($subscription, $plan);
+
+        // todo: set status
+        // todo: set charge_at
+    }
+
+    protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
+    {
+        $startAt = $subscription->getStartAt();
+        $upfrontAmount = $subscription->getUpfrontAmount();
+
+        if (($startAt === null) or ($upfrontAmount !== null))
+        {
+            throw new Exception\LogicException(
+                'The subscription should have been captured by now.',
+                null,
+                [
+                    'start_at' => $startAt,
+                    'upfront_amount' => $upfrontAmount,
+                    'subscription_id' => $subscription->getId(),
+                    'payment_id' => $payment->getId(),
+                ]);
+        }
+
+        //
+        // This would mean that this was a 5rs auth transaction.
+        // There was no upfront amount or this is not being used as first charge.
+        //
+        if ($payment->getStatus() !== Payment\Status::CAPTURED)
+        {
+            $this->refundAuthorizedPayment($payment);
+        }
+    }
+
+    protected function updateSubscriptionToken(Payment\Entity $payment, Subscription\Entity $subscription)
+    {
         $paymentToken = $payment->token;
 
         $this->trace->info(
@@ -1370,9 +1469,10 @@ trait Authorize
         $this->repo->saveOrFail($subscription);
     }
 
-    protected function handleUnexpectedSubscriptionState(Payment\Entity $payment,
-                                                         Token\Entity $paymentToken,
-                                                         Subscription\Entity $subscription)
+    protected function handleUnexpectedSubscriptionState(
+        Payment\Entity $payment,
+        Token\Entity $paymentToken,
+        Subscription\Entity $subscription)
     {
         $valid = true;
 

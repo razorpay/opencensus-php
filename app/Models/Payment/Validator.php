@@ -34,6 +34,7 @@ class Validator extends Base\Validator
         'callback_url'            =>  'sometimes|url',
         'order_id'                =>  'sometimes',
         'customer_id'             =>  'sometimes',
+        'subscription_id'         =>  'sometimes|string|size:18',
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
