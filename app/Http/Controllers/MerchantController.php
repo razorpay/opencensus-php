@@ -625,6 +625,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getActivationFile($id)
+    {
+        $response = (new Detail\Service)->fetchMerchantFilesDetails($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function postSaveActivationDetails()
     {
         $input = Request::all();

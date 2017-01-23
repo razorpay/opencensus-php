@@ -22,31 +22,35 @@ class Service extends Base\Service
         return $this->createResponse($merchantDetails);
     }
 
-    public function fetchMerchantFilesDetails()
+    public function fetchMerchantFilesDetails($id)
     {
-        $merchantDetails = $this->getMerchantDetails($this->merchant);
-        $files = Entity::$files;
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        foreach ($files as $key) {
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        foreach (Entity::UPLOADED_FIELDS as $key)
+        {
             if (isset($merchantDetails[$key]))
             {
-                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key]);
+                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
             }
         }
 
         return $signedUrls;
     }
 
-    protected function getSignedUrl($key)
+    protected function getSignedUrl($fileStoreId, $merchantId)
     {
         $accessor = new FileStore\Accessor;
 
-        $file = $accessor->id($key)
-                         ->merchantId($this->merchant->id)
-                         ->get();
+        $fileStore = $accessor->id($fileStoreId)
+                              ->merchantId($merchantId)
+                              ->get();
 
-        $storageHandler = Filestore\Store::getHandler($file->store);
-        $url = $storageHandler->getSignedUrl($file->bucket, $key);
+        $storageHandler = Filestore\Store::getHandler($fileStore->getStore());
+
+        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+
         return $url;
     }
 
