@@ -42,17 +42,17 @@ class Service extends Base\Service
         return $transfer->toArrayPublic();
     }
 
-    public function reverse(string $id, array $input) : array
-    {
-        $reversal = (new Reversal\Core)->reverse($id, $input, $this->merchant);
-
-        return $reversal->toArrayPublic();
-    }
-
     public function edit(string $id, array $input) : array
     {
         $transfer = $this->core->edit($id, $input, $this->merchant);
 
         return $transfer->toArrayPublic();
+    }
+
+    public function reverse(string $id, array $input) : array
+    {
+        $reversal = (new Reversal\Core)->reverse($id, $input, $this->merchant);
+
+        return $reversal->toArrayPublic();
     }
 }

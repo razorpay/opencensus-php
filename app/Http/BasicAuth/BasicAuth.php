@@ -1116,11 +1116,11 @@ class BasicAuth
 
     protected function invalidAccountKey()
     {
-        // $this->trace->info(
-        //     TraceCode::BAD_REQUEST_INVALID_API_KEY, ['key_id' => $this->getKey()]);
+        $this->trace->info(
+            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER, ['key_id' => $this->getKey()]);
 
         return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT);
     }
 
     protected function isKeyBlank()

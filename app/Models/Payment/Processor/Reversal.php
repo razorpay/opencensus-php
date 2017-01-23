@@ -29,7 +29,7 @@ trait Reversal
 
         // Reverse the associated transfer
         return (new ReversalCore)
-            ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
+                    ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 
     /**

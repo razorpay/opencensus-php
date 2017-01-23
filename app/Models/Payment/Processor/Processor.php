@@ -318,6 +318,12 @@ class Processor
                             $input['transfers'],
                             $this->merchant);
 
+            $transferIds = implode(' , ', $transfers->getIds());
+
+            $this->trace->info(
+                TraceCode::PAYMENT_TRANSFER_REQUEST,
+                ['transfer_ids' => $transferIds]);
+
             return $transfers;
         });
     }

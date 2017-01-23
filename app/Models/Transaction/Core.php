@@ -96,6 +96,8 @@ class Core extends Base\Core
             [
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId(),
+                'on_hold'        => $payment->getOnHold(),
+                'settled_at'     => $settledAt,
             ]
         );
 

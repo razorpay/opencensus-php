@@ -32,16 +32,24 @@ class Core extends Base\Core
      */
     public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
     {
+        $this->trace->info(
+            TraceCode::TRANSFER_CREATE_REQUEST,
+            ['input' => $input]);
+
         return $this->repo->transaction(function () use ($input, $merchant)
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_CREATE_SUCCESS,
+                ['transfer_id' => $transfer->getId()]);
 
             return $transfer;
         });
     }
 
     /**
-     * Create a transfer from a source payment
+     * Create a transfer from a captured payment source
      *
      * @param   Payment\Entity          $payment
      * @param   array                   $input
@@ -82,6 +90,13 @@ class Core extends Base\Core
      */
     public function edit(string $id, array $input, Merchant\Entity $merchant) : Entity
     {
+        $this->trace->info(
+            TraceCode::TRANSFER_EDIT_REQUEST,
+            [
+                'transfer_id' => $id,
+                'input'       => $input,
+            ]);
+
         $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $merchant);
 
         $transfer->edit($input);
@@ -96,6 +111,10 @@ class Core extends Base\Core
             $this->repo->saveOrFail($transfer);
 
             $this->updatePaymentHold($transfer, $input);
+
+            $this->trace->info(
+            TraceCode::TRANSFER_EDIT_SUCCESS,
+            ['transfer_id' => $transfer->getId()]);
 
             return $transfer;
         });
@@ -143,6 +162,13 @@ class Core extends Base\Core
 
     protected function updatePaymentHold(Entity $transfer, array $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_HOLD,
+            [
+                'transfer_id' => $transfer->getId(),
+                'input'       => $input,
+            ]);
+
         $payment = $this->repo
                         ->payment
                         ->findByTransferIdAndMerchant(
@@ -162,6 +188,13 @@ class Core extends Base\Core
 
     protected function updatePaymentAmountTransferred($payment, int $amount)
     {
+        $this->trace->info(
+            TraceCode::PAYMENY_UPDATE_AMOUNT_TRANSFERRED,
+            [
+                'payment_id'    => $payment->getId(),
+                'amount'        => $amount,
+            ]);
+
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $amount)
         {
             $payment->transferAmount($amount);

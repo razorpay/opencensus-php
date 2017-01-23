@@ -29,11 +29,13 @@ class PaymentMarketplaceRefundTest extends TestCase
         $this->ba->privateAuth();
     }
 
+    /**
+     * Try refunding a transfer payment using account auth.
+     * Transfer payments can only be refunded via Reversals.
+     * Direct refunds should fail
+     */
     public function testRefundTransferPayment()
     {
-        // Enable with Account Auth
-        $this->markTestSkipped('Enable and run on Account Auth, when implemented');
-
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 1000,
@@ -48,6 +50,8 @@ class PaymentMarketplaceRefundTest extends TestCase
         $this->transferPayment($this->payment['id'], $transfers);
 
         $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->ba->addAccountAuth('acc_10000000000002');
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transferPayment)
         {

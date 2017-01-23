@@ -8,6 +8,8 @@ use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -53,6 +55,13 @@ class Core extends Base\Core
      */
     public function reverse(string $id, array $input, Merchant\Entity $merchant)
     {
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_REQUEST,
+            [
+                'transfer_id' => $id,
+                'input'       => $input
+            ]);
+
         $transfer = $this->repo
                          ->transfer
                          ->findByPublicIdAndMerchant($id, $merchant);
@@ -71,6 +80,14 @@ class Core extends Base\Core
         {
             $reversal = (new Payment\Processor\Processor($merchant))
                             ->refundPaymentAndReverseTransfer($transfer, $amount);
+
+            $traceMessage = [
+                'transfer_id'       => $reversal->getTransferId(),
+                'reversal_id'       => $reversal->getId(),
+                'refund_amount'     => $reversal->getAmount()
+            ];
+
+            $this->trace->info(TraceCode::TRANSFER_REVERSAL_SUCCESS, $traceMessage);
 
             return $reversal;
         });
