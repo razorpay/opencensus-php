@@ -315,3 +315,13 @@ a.highlight:hover, a.highlight:focus {
 .border-bottom {
   border-bottom: 1px #edf1f2 solid;
 }
+
+.table-noborder tbody > tr > td {
+  border-color: transparent;
+}
+
+@media(max-width: 600px){
+  .invites-table .table > tbody > tr > td {
+    display: block;
+  }
+}
