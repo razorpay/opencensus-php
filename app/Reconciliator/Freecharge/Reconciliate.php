@@ -6,6 +6,7 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
+    // Number of lines to skip from EOF while reading MIS file
     const NUM_LINES_TO_SKIP = 3;
 
     /**

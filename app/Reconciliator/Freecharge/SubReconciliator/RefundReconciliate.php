@@ -13,6 +13,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     const COLUMN_REFUND_ID = 'Transaction Id';
     const COLUMN_SETTLED_AT = 'Transaction Date';
     const COLUMN_REFUND_AMOUNT = 'Total Transaction Amount';
+
     const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
 
     const REFUND_ID_INDEX = 1;

@@ -282,7 +282,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
         catch (\Exception $ex)
         {
-            sd($ex->getMessage());
             $refundSuccess = $this->createRefundOnApi($row, $refundId, $ex);
 
             if ($refundSuccess === false)

@@ -20,6 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE             = 'Net Deduction';
     const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
     const COLUMN_SETTLED_AT      = 'Transaction Date';
+
     const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
 
     protected function getPaymentId($row)

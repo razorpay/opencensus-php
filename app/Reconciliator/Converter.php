@@ -176,6 +176,7 @@ class Converter
 
         $columnHeadersCount = count($columnHeaders);
 
+        // Loads the file into memory to get the number of lines to read
         $fileContent = file($filePath);
         $fileLinesCount = count($fileContent);
 
