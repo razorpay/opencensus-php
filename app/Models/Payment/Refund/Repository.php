@@ -168,41 +168,18 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
-    public function fetchRefundsForTerminalsBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $terminals)
-    {
-        $attrs = $this->getAttributeWithTableName('*');
-
-        $query = $this->newQuery();
-
-        $refunds = $query->select($attrs)->join(
-            $this->manager->payment->getTableName(),
-            function ($join) use ($from, $to, $type, $gatewayCode, $gateway, $terminals)
-            {
-                $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
-                $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
-
-                $pRepo = $this->manager->payment;
-                $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
-                $pType = $pRepo->getAttributeWithTableName($type);
-                $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
-                $pTerminal = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
-
-                $join->on($rPaymentId, '=', $pId)
-                     ->where($rCreatedAt, '>=', $from)
-                     ->where($rCreatedAt, '<=', $to)
-                     ->where($pType, '=', $gatewayCode)
-                     ->where($pGateway, '=', $gateway)
-                     ->whereIn($pTerminal, $terminals);
-
-            })
-            ->with('payment')
-            ->get();
-
-        return $refunds;
-    }
-
     public function fetchRefundsForTpvBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $tpvEnabled = false)
     {
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `refunds`.`created_at` >= $from
+        //   AND `refunds`.`created_at` < $to
+        //   AND `payments`.`bank` = $gatewayCode
+        //   AND `payments`.`gateway` = $gateway
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
         $attrs = $this->getAttributeWithTableName('*');
 
         $pRepo = $this->manager->payment;
@@ -223,16 +200,16 @@ class Repository extends Base\Repository
         $tTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
 
         return $this->newQuery()
-             ->select($attrs)
-             ->join($pTableName, $rPaymentId, '=', $pId)
-             ->join($tTableName, $pTerminalId, '=', $tId)
-             ->where($rCreatedAt, '>=', $from)
-             ->where($rCreatedAt, '<=', $to)
-             ->where($pType, '=', $gatewayCode)
-             ->where($pGateway, '=', $gateway)
-             ->where($tTpv, '=', $tpvEnabled)
-             ->with('payment')
-             ->get();
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->join($tTableName, $pTerminalId, '=', $tId)
+                    ->where($rCreatedAt, '>=', $from)
+                    ->where($rCreatedAt, '<=', $to)
+                    ->where($pType, '=', $gatewayCode)
+                    ->where($pGateway, '=', $gateway)
+                    ->where($tTpv, '=', $tpvEnabled)
+                    ->with('payment')
+                    ->get();
     }
 
     /**

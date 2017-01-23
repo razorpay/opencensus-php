@@ -421,33 +421,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchReconciledPaymentsForTerminals($from, $to, $gateway, $status, $terminals)
-    {
-        $paymentAttrs = $this->getAttributeWithTableName('*');
-
-        $paymentId = $this->getAttributeWithTableName(Entity::ID);
-
-        $txnRepo = $this->manager->transaction;
-
-        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
-
-        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
-
-        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
-
-        return $this->newQuery()
-                    ->select($paymentAttrs)
-                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
-                    ->where(Entity::GATEWAY, '=', $gateway)
-                    ->where($transactionEntityType, '=', 'payment')
-                    ->whereBetween($transactionReconciledAt, [$from, $to])
-                    ->whereIn(Entity::STATUS, $status)
-                    ->whereIn(Entity::TERMINAL_ID, $terminals)
-                    ->get();
-    }
-
     public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
     {
+        // SELECT `payments`.*
+        // FROM `payments`
+        // INNER JOIN `transactions` ON `payments`.`id` = `transactions`.`entity_id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `payments`.`gateway` = $gateway
+        //   AND `transactions`.`type` = 'payment'
+        //   AND `transactions`.`reconciled_at` BETWEEN $from AND $to
+        //   AND `payments`.`status` IN ( $status ) // status is an array
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
         $paymentAttrs = $this->getAttributeWithTableName('*');
 
         $paymentId = $this->getAttributeWithTableName(Entity::ID);
