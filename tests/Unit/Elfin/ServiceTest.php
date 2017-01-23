@@ -82,12 +82,14 @@ class ServiceTest extends TestCase
                             $this->onConsecutiveCalls($this->gimli, $this->bitly)
                         );
 
-        $exception = new Exception\RuntimeException(
-            'Unexpected response code received from Gimli service.',
-            [
-                'status_code' => 500
-            ]
-        );
+        /**
+         * Using instance of \Exception to cover for cases: when an unknown type
+         * error gets thrown (e.g. Operation timed out etc).
+         *
+         * From code validations (of status code and response) we throw
+         * \RZP\Exception\RuntimeException. This gets covered in other tests.
+         */
+        $exception = new \Exception('Some random timeout error..');
 
         $this->gimli->expects($this->once())
                     ->method('makeRequestAndValidateHeader')
