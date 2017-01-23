@@ -168,7 +168,7 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [])
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], $linesToSkip = 0)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -176,7 +176,14 @@ class Converter
 
         $columnHeadersCount = count($columnHeaders);
 
+        $fileContent = file($filePath);
+        $fileLinesCount = count($fileContent);
+
+        $totalLinesToRead = $fileLinesCount - $linesToSkip;
+        $lineCount = 0;
+
         $handle = fopen($filePath, 'r');
+
         if ($handle === false)
         {
             throw new Exception\RuntimeException(
@@ -187,11 +194,14 @@ class Converter
         {
             while (($row = fgetcsv($handle)) !== false)
             {
+                if ($lineCount >= $totalLinesToRead)
+                {
+                    break;
+                }
                 // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
                     $columnHeaders = array_map('trim', $row);
-
                     $columnHeadersCount = count($columnHeaders);
                 }
                 else
@@ -207,6 +217,8 @@ class Converter
                     // Combines the columnHeaders(keys) with the row(values).
                     $data[] = array_combine($columnHeaders, $row);
                 }
+
+                $lineCount++;
             }
         }
         finally

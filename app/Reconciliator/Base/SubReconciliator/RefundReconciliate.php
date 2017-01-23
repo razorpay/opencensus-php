@@ -9,7 +9,6 @@ use RZP\Models\Card;
 use RZP\Models\Card\IIN;
 use RZP\Models\Transaction;
 use RZP\Models\Payment\Refund;
-use Config;
 
 use App;
 use RZP\Trace\TraceCode;
@@ -85,6 +84,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
         try
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
+
+            $this->assertRefundAmountEqaulsReconAmount($row);
 
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
@@ -277,11 +278,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
         try
         {
-            sd(Config::get('database.default'));
-
             $this->refund = $this->repo->refund->findOrFail($refundId);
-
-
         }
         catch (\Exception $ex)
         {
@@ -371,5 +368,15 @@ class RefundReconciliate extends Foundation\SubReconciliate
         }
 
         return true;
+    }
+
+    /**
+     * Checks if amount in recon file matches the actual amount in refund entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array  $row Row data
+     */
+    protected function assertRefundAmountEqaulsReconAmount(array $row)
+    {
     }
 }

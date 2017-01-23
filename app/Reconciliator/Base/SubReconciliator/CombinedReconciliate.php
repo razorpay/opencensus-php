@@ -54,10 +54,12 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
             if ($entityType === null)
             {
+                $message = 'Did not get the reconciliation type for the row in combined reconciliation.';
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'    => TraceCode::RECON_PARSE_ERROR,
-                        'message'       => 'Did not get the reconciliation type for the row in combined reconciliation.',
+                        'message'       => $message,
                         'row_details'   => $row,
                         'extra_details' => $extraDetails,
                         'gateway'       => get_called_class()
@@ -75,7 +77,6 @@ class CombinedReconciliate extends Foundation\SubReconciliate
 
             $subReconciliatorClassName = $this->getSubReconciliatorClassName($entityType);
             $subReconciliatorObject = new $subReconciliatorClassName;
-
             $this->repo->transactionOnLiveAndTest(function() use ($subReconciliatorObject, $row, $extraDetails)
             {
                 $subReconciliatorObject->runReconciliate($row, $extraDetails);

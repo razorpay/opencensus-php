@@ -96,6 +96,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
+            $this->assertPaymentAmountEqaulsReconAmount($row);
+
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             if ($reconciled === true)
@@ -795,11 +797,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
             catch (\Exception $ex)
             {
+                $message = 'Payment transaction create failed with -> '. $ex->getMessage();
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'                        => TraceCode::RECON_FAILURE,
                         'failure_code'                      => 'PAYMENT_TRANSACTION_CREATE_FAIL',
-                        'message'                           => 'Payment transaction create failed with -> '. $ex->getMessage(),
+                        'message'                           => $message,
                         'is_hdfc_dicl'                      => $isHDFCDICL,
                         'is_not_captured_but_authorized'    => $isNotCapturedButAuthorized,
                         'payment_id'                        => $this->payment->getId(),
@@ -866,10 +870,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayFee !== $reconGatewayFee)
             {
+                $message = 'Gateway fee in the recon file does not match with the one stored in API.';
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'        => TraceCode::RECON_FAILURE,
-                        'message'           => 'Gateway fee in the recon file does not match with the one stored in API.',
+                        'message'           => $message,
                         'recon_gateway_fee' => $reconGatewayFee,
                         'api_gateway_fee'   => $currentGatewayFee,
                         'gateway'           => get_called_class(),
@@ -901,10 +907,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayServiceTax !== $reconGatewayServiceTax)
             {
+                $message = 'Gateway service tax in the recon file does not match with the one stored in API.';
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'                 => TraceCode::RECON_FAILURE,
-                        'message'                    => 'Gateway service tax in the recon file does not match with the one stored in API.',
+                        'message'                    => $message,
                         'recon_gateway_service_tax'  => $reconGatewayServiceTax,
                         'api_gateway_service_tax'    => $currentGatewayServiceTax,
                         'gateway'                    => get_called_class(),
@@ -922,5 +930,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
             return true;
         }
+    }
+
+    /**
+     * Checks if amount in recon file matches the actual amount in payment entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array  $row Row data
+     */
+    protected function assertPaymentAmountEqaulsReconAmount(array $row)
+    {
     }
 }

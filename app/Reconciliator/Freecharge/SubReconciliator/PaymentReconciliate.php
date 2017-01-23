@@ -18,6 +18,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_SB_CESS         = 'Swachh Bharat Cess';
     const COLUMN_KK_CESS         = 'Krishi Kalyan Cess';
     const COLUMN_FEE             = 'Net Deduction';
+    const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
     const COLUMN_SETTLED_AT      = 'Transaction Date';
     const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
 
@@ -58,6 +59,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return round($fee);
     }
 
+    protected function getGatewayPaymentAmount($row)
+    {
+        $paymentAmount = floatval($row[self::COLUMN_PAYMENT_AMOUNT]) * 100;
+
+        return intval($paymentAmount);
+    }
+
     protected function getGatewaySettledAt($row)
     {
         if (empty($row[self::COLUMN_SETTLED_AT]) === true)
@@ -89,5 +97,19 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
 
         return $gatewaySettledAt;
+    }
+
+    protected function assertPaymentAmountEqaulsReconAmount(array $row)
+    {
+        if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Payment amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+        }
     }
 }

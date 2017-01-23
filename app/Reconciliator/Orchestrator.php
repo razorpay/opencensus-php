@@ -739,7 +739,9 @@ class Orchestrator extends Base\Core
     {
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders);
+        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip);
 
         $this->setExtraDetails($csvArray, $fileDetails);
         $this->allFilesContents[] = $csvArray;

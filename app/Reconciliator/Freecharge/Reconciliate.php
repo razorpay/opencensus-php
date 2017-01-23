@@ -6,6 +6,8 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
+    const NUM_LINES_TO_SKIP = 3;
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -20,5 +22,10 @@ class Reconciliate extends Base\Reconciliate
     protected function getTypeName($fileName)
     {
         return self::COMBINED;
+    }
+
+    public function getNumLinesToSkip()
+    {
+        return self::NUM_LINES_TO_SKIP;
     }
 }

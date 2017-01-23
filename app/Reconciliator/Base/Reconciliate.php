@@ -216,4 +216,16 @@ class Reconciliate
     {
         return [];
     }
+
+    /**
+     * This method returns the number of lines to be skipped from end while
+     * reading csv files. Should be overriden by any gateway which needs to
+     * read only till a certain line number
+     *
+     * @return  int number of lines to skip from end
+     */
+    public function getNumLinesToSkip()
+    {
+        return 0;
+    }
 }

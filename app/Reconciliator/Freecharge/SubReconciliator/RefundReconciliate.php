@@ -12,6 +12,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 {
     const COLUMN_REFUND_ID = 'Transaction Id';
     const COLUMN_SETTLED_AT = 'Transaction Date';
+    const COLUMN_REFUND_AMOUNT = 'Total Transaction Amount';
     const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
 
     const REFUND_ID_INDEX = 1;
@@ -31,7 +32,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     {
         $refundId = $this->getRefundId($row);
 
-        $gatewayEntities = $this->repo->wallet_olamoney->findSuccessfulRefundByRefundId(
+        $gatewayEntities = $this->repo->wallet_freecharge->findSuccessfulRefundByRefundId(
                                                                 $refundId,
                                                                 Wallet::FREECHARGE);
 
@@ -76,5 +77,19 @@ class RefundReconciliate extends Base\RefundReconciliate
         }
 
         return $gatewaySettledAt;
+    }
+
+    protected function assertRefundAmountEqaulsReconAmount(array $row)
+    {
+        if ($this->refund->getAmount() !== intval($this->getRefundAmount($row)))
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'    => TraceCode::RECON_INFO_ALERT,
+                    'message'       => 'Refund amount mismatch',
+                    'row'           => $row,
+                    'gateway'       => get_called_class()
+                ]);
+        }
     }
 }
