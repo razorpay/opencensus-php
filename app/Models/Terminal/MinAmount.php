@@ -21,16 +21,16 @@ class MinAmount
     const MIN_AMOUNT = [
         Method::NETBANKING => [
             Gateway::BILLDESK   => [
-                'govt_education' => 200000,
-                'pvt_education'  => 200000,
-                'corporate'      => 200000,
+                Category::GOVT_EDUCATION => 200000,
+                Category::PVT_EDUCATION  => 200000,
+                Category::CORPORATE      => 200000,
             ],
             self::TOP_SIX_BANKS => [
             ],
             Gateway::NETBANKING_KOTAK => [
-                'govt_education' => 200000,
-                'pvt_education'  => 200000,
-                'corporate'      => 200000,
+                Category::GOVT_EDUCATION => 200000,
+                Category::PVT_EDUCATION  => 200000,
+                Category::CORPORATE      => 200000,
             ],
         ],
         Method::CARD => [
@@ -50,6 +50,8 @@ class MinAmount
     * Accepts array of key-val pair
     * with keys : category, method, network, gateway
     * All keys should be present
+    * A more specific combination will override a
+    * less specific combination.
     * Corresponding values can be null
     *
     * @param $filterParams array
@@ -57,25 +59,17 @@ class MinAmount
     */
     public static function getMinAmount($method, $gateway, $network, $category)
     {
-        $minAmount = 0;
+        $key = '';
 
-        // set category
+        $minAmount = 0 ;
+
+        // set category if not available
         if (empty($category) === true)
         {
             $category = Category::getDefaultForMethodAndNetwork($method, $network);
         }
 
-        $minAmount = self::minAmount($method, $gateway, $network, $category);
-
-        return $minAmount;
-    }
-
-    protected static function minAmount($method, $gateway, $network, $category)
-    {
-        $key = '';
-
-        $minAmount = 0 ;
-
+        // set method key
         switch ($method)
         {
             case Method::NETBANKING:
@@ -88,11 +82,13 @@ class MinAmount
                 break;
         }
 
+        // get method category combination
         if (isset(self::MIN_AMOUNT[$method][$category]) === true)
         {
             $minAmount = self::MIN_AMOUNT[$method][$category];
         }
 
+        // get netbanking top_six category combination
         if (($method === Method::NETBANKING) and
             (in_array($gateway, self::TOP_SIX) === true) and
             (isset(self::MIN_AMOUNT[$method][self::TOP_SIX_BANKS][$category]) === true))
@@ -100,8 +96,8 @@ class MinAmount
             $minAmount = self::MIN_AMOUNT[$method][self::TOP_SIX_BANKS][$category];
         }
 
-        if ((isset(self::MIN_AMOUNT[$method][$key]) === true) and
-            (isset(self::MIN_AMOUNT[$method][$key][$category]) === true))
+        // get method key category map
+        if (isset(self::MIN_AMOUNT[$method][$key][$category]) === true)
         {
             $minAmount = self::MIN_AMOUNT[$method][$key][$category];
         }
