@@ -254,6 +254,24 @@ return [
         ],
     ],
 
+    'testUpdateCustomerToken' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/token_1000custwallet',
+            'method' => 'put',
+            'content' => [
+                'recurring' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => "token_1000custwallet",
+                'entity' => "token",
+                'wallet' => "paytm",
+                'method' => "wallet",
+            ],
+        ],
+    ],
+
     'testDeleteCustomerToken' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens/100wallettoken',

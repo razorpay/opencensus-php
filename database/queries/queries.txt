@@ -1552,6 +1552,16 @@ ALTER TABLE invoices ADD INDEX invoices_expire_by_index (expire_by);
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
 
+# Adds archived and suspended columns to merchant
 ALTER TABLE merchants
     ADD COLUMN archived_at INT DEFAULT NULL AFTER activated_at,
     ADD COLUMN suspended_at INT DEFAULT NULL AFTER archived_at;
+
+# Removes terminal related columns from payment anlytics
+ALTER TABLE payment_analytics
+    DROP COLUMN terminal_id,
+    DROP COLUMN terminal_status,
+    DROP COLUMN terminal_response_time,
+    DROP COLUMN terminal_status_code,
+    DROP COLUMN terminal_status_msg,
+    DROP COLUMN payment_type;
