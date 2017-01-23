@@ -68,6 +68,10 @@ class ResponseCode extends Base\ResponseCode
         'EU11'      => 'Incorrect username or password',
         'EU12'      => 'You have exceeded the maximum limit of OTPs. Please try after few minutes.',
         'EU13'      => 'OTP Expired',
-
     ];
+
+    public static function isFatalError(string $errorCode)
+    {
+        return $errorCode === 'E018';
+    }
 }

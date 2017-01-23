@@ -406,8 +406,12 @@ trait Refund
             // provides us this feature, currently.
             //
 
-            if (($this->payment->getGateway() !== Payment\Gateway::BILLDESK) and
-                ($this->payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE))
+            $allowedGateways = [
+                Payment\Gateway::WALLET_FREECHARGE,
+                Payment\Gateway::BILLDESK,
+            ];
+
+            if (in_array($gateway, $allowedGateways, true) === false)
             {
                 throw $ex;
             }
@@ -434,6 +438,35 @@ trait Refund
                     TraceCode::PAYMENT_REFUND_FAILURE);
 
             throw $e;
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $allowedGateways = [
+                Payment\Gateway::WALLET_FREECHARGE,
+            ];
+
+            if (in_array($gateway, $allowedGateways, true) === false)
+            {
+                throw $ex;
+            }
+
+            $data = $ex->getError()->getDebugArray();
+
+            $skippedRefund = $this->callGatewayFunction(
+                'verify_if_skip_refund', $data);
+
+            if ($skippedRefund === true)
+            {
+                $this->trace->traceException($ex);
+
+                // We just ignore the exception and mark it as refunded on the api side.
+                // Later we would run verify for these refunds and
+                // create appropriate entries on the gateway side.
+
+                $this->trace->info(
+                    TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
+                    ['payment_id' => $this->payment->getId()]);
+            }
         }
     }
 

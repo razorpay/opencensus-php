@@ -316,6 +316,111 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function createRefundRecord(array $input)
+    {
+        $this->action($input, Action::CREATE_REFUND_RECORD);
+
+        $refundId = $input['refund']['id'];
+        $paymentId = $input['payment']['id'];
+
+        # Need terminal to get MerchantId
+        $terminal = $this->repo->terminal->findByIdOrFail(
+            $input['payment']['terminal_id']);
+
+        $input['terminal'] = $terminal->toArray();
+
+        $gatewayRefundEntity = $this->repo->findByRefundId(
+            $refundId);
+
+        $applicable = false;
+        $success = null;
+
+        if ($gatewayRefundEntity === true)
+        {
+            $applicable = true;
+
+            list($refunded, $response) = $this->verifyIfRefunded($input);
+
+            if ($refunded === true)
+            {
+                $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
+
+                $this->createGatewayRefundEntity($refundContent, Action::REFUND);
+
+                $success = true;
+
+                $this->trace->info(
+                    TraceCode::GATEWAY_REFUND_RECORD_CREATED,
+                    [
+                        'payment_id' => $paymentId,
+                        'refund_id'  => $refundId
+                    ]);
+            }
+            else
+            {
+                $success = false;
+
+                // It should have been refunded on the gateway side also. But, verify returned
+                // false in the verify response for refund.
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_REFUND_ABSENT,
+                    [
+                        'refund_id'         => $refundId,
+                        'payment_id'        => $paymentId,
+                        'verify_response'   => $response,
+                    ]);
+            }
+
+            return [
+                'applicable'    => $applicable,
+                'success'       => $success,
+                'refund_id'     => $refundId,
+                'payment_id'    => $input['payment']['id'],
+            ];
+        }
+    }
+
+    public function verifyIfSkipRefund(array $debugInfo)
+    {
+        $error = $debugInfo['error'];
+
+        list($errorCode, $errorDesc) = $error->getGatewayErrorCodeAndDesc();
+
+        // Handle the unknown error (fatal errors) and mark it as skip refund
+        // Verify it later
+        return ResponseCode::isFatalError($errorCode) === true;
+    }
+
+    protected function verifyIfRefunded(array $input)
+    {
+        $this->action($input, Action::VERIFY);
+
+        $content = [
+            RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
+            RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
+            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+        ];
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+
+        $request = $this->getCustomRequestArray($content, 'GET');
+
+        $content = http_build_query($content);
+        $request['url'] .= '?' . $content;
+        $request['content'] = [];
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->action($input, Action::CREATE_REFUND_RECORD);
+
+        $refunded = $content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS;
+
+        return [$refunded, $content];
+    }
+
     protected function getTokenAttributes($content)
     {
         $input = $this->input;

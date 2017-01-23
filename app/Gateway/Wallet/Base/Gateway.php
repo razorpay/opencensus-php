@@ -35,8 +35,10 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes)
+    protected function createGatewayRefundEntity($attributes, $action = null)
     {
+        $action = $action ? $action : $this->action;
+
         $refund = $this->getNewGatewayPaymentEntity();
 
         $refund->fill($attributes);

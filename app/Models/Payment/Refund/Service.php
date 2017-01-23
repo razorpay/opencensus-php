@@ -365,7 +365,7 @@ class Service extends Base\Service
             Payment\Gateway::BILLDESK,
         ];
 
-        if (in_array($gateway, $allowedGateways) === false)
+        if (in_array($gateway, $allowedGateways, true) === false)
         {
             throw Exception\LogicException('Gateway not allowed');
         }
