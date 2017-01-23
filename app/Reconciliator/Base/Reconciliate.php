@@ -52,7 +52,7 @@ class Reconciliate
      * File handling constants
      *************************/
 
-    const LINES_FROM_TOP = 'lines_from_top';
+    const LINES_FROM_TOP    = 'lines_from_top';
     const LINES_FROM_BOTTOM = 'lines_from_bottom';
 
     /*********************
@@ -234,7 +234,7 @@ class Reconciliate
     public function getNumLinesToSkip()
     {
         return [
-            self::LINES_FROM_TOP => 0,
+            self::LINES_FROM_TOP    => 0,
             self::LINES_FROM_BOTTOM => 0
         ];
     }
