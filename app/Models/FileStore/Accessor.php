@@ -158,15 +158,11 @@ class Accessor extends Base\Core
      */
     protected function updateMerchantId()
     {
-        if ($this->merchant !== null)
-        {
-            $merchant = $this->merchant;
-        }
-        else
+        if ($this->merchantId === null)
         {
             $merchant = $this->repo->merchant->getSharedAccount();
-        }
 
-        $this->merchantId($merchant->getId());
+            $this->merchantId($merchant->getId());
+        }
     }
 }
