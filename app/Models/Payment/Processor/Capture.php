@@ -416,7 +416,7 @@ trait Capture
         {
             $this->trace->info(
                 TraceCode::ORDER_PAID_EVENT,
-                $payment
+                $payment->toArrayPublic()
             );
             
             $this->app['events']->fire('api.order.paid', array($payment));
@@ -459,7 +459,7 @@ trait Capture
     {
         $this->trace->info(
             TraceCode::INVOICE_PAID_EVENT,
-            $payment
+            $payment->toArrayPublic()
         );
         
         $this->app['events']->fire('api.invoice.paid', array($payment));
