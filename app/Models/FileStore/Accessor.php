@@ -79,7 +79,7 @@ class Accessor extends Base\Core
      *
      * @return Collection/File store Entity
      */
-    protected function get()
+    public function get()
     {
         $this->updateMerchantId();
 

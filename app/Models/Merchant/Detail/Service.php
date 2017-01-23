@@ -22,6 +22,34 @@ class Service extends Base\Service
         return $this->createResponse($merchantDetails);
     }
 
+    public function fetchMerchantFilesDetails()
+    {
+        $merchantDetails = $this->getMerchantDetails($this->merchant);
+        $files = Entity::$files;
+
+        foreach ($files as $key) {
+            if (isset($merchantDetails[$key]))
+            {
+                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key]);
+            }
+        }
+
+        return $signedUrls;
+    }
+
+    protected function getSignedUrl($key)
+    {
+        $accessor = new FileStore\Accessor;
+
+        $file = $accessor->id($key)
+                         ->merchantId($this->merchant->id)
+                         ->get();
+
+        $storageHandler = Filestore\Store::getHandler($file->store);
+        $url = $storageHandler->getSignedUrl($file->bucket, $key);
+        return $url;
+    }
+
     public function saveMerchantDetails(array $input)
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
@@ -197,7 +225,7 @@ class Service extends Base\Service
             $response['verification'] = [
                 'status'            => 'disabled',
                 'disabled_reason'   => 'required_fields',
-                'required_fields'   =>  $requiredFields
+                'required_fields'   => $requiredFields
             ];
 
             $response['can_submit'] = false;
