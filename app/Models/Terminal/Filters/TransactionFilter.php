@@ -164,9 +164,11 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // Only shared terminals support Maestro on Live mode.
+            // For HDFC, only shared terminals support
+            // Maestro cards on Live mode.
             if (($network === Network::MAES) and
-                ($input['mode'] === Mode::LIVE))
+                ($input['mode'] === Mode::LIVE) and
+                ($terminal->getGateway() === Gateway::HDFC))
             {
                 return Shared::isSharedTerminal($terminal);
             }

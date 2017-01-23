@@ -65,6 +65,10 @@ class Validator extends Base\Validator
         Entity::LOGO_URL                    => 'sometimes|max:2000',
     );
 
+    protected static $actionRules = array(
+        Entity::ACTION                      => 'required|custom'
+    );
+
     protected static $featureRules = [
         'features'          => 'required|array',
         'optout_reason'     => 'sometimes|string|max:200'
@@ -214,7 +218,7 @@ class Validator extends Base\Validator
         switch ($duration)
         {
             case 'mins':
-                $min = 60;
+                $min = 30;
                 $max = 7200;
                 break;
 
@@ -237,6 +241,78 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Auto refund delay should be between ' . $min . ' and ' . $max . ' ' . $duration);
+        }
+    }
+
+    protected function validateAction($attribute, $action)
+    {
+        if (Action::exists($action) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
+        }
+
+        $validator = 'validate' .ucfirst($action);
+
+        $this->$validator();
+    }
+
+    protected function validateArchive()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED);
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($merchantDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
+        }
+
+        if (!(($merchantDetails->isSubmitted() === true) and
+            ($merchantDetails->isLocked() === true) and
+            ($merchant->isActivated() === false)))
+        {
+            throw new Exception\BadRequestException(
+            ErrorCode::BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED);
+        }
+    }
+
+    protected function validateUnarchive()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isArchived() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED);
+        }
+    }
+
+    protected function validateSuspend()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
+        }
+    }
+
+    protected function validateUnsuspend()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isSuspended() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
         }
     }
 }

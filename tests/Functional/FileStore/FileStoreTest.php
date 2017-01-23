@@ -163,7 +163,7 @@ class FileStoreTest extends TestCase
 
     protected function validateRefundFile($content)
     {
-        $refundsFileUrl = $content['netbanking_kotak'][0];
+        $refundsFileUrl = $content['netbanking_kotak']['refunds']['nonTpv'];
 
         $refundsFileContents = file($refundsFileUrl);
 
