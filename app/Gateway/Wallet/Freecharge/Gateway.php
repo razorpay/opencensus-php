@@ -16,6 +16,7 @@ use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -324,7 +325,7 @@ class Gateway extends Base\Gateway
         $paymentId = $input['payment']['id'];
 
         # Need terminal to get MerchantId
-        $terminal = $this->repo->terminal->findByIdOrFail(
+        $terminal = (new Terminal\Repository)->getById(
             $input['payment']['terminal_id']);
 
         $input['terminal'] = $terminal->toArray();
@@ -335,7 +336,7 @@ class Gateway extends Base\Gateway
         $applicable = false;
         $success = null;
 
-        if ($gatewayRefundEntity === true)
+        if ($gatewayRefundEntity === null)
         {
             $applicable = true;
 
@@ -343,7 +344,7 @@ class Gateway extends Base\Gateway
 
             if ($refunded === true)
             {
-                $refundContent = $this->getRefundContentForGatewayEntity($input, $verifyResponse);
+                $refundContent = $this->getRefundContentForGatewayEntity($input, $response);
 
                 $this->createGatewayRefundEntity($refundContent, Action::REFUND);
 
@@ -414,11 +415,32 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
+        $this->verifyCheckSumForResponse($content);
+
         $this->action($input, Action::CREATE_REFUND_RECORD);
 
         $refunded = $content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS;
 
         return [$refunded, $content];
+    }
+
+    protected function getRefundContentForGatewayEntity(array $input, array $response)
+    {
+        $refundAttributes = [
+            'payment_id'            =>  $input['payment']['id'],
+            'action'                =>  $this->action,
+            'amount'                =>  $input['refund']['amount'],
+            'wallet'                =>  $input['payment']['wallet'],
+            'email'                 =>  $input['payment']['email'],
+            'received'              =>  true,
+            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
+            'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
+            'refund_id'             =>  $input['refund']['id'],
+            'status_code'           =>  $response[ResponseFields::STATUS],
+            'gateway_refund_id'     =>  $response[ResponseFields::TXN_ID],
+        ];
+
+        return $refundAttributes;
     }
 
     protected function getTokenAttributes($content)

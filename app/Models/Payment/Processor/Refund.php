@@ -393,6 +393,8 @@ trait Refund
 
     protected function refundOnGateway($data)
     {
+        $gateway = $data['payment']['gateway'];
+
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
@@ -406,12 +408,7 @@ trait Refund
             // provides us this feature, currently.
             //
 
-            $allowedGateways = [
-                Payment\Gateway::WALLET_FREECHARGE,
-                Payment\Gateway::BILLDESK,
-            ];
-
-            if (in_array($gateway, $allowedGateways, true) === false)
+            if (in_array($gateway, Payment\Gateway::REFUND_VERIFY_GATEWAYS, true) === false)
             {
                 throw $ex;
             }

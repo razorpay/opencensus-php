@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Constants\Table;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -250,6 +251,17 @@ class Service extends Base\Service
 
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
+            $this->trace->traceException($ex);
+
+            //
+            // We just ignore the timeout and mark it as refunded on the api side.
+            // Later we would run verify for these refunds and
+            // create appropriate entries on the gateway side.
+            //
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
+                ['payment_id' => $this->payment->getId()]);
+
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
@@ -360,19 +372,27 @@ class Service extends Base\Service
     public function createGatewayRefundRecords($gateway)
     {
         // Currently, we are running this for billdesk and freecharge refund timeouts only.
-        $allowedGateways = [
-            Payment\Gateway::WALLET_FREECHARGE,
-            Payment\Gateway::BILLDESK,
-        ];
-
-        if (in_array($gateway, $allowedGateways, true) === false)
+        if (in_array($gateway, Payment\Gateway::REFUND_VERIFY_GATEWAYS, true) === false)
         {
-            throw Exception\LogicException('Gateway not allowed');
+            throw Exception\LogicException(
+                'Gateway is not supported for refund verify process.');
         }
 
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
+        $gatewayTable = $gateway;
 
-        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
+        # For wallets, gateway payment entity table is 'wallet'
+        $walletGateways = Payment\Gateway::$methodMap[Payment\Method::WALLET];
+
+        if (in_array($gateway, $walletGateways, true) === true)
+        {
+            $gatewayTable = 'wallet';
+        }
+
+        $gatewayTable = constant(Table::class . '::' . strtoupper($gatewayTable));
+
+        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway(
+            $gateway, $createdAfter, $gatewayTable);
 
         $data = [];
 
