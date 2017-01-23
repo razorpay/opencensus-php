@@ -62,6 +62,7 @@ class RefundReconciliate extends Base\RefundReconciliate
                                     self::SETTLEMENT_DATE_FORMAT,
                                     $row[self::COLUMN_SETTLED_AT],
                                     'Asia/Kolkata');
+
             $gatewaySettledAt = $gatewaySettledAt->timestamp;
         }
         catch (\Exception $ex)
@@ -80,7 +81,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $gatewaySettledAt;
     }
 
-    protected function assertRefundAmountEqaulsReconAmount(array $row)
+    protected function assertRefundAmountEqualsReconAmount(array $row)
     {
         if ($this->refund->getAmount() !== intval($this->getRefundAmount($row)))
         {

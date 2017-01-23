@@ -96,7 +96,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
-            $this->assertPaymentAmountEqaulsReconAmount($row);
+            $this->assertPaymentAmountEqualsReconAmount($row);
 
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
@@ -938,7 +938,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param  array  $row Row data
      */
-    protected function assertPaymentAmountEqaulsReconAmount(array $row)
+    protected function assertPaymentAmountEqualsReconAmount(array $row)
     {
+        ;
     }
 }

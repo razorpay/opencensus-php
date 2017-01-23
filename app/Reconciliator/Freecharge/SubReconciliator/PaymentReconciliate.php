@@ -100,7 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $gatewaySettledAt;
     }
 
-    protected function assertPaymentAmountEqaulsReconAmount(array $row)
+    protected function assertPaymentAmountEqualsReconAmount(array $row)
     {
         if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
         {
