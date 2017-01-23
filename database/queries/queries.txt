@@ -1575,3 +1575,41 @@ ALTER TABLE payment_analytics
     DROP COLUMN terminal_status_code,
     DROP COLUMN terminal_status_msg,
     DROP COLUMN payment_type;
+
+ALTER TABLE invoices
+    ADD INDEX invoices_type_index (`type`),
+    ADD INDEX invoices_source_index (`source`);
+
+# Merchant Details data correction
+UPDATE files
+    SET entity_type='merchant_detail'
+    WHERE entity_type = "RZP\\Models\\Merchant\\Detail\\Entity";
+
+UPDATE merchant_details
+    SET business_proof_url = substr(business_proof_url, 6)
+    where business_proof_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET business_operation_proof_url = substr(business_operation_proof_url, 6)
+    where business_operation_proof_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET business_pan_url = substr(business_pan_url, 6)
+    where business_pan_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET address_proof_url = substr(address_proof_url, 6)
+    where address_proof_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET promoter_proof_url = substr(promoter_proof_url, 6)
+    where promoter_proof_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET promoter_pan_url = substr(promoter_pan_url, 6)
+    where promoter_pan_url LIKE "file_%";
+
+UPDATE merchant_details
+    SET promoter_address_url = substr(promoter_address_url, 6)
+    where promoter_address_url LIKE "file_%";
+
