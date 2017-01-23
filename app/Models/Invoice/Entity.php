@@ -111,7 +111,6 @@ class Entity extends Base\PublicEntity
         'updateLineItem',
         'removeLineItem',
         'removeManyLineItems',
-        'getInvoiceViewDetails',
     ];
 
     protected $defaults = [

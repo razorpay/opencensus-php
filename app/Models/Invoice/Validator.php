@@ -336,14 +336,6 @@ class Validator extends Base\Validator
 
                 break;
 
-            case 'getInvoiceViewDetails':
-                $allowedStatuses = [
-                    Status::ISSUED,
-                    Status::PAID,
-                ];
-
-                break;
-
             default:
                 $allowedStatuses = [
                     Status::DRAFT,

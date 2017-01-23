@@ -199,8 +199,6 @@ class Service extends Base\Service
         Entity::verifyIdAndStripSign($invoiceId);
         $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
 
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
-
         $merchant = $invoice->merchant;
 
         $keys = $this->repo->key->getKeysForMerchant($merchant->getId());
@@ -228,7 +226,7 @@ class Service extends Base\Service
             'invoice_id'        => Entity::getSignedId($invoiceId),
             'status'            => $invoice->getStatus(),
             'key_id'            => $publicKey,
-            'amount'            => $invoice->order->getAmount(),
+            'amount'            => $invoice->getAmount(),
             'environment'       => $this->app->environment(),
             'view_less'         => $invoice->getViewLess(),
             'merchant_details'  => $merchantDetails,
