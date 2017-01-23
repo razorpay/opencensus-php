@@ -21,6 +21,13 @@ class Type
         }
     }
 
+    /**
+     * Get invoice type's label, which will be used in public error descriptions.
+     *
+     * @param string $type
+     *
+     * @return string
+     */
     public static function getLabel($type)
     {
         self::checkType($type);

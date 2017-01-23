@@ -2209,7 +2209,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice expiry failed as payment exists for this invoice or is in progress.',
+                    'description' => 'Invoice expiry failed as payment exists or is in progress for this invoice.',
                 ],
             ],
             'status_code' => 400,
