@@ -359,8 +359,16 @@ class Service extends Base\Service
 
     public function createGatewayRefundRecords($gateway)
     {
-        // Currently, we are running this for billdesk refund timeouts only.
-        assert ($gateway === Payment\Gateway::BILLDESK);
+        // Currently, we are running this for billdesk and freecharge refund timeouts only.
+        $allowedGateways = [
+            Payment\Gateway::WALLET_FREECHARGE,
+            Payment\Gateway::BILLDESK,
+        ];
+
+        if (in_array($gateway, $allowedGateways) === false)
+        {
+            throw Exception\LogicException('Gateway not allowed');
+        }
 
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 

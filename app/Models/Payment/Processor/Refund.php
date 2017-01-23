@@ -406,7 +406,8 @@ trait Refund
             // provides us this feature, currently.
             //
 
-            if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
+            if (($this->payment->getGateway() !== Payment\Gateway::BILLDESK) and
+                ($this->payment->getGateway() !== Payment\Gateway::WALLET_FREECHARGE))
             {
                 throw $ex;
             }
