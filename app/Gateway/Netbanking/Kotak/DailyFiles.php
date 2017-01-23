@@ -24,10 +24,10 @@ class DailyFiles extends Base\DailyFiles
         return [
                     'refunds' => [
                         'tpv' => $files[0]['refunds'],
-                        'nonTpv' => $files[0]['refunds']
+                        'nonTpv' => $files[1]['refunds']
                     ],
                     'claims' => [
-                        'tpv' => $files[1]['claims'],
+                        'tpv' => $files[0]['claims'],
                         'nonTpv' => $files[1]['claims']
                     ]
                 ];

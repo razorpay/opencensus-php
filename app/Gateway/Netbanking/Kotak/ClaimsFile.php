@@ -69,6 +69,7 @@ class ClaimsFile extends Base\RefundFile
         $i = 1;
 
         $data = [];
+
         $totalAmount = 0;
 
         foreach ($input['data'] as $row)
