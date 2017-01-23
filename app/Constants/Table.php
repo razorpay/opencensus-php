@@ -32,6 +32,7 @@ class Table
     const SCHEDULE              = 'schedules';
     const TERMINAL              = 'terminals';
     const MERCHANT              = 'merchants';
+    const ACCOUNT               = 'merchants';
     const CUSTOMER              = 'customers';
     const EMI_PLAN              = 'emi_plans';
     const TRANSFER              = 'transfers';

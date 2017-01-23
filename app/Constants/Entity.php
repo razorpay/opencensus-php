@@ -42,6 +42,7 @@ class Entity
     const CUSTOMER              = 'customer';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';
+    const ACCOUNT               = 'account';
     const REVERSAL              = 'reversal';
     const TRANSFER              = 'transfer';
     const SCHEDULE              = 'schedule';
@@ -146,6 +147,7 @@ class Entity
         self::FEATURE               => \RZP\Models\Feature::class,
         self::WEBHOOK               => \RZP\Models\Merchant\Webhook::class,
         self::MERCHANT              => \RZP\Models\Merchant::class,
+        self::ACCOUNT               => \RZP\Models\Merchant\Account::class,
         self::BILLDESK              => \RZP\Gateway\Billdesk::class,
         self::CUSTOMER              => \RZP\Models\Customer::class,
         self::EMI_PLAN              => \RZP\Models\Emi::class,
@@ -187,7 +189,7 @@ class Entity
         self::WALLET_OPENWALLET     => \RZP\Gateway\Wallet\Openwallet::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
-        self::ORG_FIELD_MAP          => \RZP\Models\Admin\Org\FieldMap::class,
+        self::ORG_FIELD_MAP         => \RZP\Models\Admin\Org\FieldMap::class,
         self::ROLE                  => \RZP\Models\Admin\Role::class,
         self::PERMISSION            => \RZP\Models\Admin\Permission::class,
         self::GROUP                 => \RZP\Models\Admin\Group::class,

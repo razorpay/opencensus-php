@@ -397,8 +397,7 @@ trait RepositoryFetch
 
         if ($merchantId !== null)
         {
-            $attr = static::getAttributeWithTableName(Common::MERCHANT_ID);
-            $query = $query->where($attr, '=', $merchantId);
+            $query = $query->merchantId($merchantId);
         }
 
         //

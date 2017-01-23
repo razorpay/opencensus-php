@@ -14,21 +14,21 @@ class AccountController extends Controller
     {
         parent::__construct();
 
-        $this->service = new Merchant\Service;
+        $this->service = new Merchant\Account\Service;
     }
 
     public function getAccounts()
     {
     	$input = Request::all();
 
-    	$accounts = $this->service->fetchAccountMultiple($input);
+    	$accounts = $this->service->fetchMultiple($input);
 
     	return ApiResponse::json($accounts);
     }
 
     public function getAccount(string $id)
     {
-    	$account = $this->service->fetchAccount($id);
+    	$account = $this->service->fetch($id);
 
     	return ApiResponse::json($account);
     }

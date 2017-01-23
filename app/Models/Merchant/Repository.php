@@ -20,10 +20,6 @@ class Repository extends Base\Repository
 
     protected $sharedMerchant = null;
 
-    protected $entityFetchParamRules = [
-        Entity::PARENT_ID               => 'sometimes|string|max:14',
-    ];
-
     protected $appFetchParamRules = [
         Entity::ACTIVATED               => 'sometimes|boolean',
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
@@ -77,8 +73,6 @@ class Repository extends Base\Repository
 
     public function isMerchantIdRequiredForFetch()
     {
-        // @todo
-
         return false;
     }
 

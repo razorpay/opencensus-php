@@ -306,11 +306,18 @@ class Core extends Base\Core
 
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
-        $originPayment = null;
+        $to = null;
 
-        $to = $this->repo
-                   ->merchant
-                   ->fetchByAccountIdAndMerchant($accountId, $merchant);
+        try
+        {
+            $to = $this->repo
+                       ->account
+                       ->findByPublicIdAndMerchant($accountId, $merchant);
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException($e);
+        }
 
         $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
 
@@ -372,7 +379,7 @@ class Core extends Base\Core
      */
     protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId, Merchant\Entity $merchant)
     {
-        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+        Merchant\Account\Entity::verifyIdAndStripSign($accountId);
 
         $transfers = $this->repo
                           ->transfer
