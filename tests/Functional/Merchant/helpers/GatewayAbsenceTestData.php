@@ -123,6 +123,33 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+
+    'testCreateAbsenceCardInvalidIssuer' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'axis_migs',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'issuer' => 'SOME BANK',
+                'method' => 'netbanking',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testCreateAbsenceNBNonSupportedIssuer' => [
         'request' => [
             'content' => [
@@ -182,6 +209,87 @@ return [
                 'method' => 'netbanking',
                 'issuer' => 'HDFC',
                 'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testGatewayCreateAbsenceInvalidSource' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'DUMMY'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testGatewayCreateAbsenceInvalidFrom' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'statuscake'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
+    'testGatewayCreateAbsenceInvalidTo' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'comment' => 'Test Reason',
+                'source' => 'statuscake'
             ],
             'method' => 'POST',
             'url' => '/gateway/absence'
@@ -408,6 +516,32 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
+    'testGatewayAbsenceWithInvalidWalletIssuer' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'wallet_olamoney',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'wallet',
+                'issuer' => 'wallet_somewallet',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/absence'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                ]
+            ],
+            'status_code'   => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ]
+    ],
+
     'testStatusCakeWebHookNB' => [
         'request' => [
             'content' => [

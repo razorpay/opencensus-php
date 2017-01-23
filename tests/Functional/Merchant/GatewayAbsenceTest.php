@@ -218,6 +218,13 @@ class GatewayAbsenceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateAbsenceCardInvalidIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
     public function testCreateAbsenceNBNonSupportedIssuer()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
@@ -232,6 +239,43 @@ class GatewayAbsenceTest extends TestCase
         $from = $this->testData[__FUNCTION__]['request']['content']['downtime_from'];
 
         $this->testData[__FUNCTION__]['request']['content']['downtime_to'] = $from - 10;
+
+        $this->startTest();
+    }
+
+    public function testGatewayCreateAbsenceInvalidSource()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $from = $this->testData[__FUNCTION__]['request']['content']['downtime_from'];
+
+        $this->testData[__FUNCTION__]['request']['content']['downtime_to'] = $from - 10;
+
+        $this->startTest();
+    }
+
+    public function testGatewayCreateAbsenceInvalidFrom()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        // more than end of time
+        $from = 2147483648;
+
+        $this->testData[__FUNCTION__]['request']['content']['downtime_from'] = $from;
+
+        $this->testData[__FUNCTION__]['request']['content']['downtime_to'] = $from - 10;
+
+        $this->startTest();
+    }
+
+    public function testGatewayCreateAbsenceInvalidTo()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        // more than end of time
+        $to = 2147483648;
+
+        $this->testData[__FUNCTION__]['request']['content']['downtime_to'] = $to;
 
         $this->startTest();
     }
@@ -307,6 +351,14 @@ class GatewayAbsenceTest extends TestCase
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
+    }
+
+    public function testGatewayAbsenceWithInvalidWalletIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+
     }
 
 
