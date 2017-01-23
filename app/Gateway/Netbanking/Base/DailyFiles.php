@@ -53,7 +53,7 @@ class DailyFiles
             $this->sendMail($amount, $claimsFile, $refundsFile);
         }
 
-        return ['refundsFile' => $refundsFile, 'claimsFile' => $claimsFile];
+        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
     protected function getRefundsData($from, $to)

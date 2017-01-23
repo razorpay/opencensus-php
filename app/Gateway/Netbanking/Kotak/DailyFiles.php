@@ -24,8 +24,16 @@ class DailyFiles extends Base\DailyFiles
 
         $nonTpvFiles = $this->generateMail($from, $to, $nonTpvTerminals);
 
-        return ['refundsFile' => [ 'tpv' => $tpvFiles[0], 'nonTpv' => $nonTpvFiles[0]],
-                'claimsFile' => [ 'tpv' => $tpvFiles[1], 'nonTpv' => $nonTpvFiles[1]]];
+        return [
+                    'refunds' => [
+                        'tpv' => $tpvFiles['refunds'],
+                        'nonTpv' => $nonTpvFiles['refunds']
+                    ],
+                    'claims' => [
+                        'tpv' => $tpvFiles['claims'],
+                        'nonTpv' => $nonTpvFiles['claims']
+                    ]
+                ];
     }
 
     public function generateMail($from, $to, $terminalIds)
@@ -45,7 +53,7 @@ class DailyFiles extends Base\DailyFiles
             $this->sendMail($amount, $claimsFile, $refundsFile);
         }
 
-        return [$refundsFile, $claimsFile];
+        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
     protected function getRefundsDataForTerminals($from, $to, $terminalIds)

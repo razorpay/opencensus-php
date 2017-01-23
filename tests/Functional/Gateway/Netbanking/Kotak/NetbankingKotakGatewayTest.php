@@ -184,9 +184,9 @@ class NetbankingKotakGatewayTest extends TestCase
 
     protected function checkDailyFilesContent($content, $fileType)
     {
-        $refundsFileUrl = $content['netbanking_kotak']['refundsFile'][$fileType];
+        $refundsFileUrl = $content['netbanking_kotak']['refunds'][$fileType];
 
-        $claimsFileUrl = $content['netbanking_kotak']['claimsFile'][$fileType];
+        $claimsFileUrl = $content['netbanking_kotak']['claims'][$fileType];
 
         $claimsFileContents = file($claimsFileUrl);
 
