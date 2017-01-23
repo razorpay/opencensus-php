@@ -88,7 +88,8 @@ class NodalAccount extends Base\Core
 
     protected function getEncryptedText($plainText)
     {
-        $cipher = new Crypt\AES();
+        // create AES instance in ECB encryption mode
+        $cipher = new Crypt\AES(1);
 
         $cipher->setKey(self::ENCRYPTION_KEY);
 
