@@ -33,6 +33,11 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'customer';
 
+    //
+    // Additional input keys. Not attributes of entity.
+    //
+    const BILLING_ADDRESS       = 'billing_address';
+
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
@@ -119,19 +124,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function getCurrentShippingAddressId()
+    public function getCurrentAddressOfType(string $type)
     {
-        $app = App::getFacadeRoot();
+        $app  = App::getFacadeRoot();
+        $repo = $app['repo'];
 
-        $shippingAddress = $app['repo']->address
-            ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
+        $address = $repo->address->fetchPrimaryAddressOfEntityOfType($this, $type);
 
-        if ($shippingAddress !== null)
-        {
-            return $shippingAddress->getId();
-        }
-
-        return null;
+        return $address;
     }
 
     // ----------------------------------- END GETTERS -----------------------------------

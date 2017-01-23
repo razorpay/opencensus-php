@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Address;
 
 class Entity extends Base\PublicEntity
 {
@@ -26,7 +27,7 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
-    const CUSTOMER_ADDRESS      = 'customer_address';
+    const CUST_BILLING_ADDR_ID  = 'cust_billing_addr_id';
     const CUSTOMER_CONTACT      = 'customer_contact';
     // Invoice status
     const STATUS                = 'status';
@@ -78,6 +79,7 @@ class Entity extends Base\PublicEntity
 
     // ------------------------- Output Keys --------------------------------------
     const CUSTOMER_DETAILS      = 'customer_details';
+    const BILLING_ADDRESS       = 'billing_address';
     const PAYMENT_ID            = 'payment_id';
 
     // ------------------------ Output Keys End -----------------------------------
@@ -115,30 +117,30 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         // This is null by default because we don't create an order
         // when the invoice is being generated in a draft state.
-        self::ORDER_ID          => null,
+        self::ORDER_ID            => null,
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
-        self::STATUS            => Status::ISSUED,
+        self::STATUS              => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
-        self::DATE              => null,
-        self::ISSUED_AT         => null,
-        self::PAID_AT           => null,
-        self::EXPIRED_AT        => null,
-        self::EXPIRE_BY         => null,
-        self::RECEIPT           => null,
-        self::DESCRIPTION       => null,
-        self::NOTES             => [],
-        self::SHORT_URL         => null,
-        self::VIEW_LESS         => 1,
-        self::TYPE              => Type::INVOICE,
-        self::USER_ID           => null,
-        self::AMOUNT            => null,
-        self::CURRENCY          => 'INR',
-        self::CUSTOMER_NAME     => null,
-        self::CUSTOMER_EMAIL    => null,
-        self::CUSTOMER_CONTACT  => null,
-        self::CUSTOMER_ADDRESS  => null,
+        self::DATE                => null,
+        self::ISSUED_AT           => null,
+        self::PAID_AT             => null,
+        self::EXPIRED_AT          => null,
+        self::EXPIRE_BY           => null,
+        self::RECEIPT             => null,
+        self::DESCRIPTION         => null,
+        self::NOTES               => [],
+        self::SHORT_URL           => null,
+        self::VIEW_LESS           => 1,
+        self::TYPE                => Type::INVOICE,
+        self::USER_ID             => null,
+        self::AMOUNT              => null,
+        self::CURRENCY            => 'INR',
+        self::CUSTOMER_NAME       => null,
+        self::CUSTOMER_EMAIL      => null,
+        self::CUSTOMER_CONTACT    => null,
+        self::CUST_BILLING_ADDR_ID => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -188,10 +190,6 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ORDER_ID,
         self::PAYMENT_ID,
-        // self::CUSTOMER_EMAIL,
-        // self::CUSTOMER_CONTACT,
-        // self::CUSTOMER_NAME,
-        // self::CUSTOMER_ADDRESS,
         self::DUE_BY,
         self::EXPIRED_AT,
         self::EXPIRE_BY,
@@ -409,6 +407,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::EXPIRED);
     }
 
+    public function hasCustomerBillingAddress()
+    {
+        return ($this->getAttribute(self::CUST_BILLING_ADDR_ID) !== null);
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -424,7 +427,13 @@ class Entity extends Base\PublicEntity
         $this->setCustomerName($customer->getName());
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
-        $this->setCustomerAddress($customer->getCurrentShippingAddressId());
+
+        $customerBillingAddress = $customer->getCurrentAddressOfType(Address\Type::BILLING_ADDRESS);
+
+        if ($customerBillingAddress !== null)
+        {
+            $this->setCustBillingAddId($customerBillingAddress->getId());
+        }
     }
 
     public function setCustomerName($customerName)
@@ -432,9 +441,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
     }
 
-    public function setCustomerAddress($customerAddress)
+    public function setCustBillingAddId($customerBillingAddressId)
     {
-        $this->setAttribute(self::CUSTOMER_ADDRESS, $customerAddress);
+        $this->setAttribute(self::CUST_BILLING_ADDR_ID, $customerBillingAddressId);
     }
 
     public function setCustomerEmail($customerEmail)
@@ -499,12 +508,19 @@ class Entity extends Base\PublicEntity
 
     protected function getCustomerDetailsAttribute()
     {
-        return [
+        $customerDetails = [
             self::CUSTOMER_NAME     => $this->attributes[self::CUSTOMER_NAME],
             self::CUSTOMER_EMAIL    => $this->attributes[self::CUSTOMER_EMAIL],
             self::CUSTOMER_CONTACT  => $this->attributes[self::CUSTOMER_CONTACT],
-            self::CUSTOMER_ADDRESS  => $this->attributes[self::CUSTOMER_ADDRESS],
+            self::BILLING_ADDRESS   => null,
         ];
+
+        if ($this->hasCustomerBillingAddress())
+        {
+            $customerDetails[self::BILLING_ADDRESS] = $this->address->toArrayPublic();
+        }
+
+        return $customerDetails;
     }
 
     protected function getLineItemsAttribute()
@@ -726,7 +742,7 @@ class Entity extends Base\PublicEntity
 
     public function address()
     {
-        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_address');
+        return $this->belongsTo('RZP\Models\Address\Entity', 'cust_billing_addr_id');
     }
 
     public function payments()

@@ -36,6 +36,9 @@ class CreateInvoices extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::CUST_BILLING_ADDR_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::DATE)
@@ -69,9 +72,6 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->string(Entity::CURRENCY, 3);
-
-            $table->char(Entity::CUSTOMER_ADDRESS, Entity::ID_LENGTH)
-                  ->nullable();
 
             $table->string(Entity::CUSTOMER_NAME)
                   ->nullable();
@@ -137,7 +137,7 @@ class CreateInvoices extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Entity::CUSTOMER_ADDRESS)
+            $table->foreign(Entity::CUST_BILLING_ADDR_ID)
                   ->references(Address\Entity::ID)
                   ->on(Table::ADDRESS)
                   ->on_delete('restrict');
@@ -180,7 +180,7 @@ class CreateInvoices extends Migration
 
             $table->dropForeign
             (
-                Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
+                Table::INVOICE . '_' . Entity::CUST_BILLING_ADDR_ID . '_foreign'
             );
         });
 
