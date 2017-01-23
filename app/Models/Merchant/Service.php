@@ -130,7 +130,7 @@ class Service extends Base\Service
         return $subMerchant->toArrayPublic();
     }
 
-    public function edit($id, array $input)
+    public function edit(string $id, array $input)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 

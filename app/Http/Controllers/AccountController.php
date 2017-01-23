@@ -47,11 +47,11 @@ class AccountController extends Controller
     	;
     }
 
-    public function patchAccount()
+    public function patchAccount(string $id)
     {
     	$input = Request::all();
 
-    	$account = $this->service->edit($input);
+    	$account = $this->service->edit($id, $input);
 
     	return ApiResponse::json($account);
     }

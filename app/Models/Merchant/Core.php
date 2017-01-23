@@ -203,9 +203,15 @@ class Core extends Base\Core
      */
     protected function saveAndNotify($merchant)
     {
-        $data = $this->getEditedMerchantDifference($merchant);
-
         $this->repo->saveOrFail($merchant);
+
+        // Dont notify for account changes
+        if ($merchant instanceof Account\Entity)
+        {
+            return;
+        }
+
+        $data = $this->getEditedMerchantDifference($merchant);
 
         if (empty($data) === false)
         {
