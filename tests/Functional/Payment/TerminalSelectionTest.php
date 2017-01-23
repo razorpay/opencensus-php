@@ -359,6 +359,7 @@ class TerminalSelectionTest extends TestCase
                                 ['id' => 'SharNbKtkTrmnl']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = '5000000';
         $payment['bank'] = 'KKBK';
 
         $content = $this->doAuthAndCapturePayment($payment);
@@ -446,6 +447,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['amount'] = '500000';
         $payment['bank'] = 'KKBK';
 
         $this->doAuthAndCapturePayment($payment);
@@ -491,6 +493,34 @@ class TerminalSelectionTest extends TestCase
         $payment2 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
+    }
+
+    public function testAmountFilterForTerminals()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DCrpNbKtkTrmnl', 'network_category' => 'corporate']);
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DrctNbKtkTrmnl', 'network_category' => 'ecommerce']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+        $payment['amount'] = 100000;
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // ecomm KKBK terminal
+        $this->assertEquals('DrctNbKtkTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+        $payment['amount'] = 300000;
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // KKBK corporate category terminal
+        $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 
     protected function getPaymentForTPV($attributes = [])
