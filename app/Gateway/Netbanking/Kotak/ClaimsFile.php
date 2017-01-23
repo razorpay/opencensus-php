@@ -4,10 +4,15 @@ namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Claim';
+    protected static $fileToWriteName;
+
+    protected static $tpvFileName = 'Kotak_Netbanking_Claim_OTRAZORPAY';
+
+    protected static $nonTpvFileName = 'Kotak_Netbanking_Claim_OSRAZORPAY';
 
     protected static $headers = [
         'S.No',
@@ -21,13 +26,30 @@ class ClaimsFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getClaimsData($input);
 
-        $name = $this->getFileToWriteName();
+        $this->setFileToWriteName($input);
 
-        $filePath = $this->writeToTextFile($txt);
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $fileFullPath = $this->getFullFilePath($name);
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::KOTAK_NETBANKING_CLAIM);
 
-        return [$totalAmount, $fileFullPath];
+        $file = $creator->get();
+
+        return [$totalAmount, $file['local_file_path']];
+    }
+
+    protected function setFileToWriteName($input)
+    {
+        self::$fileToWriteName = self::$nonTpvFileName;
+
+        if (isset($input['tpv']) and
+            ($input['tpv'] === true))
+        {
+            self::$fileToWriteName = self::$tpvFileName;
+        }
     }
 
     protected function getTextData($data, $prependLine = '')

@@ -12,35 +12,32 @@ class DailyFiles extends Base\DailyFiles
     {
         // Since Kotak TPV requires entries for separate pool accounts in a
         // separate mail we will have to send them separately
-        $tpvTerminals = $this->repo->terminal->getTpvTerminalIdsForGateway($this->gateway);
+        $tpvType = [true, false];
 
-        $tpvTerminals = $tpvTerminals->map(function($item){return $item->getId();})->all();
+        $files = [];
 
-        $nonTpvTerminals = $this->repo->terminal->getTerminalIdsForGateway($this->gateway, $tpvTerminals);
-
-        $nonTpvTerminals = $nonTpvTerminals->map(function($item){return $item->getId();})->all();
-
-        $tpvFiles = $this->generateMail($from, $to, $tpvTerminals);
-
-        $nonTpvFiles = $this->generateMail($from, $to, $nonTpvTerminals);
+        foreach ($tpvType as $tpv)
+        {
+            $files[] = $this->generateMail($from, $to, $tpv);
+        }
 
         return [
                     'refunds' => [
-                        'tpv' => $tpvFiles['refunds'],
-                        'nonTpv' => $nonTpvFiles['refunds']
+                        'tpv' => $files[0]['refunds'],
+                        'nonTpv' => $files[0]['refunds']
                     ],
                     'claims' => [
-                        'tpv' => $tpvFiles['claims'],
-                        'nonTpv' => $nonTpvFiles['claims']
+                        'tpv' => $files[1]['claims'],
+                        'nonTpv' => $files[1]['claims']
                     ]
                 ];
     }
 
-    public function generateMail($from, $to, $terminalIds)
+    public function generateMail($from, $to, $tpvEnabled = false)
     {
-        list($refundAmount, $refundsFile) = $this->getRefundsDataForTerminals($from, $to, $terminalIds);
+        list($refundAmount, $refundsFile) = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
 
-        list($claimAmount, $claimsFile) = $this->getClaimsDataForTerminals($from, $to, $terminalIds);
+        list($claimAmount, $claimsFile) = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
 
         $amount = [];
         $amount['claims'] = $claimAmount;
@@ -56,20 +53,15 @@ class DailyFiles extends Base\DailyFiles
         return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
-    protected function getRefundsDataForTerminals($from, $to, $terminalIds)
+    public function getRefundsDataForTpv($from, $to, $tpvEnabled = false)
     {
-        if (empty($terminalIds) === true)
-        {
-            return;
-        }
-
-        $refunds = $this->repo->refund->fetchRefundsForTerminalsBetweenTimestamps(
+        $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
                                             Payment\Entity::BANK,
                                             $this->bankCode,
                                             $from,
                                             $to,
                                             $this->gateway,
-                                            $terminalIds);
+                                            $tpvEnabled);
 
         $count = $refunds->count();
 
@@ -93,6 +85,7 @@ class DailyFiles extends Base\DailyFiles
         }
 
         $input['data'] = $data;
+        $input['tpv']  = $tpvEnabled;
 
         $gateway = $terminal->getGateway();
 
@@ -101,13 +94,8 @@ class DailyFiles extends Base\DailyFiles
         return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
     }
 
-    protected function getClaimsDataForTerminals($from, $to, $terminalIds)
+    protected function getClaimsDataForTpv($from, $to, $tpvEnabled = false)
     {
-        if (empty($terminalIds) === true)
-        {
-            return;
-        }
-
         $status = [
             Payment\Status::AUTHORIZED,
             Payment\Status::CAPTURED,
@@ -118,11 +106,11 @@ class DailyFiles extends Base\DailyFiles
         // so forwarding time stamps by 1 day
         list($from, $to) = $this->updateTimeStamps($from, $to);
 
-        $claims= $this->repo->payment->fetchReconciledPaymentsForTerminals($from,
+        $claims= $this->repo->payment->fetchReconciledPaymentsForTpv($from,
                                                                          $to,
                                                                          $this->gateway,
                                                                          $status,
-                                                                         $terminalIds);
+                                                                         $tpvEnabled);
 
         if ($claims->count() === 0)
         {
@@ -140,6 +128,7 @@ class DailyFiles extends Base\DailyFiles
         }
 
         $input['data'] = $data;
+        $input['tpv']  = $tpvEnabled;
 
         $gateway = $claim->terminal->getGateway();
 

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
@@ -198,6 +199,40 @@ class Repository extends Base\Repository
             ->get();
 
         return $refunds;
+    }
+
+    public function fetchRefundsForTpvBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $tpvEnabled = false)
+    {
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $pRepo = $this->manager->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $tRepo = $this->manager->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+        $pType = $pRepo->getAttributeWithTableName($type);
+        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $pTerminalId = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
+
+        $tId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
+        $tTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+
+        return $this->newQuery()
+             ->select($attrs)
+             ->join($pTableName, $rPaymentId, '=', $pId)
+             ->join($tTableName, $pTerminalId, '=', $tId)
+             ->where($rCreatedAt, '>=', $from)
+             ->where($rCreatedAt, '<=', $to)
+             ->where($pType, '=', $gatewayCode)
+             ->where($pGateway, '=', $gateway)
+             ->where($tTpv, '=', $tpvEnabled)
+             ->with('payment')
+             ->get();
     }
 
     /**

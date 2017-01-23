@@ -8,7 +8,11 @@ use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Refund';
+    protected static $fileToWriteName;
+
+    protected static $tpvFileName = 'Kotak_Netbanking_Refund_OTRAZORPAY';
+
+    protected static $nonTpvFileName = 'Kotak_Netbanking_Refund_OSRAZORPAY';
 
     protected static $headers = [
         'S.No',
@@ -22,11 +26,7 @@ class RefundFile extends Base\RefundFile
     {
         list($txt, $totalAmount) = $this->getRefundData($input);
 
-        // Uncomment commented lines to disbale UFH
-
-        //$name = $this->getFileToWriteName();
-
-        //$filePath = $this->writeToTextFile($txt);
+        $this->setFileToWriteName($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
@@ -38,11 +38,18 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        //$fileFullPath = $this->getFullFilePath($name);
-
-        //return [$totalAmount, $fileFullPath];
-
         return [$totalAmount, $file['local_file_path']];
+    }
+
+    protected function setFileToWriteName($input)
+    {
+        self::$fileToWriteName = self::$nonTpvFileName;
+
+        if (isset($input['tpv']) and
+            ($input['tpv'] === true))
+        {
+            self::$fileToWriteName = self::$tpvFileName;
+        }
     }
 
     protected function getTextData($data, $prependLine = '')
