@@ -29,6 +29,8 @@ class Validator extends Base\Validator
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
 
+    const MAX_ALLOWED_LINE_ITEMS = 20;
+
     //
     // A minimum of 1 days of gap must exist between invoice issue and expired by
     //
@@ -54,7 +56,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -88,7 +90,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -109,7 +111,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:10',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
@@ -130,7 +132,7 @@ class Validator extends Base\Validator
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
@@ -396,14 +398,34 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateInvoiceNotExpired()
+    public function validateInvoicePayable()
     {
         $invoice = $this->entity;
 
-        if ($invoice->isExpired())
+        if ($invoice->trashed())
         {
             throw new BadRequestValidationFailureException(
-                $invoice->getTypeLabel() . ' is expired');
+                $invoice->getTypeLabel() . ' is not payable as it is deleted.');
+        }
+
+        if ($invoice->isIssued() === false)
+        {
+            $message = $invoice->getTypeLabel() . ' is not payable in ' .
+                       $invoice->getStatus() . ' status.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateInvoiceMaxAllowedLineItems()
+    {
+        $invoice        = $this->entity;
+        $lineItemsCount = $invoice->lineItems()->count();
+
+        if ($lineItemsCount >= self::MAX_ALLOWED_LINE_ITEMS)
+        {
+            throw new BadRequestValidationFailureException(
+                'The line items may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items.');
         }
     }
 

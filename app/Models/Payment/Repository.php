@@ -140,7 +140,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function lockForUpdate($id)
+    /**
+     * Fetches entity with given id with a mysql lock for update
+     *
+     * @param string       $id
+     * @param bool|boolean $withTrashed
+     *
+     * withTrashed: Method signature changed to make it compatible
+     *              with Base/Repository's method.
+     *
+     * @return Entity
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
     {
         return $this->newQuery()
                     ->lockForUpdate()->findOrFail($id);

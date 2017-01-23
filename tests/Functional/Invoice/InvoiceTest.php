@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 
 use Carbon\Carbon;
 use Mockery;
@@ -491,9 +492,22 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testDeleteDraftInvoice()
+    public function testDeleteInvoice()
     {
-        $this->createDraftInvoice();
+        $this->createOrder();
+
+        $this->fixtures->create('invoice');
+
+        //
+        // Just adding one failed payment. This should not stop from invoice to
+        // be deleted.
+        //
+        $this->fixtures->create('payment:failed',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
 
         $this->startTest();
 
@@ -501,11 +515,15 @@ class InvoiceTest extends TestCase
         $this->assertNull($invoice);
     }
 
-    public function testDeleteIssuedInvoice()
+    public function testDeletePaidInvoice()
     {
         $this->createOrder();
 
-        $this->fixtures->create('invoice');
+        $invoice = $this->fixtures->create('invoice');
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -513,7 +531,7 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice);
     }
 
-    public function testAddLineItemsToInvoice()
+    public function testAddLineItemToInvoice()
     {
         $this->createDraftInvoice();
 
@@ -561,7 +579,32 @@ class InvoiceTest extends TestCase
         $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testAddLineItemsToInvoiceWithBadData()
+    public function testAddTooManyLineItemsToInvoice()
+    {
+        $this->createDraftInvoice();
+
+        foreach (range(1, 18) as $i)
+        {
+            $item = $this->fixtures->create('item',
+                [
+                    'id' => UniqueIdEntity::generateUniqueId(),
+                ]);
+
+            $this->fixtures->create('line_item',
+                [
+                    'id'      => UniqueIdEntity::generateUniqueId(),
+                    'item_id' => $item->getId(),
+                ]);
+        }
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertCount(18, $invoice['line_items']);
+    }
+
+    public function testAddLineItemToInvoiceWithBadData()
     {
         $this->createDraftInvoice();
 
@@ -608,7 +651,7 @@ class InvoiceTest extends TestCase
 
         $this->createDraftInvoice();
 
-        $testData = $this->testData['testAddLineItemsToInvoice'];
+        $testData = $this->testData['testAddLineItemToInvoice'];
 
         $response = $this->startTest($testData);
 
@@ -969,6 +1012,44 @@ class InvoiceTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testPayExpiredInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['status' => 'expired']);
+
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $invoice->order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPayDeletedInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['deleted_at' => time()]);
+
+        $this->assertNull($this->getLastEntity('invoice'));
+
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $invoice->order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testExpireInvoice()
     {
         $this->createOrder();
@@ -985,7 +1066,9 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->fixtures->create('invoice');
 
+        //
         // Just adds one failed payment too, for testing purposes.
+        //
         $this->fixtures->create('payment:failed',
             [
                 'order_id'   => '100000000order',

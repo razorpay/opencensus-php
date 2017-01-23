@@ -1388,7 +1388,7 @@ return [
         ],
     ],
 
-    'testDeleteDraftInvoice' => [
+    'testDeleteInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'delete',
@@ -1399,7 +1399,7 @@ return [
         ]
     ],
 
-    'testDeleteIssuedInvoice' => [
+    'testDeletePaidInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'delete',
@@ -1409,18 +1409,18 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Invoice delete failed as payment exists or is in progress for this invoice.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_DELETE_FAILED,
         ],
     ],
 
-    'testAddLineItemsToInvoice' => [
+    'testAddLineItemToInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -1530,6 +1530,42 @@ return [
         ]
     ],
 
+    'testAddTooManyLineItemsToInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items',
+            'method'    => 'post',
+            'content'   => [
+                [
+                    'name'     => 'Very new item',
+                    'amount'   => 100,
+                ],
+                [
+                    'name'     => 'Very new item 2',
+                    'amount'   => 200,
+                    'quantity' => 2,
+                ],
+                [
+                    'name'     => 'Very new item 3',
+                    'amount'   => 300,
+                    'quantity' => 2,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The line items may not have more than 20 items.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testAddManyLineItemsToInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
@@ -1568,7 +1604,7 @@ return [
         ],
     ],
 
-    'testAddLineItemsToInvoiceWithBadData' => [
+    'testAddLineItemToInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -2165,6 +2201,38 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
         ],
     ],
+
+   'testPayExpiredInvoice' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invoice is not payable in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+   ],
+
+   'testPayDeletedInvoice' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invoice is not payable as it is deleted.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+   ],
 
     'testExpireInvoice' => [
         'request' => [

@@ -777,16 +777,16 @@ class Processor
             return;
         }
 
-        $invoice = $this->order->invoice;
+        $invoice = $this->order->invoice()->withTrashed()->first();
 
         if ($invoice === null)
         {
             return;
         }
 
-        $this->repo->invoice->lockForUpdateAndReload($invoice);
+        $this->repo->invoice->lockForUpdateAndReload($invoice, true);
 
-        $invoice->getValidator()->validateInvoiceNotExpired();
+        $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
     }

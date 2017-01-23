@@ -227,23 +227,44 @@ class Repository extends \Razorpay\Spine\Repository
      * object too.
      *
      * @param Models\Base\PublicEntity $entity
+     * @param bool|boolean             $withTrashed
      *
      * @return null
      *
      * @throws Exception\LogicException
      */
-    public function lockForUpdateAndReload($entity)
+    public function lockForUpdateAndReload(
+        Models\Base\PublicEntity $entity,
+        bool $withTrashed = false)
     {
-        $lockedEntity = $this->lockForUpdate($entity->getId());
+        $lockedEntity = $this->lockForUpdate($entity->getId(), $withTrashed);
 
         $entity->setRawAttributes($lockedEntity->getAttributes(), true);
     }
 
-    public function lockForUpdate($id)
+    /**
+     * Fetches entity with given id with a mysql lock for update
+     *
+     * @param string       $id
+     * @param bool|boolean $withTrashed - Whether to include soft deleted results?
+     *
+     * TODO:
+     * - $withTrashed should go in findOrFail() in spine?
+     *
+     * @return Models\Base\PublicEntity
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
     {
         assert($this->isTransactionActive());
 
-        return $this->newQuery()->lockForUpdate()->findOrFail($id);
+        $query = $this->newQuery()->lockForUpdate();
+
+        if ($withTrashed)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->findOrFail($id);
     }
 
     protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
