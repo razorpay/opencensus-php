@@ -29,16 +29,16 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC     = 'HDFC';
-    const AXIS     = 'Axis';
-    const KOTAK    = 'Kotak';
-    const BILLDESK = 'BillDesk';
-    const PAYZAPP  = 'PayZapp';
-    const MOBIKWIK = 'Mobikwik';
-    const PAYTM    = 'Paytm';
-    const OLAMONEY = 'Olamoney';
+    const HDFC       = 'HDFC';
+    const AXIS       = 'Axis';
+    const KOTAK      = 'Kotak';
+    const BILLDESK   = 'BillDesk';
+    const PAYZAPP    = 'PayZapp';
+    const MOBIKWIK   = 'Mobikwik';
+    const PAYTM      = 'Paytm';
+    const OLAMONEY   = 'Olamoney';
     const FREECHARGE = 'Freecharge';
-    const ADMIN    = 'admin';
+    const ADMIN      = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'

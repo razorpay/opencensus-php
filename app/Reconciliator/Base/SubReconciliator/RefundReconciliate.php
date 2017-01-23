@@ -85,8 +85,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
-            $this->assertRefundAmountEqualsReconAmount($row);
-
             $reconciled = $this->checkIfAlreadyReconciled($this->refund);
 
             if ($reconciled === true)

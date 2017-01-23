@@ -10,9 +10,9 @@ use RZP\Trace\TraceCode;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
-    const COLUMN_REFUND_ID = 'Transaction Id';
-    const COLUMN_PAYMENT_ID = 'Order Id';
-    const COLUMN_SETTLED_AT = 'Settlement Date';
+    const COLUMN_REFUND_ID     = 'Transaction Id';
+    const COLUMN_PAYMENT_ID    = 'Order Id';
+    const COLUMN_SETTLED_AT    = 'Settlement Date';
     const COLUMN_REFUND_AMOUNT = 'Total Transaction Amount';
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
