@@ -11,10 +11,11 @@ use RZP\Trace\TraceCode;
 class RefundReconciliate extends Base\RefundReconciliate
 {
     const COLUMN_REFUND_ID = 'Transaction Id';
-    const COLUMN_SETTLED_AT = 'Transaction Date';
+    const COLUMN_PAYMENT_ID = 'Order Id';
+    const COLUMN_SETTLED_AT = 'Settlement Date';
     const COLUMN_REFUND_AMOUNT = 'Total Transaction Amount';
 
-    const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
+    const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
     const REFUND_ID_INDEX = 1;
 
@@ -31,18 +32,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $refundId = $this->getRefundId($row);
-
-        $gatewayEntities = $this->repo->wallet_freecharge->findSuccessfulRefundByRefundId(
-                                                                $refundId,
-                                                                Wallet::FREECHARGE);
-
-        if ($gatewayEntities->count() === 0)
-        {
-            return null;
-        }
-
-        $paymentId = $gatewayEntities->first()->getPaymentId();
+        $paymentId = $row[self::COLUMN_PAYMENT_ID];
 
         return $paymentId;
     }
@@ -81,7 +71,7 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $gatewaySettledAt;
     }
 
-    protected function assertRefundAmountEqualsReconAmount(array $row)
+    protected function validateRefundAmountEqualsReconAmount(array $row)
     {
         if ($this->refund->getAmount() !== intval($this->getRefundAmount($row)))
         {
@@ -92,6 +82,10 @@ class RefundReconciliate extends Base\RefundReconciliate
                     'row'           => $row,
                     'gateway'       => get_called_class()
                 ]);
+
+            return false;
         }
+
+        return true;
     }
 }

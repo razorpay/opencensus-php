@@ -19,7 +19,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_KK_CESS         = 'Krishi Kalyan Cess';
     const COLUMN_FEE             = 'Net Deduction';
     const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
-    const COLUMN_SETTLED_AT      = 'Transaction Date';
+    const COLUMN_SETTLED_AT      = 'Settlement Date';
 
     const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
 
@@ -100,7 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $gatewaySettledAt;
     }
 
-    protected function assertPaymentAmountEqualsReconAmount(array $row)
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         if ($this->payment->getAmount() !== $this->getGatewayPaymentAmount($row))
         {
@@ -111,6 +111,10 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                     'row'           => $row,
                     'gateway'       => get_called_class()
                 ]);
+
+            return false;
         }
+
+        return true;
     }
 }

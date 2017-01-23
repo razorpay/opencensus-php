@@ -7,7 +7,7 @@ use RZP\Reconciliator\Base;
 class Reconciliate extends Base\Reconciliate
 {
     // Number of lines to skip from EOF while reading MIS file
-    const NUM_LINES_TO_SKIP = 3;
+    const NUM_LINES_TO_SKIP_FROM_BOTTOM = 3;
 
     /**
      * Figures out what kind of reconciliation is it
@@ -27,6 +27,9 @@ class Reconciliate extends Base\Reconciliate
 
     public function getNumLinesToSkip()
     {
-        return self::NUM_LINES_TO_SKIP;
+        return [
+            self::LINES_FROM_TOP => 0,
+            self::LINES_FROM_BOTTOM => 3
+        ];
     }
 }

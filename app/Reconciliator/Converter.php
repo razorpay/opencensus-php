@@ -6,6 +6,7 @@ use Excel;
 use Config;
 
 use RZP\Exception;
+use RZP\Reconciliator\Base;
 
 class Converter
 {
@@ -17,6 +18,7 @@ class Converter
         'mer'  => 'merchant',
         'comm' => 'commission',
         'ac'   => 'account',
+
         'acc'  => 'account',
         'amt'  => 'amount',
         'txn'  => 'transaction',
@@ -168,7 +170,7 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], $linesToSkip = 0)
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip)
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -176,11 +178,7 @@ class Converter
 
         $columnHeadersCount = count($columnHeaders);
 
-        // Loads the file into memory to get the number of lines to read
-        $fileContent = file($filePath);
-        $fileLinesCount = count($fileContent);
-
-        $totalLinesToRead = $fileLinesCount - $linesToSkip;
+        $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
         $lineCount = 0;
 
         $handle = fopen($filePath, 'r');
@@ -195,10 +193,18 @@ class Converter
         {
             while (($row = fgetcsv($handle)) !== false)
             {
-                if ($lineCount >= $totalLinesToRead)
+                if (($totalLinesToRead !== null) and
+                        ($lineCount >= $totalLinesToRead))
                 {
                     break;
                 }
+
+                if (($linesToSkip[Base\Reconciliate::LINES_FROM_TOP] > 0) and
+                        ($lineCount < $linesToSkip[Base\Reconciliate::LINES_FROM_TOP]))
+                {
+                    continue;
+                }
+
                 // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
@@ -228,5 +234,23 @@ class Converter
         }
 
         return $data;
+    }
+
+    protected function getTotalLinesToRead(string $filePath, array $linesToSkip)
+    {
+        $totalLinesToRead = null;
+
+        if ($linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] > 0)
+        {
+            // Loads the file into memory to get the number of lines to read
+            $fileContent = file($filePath);
+            $fileLinesCount = count($fileContent);
+
+            $totalLinesToRead = $fileLinesCount -
+                                ($linesToSkip[Base\Reconciliate::LINES_FROM_TOP] +
+                                $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM]);
+        }
+
+        return $totalLinesToRead;
     }
 }

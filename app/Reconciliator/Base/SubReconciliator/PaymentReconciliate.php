@@ -96,8 +96,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->runPreReconciledAtCheckRecon($rowDetails);
 
-            $this->assertPaymentAmountEqualsReconAmount($row);
-
             $reconciled = $this->checkIfAlreadyReconciled($this->payment);
 
             if ($reconciled === true)
@@ -108,8 +106,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
 
-            // Validates that the payment status is not failed.
-            $validate = $this->validatePaymentStatus($row);
+            $validate = $this->validatePaymentDetails($row);
 
             if ($validate === true)
             {
@@ -157,6 +154,15 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
+    protected function validatePaymentDetails(array $row)
+    {
+        return $this->validatePaymentStatus($row) and
+            $this->validatePaymentAmountEqualsReconAmount($row);
+    }
+
+    /**
+     * Validates that the payment status is not failed.
+     */
     protected function validatePaymentStatus($row)
     {
         $paymentStatus = $this->payment->getStatus();
@@ -410,6 +416,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
+
             //
             // It's possible that the payment is in failed state and hence the transaction
             // is not present. While validating the payment status, we check for failed status
@@ -938,8 +945,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param  array  $row Row data
      */
-    protected function assertPaymentAmountEqualsReconAmount(array $row)
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
-        ;
+        return true;
     }
 }

@@ -97,6 +97,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
 
+            $validate = $this->validateRefundDetails($row);
+
             // Validates that the payment status is not failed.
             $validate = $this->validatePaymentStatus();
 
@@ -156,6 +158,12 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function runPreReconciledAtCheckRecon($rowDetails)
     {
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
+    }
+
+    protected function validateRefundDetails(array $row)
+    {
+        return $this->validatePaymentStatus() and
+                $this->validateRefundAmountEqualsReconAmount($row);
     }
 
     protected function validatePaymentStatus()
@@ -375,8 +383,8 @@ class RefundReconciliate extends Foundation\SubReconciliate
      *
      * @param  array  $row Row data
      */
-    protected function assertRefundAmountEqualsReconAmount(array $row)
+    protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        ;
+        return true;
     }
 }
