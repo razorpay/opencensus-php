@@ -35,7 +35,7 @@ trait ResponseFieldsTrait
     );
 
     protected static $callbackResponseFields = array(
-        'MercantID',
+        'MerchantID',
         'CustomerID',
         'TxnReferenceNo',
         'BankReferenceNo',
