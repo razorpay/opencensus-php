@@ -43,15 +43,11 @@ class Service extends Base\Service
     {
         $accessor = new FileStore\Accessor;
 
-        $fileStore = $accessor->id($fileStoreId)
-                              ->merchantId($merchantId)
-                              ->get();
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
 
-        $storageHandler = Filestore\Store::getHandler($fileStore->getStore());
-
-        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
-
-        return $url;
+        return $signedUrls[$fileStoreId];
     }
 
     public function saveMerchantDetails(array $input)

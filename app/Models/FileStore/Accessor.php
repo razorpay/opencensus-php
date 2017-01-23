@@ -119,6 +119,34 @@ class Accessor extends Base\Core
         return $filePath;
     }
 
+    public function getSignedUrl()
+    {
+        $urls = [];
+
+        $files = $this->get();
+
+        if (($files instanceof Base\PublicCollection) === false)
+        {
+            $files = (new Base\PublicCollection)->push($files);
+        }
+
+        foreach ($files as $file)
+        {
+            $urls[$file->getId()] = $this->getUrl($file);
+        }
+
+        return $urls;
+    }
+
+    protected function getUrl(Entity $fileStore)
+    {
+        $storageHandler = Store::getHandler($fileStore->getStore());
+
+        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+
+        return $url;
+    }
+
     protected function createFullFilePath(string $location)
     {
         return $this->getStorageDir() . $location;
