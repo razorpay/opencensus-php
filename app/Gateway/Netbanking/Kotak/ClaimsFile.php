@@ -24,9 +24,9 @@ class ClaimsFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount) = $this->getClaimsData($input);
-
         $this->setFileToWriteName($input);
+
+        list($txt, $totalAmount) = $this->getClaimsData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 

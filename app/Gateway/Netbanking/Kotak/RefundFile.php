@@ -24,9 +24,9 @@ class RefundFile extends Base\RefundFile
 
     public function generate($input)
     {
-        list($txt, $totalAmount) = $this->getRefundData($input);
-
         $this->setFileToWriteName($input);
+
+        list($txt, $totalAmount) = $this->getRefundData($input);
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
