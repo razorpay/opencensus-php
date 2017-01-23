@@ -1559,6 +1559,10 @@ ALTER TABLE payment_analytics
     DROP COLUMN terminal_status_msg,
     DROP COLUMN payment_type;
 
+ALTER TABLE invoices
+    ADD INDEX invoices_type_index (`type`),
+    ADD INDEX invoices_source_index (`source`);
+
 # Merchant Details data correction
 UPDATE files
     SET entity_type='merchant_detail'
@@ -1591,3 +1595,4 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
+
