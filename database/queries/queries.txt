@@ -1574,6 +1574,10 @@ ALTER TABLE payment_analytics
     DROP COLUMN terminal_status_msg,
     DROP COLUMN payment_type;
 
+ALTER TABLE invoices
+    ADD INDEX invoices_type_index (`type`),
+    ADD INDEX invoices_source_index (`source`);
+
 # Merchant Details data correction
 UPDATE files
     SET entity_type='merchant_detail'
