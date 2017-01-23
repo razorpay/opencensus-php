@@ -43,6 +43,8 @@ class Gateway extends Base\Gateway
 
         $refund->fill($attributes);
 
+        $refund->setAction($action);
+
         $refund->saveOrFail();
 
         return $refund;
