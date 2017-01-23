@@ -494,6 +494,12 @@ final class Route
         'user_create'                             => ['post',     'users',                                          'UserController@postUser'                                           ],
         'user_edit'                               => ['put',      'users/{id}',                                     'UserController@putUser'                                            ],
         'user_attach_merchant'                    => ['put',      'users/{id}/attach',                              'UserController@attachUserToMerchant'                               ],
+        'account_fetch'                           => ['get',      'accounts',                                       'AccountController@getAccounts'                                     ],
+        'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@getAccount'                                      ],
+        'account_create'                          => ['post',     'accounts/{id}',                                  'AccountController@postAccount'                                     ],
+        'account_create_file'                     => ['post',     'accounts/{id}/files/{type}',                     'AccountController@postAccountFile'                                 ],
+        'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@patchAccount'                                    ],
+        'account_edit_file'                       => ['patch',    'accounts/{id}/files/{type}',                     'AccountController@patchAccountFile'                                ],
     );
 
     public static $public = array(
@@ -639,6 +645,8 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
+        'account_fetch',
+        'account_fetch_multiple',
     );
 
     public static $internal = array(

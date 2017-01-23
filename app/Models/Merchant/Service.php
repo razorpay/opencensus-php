@@ -233,6 +233,23 @@ class Service extends Base\Service
         return $merchants->toArrayPublic();
     }
 
+    public function fetchAccount($id)
+    {
+        $merchant = $this->repo->merchant->fetchByAccountIdAndMerchant($id, $this->merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function fetchAccountMultiple($input)
+    {
+        $input[Entity::PARENT_ID] = $this->merchant->getId();
+
+        $merchants = $this->repo->merchant->fetch($input);
+
+        return $merchants->toArrayPublic();
+    }
+
+
     // This is on proxy auth
     public function fetchConfig()
     {
