@@ -114,17 +114,7 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $fileName = 'api/' . $merchant->getId() .'/' .$key;
-
-            $file = $this->createFile(
-                $merchantDetails,
-                $value->extension(),
-                $value,
-                $fileName,
-                $key,
-                $merchant);
-
-            $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+            $params[$key] = $this->processFile($key, $value, $this->merchant, $merchantDetails);
         }
 
         $merchantDetails->fill($params);
@@ -193,6 +183,29 @@ class Service extends Base\Service
         return $merchantDetail;
     }
 
+    /**
+     * Process a UFH file upload
+     *
+     * @param  string       $type
+     * @param  mixed        $content
+     * @param  Entity       $merchant
+     * @param  Entity       $merchantDetails
+     */
+    public function processFile(string $type, $content, $merchant, Entity $merchantDetails) : string
+    {
+        $fileName = 'api/' . $merchant->getId() .'/' .$key;
+
+        $file = $this->createFile(
+            $merchantDetails,
+            $value->extension(),
+            $value,
+            $fileName,
+            $key,
+            $merchant);
+
+        return FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
+    }
+
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
@@ -237,7 +250,7 @@ class Service extends Base\Service
         return $file;
     }
 
-    protected function createResponse(Detail\Entity $merchantDetails)
+    public function createResponse(Detail\Entity $merchantDetails)
     {
         $merchantDetailsArr = $merchantDetails->toArray();
 

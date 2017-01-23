@@ -36,6 +36,26 @@ class Service extends Merchant\Service
         return $merchant->toArrayPublic();
     }
 
+    public function uploadFiles(string $id, $input)
+    {
+        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
+
+        try
+        {
+            $this->core->uploadFiles($account, $input);
+        }
+        catch (\Throwable $ex)
+        {
+            // Trace
+
+            throw $ex;
+        }
+
+        return [
+            'success'  => true
+        ];
+    }
+
     public function edit(string $id, array $input)
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);

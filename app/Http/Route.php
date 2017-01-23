@@ -497,9 +497,9 @@ final class Route
         'account_fetch'                           => ['get',      'accounts',                                       'AccountController@getAccounts'                                     ],
         'account_fetch_multiple'                  => ['get',      'accounts/{id}',                                  'AccountController@getAccount'                                      ],
         'account_create'                          => ['post',     'accounts',                                       'AccountController@postAccount'                                     ],
-        'account_create_file'                     => ['post',     'accounts/{id}/files/{type}',                     'AccountController@postAccountFile'                                 ],
+        'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
         'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@patchAccount'                                    ],
-        'account_edit_file'                       => ['patch',    'accounts/{id}/files/{type}',                     'AccountController@patchAccountFile'                                ],
+        'account_edit_files'                      => ['patch',    'accounts/{id}/files',                            'AccountController@patchAccountFiles'                               ],
     );
 
     public static $public = array(
@@ -648,9 +648,9 @@ final class Route
         'account_fetch',
         'account_fetch_multiple',
         'account_create',
-        'account_create_file',
+        'account_create_files',
         'account_edit',
-        'account_edit_file',
+        'account_edit_files',
     );
 
     public static $internal = array(

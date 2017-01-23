@@ -7,7 +7,7 @@ use RZP\Models\Pricing;
 
 class Core extends Merchant\Core
 {
-    public function createAccount(array $input, Merchant\Entity $merchant)
+    public function createAccount(array $input, Merchant\Entity $merchant) : Entity
     {
         $account = (new Entity)->build($input);
 
@@ -28,5 +28,29 @@ class Core extends Merchant\Core
         $this->addMerchantSupportingEntities($account);
 
         return $account;
+    }
+
+    public function uploadFiles(Entity $account, $input)
+    {
+        $accountDetails = $account->merchantDetail;
+
+        $account->getValidator()->validateInput('upload', $input);
+
+        // @todo: Change error
+        $accountDetails->getValidator()->validateIsNotLocked();
+
+        foreach ($input as $type => $content)
+        {
+            $type = FileType::getFieldForType($type);
+
+            $ufhId = (new Merchant\Detail\Service)
+                        ->processFile($type, $content, $account, $accountDetails);
+
+            $params[$type] = $ufhId;
+        }
+
+        $accountDetails->fill($params);
+
+        $this->repo->saveOrFail($accountDetails);
     }
 }
