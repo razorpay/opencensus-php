@@ -59,6 +59,19 @@ class CustomerTokenTest extends TestCase
         return $this->startTest();
     }
 
+    public function testUpdateCustomerToken()
+    {
+        $this->fixtures->edit('token', '1000custwallet', ['recurring' => 1]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $token = $this->getEntityById('token', 'token_1000custwallet', true);
+
+        $this->assertEquals(false, array_key_exists('recurring', $token));
+    }
+
     public function testDeleteCustomerToken()
     {
         $this->mockSession();
