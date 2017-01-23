@@ -6,11 +6,13 @@ use DirectoryIterator;
 
 use App;
 
-use RZP\Base\RuntimeManager;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
 
-class Orchestrator
+class Orchestrator extends Base\Core
 {
     const GATEWAY = 'gateway';
 
@@ -41,19 +43,26 @@ class Orchestrator
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC     => ['prashanth@razorpay.com'],
-        self::AXIS     => ['prashanth@razorpay.com'],
-        self::BILLDESK => ['prashanth@razorpay.com'],
-        self::PAYZAPP  => ['prashanth@razorpay.com'],
-        self::MOBIKWIK => ['prashanth@razorpay.com'],
-        self::PAYTM    => ['prashanth@razorpay.com'],
-        self::KOTAK    => ['giri@razorpay.com'],
-        self::OLAMONEY => ['prashanth@razorpay.com'],
+        self::HDFC     => ['payoutreport@hdfcbank.com'],
+        self::AXIS     => [],
+        self::BILLDESK => [],
+        self::PAYZAPP  => [],
+        self::MOBIKWIK => [],
+        self::PAYTM    => [],
+        self::KOTAK    => ['BankAlerts@kotak.com'],
+        self::OLAMONEY => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN    => ['prashanth.yv@razorpay.com'],
     ];
 
+    /**
+     * Gateways for which we run validations on email content
+     */
+    const GATEWAY_EMAIL_VALIDATION = [
+        self::HDFC,
+        self::KOTAK,
+    ];
 
     /*********************
      * Instance variables
@@ -76,9 +85,9 @@ class Orchestrator
 
     public function __construct()
     {
-        $this->increaseAllowedSystemLimits();
+        parent::__construct();
 
-        $this->app = App::getFacadeRoot();
+        $this->increaseAllowedSystemLimits();
 
         $this->messenger = new Messenger();
         $this->validator = new Validator;
@@ -87,24 +96,60 @@ class Orchestrator
     }
 
     /**
+     * Determines whether the request is manual or via Mailgun, and
+     * either throws or suppresses the exception accordingly.
+     * Exception is suppressed in the latter case, as we do not want
+     * Mailgun to attempt retrying the same request.
+     *
+     * @param array $input The input received from the route
+     *
+     * @return array Summary of reconciliation
+     * @throws \Exception
+     */
+    public function initiateReconciliationProcess(array $input)
+    {
+        $this->traceReconRequest($input);
+
+        try
+        {
+            $summary = $this->processReconciliationRequest($input);
+        }
+        catch (\Throwable $e)
+        {
+            if ($this->isManualRequest($input) === true)
+            {
+                $this->trace->traceException(
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
+                    (array) json_decode($e->getMessage()));
+
+                throw $e;
+            }
+
+            $this->trace->traceException(
+                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                (array) json_decode($e->getMessage()));
+
+            // We do not throw an exception as route is hit via Mailgun,
+            // and Mailgun will attempt retrying, which we don't want.
+            return [];
+        }
+
+        return $summary;
+    }
+
+    /**
      * Determines whether the reconciliation request is manual or
      * via MailGun and gets the files details accordingly.
      *
      * @param array $input The input received from the route.
-     * @return int Status code. Currently, always returns a 200.
-     *             Will raise alerts in case of issues.
+     * @return array Summary of reconciliation
      * @throws Exception\ReconciliationException Raised when there are no
      *                                           files to reconcile.
      */
-    public function initiateReconciliationProcess(array $input)
+    protected function processReconciliationRequest(array $input)
     {
-        $this->app['trace']->info(
-            TraceCode::RECON_REQUEST,
-            $input
-        );
-
         // Checks if it's manual call or mailgun call
-        if ((isset($input['manual']) === true) and ($input['manual'] === "1"))
+        if ($this->isManualRequest($input) === true)
         {
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
@@ -121,16 +166,51 @@ class Orchestrator
         if (empty($this->allFilesDetails) === true)
         {
             throw new Exception\ReconciliationException(
-                'File details are empty.'
-            );
+                'File details are empty.');
         }
 
-        $this->app['trace']->info(
+        $this->trace->info(
             TraceCode::RECON_FILE_DETAILS,
-            $this->allFilesDetails
-        );
+            $this->allFilesDetails);
 
         return $this->orchestrate();
+    }
+
+    /**
+     * Request body, if sent via mail through Mailgun, is too large
+     * to be parsed effectively on Splunk. So we unset the body params,
+     * then trace everything else.
+     * Other headers will be enough to identify the mail if needed.
+     *
+     * @param array $input Request body
+     */
+    protected function traceReconRequest(array $input)
+    {
+        unset($input['body-html']);
+        unset($input['body-plain']);
+        unset($input['stripped-html']);
+        unset($input['stripped-text']);
+        unset($input['message-headers']);
+
+        $this->trace->info(
+            TraceCode::RECON_REQUEST,
+            $input);
+    }
+
+    /**
+     * Checks if request is manual or via Mailgun.
+     *
+     * @param array $input The input received from the route.
+     * @return boolean Flag to indicate manual request
+     */
+    protected function isManualRequest(array $input)
+    {
+        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
@@ -169,11 +249,12 @@ class Orchestrator
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
+
         $this->validator->filterEmails($this->emailDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
-        $this->setGatewayFromEmailId();
+        $this->setGatewayFromEmail();
 
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
@@ -194,10 +275,10 @@ class Orchestrator
         // Run validations and conversions on each file
         foreach ($this->allFilesDetails as $file => $fileDetails)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_FILE_DETAILS,
                 [
-                    'message' => 'File details of the file being orchestrated.',
+                    'message'      => 'File details of the file being orchestrated.',
                     'file_details' => $fileDetails
                 ]
             );
@@ -222,13 +303,14 @@ class Orchestrator
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                        'message'      => 'Skipping file because not able to convert file content to array. -> ' . $ex->getMessage(),
+                        'message'      => 'Skipping file because not able to convert file content to array. -> ' .
+                                            $ex->getMessage(),
                         'file_details' => $fileDetails,
                         //'gateway'      => get_class($this->gatewayReconciliator),
                         'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
                     ]);
 
-                $this->app['trace']->traceException($ex);
+                $this->trace->traceException($ex);
 
                 $this->handleFileSkip($file, $fileDetails);
 
@@ -260,7 +342,7 @@ class Orchestrator
 
         if ($inExclude === true)
         {
-            $this->app['trace']->info(
+            $this->trace->info(
                 TraceCode::RECON_FILE_SKIP,
                 [
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
@@ -314,7 +396,7 @@ class Orchestrator
     {
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
-            self::GATEWAY => $input['gateway'],
+            self::GATEWAY          => $input['gateway'],
         ];
 
         return $inputDetails;
@@ -322,12 +404,21 @@ class Orchestrator
 
     protected function getEmailDetails($input)
     {
+        // Sender info is picked from the 'X-Original-Sender' header, instead
+        // of 'sender' or 'from' headers.
+        //
+        // 'sender' will contain "settlement+{hash}@googlegroups.com", as the
+        // mail is being forwarded to Mailgun through our settlements group.
+        // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
+        // formatted by the sender's email client.
+        // 'X-Original-Sender' always contains just the email address.
+
         $emailDetails = [
-            'from' => $input['sender'],
-            'subject' => $input['subject'],
-            'to' => $input['recipient'],
+            'from'      => $input['X-Original-Sender'],
+            'subject'   => $input['subject'],
+            'to'        => $input['recipient'],
             'timestamp' => $input['timestamp'],
-            'body' => $input['stripped-text'],
+            'body'      => $input['stripped-text'],
         ];
 
         // Validates that attachments are present in the email.
@@ -372,29 +463,61 @@ class Orchestrator
      *
      * @throws Exception\ReconciliationException
      */
-    protected function setGatewayFromEmailId()
+    protected function setGatewayFromEmail()
+    {
+        // For a particular gateway, reconciliation files can be sent from more than one email ID.
+        $gateway = $this->getGatewayFromEmail();
+
+        if ($gateway === self::ADMIN)
+        {
+            $gateway = $this->emailDetails['subject'];
+
+            assert(
+                in_array(
+                    $gateway,
+                    array_keys(self::GATEWAY_SENDER_MAPPING)),
+                '[Admin] Invalid/Unrecognized gateway sent in the subject line.');
+        }
+
+        $this->setGatewayReconciliatorObject($gateway);
+    }
+
+    protected function getGatewayFromEmail()
     {
         $fromEmailId = $this->emailDetails['from'];
 
-        // For a particular gateway, reconciliation files can be sent from more than one email ID.
         $gateway = $this->getKeyFromSubArrayMatch($fromEmailId, self::GATEWAY_SENDER_MAPPING);
 
         if (empty($gateway) === true)
         {
             throw new Exception\ReconciliationException(
                 'Email ID not present in Sender-Gateway mapping.',
-                ['email_id' => $fromEmailId]
-            );
+                ['email_id' => $fromEmailId]);
         }
 
-        if ($gateway === self::ADMIN)
+        if (($this->gatewayEmailValidationIsNeeded($gateway) === true) and
+            ($this->gatewayEmailIsValid($gateway) === false))
         {
-            $gateway = $this->emailDetails['subject'];
-            assertTrue(in_array($gateway, array_keys(self::GATEWAY_SENDER_MAPPING)),
-                    "[Admin] Invalid/Unrecognized gateway sent in the subject line.");
+            throw new Exception\ReconciliationException(
+                'Email content is invalid.',
+                ['email_details' => $this->emailDetails]);
         }
 
-        $this->setGatewayReconciliatorObject($gateway);
+        return $gateway;
+    }
+
+    protected function gatewayEmailValidationIsNeeded($gateway)
+    {
+        return (in_array($gateway, self::GATEWAY_EMAIL_VALIDATION, true) === true);
+    }
+
+    protected function gatewayEmailIsValid($gateway)
+    {
+        $gatewayEmailValidator = 'validate' . title_case($gateway) . 'Email';
+
+        $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
+
+        return $valid;
     }
 
     protected function getFileDetailsFromInput($inputDetails, $input)
@@ -406,7 +529,7 @@ class Orchestrator
         {
             // All the attachment files have to be named as 'attachment-{number}'
             // Validations should take care of this.
-            $file = $input['attachment-'.$attachmentNumber];
+            $file = $input['attachment-' . $attachmentNumber];
 
             // This step is mainly to figure out whether the file is of zip type,
             // since we need to execute a different set of flow ONLY for zip files.
@@ -449,13 +572,14 @@ class Orchestrator
                 }
                 catch (\Exception $ex)
                 {
-                    $this->app['trace']->traceException($ex);
+                    $this->trace->traceException($ex);
 
                     $this->messenger->raiseReconAlert(
                         [
                             'trace_code'   => TraceCode::RECON_FILE_SKIP,
-                            'message'      => 'Skipping file because unzip file caused an exception -> ' . $ex->getMessage(),
-                            'file_details' => !empty($extractedFileDetails) ?  $extractedFileDetails : null,
+                            'message'      => 'Skipping file because unzip file caused an exception -> ' .
+                                                $ex->getMessage(),
+                            'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
                             'gateway'      => get_class($this->gatewayReconciliator),
                         ]);
 

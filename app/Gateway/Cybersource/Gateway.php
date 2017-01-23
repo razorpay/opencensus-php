@@ -29,6 +29,8 @@ class Gateway extends Base\Gateway
 
     const CACHE_KEY = 'cybersource_%s_card_details';
 
+    const CACHE_TTL = 15;
+
     // Request timeout limit in seconds
     const TIMEOUT = 60;
 
@@ -188,6 +190,15 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
+
+        // We are adding this condition as Cybersource updates the cache
+        // after sometime (read as 30 seconds). It a payment has been authorized
+        // recently (30 seconds), we skip the verify for that bucket.
+        if (($input['payment']['authorized_at'] !== null) and
+            ($input['payment']['authorized_at'] >= strtotime('-30 seconds')))
+        {
+            return null;
+        }
 
         $verify = new Verify($this->gateway, $input);
 
@@ -693,7 +704,7 @@ class Gateway extends Base\Gateway
             'vault_token' => $vaultToken
         ];
 
-        Cache::store($this->secureCacheDriver)->put($key, $data, 10);
+        Cache::store($this->secureCacheDriver)->put($key, $data, self::CACHE_TTL);
     }
 
     protected function setCardNumberAndCvv(&$input)
@@ -745,7 +756,7 @@ class Gateway extends Base\Gateway
         $attributes = [
             E::REF                      => $response[F::REQUEST_ID],
             E::REASON_CODE              => $response[F::REASON_CODE],
-            E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER],
+            E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER] ?? null,
             E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE] ?? null,
             E::AVS_CODE                 => $ccAuthReply[F::AVS_CODE] ?? null,
             E::CARD_CATEGORY            => $ccAuthReply[F::CARD_CATEGORY] ?? null,
@@ -987,7 +998,9 @@ class Gateway extends Base\Gateway
 
         if ($cardNetwork === Card\Network::MC)
         {
-            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $gatewayPayment->getUcafAuthenticationData();
+            $ucafAuthData = $gatewayPayment->getUcafAuthenticationData();
+
+            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $ucafAuthData;
         }
 
         $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;

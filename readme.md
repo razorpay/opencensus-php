@@ -4,7 +4,7 @@
 
 ## Set up instructions ( for development )
 
-#### Pre-requistics
+#### Pre-requisites
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 
@@ -41,6 +41,8 @@
 * Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
 * `php artisan rzp:dbr --install --seed` (Creates tables and seeds them)
+* Set up pre-commit hooks - `cp scripts/git-hooks/pre-commit .git/hooks/`
+* Install phpcs - http://tedshd.logdown.com/posts/246406-php-install-phpcsphp-codesniffer
 
 ### Common Test Setup Instructions
 

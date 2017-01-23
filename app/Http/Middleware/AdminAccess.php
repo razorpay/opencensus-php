@@ -53,11 +53,31 @@ class AdminAccess
         return $next($request);
     }
 
+    private function getRoutePermissions(string $routeName)
+    {
+        $adminAuthRoutes = Route::$adminPermission;
+
+        if (isset($adminAuthRoutes[$routeName]) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
+        }
+
+        return $adminAuthRoutes[$routeName];
+    }
+
     private function validateAdminBelongsToSameOrg($routeName, $admin, $request)
     {
-        if (in_array($routeName, self::getExcludedRoutes()) === true)
+        if (in_array($routeName, static::getExcludedRoutes(), true) === true)
         {
             return;
+        }
+
+        // Some orgs have global access to edit other org over specific routes
+        if ((in_array($routeName, Route::$crossOrgRoutes, true) === true) and
+            ($admin->org->isCrossOrgAccessEnabled() === true))
+        {
+            return true;
         }
 
         // Fetch public org Id from uri
@@ -118,15 +138,7 @@ class AdminAccess
 
     private function policyChecker($routeName, $admin, $merchant = null)
     {
-        $adminAuthRoutes = Route::$adminPermission;
-
-        if (isset($adminAuthRoutes[$routeName]) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PERMISSION_ERROR);
-        }
-
-        $permissions = $adminAuthRoutes[$routeName];
+        $permissions = $this->getRoutePermissions($routeName);
 
         // We have the following:
         // - permission
@@ -169,7 +181,7 @@ class AdminAccess
 
     private function checkPermissionsAllowed($toCheck, $haystack)
     {
-        if (in_array(self::WILDCARD_PERMISSION, $toCheck))
+        if (in_array(self::WILDCARD_PERMISSION, $toCheck, true) === true)
         {
             $this->validateWildCardPermissionRules($toCheck);
 
@@ -178,7 +190,7 @@ class AdminAccess
 
         foreach ($toCheck as $permission)
         {
-            if (in_array($permission, $haystack) === false)
+            if (in_array($permission, $haystack, true) === false)
             {
                 return false;
             }

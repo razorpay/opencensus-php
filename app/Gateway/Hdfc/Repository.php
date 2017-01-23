@@ -404,7 +404,7 @@ class Repository extends Base\Repository
     public function findSuccessfulRefundByRefundId($refundId)
     {
         $refundEntities =  $this->newQuery()
-                                ->where('refund_id', $refundId)
+                                ->where('refund_id', '=', $refundId)
                                 ->where('status', '=', Payment\Status::REFUNDED)
                                 ->get();
 

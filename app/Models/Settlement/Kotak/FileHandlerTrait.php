@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement\Kotak;
 use AWS;
 use Excel;
 use Config;
+use RZP\Trace\Trace;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
@@ -364,7 +365,20 @@ trait FileHandlerTrait
         fwrite($file, $txt);
         fclose($file);
 
-        chmod($fullpath, 0777);  // keep it 0777. This step is important.
+        try
+        {
+            chmod($fullpath, 0777);  // keep it 0777. This step is important
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                [
+                    'path' => $fullpath
+                ]);
+        }
 
         return $fullpath;
     }
@@ -554,8 +568,7 @@ trait FileHandlerTrait
     {
         $rows = $this->getFileLines($file);
 
-        $data = array();
-        $headings = $this->getHeadings();
+        $data = [];
 
         foreach ($rows as $ix => $row)
         {
@@ -565,20 +578,35 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $values = explode('~', $row);
-
-            if (count($headings) !== count($values))
-            {
-                throw new Exception\RuntimeException(
-                    'Count of array elements for combine not equal. Heading count: ' .
-                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
-            }
-
-            $values = array_combine($headings, $values);
-            $data[] = $values;
+            $data[] = $this->parseTextRow($row, $ix);
         }
 
         return $data;
+    }
+
+    protected function parseTextRow($row, $ix)
+    {
+        $headings = $this->getHeadings();
+
+        $values = explode('~', $row);
+
+        if (count($headings) !== count($values))
+        {
+            $values = $this->parseTextRowWithHeadingMismatch($headings, $values, $ix);
+        }
+        else
+        {
+            $values = array_combine($headings, $values);
+        }
+
+        return $values;
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        throw new Exception\RuntimeException(
+            'Count of array elements for combine not equal. Heading count: ' .
+            count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
     }
 
     protected function parseExcelFile($filePath)

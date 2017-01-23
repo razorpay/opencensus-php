@@ -13,7 +13,17 @@ class Validator
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
         'xls'   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
+        'xlsb'  => [
+            'application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
+            'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
+        ],
         'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
+    ];
+
+    const GATEWAY_SUBJECT_REGEX = [
+        Orchestrator::HDFC     => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::KOTAK    => "/^PG Transaction File/",
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -22,7 +32,7 @@ class Validator
     // Max allowed file size - 20M (20*1024*1024).
     const MAX_FILE_SIZE = 20971520;
 
-    public function filterEmails($emailDetails)
+    public function filterEmails(array $emailDetails)
     {
         $from = $emailDetails['from'];
         $validEmailIds = Orchestrator::GATEWAY_SENDER_MAPPING;
@@ -35,7 +45,29 @@ class Validator
         }
     }
 
-    public function validateAttachments(& $input)
+    public function validateHdfcEmail(array $emailDetails)
+    {
+        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
+    }
+
+    public function validateKotakEmail(array $emailDetails)
+    {
+        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
+    }
+
+    protected function validateEmailSubject(string $subject, string $bank)
+    {
+        $regex = self::GATEWAY_SUBJECT_REGEX[$bank];
+
+        if (preg_match($regex, $subject) === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function validateAttachments(array & $input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
@@ -104,7 +136,7 @@ class Validator
         return false;
     }
 
-    public function validateExtensionMimeType($extension, $mimeType)
+    public function validateExtensionMimeType(string $extension, string $mimeType)
     {
         $acceptedExtensionsMap = self::ACCEPTED_EXTENSIONS_MAP;
 
@@ -117,7 +149,7 @@ class Validator
         return true;
     }
 
-    public function validateFileSize($fileSize)
+    public function validateFileSize(int $fileSize)
     {
         if ($fileSize > self::MAX_FILE_SIZE)
         {

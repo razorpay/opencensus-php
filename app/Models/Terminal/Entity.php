@@ -49,6 +49,8 @@ class Entity extends Base\PublicEntity
      */
     const TERMINAL_ID                   = 'terminal_id';
 
+    const SUB_MERCHANTS                 = 'sub_merchants';
+
     //const PRIORITY                      = 'priority';
 
     protected $fillable = [
@@ -98,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-        self::ENABLED
+        self::ENABLED,
+        self::SUB_MERCHANTS,
     ];
 
     protected $hidden = [
@@ -205,6 +208,24 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI_DURATION);
     }
 
+    protected function getSubMerchants()
+    {
+        $subMerchants = $this->merchants()->get();
+
+        $subMerchants->transform(
+            function ($item, $key)
+            {
+                return [
+                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
+                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
+                ];
+            });
+
+        return $subMerchants->all();
+    }
+
     public function isEnabled()
     {
         return $this->getAttribute(self::ENABLED);
@@ -252,6 +273,11 @@ class Entity extends Base\PublicEntity
     public function setEnabled($status)
     {
         $this->setAttribute(self::ENABLED, $status);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
     }
 
     // ---------------------- END SETTERS ----------------------
@@ -510,5 +536,29 @@ class Entity extends Base\PublicEntity
     public function isNon3DSRecurring()
     {
         return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
+    }
+
+    public function toArrayPublic($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
+    }
+
+    public function toArrayAdmin($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayAdmin();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
     }
 }

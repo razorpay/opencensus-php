@@ -24,6 +24,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'netbanking_kotak',
+        'netbanking_axis',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -47,6 +48,7 @@ return array(
     'mock_paytm'              => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -73,14 +75,23 @@ return array(
     ),
 
     'first_data' => array(
+        // Test credentials
         'test_store_id'                     => env('FIRST_DATA_TEST_STORE_ID'),
         'test_hash_secret'                  => env('FIRST_DATA_TEST_HASH_SECRET'),
         'test_user_id'                      => env('FIRST_DATA_TEST_USER_ID'),
         'test_password'                     => env('FIRST_DATA_TEST_PASSWORD'),
         'test_client_certificate'           => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE'),
         'test_client_certificate_password'  => env('FIRST_DATA_TEST_CLIENT_CERTIFICATE_PASSWORD'),
+        // Live credentials
+        'live_hash_secret'                  => env('FIRST_DATA_LIVE_HASH_SECRET'),
+        'live_user_id'                      => env('FIRST_DATA_LIVE_USER_ID'),
+        'live_password'                     => env('FIRST_DATA_LIVE_PASSWORD'),
+        'live_client_certificate'           => env('FIRST_DATA_LIVE_CLIENT_CERTIFICATE'),
+        'live_client_certificate_password'  => env('FIRST_DATA_LIVE_CLIENT_CERTIFICATE_PASSWORD'),
+        // Default values
         'cert_dir_name'                     => env('FIRST_DATA_CERT_DIR_NAME'),
         'server_certificate'                => env('FIRST_DATA_SERVER_CERTIFICATE'),
+        'client_certificate'                => env('FIRST_DATA_CLIENT_CERTIFICATE'),
     ),
 
     'amex' => array(
@@ -198,8 +209,14 @@ return array(
     ),
 
     'netbanking_kotak' => array(
-        'live_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
-        'test_hash_secret'  => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_LIVE_HASH_SECRET'),
+        'test_hash_secret'     => env('NETBANKING_KOTAK_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret_sec' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
+    ),
+
+    'netbanking_axis' => array(
+        'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
     ),
 
     'sharp' => array(
