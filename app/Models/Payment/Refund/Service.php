@@ -251,17 +251,6 @@ class Service extends Base\Service
 
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-            $this->trace->traceException($ex);
-
-            //
-            // We just ignore the timeout and mark it as refunded on the api side.
-            // Later we would run verify for these refunds and
-            // create appropriate entries on the gateway side.
-            //
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                ['payment_id' => $this->payment->getId()]);
-
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
@@ -378,11 +367,11 @@ class Service extends Base\Service
                 'Gateway is not supported for refund verify process.');
         }
 
-        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
-        $gatewayTable = $gateway;
-
         # For wallets, gateway payment entity table is 'wallet'
         $walletGateways = Payment\Gateway::$methodMap[Payment\Method::WALLET];
+        $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
+
+        $gatewayTable = $gateway;
 
         if (in_array($gateway, $walletGateways, true) === true)
         {
@@ -396,8 +385,7 @@ class Service extends Base\Service
 
         $data = [];
 
-        // We get all the Billdesk refunds. We return back data for applicable and if success.
-
+        // We get all the gateway refunds. We return back data for applicable and if success.
         foreach ($refunds as $refund)
         {
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);

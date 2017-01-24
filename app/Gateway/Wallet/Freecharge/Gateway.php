@@ -382,11 +382,9 @@ class Gateway extends Base\Gateway
         }
     }
 
-    public function verifyIfSkipRefund(array $debugInfo)
+    public function verifyIfSkipRefund(array $error)
     {
-        $error = $debugInfo['error'];
-
-        list($errorCode, $errorDesc) = $error->getGatewayErrorCodeAndDesc();
+        $errorCode = $error['gateway_error_code'];
 
         // Handle the unknown error (fatal errors) and mark it as skip refund
         // Verify it later
@@ -415,9 +413,16 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->verifyCheckSumForResponse($content);
-
         $this->action($input, Action::CREATE_REFUND_RECORD);
+
+        // If transaction is not found, treat it as refund failed.
+        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
+            (ResponseCode::isTransactionAbsent($content[ResponseFields::ERROR_CODE]) === true))
+        {
+            return [false, []];
+        }
+
+        $this->verifyCheckSumForResponse($content);
 
         $refunded = $content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS;
 

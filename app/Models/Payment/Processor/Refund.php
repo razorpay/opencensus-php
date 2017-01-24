@@ -425,17 +425,6 @@ trait Refund
                 TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
                 ['payment_id' => $this->payment->getId()]);
         }
-        catch (Exception\BaseException $e)
-        {
-            $this->app['segment']->trackPayment(
-                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
-
-            $this->tracePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_REFUND_FAILURE);
-
-            throw $e;
-        }
         catch (Exception\GatewayErrorException $ex)
         {
             $allowedGateways = [
@@ -447,23 +436,36 @@ trait Refund
                 throw $ex;
             }
 
-            $data = $ex->getError()->getDebugArray();
+            $data = $ex->getError()->toArray();
 
             $skippedRefund = $this->callGatewayFunction(
                 'verify_if_skip_refund', $data);
 
-            if ($skippedRefund === true)
+            if ($skippedRefund === false)
             {
-                $this->trace->traceException($ex);
-
-                // We just ignore the exception and mark it as refunded on the api side.
-                // Later we would run verify for these refunds and
-                // create appropriate entries on the gateway side.
-
-                $this->trace->info(
-                    TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                    ['payment_id' => $this->payment->getId()]);
+                throw $ex;
             }
+
+            $this->trace->traceException($ex);
+
+            // We just ignore the exception and mark it as refunded on the api side.
+            // Later we would run verify for these refunds and
+            // create appropriate entries on the gateway side.
+
+            $this->trace->info(
+                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
+                ['payment_id' => $this->payment->getId()]);
+        }
+        catch (Exception\BaseException $e)
+        {
+            $this->app['segment']->trackPayment(
+                $this->payment, TraceCode::PAYMENT_REFUND_FAILURE);
+
+            $this->tracePaymentFailed(
+                    $e->getError(),
+                    TraceCode::PAYMENT_REFUND_FAILURE);
+
+            throw $e;
         }
     }
 

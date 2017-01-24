@@ -214,15 +214,6 @@ class Error extends Support\Fluent
         return $this->getCustomerDescriptionFromErrorCode($code);
     }
 
-    public function getGatewayErrorCodeAndDesc()
-    {
-        $gatewayErrorCode = $this->getAttribute(self::GATEWAY_ERROR_CODE);
-
-        $gatewayErrorDesc = $this->getAttribute(self::GATEWAY_ERROR_DESC);
-
-        return [$gatewayErrorCode, $gatewayErrorDesc];
-    }
-
     protected function handleBadRequestErrors()
     {
         $code = $this->getInternalErrorCode();

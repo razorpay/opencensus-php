@@ -74,4 +74,9 @@ class ResponseCode extends Base\ResponseCode
     {
         return $errorCode === 'E018';
     }
+
+    public static function isTransactionAbsent(string $errorCode)
+    {
+        return $errorCode === 'E008';
+    }
 }
