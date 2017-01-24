@@ -14,7 +14,7 @@ const webpackConfig = {
       'react-simple-dropdown': path.resolve(__dirname, 'node_modules/@selvagsz/react-simple-dropdown')
     },
     modules: [
-      'node_modules',
+      path.resolve(__dirname, 'node_modules'),
       'web_modules',
       path.resolve(__dirname, 'public/react'),
     ],

@@ -1,6 +1,7 @@
 const createHighlighedOption = (label, searchTerm) => {
   if (searchTerm) {
-    label = label.replace(new RegExp(searchTerm, 'i'), '<b>$&</b>')
+    let escapedSearchTerm = searchTerm.replace(/([.?*+^$[\]\\(){}|-])/g, '\\$1')
+    label = label.replace(new RegExp(escapedSearchTerm, 'i'), '<b>$&</b>')
   }
 
   return {

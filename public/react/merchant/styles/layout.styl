@@ -7,6 +7,21 @@
 @import 'react-simple-dropdown/styles/Dropdown.css';
 @import './invoice'
 
+.react-root {
+  ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
+    color: #aaa;
+  }
+  :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
+   color: #aaa;
+  }
+  ::-moz-placeholder { /* Mozilla Firefox 19+ */
+   color: #aaa;
+  }
+  :-ms-input-placeholder { /* Internet Explorer 10-11 */
+    color: #aaa;
+  }
+}
+
 .content-wrapper {
   padding: 30px 20px;
 
@@ -194,11 +209,21 @@ tr:hover .row-action > .btn-group {
   padding: 5px 10px;
 }
 
-.label-required::after {
-  content: '*';
-  position: absolute;
+.label-required {
+  position: relative;
+
+  &::after {
+    content: '*';
+    position: absolute;
+    top: 0;
+    right: -10px;
+    color: #e68686;
+  }
+}
+
+.form-horizontal .control-label.label-required::after {
+  right: 7px;
   top: 7px;
-  color: #e68686;
 }
 
 // List Filter Container

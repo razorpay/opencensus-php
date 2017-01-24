@@ -7,6 +7,7 @@ import Modal from 'rzp/ui/Modal'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import PowerSelect from 'rzp/ui/Select/PowerSelect'
+import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import Spinner from 'rzp/ui/Spinner'
 
 import LineItemTable from './LineItemTable'
@@ -160,16 +161,19 @@ export default class InvoicesNewContainer extends ModalContainer {
                   <div class='row'>
                     <div class='col-md-5'>
                       <div class='form-group'>
-                        <label>Customer Name</label>
+                        <label class='label-required'>Customer Name</label>
                         <Field
                           name='customer_id'
-                          component={PowerSelect}
+                          component={TypeAhead}
                           options={this.props.customers}
                           selected={this.props.customer_id}
                           optionLabelPath='displayName'
                           placeholder='Select a customer'
                           onQuickAdd={this.quickCreateCustomer}
                           disabled={isIssued}
+                          onChange={(selectedCustomer) => {
+                            this.props.change('customer_id', selectedCustomer.id || '')
+                          }}
                         />
                       </div>
                     </div>
@@ -204,6 +208,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                       name='terms'
                       component='textarea'
                       class='form-control'
+                      rows={3}
                     />
                   </div>
 
@@ -213,7 +218,14 @@ export default class InvoicesNewContainer extends ModalContainer {
                     <AsyncButton
                       type='button'
                       class='btn btn-primary btn-rounded'
-                      text='Save'
+                      text='Save & Send'
+                      pendingText='Saving...'
+                      onClick={handleSubmit(this.save)}
+                    />
+                    <AsyncButton
+                      type='button'
+                      class='btn btn-default btn-rounded'
+                      text='Save as draft'
                       pendingText='Saving...'
                       onClick={handleSubmit(this.save)}
                     />

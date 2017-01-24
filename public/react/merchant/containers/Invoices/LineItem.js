@@ -33,6 +33,7 @@ export default class InvoiceLineItem extends ModalContainer {
     let fieldName = this.props.fieldName
     this.props.change(`${fieldName}.item_id`, item.id)
     this.props.change(`${fieldName}.amountInINR`, (item.amount/100).toFixed(2))
+    this.props.change(`${fieldName}.description`, item.description)
     this.closeModal()
   }
 
@@ -65,22 +66,37 @@ export default class InvoiceLineItem extends ModalContainer {
             />
           </Modal>
 
-          <Field
-            name={`${fieldName}.item_id`}
-            component={TypeAhead}
-            options={items}
-            selected={selectedOption}
-            optionLabelPath='name'
-            placeholder='Select an item'
-            onChange={(selectedItem) => {
-              this.props.change(`${fieldName}.amountInINR`, selectedItem.amountInINR || '0.00')
-              setTimeout(() => {
-                this.calculateLineItemTotal()
-              }, 0)
-            }}
-            onQuickAdd={this.quickCreateItem}
-            disabled={disabled}
-          />
+          <span class='remove-row-action' onClick={() => onRemove(index)}>
+            <i class='fa fa-times-circle text-danger'></i>
+          </span>
+
+          <div class='item-ac-container'>
+            <Field
+              name={`${fieldName}.item_id`}
+              component={TypeAhead}
+              options={items}
+              selected={selectedOption}
+              optionLabelPath='name'
+              placeholder='Select an item'
+              onChange={(selectedItem) => {
+                this.props.change(`${fieldName}.amountInINR`, selectedItem.amountInINR || '0.00')
+                this.props.change(`${fieldName}.item_id`, selectedItem.id || '')
+                this.props.change(`${fieldName}.description`, selectedItem.description || '')
+
+                setTimeout(() => {
+                  this.calculateLineItemTotal()
+                }, 0)
+              }}
+              onQuickAdd={this.quickCreateItem}
+              disabled={disabled}
+            />
+            <Field
+              name={`${fieldName}.description`}
+              component='textarea'
+              class='form-control'
+              placeholder='Enter item description'
+            />
+          </div>
         </td>
 
         <td>
@@ -106,10 +122,6 @@ export default class InvoiceLineItem extends ModalContainer {
 
         <td class='text-right'>
           {this.calculateLineItemTotal()}
-
-          <span class='remove-row-action' onClick={() => onRemove(index)}>
-            <i class='fa fa-times-circle text-danger'></i>
-          </span>
         </td>
       </tr>
     )

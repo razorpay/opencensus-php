@@ -22,17 +22,33 @@
       max-width: 80%;
     }
 
+    .table > tbody > tr > td {
+      border-bottom: 1px solid #eaeff0;
+      &:first-child {
+        position: relative;
+
+        &:before {
+          $width = 50px;
+          content: '';
+          width: $width;
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: - $width;
+        }
+      }
+    }
+
     .remove-row-action {
       position: absolute;
       top: 0;
-      bottom: 0;
-      right: -32px;
+      left: -32px;
       padding: 16px 10px;
       cursor: pointer;
       visibility: hidden;
     }
 
-    .table > tbody > tr:hover .remove-row-action {
+    .table > tbody > tr:hover .remove-row-action, .remove-row-action:hover {
       visibility: visible;
     }
   }
@@ -135,5 +151,22 @@
   .invoice-lineitem {
     margin-left: -15px;
     margin-right: -15px;
+  }
+}
+
+.item-ac-container {
+  .powerselect {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  textarea.form-control {
+    border: 1px dashed transparent;
+    border-top: 0;
+    resize: none;
+
+    &:hover, &:active {
+      border-color: #ccc;
+    }
   }
 }

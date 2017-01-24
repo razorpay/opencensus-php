@@ -80,13 +80,14 @@ export default class Invoice extends Entity {
       } else if (this.type === 'invoice') {
         return this.line_items.map((item, index) => {
           let lineItem = {
-            quantity: item.quantity
+            quantity: item.quantity,
+            description: item.description
           }
 
           if (item.item_id) {
             lineItem.item_id = item.item_id
           } else {
-            lineItem.id = this.line_items[index]['id']
+            lineItem.id = item.id
           }
 
           return lineItem
