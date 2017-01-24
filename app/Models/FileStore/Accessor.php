@@ -132,13 +132,13 @@ class Accessor extends Base\Core
 
         foreach ($files as $file)
         {
-            $urls[$file->getId()] = $this->getSignedUrl($file);
+            $urls[$file->getId()] = $this->getUrl($file);
         }
 
         return $urls;
     }
 
-    protected function getSignedUrl(Entity $fileStore)
+    protected function getUrl(Entity $fileStore)
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
 
