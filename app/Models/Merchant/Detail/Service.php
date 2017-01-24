@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
+        $signedUrls = [];
+
         foreach (Entity::UPLOADED_FIELDS as $key)
         {
             if (isset($merchantDetails[$key]))
