@@ -2007,6 +2007,7 @@ class Service extends Base\Service
     public function editTerminal($mode, $terminalId, $input)
     {
         $this->setApiCredentials(null, $mode);
+
         try
         {
             $response = $this->api->terminal->edit($terminalId, $input);
@@ -2016,6 +2017,60 @@ class Service extends Base\Service
         {
             return [$e->getMessage(), null];
         }
+    }
+
+    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        $error = $response = null;
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->terminal->unassignSubMerchant($terminalId, $merchantId)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [ $error, $response ];
+    }
+
+    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        $error = $response = null;
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->terminal->assignSubMerchant($terminalId, $merchantId)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [ $error, $response ];
+    }
+
+    public function changeTerminalPrimaryMerchant($mode, $terminalId, $input)
+    {
+        $error = $response = null;
+
+        $this->setApiCredentials(null, $mode);
+
+        try
+        {
+            $response = $this->api->terminal->changePrimaryMerchant($terminalId, $input)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = $e->getMessage();
+        }
+
+        return [ $error, $response ];
     }
 
     public function toggleTerminal($mode, $terminalId, $input)
