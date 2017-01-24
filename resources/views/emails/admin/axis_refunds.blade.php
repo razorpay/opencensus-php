@@ -20,25 +20,25 @@
             <table style="border: 1px solid grey;">
                 <thead>
                     <tr style="border: 1px solid grey">
-                        <th style="border: 1px solid grey">Sr. No.</th>
-                        <th style="border: 1px solid grey">Particulars</th>
-                        <th style="border: 1px solid grey">Amount</th>
+                        <th style="border: 1px solid grey">Description</th>
+                        <th style="border: 1px solid grey">Transaction Count</th>
+                        <th style="border: 1px solid grey">Transaction Amount</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">1</td>
-                        <td style="border: 1px solid grey">Sale transactions</td>
+                        <td style="border: 1px solid grey">Claim File Dated {{{$date}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['claims']}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
                     </tr>
                     <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">2</td>
-                        <td style="border: 1px solid grey">Refunds</td>
+                        <td style="border: 1px solid grey">Refund Dated {{{$date}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['refunds']}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
                     </tr>
                     <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey"></td>
-                        <td style="border: 1px solid grey">Amount to be remitted to  Account</td>
+                        <td style="border: 1px solid grey">Net Amt to be credited to Nodal A/c</td>
+                        <td style="border: 1px solid grey">{{{$count['total']}}}</td>
                         <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
                     </tr>
                 </tbody>
