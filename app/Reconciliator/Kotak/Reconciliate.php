@@ -6,7 +6,7 @@ use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const SUCCESS = 'osrazorpay';
+    const SUCCESS = ['osrazorpay', 'otrazorpay'];
 
     const PAYMENT_COLUMN_HEADERS = [
         'merchant_id',
@@ -38,11 +38,15 @@ class Reconciliate extends Base\Reconciliate
     {
         $typeName = null;
 
-        if (strpos($fileName, self::SUCCESS) !== false)
+        foreach (self::SUCCESS as $name)
         {
-            $typeName = self::PAYMENT;
+            if (strpos($fileName, $name) !== false)
+            {
+                $typeName = self::PAYMENT;
+            }
         }
-        else if (strpos($fileName, self::REFUND) !== false)
+
+        if (strpos($fileName, self::REFUND) !== false)
         {
             $typeName = self::REFUND;
         }

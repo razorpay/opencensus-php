@@ -229,6 +229,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METADATA);
     }
 
+    public function getBucket()
+    {
+        return $this->getAttribute(self::BUCKET);
+    }
+
+    public function getLocation()
+    {
+        return $this->getAttribute(self::LOCATION);
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()

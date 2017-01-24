@@ -8,6 +8,8 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Type
 {
+    const KOTAK_NETBANKING_CLAIM            = 'kotak_netbanking_claim';
+
     const KOTAK_NETBANKING_REFUND           = 'kotak_netbanking_refund';
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
@@ -34,6 +36,7 @@ class Type
     const TYPE_MAP = [
 
         self::BLANK => [
+            self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
@@ -63,6 +66,7 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,

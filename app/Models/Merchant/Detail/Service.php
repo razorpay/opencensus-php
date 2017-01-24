@@ -22,6 +22,34 @@ class Service extends Base\Service
         return $this->createResponse($merchantDetails);
     }
 
+    public function fetchActivationFiles(string $id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        foreach (Entity::UPLOADED_FIELDS as $key)
+        {
+            if (isset($merchantDetails[$key]))
+            {
+                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
+            }
+        }
+
+        return $signedUrls;
+    }
+
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $accessor = new FileStore\Accessor;
+
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
+
+        return $signedUrls[$fileStoreId];
+    }
+
     public function saveMerchantDetails(array $input)
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant, $input);
@@ -197,7 +225,7 @@ class Service extends Base\Service
             $response['verification'] = [
                 'status'            => 'disabled',
                 'disabled_reason'   => 'required_fields',
-                'required_fields'   =>  $requiredFields
+                'required_fields'   => $requiredFields
             ];
 
             $response['can_submit'] = false;

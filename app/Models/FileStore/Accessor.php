@@ -79,7 +79,7 @@ class Accessor extends Base\Core
      *
      * @return Collection/File store Entity
      */
-    protected function get()
+    public function get()
     {
         $this->updateMerchantId();
 
@@ -117,6 +117,34 @@ class Accessor extends Base\Core
         $storageHandler->saveAs($file->bucket, $file->location, $filePath);
 
         return $filePath;
+    }
+
+    public function getSignedUrl()
+    {
+        $urls = [];
+
+        $files = $this->get();
+
+        if (($files instanceof Base\PublicCollection) === false)
+        {
+            $files = (new Base\PublicCollection)->push($files);
+        }
+
+        foreach ($files as $file)
+        {
+            $urls[$file->getId()] = $this->getUrl($file);
+        }
+
+        return $urls;
+    }
+
+    protected function getUrl(Entity $fileStore)
+    {
+        $storageHandler = Store::getHandler($fileStore->getStore());
+
+        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+
+        return $url;
     }
 
     protected function createFullFilePath(string $location)
@@ -158,15 +186,11 @@ class Accessor extends Base\Core
      */
     protected function updateMerchantId()
     {
-        if ($this->merchant !== null)
-        {
-            $merchant = $this->merchant;
-        }
-        else
+        if ($this->merchantId === null)
         {
             $merchant = $this->repo->merchant->getSharedAccount();
-        }
 
-        $this->merchantId($merchant->getId());
+            $this->merchantId($merchant->getId());
+        }
     }
 }
