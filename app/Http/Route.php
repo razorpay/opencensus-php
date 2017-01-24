@@ -866,8 +866,7 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
-        'statuscake_gateway_webhook',
-        'auditlog_search'
+        'statuscake_gateway_webhook'
     );
 
     public static $internalApps = array(
