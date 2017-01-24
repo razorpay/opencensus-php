@@ -14,7 +14,6 @@ final class Route
      | make sure to run the full test suite
      */
 
-    // @codingStandardsIgnoreStart
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
@@ -148,6 +147,8 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
+        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -155,6 +156,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -198,6 +200,7 @@ final class Route
         'setl_post_details_old'                   => ['post',     'settlements/details',                            'SettlementController@postSettlementDetailsForOldTxns'              ],
         'setl_combined_report'                    => ['get',      'settlements/report/combined',                    'SettlementController@getSettlementCombinedReport'                  ],
         'batch_setl_calc_previous_fees'           => ['post',     'batchsettlements/fees/previous',                 'SettlementController@postBatchSettlementCalculatePreviousFees'     ],
+        'nodal_initiate_transfer'                 => ['post',     'nodal/transfer/icici',                           'SettlementController@postInitiateTransfer'                         ],
         'adj_fetch_by_id'                         => ['get',      'adjustments/{id}',                               'AdjustmentController@getAdjustment'                                ],
         'adj_fetch_multiple'                      => ['get',      'adjustments',                                    'AdjustmentController@getAdjustments'                               ],
         'adj_add'                                 => ['post',     'adjustments',                                    'AdjustmentController@postAdjustment'                               ],
@@ -228,6 +231,7 @@ final class Route
         'mock_wallet_payment_with_paymentid'      => ['post',     'gateway/mock/wallet/{wallet}/{paymentId}',       'MockGatewayController@walletPayment'                               ],
         'mock_upi_icici_payment'                  => ['post',     'gateway/mock/upi/{bank}',                        'MockGatewayController@postUpiPayment'                              ],
         'admin_fetch_entity_multiple'             => ['get',      'admin/{type}',                                   'AdminController@getEntityMultiple'                                 ],
+        'admin_fetch_terminal_by_id'              => ['get',      'admin/terminal/{id}',                            'AdminController@getTerminalById'                                   ],
         'admin_fetch_entity_by_id'                => ['get',      'admin/{type}/{id}',                              'AdminController@getEntityById'                                     ],
         'send_test_newsletter'                    => ['post',     'admin/newsletter/test',                          'AdminController@postSendTestNewsletter'                            ],
         'send_newsletter'                         => ['post',     'admin/newsletter/mail',                          'AdminController@postSendNewsletter'                                ],
@@ -411,7 +415,6 @@ final class Route
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
     );
-    // @codingStandardsIgnoreEnd
 
     public static $public = array(
         'checkout',
@@ -522,6 +525,7 @@ final class Route
         'customer_update',
         'customer_fetch_by_id',
         'customer_fetch_multiple',
+        'customer_update_token',
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
@@ -541,6 +545,7 @@ final class Route
 
     public static $internal = array(
         'admin_fetch_entity_multiple',
+        'admin_fetch_terminal_by_id',
         'admin_fetch_entity_by_id',
         'merchant_secret',
         'merchant_create',
@@ -609,6 +614,7 @@ final class Route
         'setl_post_details_old',
         'setl_fixer',
         'settlement_compute_tax',
+        'nodal_initiate_transfer',
         'batch_setl_calc_previous_fees',
         'batch_settlement_compute_tax',
         'payment_verify',
@@ -631,6 +637,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
+        'ecollect_validate',
+        'ecollect_pay',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -688,6 +696,7 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
+        'merchant_activation_files',
         'admin_edit_app_auth',
         'offers_update_merchants',
         'offer_create',
@@ -734,7 +743,6 @@ final class Route
         'merchant_sub_create',
         'customer_delete',
         'customer_create_token',
-        'customer_update_token',
         'device_verify_token',
         'app_fetch_tokens',
         'credits_fetch_multiple',
@@ -900,6 +908,11 @@ final class Route
             'billdesk_create_cancelled_refunds',
         ),
 
+        'kotak' => array(
+            'ecollect_validate',
+            'ecollect_pay',
+        ),
+
         'mailgun' => array(
             'reconciliate'
         ),
@@ -1027,7 +1040,7 @@ final class Route
         return self::$slaveRoutes;
     }
 
-    public function getUrl($routeName, array $parameters = array(), $key = '', $secret = '')
+    public function getUrl($routeName, array $parameters = [], $key = '', $secret = '')
     {
         if (($secret === '') and
             ($key !== ''))
@@ -1044,7 +1057,7 @@ final class Route
         return $url;
     }
 
-    public function getUrlWithPublicAuth($routeName, array $parameters = array(), $key = '')
+    public function getUrlWithPublicAuth($routeName, array $parameters = [], $key = '')
     {
         if ($key === '')
         {
@@ -1054,7 +1067,7 @@ final class Route
         return $this->getUrl($routeName, $parameters, $key);
     }
 
-    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = array())
+    public function getUrlWithPublicAuthInQueryParam($routeName, array $parameters = [])
     {
         $key = $this->ba->getPublicKey();
 
@@ -1067,7 +1080,7 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = array(), $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
     {
         if ($key === '')
         {

@@ -32,7 +32,7 @@ class Entity extends Base\PublicEntity
 
     public $incrementing = true;
 
-    protected $fillable = array(
+    protected $fillable = [
         self::PAYMENT_ID,
         self::MERCHANT_ID,
         self::CHECKOUT_ID,
@@ -50,9 +50,9 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::PAYMENT_ID,
         self::MERCHANT_ID,
@@ -73,11 +73,34 @@ class Entity extends Base\PublicEntity
         self::USER_AGENT,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected $casts = array(
+    protected $visible = [
+        self::ID,
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
+        self::CHECKOUT_ID,
+        self::ATTEMPTS,
+        self::LIBRARY,
+        self::LIBRARY_VERSION,
+        self::BROWSER,
+        self::OS,
+        self::OS_VERSION,
+        self::DEVICE,
+        self::PLATFORM,
+        self::PLATFORM_VERSION,
+        self::IP,
+        self::INTEGRATION,
+        self::INTEGRATION_VERSION,
+        self::REFERER,
+        self::USER_AGENT,
+        self::CREATED_AT,
+        self::UPDATED_AT
+    ];
+
+    protected $casts = [
         self::ATTEMPTS  => 'int',
-    );
+    ];
 
     // ----------------------- Relations ---------------------------------------
 
