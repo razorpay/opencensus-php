@@ -448,7 +448,7 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_TRACK_FAILED);
         }
     }
 }
