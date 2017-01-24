@@ -12,6 +12,7 @@ use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 
@@ -403,6 +404,7 @@ class Repository extends Base\Repository
         $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
         $txnRepo = $this->manager->transaction;
+
         $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
         $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
@@ -416,6 +418,49 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+
+    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
+    {
+        // SELECT `payments`.*
+        // FROM `payments`
+        // INNER JOIN `transactions` ON `payments`.`id` = `transactions`.`entity_id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `payments`.`gateway` = $gateway
+        //   AND `transactions`.`type` = 'payment'
+        //   AND `transactions`.`reconciled_at` BETWEEN $from AND $to
+        //   AND `payments`.`status` IN ( $status ) // status is an array
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
+        $paymentAttrs = $this->getAttributeWithTableName('*');
+
+        $paymentId = $this->getAttributeWithTableName(Entity::ID);
+        $paymentTerminalId = $this->getAttributeWithTableName(Entity::TERMINAL_ID);
+        $paymentGateway = $this->getAttributeWithTableName(Entity::GATEWAY);
+        $paymentStatus = $this->getAttributeWithTableName(Entity::STATUS);
+
+        $txnRepo = $this->manager->transaction;
+
+        $tRepo = $this->manager->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+
+        $terminalId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
+        $terminalTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+
+        return $this->newQuery()
+                    ->select($paymentAttrs)
+                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
+                    ->join($tRepo->getTableName(), $paymentTerminalId, '=', $terminalId)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($transactionEntityType, '=', 'payment')
+                    ->whereBetween($transactionReconciledAt, [$from, $to])
+                    ->whereIn($paymentStatus, $status)
+                    ->where($terminalTpv, '=', $tpvEnabled)
                     ->get();
     }
 

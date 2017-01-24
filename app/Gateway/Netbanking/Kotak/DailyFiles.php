@@ -7,7 +7,94 @@ use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
 {
-    protected function getClaimsData($from, $to)
+
+    public function generate($from, $to)
+    {
+        // Since Kotak TPV requires entries for separate pool accounts in a
+        // separate mail we will have to send them separately
+        $tpvType = [true, false];
+
+        $files = [];
+
+        foreach ($tpvType as $tpv)
+        {
+            $files[] = $this->generateMail($from, $to, $tpv);
+        }
+
+        return [
+                    'refunds' => [
+                        'tpv' => $files[0]['refunds'],
+                        'nonTpv' => $files[1]['refunds']
+                    ],
+                    'claims' => [
+                        'tpv' => $files[0]['claims'],
+                        'nonTpv' => $files[1]['claims']
+                    ]
+                ];
+    }
+
+    public function generateMail($from, $to, $tpvEnabled = false)
+    {
+        list($refundAmount, $refundsFile) = $this->getRefundsDataForTpv($from, $to, $tpvEnabled);
+
+        list($claimAmount, $claimsFile) = $this->getClaimsDataForTpv($from, $to, $tpvEnabled);
+
+        $amount = [];
+        $amount['claims'] = $claimAmount;
+        $amount['refunds'] = $refundAmount;
+        $amount['total'] = $claimAmount - $refundAmount;
+
+        // Send the mail only when there is at least 1 claim or refund
+        if ($amount['claims'] + $amount['refunds'] > 0)
+        {
+            $this->sendMail($amount, $claimsFile, $refundsFile);
+        }
+
+        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
+    }
+
+    public function getRefundsDataForTpv($from, $to, $tpvEnabled = false)
+    {
+        $refunds = $this->repo->refund->fetchRefundsForTpvBetweenTimestamps(
+                                            Payment\Entity::BANK,
+                                            $this->bankCode,
+                                            $from,
+                                            $to,
+                                            $this->gateway,
+                                            $tpvEnabled);
+
+        $count = $refunds->count();
+
+        if ($count == 0)
+        {
+            return [0, ''];
+        }
+
+        $data = [];
+
+        foreach ($refunds as $refund)
+        {
+            $payment = $refund->payment;
+            $terminal = $payment->terminal;
+
+            $col['refund'] = $refund->toArray();
+            $col['payment'] = $payment->toArray();
+            $col['terminal'] = $terminal->toArray();
+
+            $data[] = $col;
+        }
+
+        $input['data'] = $data;
+        $input['tpv']  = $tpvEnabled;
+
+        $gateway = $terminal->getGateway();
+
+        $action = 'generateRefunds';
+
+        return $this->app['gateway']->call($gateway, $action, $input, $this->mode);
+    }
+
+    protected function getClaimsDataForTpv($from, $to, $tpvEnabled = false)
     {
         $status = [
             Payment\Status::AUTHORIZED,
@@ -19,10 +106,11 @@ class DailyFiles extends Base\DailyFiles
         // so forwarding time stamps by 1 day
         list($from, $to) = $this->updateTimeStamps($from, $to);
 
-        $claims= $this->repo->payment->fetchReconciledPaymentsForGateway($from,
+        $claims= $this->repo->payment->fetchReconciledPaymentsForTpv($from,
                                                                          $to,
                                                                          $this->gateway,
-                                                                         $status);
+                                                                         $status,
+                                                                         $tpvEnabled);
 
         if ($claims->count() === 0)
         {
@@ -40,6 +128,7 @@ class DailyFiles extends Base\DailyFiles
         }
 
         $input['data'] = $data;
+        $input['tpv']  = $tpvEnabled;
 
         $gateway = $claim->terminal->getGateway();
 
