@@ -435,10 +435,10 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        /*if ($this->mock === true)
+        if ($this->mock === true)
         {
             return;
-        }*/
+        }
 
         try
         {
