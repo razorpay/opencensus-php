@@ -126,9 +126,9 @@ class Gateway extends Base\Gateway
         if ($forceDecryption === false)
         {
             $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [
-                'body'      =>  $response,
-                'encrypted' =>  true,
-                'gateway'   =>  $this->gateway
+                'body'      => $response,
+                'encrypted' => true,
+                'gateway'   => $this->gateway
             ]);
 
             $decodedJson = json_decode($response, true);
@@ -172,7 +172,7 @@ class Gateway extends Base\Gateway
      */
     protected function formatAmount($amount)
     {
-        return number_format($amount/100, 2, '.', '');
+        return number_format($amount / 100, 2, '.', '');
     }
 
     /**
@@ -320,7 +320,7 @@ class Gateway extends Base\Gateway
             'note'              => $this->getPaymentRemark($input),
             'payerVa'           => $input['payment']['vpa'],
             'subMerchantId'     => $this->getSubMerchantId($input),
-            'subMerchantName'   => $input['merchant']->getBillingLabelElseName(),
+            'subMerchantName'   => $input['merchant']->getFilteredDba(),
             'terminalId'        => '1234',
         ];
 
@@ -347,7 +347,7 @@ class Gateway extends Base\Gateway
      */
     protected function getPaymentRemark(array $input)
     {
-        $description = $input['merchant']->getBillingLabelElseName();
+        $description = $input['merchant']->getFilteredDba();
 
         return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
