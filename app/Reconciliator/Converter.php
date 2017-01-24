@@ -170,7 +170,7 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip)
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
@@ -246,9 +246,11 @@ class Converter
             $fileContent = file($filePath);
             $fileLinesCount = count($fileContent);
 
+            $linesFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
+            $linesFromBottom = $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] ?? 0;
+
             $totalLinesToRead = $fileLinesCount -
-                                ($linesToSkip[Base\Reconciliate::LINES_FROM_TOP] +
-                                $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM]);
+                                ($linesFromTop + $linesFromBottom);
         }
 
         return $totalLinesToRead;
