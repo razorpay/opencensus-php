@@ -121,6 +121,8 @@ class Service extends Base\Service
             ];
 
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
+
+            (new Merchant\Service)->createMerchantOnApi($data['id']);
         }
         else if ($invitationToken)
         {

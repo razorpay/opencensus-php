@@ -536,7 +536,7 @@ class Service extends Base\Service
 
         $response = $merchantDetails->filterDetails();
 
-        $response['data'] = MerchantDetails\Validator::sortDataInSteps($response['data']);
+        $files = [];
 
         foreach ($response['files'] as $key => &$file)
         {
@@ -560,9 +560,12 @@ class Service extends Base\Service
             {
                 $file = 'ERROR: ' . $e->getMessage();
             }
+
+            $files[$key] = $file;
         }
 
-        return $response;
+        $fileResponse['files'] = $files;
+        return $fileResponse;
     }
 
     public function fetchMerchantAndActivationDetails($id)
@@ -574,7 +577,7 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        $activationDetails = $this->fetchMerchantActivationDetails($id);
+        $activationDetails = (new MerchantDetails\Service)->getActivationFiles($id);
 
         $data = array(
             'activation' => $activationDetails,
@@ -597,15 +600,11 @@ class Service extends Base\Service
     {
         $details = null;
 
+        $error = [];
+
         if ($id !== '10NodalAccount')
         {
             $details = $this->fetchMerchantDetails($id);
-
-            if (isset($details['confirmed']) && $details['confirmed'] === false)
-            {
-                unset($details['confirmed']);
-                return [['Merchant not confirmed'], null];
-            }
         }
 
         $terminal = $this->fetchMerchantTerminal($id);
@@ -617,7 +616,7 @@ class Service extends Base\Service
                     'terminals' => $terminal,
                     'pricing_plan' => $pricingPlan);
 
-        return [[], $data];
+        return [$error, $data];
     }
 
     public function fetchMerchantDetails($id)
@@ -636,6 +635,8 @@ class Service extends Base\Service
             $merchant['confirmed'] = false;
             return $merchant;
         }
+
+        $data['confirmed'] = ($merchant->users()->first()->confirm_token === null);
 
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
@@ -1483,6 +1484,7 @@ class Service extends Base\Service
     public function archiveMerchant($id)
     {
         $error = [];
+
         $merchant = Merchant\Entity::findOrSoftFail($id);
 
         $merchantDetails =  MerchantDetails\Entity::findorfail($id);
@@ -1498,6 +1500,8 @@ class Service extends Base\Service
         {
             $this->logActionToSlack($merchant, Actions::ARCHIVED);
             $merchant->archive();
+
+            $this->actions($id, 'archive');
 
             // Return empty array in case of success
             return [];
@@ -1522,6 +1526,8 @@ class Service extends Base\Service
         $merchant->archived_at = null;
         $merchant->save();
 
+        $this->actions($id, 'unarchive');
+
         return array();
     }
 
@@ -1542,6 +1548,8 @@ class Service extends Base\Service
 
         $this->postEditMerchant($id, ['hold_funds' => 1]);
 
+        $this->actions($id, 'suspend');
+
         return [];
     }
 
@@ -1560,6 +1568,8 @@ class Service extends Base\Service
 
         $merchant->suspended_at = null;
         $merchant->save();
+
+        $this->actions($id, 'unsuspend');
 
         return array();
     }
@@ -2778,5 +2788,24 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function actions($merchantId, $action)
+    {
+        $params = ['action' => $action ];
+
+        $this->setApiCredentials();
+
+        list($error, $merchant) = $this->api
+                                       ->merchant
+                                       ->actions($merchantId, $params);
+
+        if (empty($error) === false)
+        {
+            $this->trace->debug('MISC_TRACE_CODE', [
+                    'error'     => "Error occured while updating merchant details on API",
+                    'exception' => $error,
+            ]);
+        }
     }
 }

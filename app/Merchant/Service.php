@@ -291,6 +291,17 @@ class Service extends Base\Service
 
     public function confirmMerchantById($merchantId)
     {
+        $merchant = $this->createMerchantOnApi($merchantId);
+
+        // Confirm the merchant and associated users (with same email)
+        // This also calls the mailing list subscription for the user email
+        $merchant->confirm();
+
+        return array();
+    }
+
+    public function createMerchantOnApi($merchantId)
+    {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
         $merchantApiData = $merchant->generateApiData();
@@ -324,11 +335,7 @@ class Service extends Base\Service
             $response = $this->api->merchant->create($merchantApiData);
         }
 
-        // Confirm the merchant and associated users (with same email)
-        // This also calls the mailing list subscription for the user email
-        $merchant->confirm();
-
-        return array();
+        return $merchant;
     }
 
     public function tagAdmin($merchantOnApi)
