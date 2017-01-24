@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
 
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
+    const OFFER_ID      = 'offer_id';
     const AMOUNT        = 'amount';
     const CURRENCY      = 'currency';
     const ATTEMPTS      = 'attempts';

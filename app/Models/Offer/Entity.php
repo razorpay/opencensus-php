@@ -9,7 +9,9 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
+    const ID                        = 'id';
     const NAME                      = 'name';
+    const MERCHANT_ID               = 'merchant_id';
     const PAYMENT_METHOD            = 'payment_method';
     const PAYMENT_METHOD_TYPE       = 'payment_method_type';
     const PAYMENT_NETWORK           = 'payment_network';

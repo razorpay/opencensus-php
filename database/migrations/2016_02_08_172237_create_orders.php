@@ -27,6 +27,8 @@ class CreateOrders extends Migration {
 
             $table->char(Order::MERCHANT_ID, 14);
 
+            $table->char(Order::OFFER_ID, 14);
+
             $table->integer(Order::AMOUNT)
                   ->unsigned();
 
@@ -118,6 +120,9 @@ class CreateOrders extends Migration {
         {
             $table->dropForeign(
                 Table::ORDER . '_' . Order::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(
+                Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
         });
 
         Schema::drop(Table::ORDER);

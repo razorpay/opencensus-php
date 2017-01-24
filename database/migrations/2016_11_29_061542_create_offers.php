@@ -4,8 +4,9 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Merchant;
+use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Offer\Entity as Offer;
+use RZP\Models\Order\Entity as Order;
 
 class CreateOffers extends Migration
 {
@@ -22,6 +23,8 @@ class CreateOffers extends Migration
 
             $table->char(Offer::ID, Offer::ID_LENGTH)
                   ->primary();
+
+            $table->char(Offer::MERCHANT_ID, Offer::ID_LENGTH);
 
             $table->string(Offer::NAME, 25);
 
@@ -91,6 +94,19 @@ class CreateOffers extends Migration
             $table->index(Offer::ENDS_AT);
 
             $table->index(Offer::ACTIVE);
+
+            $table->foreign(Offer::MERCHANT_ID)
+                    ->references(Merchant::ID)
+                    ->on(Table::MERCHANT)
+                    ->on_delete('restrict');
+        });
+
+        Schema::table(Table::ORDER, function ($table)
+        {
+            $table->foreign(Order::OFFER_ID)
+                    ->references(Offer::ID)
+                    ->on(Table::OFFER)
+                    ->on_delete('restrict');
         });
     }
 
@@ -101,6 +117,17 @@ class CreateOffers extends Migration
      */
     public function down()
     {
+        Schema::table(Table::ORDER, function ($table)
+        {
+            $table->dropForeign(
+                Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
+        });
+
+        Schema::table(Table::OFFER, function ($table)
+        {
+            $table->dropForeign(Tbale::OFFER . '_' . Offer::MERCHANT_ID . '_foreign');
+        });
+
         Schema::drop(Table::OFFER);
     }
 }
