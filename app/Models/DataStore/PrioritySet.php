@@ -47,7 +47,7 @@ class PrioritySet extends Base
 
         $result = array_keys(array_filter($this->data));
 
-        return ((empty($result) === true) ? null : $result);
+        return $result ? : null;
     }
 
     public function save()
