@@ -8,25 +8,17 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    protected $validator;
+    // protected $validator;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->validator = new Validator;
-    }
+    // public function __construct()
+    // {
+    //     parent::__construct();
+    // }
 
     public function addPriorityForMethod(string $method, array $data)
     {
         $this->trace->info(
             TraceCode::ADD_GATEWAY_PRIORITY_REQUEST, [$method => $data]);
-
-        $this->validator->validateMethod($method);
-
-        $this->validator->validateGatewaysForMethod($method, $data);
-
-        $this->validator->validateInput('add_priority', $data);
 
         $priority = (new Core)->addPriorityForMethod($method, $data);
 
@@ -53,10 +45,6 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::REMOVE_GATEWAY_PRIORITY_REQUEST,
                             [$method => $gateways]);
-
-        $validatonInput = array_flip($gateways);
-
-        $this->validator->validateGatewaysForMethod($method, $validatonInput);
 
         $priority = (new Core)->removePriorityForMethod($method, $gateways);
 

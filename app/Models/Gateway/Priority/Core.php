@@ -13,11 +13,15 @@ class Core extends Base\Core
 
     protected $store;
 
+    protected $validator;
+
     // Namespace used for storing the data in store provider
     protected static $storeNameSpace = 'gateway_priority';
 
     protected function init()
     {
+        $this->validator = new Validator;
+
         $storeMock = $this->app['config']->get('app.data_store.mock');
 
         if ($storeMock === true)
@@ -32,6 +36,8 @@ class Core extends Base\Core
 
     public function addPriorityForMethod(string $method, array $priorityData)
     {
+        $this->validator->validateAddPriority($method, $priorityData);
+
         $priority = $this->getPrioritySet($method);
 
         $priority->setData($priorityData);
@@ -59,15 +65,17 @@ class Core extends Base\Core
 
     public function removePriorityForMethod(string $method, array $gateways)
     {
-         $priority = $this->getPrioritySet($method);
+        $this->validator->validateRemovePriority($method, $gateways);
 
-         $priority->setData($gateways);
+        $priority = $this->getPrioritySet($method);
 
-         $priority = $this->store->deleteOrFail($priority);
+        $priority->setData($gateways);
 
-         $priority = $this->store->fetchOrFail($priority);
+        $priority = $this->store->deleteOrFail($priority);
 
-         return $priority;
+        $priority = $this->store->fetchOrFail($priority);
+
+        return $priority;
     }
 
     public function getGatewaysForMethod(string $method)

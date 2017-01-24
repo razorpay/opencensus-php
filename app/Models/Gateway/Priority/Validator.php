@@ -23,6 +23,23 @@ class Validator extends Base\Validator
         Gateway::EBS         => 'sometimes|numeric|min:0|max:100'
     ];
 
+    public function validateAddPriority(string $method, array $priorityData)
+    {
+        $this->validateMethod($method);
+
+        $this->validateGatewaysForMethod($method, $priorityData);
+
+        $this->validateInput('add_priority', $priorityData);
+
+    }
+
+    public function validateRemovePriority(string $method, array $data)
+    {
+        $validatonInput = array_flip($data);
+
+        $this->validateGatewaysForMethod($method, $validatonInput);
+    }
+
     public function validateMethod(string $method)
     {
         if (in_array($method, static::$validPaymentMethods, true) === false)
@@ -34,21 +51,11 @@ class Validator extends Base\Validator
 
     public function validateGatewaysForMethod(string $method, array $input)
     {
-        switch ($method) {
-            case Method::CARD:
-                $valid = $this->validCardGateways($input);
-                break;
+        $inputGateways = array_keys($input);
 
-            case Method::NETBANKING:
-                $valid = $this->validNetBankingGateways($input);
-                break;
+        $validGatewaysForMethod = Defaults::GATEWAY_ORDER[$method][Mode::LIVE];
 
-            default:
-                throw new Exception\LogicException("Should not come here");
-                break;
-        }
-
-        if ($valid === false)
+        if (empty(array_diff($inputGateways, $validGatewaysForMethod)) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD);
