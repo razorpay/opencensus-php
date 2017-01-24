@@ -234,7 +234,7 @@ class Inferno
             {
                 $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as ' .
                     round(self::WEBHOOK_TIMEOUT * 0.75) .
-                    ' seconds. We will only retry a few times before deactivating webhook.';
+                    ' seconds. We will retry only a few times before deactivating webhook.';
             }
             else if ($this->isKnownRequestsException($e))
             {
