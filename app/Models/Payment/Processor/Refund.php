@@ -33,7 +33,7 @@ trait Refund
     {
         $refund = $this->buildRefundEntity($payment, $input, $batch);
 
-        $this->processRefund($refund);
+        $this->processRefund();
 
         return $refund;
     }
@@ -310,8 +310,7 @@ trait Refund
                     'transaction_id'    => $txn->getId(),
                     'auth_capture'      => $supportsAuthAndCapture,
                     'force_refund_txn'  => $forceRefundTransaction,
-                ]
-            );
+                ]);
 
             return $txn;
         }
@@ -457,7 +456,7 @@ trait Refund
     {
         try
         {
-            $this->repo->transaction(
+            return $this->repo->transaction(
                 function()
                 {
                     $payment = $this->payment;
@@ -471,6 +470,8 @@ trait Refund
                     // transaction which is set in the createTransactionForRefund function.
                     //
                     $this->repo->saveOrFail($this->refund);
+
+                    return true;
                 });
         }
         catch (\Exception $ex)
@@ -484,6 +485,8 @@ trait Refund
                     'refund_id'     => $this->refund->getId(),
                     'error_message' => $ex->getMessage(),
                 ]);
+
+            return false;
         }
     }
 
@@ -530,24 +533,24 @@ trait Refund
         return $refund;
     }
 
-    protected function  processRefund(Payment\Refund\Entity $refund)
+    protected function processRefund()
     {
-        $payment = $refund->payment;
+        $payment = $this->refund->payment;
 
-        $data = $this->getGatewayDataForRefund($refund, $payment);
+        $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $refund->payment->card->toArray();
+            $data['card'] = $this->refund->payment->card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
             if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
 
-                $refund->setGatewayRefunded(true);
+                $this->refund->setGatewayRefunded(true);
             }
             else if ($this->gatewaySupportsReversal($payment) === true)
             {
@@ -556,20 +559,31 @@ trait Refund
                 // TODO: Record this too.
             }
 
+            $refundCopy = clone $this->refund;
+
             //
             // NOTE: We should create the transaction before we update
             // the payment as refunded since there is different logic
             // for creating a refund transaction based on the payment status.
             //
-            $this->recordTransactionForRefund();
+            $success = $this->recordTransactionForRefund();
+
+            //
+            // `recordTransactionForRefund` may have made modifications to the refund
+            // entity which we don't want to update, since recording transaction failed.
+            //
+            if ($success === false)
+            {
+                $this->refund = $refundCopy;
+            }
 
             // Record refund since it's refunded on gateway
             $this->updatePaymentRefunded();
 
-            $this->sendRefundNotification($payment, $refund);
+            $this->sendRefundNotification($payment);
         });
 
-        return $refund;
+        return $this->refund;
     }
 
     protected function gatewaySupportsReversal($payment)
@@ -709,17 +723,18 @@ trait Refund
      * - Dashboard (for analytics)
      * - Slack (for us to see)
      * - EMails (to both customer and merchant)
-     * @param  Payment\Entity        $payment Payment Entity
-     * @param  Payment\Refund\Entity $refund  Refund Entity
+     *
+     * @param  Payment\Entity $payment Payment Entity
+     *
      * @return null
      */
-    protected function sendRefundNotification(Payment\Entity $payment, Payment\Refund\Entity $refund)
+    protected function sendRefundNotification(Payment\Entity $payment)
     {
         //
         // Analytics is on dashboard side for now
         //
         $notifier = new Notify($payment);
-        $notifier->addRefund($refund);
+        $notifier->addRefund($this->refund);
         $notifier->trigger(Notify::REFUNDED);
 
         $this->notifyDashboard('refund', $this->refund);
