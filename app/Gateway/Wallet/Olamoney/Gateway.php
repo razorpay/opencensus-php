@@ -382,7 +382,7 @@ class Gateway extends Base\Gateway
     {
         $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
         $notificationUrl = $this->route->getUrlWithPublicAuth(
@@ -522,7 +522,7 @@ class Gateway extends Base\Gateway
 
         $formattedAmount = number_format($topupAmount / 100, 2, '.', '');
 
-        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
         $content = array(

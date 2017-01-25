@@ -16,6 +16,7 @@ final class Route
 
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
+        'callback_params'                         => ['get',      'callback_params',                                'PublicController@getCallbackUrlWithParams'                         ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
@@ -156,6 +157,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -695,6 +697,7 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
+        'merchant_activation_files',
         'admin_edit_app_auth',
         'offers_update_merchants',
         'offer_create',
@@ -846,6 +849,7 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'callback_params',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
