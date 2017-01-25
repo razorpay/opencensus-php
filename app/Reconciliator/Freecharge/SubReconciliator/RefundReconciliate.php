@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Freecharge;
 
 use Carbon\Carbon;
-use RZP\Models\Payment\Processor\Wallet;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 

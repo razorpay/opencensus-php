@@ -5,7 +5,6 @@ namespace RZP\Reconciliator\Freecharge;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 
-
 class CombinedReconciliate extends Base\CombinedReconciliate
 {
     /*******************
