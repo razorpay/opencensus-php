@@ -18,7 +18,6 @@ class Converter
         'mer'  => 'merchant',
         'comm' => 'commission',
         'ac'   => 'account',
-
         'acc'  => 'account',
         'amt'  => 'amount',
         'txn'  => 'transaction',
@@ -180,7 +179,7 @@ class Converter
 
         $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
         $linesToSkipFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
-        $lineCount = 0;
+        $currentLineNumber = 0;
 
         $handle = fopen($filePath, 'r');
 
@@ -194,15 +193,17 @@ class Converter
         {
             while (($row = fgetcsv($handle)) !== false)
             {
-                if (($totalLinesToRead !== null) and
-                        ($lineCount >= $totalLinesToRead))
+                if ($currentLineNumber < $linesToSkipFromTop)
                 {
-                    break;
+                    $currentLineNumber++;
+
+                    continue;
                 }
 
-                if ($lineCount < $linesToSkipFromTop)
+                if (($totalLinesToRead !== null) and
+                    ($currentLineNumber >= $totalLinesToRead))
                 {
-                    continue;
+                    break;
                 }
 
                 // If headers are empty, get headers from the first row.
@@ -225,7 +226,7 @@ class Converter
                     $data[] = array_combine($columnHeaders, $row);
                 }
 
-                $lineCount++;
+                $currentLineNumber++;
             }
         }
         finally
@@ -240,7 +241,6 @@ class Converter
     {
         $totalLinesToRead = null;
 
-        $linesFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
         $linesFromBottom = $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] ?? 0;
 
         if ($linesFromBottom > 0)
@@ -249,8 +249,7 @@ class Converter
             $fileContent = file($filePath);
             $fileLinesCount = count($fileContent);
 
-            $totalLinesToRead = $fileLinesCount -
-                                ($linesFromTop + $linesFromBottom);
+            $totalLinesToRead = $fileLinesCount - $linesFromBottom;
         }
 
         return $totalLinesToRead;

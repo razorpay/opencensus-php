@@ -97,9 +97,6 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
             $validate = $this->validateRefundDetails($row);
 
-            // Validates that the payment status is not failed.
-            $validate = $this->validatePaymentStatus();
-
             if ($validate === true)
             {
                 $persistSuccess = $this->persistReconciliationData();
@@ -160,8 +157,13 @@ class RefundReconciliate extends Foundation\SubReconciliate
 
     protected function validateRefundDetails(array $row)
     {
-        return $this->validatePaymentStatus() and
-                $this->validateRefundAmountEqualsReconAmount($row);
+        $validPaymentStatus = $this->validatePaymentStatus();
+
+        $validRefundAmount = $this->validateRefundAmountEqualsReconAmount($row);
+
+        $validRefundDetails = ($validPaymentStatus and $validRefundAmount);
+
+        return $validRefundDetails;
     }
 
     protected function validatePaymentStatus()
@@ -262,6 +264,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
     protected function getApiRefundEntityFromRow(array $row)
     {
         $refundId = $this->getRefundId($row);
+
         // If refund id is not present, return. No point of evaluating the row.
         if (empty($refundId) === true)
         {
@@ -379,7 +382,9 @@ class RefundReconciliate extends Foundation\SubReconciliate
      * Checks if amount in recon file matches the actual amount in refund entity
      * Implementation to be provided by child clasess
      *
-     * @param  array  $row Row data
+     * @param  array $row Row data
+     *
+     * @return bool
      */
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {

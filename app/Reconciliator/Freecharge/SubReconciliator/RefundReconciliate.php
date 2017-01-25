@@ -5,7 +5,7 @@ namespace RZP\Reconciliator\Freecharge;
 use Carbon\Carbon;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
-
+use RZP\Models\Payment;
 
 class RefundReconciliate extends Base\RefundReconciliate
 {
@@ -17,7 +17,7 @@ class RefundReconciliate extends Base\RefundReconciliate
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
     // Refund id in MIS file is in the format
-    // <merchant_id>_<refund_id>_<some nummber>. So we need to take the element at
+    // <merchant_id>_<refund_id>_<some number>. So we need to take the element at
     // index 1 after converting to an array.
     const REFUND_ID_INDEX = 1;
 
@@ -35,6 +35,8 @@ class RefundReconciliate extends Base\RefundReconciliate
     protected function getPaymentId(array $row)
     {
         $paymentId = $row[self::COLUMN_PAYMENT_ID];
+
+        $paymentId = Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
 
         return $paymentId;
     }

@@ -156,8 +156,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     protected function validatePaymentDetails(array $row)
     {
-        return $this->validatePaymentStatus($row) and
-            $this->validatePaymentAmountEqualsReconAmount($row);
+        $validPaymentStatus = $this->validatePaymentStatus($row);
+
+        $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
+
+        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount);
+
+        return $validPaymentDetails;
     }
 
     /**
@@ -943,7 +948,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * Checks if amount in recon file matches the actual amount in payment entity
      * Implementation to be provided by child clasess
      *
-     * @param  array  $row Row data
+     * @param  array $row Row data
+     *
+     * @return bool
      */
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {

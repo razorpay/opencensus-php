@@ -54,6 +54,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayFee($row)
     {
+        //
+        // The fee is provided as a separate column.
+        // But we use the column which is the net deduction.
+        // Hence, we don't need to add the service tax to this.
+        //
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
         return round($fee);
@@ -81,6 +86,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
                                     self::SETTLEMENT_DATE_FORMAT,
                                     $row[self::COLUMN_SETTLED_AT],
                                     'Asia/Kolkata');
+
             $gatewaySettledAt = $gatewaySettledAt->timestamp;
         }
         catch (\Exception $ex)
