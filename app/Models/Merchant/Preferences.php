@@ -28,6 +28,7 @@ class Preferences
             Gateway::HDFC,
         ],
 
+        // Zomato
         '6H7N6hlcv29OMG' => [
             Gateway::AXIS_MIGS,
             Gateway::FIRST_DATA,
