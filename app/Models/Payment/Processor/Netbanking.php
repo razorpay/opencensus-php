@@ -58,7 +58,6 @@ class Netbanking
     protected static $paytmTPV = [];
 
     protected static $billdesk = array(
-        IFSC::ABNA,
         IFSC::ALLA,
         IFSC::ANDB,
         IFSC::BBKM,
