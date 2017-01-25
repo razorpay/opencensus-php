@@ -34,11 +34,6 @@ class BaseException extends Exception
         $this->error = $error;
     }
 
-    public function setGatewayErrorCodeAndDesc($code, $desc)
-    {
-        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
-    }
-
     public function getError()
     {
         return $this->error;

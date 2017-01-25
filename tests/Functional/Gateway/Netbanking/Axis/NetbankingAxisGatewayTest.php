@@ -216,13 +216,13 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkRefundTextData($data)
     {
-        $this->assertTrue(file_exists($data['netbanking_axis'][0]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['refunds']));
 
-        $this->assertTrue(file_exists($data['netbanking_axis'][1]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['claims']));
 
-        $refundsFileContents = file($data['netbanking_axis'][0]);
+        $refundsFileContents = file($data['netbanking_axis']['refunds']);
 
-        $claimsFileContents = file($data['netbanking_axis'][1]);
+        $claimsFileContents = file($data['netbanking_axis']['claims']);
 
         // 2 refunds + 1 initial line
         assert(count($refundsFileContents) === 3);
@@ -232,13 +232,13 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $refundsFileLine1 = explode('~~', $refundsFileContents[1]);
 
-        // Each line should have 9 columns
-        assert(count($refundsFileLine1) === 9);
-
-        $claimsFileLine1 = explode('~~', $refundsFileContents[1]);
-
         // Each line should have 8 columns
-        assert(count($claimsFileLine1) === 9);
+        assert(count($refundsFileLine1) === 8);
+
+        $claimsFileLine1 = explode('~~', $claimsFileContents[1]);
+
+        // Each line should have 7 columns
+        assert(count($claimsFileLine1) === 7);
     }
 
     protected function mockPaymentFailure()

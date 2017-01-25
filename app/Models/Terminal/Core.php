@@ -33,6 +33,16 @@ class Core extends Base\Core
 
     public function addMerchantToTerminal(Entity $terminal, string $merchantId)
     {
+        $subMerchants = $terminal->merchants();
+
+        $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
+
+        if (in_array($merchantId, $subMerchantsIds, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL);
+        }
+
         $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
 
         return $terminal;

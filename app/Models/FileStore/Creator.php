@@ -4,6 +4,8 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -30,19 +32,29 @@ class Creator extends Base\Core
      * @var array column Formatter used in file
      */
     protected $columnFormat = [];
+
     /**
      * @var string file Path of local file
      */
     protected $filePath;
 
+    /**
+     * @var string content to be used for file
+     */
     protected $content;
+
+    /**
+     * @var file entity to be created with given id
+     */
+    protected $id;
 
     /**
      * @var Store Handler
      */
     protected $storageHandler;
 
-    const DEFAULT_STORE = 's3';
+    const DEFAULT_STORE    = 's3';
+    const DEFAULT_METADATA = [];
 
     public function __construct()
     {
@@ -56,6 +68,8 @@ class Creator extends Base\Core
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
+
+        $this->file->setMetadata(self::DEFAULT_METADATA);
     }
 
     /**
@@ -148,6 +162,32 @@ class Creator extends Base\Core
     public function type(string $type)
     {
         $this->file->setType($type);
+
+        return $this;
+    }
+
+    /**
+     * Set the metadata of S3 file entity
+     *
+     * @param  string $metadata metadata value
+     * @return Creater object
+     */
+    public function metadata(array $metadata)
+    {
+        $this->file->setMetadata($metadata);
+
+        return $this;
+    }
+
+    /**
+     * Set the id of File Store entity
+     *
+     * @param  string $id id value
+     * @return Creater object
+     */
+    public function id(string $id)
+    {
+        $this->file->setId($id);
 
         return $this;
     }
@@ -270,7 +310,7 @@ class Creator extends Base\Core
             'key'       => $fileName,
             'path'      => $this->filePath,
             'mime'      => $this->file->getMime(),
-            'metadata'  => [],
+            'metadata'  => $this->file->getMetadata(),
         ];
 
         $location = $this->storageHandler->save($bucket, $fileDetails);
@@ -291,8 +331,8 @@ class Creator extends Base\Core
         switch($extension)
         {
             case Format::TXT:
+            case Format::ENC:
                 $this->writeTextFile();
-
                 break;
 
             case Format::XLSX:
@@ -314,16 +354,31 @@ class Creator extends Base\Core
 
         $fullPath = $this->getFullFilePath();
 
-        if (file_exists($this->getStorageDir()) === false)
+        $dir = dirname($fullPath);
+
+        if (file_exists($dir) === false)
         {
-            mkdir($this->getStorageDir(), 0777, true);
+            mkdir($dir, 0777, true);
         }
 
         $file = fopen($fullPath, 'w');
         fwrite($file, $this->content);
         fclose($file);
 
-        chmod($fullPath, 0777);  // keep it 0777. This step is important
+        try
+        {
+            chmod($fullPath, 0777);  // keep it 0777. This step is important
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                [
+                    'path' => $fullPath
+                ]);
+        }
 
         $this->createUploadedFile($fullPath, $fileName);
     }
