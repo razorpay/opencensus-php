@@ -29,7 +29,7 @@ class DailyFiles extends Base\DailyFiles
             $this->sendMail($amount, $claimsFile, $refundsFile, $count);
         }
 
-        return [$refundsFile, $claimsFile];
+        return ['refunds' => $refundsFile, 'claims' => $claimsFile];
     }
 
     protected function sendMail($amount, $claimsFile, $refundsFile, $count=[])
