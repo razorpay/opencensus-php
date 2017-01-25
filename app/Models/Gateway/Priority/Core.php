@@ -109,7 +109,7 @@ class Core extends Base\Core
 
         try
         {
-            $priority = $this->store->fetch($priority);
+            $priority = $this->store->fetchOrFail($priority);
         }
         catch(Exception\ServerErrorException $e)
         {
