@@ -34,7 +34,14 @@ class Server extends Base\Mock\Server
 
         $msg = $this->getGatewayInstance()->getMessageStringWithHash($content);
 
-        $callbackUrl = 'http://localhost/v1/gateway/netbanking_kotak/callback';
+        //$callbackUrl = 'http://localhost/v1/gateway/netbanking_kotak/callback';
+
+        $callbackBasePath = $this->route->getUrlWithPublicCallbackAuth([]);
+
+        $callbackUrl = $callbackBasePath.'/v1/gateway/netbanking_kotak/callback';
+
+        sd($callbackUrl);
+
 
         $request = array(
             'url' => $callbackUrl,

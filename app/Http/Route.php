@@ -1102,7 +1102,7 @@ final class Route
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        list($schema, $host) = $this->getSchemaAndHost();
+        list($schema, $host, $port) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -1118,6 +1118,11 @@ final class Route
 
         $url = $schema . $auth . $host;
 
+        if ((int)$port !== 80)
+        {
+            $url .= ':' . $port;
+        }
+
         return $url;
     }
 
@@ -1126,9 +1131,12 @@ final class Route
         $request = \Request::getFacadeRoot();
 
         $schema = $request->getScheme() . '://';
+
         $host = $request->getHost();
 
-        return [$schema, $host];
+        $port = $request->getPort();
+
+        return [$schema, $host, $port];
     }
 
     // @codingStandardsIgnoreStart
