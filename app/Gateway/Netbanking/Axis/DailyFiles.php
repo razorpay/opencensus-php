@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Netbanking\Axis;
 
-use Mail;
 use Carbon\Carbon;
 use RZP\Gateway\Netbanking\Base;
 
