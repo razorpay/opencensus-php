@@ -69,6 +69,19 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testTpvVerifyPayment()
+    {
+        $this->testTpvPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
+
+        $content = $this->verifyPayment($payment['id']);
+
+        assert($content['payment']['verified'] === 1);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
