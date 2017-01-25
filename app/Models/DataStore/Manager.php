@@ -35,26 +35,8 @@ class Manager extends Core
     }
 
     /**
-     * Fetches data from store for given object
-     */
-    public function fetch(Base $store)
-    {
-        try
-        {
-            $store = $store->fetch();
-        }
-        catch(\Exception $e)
-        {
-            // Suppress any storage exception
-
-            $this->trace->traceException($e);
-        }
-
-        return $store;
-    }
-
-    /**
-     * Similar to fetch method but throws any exception instead of suppressing
+     * Fetches data from store and sets it as the data for the given
+     * store object
      */
     public function fetchOrFail(Base $store)
     {

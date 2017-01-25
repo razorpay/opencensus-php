@@ -107,7 +107,14 @@ class Core extends Base\Core
     {
         $priority = $this->getPrioritySet($method);
 
-        $priority = $this->store->fetch($priority);
+        try
+        {
+            $priority = $this->store->fetch($priority);
+        }
+        catch(Exception\ServerErrorException $e)
+        {
+            $priority->setData([]);
+        }
 
         return $this->getGateways($priority);
     }
