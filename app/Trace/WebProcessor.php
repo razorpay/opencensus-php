@@ -70,6 +70,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'client_ip'     => $this->request->getRealClientIp(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
+            'content_type'  => $this->request->headers->get('content-type'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
             'console'       => $this->console,
             'merchant_id'   => null,
