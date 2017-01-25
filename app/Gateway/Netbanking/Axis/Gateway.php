@@ -349,4 +349,11 @@ class Gateway extends Base\Gateway
             return $this->getLiveMerchantId();
         }
     }
+
+    protected function getLiveSecret()
+    {
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
+    }
 }
