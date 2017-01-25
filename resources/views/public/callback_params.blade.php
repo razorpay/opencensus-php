@@ -60,7 +60,9 @@
         <p><b>Error:</b> {{ $error }}</p>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
         <script>
-          var rp = Razorpay({!! $options !!});
+          var options = {!! $options !!};
+          options.callback_url = location.href;
+          var rp = Razorpay(options);
           rp.on('payment.success', function() {
             document.querySelector('.card').innerHTML = '<h2>Payment Successful.</h2><p>Just a moment now...</p>';
           })
