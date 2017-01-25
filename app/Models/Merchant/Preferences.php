@@ -26,6 +26,10 @@ class Preferences
         // Soch
         '6QGdVzDAIpBniU' => [
             Gateway::HDFC,
-        ]
+        ],
+
+        '6H7N6hlcv29OMG' => [
+            Gateway::AXIS_MIGS,
+        ],
     ];
 }
