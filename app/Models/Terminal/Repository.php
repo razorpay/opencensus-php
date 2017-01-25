@@ -170,6 +170,26 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getTpvTerminalIdsForGateway($gateway)
+    {
+        $tpvCategories = Category::getTPVCategories();
+
+        return $this->newQuery()
+                    ->where(Terminal\Entity::GATEWAY, $gateway)
+                    ->whereIn(Terminal\Entity::NETWORK_CATEGORY, $tpvCategories)
+                    ->enabled()
+                    ->get([Entity::ID]);
+    }
+
+    public function getTerminalIdsForGateway($gateway, $exclude = [])
+    {
+        return $this->newQuery()
+                    ->where(Terminal\Entity::GATEWAY, $gateway)
+                    ->whereNotIn(Terminal\Entity::ID, $exclude)
+                    ->enabled()
+                    ->get([Entity::ID]);
+    }
+
     public function deleteOrFail($entity)
     {
         $successCount = $entity->getUsedCount();

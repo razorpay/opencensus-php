@@ -10,6 +10,13 @@ use RZP\Exception;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Token\Core;
+    }
+
     /**
      * Note that this is on internal auth and not private auth
      * Adds token for a customer
@@ -36,13 +43,11 @@ class Service extends Base\Service
      */
     public function edit($id, $tokenId, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-        $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
-
-        $token = (new Token\Core)->edit($token, $input);
+        $token = $this->core->edit($token, $input);
 
         return $token->toArrayPublic();
     }

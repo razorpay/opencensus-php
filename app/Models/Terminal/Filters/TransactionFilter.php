@@ -38,6 +38,7 @@ class TransactionFilter extends Terminal\Filter
         'currency',
         'international',
         'bank',
+        'amount',
         'maestro',
         'netbanking_billdesk',
         'recurring',
@@ -163,16 +164,11 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // Hard-coding a test merchant, to test if Maestro cards
-            // are working correctly on a FirstData terminal
-            if ($input['merchant']->getId() === '5ubLZpACTmD8D4')
-            {
-                return true;
-            }
-
-            // Only shared terminals support Maestro on Live mode.
+            // For HDFC, only shared terminals support
+            // Maestro cards on Live mode.
             if (($network === Network::MAES) and
-                ($input['mode'] === Mode::LIVE))
+                ($input['mode'] === Mode::LIVE) and
+                ($terminal->getGateway() === Gateway::HDFC))
             {
                 return Shared::isSharedTerminal($terminal);
             }
@@ -291,6 +287,22 @@ class TransactionFilter extends Terminal\Filter
         $emiDuration = $input['payment']->emiPlan->getDuration();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+    }
 
+    public function amountFilter(Terminal\Entity $terminal, array $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        $gateway = $terminal->getGateway();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $category = $terminal->getNetworkCategory();
+
+        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
+
+        $amount = $input['payment']->getAmount();
+
+        return ($amount >= $minAmount);
     }
 }

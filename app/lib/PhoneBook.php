@@ -52,6 +52,7 @@ class PhoneBook
 
         $this->libphonenumber = $this->app['libphonenumber'];
 
+        $phoneNumber = (string) $phoneNumber;
         $this->rawNumber = $phoneNumber;
 
         try

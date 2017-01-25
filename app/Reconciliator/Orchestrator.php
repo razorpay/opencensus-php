@@ -8,6 +8,7 @@ use App;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Base\RuntimeManager;
 
@@ -42,14 +43,14 @@ class Orchestrator extends Base\Core
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC     => ['prashanth@razorpay.com', 'payoutreport@hdfcbank.com'],
-        self::AXIS     => ['prashanth@razorpay.com'],
-        self::BILLDESK => ['prashanth@razorpay.com'],
-        self::PAYZAPP  => ['prashanth@razorpay.com'],
-        self::MOBIKWIK => ['prashanth@razorpay.com'],
-        self::PAYTM    => ['prashanth@razorpay.com'],
-        self::KOTAK    => ['giri@razorpay.com'],
-        self::OLAMONEY => ['prashanth@razorpay.com'],
+        self::HDFC     => ['payoutreport@hdfcbank.com'],
+        self::AXIS     => [],
+        self::BILLDESK => [],
+        self::PAYZAPP  => [],
+        self::MOBIKWIK => [],
+        self::PAYTM    => [],
+        self::KOTAK    => ['BankAlerts@kotak.com'],
+        self::OLAMONEY => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN    => ['prashanth.yv@razorpay.com'],
@@ -60,6 +61,7 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
+        self::KOTAK,
     ];
 
     /*********************
@@ -94,21 +96,60 @@ class Orchestrator extends Base\Core
     }
 
     /**
-     * Determines whether the reconciliation request is manual or
-     * via MailGun and gets the files details accordingly.
+     * Determines whether the request is manual or via Mailgun, and
+     * either throws or suppresses the exception accordingly.
+     * Exception is suppressed in the latter case, as we do not want
+     * Mailgun to attempt retrying the same request.
      *
-     * @param array $input The input received from the route.
-     * @return int Status code. Currently, always returns a 200.
-     *             Will raise alerts in case of issues.
-     * @throws Exception\ReconciliationException Raised when there are no
-     *                                           files to reconcile.
+     * @param array $input The input received from the route
+     *
+     * @return array Summary of reconciliation
+     * @throws \Exception
      */
     public function initiateReconciliationProcess(array $input)
     {
         $this->traceReconRequest($input);
 
+        try
+        {
+            $summary = $this->processReconciliationRequest($input);
+        }
+        catch (\Throwable $e)
+        {
+            if ($this->isManualRequest($input) === true)
+            {
+                $this->trace->traceException(
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
+                    (array) json_decode($e->getMessage()));
+
+                throw $e;
+            }
+
+            $this->trace->traceException(
+                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                (array) json_decode($e->getMessage()));
+
+            // We do not throw an exception as route is hit via Mailgun,
+            // and Mailgun will attempt retrying, which we don't want.
+            return [];
+        }
+
+        return $summary;
+    }
+
+    /**
+     * Determines whether the reconciliation request is manual or
+     * via MailGun and gets the files details accordingly.
+     *
+     * @param array $input The input received from the route.
+     * @return array Summary of reconciliation
+     * @throws Exception\ReconciliationException Raised when there are no
+     *                                           files to reconcile.
+     */
+    protected function processReconciliationRequest(array $input)
+    {
         // Checks if it's manual call or mailgun call
-        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        if ($this->isManualRequest($input) === true)
         {
             // Sets the gateway reconciliator object and
             // Gets all the file details from the input.
@@ -116,25 +157,9 @@ class Orchestrator extends Base\Core
         }
         else
         {
-            try
-            {
-                // Sets the gateway reconciliator object and
-                // Gets all the file details from the input.
-                $this->allFilesDetails = $this->mailGunEntry($input);
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->error(
-                    TraceCode::RECON_ALERT,
-                    (array) json_decode($e->getMessage())
-                );
-
-                $this->trace->traceException($e);
-
-                // We do not throw an exception as route is hit via Mailgun,
-                // and Mailgun will attempt retrying, which we don't want.
-                return [];
-            }
+            // Sets the gateway reconciliator object and
+            // Gets all the file details from the input.
+            $this->allFilesDetails = $this->mailGunEntry($input);
         }
 
         // There must be at least one file. Otherwise, error.
@@ -170,6 +195,22 @@ class Orchestrator extends Base\Core
         $this->trace->info(
             TraceCode::RECON_REQUEST,
             $input);
+    }
+
+    /**
+     * Checks if request is manual or via Mailgun.
+     *
+     * @param array $input The input received from the route.
+     * @return boolean Flag to indicate manual request
+     */
+    protected function isManualRequest(array $input)
+    {
+        if ((isset($input['manual']) === true) and ($input['manual'] === '1'))
+        {
+            return true;
+        }
+
+        return false;
     }
 
     /**
