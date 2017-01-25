@@ -13,10 +13,10 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\TwoFactorAuth;
-use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -319,16 +319,8 @@ class Gateway extends Base\Gateway
 
     public function createRefundRecord(array $input)
     {
-        $this->action($input, Action::CREATE_REFUND_RECORD);
-
         $refundId = $input['refund']['id'];
         $paymentId = $input['payment']['id'];
-
-        # Need terminal to get MerchantId
-        $terminal = (new Terminal\Repository)->getById(
-            $input['payment']['terminal_id']);
-
-        $input['terminal'] = $terminal->toArray();
 
         $gatewayRefundEntity = $this->repo->findByRefundId(
             $refundId);
@@ -344,9 +336,14 @@ class Gateway extends Base\Gateway
 
             if ($refunded === true)
             {
-                $refundContent = $this->getRefundContentForGatewayEntity($input, $response);
+                $response[ResponseFields::REFUND_TXN_ID] = $response[ResponseFields::TXN_ID];
 
-                $this->createGatewayRefundEntity($refundContent, Action::REFUND);
+                $attributes = $this->getRefundAttributesFromRefundResponse($input, $response);
+
+                // We did not receive the refund response on first attempt
+                $attributes['received'] = false;
+
+                $this->createGatewayRefundEntity($attributes, Action::REFUND);
 
                 $success = true;
 
@@ -354,32 +351,40 @@ class Gateway extends Base\Gateway
                     TraceCode::GATEWAY_REFUND_RECORD_CREATED,
                     [
                         'payment_id' => $paymentId,
-                        'refund_id'  => $refundId
+                        'refund_id'  => $refundId,
                     ]);
             }
             else
             {
-                $success = false;
-
                 // It should have been refunded on the gateway side also. But, verify returned
                 // false in the verify response for refund.
+                try
+                {
+                    $this->refund($input);
+                    $success = true;
+                }
+                catch (Exception\BaseException $ex)
+                {
+                    $success =  false;
 
-                $this->trace->error(
-                    TraceCode::GATEWAY_REFUND_ABSENT,
-                    [
-                        'refund_id'         => $refundId,
-                        'payment_id'        => $paymentId,
-                        'verify_response'   => $response,
-                    ]);
+                    // if the refund fails again, trace it
+                    $this->trace->error(
+                        TraceCode::GATEWAY_REFUND_ABSENT,
+                        [
+                            'refund_id'         => $refundId,
+                            'payment_id'        => $paymentId,
+                            'verify_response'   => $response,
+                        ]);
+                }
             }
-
-            return [
-                'applicable'    => $applicable,
-                'success'       => $success,
-                'refund_id'     => $refundId,
-                'payment_id'    => $input['payment']['id'],
-            ];
         }
+
+        return [
+            'applicable'    => $applicable,
+            'success'       => $success,
+            'refund_id'     => $refundId,
+            'payment_id'    => $input['payment']['id'],
+        ];
     }
 
     public function verifyIfSkipRefund(array $error)
@@ -388,7 +393,7 @@ class Gateway extends Base\Gateway
 
         // Handle the unknown error (fatal errors) and mark it as skip refund
         // Verify it later
-        return ResponseCode::isFatalError($errorCode) === true;
+        return (ResponseCode::isFatalError($errorCode) === true);
     }
 
     protected function verifyIfRefunded(array $input)
@@ -403,49 +408,27 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getCustomRequestArray($content, 'GET');
-
-        $content = http_build_query($content);
-        $request['url'] .= '?' . $content;
-        $request['content'] = [];
+        $request = $this->getCustomRequestArray($content, 'get');
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $response = $this->jsonToArray($response->body);
 
-        $this->action($input, Action::CREATE_REFUND_RECORD);
+        $this->action($input, Action::REFUND);
 
         // If transaction is not found, treat it as refund failed.
-        if ((isset($content[ResponseFields::ERROR_CODE]) === true) and
-            (ResponseCode::isTransactionAbsent($content[ResponseFields::ERROR_CODE]) === true))
+        if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
+            (ResponseCode::isTransactionAbsent(
+                $response[ResponseFields::ERROR_CODE]) === true))
         {
             return [false, []];
         }
 
-        $this->verifyCheckSumForResponse($content);
+        $this->verifyCheckSumForResponse($response);
 
-        $refunded = $content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS;
+        $refunded = ($response[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS);
 
-        return [$refunded, $content];
-    }
-
-    protected function getRefundContentForGatewayEntity(array $input, array $response)
-    {
-        $refundAttributes = [
-            'payment_id'            =>  $input['payment']['id'],
-            'action'                =>  $this->action,
-            'amount'                =>  $input['refund']['amount'],
-            'wallet'                =>  $input['payment']['wallet'],
-            'email'                 =>  $input['payment']['email'],
-            'received'              =>  true,
-            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
-            'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
-            'refund_id'             =>  $input['refund']['id'],
-            'status_code'           =>  $response[ResponseFields::STATUS],
-            'gateway_refund_id'     =>  $response[ResponseFields::TXN_ID],
-        ];
-
-        return $refundAttributes;
+        return [$refunded, $response];
     }
 
     protected function getTokenAttributes($content)
@@ -505,13 +488,20 @@ class Gateway extends Base\Gateway
 
     protected function getCustomRequestArray($content = [], $method = 'post')
     {
-        $content = json_encode($content);
+        $encoded_content = json_encode($content);
 
-        $request = $this->getStandardRequestArray($content, $method);
+        $request = $this->getStandardRequestArray($encoded_content, $method);
 
         $request['headers'] = [
             'Content-Type' => 'application/json',
         ];
+
+        if (strtolower($method) === 'get')
+        {
+            $content = http_build_query($content);
+            $request['url'] .= '?' . $content;
+            $request['content'] = [];
+        }
 
         return $request;
     }
@@ -614,11 +604,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getCustomRequestArray($content, $method = 'GET');
-
-        $content = http_build_query($content);
-        $request['url'] .= '?' . $content;
-        $request['content'] = [];
+        $request = $this->getCustomRequestArray($content, $method = 'get');
 
         return $request;
     }
@@ -779,17 +765,17 @@ class Gateway extends Base\Gateway
     protected function getRefundAttributesFromRefundResponse($input, $response)
     {
         $refundAttributes = array(
-            'payment_id'            =>  $input['payment']['id'],
-            'action'                =>  $this->action,
-            'amount'                =>  $input['refund']['amount'],
-            'wallet'                =>  $input['payment']['wallet'],
-            'email'                 =>  $input['payment']['email'],
-            'received'              =>  true,
-            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
-            'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
-            'refund_id'             =>  $input['refund']['id'],
-            'status_code'           =>  $response['status'],
-            'gateway_refund_id'     =>  $response['refundTxnId'],
+            WalletEntity::PAYMENT_ID          => $input['payment']['id'],
+            WalletEntity::ACTION              => $this->action,
+            WalletEntity::AMOUNT              => $input['refund']['amount'],
+            WalletEntity::WALLET              => $input['payment']['wallet'],
+            WalletEntity::EMAIL               => $input['payment']['email'],
+            WalletEntity::RECEIVED            => true,
+            WalletEntity::CONTACT             => $this->getFormattedContact($input['payment']['contact']),
+            WalletEntity::GATEWAY_MERCHANT_ID => $this->getMerchantId($input['terminal']),
+            WalletEntity::REFUND_ID           => $input['refund']['id'],
+            WalletEntity::STATUS_CODE         => $response['status'],
+            WalletEntity::GATEWAY_REFUND_ID   => $response['refundTxnId'],
         );
 
         return $refundAttributes;
@@ -968,11 +954,7 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getCustomRequestArray($content, 'GET');
-
-        $content = http_build_query($content);
-        $request['url'] .= '?' . $content;
-        $request['content'] = [];
+        $request = $this->getCustomRequestArray($content, 'get');
 
         return $request;
     }

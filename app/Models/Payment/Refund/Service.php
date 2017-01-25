@@ -367,21 +367,10 @@ class Service extends Base\Service
                 'Gateway is not supported for refund verify process.');
         }
 
-        # For wallets, gateway payment entity table is 'wallet'
-        $walletGateways = Payment\Gateway::$methodMap[Payment\Method::WALLET];
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $gatewayTable = $gateway;
-
-        if (in_array($gateway, $walletGateways, true) === true)
-        {
-            $gatewayTable = 'wallet';
-        }
-
-        $gatewayTable = constant(Table::class . '::' . strtoupper($gatewayTable));
-
         $refunds = $this->repo->refund->fetchMissingRefundsOfGateway(
-            $gateway, $createdAfter, $gatewayTable);
+            $gateway, $createdAfter);
 
         $data = [];
 

@@ -90,9 +90,10 @@ class Table
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     protected static $entityToTableMap = array(
-        Entity::AXIS_MIGS       => self::MIGS,
-        Entity::AXIS_GENIUS     => self::MIGS,
-        Entity::AMEX            => self::MIGS,
+        Entity::AXIS_MIGS         => self::MIGS,
+        Entity::AXIS_GENIUS       => self::MIGS,
+        Entity::AMEX              => self::MIGS,
+        Entity::WALLET_FREECHARGE => self::WALLET,
     );
 
     public static function getTableNameForEntity(string $entity)

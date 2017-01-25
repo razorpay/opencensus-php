@@ -175,7 +175,7 @@ class Repository extends Base\Repository
      * @param $ts
      * @return mixed
      */
-    public function fetchMissingRefundsOfGateway($gateway, $ts, $gatewayTable)
+    public function fetchMissingRefundsOfGateway($gateway, $ts)
     {
         // SELECT `refunds`.*
         // FROM `refunds`
@@ -192,6 +192,7 @@ class Repository extends Base\Repository
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
+        $gatewayTable = Table::getTableNameForEntity($gateway);
 
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
