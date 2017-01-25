@@ -39,7 +39,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -99,7 +99,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
-                    'billing_address'  => [
+                    'customer_billing_address'  => [
                         'type'    => "billing_address",
                         'primary' => true,
                         'line1'   => "Line One Etc",
@@ -152,7 +152,7 @@ return [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name' => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -201,7 +201,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -289,7 +289,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -374,7 +374,7 @@ return [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name' => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -407,7 +407,7 @@ return [
                     'customer_email'   => null,
                     'customer_contact' => null,
                     'customer_name'    => null,
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items'           => [],
                 'status'               => 'draft',
@@ -450,10 +450,10 @@ return [
                 'entity'           => 'invoice',
                 'receipt'          => null,
                 'customer_details' => [
-                'customer_name'    => 'Abc Def',
-                'customer_email'   => null,
-                'customer_contact' => null,
-                'billing_address'  => null
+                    'customer_name'    => 'Abc Def',
+                    'customer_email'   => null,
+                    'customer_contact' => null,
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -551,7 +551,7 @@ return [
                     'customer_name'    => 'Abc Def',
                     'customer_email'   => null,
                     'customer_contact' => null,
-                    'billing_address'  => null
+                    'customer_address' => null,
                 ],
                 'line_items'           => [
                 [
@@ -639,7 +639,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items'   => [],
                 'status'       => 'draft',
@@ -677,7 +677,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items'   => [],
                 'status'       => 'issued',
@@ -715,7 +715,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items'   => [],
                 'status'       => 'draft',
@@ -994,7 +994,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'order_id'             => null,
                 'line_items'           => [
@@ -1074,7 +1074,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'order_id'             => null,
                 'line_items'           => [
@@ -1172,7 +1172,7 @@ return [
                     'customer_name'    => 'test 2',
                     'customer_email'   => 'test2@razorpay.com',
                     'customer_contact' => null,
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'status'               => 'draft',
             ]
@@ -1200,7 +1200,7 @@ return [
                     'customer_name'    => 'new customer',
                     'customer_email'   => 'new@razorpay.com',
                     'customer_contact' => null,
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'status'               => 'draft',
             ]
@@ -1258,7 +1258,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'order_id'             => 'order_100000000order',
                 'line_items'           => [],
@@ -1320,7 +1320,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items'           => [],
                 'payment_id'           => null,
@@ -1346,7 +1346,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'payment_id'           => null,
                 'status'               => 'issued',
@@ -1452,7 +1452,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1506,7 +1506,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1565,7 +1565,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The line items may not have more than 20 items.',
+                    'description' => 'The line items may not have more than 20 items in total.',
                 ],
             ],
             'status_code' => 400,
@@ -1659,7 +1659,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1698,7 +1698,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'billing_address'  => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -2028,7 +2028,7 @@ return [
                     'customer_email' => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name' => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -2069,7 +2069,7 @@ return [
                             'customer_email'   => 'test@razorpay.com',
                             'customer_contact' => '1234567890',
                             'customer_name'    => 'test',
-                            'billing_address'  => null,
+                            'customer_address' => null,
                         ],
                         'line_items'       => [],
                         'customer_id'      => 'cust_100000customer',
@@ -2256,7 +2256,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -2310,7 +2310,7 @@ return [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
                     'customer_name'    => 'test',
-                    'billing_address'  => null,
+                    'customer_address' => null,
                 ],
                 'customer_id'  => 'cust_100000customer',
                 'short_url'    => 'http://bitly.dev/2eZ11Vn',

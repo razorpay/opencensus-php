@@ -78,9 +78,10 @@ class Entity extends Base\PublicEntity
     // ---------------------- Input Keys End -------------------------------------
 
     // ------------------------- Output Keys --------------------------------------
-    const CUSTOMER_DETAILS      = 'customer_details';
-    const BILLING_ADDRESS       = 'billing_address';
-    const PAYMENT_ID            = 'payment_id';
+    const CUSTOMER_DETAILS         = 'customer_details';
+    const CUSTOMER_ADDRESS         = 'customer_address';
+    const CUSTOMER_BILLING_ADDRESS = 'customer_billing_address';
+    const PAYMENT_ID               = 'payment_id';
 
     // ------------------------ Output Keys End -----------------------------------
 
@@ -127,7 +128,6 @@ class Entity extends Base\PublicEntity
         self::ISSUED_AT           => null,
         self::PAID_AT             => null,
         self::EXPIRED_AT          => null,
-        self::EXPIRE_BY           => null,
         self::RECEIPT             => null,
         self::DESCRIPTION         => null,
         self::NOTES               => [],
@@ -432,7 +432,7 @@ class Entity extends Base\PublicEntity
 
         if ($customerBillingAddress !== null)
         {
-            $this->setCustBillingAddId($customerBillingAddress->getId());
+            $this->setCustBillingAddrId($customerBillingAddress->getId());
         }
     }
 
@@ -441,7 +441,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
     }
 
-    public function setCustBillingAddId($customerBillingAddressId)
+    public function setCustBillingAddrId($customerBillingAddressId)
     {
         $this->setAttribute(self::CUST_BILLING_ADDR_ID, $customerBillingAddressId);
     }
@@ -509,15 +509,17 @@ class Entity extends Base\PublicEntity
     protected function getCustomerDetailsAttribute()
     {
         $customerDetails = [
-            self::CUSTOMER_NAME     => $this->attributes[self::CUSTOMER_NAME],
-            self::CUSTOMER_EMAIL    => $this->attributes[self::CUSTOMER_EMAIL],
-            self::CUSTOMER_CONTACT  => $this->attributes[self::CUSTOMER_CONTACT],
-            self::BILLING_ADDRESS   => null,
+            self::CUSTOMER_NAME            => $this->attributes[self::CUSTOMER_NAME],
+            self::CUSTOMER_EMAIL           => $this->attributes[self::CUSTOMER_EMAIL],
+            self::CUSTOMER_CONTACT         => $this->attributes[self::CUSTOMER_CONTACT],
+            // Following line is kept to avoid backward compatibility issues
+            self::CUSTOMER_ADDRESS         => null,
+            self::CUSTOMER_BILLING_ADDRESS => null,
         ];
 
         if ($this->hasCustomerBillingAddress())
         {
-            $customerDetails[self::BILLING_ADDRESS] = $this->address->toArrayPublic();
+            $customerDetails[self::CUSTOMER_BILLING_ADDRESS] = $this->address->toArrayPublic();
         }
 
         return $customerDetails;

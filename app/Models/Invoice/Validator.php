@@ -62,7 +62,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRE_BY           => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     //
@@ -96,7 +96,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
-        Entity::EXPIRE_BY           => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     protected static $createIssuedRules = [
@@ -117,7 +117,7 @@ class Validator extends Base\Validator
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
-        Entity::EXPIRE_BY           => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     protected static $editDraftRules  = [
@@ -136,7 +136,7 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
-        Entity::EXPIRE_BY           => 'sometimes|integer',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     protected static $editIssuedRules  = [
@@ -424,8 +424,10 @@ class Validator extends Base\Validator
 
         if ($lineItemsCount >= self::MAX_ALLOWED_LINE_ITEMS)
         {
-            throw new BadRequestValidationFailureException(
-                'The line items may not have more than ' . self::MAX_ALLOWED_LINE_ITEMS . ' items.');
+            $message = 'The line items may not have more than ' .
+                        self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 

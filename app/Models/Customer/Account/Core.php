@@ -93,7 +93,7 @@ class Core extends Base\Core
     {
         $addressCore = new Address\Core;
 
-        $addressKeys = [Entity::SHIPPING_ADDRESS, Entity::BILLING_ADDRESS];
+        $addressKeys = Address\Type::getValidTypes(Address\Type::CUSTOMER);
 
         foreach ($addressKeys as $addressKey)
         {
