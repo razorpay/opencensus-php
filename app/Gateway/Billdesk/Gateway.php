@@ -25,6 +25,8 @@ class Gateway extends Base\Gateway
     protected $response;
     const CHECKSUM_ATTRIBUTE = 'Checksum';
 
+    protected $accountType;
+
     protected $tpv;
 
     public function authorize(array $input)
@@ -744,7 +746,7 @@ class Gateway extends Base\Gateway
         $refundAmount = (float) ($input['refund']['amount']);
 
         // The amount should have exact two decimal places, otherwise billdesk gives error
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $refundAmount = (string) number_format($refundAmount / 100, 2, '.', '');
         $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
 
         $content = [
@@ -978,24 +980,69 @@ class Gateway extends Base\Gateway
 
     protected function getSecurityId()
     {
-        if ($this->isTPVEnabled())
+        if ((isset($this->input['merchant']) === true) and
+            ($this->input['merchant']->getId() !== '6c8G0gmswoEMh4'))
         {
-            return $this->config['live_access_code_sec'];
+            if ($this->isTPVEnabled())
+            {
+                return $this->config['live_access_code_sec'];
+            }
+
+            return $this->config['live_access_code'];
         }
 
-        return $this->config['live_access_code'];
+        $accountType = $this->accountType;
+
+        switch ($accountType)
+        {
+            case AccountType::PRIMARY:
+                $accessCode = $this->config['live_access_code'];
+                break;
+
+            case AccountType::SECONDARY:
+                $accessCode = $this->config['live_access_code_sec'];
+                break;
+
+            default:
+                $accessCode = $this->config['live_access_code'];
+                break;
+        }
+
+        return $accessCode;
     }
 
     public function getSecret()
     {
-        if ($this->isTPVEnabled())
+        if ((isset($this->input['merchant']) === true) and
+            ($this->input['merchant']->getId() !== '6c8G0gmswoEMh4'))
         {
-            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+            if ($this->isTPVEnabled())
+            {
+                $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
 
-            return $this->config['live_hash_secret_sec'];
+                return $this->config['live_hash_secret_sec'];
+            }
+            return $this->config['live_hash_secret'];
         }
 
-        return $this->config['live_hash_secret'];
+        $accountType = $this->accountType;
+
+        switch ($accountType)
+        {
+            case AccountType::PRIMARY:
+                $secret = $this->config['live_hash_secret'];
+                break;
+
+            case AccountType::SECONDARY:
+                $secret = $this->config['live_hash_secret_sec'];
+                break;
+
+            default:
+                $secret = $this->config['live_hash_secret'];
+                break;
+        }
+
+        return $secret;
     }
 
     protected function isTPVEnabled()
@@ -1024,6 +1071,27 @@ class Gateway extends Base\Gateway
     protected function setTpv(Entity $gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function setTerminal($terminal)
+    {
+        parent::setTerminal($terminal);
+
+        $this->setAccountType($terminal);
+    }
+
+    protected function setAccountType($terminal)
+    {
+        $gatewayMerchantId = $terminal['gateway_merchant_id'];
+
+        $prefix = substr($gatewayMerchantId, 0, 2);
+
+        $this->accountType = AccountType::PRIMARY;
+
+        if (isset(AccountType::ACCOUNT_MAP[$prefix]) === true)
+        {
+            $this->accountType = AccountType::ACCOUNT_MAP[$prefix];
+        }
     }
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)
