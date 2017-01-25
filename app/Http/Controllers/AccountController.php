@@ -42,15 +42,6 @@ class AccountController extends Controller
     	return ApiResponse::json($account);
     }
 
-    public function postAccountFiles(string $id)
-    {
-        $input = Request::all();
-
-    	$response = $this->service->uploadFiles($id, $input);
-
-        return ApiResponse::json($response);
-    }
-
     public function patchAccount(string $id)
     {
     	$input = Request::all();
@@ -60,8 +51,21 @@ class AccountController extends Controller
     	return ApiResponse::json($account);
     }
 
-    public function patchAccountFiles(string $id)
+    public function postAccountFiles(string $id)
     {
-    	;
+    	$input = Request::all();
+
+        $response = $this->service->uploadFiles($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function patchAccountDetails(string $id)
+    {
+        $input = Request::all();
+
+        $response = $this->service->updateDetails($id, $input);
+
+        return ApiResponse::json($response);
     }
 }

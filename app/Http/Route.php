@@ -499,7 +499,7 @@ final class Route
         'account_create'                          => ['post',     'accounts',                                       'AccountController@postAccount'                                     ],
         'account_create_files'                    => ['post',     'accounts/{id}/files',                            'AccountController@postAccountFiles'                                ],
         'account_edit'                            => ['patch',    'accounts/{id}',                                  'AccountController@patchAccount'                                    ],
-        'account_edit_files'                      => ['patch',    'accounts/{id}/files',                            'AccountController@patchAccountFiles'                               ],
+        'account_edit_details'                    => ['patch',    'accounts/{id}/details',                          'AccountController@patchAccountDetails'                             ],
     );
 
     public static $public = array(
@@ -650,7 +650,7 @@ final class Route
         'account_create',
         'account_create_files',
         'account_edit',
-        'account_edit_files',
+        'account_edit_details',
     );
 
     public static $internal = array(

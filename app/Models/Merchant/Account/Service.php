@@ -36,6 +36,17 @@ class Service extends Merchant\Service
         return $merchant->toArrayPublic();
     }
 
+    public function edit(string $id, array $input)
+    {
+        $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $this->setSettlementScheduleIdIfNeeded($account, $input);
+
+        $account = $this->core->edit($account, $input);
+
+        return $account->toArrayPublic();
+    }
+
     public function uploadFiles(string $id, $input)
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
@@ -56,14 +67,12 @@ class Service extends Merchant\Service
         ];
     }
 
-    public function edit(string $id, array $input)
+    public function updateDetails(string $id, array $input)
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $this->setSettlementScheduleIdIfNeeded($account, $input);
+        $accountDetails = $this->core->updateDetails($account, $input);
 
-        $account = $this->core->edit($account, $input);
-
-        return $account->toArrayPublic();
+        return $accountDetails;
     }
 }

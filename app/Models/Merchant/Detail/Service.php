@@ -15,6 +15,12 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 
 class Service extends Base\Service
 {
+    // Temp
+    public function setMerchant($merchant)
+    {
+        $this->merchant = $merchant;
+    }
+
     public function fetchMerchantDetails()
     {
         $merchantDetails = $this->getMerchantDetails($this->merchant);
@@ -114,7 +120,7 @@ class Service extends Base\Service
 
         foreach ($input as $key => $value)
         {
-            $params[$key] = $this->processFile($key, $value, $this->merchant, $merchantDetails);
+            $params[$key] = $this->processFileCreation($key, $value, $this->merchant, $merchantDetails);
         }
 
         $merchantDetails->fill($params);
@@ -191,7 +197,7 @@ class Service extends Base\Service
      * @param  Entity       $merchant
      * @param  Entity       $merchantDetails
      */
-    public function processFile(string $type, $content, $merchant, Entity $merchantDetails) : string
+    public function processFileCreation(string $type, $value, $merchant, Entity $merchantDetails) : string
     {
         $fileName = 'api/' . $merchant->getId() .'/' .$key;
 
@@ -263,7 +269,7 @@ class Service extends Base\Service
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        if ($this->merchant instanceof Merchant\Account\Entity)
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
         }

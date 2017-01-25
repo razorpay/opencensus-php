@@ -44,7 +44,7 @@ class Core extends Merchant\Core
             $type = FileType::getFieldForType($type);
 
             $ufhId = (new Merchant\Detail\Service)
-                        ->processFile($type, $content, $account, $accountDetails);
+                        ->processFileCreation($type, $content, $account, $accountDetails);
 
             $params[$type] = $ufhId;
         }
@@ -52,5 +52,16 @@ class Core extends Merchant\Core
         $accountDetails->fill($params);
 
         $this->repo->saveOrFail($accountDetails);
+    }
+
+    public function updateDetails(Entity $account, array $input)
+    {
+        $detailService = new Merchant\Detail\Service;
+
+        $detailService->setMerchant($account);
+
+        $accountDetails = $detailService->saveMerchantDetails($input);
+
+        return $accountDetails;
     }
 }

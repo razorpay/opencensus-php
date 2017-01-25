@@ -11,13 +11,13 @@ class Validator extends Merchant\Validator
         Entity::EMAIL                       => 'required|email',
     ];
 
-    protected static $uploadRules = [
-        FileType::BUSINESS_PROOF            => 'required|file',
-        FileType::BUSINESS_PAN              => 'required|file',
-        FileType::BUSINESS_OPERATION_PROOF  => 'required|file',
-        FileType::ADDRESS_PROOF             => 'required|file',
-        FileType::PROMOTER_PROOF            => 'required|file',
-        FileType::PROMOTER_PAN              => 'required|file',
-        FileType::PROMOTER_ADDRESS          => 'required|file',
+    protected static $filesRules = [
+        FileType::BUSINESS_PROOF            => 'sometimes|file',
+        FileType::BUSINESS_PAN              => 'sometimes|file',
+        FileType::BUSINESS_OPERATION_PROOF  => 'sometimes|file',
+        FileType::ADDRESS_PROOF             => 'sometimes|file',
+        FileType::PROMOTER_PROOF            => 'sometimes|file',
+        FileType::PROMOTER_PAN              => 'sometimes|file',
+        FileType::PROMOTER_ADDRESS          => 'sometimes|file',
     ];
 }
