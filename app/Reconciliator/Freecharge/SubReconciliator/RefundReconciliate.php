@@ -16,6 +16,9 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
+    // Refund id in MIS file is in the format
+    // <merchant_id>_<refund_id>_<some nummber>. So we need to take the element at
+    // index 1 after converting to an array.
     const REFUND_ID_INDEX = 1;
 
     protected function getRefundId(array $row)

@@ -179,6 +179,7 @@ class Converter
         $columnHeadersCount = count($columnHeaders);
 
         $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
+        $linesToSkipFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
         $lineCount = 0;
 
         $handle = fopen($filePath, 'r');
@@ -199,8 +200,7 @@ class Converter
                     break;
                 }
 
-                if (($linesToSkip[Base\Reconciliate::LINES_FROM_TOP] > 0) and
-                        ($lineCount < $linesToSkip[Base\Reconciliate::LINES_FROM_TOP]))
+                if ($lineCount < $linesToSkipFromTop)
                 {
                     continue;
                 }
@@ -240,14 +240,14 @@ class Converter
     {
         $totalLinesToRead = null;
 
-        if ($linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] > 0)
+        $linesFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
+        $linesFromBottom = $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] ?? 0;
+
+        if ($linesFromBottom > 0)
         {
             // Loads the file into memory to get the number of lines to read
             $fileContent = file($filePath);
             $fileLinesCount = count($fileContent);
-
-            $linesFromTop = $linesToSkip[Base\Reconciliate::LINES_FROM_TOP] ?? 0;
-            $linesFromBottom = $linesToSkip[Base\Reconciliate::LINES_FROM_BOTTOM] ?? 0;
 
             $totalLinesToRead = $fileLinesCount -
                                 ($linesFromTop + $linesFromBottom);
