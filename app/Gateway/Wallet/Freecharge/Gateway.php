@@ -300,7 +300,7 @@ class Gateway extends Base\Gateway
 
             $this->handleRequestFailed($response);
         }
-        catch (Exception\BaseException $ex)
+        catch (Exception\GatewayErrorException $ex)
         {
             // if we are retrying the payment and it failed again,
             // do not handle the exception, raise it
