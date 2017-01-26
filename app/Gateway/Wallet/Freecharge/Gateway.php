@@ -15,6 +15,7 @@ use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Trace\TraceCode;
 use View;
@@ -294,6 +295,44 @@ class Gateway extends Base\Gateway
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
         $this->createGatewayRefundEntity($attributes);
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $gatewayRefundEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Processor\Wallet::FREECHARGE);
+
+        if ($gatewayRefundEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $gatewayRefundEntity = $gatewayRefundEntities->first();
+
+        $gatewayRefundEntityPaymentId = $gatewayRefundEntity->getPaymentId();
+        $gatewayRefundEntityRefundAmount = $gatewayRefundEntity->getAmount();
+        $gatewayRefundEntityStatusCode = $gatewayRefundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $gatewayRefundEntityPaymentId,
+                'gateway_refund_amount' => $gatewayRefundEntityRefundAmount,
+                'status_code'           => $gatewayRefundEntityStatusCode,
+            ]);
+
+        if (($gatewayRefundEntityPaymentId !== $paymentId) or
+            ($gatewayRefundEntityRefundAmount !== $refundAmount) or
+            ($gatewayRefundEntityStatusCode !== Status::REFUND_SUCCESS))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function verify(array $input)

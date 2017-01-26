@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Freecharge;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -25,8 +26,8 @@ class Reconciliate extends Base\Reconciliate
     public function getNumLinesToSkip()
     {
         return [
-            self::LINES_FROM_TOP => 0,
-            self::LINES_FROM_BOTTOM => 3
+            FileProcessor::LINES_FROM_TOP    => 0,
+            FileProcessor::LINES_FROM_BOTTOM => 3
         ];
     }
 }
