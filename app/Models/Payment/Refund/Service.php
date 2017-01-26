@@ -361,16 +361,19 @@ class Service extends Base\Service
     public function createGatewayRefundRecords($gateway)
     {
         // Currently, we are running this for billdesk and freecharge refund timeouts only.
-        if (in_array($gateway, Payment\Gateway::REFUND_VERIFY_GATEWAYS, true) === false)
+        if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
         {
-            throw Exception\LogicException(
-                'Gateway is not supported for refund verify process.');
+            throw new Exception\LogicException(
+                'Cannot create a refund record on the gateway entity for the given gateway',
+                null,
+                [
+                    'gateway' => $gateway
+                ]);
         }
 
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway(
-            $gateway, $createdAfter);
+        $refunds = $this->repo->refund->fetchMissingRefundsOfGateway($gateway, $createdAfter);
 
         $data = [];
 

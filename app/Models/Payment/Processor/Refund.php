@@ -408,7 +408,7 @@ trait Refund
             // provides us this feature, currently.
             //
 
-            if (in_array($gateway, Payment\Gateway::REFUND_VERIFY_GATEWAYS, true) === false)
+            if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
             {
                 throw $ex;
             }

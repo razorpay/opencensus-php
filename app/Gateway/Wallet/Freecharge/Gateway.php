@@ -140,9 +140,17 @@ class Gateway extends Base\Gateway
         return $this->getOtpSubmitRequest($input);
     }
 
-    /*
+    /**
+     * @param array $input
+     *
      * Freecharge gives us an otpId and a separate API for resending OTP.
      * If otp count for the payment is greater than zero. We use otpResend instead of otpGenerate
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
      */
     public function otpResend(array $input)
     {
@@ -322,8 +330,7 @@ class Gateway extends Base\Gateway
         $refundId = $input['refund']['id'];
         $paymentId = $input['payment']['id'];
 
-        $gatewayRefundEntity = $this->repo->findByRefundId(
-            $refundId);
+        $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
 
         $applicable = false;
         $success = null;
@@ -400,26 +407,23 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::VERIFY);
 
-        $content = [
+        $requestContent = [
             RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
             RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
         ];
 
-        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+        $requestContent[RequestFields::CHECKSUM] = $this->getHashOfArray($requestContent);
 
-        $request = $this->getCustomRequestArray($content, 'get');
+        $request = $this->getCustomRequestArray($requestContent, 'get');
 
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->jsonToArray($response->body);
 
-        $this->action($input, Action::REFUND);
-
         // If transaction is not found, treat it as refund failed.
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
-            (ResponseCode::isTransactionAbsent(
-                $response[ResponseFields::ERROR_CODE]) === true))
+            (ResponseCode::isTransactionAbsent($response[ResponseFields::ERROR_CODE]) === true))
         {
             return [false, []];
         }
@@ -481,16 +485,16 @@ class Gateway extends Base\Gateway
 
     protected function getStringToHash($content, $glue = '')
     {
-        // If JSON_UNESCAPED_SLASHES not used, wrong checksum will be created due to
-        // escaped slashes.
+        // If JSON_UNESCAPED_SLASHES not used, wrong checksum
+        // will be created due to escaped slashes.
         return json_encode($content, JSON_UNESCAPED_SLASHES) . $this->getSecret();
     }
 
     protected function getCustomRequestArray($content = [], $method = 'post')
     {
-        $encoded_content = json_encode($content);
+        $encodedContent = json_encode($content);
 
-        $request = $this->getStandardRequestArray($encoded_content, $method);
+        $request = $this->getStandardRequestArray($encodedContent, $method);
 
         $request['headers'] = [
             'Content-Type' => 'application/json',

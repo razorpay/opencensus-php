@@ -54,7 +54,7 @@ class Gateway
         self::SHARP,
     );
 
-    const REFUND_VERIFY_GATEWAYS = [
+    const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
         self::BILLDESK,
     ];
