@@ -17,7 +17,7 @@ class PublicController extends Controller
         return View::make('public.account', $data);
     }
 
-    public function getCallbackUrlWithParams()
+    public function postCallbackUrlWithParams()
     {
         $allParams = Request::all();
 
