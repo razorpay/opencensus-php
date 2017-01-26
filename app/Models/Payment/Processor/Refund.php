@@ -425,37 +425,6 @@ trait Refund
                 TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
                 ['payment_id' => $this->payment->getId()]);
         }
-        catch (Exception\GatewayErrorException $ex)
-        {
-            $allowedGateways = [
-                Payment\Gateway::WALLET_FREECHARGE,
-            ];
-
-            if (in_array($gateway, $allowedGateways, true) === false)
-            {
-                throw $ex;
-            }
-
-            $data = $ex->getError()->toArray();
-
-            $skippedRefund = $this->callGatewayFunction(
-                'verify_if_skip_refund', $data);
-
-            if ($skippedRefund === false)
-            {
-                throw $ex;
-            }
-
-            $this->trace->traceException($ex);
-
-            // We just ignore the exception and mark it as refunded on the api side.
-            // Later we would run verify for these refunds and
-            // create appropriate entries on the gateway side.
-
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                ['payment_id' => $this->payment->getId()]);
-        }
         catch (Exception\BaseException $e)
         {
             $this->app['segment']->trackPayment(
