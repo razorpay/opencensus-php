@@ -70,7 +70,7 @@ class ResponseCode extends Base\ResponseCode
         'EU13'      => 'OTP Expired',
     ];
 
-    public static function isFatalError(string $errorCode)
+    public static function isStatusUnknownError(string $errorCode)
     {
         return $errorCode === 'E018';
     }

@@ -26,8 +26,6 @@ class Action
     const CREATE_REFUND_RECORD  = 'create_refund_record';
     const ALREADY_REFUNDED      = 'already_refunded';
 
-    const VERIFY_IF_MISSING_REFUND = 'verify_if_missing_refund';
-
     protected $merchant;
 
     protected $core;

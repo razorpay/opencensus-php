@@ -17,6 +17,7 @@ use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Models\Customer\Token;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\TwoFactorAuth;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use View;
 
@@ -282,7 +283,7 @@ class Gateway extends Base\Gateway
         return $this->getTopupWalletRedirectRequestArray($input);
     }
 
-    public function refund(array $input, $retry=false)
+    public function refund(array $input, bool $retry = false)
     {
         parent::refund($input);
 
@@ -302,21 +303,40 @@ class Gateway extends Base\Gateway
         }
         catch (Exception\GatewayErrorException $ex)
         {
-            // if we are retrying the payment and it failed again,
-            // do not handle the exception, raise it
-            if (($this->verifyIfMissingRefund($ex) === false) or
-                ($retry === true))
+            //
+            // Irrespective of what the exception is, always throw
+            // it, when this is being called in a retry refund flow.
+            //
+            if ($retry === true)
             {
                 throw $ex;
             }
 
-            $this->trace->traceException($ex);
+            //
+            // If the error thrown by the gateway is
+            // `unknown status` (E018 - Fatal Error),
+            // we don't throw an exception.
+            // In every other case, we throw the exception.
+            //
+            if ($this->isStatusUnknown($ex) === false)
+            {
+                throw $ex;
+            }
 
-            $this->trace->info(
-                TraceCode::PAYMENT_REFUND_TIMEOUT_SKIP,
-                ['payment_id' => $input['payment']['id']]);
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'input' => $input
+                ]);
 
-            // return without creating gateway refund entity as refund failed
+            //
+            // Return without creating gateway refund entity as refund failed.
+            // We would create the refund for this later, via cron `create_refund_record`.
+            // For now, we would be marking this as successful on the API refund entity.
+            //
             return;
         }
 
@@ -350,7 +370,6 @@ class Gateway extends Base\Gateway
     public function createRefundRecord(array $input)
     {
         $refundId = $input['refund']['id'];
-        $paymentId = $input['payment']['id'];
 
         $gatewayRefundEntity = $this->repo->findByRefundId($refundId);
 
@@ -365,53 +384,13 @@ class Gateway extends Base\Gateway
 
             if ($refunded === true)
             {
-                $response[ResponseFields::REFUND_TXN_ID] = $response[ResponseFields::TXN_ID];
-
-                $attributes = $this->getRefundAttributesFromRefundResponse($input, $response);
-
-                // We did not receive the refund response on first attempt
-                $attributes['received'] = false;
-
-                $this->createGatewayRefundEntity($attributes, Action::REFUND);
-
                 $success = true;
 
-                $this->trace->info(
-                    TraceCode::GATEWAY_REFUND_RECORD_CREATED,
-                    [
-                        'payment_id' => $paymentId,
-                        'refund_id'  => $refundId,
-                    ]);
+                $this->createMissingGatewayRefundEntity($response, $input);
             }
             else
             {
-                $this->trace->error(
-                    TraceCode::GATEWAY_REFUND_ABSENT,
-                    [
-                        'refund_id'         => $refundId,
-                        'payment_id'        => $paymentId,
-                        'verify_response'   => $response,
-                    ]);
-
-                // It should have been refunded on the gateway side also. But, verify returned
-                // false in the verify response for refund.
-                try
-                {
-                    $this->refund($input, true);
-                    $success = true;
-                }
-                catch (Exception\BaseException $ex)
-                {
-                    $success =  false;
-
-                    $this->trace->error(
-                        TraceCode::GATEWAY_REFUND_ERROR,
-                        [
-                            'refund_id'         => $refundId,
-                            'payment_id'        => $paymentId,
-                            'verify_response'   => $response,
-                        ]);
-                }
+                $success = $this->callRefundForMissingGatewayRefundEntity($response, $input);
             }
         }
 
@@ -423,7 +402,71 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    public function verifyIfMissingRefund($ex)
+    protected function callRefundForMissingGatewayRefundEntity(array $response, array $input)
+    {
+        $refundId = $input['refund']['id'];
+        $paymentId = $input['payment']['id'];
+
+        $this->trace->error(
+            TraceCode::GATEWAY_ABSENT_REFUND_FAILED,
+            [
+                'refund_id'         => $refundId,
+                'payment_id'        => $paymentId,
+                'verify_response'   => $response,
+            ]);
+
+        //
+        // It should have been refunded on the gateway side also. But, verify returned
+        // false in the verify response for refund.
+        // Hence, going to try and refund this now.
+        //
+        try
+        {
+            $this->refund($input, true);
+
+            $success = true;
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
+                TraceCode::GATEWAY_ABSENT_REFUND_RETRY_FAILED,
+                [
+                    'refund_id'         => $refundId,
+                    'payment_id'        => $paymentId,
+                    'verify_response'   => $response,
+                ]);
+
+            $success = false;
+        }
+
+        return $success;
+    }
+
+    protected function createMissingGatewayRefundEntity(array $response, array $input)
+    {
+        $refundId = $input['refund']['id'];
+        $paymentId = $input['payment']['id'];
+
+        $response[ResponseFields::REFUND_TXN_ID] = $response[ResponseFields::TXN_ID];
+
+        $attributes = $this->getRefundAttributesFromRefundResponse($input, $response);
+
+        // We did not receive the refund response on first attempt
+        $attributes['received'] = false;
+
+        $this->createGatewayRefundEntity($attributes, Action::REFUND);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RECORD_CREATED,
+            [
+                'payment_id' => $paymentId,
+                'refund_id'  => $refundId,
+            ]);
+    }
+
+    protected function isStatusUnknown($ex)
     {
         $error = $ex->getError()->toArray();
 
@@ -431,7 +474,7 @@ class Gateway extends Base\Gateway
 
         // Handle the unknown error (fatal errors) and mark it as skip refund
         // Verify it later
-        return (ResponseCode::isFatalError($errorCode) === true);
+        return (ResponseCode::isStatusUnknownError($errorCode) === true);
     }
 
     protected function verifyIfRefunded(array $input)
