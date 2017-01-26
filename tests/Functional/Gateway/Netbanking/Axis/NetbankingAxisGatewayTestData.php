@@ -31,6 +31,28 @@ return [
         'terminal_id' => '100NbAxisTrmnl',
     ],
 
+    'testTpvPayment' => [
+        'request' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'bank'           => 'UTIB',
+                'account_number' => '0040304030403040',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+            ],
+        ],
+    ],
+
     'testPaymentNetbankingEntity' => [
         'action' => 'authorize',
         'amount' => 500,

@@ -32,7 +32,8 @@ class Netbanking
 
     protected static $selfTPV = [
         IFSC::HDFC,
-        IFSC::KKBK
+        IFSC::KKBK,
+        IFSC::UTIB,
     ];
 
     protected static $paytm = array(
