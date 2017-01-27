@@ -19,8 +19,11 @@ class DailyFiles extends Base\DailyFiles
         $amount['total'] = $claimAmount - $refundAmount;
 
         $count = [];
-        $count['claims'] = count(file($claimsFile))-1;
-        $count['refunds'] = count(file($refundsFile))-1;
+
+        $count['claims'] = empty($claimsFile) ? 0 : count(file($claimsFile))-1;
+
+        $count['refunds'] = empty($refundsFile) ? 0 : count(file($refundsFile))-1;
+
         $count['total'] = $count['claims'] + $count['refunds'];
 
         // Send the mail only when there is at least 1 claim or refund
