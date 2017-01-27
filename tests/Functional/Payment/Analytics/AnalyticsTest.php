@@ -134,8 +134,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testHttpRequestDataForNonOtpBasedPayment');
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForNonOtpBasedPayment');
     }
 
     public function testHttpRequestDataForS2sPayments()
@@ -173,8 +172,7 @@ class AnalyticsTest extends TestCase
 
         // @codingStandardsIgnoreStart
         $requestServer = [
-            'HTTP_USER_AGENT' =>
-                'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
             'HTTP_REFERER'    => 'https://pay.com/demo'
         ];
         // @codingStandardsIgnoreEnd
@@ -223,8 +221,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testDataForUserAgentAnomaly');
+        $this->assertTestResponse($paymentAnalytic, 'testDataForUserAgentAnomaly');
     }
 
     public function testHttpRequestDataForInvalidData()
@@ -245,8 +242,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testHttpRequestDataForInvalidData');
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
     }
 
     public function testOs1()
@@ -267,13 +263,13 @@ class AnalyticsTest extends TestCase
             $paymentAnalytic[AnalyticsEntity::OS]);
     }
 
-    public function testMozilla()
+    public function testOs2()
     {
         $payment = $this->getDefaultPaymentArray();
 
         // @codingStandardsIgnoreStart
         $requestServer = [
-            'HTTP_USER_AGENT' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_2 like Mac OS X) AppleWebKit/602.3.12 (KHTML, like Gecko) Mobile/14C92',
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0',
         ];
         // @codingStandardsIgnoreEnd
 
@@ -281,8 +277,27 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertEquals(Metadata::FIREFOX,
-            $paymentAnalytic[AnalyticsEntity::BROWSER]);
+        $this->assertEquals(Metadata::UBUNTU,
+            $paymentAnalytic[AnalyticsEntity::OS]);
+    }
+
+    public function testMozilla()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        // @codingStandardsIgnoreStart
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_2 like Mac OS X) AppleWebKit/602.3.12 (KHTML, like Gecko) Firefox/46.0',
+        ];
+        // @codingStandardsIgnoreEnd
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals(Metadata::FIREFOX, $paymentAnalytic[AnalyticsEntity::BROWSER]);
+
+        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::PLATFORM_VERSION]);
     }
 
     public function testHttpRefer1()
@@ -321,7 +336,6 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertEquals('https://hello.com',
-            $paymentAnalytic[AnalyticsEntity::REFERER]);
+        $this->assertEquals('https://hello.com', $paymentAnalytic[AnalyticsEntity::REFERER]);
     }
 }
