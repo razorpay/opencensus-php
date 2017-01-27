@@ -110,7 +110,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'refund');
 
         $response = [
-            ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
+            ResponseFields::STATUS                 => Freecharge\Status::TRANSACTION_INITIATED,
             ResponseFields::REFUND_TXN_ID          => random_integer(5),
             ResponseFields::REFUND_MERCHANT_TXN_ID => uniqid(),
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
