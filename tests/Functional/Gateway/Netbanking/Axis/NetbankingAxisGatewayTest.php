@@ -46,6 +46,42 @@ class NetbankingAxisGatewayTest extends TestCase
             FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], '100NbAxisTpvTl');
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testTpvVerifyPayment()
+    {
+        $this->testTpvPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
+
+        $content = $this->verifyPayment($payment['id']);
+
+        assert($content['payment']['verified'] === 1);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
@@ -216,13 +252,13 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function checkRefundTextData($data)
     {
-        $this->assertTrue(file_exists($data['netbanking_axis'][0]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['refunds']));
 
-        $this->assertTrue(file_exists($data['netbanking_axis'][1]));
+        $this->assertTrue(file_exists($data['netbanking_axis']['claims']));
 
-        $refundsFileContents = file($data['netbanking_axis'][0]);
+        $refundsFileContents = file($data['netbanking_axis']['refunds']);
 
-        $claimsFileContents = file($data['netbanking_axis'][1]);
+        $claimsFileContents = file($data['netbanking_axis']['claims']);
 
         // 2 refunds + 1 initial line
         assert(count($refundsFileContents) === 3);

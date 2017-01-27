@@ -208,6 +208,16 @@ class Entity extends Base\PublicEntity
         self::BUSINESS_INTERNATIONAL => 'bool',
     ];
 
+    const UPLOADED_FIELDS = [
+        self::PROMOTER_PAN_URL,
+        self::BUSINESS_PAN_URL,
+        self::ADDRESS_PROOF_URL,
+        self::PROMOTER_PROOF_URL,
+        self::BUSINESS_PROOF_URL,
+        self::PROMOTER_ADDRESS_URL,
+        self::BUSINESS_OPERATION_PROOF_URL,
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity', self::MERCHANT_ID, 'id');
