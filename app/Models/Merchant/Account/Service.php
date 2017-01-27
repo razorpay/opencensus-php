@@ -51,16 +51,7 @@ class Service extends Merchant\Service
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
-        try
-        {
-            $this->core->uploadFiles($account, $input);
-        }
-        catch (\Throwable $ex)
-        {
-            // Trace
-
-            throw $ex;
-        }
+        $this->core->uploadFiles($account, $input);
 
         return [
             'success'  => true
