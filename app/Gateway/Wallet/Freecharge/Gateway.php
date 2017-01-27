@@ -395,7 +395,8 @@ class Gateway extends Base\Gateway
                 // processed, The refund is then neither successful nor
                 // failed. This refund should be handled in next cron
                 //
-                if ($response[ResponseFields::STATUS] === Status::TRANSACTION_INITIATED)
+                if ((isset($response[ResponseFields::STATUS]) === true) and
+                    ($response[ResponseFields::STATUS] === Status::TRANSACTION_INITIATED))
                 {
                     $success = false;
                 }
