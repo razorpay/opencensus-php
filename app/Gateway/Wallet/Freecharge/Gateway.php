@@ -325,9 +325,12 @@ class Gateway extends Base\Gateway
                 'status_code'           => $gatewayRefundEntityStatusCode,
             ]);
 
+        $gatewayRefundSuccess = (($gatewayRefundEntityStatusCode === Status::REFUND_INITIATED) or
+                                    ($gatewayRefundEntityStatusCode === Status::REFUND_SUCCESS));
+
         if (($gatewayRefundEntityPaymentId !== $paymentId) or
             ($gatewayRefundEntityRefundAmount !== $refundAmount) or
-            ($gatewayRefundEntityStatusCode !== Status::REFUND_SUCCESS))
+            ($gatewayRefundSuccess === false))
         {
             return false;
         }
