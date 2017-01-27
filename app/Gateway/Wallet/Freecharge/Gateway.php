@@ -390,7 +390,19 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                $success = $this->callRefundForMissingGatewayRefundEntity($response, $input);
+                //
+                // The refund of the payment has been initiated but not
+                // processed, The refund is then neither successful nor
+                // failed. This refund should be handled in next cron
+                //
+                if ($response[ResponseFields::STATUS] === Status::TRANSACTION_INITIATED)
+                {
+                    $success = false;
+                }
+                else
+                {
+                    $success = $this->callRefundForMissingGatewayRefundEntity($response, $input);
+                }
             }
         }
 
@@ -491,9 +503,26 @@ class Gateway extends Base\Gateway
 
         $request = $this->getCustomRequestArray($requestContent, 'get');
 
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
         $response = $this->sendGatewayRequest($request);
 
         $response = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'content'    => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
 
         // If transaction is not found, treat it as refund failed.
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
