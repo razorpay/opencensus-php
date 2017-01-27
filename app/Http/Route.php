@@ -329,7 +329,7 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
-        'offer_update'                            => ['put',      'offers/{id}',                                    'OfferController@updateOffer'                                       ],
+        'offer_update'                            => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
@@ -540,6 +540,8 @@ final class Route
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
+        'offer_create',
+        'offer_update'
     );
 
     public static $internal = array(
@@ -697,8 +699,6 @@ final class Route
         'merchant_activation_update',
         'admin_edit_app_auth',
         'offers_update_merchants',
-        'offer_create',
-        'offer_update',
         'offer_delete',
         'currency_update_rates',
         'currency_fetch_rates',

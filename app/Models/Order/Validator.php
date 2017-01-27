@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         Entity::METHOD          =>  'sometimes|in:netbanking',
         Entity::ACCOUNT_NUMBER  =>  'sometimes|string|max:50|min:5',
         Entity::BANK            =>  'sometimes',
+        Entity::OFFER_ID        =>  'sometimes'
     );
 
     public function validateOrderNotPaid($order)

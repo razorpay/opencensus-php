@@ -57,6 +57,8 @@ trait Authorize
 
         $this->runPaymentInputValidations($payment, $input);
 
+        $this->validateOfferIfApplicable($payment);
+
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
         return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
@@ -459,6 +461,27 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
+    }
+
+    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    {
+        $order = $payment->order;
+
+        // Not applicable if order is not present
+        if ($order === null)
+        {
+            return;
+        }
+
+        $offerApplied = $order->offer;
+
+        // Not applicable if order has no offer
+        if ($offerApplied === null)
+        {
+            return;
+        }
+
+        $offerApplied->checkOfferCriteriaSatisfied($payment);
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)

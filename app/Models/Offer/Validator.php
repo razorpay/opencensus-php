@@ -18,11 +18,12 @@ class Validator extends Base\Validator
     const OFFER_PERIOD                = 'offer_period';
 
     protected static $createRules = [
-        Entity::NAME                      => 'required|alpha_space_num|max:25',
+        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
         Entity::PAYMENT_METHOD            => 'required|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE       => 'required_if:payment_method,card|in:debit,credit',
+        Entity::PAYMENT_METHOD_TYPE       => 'sometimes|in:debit,credit',
         ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes|alpha',
+        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
+        Entity::IINS                      => 'sometimes_without_all:payment_network,issuer|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
         Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
@@ -41,7 +42,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD            => 'sometimes|alpha|custom',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
         ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes',
+        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
+        Entity::IINS                      => 'sometimes_without_all:payment_network,issuer|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
         Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',

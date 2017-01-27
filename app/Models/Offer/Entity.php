@@ -6,14 +6,15 @@ use Carbon\Carbon;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Order;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                        = 'id';
     const NAME                      = 'name';
     const MERCHANT_ID               = 'merchant_id';
     const PAYMENT_METHOD            = 'payment_method';
     const PAYMENT_METHOD_TYPE       = 'payment_method_type';
+    const IINS                      = 'iins';
     const PAYMENT_NETWORK           = 'payment_network';
     const ISSUER                    = 'issuer';
     const ACTIVE                    = 'active';
@@ -29,7 +30,11 @@ class Entity extends Base\PublicEntity
     const CUSTOM_SHORT_DISPLAY_TEXT = 'custom_short_display_text';
     const CUSTOM_LONG_DISPLAY_TEXT  = 'custom_long_display_text';
 
-    protected $entity             = 'offer';
+    protected $entity      = 'offer';
+
+    protected static $sign = 'offer';
+
+    protected $payment;
 
     protected $generateIdOnCreate = true;
 
@@ -37,6 +42,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
+        self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
         self::PERCENT_RATE,
@@ -57,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
+        self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
         self::PERCENT_RATE,
@@ -77,6 +84,7 @@ class Entity extends Base\PublicEntity
         self::NAME,
         self::PAYMENT_METHOD,
         self::PAYMENT_METHOD_TYPE,
+        self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
         self::PERCENT_RATE,
@@ -100,20 +108,14 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $publicSetters = [
-        Entity::CUSTOM_LONG_DISPLAY_TEXT,
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT
+        self::ID,
+        self::CUSTOM_LONG_DISPLAY_TEXT,
+        self::CUSTOM_SHORT_DISPLAY_TEXT
     ];
 
     protected $casts = [
-        self::ACTIVE          => 'boolean',
-        self::PERCENT_RATE    => 'integer',
-        self::MIN_AMOUNT      => 'integer',
-        self::MAX_CASHBACK    => 'integer',
-        self::FLAT_CASHBACK   => 'integer',
-        self::PAYMENT_COUNT   => 'integer',
-        self::PROCESSING_TIME => 'integer',
-        self::STARTS_AT       => 'integer',
-        self::ENDS_AT         => 'integer'
+        self::IINS            => 'array',
+        self::ACTIVE          => 'boolean'
     ];
 
     public function coupons()
@@ -121,9 +123,14 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Offer\Coupon\Entity', Coupon\Entity::OFFER_ID);
     }
 
-    public function merchants()
+    public function merchant()
     {
-        return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_OFFER);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function orders()
+    {
+        return $this->hasMany('RZP\Models\Order\Entity');
     }
 
     public function isActive()
@@ -186,6 +193,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ADDITIONAL_DETAILS);
     }
 
+    public function getIins()
+    {
+        return $this->getAttribute(self::IINS);
+    }
+
+    public function getStartsAt()
+    {
+        return $this->getAttribute(self::STARTS_AT);
+    }
+
+    public function getEndsAt()
+    {
+        return $this->getAttribute(self::ENDS_AT);
+    }
+
 // -----------------------Mutators begin----------------------------------------
     /**
      * Sets the custom_long_display_text value if present else generates a long
@@ -231,7 +253,7 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::PROCESSING_TIME] = strtotime($processingTime . ' day', 0);
     }
 
-// -----------------------Mutators end==----------------------------------------
+// -----------------------Mutators end------------------------------------------
 
 // -----------------------Accessors begin---------------------------------------
 
@@ -248,5 +270,123 @@ class Entity extends Base\PublicEntity
         }
 
         return $additionalDetails;
+    }
+
+// ----------------------Accessors end------------------------------------------
+
+    public function validOfferForOrder(Order\Entity $order)
+    {
+        return ($this->validOrderAmountForOffer($order) and $this->checkOfferPeriod());
+    }
+
+    protected function validOrderAmountForOffer(Order\Entity $order)
+    {
+        $orderAmount = $order->getAmount();
+
+        return ($orderAmount >= $this->getMinAmount());
+    }
+
+    public function checkOfferCriteriaSatisfied(Payment\Entity $payment)
+    {
+        $this->payment = $payment;
+
+        return $this->checkPaymentMethodCriteria() and
+                $this->checkPaymentAmount() and
+                $this->checkOfferValidityCriteria();
+    }
+
+    protected function checkPaymentMethodCriteria()
+    {
+        $method = $this->payment->getMethod();
+
+        $checkerFunction = 'check' . studly_case($method) . 'Criteria';
+
+        return $this->$checkerFunction();
+    }
+
+    protected function checkPaymentAmount()
+    {
+        $amount = $this->payment->getAmount();
+        $minAmount = $this->getMinAmount();
+
+        if ($minAmount === null)
+        {
+            return true;
+        }
+
+        return ($amount >= $minAmount);
+    }
+
+    protected function checkOfferValidityCriteria()
+    {
+        return $this->isActive() and $this->checkOfferPeriod();
+    }
+
+    protected function checkOfferPeriod()
+    {
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $startsAt = $this->getStartsAt();
+        $endsAt = $this->getEndsAt();
+
+        return (($now >= $startsAt) and ($now <= $endsAt));
+    }
+
+    protected function checkUpiCriteria()
+    {
+        return true;
+    }
+
+    protected function checkEmiCriteria()
+    {
+        return true;
+    }
+
+    protected function checkWalletCriteria()
+    {
+        $wallet = $this->payment->getWallet();
+
+        return ($wallet === $this->getPaymentNetwork());
+    }
+
+    public function checkNetbankingCriteria()
+    {
+        $bank = $this->payment->getBank();
+
+        return ($bank === $this->getPaymentNetwork());
+    }
+
+    protected function checkCardCriteria()
+    {
+        $card = $this->payment->card;
+
+        $iins = $this->getIIns();
+
+        if (empty($iins) === false)
+        {
+            return (in_array($card->getIin(), $iins, true) === true);
+        }
+
+        $cardTypeValid = $this->checkCardType($card);
+
+        $cardNetworkValid = $this->checkCardNetwork($card);
+
+        $cardIssuerValid = $this->checkCardIssuer($card);
+
+        return ($cardTypeValid and $cardNetworkValid and $cardIssuerValid);
+    }
+
+    protected function checkCardType($card)
+    {
+        return ($this->getType() === $card->getType());
+    }
+
+    protected function checkCardNetwork($card)
+    {
+        return ($this->getPaymentNetwork() === $card->getNetwork());
+    }
+
+    protected function checkCardIssuer($card)
+    {
+        return ($this->getIssuer() === $card->getIssuer());
     }
 }

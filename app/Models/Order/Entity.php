@@ -66,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
+        self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -101,6 +102,11 @@ class Entity extends Base\PublicEntity
     public function invoice()
     {
         return $this->hasOne('RZP\Models\Invoice\Entity');
+    }
+
+    public function offer()
+    {
+        return $this->belongsTo('RZP\Models\Offer\Entity');
     }
 
     /** End Related Models */

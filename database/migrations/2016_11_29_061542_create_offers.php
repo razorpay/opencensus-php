@@ -26,12 +26,14 @@ class CreateOffers extends Migration
 
             $table->char(Offer::MERCHANT_ID, Offer::ID_LENGTH);
 
-            $table->string(Offer::NAME, 25);
+            $table->string(Offer::NAME, 25)->nullable();
 
             $table->string(Offer::PAYMENT_METHOD, 10);
 
             $table->string(Offer::PAYMENT_METHOD_TYPE, 6)
                     ->nullable();
+
+            $table->text(Offer::IINS)->nullable();
 
             $table->string(Offer::PAYMENT_NETWORK, 20)
                     ->nullable();
@@ -57,7 +59,7 @@ class CreateOffers extends Migration
             $table->integer(Offer::PAYMENT_COUNT)
                     ->nullable();
 
-            $table->integer(Offer::PROCESSING_TIME);
+            $table->integer(Offer::PROCESSING_TIME)->nullable();
 
             $table->integer(Offer::STARTS_AT);
 

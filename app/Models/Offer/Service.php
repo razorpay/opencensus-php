@@ -14,7 +14,7 @@ class Service extends Base\Service
 
         $offer = (new Core)->create($input);
 
-        return $offer->toArrayAdmin();
+        return $offer->toArrayPublic();
     }
 
     public function updateOffer(string $id, array $input)

@@ -28,6 +28,20 @@ class Core extends Base\Core
 
         $order->getValidator()->validateMerchantSpecificData($order);
 
+        if (isset($input[Entity::OFFER_ID]) === true)
+        {
+            $offerId = $input[Entity::OFFER_ID];
+
+            $offer = $this->repo->offer->findByPublicIdAndMerchant($offerId, $this->merchant);
+
+            if ($offer->validOfferForOrder($order) === false)
+            {
+                throw new Exception\BadRequestException(ErrorCode::OFFER_INVALID_FOR_ORDER);
+            }
+
+            $order->offer()->associate($offer);
+        }
+
         $this->repo->saveOrFail($order);
 
         return $order;

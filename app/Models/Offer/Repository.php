@@ -16,7 +16,7 @@ class Repository extends Base\Repository
 
     protected $entity = 'offer';
 
-    protected $appFetchParamRules = [
+    protected $entityFetchParamRules = [
         Entity::PAYMENT_METHOD            => 'sometimes|alpha',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|alpha',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
@@ -48,7 +48,7 @@ class Repository extends Base\Repository
         Entity::FLAT_CASHBACK
     ];
 
-    public function fetchExistingOffers(array $input)
+    public function fetchExistingOffers(array $input, string $merchantId)
     {
         $offerFetchParams = [];
 
@@ -60,7 +60,7 @@ class Repository extends Base\Repository
             }
         }
 
-        return $this->fetch($offerFetchParams);
+        return $this->fetch($offerFetchParams, $merchantId);
     }
 
     public function fetchActiveOfferByMerchantAndMethod(Merchant\Entity $merchant, string $method)
@@ -77,22 +77,22 @@ class Repository extends Base\Repository
         return $offers;
     }
 
-    public function fetchOffersForMerchant(Merchant\Entity $merchant)
-    {
-        $offers = $this->fetchMerchantOffersQuery($merchant)
-                        ->get();
+    // public function fetchOffersForMerchant(Merchant\Entity $merchant)
+    // {
+    //     $offers = $this->fetchMerchantOffersQuery($merchant)
+    //                     ->get();
 
-        return $offers;
-    }
+    //     return $offers;
+    // }
 
-    private function fetchMerchantOffersQuery(Merchant\Entity $merchant)
-    {
-        return $this->newQuery()
-                    ->leftJoin('merchant_offer', 'offers.id', '=', 'merchant_offer.offer_id')
-                    ->where(function ($query) use ($merchant)
-                    {
-                        $query->whereNull('merchant_offer.merchant_id')
-                              ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
-                    });
-    }
+    // private function fetchMerchantOffersQuery(Merchant\Entity $merchant)
+    // {
+    //     return $this->newQuery()
+    //                 ->leftJoin('merchant_offer', 'offers.id', '=', 'merchant_offer.offer_id')
+    //                 ->where(function ($query) use ($merchant)
+    //                 {
+    //                     $query->whereNull('merchant_offer.merchant_id')
+    //                           ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
+    //                 });
+    // }
 }
