@@ -549,4 +549,61 @@ class Service extends Base\Service
 
         return $processor;
     }
+
+    public function validateGatewayRefunds(string $gateway)
+    {
+
+        $now = Carbon::now()->timestamp;
+
+        $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
+
+        $refunds = $this->repo->refund->fetchBetweenTimestampsForGateway(
+            $createdAfter, $now, $gateway);
+
+        $totalRefunds = 0;
+        $failed = 0;
+        $failedRefundData = [];
+        $successRefundData = [];
+        $success = 0;
+
+        foreach ($refunds as $refund)
+        {
+            $totalRefunds++;
+
+            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+
+            $refundData = $this->getNewProcessor($merchant)->validateGatewayRefund(
+                $gateway, $refund);
+
+            if ($refundData['success'] === true)
+            {
+                $success++;
+                $successRefundData[] = $refundData;
+            }
+            else
+            {
+                $failed++;
+                $failedRefundData[] = $refundData;
+            }
+        }
+
+        $summary = [
+            'gateway'               => $gateway,
+            'total_refunds'         => $totalRefunds,
+            'total_failed_refunds'  => $failed,
+            'total_success_refunds' => $success,
+            'failed_refunds'        => $failedRefundData,
+            'success_refunds'       => $successRefundData,
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_VALIDATE_REFUND_SUMMARY,
+            $summary);
+
+        $message = "Gateway refund records validation";
+
+        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
+    }
 }

@@ -390,6 +390,23 @@ trait Refund
         }
     }
 
+    protected function callGatewayForRefundValidation(array $data)
+    {
+        try
+        {
+            return $this->callGatewayFunction(Payment\Action::VALIDATE_REFUND, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
+            );
+
+            throw $ex;
+        }
+    }
+
     protected function refundOnGateway($data)
     {
         try
@@ -775,5 +792,21 @@ trait Refund
         $this->refund->setGatewayRefunded(true);
 
         $this->recordTransactionAndUpdatePaymentForRefund();
+    }
+
+    public function validateGatewayRefund(string $gateway, Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        return $this->callGatewayForRefundValidation($data);
     }
 }
