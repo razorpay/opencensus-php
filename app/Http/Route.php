@@ -336,7 +336,7 @@ final class Route
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
-        'gateway_validate_refund'                 => ['post',     'refunds/{gateway}/validate_record',              'RefundController@postGatewayValidateRefund'                        ],
+        'gateway_validate_refund'                 => ['post',     'refunds/{gateway}',                              'RefundController@postGatewayValidateRefund'                        ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],

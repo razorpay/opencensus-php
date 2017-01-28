@@ -400,7 +400,7 @@ trait Refund
         {
             $this->tracePaymentFailed(
                 $ex->getError(),
-                TraceCode::CREATE_GATEWAY_REFUND_RECORD_FAILED
+                TraceCode::GATEWAY_REFUND_VALIDATION_FAILED
             );
 
             throw $ex;
@@ -794,7 +794,7 @@ trait Refund
         $this->recordTransactionAndUpdatePaymentForRefund();
     }
 
-    public function validateGatewayRefund(string $gateway, Payment\Refund\Entity $refund)
+    public function validateGatewayRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 

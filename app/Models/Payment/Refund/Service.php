@@ -557,8 +557,10 @@ class Service extends Base\Service
 
         $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $refunds = $this->repo->refund->fetchBetweenTimestampsForGateway(
-            $createdAfter, $now, $gateway);
+        $refunds = $this->repo
+                        ->refund
+                        ->fetchBetweenTimestampsForGateway(
+                            $createdAfter, $now, $gateway);
 
         $totalRefunds = 0;
         $failed = 0;
@@ -572,8 +574,8 @@ class Service extends Base\Service
 
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
-            $refundData = $this->getNewProcessor($merchant)->validateGatewayRefund(
-                $gateway, $refund);
+            $refundData = $this->getNewProcessor($merchant)
+                               ->validateGatewayRefund($refund);
 
             if ($refundData['success'] === true)
             {
@@ -602,7 +604,10 @@ class Service extends Base\Service
 
         $message = "Gateway refund records validation";
 
-        $this->app['slack']->queue($message, $summary, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->app['slack']->queue(
+            $message,
+            $summary,
+            ['channel' => Config::get('slack.channels.tech_logs')]);
 
         return $summary;
     }

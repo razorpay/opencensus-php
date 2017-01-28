@@ -358,6 +358,61 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /*
+     * Validate if the refund was successfully processed on freecharge's end
+     */
+    public function validateRefund(array $input)
+    {
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->handleRequestFailure($response);
+
+        $success = null;
+
+        $wallet = $this->repo->findByRefundId($input['refund']['id']);
+
+        if ((isset($content[ResponseFields::STATUS]) === true) and
+            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
+        {
+            $success = true;
+
+            // updateGatewayPaymentEntity takes mapped attributes
+            $refundAttr = [
+                RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
+            ];
+
+
+            $this->updateGatewayPaymentEntity($wallet, $refundAttr);
+        }
+        else
+        {
+            $this->trace->info(TraceCode::GATEWAY_REFUND_FAILED,
+                [
+                    'payment_id' => $input['payment']['id'],
+                    'gateway' => $this->gateway,
+                ]);
+
+            $sucess = false;
+
+            //
+            // if the refund failed, delete the refund entity
+            // Refund Record cron will pick it up and attempt the refund again.
+            //
+            $this->repo->deleteOrFail($wallet);
+        }
+
+        $data = [
+            'success'    => $success,
+            'refund_id'  => $input['refund']['id'],
+            'payment_id' => $input['payment']['id'],
+        ];
+
+    }
+
     protected function getTokenAttributes($content)
     {
         $input = $this->input;

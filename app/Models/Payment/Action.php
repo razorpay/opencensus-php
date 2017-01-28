@@ -25,6 +25,7 @@ class Action
     const MANUAL_GATEWAY_REFUND = 'manual_gateway_refund';
     const CREATE_REFUND_RECORD  = 'create_refund_record';
     const ALREADY_REFUNDED      = 'already_refunded';
+    const VALIDATE_REFUND       = 'validate_refund';
 
     protected $merchant;
 
