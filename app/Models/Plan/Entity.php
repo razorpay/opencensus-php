@@ -73,6 +73,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PERIOD);
     }
 
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- RELATIONS ---------------------

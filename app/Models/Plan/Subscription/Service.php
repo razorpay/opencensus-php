@@ -6,6 +6,7 @@ use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Customer\Token;
 use RZP\Models\Plan;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
@@ -40,18 +41,64 @@ class Service extends Base\Service
         return $subscription->toArrayPublic();
     }
 
-    public function chargeSubscriptions()
+    public function createSubscriptionInvoices()
     {
         $subscriptionsToCharge = $this->repo->subscription->getSubscriptionsToCharge();
 
-        $queued = $failed = 0;
+        $invoicesCreated = $failed = 0;
         $failures = [];
 
         foreach ($subscriptionsToCharge as $subscription)
         {
             try
             {
-                $this->core->charge($subscription);
+                $this->core->createInvoice($subscription);
+                $invoicesCreated += 1;
+            }
+            catch (\Exception $ex)
+            {
+                $failed += 1;
+                $failures[] = $subscription->getId();
+
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
+                    TraceCode::SUBSCRIPTION_CREATE_INVOICE_FAILED,
+                    [
+                        'subscription_id' => $subscription->getId()
+                    ]);
+            }
+        }
+
+        $summary = [
+            'total' => $subscriptionsToCharge->count(),
+            'invoices_created' => $invoicesCreated,
+            'failed' => $failed,
+            'failure_subscriptions' => $failures,
+        ];
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_CREATE_INVOICE_SUMMARY,
+            $summary
+        );
+
+        return $summary;
+    }
+
+    public function chargeSubscriptions()
+    {
+        $invoicesToCharge = $this->repo->invoice->getSubscriptionInvoicesToCharge();
+
+        $queued = $failed = 0;
+        $failures = [];
+
+        foreach ($invoicesToCharge as $invoice)
+        {
+            try
+            {
+                $subscription = $invoice->subscription;
+
+                $this->core->charge($subscription, $invoice);
                 $queued += 1;
             }
             catch (\Exception $ex)
@@ -59,12 +106,12 @@ class Service extends Base\Service
                 $failed += 1;
                 $failures[] = $subscription->getId();
 
-                $this->trace->traceException($ex);
-
-                $this->trace->error(
+                $this->trace->traceException(
+                    $ex,
+                    Trace::ERROR,
                     TraceCode::SUBSCRIPTION_CHARGE_QUEUE_FAILED,
                     [
-                        'subscription_id' => $subscription->getId(),
+                        'subscription_id' => $subscription->getId()
                     ]);
             }
         }

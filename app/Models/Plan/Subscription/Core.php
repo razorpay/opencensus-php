@@ -6,6 +6,8 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\BadRequestException;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
+use RZP\Models\Invoice;
+use RZP\Models\LineItem;
 use RZP\Models\Merchant;
 use RZP\Models\Plan;
 use RZP\Models\Schedule\Run;
@@ -82,17 +84,43 @@ class Core extends Base\Core
         }
     }
 
-    public function charge(Entity $subscription)
+    public function createInvoice(Entity $subscription)
+    {
+        $plan = $subscription->plan;
+        $customer = $subscription->customer;
+        $merchant = $subscription->merchant;
+
+        // TODO: The amount here may differ in cases of prorate.
+        $lineItems = [
+            [
+                LineItem\Entity::NAME => $plan->getName(),
+                LineItem\Entity::AMOUNT => $plan->getAmount()
+            ]
+        ];
+
+        $invoiceInput = [
+            Invoice\Entity::CUSTOMER_ID => $customer->getPublicId(),
+            Invoice\Entity::LINE_ITEMS => $lineItems,
+            Invoice\Entity::CURRENCY => $plan->getCurrency(),
+            Invoice\Entity::SMS_NOTIFY => '0',
+            Invoice\Entity::EMAIL_NOTIFY => '0',
+        ];
+
+        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+    }
+
+    public function charge(Entity $subscription, Invoice\Entity $invoice)
     {
         $this->mutex->acquireAndRelease(
             $subscription->getId(),
-            function() use($subscription)
+            function() use($subscription, $invoice)
             {
-                $recurringPayload = $this->constructRecurringPayload($subscription);
+                $recurringPayload = $this->constructRecurringPayload($subscription, $invoice);
 
                 $queuePayload = [
                     'recurring_payload' => $recurringPayload,
                     'subscription_id'   => $subscription->getId(),
+                    'invoice_id'        => $invoice->getId(),
                     // This would almost always be rzp_{mode},since it will be
                     // run via cron. We actually need the mode here. But basicauth
                     // functions mostly work on the key. Hence, sending the key
@@ -122,7 +150,7 @@ class Core extends Base\Core
 
     public function retry(Entity $subscription)
     {
-        $this->charge($subscription);
+        //$this->charge($subscription, $invoice);
     }
 
     /**
@@ -244,7 +272,7 @@ class Core extends Base\Core
         return $run;
     }
 
-    protected function constructRecurringPayload(Entity $subscription)
+    protected function constructRecurringPayload(Entity $subscription, Invoice\Entity $invoice)
     {
         $subscriptionAmount = $subscription->getChargeableAmount();
         $customer = $subscription->customer;
@@ -255,11 +283,12 @@ class Core extends Base\Core
             Payment\Entity::CURRENCY        => Payment\Entity::DEFAULT_CURRENCY,
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
+            Payment\Entity::INVOICE_ID      => $invoice->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,
             Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
             Payment\Entity::EMAIL           => $customer->getEmail(),
             Payment\Entity::CONTACT         => $customer->getContact(),
-            Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription'
+            Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
         ];
 
         return $recurringPayload;

@@ -10,6 +10,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Address;
 use RZP\Models\Payment;
+use RZP\Models\Plan\Subscription;
 
 class CreateInvoices extends Migration
 {
@@ -37,6 +38,9 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
+
+            $table->char(Entity::SUBSCRIPTION_ID, Entity::ID_LENGTH)
+                  ->nullable();
 
             $table->integer(Entity::DATE)
                   ->nullable();
@@ -97,6 +101,12 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->string(Entity::SOURCE, 32)
+                  ->nullable();
+
+            $table->integer(Entity::BILLING_START)
+                  ->nullable();
+
+            $table->integer(Entity::BILLING_END)
                   ->nullable();
 
             $table->char(Entity::USER_ID, Entity::ID_LENGTH)

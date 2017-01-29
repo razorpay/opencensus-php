@@ -23,14 +23,14 @@ class Core extends Base\Core
         $this->lineItemCore = new LineItem\Core;
     }
 
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(array $input, Merchant\Entity $merchant, $subscription = null)
     {
         $this->trace->info(
             TraceCode::INVOICE_CREATE_REQUEST,
             $input
         );
 
-        $invoice = (new Generator($merchant))->generate($input);
+        $invoice = (new Generator($merchant))->generate($input, $subscription);
 
         $this->trace->info(
             TraceCode::INVOICE_CREATED,

@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Plan;
+use RZP\Models\Invoice;
 
 class CreateSubscription extends Migration
 {
@@ -112,6 +113,16 @@ class CreateSubscription extends Migration
                   ->on(Table::TOKEN)
                   ->on_delete('restrict');
         });
+
+        // This should be here and not in invoices table because
+        // subscription table is created after invoices.
+        Schema::table(Table::INVOICE, function($table)
+        {
+            $table->foreign(Invoice\Entity::SUBSCRIPTION_ID)
+                ->references(Entity::ID)
+                ->on(Table::SUBSCRIPTION)
+                ->on_delete('restrict');
+        });
     }
 
     /**
@@ -124,21 +135,18 @@ class CreateSubscription extends Migration
         Schema::table(Table::SUBSCRIPTION, function($table)
         {
             $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::MERCHANT_ID . '_foreign');
-        });
 
-        Schema::table(Table::SUBSCRIPTION, function($table)
-        {
             $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::CUSTOMER_ID . '_foreign');
-        });
 
-        Schema::table(Table::SUBSCRIPTION, function($table)
-        {
             $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::TOKEN_ID . '_foreign');
+
+            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::PLAN_ID . '_foreign');
         });
 
-        Schema::table(Table::SUBSCRIPTION, function($table)
+        Schema::table(Table::INVOICE, function($table)
         {
-            $table->dropForeign(Table::SUBSCRIPTION . '_' . Entity::PLAN_ID . '_foreign');
+            $table->dropForeign(
+                Table::INVOICE . '_' . Invoice\Entity::SUBSCRIPTION_ID . '_foreign');
         });
 
         Schema::drop(Table::SUBSCRIPTION);

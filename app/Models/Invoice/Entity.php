@@ -10,6 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 
 class Entity extends Base\PublicEntity
 {
@@ -23,6 +24,7 @@ class Entity extends Base\PublicEntity
     // Invoice receipt provided by merchant for his own references
     const RECEIPT               = 'receipt';
     const MERCHANT_ID           = 'merchant_id';
+    const SUBSCRIPTION_ID       = 'subscription_id';
     const CUSTOMER_ID           = 'customer_id';
     const CUSTOMER_NAME         = 'customer_name';
     const CUSTOMER_EMAIL        = 'customer_email';
@@ -48,6 +50,9 @@ class Entity extends Base\PublicEntity
 
     const AMOUNT                = 'amount';
     const CURRENCY              = 'currency';
+
+    const BILLING_START         = 'billing_start';
+    const BILLING_END           = 'billing_end';
 
     const USER_ID               = 'user_id';
     const SOURCE                = 'source';
@@ -105,6 +110,7 @@ class Entity extends Base\PublicEntity
         // This is null by default because we don't create an order
         // when the invoice is being generated in a draft state.
         self::ORDER_ID          => null,
+        self::SUBSCRIPTION_ID   => null,
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
         self::STATUS            => Status::ISSUED,
@@ -120,6 +126,8 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::TYPE              => Type::INVOICE,
+        self::BILLING_START     => null,
+        self::BILLING_END       => null,
         self::USER_ID           => null,
         self::AMOUNT            => null,
         self::CURRENCY          => 'INR',
@@ -158,6 +166,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SOURCE,
         self::TYPE,
+        self::BILLING_START,
+        self::BILLING_END,
         self::USER_ID,
         // self::ADJUSTMENT,
         // self::SHIPPING,
@@ -172,6 +182,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::CUSTOMER_ID,
         self::MERCHANT_ID,
+        self::SUBSCRIPTION_ID,
         self::ORDER_ID,
         self::PAYMENT_ID,
         // self::CUSTOMER_EMAIL,
@@ -197,6 +208,8 @@ class Entity extends Base\PublicEntity
         self::SOURCE,
         self::TYPE,
         self::AMOUNT,
+        self::BILLING_START,
+        self::BILLING_END,
         self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -211,6 +224,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOMER_ID,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
         self::LINE_ITEMS,
         self::PAYMENT_ID,
         self::STATUS,
@@ -228,6 +242,8 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
+        self::BILLING_START,
+        self::BILLING_END,
         self::TYPE,
         // self::USER_ID,
         // self::TOTAL_AMOUNT,
@@ -250,6 +266,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::CUSTOMER_ID,
         self::ORDER_ID,
+        self::SUBSCRIPTION_ID,
         // self::USER_ID,
     ];
 
@@ -524,6 +541,20 @@ class Entity extends Base\PublicEntity
         $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
     }
 
+    protected function setPublicSubscriptionIdAttribute(array & $array)
+    {
+        $subscriptionId = $this->getAttribute(self::SUBSCRIPTION_ID);
+
+        if ($subscriptionId !== null)
+        {
+            $array[self::SUBSCRIPTION_ID] = Subscription\Entity::getSignedIdOrNull($subscriptionId);
+        }
+        else
+        {
+            unset($array[Entity::SUBSCRIPTION_ID]);
+        }
+    }
+
     protected function setPublicUserIdAttribute(array & $array)
     {
         $type = $this->getAttribute(self::TYPE);
@@ -668,6 +699,11 @@ class Entity extends Base\PublicEntity
     public function lineItems()
     {
         return $this->morphMany('RZP\Models\LineItem\Entity', 'entity');
+    }
+
+    public function subscription()
+    {
+        return $this->belongsTo('RZP\Models\Plan\Subscription\Entity');
     }
 
     public function merchant()

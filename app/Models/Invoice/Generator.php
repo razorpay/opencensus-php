@@ -16,6 +16,7 @@ use RZP\Models\LineItem;
 use RZP\Models\Item;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Plan\Subscription;
 use RZP\Trace\TraceCode;
 use RZP\Services\Elfin\Service as Elfin;
 
@@ -68,16 +69,16 @@ class Generator extends Base\Core
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
-    public function generate(array $input)
+    public function generate(array $input, $subscription = null)
     {
         $this->generateInvoiceSkeleton($input);
 
         try
         {
             $this->repo->transaction(
-                function() use ($input)
+                function() use ($input, $subscription)
                 {
-                    $this->preProcessGeneration($input);
+                    $this->preProcessGeneration($input, $subscription);
 
                     if ($this->invoice->getStatus() === Status::ISSUED)
                     {
@@ -114,9 +115,14 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function preProcessGeneration(array $input)
+    protected function preProcessGeneration(array $input, $subscription = null)
     {
         $this->associateCustomerWithInvoice($input);
+
+        if ($subscription !== null)
+        {
+            $this->invoice->subscription()->associate($subscription);
+        }
 
         $this->createLineItemsFromInputAndSetInvoiceAmount($input);
     }

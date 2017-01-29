@@ -13,7 +13,7 @@ class Validator extends Base\Validator
     //
     // We have rules on create and update for the two status: DRAFT, ISSUED.
     // Eg. In ISSUED state, you cannot update amount of the invoice. There are
-    //     rules to accomodate such requirements. This way it's good to manage and
+    //     rules to accommodate such requirements. This way it's good to manage and
     //     is easy to understand.
     //
     // - Create invoice in DRAFT status
@@ -51,6 +51,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|integer',
+        Entity::BILLING_END         => 'sometimes|integer',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
@@ -84,6 +86,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|integer',
+        Entity::BILLING_END         => 'sometimes|integer',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
     ];
@@ -104,6 +108,8 @@ class Validator extends Base\Validator
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
+        Entity::BILLING_START       => 'sometimes|integer',
+        Entity::BILLING_END         => 'sometimes|integer',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
     ];
@@ -123,6 +129,8 @@ class Validator extends Base\Validator
         Entity::LINE_ITEMS          => 'sometimes|array',
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
+        Entity::BILLING_START       => 'sometimes|integer',
+        Entity::BILLING_END         => 'sometimes|integer',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
     ];
 

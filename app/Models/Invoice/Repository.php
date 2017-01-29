@@ -47,6 +47,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getSubscriptionInvoicesToCharge()
+    {
+        return $this->newQuery()
+                    ->where(Entity::STATUS, '=', Status::ISSUED)
+                    ->whereNotNull(Entity::SUBSCRIPTION_ID)
+                    ->get();
+    }
+
     protected function addQueryParamPaymentId($query, $params)
     {
         $this->joinQueryPayment($query);
