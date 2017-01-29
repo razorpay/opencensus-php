@@ -497,7 +497,11 @@ trait Authorize
     {
         $expectedAmount = (new Subscription\Core)->getAuthTransactionAmount($subscription);
 
-        if ($paymentAmount !== $expectedAmount)
+        //
+        // Adding `intval` because it's failing otherwise in wercker.
+        // Works fine on local though. >.<
+        //
+        if (intval($paymentAmount) !== intval($expectedAmount))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_AUTH_TRANSACTION_AMOUNT,
