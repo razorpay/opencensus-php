@@ -409,7 +409,6 @@ trait Authorize
                 [
                     'payment_id'        => $payment->getId(),
                     'subscription_id'   => $subscriptionId,
-                    'recurring'         => $input[Payment\Entity::RECURRING],
                 ]);
         }
 
@@ -1403,14 +1402,18 @@ trait Authorize
         }
 
         //
+        // This should be called before `updateSubscriptionDetails`
+        // because the status is changed to `activated` in that.
+        //
+        $this->updateSubscriptionToken($payment, $subscription);
+
+        //
         // This signifies that the auth transaction include the first charge also.
         //
         if ($subscription->getStartAt() === null)
         {
             $this->updateSubscriptionDetails($subscription, $payment);
         }
-
-        $this->updateSubscriptionToken($payment, $subscription);
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
 
@@ -1435,7 +1438,19 @@ trait Authorize
         $startAt = $subscription->getStartAt();
         $upfrontAmount = $subscription->getUpfrontAmount();
 
-        if (($startAt === null) or ($upfrontAmount !== null))
+        $paymentStatus = $payment->getStatus();
+
+        if ($paymentStatus === Payment\Status::CAPTURED)
+        {
+            return;
+        }
+
+        //
+        // If upfront amount is present or start_at is null (first charge in auth txn itself),
+        // the payment should have been captured before it reaches this stage.
+        //
+        if (($paymentStatus !== Payment\Status::CAPTURED) and
+            (($startAt === null) or ($upfrontAmount !== null)))
         {
             throw new Exception\LogicException(
                 'The subscription should have been captured by now.',
@@ -1452,10 +1467,7 @@ trait Authorize
         // This would mean that this was a 5rs auth transaction.
         // There was no upfront amount or this is not being used as first charge.
         //
-        if ($payment->getStatus() !== Payment\Status::CAPTURED)
-        {
-            $this->refundAuthorizedPayment($payment);
-        }
+        $this->refundAuthorizedPayment($payment);
     }
 
     protected function updateSubscriptionToken(Payment\Entity $payment, Subscription\Entity $subscription)

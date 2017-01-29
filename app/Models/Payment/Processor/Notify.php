@@ -251,7 +251,6 @@ class Notify
                 {
                     $this->sendMail($view, $subject, $to);
                 }
-
             }
         }
     }

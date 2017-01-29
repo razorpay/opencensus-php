@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Subscription;
 
+use RZP\Exception\BadRequestException;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use Mockery;
@@ -28,7 +29,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $this->mockTokenex();
     }
 
-    public function testSubscriptionAuthTransaction()
+    public function testSubscriptionAuthTxnNormal()
     {
         $plan = $this->fixtures->create(
             'plan',
@@ -47,7 +48,284 @@ class SubscriptionAuthTransactionTest extends TestCase
 
         $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
 
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('created', $subscription['status']);
+
         $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $payment = $this->getLastEntity('payment', true);
+        $refund = $this->getLastEntity('refund', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals('refunded', $payment['status']);
+        $this->assertEquals(500, $payment['amount_refunded']);
+
+        $this->assertEquals($payment['id'], $refund['payment_id']);
+    }
+
+    public function testSubscriptionAuthTxnAutoCaptureUpfrontAmount()
+    {
+        $plan = $this->fixtures->create(
+            'plan',
+            [
+                'interval' => 3,
+                'period' => 'monthly'
+            ]);
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'upfront_amount' => 1000,
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['amount'] = 1000;
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $payment = $this->getLastEntity('payment', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(null, $payment['amount_refunded']);
+    }
+
+    public function testSubscriptionAuthTxnAutoCaptureFirstCharge()
+    {
+        $plan = $this->fixtures->create(
+            'plan',
+            [
+                'interval' => 3,
+                'period' => 'monthly'
+            ]);
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => null,
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['amount'] = $plan->getAmount();
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $this->assertEquals('created', $subscription['status']);
+        $this->assertEquals(null, $subscription['start_at']);
+        $this->assertEquals(null, $subscription['end_at']);
+        $this->assertEquals(null, $subscription['charge_at']);
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $payment = $this->getLastEntity('payment', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals($payment['created_at'], $subscription['start_at']);
+        $this->assertNotNull($subscription['end_at']);
+        $this->assertLessThanOrEqual($payment['created_at'] + 7776000, $subscription['charge_at']);
+        $this->assertGreaterThan($payment['created_at'] + 7257600, $subscription['charge_at']);
+        $this->assertEquals($payment['created_at'], $subscription['current_start']);
+        $this->assertNotNull($subscription['current_end']);
+        $this->assertEquals(1, $subscription['paid_count']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(null, $payment['amount_refunded']);
+    }
+
+    public function testSubscriptionAuthTxnAutoCaptureFirstChargeAndUpfrontAmount()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'upfront_amount' => 1000,
+                'start_at' => null, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        $paymentRequest['amount'] = 1000 + $plan->getAmount();
+
+        $recurringPayment = $this->doAuthPayment($paymentRequest);
+
+        $subscription = $this->getLastEntity('subscription', true);
+        $payment = $this->getLastEntity('payment', true);
+        $token = $this->getLastEntity('token', true);
+
+        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals($token['id'], $subscription['token_id']);
+
+        $this->assertEquals($subscription['id'], $payment['subscription_id']);
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals(null, $payment['amount_refunded']);
+    }
+
+    public function testSubscriptionAuthTxnWithRecurringFalse()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+        unset($paymentRequest['recurring']);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('Recurring is not set for the subscription payment', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
+    }
+
+    public function testSubscriptionAuthTxnWithWrongAmount()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'upfront_amount' => 1000,
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('The amount does not match with the expected amount ' .
+                'for the first transaction. It might have been tampered.', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
+    }
+
+    public function testSubscriptionAuthTxnWithPastStartAt()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => 1379631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('Subscription\'s start time is past the current time. ' .
+                'Cannot do an auth transaction now.', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
+    }
+
+    public function testSubscriptionAuthTxnWithNotCreatedState()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+                'status' => 'activated',
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('Subscription is already active', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
+    }
+
+    public function testSubscriptionAuthTxnWithTokenAlreadyAssociated()
+    {
+        $plan = $this->fixtures->create('plan');
+
+        $token = $this->fixtures->create('token', ['token' => '20000cardtoken']);
+
+        $subscription = $this->fixtures->create(
+            'subscription',
+            [
+                'plan_id' => $plan->getId(),
+                'start_at' => 1579631400, // 1-22-2020, 12:00:00 AM
+                'total_count' => 3,
+                'token_id' => $token->getId(),
+            ]);
+
+        $paymentRequest = $this->getSubscriptionAuthTransactionRequest($subscription);
+
+        try
+        {
+            $recurringPayment = $this->doAuthPayment($paymentRequest);
+        }
+        catch (BadRequestException $ex)
+        {
+            $this->assertEquals('Subscription is already active', $ex->getMessage());
+
+            return;
+        }
+
+        $this->assertTrue(false);
     }
 
     protected function getSubscriptionAuthTransactionRequest($subscription)
