@@ -925,11 +925,45 @@ class Processor
         return $this->shouldAutoCaptureOrder($payment);
     }
 
-    protected function shouldAutoCaptureSubscription(Payment\Entity $payment)
+    protected function shouldAutoCaptureAlreadyActivatedSubscription(Payment\Entity $payment)
     {
         $subscription = $payment->subscription;
 
-        $this->repo->reload($subscription);
+        //
+        // On late authorization, we should not be capturing the payment
+        // if the charge for this billing has not been captured already.
+        // Since, right now, we don't have a way to figure out which period
+        // is this being charged for, we are not going to auto capture it.
+        // Once we start using invoices with this, it'll be easier to
+        // identify.
+        // TODO: Handle late auth for activated and for new subscriptions.
+        if ($payment->isLateAuthorized())
+        {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
+            return false;
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureNewSubscription(Payment\Entity $payment)
+    {
+        $subscription = $payment->subscription;
+
+        //
+        // This is commented out because all the attributes set
+        // for the subscription and not saved will get overridden
+        // with the values present in the DB.
+        // TODO: Handle this because race conditions.
+        //
+        // $this->repo->reload($subscription);
 
         $startAt = $subscription->getStartAt();
         $upfrontAmount = $subscription->getUpfrontAmount();
@@ -950,6 +984,16 @@ class Processor
         // TODO: Fix this flow.
         if ($payment->isLateAuthorized())
         {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_LATE_AUTH_NO_AUTO_CAPTURE,
+                [
+                    'payment_id' => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'start_at' => $startAt,
+                    'upfront_amount' => $upfrontAmount,
+                    'late_authorized' => $payment->isLateAuthorized(),
+                ]);
+
             return false;
         }
 

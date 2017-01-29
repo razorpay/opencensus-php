@@ -251,14 +251,15 @@ class Core extends Base\Core
         $tokenId = $subscription->token->getPublicId();
 
         $recurringPayload = [
-            Payment\Entity::AMOUNT      => $subscriptionAmount,
-            Payment\Entity::CURRENCY    => Payment\Entity::DEFAULT_CURRENCY,
-            Payment\Entity::RECURRING   => '1',
-            Payment\Entity::TOKEN       => $tokenId,
-            Payment\Entity::CUSTOMER_ID => $customer->getPublicId(),
-            Payment\Entity::EMAIL       => $customer->getEmail(),
-            Payment\Entity::CONTACT     => $customer->getContact(),
-            Payment\Entity::DESCRIPTION => 'Recurring Payment via Subscription'
+            Payment\Entity::AMOUNT          => $subscriptionAmount,
+            Payment\Entity::CURRENCY        => Payment\Entity::DEFAULT_CURRENCY,
+            Payment\Entity::RECURRING       => '1',
+            Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
+            Payment\Entity::TOKEN           => $tokenId,
+            Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            Payment\Entity::EMAIL           => $customer->getEmail(),
+            Payment\Entity::CONTACT         => $customer->getContact(),
+            Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription'
         ];
 
         return $recurringPayload;

@@ -191,6 +191,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPFRONT_AMOUNT);
     }
 
+    public function hasBeenActivated()
+    {
+        return ($this->getAttribute(self::ACTIVATED_AT) !== null);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------

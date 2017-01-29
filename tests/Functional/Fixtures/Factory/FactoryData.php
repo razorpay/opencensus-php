@@ -472,7 +472,7 @@ final class FactoryData
             'customer_id'   => '100000customer',
             'status'        => 'created',
             'quantity'      => 1,
-            'total_count'   => 6,
+            'total_count'   => 4,
             'notes'         => null,
         ]);
 

@@ -150,20 +150,4 @@ class SubscriptionCreateTest extends TestCase
         // $tokenEntity = $this->getLastEntity('token', true);
         // $this->assertEquals(true, $tokenEntity['recurring']);
     }
-
-    protected function getCreateSubscriptionRequestContent($function, $planId = null)
-    {
-        $requestContent = $this->testData[$function];
-
-        if ($planId === null)
-        {
-            $plan = $this->fixtures->create('plan');
-
-            $planId = $plan->getPublicId();
-        }
-
-        $requestContent['request']['url'] = '/plans/' . $planId . '/subscriptions/';
-
-        return $requestContent;
-    }
 }

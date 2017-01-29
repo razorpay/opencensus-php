@@ -135,7 +135,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $token = $this->getLastEntity('token', true);
 
-        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals('processed', $subscription['status']);
         $this->assertEquals($payment['created_at'], $subscription['start_at']);
         $this->assertNotNull($subscription['end_at']);
         $this->assertLessThanOrEqual($payment['created_at'] + 7776000, $subscription['charge_at']);
@@ -172,7 +172,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         $payment = $this->getLastEntity('payment', true);
         $token = $this->getLastEntity('token', true);
 
-        $this->assertEquals('activated', $subscription['status']);
+        $this->assertEquals('processed', $subscription['status']);
         $this->assertEquals($token['id'], $subscription['token_id']);
 
         $this->assertEquals($subscription['id'], $payment['subscription_id']);
@@ -326,16 +326,6 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
 
         $this->assertTrue(false);
-    }
-
-    protected function getSubscriptionAuthTransactionRequest($subscription)
-    {
-        $paymentRequest = $this->getDefaultRecurringPaymentArray();
-
-        $paymentRequest['subscription_id'] = $subscription['public_id'];
-        $paymentRequest['amount'] = 500;
-
-        return $paymentRequest;
     }
 
     protected function createSubscription($plan)

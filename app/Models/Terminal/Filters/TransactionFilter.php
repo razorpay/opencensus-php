@@ -249,7 +249,8 @@ class TransactionFilter extends Terminal\Filter
 
             if (($payment->getTokenId() !== null) and
                 ($payment->localToken->isRecurring() === true) and
-                ($ba->isPrivateAuth() === true))
+                (($ba->isPrivateAuth() === true) or
+                 ($ba->isPrivilegeAuth() === true)))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }

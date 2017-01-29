@@ -30,15 +30,25 @@ class Charge
         $this->repo = $this->app['repo'];
     }
 
-    // Called through queue
+    /**
+     * This is called via the queue to initiate the actual
+     * charge process.
+     *
+     * @param $job
+     * @param $data
+     *
+     * @throws LogicException
+     */
     public function fireCharge($job, $data)
     {
         $this->trace->info(
             TraceCode::SUBSCRIPTION_PAYMENT_QUEUE_DATA,
             $data);
 
+        //
         // This is required so that the mode and the db connection are set.
         // Since this is via queue, this will not set on its own.
+        //
         $this->app['basicauth']->checkAndSetKeyId($data['key_id']);
 
         $recurringPayload = $data['recurring_payload'];
@@ -47,6 +57,10 @@ class Charge
 
         $this->processor = new Payment\Processor\Processor($subscription->merchant);
 
+        //
+        // This needs to be incremented every time we attempt to authorize a payment.
+        // Using this attribute, we would decide whether to retry or not.
+        //
         $subscription->incrementAuthAttempts();
 
         $authorizedPayment = null;
@@ -68,9 +82,11 @@ class Charge
             $job->delete();
         }
 
+        //
         // This is being done outside the try-catch-finally block because we
         // do not want to invoke the function handleAuthorizationFailure
         // if an exception gets thrown in handleAuthorizationSuccess.
+        //
         $this->handleAuthorizationSuccess($authorizedPayment, $subscription);
     }
 
@@ -78,36 +94,33 @@ class Charge
     {
         $recurringPayment = $this->processor->process($recurringPayload);
 
-        $authorizedPayment = $this->repo->findOrFail($recurringPayment['razorpay_payment_id']);
+        $authorizedPayment = $this->repo->payment->findByPublicId($recurringPayment['razorpay_payment_id']);
 
         return $authorizedPayment;
     }
 
-    protected function handleAuthorizationSuccess(Payment\Entity $authorizedPayment, Entity $subscription)
+    protected function handleAuthorizationSuccess(Payment\Entity $payment, Entity $subscription)
     {
-        $authorizedPayment->subscription()->associate($subscription);
-        $this->repo->saveOrFail($authorizedPayment);
-
         $this->resetErrorFields($subscription);
+
+        //
+        // If it's already captured, `handleCaptureSuccess` would have been
+        // called in the auto capture flow itself.
+        // Hence, we don't have to handle for captured successfully flow, here.
+        //
+        if ($payment->isCaptured() === false)
+        {
+            $this->trace->error(
+                TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
+                [
+                    'subscription_id'   => $subscription->getId(),
+                ]);
+
+            $subscription->setStatus(Status::ON_HOLD);
+            $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
+        }
+
         $this->repo->saveOrFail($subscription);
-
-        try
-        {
-            $capturedPayment = $this->capturePayment($authorizedPayment);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-
-            $this->handleCaptureFailure($subscription);
-
-            return;
-        }
-
-        // This is being done outside the try-catch block because we do not
-        // want to invoke handleCaptureFailure if an exception gets thrown
-        // in handleCaptureSuccess flow.
-        $this->handleCaptureSuccess($subscription, $capturedPayment);
     }
 
     protected function resetErrorFields(Entity $subscription)
@@ -200,8 +213,6 @@ class Charge
         $this->setEndedAtIfApplicable($subscription);
 
         $this->setProcessedAt($subscription, $capturedPayment);
-
-        $this->repo->saveOrFail($subscription);
     }
 
     public function handleCaptureSuccessAfterFirstTransaction(Entity $subscription)
@@ -209,6 +220,8 @@ class Charge
         $plan = $subscription->plan;
 
         // TODO: Add concept of sub_status?
+
+        $subscription->setStatus(Status::PROCESSED);
 
         $this->setCurrentPeriod($subscription, $plan);
 
@@ -221,8 +234,10 @@ class Charge
     {
         $errorStatus = $subscription->getErrorStatus();
 
+        //
         // At this point of the flow, if there is an error, it should be capture failure only.
         // If it was auth_failure, capture shouldn't have been called at all for the payment.
+        //
 
         if (($errorStatus === null) or
             ($errorStatus === Status::CAPTURE_FAILURE))
@@ -358,56 +373,6 @@ class Charge
         {
             $subscription->setEndedAt($subscription->getCurrentEnd());
         }
-    }
-
-    protected function handleCaptureFailure(Entity $subscription)
-    {
-        $this->trace->error(
-            TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
-            [
-                'subscription_id'   => $subscription->getId(),
-            ]);
-
-        $subscription->setStatus(Status::ON_HOLD);
-        $subscription->setErrorStatus(Status::CAPTURE_FAILURE);
-
-        $this->repo->saveOrFail($subscription);
-    }
-
-    protected function captureSubscriptionPayment(Entity $subscription, Payment\Entity $payment)
-    {
-        try
-        {
-            $paymentId = $payment->getId();
-            $paymentAmount = $payment->getAmount();
-
-            $this->processor->capture($paymentId, [Payment\Entity::AMOUNT => $paymentAmount]);
-
-            $subscription->setStatus(Status::PROCESSED);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException($ex);
-
-            $this->trace->error(
-                TraceCode::SUBSCRIPTION_PAYMENT_CAPTURE_FAILED,
-                [
-                    'payment_id'        => $payment->getId(),
-                    'subscription_id'   => $subscription->getId(),
-                ]);
-
-            $slackData = [
-                'error'             => $ex->getMessage(),
-                'payment_id'        => $payment->getId(),
-                'subscription_id'   => $subscription->getId(),
-            ];
-
-            $this->logToSlack($slackData);
-
-            $subscription->setStatus(Status::FAILED);
-        }
-
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function logToSlack(array $data)

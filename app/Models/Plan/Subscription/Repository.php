@@ -33,7 +33,7 @@ class Repository extends Base\Repository
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
-                    ->where(Entity::CHARGE_AT, '<', $currentTime)
+                    ->where(Entity::CHARGE_AT, '<=', $currentTime)
                     ->where(function($query) use ($currentTime)
                             {
                                 $query->whereNull(Entity::CURRENT_END)

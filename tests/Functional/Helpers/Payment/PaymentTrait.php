@@ -284,24 +284,14 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doAuthPaymentForSubscription(array $payment)
+    public function getSubscriptionAuthTransactionRequest($subscription)
     {
-        $request = [
-            'method' => 'POST',
-            'url' => '/payments/create/recurring',
-            'content' => $payment
-        ];
+        $paymentRequest = $this->getDefaultRecurringPaymentArray();
 
-        if (isset($server))
-        {
-            $request['server'] = $server;
-        }
+        $paymentRequest['subscription_id'] = $subscription['public_id'];
+        $paymentRequest['amount'] = 500;
 
-        $this->ba->publicAuth();
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        return $content;
+        return $paymentRequest;
     }
 
     protected function doS2SRecurringPayment($payment = null)
@@ -370,6 +360,21 @@ trait PaymentTrait
         $payment['wallet'] = $wallet;
 
         return $this->doAuthPayment($payment);
+    }
+
+    public function makeChargeCronRequest()
+    {
+        $request = [
+            'url'     => '/subscriptions/charge',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
     }
 
     protected function doAuthPaymentViaAjaxRoute($payment)

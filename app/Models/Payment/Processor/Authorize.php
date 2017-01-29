@@ -414,6 +414,63 @@ trait Authorize
 
         $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
 
+        $subscriptionStatus = $subscription->getStatus();
+
+        if ($subscriptionStatus === Subscription\Status::CREATED)
+        {
+            $this->validateNewSubscription($subscription, $payment, $input);
+        }
+        else
+        {
+            $this->validateActivatedSubscription($subscription, $payment, $input);
+        }
+    }
+
+    protected function validateActivatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment, array $input)
+    {
+        if ($subscription->hasBeenActivated() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_NOT_ACTIVATED,
+                null,
+                [
+                    'payment_id' => $payment->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'input' => $input,
+                    'subscription_status' => $subscription->getStatus(),
+                ]);
+        }
+
+        if ($subscription->token === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_NOT_ASSOCIATED,
+                null,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                    'subscription_token'    => $subscription->getTokenId(),
+                ]);
+        }
+
+        if ($subscription->getPaidCount() >= $subscription->getTotalCount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOTAL_COUNT_EXCEEDED,
+                null,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                    'total_count'           => $subscription->getTotalCount(),
+                    'paid_count'            => $subscription->getPaidCount(),
+                ]);
+        }
+    }
+
+    protected function validateNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment, array $input)
+    {
         $this->validateSubscriptionAmount($subscription, $input[Payment\Entity::AMOUNT]);
 
         $subscription->getValidator()->validateStartAtForAuthTransaction();
@@ -422,15 +479,14 @@ trait Authorize
         // For the first transaction, the subscription should be in created state
         // and should not have any token associated with it already.
         //
-        if (($subscription->getStatus() !== Subscription\Status::CREATED) or
-            ($subscription->token !== null))
+        if ($subscription->token !== null)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_SUBSCRIPTION_ALREADY_ACTIVE,
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
                 null,
                 [
                     'payment_id'            => $payment->getId(),
-                    'subscription_id'       => $subscriptionId,
+                    'subscription_id'       => $subscription->getId(),
                     'subscription_status'   => $subscription->getStatus(),
                     'subscription_token'    => $subscription->getTokenId(),
                 ]);
@@ -1391,33 +1447,82 @@ trait Authorize
             return;
         }
 
+        $subscriptionStatus = $subscription->getStatus();
+
+        if ($subscriptionStatus === Subscription\Status::CREATED)
+        {
+            $this->processNewSubscription($subscription, $payment);
+        }
+        else
+        {
+            $this->processAlreadyActivatedSubscription($subscription, $payment);
+        }
+
+        $this->repo->saveOrFail($subscription);
+    }
+
+    protected function processAlreadyActivatedSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        if ($subscription->hasBeenActivated() === false)
+        {
+            throw new Exception\LogicException(
+                'This should have been called only if the subscription was already activated.',
+                null,
+                [
+                    'payment_id'            => $payment->getId(),
+                    'subscription_id'       => $subscription->getId(),
+                    'subscription_status'   => $subscription->getStatus(),
+                ]);
+        }
+
+        if ($this->shouldAutoCaptureAlreadyActivatedSubscription($payment) === true)
+        {
+            $this->autoCapturePayment($payment);
+
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
+        }
+    }
+
+    protected function processNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
+    {
+        $this->updateSubscriptionToken($subscription, $payment);
+
+        $subscription->setStatus(Subscription\Status::ACTIVATED);
+
         //
         // We don't do this in the normal auth and capture flow because we need
         // to do some things after authorization and before capture.
         // And some more things after capture.
         //
-        if ($this->shouldAutoCaptureSubscription($payment) === true)
+        if ($this->shouldAutoCaptureNewSubscription($payment) === true)
         {
             $this->autoCapturePayment($payment);
         }
 
         //
-        // This should be called before `updateSubscriptionDetails`
-        // because the status is changed to `activated` in that.
+        // This signifies that the auth transaction also
+        // includes the first charge of the subscription.
         //
-        $this->updateSubscriptionToken($payment, $subscription);
+        $authTxnCharge = ($subscription->getStartAt() === null);
 
         //
-        // This signifies that the auth transaction include the first charge also.
+        // We have an explicit check for auth txn charge because we don't want
+        // to run `handleCaptureSuccess` for capturing an upfront amount or
+        // authorizing just the auth txn amount.
         //
-        if ($subscription->getStartAt() === null)
+        if ($authTxnCharge)
         {
+            //
+            // If this is auth txn charge, it means that start_at was null. This,
+            // in turn, means that some fields were not filled when the subscription
+            // was created. We fill those fields here.
+            //
             $this->updateSubscriptionDetails($subscription, $payment);
+
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
         }
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);
-
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function updateSubscriptionDetails(Subscription\Entity $subscription, Payment\Entity $payment)
@@ -1427,10 +1532,6 @@ trait Authorize
         $subscription->setStartAt($payment->getCreatedAt());
 
         (new Subscription\Core)->fillEndAtAndTotalCount($subscription, $plan);
-
-        $subscription->setStatus(Subscription\Status::ACTIVATED);
-
-        (new Subscription\Charge)->handleCaptureSuccessAfterFirstTransaction($subscription);
     }
 
     protected function autoRefundAuthTransactionIfApplicable(Payment\Entity $payment, Subscription\Entity $subscription)
@@ -1470,7 +1571,7 @@ trait Authorize
         $this->refundAuthorizedPayment($payment);
     }
 
-    protected function updateSubscriptionToken(Payment\Entity $payment, Subscription\Entity $subscription)
+    protected function updateSubscriptionToken(Subscription\Entity $subscription, Payment\Entity $payment)
     {
         // TODO: This will have to be fixed when we bring in global for subscriptions
         $paymentToken = $payment->localToken;
@@ -1493,9 +1594,6 @@ trait Authorize
         }
 
         $subscription->token()->associate($paymentToken);
-        $subscription->setStatus(Subscription\Status::ACTIVATED);
-
-        $this->repo->saveOrFail($subscription);
     }
 
     protected function handleUnexpectedSubscriptionState(
@@ -1507,10 +1605,14 @@ trait Authorize
 
         $subscriptionToken = $subscription->token;
 
+        //
+        // From the second charge onwards, the token would have already been
+        // associated with the subscription.
+        // Hence, we don't need to associate it again.
+        //
         if ($subscriptionToken !== null)
         {
-            // Will move this to warning/info if we are getting too many of these.
-            $this->trace->error(
+            $this->trace->info(
                 TraceCode::SUBSCRIPTION_TOKEN_ALREADY_ASSOCIATED,
                 [
                     'payment_id'            => $payment->getId(),
@@ -1524,6 +1626,12 @@ trait Authorize
 
         $subscriptionStatus = $subscription->getStatus();
 
+        //
+        // If a token is not associated with the subscription already,
+        // it means that the subscription is in created state, because,
+        // no transaction yet happened on this subscription, due to which,
+        // there's no token associated with it yet.
+        //
         if ($subscriptionStatus !== Subscription\Status::CREATED)
         {
             $this->trace->error(
