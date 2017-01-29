@@ -289,7 +289,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Subscription is already active', $ex->getMessage());
+            $this->assertEquals('Payment cannot be authorized since subscription is not activated', $ex->getMessage());
 
             return;
         }
@@ -320,7 +320,7 @@ class SubscriptionAuthTransactionTest extends TestCase
         }
         catch (BadRequestException $ex)
         {
-            $this->assertEquals('Subscription is already active', $ex->getMessage());
+            $this->assertEquals('The subscription already has a token associated with it', $ex->getMessage());
 
             return;
         }
