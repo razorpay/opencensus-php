@@ -229,6 +229,7 @@ class Service extends Base\Service
             'view_less'         => $invoice->getViewLess(),
             'merchant_details'  => $merchantDetails,
             'payment_id'        => $invoice->getPaymentId(),
+            'invoice'           => $invoice
         ];
 
         return $viewDetails;
