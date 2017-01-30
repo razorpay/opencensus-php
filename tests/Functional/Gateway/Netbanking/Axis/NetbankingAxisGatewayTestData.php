@@ -39,7 +39,7 @@ return [
                 'receipt'        => 'rcptid42',
                 'method'         => 'netbanking',
                 'bank'           => 'UTIB',
-                'account_number' => '0040304030403040',
+                'account_number' => '040304030403040',
             ],
             'method'    => 'POST',
             'url'       => '/orders',

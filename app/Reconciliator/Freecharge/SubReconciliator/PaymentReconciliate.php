@@ -20,7 +20,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_AMOUNT  = 'Total Transaction Amount';
     const COLUMN_SETTLED_AT      = 'Settlement Date';
 
-    const SETTLEMENT_DATE_FORMAT = 'd/m/Y H:i:s T';
+    const SETTLEMENT_DATE_FORMAT = 'jS F Y';
 
     protected function getPaymentId($row)
     {
@@ -49,7 +49,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             $serviceTax += $kkCess;
         }
 
-        return round($serviceTax);
+        return intval(round($serviceTax));
     }
 
     protected function getGatewayFee($row)
@@ -61,7 +61,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         //
         $fee = floatval($row[self::COLUMN_FEE]) * 100;
 
-        return round($fee);
+        return intval($fee);
     }
 
     protected function getGatewayPaymentAmount($row)
