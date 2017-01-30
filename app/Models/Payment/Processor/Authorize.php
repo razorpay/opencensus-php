@@ -481,7 +481,13 @@ trait Authorize
             return;
         }
 
-        $offerApplied->checkOfferCriteriaSatisfied($payment);
+        if($offerApplied->checkOfferCriteriaSatisfied($payment) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
+        }
+
+        return;
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)

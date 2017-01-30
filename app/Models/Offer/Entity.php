@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Order;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -115,7 +116,8 @@ class Entity extends Base\PublicEntity
 
     protected $casts = [
         self::IINS            => 'array',
-        self::ACTIVE          => 'boolean'
+        self::ACTIVE          => 'boolean',
+        self::MIN_AMOUNT      => 'int'
     ];
 
     public function coupons()
@@ -377,16 +379,31 @@ class Entity extends Base\PublicEntity
 
     protected function checkCardType($card)
     {
-        return ($this->getType() === $card->getType());
+        if ($this->getPaymentMethodType() === null)
+        {
+            return true;
+        }
+
+        return ($this->getPaymentMethodType() === $card->getType());
     }
 
     protected function checkCardNetwork($card)
     {
-        return ($this->getPaymentNetwork() === $card->getNetwork());
+        if ($this->getPaymentNetwork() === null)
+        {
+            return true;
+        }
+
+        return ($this->getPaymentNetwork() === $card->getNetworkCode());
     }
 
     protected function checkCardIssuer($card)
     {
+        if ($this->getIssuer() === null)
+        {
+            return true;
+        }
+
         return ($this->getIssuer() === $card->getIssuer());
     }
 }

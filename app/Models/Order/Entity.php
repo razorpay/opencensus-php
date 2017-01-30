@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Offer;
 
 class Entity extends Base\PublicEntity
 {
@@ -82,6 +83,11 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = [
         self::AMOUNT
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::OFFER_ID
     ];
 
     protected static $sign = 'order';
@@ -203,5 +209,12 @@ class Entity extends Base\PublicEntity
     public function isPaid()
     {
         return ($this->getAttribute(self::STATUS) === Status::PAID);
+    }
+
+    protected function setPublicOfferIdAttribute(array & $array)
+    {
+        $offerId = $this->getAttribute(self::OFFER_ID);
+
+        $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
     }
 }

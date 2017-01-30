@@ -2,9 +2,10 @@
 
 namespace RZP\Models\Order;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -36,7 +37,7 @@ class Core extends Base\Core
 
             if ($offer->validOfferForOrder($order) === false)
             {
-                throw new Exception\BadRequestException(ErrorCode::OFFER_INVALID_FOR_ORDER);
+                throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_ORDER);
             }
 
             $order->offer()->associate($offer);
