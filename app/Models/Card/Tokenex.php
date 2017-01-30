@@ -41,7 +41,7 @@ class Tokenex extends Base\Core
         }
     }
 
-    public static function getVaultToken($cardNumber)
+    public function getVaultToken($cardNumber)
     {
         try
         {

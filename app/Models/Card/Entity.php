@@ -170,7 +170,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::VAULT]))
         {
-            $vaultToken = (new Card\Toekenex)->getVaultToken($input['number']);
+            $vaultToken = (new Card\Tokenex)->getVaultToken($input['number']);
 
             $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
         }
