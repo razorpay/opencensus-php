@@ -158,7 +158,7 @@ class TokenEx
             }
             catch(\Requests_Exception $e)
             {
-                if ($e->getType() === 'CURLE_OPERATION_TIMEDOUT')
+                if (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT)
                 {
                     $retryCount++;
                 }
