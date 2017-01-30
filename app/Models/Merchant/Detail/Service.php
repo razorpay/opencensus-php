@@ -158,6 +158,24 @@ class Service extends Base\Service
         return $merchantDetail;
     }
 
+    public function calculateActivationProgress($merchantId)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $response = $this->createResponse($merchantDetails);
+
+        $verificationStatus = $response['verification']['status'];
+
+        if ($verificationStatus === 'disabled')
+        {
+            return intval(count($response['verification']['required_fields']) * 100 / count(ValidationFields::DASHBOARD_FIELDS));
+        }
+
+        return 100;
+    }
+
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and
