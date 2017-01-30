@@ -24,6 +24,10 @@ class Netbanking
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
     );
 
+    const ACCOUNT_NUMBER_LENGTHS = [
+        IFSC::UTIB => 15,
+    ];
+
     protected static $self = [
         IFSC::HDFC,
         IFSC::UTIB,
@@ -297,7 +301,7 @@ class Netbanking
         return self::$self;
     }
 
-    public static function getSupportedBanks($mode = Mode::LIVE, $isTPVRequired = false)
+    public static function getSupportedBanks($isTPVRequired = false)
     {
         $banks = self::getSupportedBanksInLiveMode();
 
@@ -348,5 +352,10 @@ class Netbanking
     public static function isBilldeskSupportedBank($bank)
     {
         return in_array($bank, self::$billdesk);
+    }
+
+    public static function getAccountNumberLengths()
+    {
+        return self::ACCOUNT_NUMBER_LENGTHS;
     }
 }
