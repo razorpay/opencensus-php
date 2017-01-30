@@ -46,6 +46,42 @@ class NetbankingAxisGatewayTest extends TestCase
             FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
+
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], '100NbAxisTpvTl');
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    public function testTpvVerifyPayment()
+    {
+        $this->testTpvPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
+
+        $content = $this->verifyPayment($payment['id']);
+
+        assert($content['payment']['verified'] === 1);
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthPayment($this->payment);
@@ -90,7 +126,7 @@ class NetbankingAxisGatewayTest extends TestCase
         });
     }
 
-    public function testRefundFileGeneration()
+    public function testDailyFileGeneration()
     {
         $payments = $this->createPaymentsToClaim();
 
@@ -101,6 +137,17 @@ class NetbankingAxisGatewayTest extends TestCase
         $data = $this->generateRefundsExcelForNB('UTIB');
 
         $this->checkRefundTextData($data);
+    }
+
+    public function testEmptyDailyFileGeneration()
+    {
+        $payments = $this->createPaymentsToClaim();
+
+        $this->checkEmptyRefundsMailQueue();
+
+        $data = $this->generateRefundsExcelForNB('UTIB');
+
+        $this->checkEmptyRefundTextData($data);
     }
 
     public function testFailedAuthPayment()
@@ -201,10 +248,49 @@ class NetbankingAxisGatewayTest extends TestCase
                             $testData = array(
                                 'subject' => 'Axis Netbanking claims and refund files for '.$date,
                                 'amount' => [
-                                    'claims' => 1500,
+                                    'claims'  => 1500,
                                     'refunds' => 500,
-                                    'total' => 1000,
-                                ]);
+                                    'total'   => 1000,
+                                ],
+                                'count'   => [
+                                    'claims'  => 3,
+                                    'refunds' => 2,
+                                    'total'   => 5
+                                ]
+                            );
+
+                            $this->assertArraySelectiveEquals($testData, $data);
+
+                            return true;
+                        }),
+                    Mockery::any()
+                );
+    }
+
+    protected function checkEmptyRefundsMailQueue()
+    {
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                        {
+                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+                            // Amounts are in rupees
+                            $testData = array(
+                                'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                                'amount' => [
+                                    'claims'  => 1500,
+                                    'refunds' => 0,
+                                    'total'   => 1500,
+                                ],
+                                'count'   => [
+                                    'claims'  => 3,
+                                    'refunds' => 0,
+                                    'total'   => 3
+                                ]
+                            );
 
                             $this->assertArraySelectiveEquals($testData, $data);
 
@@ -234,6 +320,23 @@ class NetbankingAxisGatewayTest extends TestCase
 
         // Each line should have 8 columns
         assert(count($refundsFileLine1) === 8);
+
+        $claimsFileLine1 = explode('~~', $claimsFileContents[1]);
+
+        // Each line should have 7 columns
+        assert(count($claimsFileLine1) === 7);
+    }
+
+    protected function checkEmptyRefundTextData($data)
+    {
+        $this->assertTrue(file_exists($data['netbanking_axis']['refunds']) === false);
+
+        $this->assertTrue(file_exists($data['netbanking_axis']['claims']));
+
+        $claimsFileContents = file($data['netbanking_axis']['claims']);
+
+        // 3 claims + 1 initial line
+        assert(count($claimsFileContents) === 4);
 
         $claimsFileLine1 = explode('~~', $claimsFileContents[1]);
 

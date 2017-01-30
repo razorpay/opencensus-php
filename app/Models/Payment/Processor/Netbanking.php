@@ -32,7 +32,8 @@ class Netbanking
 
     protected static $selfTPV = [
         IFSC::HDFC,
-        IFSC::KKBK
+        IFSC::KKBK,
+        IFSC::UTIB,
     ];
 
     protected static $paytm = array(
@@ -58,7 +59,6 @@ class Netbanking
     protected static $paytmTPV = [];
 
     protected static $billdesk = array(
-        IFSC::ABNA,
         IFSC::ALLA,
         IFSC::ANDB,
         IFSC::BBKM,
