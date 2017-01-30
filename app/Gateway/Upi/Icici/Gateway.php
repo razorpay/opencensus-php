@@ -23,6 +23,12 @@ class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
 
+    /**
+     * Default request timeout duration in seconds.
+     * @var  integer
+     */
+    const TIMEOUT = 120;
+
     protected $gateway = 'upi_icici';
 
     const ACQUIRER = 'icici';
@@ -603,12 +609,21 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $content = $this->parseGatewayResponse($response->body);
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, [
             'gateway'   => $this->gateway,
-            'response'  => $response
+            'response'  => $content
         ]);
+
+        if ($content['success'] !== 'true')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
+                $content['success'],
+                $content);
+        }
+
     }
 
     protected function getRefundRequest(array $input)
@@ -627,7 +642,7 @@ class Gateway extends Base\Gateway
             Fields::MERCHANT_TRAN_ID                => $refund['id'],
             Fields::ORIGINAL_MERCHANT_TRAN_ID       => $payment['id'],
             Fields::REFUND_AMOUNT                   => $this->formatAmount($refund['amount']),
-            Fields::PAYEE_VA                        => $this->getTerminalVpa($input),
+            Fields::PAYEE_VA                        => $payment['vpa'],
             Fields::NOTE                            => 'Razorpay Refund ' . $refund['id'],
             Fields::ONLINE_REFUND                   => 'Y',
         ];
@@ -649,19 +664,4 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    /**
-     * This is the VPA which will issue the collect
-     * requests. This is currently:
-     *
-     * - razorpay@icici on production
-     * - razorpay@eazypay on UAT
-     *
-     * We are storing this value on the gateway_merchant_id2 parameter
-     *
-     * @return string
-     */
-    protected function getTerminalVpa($input)
-    {
-        return $input['terminal']['gateway_merchant_id2'];
-    }
 }
