@@ -562,19 +562,12 @@ class Service extends Base\Service
 
         $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
 
-        $response = [];
-
-        foreach ($responseHash as $merchantId => $name)
+        foreach ($merchants as $merchant)
         {
-            $key = array_search($merchantId, array_column($merchants->toArray(), 'id'));
-
-            if ($key !== false)
-            {
-                $response[] = array_merge($merchants[$key]->toArray(), ['referrer' => $responseHash[$merchantId]]);
-            }
+            $merchant['referrer'] = $responseHash[$merchant['id']];
         }
 
-        return $response;
+        return $merchants->toArray();
     }
 
     public function lockUnusedAccounts()
