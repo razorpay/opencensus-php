@@ -556,6 +556,27 @@ class Service extends Base\Service
         return $responseHash;
     }
 
+    public function getMerchants($orgId, $adminId, $input)
+    {
+        $responseHash = $this->getMerchantIds($orgId, $adminId);
+
+        $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
+
+        $response = [];
+
+        foreach ($responseHash as $merchantId => $name)
+        {
+            $key = array_search($merchantId, array_column($merchants->toArray(), 'id'));
+
+            if ($key !== false)
+            {
+                $response[] = array_merge($merchants[$key]->toArray(), ['referrer' => $responseHash[$merchantId]]);
+            }
+        }
+
+        return $response;
+    }
+
     public function lockUnusedAccounts()
     {
         $timestamp = Carbon::now()->subDays(30)->timestamp;

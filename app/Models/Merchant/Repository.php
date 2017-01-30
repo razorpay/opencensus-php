@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
+use RZP\Constants\Table;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -234,5 +235,53 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
+    }
+
+    public function fetchMerchantsByFilter(array $merchantIds, array $input)
+    {
+        $query = $this->newQuery()
+                      ->select(Entity::ID,
+                               Entity::NAME,
+                               Entity::EMAIL,
+                               Entity::ACTIVATED,
+                               'merchants.created_at',
+                               'merchants.updated_at',
+                               Entity::ARCHIVED_AT,
+                               Entity::SUSPENDED_AT,
+                               'merchant_details.steps_finished',
+                               'merchant_details.submitted_at')
+                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', 'merchant_id')
+                      ->whereIn(Entity::ID, $merchantIds);
+
+        switch (true)
+        {
+            case (empty($input['suspended']) === false):
+                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
+                break;
+
+            case (empty($input['archived']) === false):
+                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['activated']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT);
+                break;
+
+            case (empty($input['pending']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNotNull('merchant_details.submitted_at');
+                break;
+            case (empty($input['dead']) === false):
+                $query = $query->where('merchants.created_at', '<', time() - 24 * 7 * 3600)
+                               ->whereNull('merchant_details.submitted_at');
+                break;
+
+            default:
+                $query = $query->whereNull(Entity::ARCHIVED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT);
+                break;
+        }
+
+        return $query->get();
     }
 }
