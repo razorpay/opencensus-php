@@ -449,8 +449,8 @@ class FreechargeGatewayTest extends TestCase
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertEquals(
-            $wallet['refund_id'],
-            Refund\Entity::verifyIdAndStripSign($refund['id']));
+            Refund\Entity::verifyIdAndStripSign($refund['id']),
+            $wallet['refund_id']);
         $this->assertEquals($result['total_applicable_refunds'], 1);
         $this->assertEquals($result['total_success_refunds'], 1);
     }
@@ -467,10 +467,10 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = (new Refund\Repository)->findOrFail($refund['id']);
 
-        // To Test when refund failed but record exists
+        // Freecharge failed this refund explicitly after initiating it
         $refund['id'] = 'failedRefund12';
 
-        $refund->saveOrFail();
+        (new Refund\Repository)->saveOrFail($refund);
 
         $result = $this->startGatewayRefundRecordCron(
             'wallet_freecharge');
@@ -491,16 +491,19 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = (new Refund\Repository)->findOrFail($refund['id']);
 
-        // To Test when txnRecord does not exist for refund Id
+        // When freecharge did not handle the refund request
+        // i.e Freecharge does not have any refund transaction for razorpay
+        // refund ID
         $refund['id'] = 'failedRefund13';
+        $refund['amount'] = 300;
 
-        $refund->saveOrFail();
+        (new Refund\Repository)->saveOrFail($refund);
 
         $result = $this->startGatewayRefundRecordCron(
             'wallet_freecharge');
 
         $this->assertEquals($result['total_applicable_refunds'], 1);
-        $this->assertEquals($result['total_success_refunds'], 0);
+        $this->assertEquals($result['total_success_refunds'], 1);
     }
 
     public function testRefundRecordAbsentRefund()
@@ -515,12 +518,13 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = (new Refund\Repository)->findOrFail($refund['id']);
 
-        // To Test when refund failed but record exists
+        // Freecharge failed this refund explicitly after initiating it
         $refund['id'] = 'failedRefund12';
-        // Changing it to trigger successful refund
+
+        // refund fails when amount is 100, Changing it to trigger successful refund
         $refund['amount'] = 300;
 
-        $refund->saveOrFail();
+        (new Refund\Repository)->saveOrFail($refund);
 
         $result = $this->startGatewayRefundRecordCron(
             'wallet_freecharge');

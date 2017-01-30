@@ -68,7 +68,7 @@ class Server extends Base\Mock\Server
             {
                 $response[ResponseFields::STATUS] = 'FAILED';
             }
-            else if ($merchantTxnId ===  'failedRefund13')
+            else if ($merchantTxnId === 'failedRefund13')
             {
                 // throw transaction does not exist error
                 $response = $this->getErrorResponse('E008');
