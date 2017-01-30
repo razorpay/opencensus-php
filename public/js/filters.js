@@ -38,7 +38,7 @@ angular.module('app.filters', []).filter('fromNow', function () {
     return function(input) {
       return (!!input) ? input.charAt(0).toUpperCase() + input.substr(1).toLowerCase() : '';
     };
-}).filter('propercurrency', function($filter) {
+}).filter('propercurrency', ['$filter', function($filter) {
     return function(input, currency) {
       switch (currency) {
         case 'USD':
@@ -50,7 +50,7 @@ angular.module('app.filters', []).filter('fromNow', function () {
           return $filter('currency')(input, '', 2);
       }
     };
-}).filter('roletoname', function() {
+}]).filter('roletoname', function() {
     return function(role, helptext) {
       var rolesLabels = {
         operations: 'Operations',
