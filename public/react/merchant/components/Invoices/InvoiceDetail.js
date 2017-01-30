@@ -121,16 +121,38 @@ export default (props) => {
                   SMS Status
                 </div>
 
-                <ListGroupToggler label='Items'>
-                  {
-                    invoice.line_items.map((item, index) => (
-                      <div class='list-group-item' key={index}>
-                        <Amount class='pull-right' value={item.amount} />
-                        {item.name}
-                      </div>
-                    ))
-                  }
-                </ListGroupToggler>
+                {
+                  invoice.line_items.length ?
+                    <ListGroupToggler label='Items'>
+                      {
+                        invoice.line_items.map((item, index) => (
+                          <div class='list-group-item' key={index}>
+                            <Amount class='pull-right' value={item.amount} />
+                            {item.name}
+                          </div>
+                        ))
+                      }
+                    </ListGroupToggler> :
+                    ''
+                }
+
+                {
+                  Object.keys(invoice.notes).length ?
+                    <ListGroupToggler label='Notes'>
+                      {
+                        Object.keys(invoice.notes).map((key) => (
+                          <div class='list-group-item' key={key}>
+                            <span class='pull-right'>{invoice.notes[key]}</span>
+                            {key}
+                          </div>
+                        ))
+                      }
+                    </ListGroupToggler> :
+                    <div class='list-group-item'>
+                      <span class='pull-right'>No Notes</span>
+                      Notes
+                    </div>
+                }
 
                 <div class='list-group-item'>
                   <span class='pull-right'>{invoice.type}</span>
