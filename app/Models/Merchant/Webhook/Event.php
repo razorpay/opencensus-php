@@ -22,8 +22,9 @@ class Event
     const P2P_CREATED               = 'p2p.created';
     const P2P_REJECTED              = 'p2p.rejected';
     const P2P_TRANSFERRED           = 'p2p.transferred';
+    const ACCOUNT_ACTIVATED         = 'account.activated';
 
-    protected static $events = array(
+    protected static $events = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::PAYMENT_CAPTURED,
@@ -33,25 +34,15 @@ class Event
         self::P2P_CREATED,
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
-    );
-
-    protected static $bitMap = array(
-        self::PAYMENT_AUTHORIZED    => 0x1,
-        self::PAYMENT_FAILED        => 0x2,
-        self::PAYMENT_CAPTURED      => 0x3,
-        self::ORDER_PAID            => 0x4,
-        self::INVOICE_PAID          => 0x5,
-        self::VPA_EDITED            => 0x6,
-        self::P2P_CREATED           => 0x7,
-        self::P2P_REJECTED          => 0x8,
-    );
+        self::ACCOUNT_ACTIVATED,
+    ];
 
     /**
      * Events which are present in the system and
      * can be enabled/disabled.
      * @var array
      */
-    protected static $names = array(
+    protected static $names = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -60,9 +51,10 @@ class Event
         self::P2P_CREATED,
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
-    );
+        self::ACCOUNT_ACTIVATED,
+    ];
 
-    protected static $bitPosition = array(
+    protected static $bitPosition = [
         self::PAYMENT_AUTHORIZED    => 1,
         self::PAYMENT_FAILED        => 2,
         self::PAYMENT_CAPTURED      => 3,
@@ -72,14 +64,15 @@ class Event
         self::P2P_CREATED           => 7,
         self::P2P_REJECTED          => 8,
         self::P2P_TRANSFERRED       => 9,
-    );
+        self::ACCOUNT_ACTIVATED     => 10,
+    ];
 
     /**
      * These are events which will displayed to merchants
      * for enabling/disabling.
      * @var array
      */
-    protected static $launchedEvents = array(
+    protected static $launchedEvents = [
         self::PAYMENT_AUTHORIZED,
         self::PAYMENT_FAILED,
         self::ORDER_PAID,
@@ -88,7 +81,8 @@ class Event
         self::P2P_CREATED,
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
-    );
+        self::ACCOUNT_ACTIVATED,
+    ];
 
     // Defines the mapping to entity for respective envent and also
     // the field description to be set in mail content for webhook related mails

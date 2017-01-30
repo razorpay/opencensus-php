@@ -16,6 +16,7 @@ class Contains
         Type::P2P_CREATED        => [Constants\Entity::P2P, 'sink', 'source'],
         Type::P2P_REJECTED       => [Constants\Entity::P2P, 'sink', 'source'],
         Type::P2P_TRANSFERRED    => [Constants\Entity::P2P, 'sink', 'source'],
+        Type::ACCOUNT_ACTIVATED  => [Constants\Entity::ACCOUNT],
     );
 
     public static function getEntityNamesForEvent($event)

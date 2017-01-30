@@ -10,6 +10,7 @@ use RZP\Constants;
 use RZP\Jobs\WebHook;
 use RZP\Models\Base;
 use RZP\Models\Event;
+use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
@@ -34,6 +35,8 @@ class ApiEventSubscriber extends Base\Core
     protected $queue;
 
     protected $params;
+
+    protected $merchant;
 
     protected $webhookEnabledForEvent = false;
 
@@ -60,6 +63,8 @@ class ApiEventSubscriber extends Base\Core
     public function onEvent($params)
     {
         $event = $this->getFiringEvent();
+
+        $this->setMerchant($params);
 
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
 
@@ -169,6 +174,13 @@ class ApiEventSubscriber extends Base\Core
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onAccountActivated($account)
+    {
+        $payload = $this->getAccountPayload($account);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
     protected function getP2pPayload($p2p)
     {
         $source = $p2p->source;
@@ -257,6 +269,15 @@ class ApiEventSubscriber extends Base\Core
         return $payload;
     }
 
+    protected function getAccountPayload($account)
+    {
+        $payload = [
+            Constants\Entity::ACCOUNT => [
+                'entity' => $account->toArrayPublic()
+            ]
+        ];
+    }
+
     protected function prepareAndDispatchWebhook(array $payload)
     {
         $data = $this->getWebhookData($payload);
@@ -267,8 +288,10 @@ class ApiEventSubscriber extends Base\Core
     protected function getWebhookData($payload)
     {
         $eventFired = $this->event;
+
         $entity = $this->params;
-        $webhook = $entity->merchant->webhook;
+
+        $webhook = $this->merchant->webhook;
 
         $attributes = array(
             Event\Entity::EVENT       => $eventFired,
@@ -280,7 +303,7 @@ class ApiEventSubscriber extends Base\Core
 
         $event->setPayload($payload);
 
-        $event->merchant()->associate($entity->merchant);
+        $event->merchant()->associate($this->merchant);
 
         $data = array(
             'mode'          => $this->getMode(),
@@ -298,5 +321,19 @@ class ApiEventSubscriber extends Base\Core
         return (($webhook !== null) and
                 ($webhook->isActive()) and
                 ($webhook->isEventEnabled($this->event)));
+    }
+
+    protected function setMerchant($entity)
+    {
+        if (($entity instanceof Merchant\Account\Entity) === true)
+        {
+            $merchant = $entity->parent;
+        }
+        else
+        {
+            $merchant = $entity->merchant;
+        }
+
+        $this->merchant = $merchant;
     }
 }

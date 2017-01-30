@@ -21,4 +21,5 @@ class Type
     const P2P_CREATED        = 'p2p.created';
     const P2P_REJECTED       = 'p2p.rejected';
     const P2P_TRANSFERRED    = 'p2p.transferred';
+    const ACCOUNT_ACTIVATED  = 'account.activated';
 }
