@@ -45,7 +45,7 @@ class CreateTransfers extends Migration
             $table->tinyInteger(Entity::ON_HOLD)
                   ->default(0);
 
-            $table->integer(Entity::HOLD_UNTIL)
+            $table->integer(Entity::ON_HOLD_UNTIL)
                   ->nullable()
                   ->default(null);
 

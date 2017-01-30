@@ -54,7 +54,7 @@ class Entity extends Base\PublicEntity
     const GLOBAL_TOKEN_ID       = 'global_token_id';
     const VPA                   = 'vpa';
     const ON_HOLD               = 'on_hold';
-    const HOLD_UNTIL            = 'hold_until';
+    const ON_HOLD_UNTIL         = 'on_hold_until';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
@@ -117,7 +117,7 @@ class Entity extends Base\PublicEntity
         self::RECURRING,
         self::SAVE,
         self::ON_HOLD,
-        self::HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
     ];
 
     protected $visible = [
@@ -149,7 +149,7 @@ class Entity extends Base\PublicEntity
         self::CONTACT,
         self::NOTES,
         self::ON_HOLD,
-        self::HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
@@ -249,7 +249,7 @@ class Entity extends Base\PublicEntity
         self::CAPTURED_AT          => null,
         self::AUTO_CAPTURED        => 0,
         self::ON_HOLD              => 0,
-        self::HOLD_UNTIL           => null,
+        self::ON_HOLD_UNTIL        => null,
         self::SAVE                 => false,
         self::FEE                  => null,
         self::SERVICE_TAX          => null,
@@ -284,7 +284,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED      => 'int',
         self::AUTO_CAPTURED        => 'bool',
         self::ON_HOLD              => 'bool',
-        self::HOLD_UNTIL           => 'int',
+        self::ON_HOLD_UNTIL        => 'int',
         self::SIGNED               => 'bool',
         self::AMOUNT               => 'int',
         self::FEE                  => 'int',
@@ -507,9 +507,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
 
-    public function setHoldUntil($holdUntil)
+    public function setOnHoldUntil($holdUntil)
     {
-        $this->setAttribute(self::HOLD_UNTIL, $holdUntil);
+        $this->setAttribute(self::ON_HOLD_UNTIL, $holdUntil);
     }
 
     public function setAutoCapturedTrue()
@@ -735,9 +735,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ON_HOLD);
     }
 
-    public function getHoldUntil()
+    public function getOnHoldUntil()
     {
-        return $this->getAttribute(self::HOLD_UNTIL);
+        return $this->getAttribute(self::ON_HOLD_UNTIL);
     }
 
 // ----------------------- Accessor Ends ---------------------------------------

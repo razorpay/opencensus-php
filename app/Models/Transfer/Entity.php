@@ -20,7 +20,7 @@ class Entity extends Base\PublicEntity
     const REVERSAL_STATUS       = 'reversal_status';
     const AMOUNT_REVERSED       = 'amount_reversed';
     const ON_HOLD               = 'on_hold';
-    const HOLD_UNTIL            = 'hold_until';
+    const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
 
     protected static $sign = 'trf';
@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
         self::SOURCE_ID,
         self::SOURCE_TYPE,
         self::ON_HOLD,
-        self::HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
     ];
 
     protected $visible = [
@@ -52,7 +52,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::ON_HOLD,
-        self::HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::ON_HOLD,
-        self::HOLD_UNTIL,
+        self::ON_HOLD_UNTIL,
         self::CREATED_AT,
     ];
 
@@ -83,13 +83,13 @@ class Entity extends Base\PublicEntity
         self::AMOUNT                 => 'int',
         self::AMOUNT_REVERSED        => 'int',
         self::ON_HOLD                => 'bool',
-        self::HOLD_UNTIL             => 'int',
+        self::ON_HOLD_UNTIL          => 'int',
     ];
 
     protected $defaults = [
         self::AMOUNT_REVERSED   => 0,
         self::ON_HOLD           => 0,
-        self::HOLD_UNTIL        => null,
+        self::ON_HOLD_UNTIL     => null,
     ];
 
     // -------------------- Relations ---------------------------
@@ -163,9 +163,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ON_HOLD);
     }
 
-    public function getHoldUntil()
+    public function getOnHoldUntil()
     {
-        return $this->getAttribute(self::HOLD_UNTIL);
+        return $this->getAttribute(self::ON_HOLD_UNTIL);
     }
 
     // -------------------- End Getters ---------------------------
@@ -182,9 +182,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ON_HOLD, $onHold);
     }
 
-    public function setHoldUntil($holdUntil)
+    public function setOnHoldUntil($holdUntil)
     {
-        $this->setAttribute(self::HOLD_UNTIL, $holdUntil);
+        $this->setAttribute(self::ON_HOLD_UNTIL, $holdUntil);
     }
 
     // -------------------- End Setters ---------------------------

@@ -95,7 +95,7 @@ class CreatePayments  extends Migration
             $table->tinyInteger(Payment::ON_HOLD)
                   ->default(0);
 
-            $table->integer(Payment::HOLD_UNTIL)
+            $table->integer(Payment::ON_HOLD_UNTIL)
                   ->nullable()
                   ->default(null);
 

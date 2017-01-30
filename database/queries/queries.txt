@@ -1604,7 +1604,7 @@ ALTER TABLE merchant_banks
 ALTER TABLE payments
     ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER vpa,
-    ADD COLUMN hold_until INTEGER DEFAULT NULL AFTER on_hold;
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold;
 
 ALTER TABLE merchants
     ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER email,
@@ -1619,7 +1619,7 @@ ALTER TABLE transfers
     ADD COLUMN currency CHAR(3) NOT NULL AFTER amount,
     ADD COLUMN amount_reversed INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER currency,
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER amount_reversed,
-    ADD COLUMN hold_until INTEGER DEFAULT NULL AFTER on_hold;
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold;
 
 ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type

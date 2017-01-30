@@ -35,7 +35,7 @@ class TransferTest extends TestCase
 
         $this->assertEquals($transfer['id'], $this->getLastEntity('transfer', true)['id']);
 
-        // When Transfer Fee = 0
+        // When Transfer Fee = 0, zero pricing
         $this->assertEquals($transfer['amount'], $this->getBalance('10000000000001'));
 
         $this->checkPaymentAndTxnRecords($transfer);
@@ -69,14 +69,14 @@ class TransferTest extends TestCase
     {
         $body = $this->getTransferRequestBody('account')['content'];
 
-        unset($body['on_hold'], $body['hold_until']);
+        unset($body['on_hold'], $body['on_hold_until']);
 
         $transfer = $this->createTransfer('account', $body);
 
         $this->assertEquals(false, $transfer['on_hold']);
     }
 
-    public function testTransferHoldUntilInvalid()
+    public function testTransferOnHoldUntilInvalid()
     {
         $body = $this->getTransferRequestBody('account')['content'];
 
@@ -88,7 +88,7 @@ class TransferTest extends TestCase
         });
     }
 
-    public function testTransferHoldUntilOnHoldFalse()
+    public function testTransferOnHoldUntilOnHoldFalse()
     {
         $body = $this->getTransferRequestBody('account')['content'];
 
@@ -106,7 +106,7 @@ class TransferTest extends TestCase
 
         $body = $this->getTransferRequestBody('account', 'patch')['content'];
 
-        unset($body['hold_until']);
+        unset($body['on_hold_until']);
 
         $body['on_hold'] = '0';
 
@@ -117,7 +117,7 @@ class TransferTest extends TestCase
         $this->checkPaymentAndTxnRecords($patch);
     }
 
-    public function testPatchTransferHoldUntilOnHoldFalse()
+    public function testPatchTransferOnHoldUntilOnHoldFalse()
     {
         $transfer = $this->createTransfer('account');
 
@@ -142,6 +142,21 @@ class TransferTest extends TestCase
         $response = $this->runRequestResponseFlow($data);
 
         $this->assertEquals($transfer['id'], $response['id']);
+    }
+
+    public function testRetrieveMultipleTransfers()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $transfer1 = $this->createTransfer('account');
+
+        $transfer2 = $this->createTransfer('account');
+
+        $data['response']['content']['items'][] = $transfer2;
+
+        $data['response']['content']['items'][] = $transfer1;
+
+        $this->runRequestResponseFlow($data);
     }
 
     public function testFullReversal()
@@ -323,7 +338,7 @@ class TransferTest extends TestCase
         $expectedPayment = [
             'amount'        => $transfer['amount'],
             'on_hold'       => $transfer['on_hold'],
-            'hold_until'    => $transfer['hold_until'],
+            'on_hold_until' => $transfer['on_hold_until'],
         ];
 
         $this->assertArraySelectiveEquals($expectedPayment, $payment);

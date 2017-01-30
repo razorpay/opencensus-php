@@ -22,20 +22,20 @@ return [
         'amount'        => 1000,
         'currency'      => 'INR',
         'on_hold'       => '1',
-        'hold_until'    => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'createCustomerTransferRequest' => [
-        'customer'       => 'cust_200000customer',
+        'customer'      => 'cust_200000customer',
         'amount'        => 1000,
         'currency'      => 'INR',
         'on_hold'       => '1',
-        'hold_until'    => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'patchAccountTransferRequest' => [
         'on_hold'       => '1',
-        'hold_until'    => 1586055431,
+        'on_hold_until' => 1586055431,
     ],
 
     'testTransferInvalidType' => [
@@ -54,12 +54,12 @@ return [
         ],
     ],
 
-    'testTransferHoldUntilInvalid' => [
+    'testTransferOnHoldUntilInvalid' => [
         'response'  => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The on hold field is required when hold until is present.',
+                    'description' => 'The on hold field is required when on hold until is present.',
                 ],
             ],
             'status_code' => 400,
@@ -70,12 +70,12 @@ return [
         ],
     ],
 
-    'testTransferHoldUntilOnHoldFalse' => [
+    'testTransferOnHoldUntilOnHoldFalse' => [
         'response'  => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The on_hold field must be set to 1, if hold_until is sent',
+                    'description' => 'The on_hold field must be set to 1, if on_hold_until is sent',
                 ],
             ],
             'status_code' => 400,
@@ -86,12 +86,12 @@ return [
         ],
     ],
 
-    'testPatchTransferHoldUntilOnHoldFalse' => [
+    'testPatchTransferOnHoldUntilOnHoldFalse' => [
         'response'  => [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The on_hold field must be set to 1, if hold_until is sent',
+                    'description' => 'The on_hold field must be set to 1, if on_hold_until is sent',
                 ],
             ],
             'status_code' => 400,
@@ -114,6 +114,20 @@ return [
                 'to_id'         => 'acc_10000000000001',
                 'amount'        => 1000,
                 'currency'      => 'INR',
+            ],
+        ],
+    ],
+
+    'testRetrieveMultipleTransfers' => [
+        'request' => [
+            'method'  => 'GET',
+            'url'     => '/transfers',
+            'content' => [],
+        ],
+        'response'  => [
+            'content' => [
+                'count'         => 2,
+                'items'         => [],
             ],
         ],
     ],

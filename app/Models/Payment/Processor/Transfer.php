@@ -17,13 +17,13 @@ trait Transfer
     public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
     {
         $paymentData = [
-            Payment\Entity::AMOUNT      => $input['amount'],
-            Payment\Entity::CONTACT     => $input['contact'] ?? null,
-            Payment\Entity::EMAIL       => $input['email'] ?? null,
-            Payment\Entity::CURRENCY    => $input['currency'],
-            Payment\Entity::ON_HOLD     => $input['on_hold'] ?? 0,
-            Payment\Entity::HOLD_UNTIL  => $input['hold_until'] ?? null,
-            Payment\Entity::METHOD      => Payment\Method::TRANSFER,
+            Payment\Entity::AMOUNT          => $input['amount'],
+            Payment\Entity::CONTACT         => $input['contact'] ?? null,
+            Payment\Entity::EMAIL           => $input['email'] ?? null,
+            Payment\Entity::CURRENCY        => $input['currency'],
+            Payment\Entity::ON_HOLD         => $input['on_hold'] ?? 0,
+            Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
+            Payment\Entity::METHOD          => Payment\Method::TRANSFER,
         ];
 
         $payment = $this->createPaymentEntity($paymentData);

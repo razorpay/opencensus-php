@@ -82,7 +82,7 @@ class Core extends Base\Core
 
     /**
      * Edit the attributes of a transfer entity
-     * Currently allowed for on_hold and hold_until fields
+     * Currently allowed for on_hold and on_hold_until fields
      *
      * @param  string           $id
      * @param  array            $input
@@ -103,7 +103,7 @@ class Core extends Base\Core
 
         if ($transfer->getOnHold() === false)
         {
-            $transfer->setHoldUntil(null);
+            $transfer->setOnHoldUntil(null);
         }
 
         return $this->repo->transaction(function () use ($transfer, $input)
@@ -177,7 +177,7 @@ class Core extends Base\Core
 
         $payment->setOnHold($transfer->getOnHold());
 
-        $payment->setHoldUntil($transfer->getHoldUntil());
+        $payment->setOnHoldUntil($transfer->getOnHoldUntil());
 
         $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
 

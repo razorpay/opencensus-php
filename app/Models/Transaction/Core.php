@@ -907,9 +907,9 @@ class Core extends Base\Core
             $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
 
-        $holdUntilTime = $payment->getHoldUntil();
+        $onHoldUntilTime = $payment->getOnHoldUntil();
 
-        return max($returnTime, $holdUntilTime);
+        return max($returnTime, $onHoldUntilTime);
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)

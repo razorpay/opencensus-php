@@ -41,8 +41,8 @@ class Validator extends Base\Validator
         'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
-        'on_hold'                 =>  'required_with:hold_until|boolean',
-        'hold_until'              =>  'sometimes|integer',
+        'on_hold'                 =>  'required_with:on_hold_until|boolean',
+        'on_hold_until'           =>  'sometimes|integer',
         '_'                       =>  'sometimes'
     ];
 
@@ -54,10 +54,10 @@ class Validator extends Base\Validator
     protected static $refundRules = [
         'amount'                  => 'sometimes|integer',
         'notes'                   => 'sometimes|notes',
-        'transfers'               => 'sometimes|array',
-        'transfers.*.transfer'    => 'required_with:transfers|string|min:14',
-        'transfers.*.amount'      => 'required_with:transfers|integer|min:100',
-        'transfers.*.currency'    => 'required_with:transfers|string|size:3'
+        'reversals'               => 'sometimes|array',
+        'reversals.*.transfer'    => 'required_with:reversals|string|min:14',
+        'reversals.*.amount'      => 'required_with:reversals|integer|min:100',
+        'reversals.*.currency'    => 'required_with:reversals|string|size:3'
     ];
 
     protected static $transferRules = [
@@ -65,7 +65,9 @@ class Validator extends Base\Validator
         'transfers.*.customer'       => 'sometimes|string|max:19',
         'transfers.*.account'        => 'sometimes|string|max:19',
         'transfers.*.amount'         => 'required|integer|min:100',
-        'transfers.*.currency'       => 'required|string|size:3'
+        'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.on_hold'        => 'sometimes|boolean',
+        'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
 
     protected static $createValidators = [

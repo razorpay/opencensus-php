@@ -17,13 +17,13 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer',
         Entity::CURRENCY       => 'required|size:3',
-        Entity::ON_HOLD        => 'required_with:hold_until|boolean',
-        Entity::HOLD_UNTIL     => 'sometimes|integer',
+        Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editRules = [
         Entity::ON_HOLD        => 'required|boolean',
-        Entity::HOLD_UNTIL     => 'sometimes|integer',
+        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editValidators = [
@@ -148,20 +148,20 @@ class Validator extends Base\Validator
             return;
         }
 
-        if (isset($input['hold_until']) === true)
+        if (isset($input['on_hold_until']) === true)
         {
             if ($input['on_hold'] === '0')
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'The on_hold field must be set to 1, if hold_until is sent');
+                    'The on_hold field must be set to 1, if on_hold_until is sent');
             }
 
             $now = Carbon::now('Asia/Kolkata');
 
-            if ($input['hold_until'] < $now->timestamp)
+            if ($input['on_hold_until'] < $now->timestamp)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'The hold_until timestamp cannot be less than the current timestamp');
+                    'The on_hold_until timestamp cannot be less than the current timestamp');
             }
         }
     }
