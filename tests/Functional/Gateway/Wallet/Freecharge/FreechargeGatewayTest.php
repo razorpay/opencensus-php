@@ -447,12 +447,14 @@ class FreechargeGatewayTest extends TestCase
             'wallet_freecharge');
 
         $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals(200, $payment['amount_refunded']);
         $this->assertEquals(
             Refund\Entity::verifyIdAndStripSign($refund['id']),
             $wallet['refund_id']);
-        $this->assertEquals($result['total_applicable_refunds'], 1);
-        $this->assertEquals($result['total_success_refunds'], 1);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
     }
 
     public function testRefundRecordFailed()
@@ -475,8 +477,8 @@ class FreechargeGatewayTest extends TestCase
         $result = $this->startGatewayRefundRecordCron(
             'wallet_freecharge');
 
-        $this->assertEquals($result['total_applicable_refunds'], 1);
-        $this->assertEquals($result['total_success_refunds'], 0);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(0, $result['total_success_refunds']);
     }
 
     public function testRefundRecordFailed2()
@@ -502,8 +504,13 @@ class FreechargeGatewayTest extends TestCase
         $result = $this->startGatewayRefundRecordCron(
             'wallet_freecharge');
 
-        $this->assertEquals($result['total_applicable_refunds'], 1);
-        $this->assertEquals($result['total_success_refunds'], 1);
+        $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100, $payment['amount_refunded']);
+        $this->assertequals($refund['id'], $wallet['refund_id']);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
     }
 
     public function testRefundRecordAbsentRefund()
@@ -530,10 +537,12 @@ class FreechargeGatewayTest extends TestCase
             'wallet_freecharge');
 
         $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
 
-        $this->assertEquals($wallet['refund_id'], $refund['id']);
-        $this->assertEquals($result['total_applicable_refunds'], 1);
-        $this->assertEquals($result['total_success_refunds'], 1);
+        $this->assertEquals(100, $payment['amount_refunded']);
+        $this->assertequals($refund['id'], $wallet['refund_id']);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
     }
 
     public function deleteGatewayRefundEntity($id)
