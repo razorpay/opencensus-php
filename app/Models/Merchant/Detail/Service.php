@@ -15,7 +15,10 @@ use RZP\Models\Merchant\Detail\ValidationFields;
 
 class Service extends Base\Service
 {
-    // Temp
+    /**
+     * Sets the merchant entity for the current instance
+     * Used in account onboarding
+     */
     public function setMerchant($merchant)
     {
         $this->merchant = $merchant;

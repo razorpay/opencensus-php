@@ -13,8 +13,6 @@ class Core extends Merchant\Core
 
         $account->generateId();
 
-        // $account->setAuditAction(Action::CREATE_account);
-
         $email['email'] = $input['email'];
 
         $account->getValidator()->validateInput('unique_email', $email);
@@ -34,10 +32,11 @@ class Core extends Merchant\Core
     {
         $accountDetails = $account->merchantDetail;
 
-        $account->getValidator()->validateInput('upload', $input);
+        $account->getValidator()->validateInput('files', $input);
 
-        // @todo: Change error
-        $accountDetails->getValidator()->validateIsNotLocked();
+        $accountDetails->getValidator()->validateIsNotLocked(true);
+
+        $params = [];
 
         foreach ($input as $type => $content)
         {
@@ -58,9 +57,18 @@ class Core extends Merchant\Core
     {
         $detailService = new Merchant\Detail\Service;
 
+        (new Validator)->validateInput('update_details', $input);
+
+        // Convert nested input array to a flat structure
+        $inputConverted = Detail::flattenInputArray($input);
+
         $detailService->setMerchant($account);
 
-        $accountDetails = $detailService->saveMerchantDetails($input);
+        $accountDetails = $detailService->saveMerchantDetails($inputConverted);
+
+        // Convert the flat output back into a the nested structure
+        // Structure defined in Detail::$detailMap
+        $accountDetails = Detail::expandNestedDetailArray($accountDetails);
 
         return $accountDetails;
     }

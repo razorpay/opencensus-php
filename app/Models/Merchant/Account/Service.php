@@ -15,14 +15,26 @@ class Service extends Merchant\Service
         $this->core = new Core;
     }
 
-    public function fetch($id)
+    /**
+     * Retrieve a single account entity
+     *
+     * @param  string       $id
+     * @return array
+     */
+    public function fetch(string $id) : array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $account->toArrayPublic();
     }
 
-    public function fetchMultiple($input)
+    /**
+     * Retrieve a collection of accounts
+     *
+     * @param  mixed        $input
+     * @return array
+     */
+    public function fetchMultiple($input) : array
     {
         $accounts = $this->repo->account->fetch($input, $this->merchant->getId());
 
@@ -47,7 +59,14 @@ class Service extends Merchant\Service
         return $account->toArrayPublic();
     }
 
-    public function uploadFiles(string $id, $input)
+    /**
+     * Upload activation files for an account
+     *
+     * @param  string       $id
+     * @param  mixed        $input
+     * @return array
+     */
+    public function uploadFiles(string $id, $input) : array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 
@@ -58,7 +77,14 @@ class Service extends Merchant\Service
         ];
     }
 
-    public function updateDetails(string $id, array $input)
+    /**
+     * Add or edit account details
+     *
+     * @param  string       $id
+     * @param  array        $input
+     * @return array
+     */
+    public function updateDetails(string $id, array $input) : array
     {
         $account = $this->repo->account->findByPublicIdAndMerchant($id, $this->merchant);
 

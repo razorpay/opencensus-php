@@ -1143,7 +1143,7 @@ final class Route
         'merchant_public_get_banks',
         'merchant_methods',
     );
-
+    
     /**
      * A route can belong to multiple features, mapped here
      */
