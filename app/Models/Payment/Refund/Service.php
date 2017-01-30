@@ -557,10 +557,10 @@ class Service extends Base\Service
 
         $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        $refunds = $this->repo
-                        ->refund
-                        ->fetchBetweenTimestampsForGateway(
-                            $createdAfter, $now, $gateway);
+        # TODO consult with others to express it better
+        $repoFunc = 'fetch' . str_replace('_', '', ucwords($gateway, '_')) . 'RefundsForValidation';
+
+        $refunds = $this->repo->refund->$repoFunc($gateway, $createdAfter);
 
         $totalRefunds = 0;
         $failed = 0;

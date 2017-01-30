@@ -369,7 +369,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->handleRequestFailure($response);
+        $this->handleRequestFailed($response);
 
         $success = null;
 
@@ -384,7 +384,6 @@ class Gateway extends Base\Gateway
             $refundAttr = [
                 RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
             ];
-
 
             $this->updateGatewayPaymentEntity($wallet, $refundAttr);
         }
@@ -411,6 +410,7 @@ class Gateway extends Base\Gateway
             'payment_id' => $input['payment']['id'],
         ];
 
+        return $data;
     }
 
     protected function getTokenAttributes($content)
@@ -917,6 +917,27 @@ class Gateway extends Base\Gateway
         }
 
         return $contentToSave;
+    }
+
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $this->action($input, Action::VERIFY);
+
+        $content = [
+            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
+            RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
+        ];
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+
+        $request = $this->getCustomRequestArray($content, 'GET');
+
+        $content = http_build_query($content);
+        $request['url'] .= '?' . $content;
+        $request['content'] = [];
+
+        return $request;
     }
 
     protected function getVerifyRequestArray($input)

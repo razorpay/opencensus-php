@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use RZP\Gateway\Wallet\Freecharge;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -269,6 +270,50 @@ class Repository extends Base\Repository
                                  ')'
                          )
                          ->get();
+
+        return $response;
+    }
+
+    public function fetchWalletFreechargeRefundsForValidation($gateway, $ts)
+    {
+        /*
+            SELECT `refunds`.*
+            FROM `refunds`
+            INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+            INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
+            WHERE `payments`.`gateway` = 'wallet_freecharge'
+                AND `refunds`.`transaction_id` IS NOT NULL
+                AND `refunds`.`created_at` > 1485413187
+                AND `wallet`.`status_code` = 'INITIATED';
+        */
+
+       // TODO Use getEntityWithWallet after merging #2183
+       $gatewayTable = 'wallet';
+       $refundTable = Table::REFUND;
+       $paymentTable = Table::PAYMENT;
+
+       $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+       $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+       $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
+       $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+
+       $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+       $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+       $gatewayStatusCodeAttr = 'status_code';
+       $gatewayRefundIdAttr = 'refund_id';
+
+       $refundAttributes = $this->getAttributeWithTableName('*');
+
+       $response = $this->newQuery()
+                        ->select($refundAttributes)
+                        ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                        ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
+                        ->where($paymentGatewayAttr, '=', $gateway)
+                        ->whereNotNull($refundTransactionIdAttr)
+                        ->where($refundCreatedAtAttr, '>', $ts)
+                        ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
+                        ->get();
 
         return $response;
     }
