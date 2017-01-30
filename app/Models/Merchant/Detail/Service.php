@@ -170,7 +170,7 @@ class Service extends Base\Service
 
         if ($verificationStatus === 'disabled')
         {
-            return intval(count($response['verification']['required_fields']) * 100 / count(ValidationFields::DASHBOARD_FIELDS));
+            return 100 - intval(count($response['verification']['required_fields']) * 100 / count(ValidationFields::DASHBOARD_FIELDS));
         }
 
         return 100;
