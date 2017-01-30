@@ -72,21 +72,26 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support' class='btn-toolbar'>
-          <button
-            class='btn btn-primary btn-rounded'
-            onClick={() => this.showPaymentLinkModal()}
-          >
-            <i class='fa fa-plus'></i>
-            <span>Create Payment Link</span>
-          </button>
-          <a
-            href='#/app/invoices/new'
-            class='btn btn-primary btn-rounded'
-          >
-            <i class='fa fa-plus'></i>
-            <span>New Invoice</span>
-          </a>
+        <Role notMyRole='support'>
+          <div class='btn-toolbar'>
+            <button
+              class='btn btn-primary btn-rounded'
+              onClick={() => this.showPaymentLinkModal()}
+            >
+              <i class='fa fa-plus'></i>
+              <span>Create Payment Link</span>
+            </button>
+
+            <Role notMyRole='sellerapp'>
+              <a
+                href='#/app/invoices/new'
+                class='btn btn-primary btn-rounded'
+              >
+                <i class='fa fa-plus'></i>
+                <span>New Invoice</span>
+              </a>
+            </Role>
+          </div>
         </Role>
 
         <div class='content-wrapper'>

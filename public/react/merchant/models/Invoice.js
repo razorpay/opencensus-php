@@ -78,20 +78,22 @@ export default class Invoice extends Entity {
           }
         })
       } else if (this.type === 'invoice') {
-        return this.line_items.map((item, index) => {
-          let lineItem = {
-            quantity: item.quantity,
-            description: item.description
-          }
+        return this.line_items
+          .filter((item) => !!(item.item_id || item.id || item.name))
+          .map((item, index) => {
+            let lineItem = {
+              quantity: item.quantity,
+              description: item.description
+            }
 
-          if (item.item_id) {
-            lineItem.item_id = item.item_id
-          } else {
-            lineItem.id = item.id
-          }
+            if (item.item_id) {
+              lineItem.item_id = item.item_id
+            } else {
+              lineItem.id = item.id
+            }
 
-          return lineItem
-        })
+            return lineItem
+          })
       }
     }
 

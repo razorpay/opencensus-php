@@ -20,10 +20,6 @@ export default class Role extends Component {
       return null;
     }
 
-    return (
-      <div class={className}>
-        {children}
-      </div>
-    )
+    return children
   }
 }

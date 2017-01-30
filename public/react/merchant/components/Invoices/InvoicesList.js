@@ -1,3 +1,4 @@
+import ReactTooltip from 'react-tooltip'
 import TableBody from '../TableBody'
 import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
@@ -31,32 +32,30 @@ const InvoiceListItem = (props) => {
       </td>
       <td>
         <div class='row-action'>
-          {
-            invoice.isEditable ?
-            <div class='btn-group'>
+          <div class='btn-group'>
+            <div data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}>
               <button
                 class='btn btn-xs btn-default'
+                disabled={!invoice.isEditable}
                 onClick={props.onEditClick}
               >
                 <i class='fa fa-edit'></i>
                 <span>edit</span>
               </button>
+            </div>
+            <div data-tip={!invoice.isEditable ? 'Paid invoice cannot be deleted' : ''}>
               <button
                 class='btn btn-xs btn-default'
+                disabled={!invoice.isEditable}
                 onClick={props.onDeleteClick}
               >
                 <i class='fa fa-trash text-danger'></i>
                 <span>delete</span>
               </button>
-            </div> :
-            <a
-              class='btn btn-xs btn-default'
-              href={`#/app/invoices/${invoice.id}/details`}
-            >
-              view details
-            </a>
-          }
+            </div>
+          </div>
         </div>
+        <ReactTooltip effect='solid' />
       </td>
     </tr>
   )

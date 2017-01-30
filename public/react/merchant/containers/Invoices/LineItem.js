@@ -22,6 +22,7 @@ export default class InvoiceLineItem extends ModalContainer {
   constructor() {
     super(...arguments)
     this.quickCreateItem = ::this.quickCreateItem
+    this.updateLineItemRow = ::this.updateLineItemRow
     this.selectItemAndCloseModal = ::this.selectItemAndCloseModal
   }
 
@@ -30,11 +31,16 @@ export default class InvoiceLineItem extends ModalContainer {
   }
 
   selectItemAndCloseModal(item) {
-    let fieldName = this.props.fieldName
-    this.props.change(`${fieldName}.item_id`, item.id)
-    this.props.change(`${fieldName}.amountInINR`, (item.amount/100).toFixed(2))
-    this.props.change(`${fieldName}.description`, item.description)
+    this.updateLineItemRow(item)
     this.closeModal()
+  }
+
+  updateLineItemRow(item) {
+    let fieldName = this.props.fieldName
+    this.props.change(`${fieldName}.item_id`, item.id || 'NULL') // since redux-form converts falsy values into empty strings
+    this.props.change(`${fieldName}.quantity`, 1)
+    this.props.change(`${fieldName}.description`, item.description || '')
+    this.props.change(`${fieldName}.amountInINR`, item.amountInINR || '0.00')
   }
 
   calculateLineItemTotal() {
@@ -78,15 +84,7 @@ export default class InvoiceLineItem extends ModalContainer {
               selected={selectedOption}
               optionLabelPath='name'
               placeholder='Select an item'
-              onChange={(selectedItem) => {
-                this.props.change(`${fieldName}.amountInINR`, selectedItem.amountInINR || '0.00')
-                this.props.change(`${fieldName}.item_id`, selectedItem.id || '')
-                this.props.change(`${fieldName}.description`, selectedItem.description || '')
-
-                setTimeout(() => {
-                  this.calculateLineItemTotal()
-                }, 0)
-              }}
+              onChange={this.updateLineItemRow}
               onQuickAdd={this.quickCreateItem}
               disabled={disabled}
             />

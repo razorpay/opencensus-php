@@ -5,6 +5,21 @@ export default (props) => {
   return (
     <ListFilter {...props}>
       <div class='form-group list-filter-item'>
+        <label>Invoice Status</label>
+        <Field
+          name='status'
+          component='select'
+          class='form-control input-sm'
+        >
+          <option value=''>All</option>
+          <option value='draft'>Draft</option>
+          <option value='issued'>Issued</option>
+          <option value='paid'>Paid</option>
+          <option value='expired'>Expired</option>
+        </Field>
+      </div>
+
+      <div class='form-group list-filter-item'>
         <label>Invoice ID</label>
         <Field
           name='id'

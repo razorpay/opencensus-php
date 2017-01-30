@@ -66,14 +66,16 @@ export default class CustomersListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support' class='btn-toolbar'>
-          <button
-            class='pull-right btn btn-primary btn-rounded'
-            onClick={() => this.showCustomerModal()}
-          >
-            <i class='fa fa-plus'></i>
-            <span>New Customer</span>
-          </button>
+        <Role notMyRole='support'>
+          <div class='btn-toolbar'>
+            <button
+              class='pull-right btn btn-primary btn-rounded'
+              onClick={() => this.showCustomerModal()}
+            >
+              <i class='fa fa-plus'></i>
+              <span>New Customer</span>
+            </button>
+          </div>
         </Role>
 
         <div class='content-wrapper'>

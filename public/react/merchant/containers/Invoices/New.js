@@ -9,6 +9,7 @@ import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import Spinner from 'rzp/ui/Spinner'
+import { required } from 'rzp/utils/validators'
 
 import LineItemTable from './LineItemTable'
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
@@ -174,6 +175,7 @@ export default class InvoicesNewContainer extends ModalContainer {
                           onChange={(selectedCustomer) => {
                             this.props.change('customer_id', selectedCustomer.id || '')
                           }}
+                          validate={required('Please provide the customer')}
                         />
                       </div>
                     </div>

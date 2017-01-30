@@ -100,8 +100,8 @@ export default (props) => {
                   <Amount value={invoice.amount} />
                 </dd>
 
-                <dt>Terms & Conditions</dt>
-                <dd>{invoice.terms}</dd>
+                <dt>Terms & Conditions:</dt>
+                <dd>{invoice.terms || '--'}</dd>
               </dl>
             </div>
           </div>
