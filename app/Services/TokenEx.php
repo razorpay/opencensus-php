@@ -19,6 +19,8 @@ class TokenEx
     const VALID             = 'Valid';
     const VALUE             = 'Value';
 
+    const MAX_RETRY_COUNT = 2;
+
     protected $tokenScheme;
 
     protected $apiKey;
@@ -142,17 +144,29 @@ class TokenEx
     {
         $method = $request['method'];
 
-        try
+        $retryCount = 0;
+
+        while ($retryCount < self::MAX_RETRY_COUNT)
         {
-            $response = Requests::$method(
-                $request['url'],
-                $request['headers'],
-                json_encode($request['content']),
-                $request['options']);
-        }
-        catch(\Requests_Exception $e)
-        {
-            throw $e;
+            try
+            {
+                $response = Requests::$method(
+                    $request['url'],
+                    $request['headers'],
+                    json_encode($request['content']),
+                    $request['options']);
+            }
+            catch(\Requests_Exception $e)
+            {
+                if ($e->getType() === 'CURLE_OPERATION_TIMEDOUT')
+                {
+                    $retryCount++;
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
         }
 
         return $response;
