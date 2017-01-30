@@ -292,6 +292,24 @@ app.controller('EntitiesCtrl', [
           'unknown'
         ],
       },
+      invoice: {
+        merchant_id: ['Merchant Id'],
+        type: [
+          'all',
+          'link',
+          'invoice',
+          'ecod',
+        ],
+        receipt: ['Receipt'],
+        payment_id: ['Payment Id'],
+        status: [
+          'all',
+          'draft',
+          'issued',
+          'paid',
+          'expired',
+        ],
+      },
       key: {
         merchant_id: ['Merchant Id']
       },
