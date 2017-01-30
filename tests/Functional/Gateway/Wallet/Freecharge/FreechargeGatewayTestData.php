@@ -262,7 +262,7 @@ return [
         'amount'                => 50000,
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
-        'status_code'           => 'INITIATED',
+        'status_code'           => 'SUCCESS',
         'entity'                => 'wallet',
     ],
 
@@ -273,7 +273,7 @@ return [
         'amount'                => 25000,
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
-        'status_code'           => 'INITIATED',
+        'status_code'           => 'SUCCESS',
         'entity'                => 'wallet',
     ],
 

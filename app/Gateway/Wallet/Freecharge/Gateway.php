@@ -414,11 +414,21 @@ class Gateway extends Base\Gateway
      */
     public function validateRefund(array $input)
     {
+        $this->action($input, Action::VERIFY);
+
         $request = $this->getRefundVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'content'    => $response,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $this->handleRequestFailed($response);
 
@@ -591,23 +601,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::VERIFY);
 
-        $requestContent = [
-            RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
-            RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
-            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
-        ];
-
-        $requestContent[RequestFields::CHECKSUM] = $this->getHashOfArray($requestContent);
-
-        $request = $this->getCustomRequestArray($requestContent, 'get');
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
-            [
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $request = $this->getRefundVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -620,7 +614,6 @@ class Gateway extends Base\Gateway
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
-
 
         // If transaction is not found, treat it as refund failed.
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
@@ -1147,8 +1140,6 @@ class Gateway extends Base\Gateway
 
     protected function getRefundVerifyRequestArray(array $input)
     {
-        $this->action($input, Action::VERIFY);
-
         $content = [
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
@@ -1157,11 +1148,15 @@ class Gateway extends Base\Gateway
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
 
-        $request = $this->getCustomRequestArray($content, 'GET');
+        $request = $this->getCustomRequestArray($content, 'get');
 
-        $content = http_build_query($content);
-        $request['url'] .= '?' . $content;
-        $request['content'] = [];
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         return $request;
     }

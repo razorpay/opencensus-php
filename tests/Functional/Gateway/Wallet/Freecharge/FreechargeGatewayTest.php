@@ -387,9 +387,17 @@ class FreechargeGatewayTest extends TestCase
 
         $this->refundPayment($capturePayment['id']);
 
-        $refund = $this->getLastEntity('wallet', true);
+        $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($refund);
+        $this->assertEquals('INITIATED', $wallet['status_code']);
+
+        // Run the cron to verify the refund status and edit gateway refund
+        // entity status_code to SUCCESS
+        $this->startGatewayRefundValidateCron($this->gateway);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet);
     }
 
     public function testPartialRefundPayment()
@@ -402,9 +410,17 @@ class FreechargeGatewayTest extends TestCase
 
         $this->refundPayment($capturePayment['id'], $capturePayment['amount']/2);
 
-        $refund = $this->getLastEntity('wallet', true);
+        $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($refund);
+        $this->assertEquals('INITIATED', $wallet['status_code']);
+
+        // Run the cron to verify the refund status and edit gateway refund
+        // entity status_code to SUCCESS
+        $this->startGatewayRefundValidateCron($this->gateway);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet);
     }
 
     protected function runPaymentCallbackFlowWalletFreecharge($response, &$callback = null)
