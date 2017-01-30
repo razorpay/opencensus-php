@@ -56,6 +56,11 @@ class Gateway
         self::SHARP,
     );
 
+    const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
+        self::WALLET_FREECHARGE,
+        self::BILLDESK,
+    ];
+
     public static $channels = array(
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -326,8 +331,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -361,8 +364,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**

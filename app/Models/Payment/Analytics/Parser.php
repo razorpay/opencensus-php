@@ -144,7 +144,7 @@ class Parser extends Base\Core
 
         if ($pa->getBrowser() !== null)
         {
-            $pa->setPlatform($this->uAgent->version($this->uAgent->browser()));
+            $pa->setPlatformVersion($this->uAgent->version($this->uAgent->browser()));
         }
 
         $pa->setOs($this->getOs());

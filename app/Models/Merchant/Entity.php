@@ -441,6 +441,15 @@ class Entity extends Base\PublicEntity
         return $label;
     }
 
+    public function getFilteredDba()
+    {
+        $label = $this->getBillingLabelElseName();
+
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        return $filteredLabel;
+    }
+
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
@@ -846,16 +855,14 @@ class Entity extends Base\PublicEntity
      */
     public function isTPVRequired()
     {
-        $tpvCategories = $this->getTPVCategories();
+        $category2 = $this->getCategory2();
 
-        $category = $this->getCategory2();
-
-        return in_array($category, $tpvCategories);
+        return Terminal\Category::isMerchantCategoryTpv($category2);
     }
 
     public function getTPVCategories()
     {
-        return Terminal\Category::INCOMPATIBLE;
+        return Terminal\Category::getTPVCategories();
     }
 
     public function isShared()

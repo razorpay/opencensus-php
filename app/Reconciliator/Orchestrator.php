@@ -29,31 +29,33 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC     = 'HDFC';
-    const AXIS     = 'Axis';
-    const KOTAK    = 'Kotak';
-    const BILLDESK = 'BillDesk';
-    const PAYZAPP  = 'PayZapp';
-    const MOBIKWIK = 'Mobikwik';
-    const PAYTM    = 'Paytm';
-    const OLAMONEY = 'Olamoney';
-    const ADMIN    = 'admin';
+    const HDFC       = 'HDFC';
+    const AXIS       = 'Axis';
+    const KOTAK      = 'Kotak';
+    const BILLDESK   = 'BillDesk';
+    const PAYZAPP    = 'PayZapp';
+    const MOBIKWIK   = 'Mobikwik';
+    const PAYTM      = 'Paytm';
+    const OLAMONEY   = 'Olamoney';
+    const FREECHARGE = 'Freecharge';
+    const ADMIN      = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC     => ['prashanth@razorpay.com', 'payoutreport@hdfcbank.com'],
-        self::AXIS     => ['prashanth@razorpay.com'],
-        self::BILLDESK => ['prashanth@razorpay.com'],
-        self::PAYZAPP  => ['prashanth@razorpay.com'],
-        self::MOBIKWIK => ['prashanth@razorpay.com'],
-        self::PAYTM    => ['prashanth@razorpay.com'],
-        self::KOTAK    => ['giri@razorpay.com'],
-        self::OLAMONEY => ['prashanth@razorpay.com'],
+        self::HDFC       => ['payoutreport@hdfcbank.com'],
+        self::AXIS       => [],
+        self::BILLDESK   => [],
+        self::PAYZAPP    => [],
+        self::MOBIKWIK   => [],
+        self::PAYTM      => [],
+        self::KOTAK      => ['BankAlerts@kotak.com'],
+        self::OLAMONEY   => [],
+        self::FREECHARGE => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN    => ['prashanth.yv@razorpay.com'],
+        self::ADMIN      => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
@@ -61,6 +63,7 @@ class Orchestrator extends Base\Core
      */
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
+        self::KOTAK,
     ];
 
     /*********************
@@ -113,15 +116,20 @@ class Orchestrator extends Base\Core
         {
             $summary = $this->processReconciliationRequest($input);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
-            $this->trace->traceException(
-                $e, Trace::ERROR, TraceCode::RECON_ALERT, (array) json_decode($e->getMessage()));
-
             if ($this->isManualRequest($input) === true)
             {
+                $this->trace->traceException(
+                    $e, Trace::ERROR, TraceCode::RECON_ALERT,
+                    (array) json_decode($e->getMessage()));
+
                 throw $e;
             }
+
+            $this->trace->traceException(
+                $e, Trace::INFO, TraceCode::RECON_ALERT,
+                (array) json_decode($e->getMessage()));
 
             // We do not throw an exception as route is hit via Mailgun,
             // and Mailgun will attempt retrying, which we don't want.
@@ -737,10 +745,11 @@ class Orchestrator extends Base\Core
     {
         $columnHeaders = $this->getColumnHeadersForGatewayIfApplicable($fileDetails);
 
-        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders);
+        $linesToSkip = $this->gatewayReconciliator->getNumLinesToSkip();
+
+        $csvArray = $this->converter->convertCsvToArray($fileDetails, $columnHeaders, $linesToSkip);
 
         $this->setExtraDetails($csvArray, $fileDetails);
-
         $this->allFilesContents[] = $csvArray;
     }
 

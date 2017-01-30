@@ -1281,4 +1281,19 @@ trait PaymentTrait
 
         $this->app->instance('card.tokenex', $tokenex);
     }
+
+    public function startGatewayRefundRecordCron($gateway)
+    {
+        $request = [
+            'url'     => '/refunds/' . $gateway . '/create_record',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
 }

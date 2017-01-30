@@ -526,13 +526,8 @@ trait Authorize
 
     protected function runInternationalChecks($payment)
     {
-        if ($payment->getMethod() !== Method::CARD)
-        {
-            return;
-        }
-
         // return if method is not card or card is not international
-        if (($payment->getMerchantId() !== '2aTeFCKTYWwfrF') and
+        if (($payment->getMethod() !== Method::CARD) or
             ($payment->card->isInternational() === false))
         {
             return;
@@ -1205,7 +1200,19 @@ trait Authorize
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $this->updatePaymentAuthorized($wasFailed);
+        $updated = $this->updatePaymentAuthorized($wasFailed);
+
+        //
+        // If payment has not been updated to authorized, we don't fire the webhook
+        // or send an email to customer/merchant.
+        // This can happen due to race conditions where this function will be called
+        // twice. The first time it gets called, it would fire the webhook and notify.
+        // We don't need to do that, the second time it gets called.
+        //
+        if ($updated === false)
+        {
+            return;
+        }
 
         $this->eventPaymentAuthorized();
 
@@ -1762,7 +1769,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment, $wasFailed)
+        $updated = $this->repo->transaction(function() use ($payment, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -1772,7 +1779,7 @@ trait Authorize
             // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
-                return;
+                return false;
             }
 
             $payment->setErrorNull();
@@ -1828,7 +1835,11 @@ trait Authorize
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
+
+            return true;
         });
+
+        return $updated;
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)

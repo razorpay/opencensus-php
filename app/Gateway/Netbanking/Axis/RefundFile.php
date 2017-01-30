@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 use RZP\Models\FileStore;
 
 class RefundFile extends Base\RefundFile
@@ -99,6 +100,11 @@ class RefundFile extends Base\RefundFile
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+
+        if ($this->mode === Mode::TEST)
+        {
+            return static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
+        }
 
         return static::$fileToWriteName . '_' . $time . '_1';
     }

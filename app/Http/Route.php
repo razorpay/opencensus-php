@@ -17,6 +17,7 @@ final class Route
 
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
+        'callback_params'                         => ['post',     'callback_params',                                'PublicController@postCallbackUrlWithParams'                        ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
@@ -150,6 +151,8 @@ final class Route
         'terminal_remove_merchant'                => ['delete',   'terminals/{id}/merchants/{mid}',                 'TerminalController@removeMerchant'                                 ],
         'terminal_reassign_merchant'              => ['put',      'terminals/{id}/reassign',                        'TerminalController@reassignMerchant'                               ],
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
+        'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
+        'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -157,6 +160,7 @@ final class Route
         'merchant_activation_details'             => ['get',      'merchant/activation',                            'MerchantController@getActivationDetails'                           ],
         'merchant_activation_save'                => ['post',     'merchant/activation',                            'MerchantController@postSaveActivationDetails'                      ],
         'merchant_activation_upload_file'         => ['post',     'merchant/activation/upload',                     'MerchantController@postUploadActivationFile'                       ],
+        'merchant_activation_files'               => ['get',      'merchant/activation/{id}/files',                 'MerchantController@getActivationFiles'                             ],
         'merchant_activation_update'              => ['put',      'merchant/activation/{id}/update',                'MerchantController@putEditMerchantDetailsAfterLock'                ],
         'merchant_activation_migrate'             => ['post',     'merchant/activation/migrate',                    'MerchantController@postMerchantDetailMigrate'                      ],
         'pricing_create_plan'                     => ['post',     'pricing',                                        'PricingController@postCreatePricingPlan'                           ],
@@ -534,6 +538,7 @@ final class Route
         'customer_update',
         'customer_fetch_by_id',
         'customer_fetch_multiple',
+        'customer_update_token',
         'customer_delete_token',
         'customer_fetch_token',
         'customer_fetch_tokens',
@@ -652,6 +657,8 @@ final class Route
         'mock_hdfc_enroll',
         'mock_hdfc_auth_enrolled',
         'mock_hdfc_payment',
+        'ecollect_validate',
+        'ecollect_pay',
         'iin_fetch_by_iin',
         'iin_fetch_multiple',
         'iin_add',
@@ -709,6 +716,7 @@ final class Route
         'admin_forgot_password',
         'admin_reset_password',
         'merchant_activation_update',
+        'merchant_activation_files',
         'admin_edit_app_auth',
         'offers_update_merchants',
         'offer_create',
@@ -755,7 +763,6 @@ final class Route
         'merchant_sub_create',
         'customer_delete',
         'customer_create_token',
-        'customer_update_token',
         'device_verify_token',
         'app_fetch_tokens',
         'credits_fetch_multiple',
@@ -861,6 +868,7 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'callback_params',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
@@ -919,6 +927,11 @@ final class Route
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
+        ),
+
+        'kotak' => array(
+            'ecollect_validate',
+            'ecollect_pay',
         ),
 
         'mailgun' => array(
