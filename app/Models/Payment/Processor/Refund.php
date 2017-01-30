@@ -392,6 +392,8 @@ trait Refund
 
     protected function refundOnGateway($data)
     {
+        $gateway = $data['payment']['gateway'];
+
         try
         {
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
@@ -405,7 +407,7 @@ trait Refund
             // provides us this feature, currently.
             //
 
-            if ($this->payment->getGateway() !== Payment\Gateway::BILLDESK)
+            if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
             {
                 throw $ex;
             }
