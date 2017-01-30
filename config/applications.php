@@ -24,7 +24,7 @@ return array(
         'url'       =>  'razorpay.com',
         'key'       =>  env('MAILGUN_SECRET'),
         'mock'      =>  env('MAILGUN_MOCK'),
-        'secret'    =>  '',
+        'secret'    =>  env('APP_MAILGUN_SECRET'),
         'from_name' =>  'Team Razorpay',
         'from_email' => 'support@razorpay.com'
     ),
@@ -59,6 +59,10 @@ return array(
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
         'secret'    => env('MAXMIND_SECRET')
+    ),
+
+    'kotak' => array(
+        'secret'    => env('KOTAK_SECRET'),
     ),
 
     'lumberjack' => array(

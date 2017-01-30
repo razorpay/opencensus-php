@@ -29,7 +29,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '5yKTyCuDne8eiz' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 1,
+            'load'       => 0,
         ],
 
         '6qJd4PFKxZwFbL' => [

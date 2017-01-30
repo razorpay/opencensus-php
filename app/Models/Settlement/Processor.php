@@ -11,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Daily\Entity as BatchSettlement;
+use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
@@ -270,6 +270,12 @@ class Processor extends Base\Core
             //settle only if settlement amount is more than INR 1
             if ($setlAmount <= 100)
             {
+                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant'   => $merchant->getId(),
+                        'setlAmount' => $setlAmount,
+                    ]);
+
                 continue;
             }
 

@@ -20,6 +20,7 @@ class Shared
     const NETBANKING_ICICI_TERMINAL         = '100NbIciciTmnl';
     const NETBANKING_ICICI_TPV_TERMINAL     = '100NbIcicTpvTl';
     const NETBANKING_AXIS_TERMINAL          = '100NbAxisTrmnl';
+    const NETBANKING_AXIS_TPV_TERMINAL      = '100NbAxisTpvTl';
     const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';

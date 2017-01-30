@@ -95,8 +95,7 @@ class RefundReconciliate extends Foundation\SubReconciliate
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $refundId);
 
-            // Validates that the payment status is not failed.
-            $validate = $this->validatePaymentStatus();
+            $validate = $this->validateRefundDetails($row);
 
             if ($validate === true)
             {
@@ -156,6 +155,17 @@ class RefundReconciliate extends Foundation\SubReconciliate
         $this->persistGatewaySettledAt($this->refund, $rowDetails);
     }
 
+    protected function validateRefundDetails(array $row)
+    {
+        $validPaymentStatus = $this->validatePaymentStatus();
+
+        $validRefundAmount = $this->validateRefundAmountEqualsReconAmount($row);
+
+        $validRefundDetails = ($validPaymentStatus and $validRefundAmount);
+
+        return $validRefundDetails;
+    }
+
     protected function validatePaymentStatus()
     {
         $paymentStatus = $this->payment->getStatus();
@@ -207,13 +217,14 @@ class RefundReconciliate extends Foundation\SubReconciliate
         );
 
         $refund = $this->getApiRefundEntityFromRow($row);
-        $refundId = $refund->getId();
 
         // If we cannot get the refund, return. No point of evaluating the row.
         if ($refund === null)
         {
             return null;
         }
+
+        $refundId = $refund->getId();
 
         // Sets the corresponding payment for the refund.
         $this->payment = $this->refund->payment;
@@ -364,6 +375,19 @@ class RefundReconciliate extends Foundation\SubReconciliate
             return false;
         }
 
+        return true;
+    }
+
+    /**
+     * Checks if amount in recon file matches the actual amount in refund entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validateRefundAmountEqualsReconAmount(array $row)
+    {
         return true;
     }
 }

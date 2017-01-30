@@ -190,7 +190,10 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
-        // TODO: Add TPV to the request array
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::BANK_ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
 
         $data = array_merge($defaultData, $data);
 
@@ -240,7 +243,7 @@ class Gateway extends Base\Gateway
 
         $crypto = new AESCrypto($masterKey);
 
-        $decryptedString = $crypto->decryptString(urldecode($encryptedString));
+        $decryptedString = $crypto->decryptString($encryptedString);
 
         parse_str($decryptedString, $response);
 
@@ -345,5 +348,12 @@ class Gateway extends Base\Gateway
         {
             return $this->getLiveMerchantId();
         }
+    }
+
+    protected function getLiveSecret()
+    {
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
     }
 }

@@ -198,7 +198,6 @@ return [
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'fee' => 0,
         'service_tax' => 0,
 //        'escrow_balance' => 998562,
         'channel' => 'kotak',

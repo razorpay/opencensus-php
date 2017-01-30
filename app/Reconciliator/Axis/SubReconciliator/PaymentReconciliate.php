@@ -260,7 +260,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             ]
         );
 
-        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
+        if ((empty($response['status']) === false) and 
+            ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;
         }

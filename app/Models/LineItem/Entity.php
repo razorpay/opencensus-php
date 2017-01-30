@@ -16,10 +16,12 @@ class Entity extends Base\PublicEntity
     const ENTITY_TYPE      = 'entity_type';
     const MERCHANT_ID      = 'merchant_id';
     const ITEM_ID          = 'item_id';
+    const NAME             = 'name';
+    const DESCRIPTION      = 'description';
+    const AMOUNT           = 'amount';
+    const CURRENCY         = 'currency';
     const QUANTITY         = 'quantity';
     const DELETED_AT       = 'deleted_at';
-
-    const ITEM             = 'item';
 
     //
     // Input keys
@@ -35,7 +37,8 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $defaults = [
-        self::QUANTITY          => 1,
+        self::QUANTITY    => 1,
+        self::DESCRIPTION => null,
     ];
 
     protected $visible = [
@@ -45,39 +48,36 @@ class Entity extends Base\PublicEntity
         self::ENTITY_TYPE,
         self::QUANTITY,
         self::ITEM_ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-
-        //
-        // We when serialize this entity, keep item attributes at same level
-        // in the output by merging both line_item and item arrays.
-        //
-        // Attributes of item which needs to be exposed in api, should be added
-        // here too.
-        //
-
-        Item\Entity::NAME,
-        Item\Entity::DESCRIPTION,
-        Item\Entity::AMOUNT,
-        Item\Entity::CURRENCY,
     ];
 
     protected $public = [
         self::ID,
+        // Uncomment later when required
+        // self::ITEM_ID,
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
         self::QUANTITY,
-
-        Item\Entity::NAME,
-        Item\Entity::DESCRIPTION,
-        Item\Entity::AMOUNT,
-        Item\Entity::CURRENCY,
     ];
 
     protected $fillable = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
         self::QUANTITY,
     ];
 
     protected $casts = [
+        self::AMOUNT    => 'int',
         self::QUANTITY  => 'int',
     ];
 
@@ -85,10 +85,30 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::ITEM_ID,
-        self::ITEM,
+    ];
+
+    //
+    // Fields which can be populated from item template, if item_id is provided
+    // in input.
+    //
+    public static $itemFields = [
+        self::NAME,
+        self::DESCRIPTION,
+        self::AMOUNT,
+        self::CURRENCY,
     ];
 
     // -------------------------- Getters --------------------------
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
 
     public function getQuantity()
     {
@@ -102,17 +122,6 @@ class Entity extends Base\PublicEntity
     protected function setPublicItemIdAttribute(array & $array)
     {
         $array[self::ITEM_ID] = Item\Entity::getSignedId($this->getAttribute(self::ITEM_ID));
-    }
-
-    protected function setPublicItemAttribute(array & $array)
-    {
-        // Flatten response: Merge item attributes into line_item level.
-
-        $item = $this->item->toArrayPublic();
-
-        unset($item[Item\Entity::ID]);
-
-        $array = array_merge($array, $item);
     }
 
     // -------------------------- Public Setters Ends --------------------------

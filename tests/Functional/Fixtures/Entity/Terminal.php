@@ -193,7 +193,6 @@ class Terminal extends Base
             'card'                      => 1,
             'shared'                    => 1,
             'gateway_merchant_id'       => 'random',
-            'gateway_secure_secret'     => 'secret',
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
@@ -694,6 +693,16 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingIciciTpvTerminal()
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        $this->createSharedNetbankingIciciTerminal($attributes);
+    }
+
     public function createSharedNetbankingAxisTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
@@ -713,14 +722,14 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingIciciTpvTerminal()
+    public function createSharedNetbankingAxisTPVTerminal(array $attributes = [])
     {
         $attributes = [
-            'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
+            'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
             'network_category'  => 'securities',
         ];
 
-        $this->createSharedNetbankingIciciTerminal($attributes);
+        $this->createSharedNetbankingAxisTerminal($attributes);
     }
 
     public function createSharedAmexTerminal(array $attributes = [])

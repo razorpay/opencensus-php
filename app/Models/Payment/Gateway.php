@@ -55,6 +55,11 @@ class Gateway
         self::SHARP,
     );
 
+    const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
+        self::WALLET_FREECHARGE,
+        self::BILLDESK,
+    ];
+
     public static $channels = array(
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -143,7 +148,9 @@ class Gateway
         self::AXIS_MIGS => [],
         self::AMEX => [],
         self::CYBERSOURCE => [],
-        self::FIRST_DATA => [],
+        self::FIRST_DATA => [
+            self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
+        ],
     ];
 
     /**
@@ -212,7 +219,10 @@ class Gateway
             Network::VISA),
         self::FIRST_DATA => array(
             Network::MC,
-            Network::VISA),
+            Network::VISA,
+            Network::MAES,
+            Network::RUPAY,
+        ),
     );
 
     public static $walletToGatewayMap = array(
@@ -317,8 +327,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::AXIS_GENIUS,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**
@@ -352,8 +360,6 @@ class Gateway
         Gateway::PAYTM,
         Gateway::ATOM,
         Gateway::SHARP,
-        Gateway::CYBERSOURCE,
-        Gateway::FIRST_DATA,
     );
 
     /**

@@ -96,7 +96,7 @@ class Entity extends Base\PublicEntity
         self::PERMISSION        => null,
         self::ENCRYPTION_METHOD => null,
         self::PASSWORD          => null,
-        self::METADATA          => null,
+        self::METADATA          => [],
     ];
 
     // ----------------------- Mutators -------------------------------------------
@@ -161,6 +161,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LOCATION, $location);
     }
 
+    public function setMetadata($metadata)
+    {
+        $this->setAttribute(self::METADATA, $metadata);
+    }
+
     // ----------------------- Setters Ends----------------------------------------
 
     // ----------------------- Relations -----------------------------------------
@@ -219,6 +224,21 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_TYPE);
     }
 
+    public function getMetadata()
+    {
+        return $this->getAttribute(self::METADATA);
+    }
+
+    public function getBucket()
+    {
+        return $this->getAttribute(self::BUCKET);
+    }
+
+    public function getLocation()
+    {
+        return $this->getAttribute(self::LOCATION);
+    }
+
     // ----------------------- Getters Ends----------------------------------------
 
     protected function getPasswordAttribute()
@@ -232,4 +252,26 @@ class Entity extends Base\PublicEntity
 
         return $password;
     }
+
+    protected function getMetadataAttribute()
+    {
+        $metadata = $this->attributes[self::METADATA];
+
+        if ($metadata === null)
+        {
+            $metadata = [];
+        }
+        else
+        {
+            $metadata = json_decode($metadata, true);
+        }
+
+        return $metadata;
+    }
+
+    protected function setMetadataAttribute(array $metadata = [])
+    {
+        $this->attributes[self::METADATA] = json_encode($metadata);
+    }
+
 }

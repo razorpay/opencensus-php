@@ -38,7 +38,7 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
-    const DAILY_SETTLEMENT      = 'daily_settlements';
+    const BATCH_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
@@ -90,9 +90,13 @@ class Table
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     protected static $entityToTableMap = array(
-        Entity::AXIS_MIGS       => self::MIGS,
-        Entity::AXIS_GENIUS     => self::MIGS,
-        Entity::AMEX            => self::MIGS,
+        Entity::AXIS_MIGS           => self::MIGS,
+        Entity::AXIS_GENIUS         => self::MIGS,
+        Entity::AMEX                => self::MIGS,
+        Entity::WALLET_FREECHARGE   => self::WALLET,
+        Entity::WALLET_OLAMONEY     => self::WALLET,
+        Entity::WALLET_AIRTELMONEY  => self::WALLET,
+        Entity::WALLET_PAYUMONEY    => self::WALLET,
     );
 
     public static function getTableNameForEntity(string $entity)
@@ -104,6 +108,6 @@ class Table
             return self::$entityToTableMap[$entity];
         }
 
-        return constant(Table::class.'::'.strtoupper($entity));
+        return constant(Table::class . '::' . strtoupper($entity));
     }
 }

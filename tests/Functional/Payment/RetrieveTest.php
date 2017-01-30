@@ -105,6 +105,21 @@ class PaymentRetrieveTest extends TestCase
         $this->assertEquals($email, $payment['items'][0]['email']);
     }
 
+    public function testRetrievePaymentHavingNullContact()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['contact' => null]);
+
+        $id = $payment->getPublicId();
+
+        $request = $this->request;
+        $request['url'] .= '/' . $id;
+
+        $payment = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($id, $payment['id']);
+        $this->assertNull($payment['contact']);
+    }
+
     public function testRetrievePaymentWithCardIIN()
     {
         $this->ba->appAuth();

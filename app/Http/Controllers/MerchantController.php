@@ -241,6 +241,15 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function putAction($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->action($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function postBankAccount($id)
     {
         $input = Request::all();
@@ -612,6 +621,13 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Detail\Service)->uploadActivationFile($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getActivationFiles(string $id)
+    {
+        $response = (new Detail\Service)->fetchActivationFiles($id);
 
         return ApiResponse::json($response);
     }
