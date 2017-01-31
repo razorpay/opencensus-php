@@ -155,6 +155,8 @@ class TokenEx
                     $request['headers'],
                     json_encode($request['content']),
                     $request['options']);
+
+                break;
             }
             catch(\Requests_Exception $e)
             {
