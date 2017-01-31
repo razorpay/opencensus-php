@@ -1598,9 +1598,9 @@ UPDATE merchant_details
 
 # Changes default value of gateway and terminal
 ALTER TABLE payments
-    MODIFY COLUMN gateway VARCHAR(14) NULL;
+    MODIFY COLUMN gateway VARCHAR(255) NULL,
 
 SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE payments
-    MODIFY COLUMN terminal_id VARCHAR(255) NULL;
+    MODIFY COLUMN terminal_id VARCHAR(14) NULL;
 SET FOREIGN_KEY_CHECKS=1;
