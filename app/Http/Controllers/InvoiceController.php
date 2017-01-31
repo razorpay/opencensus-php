@@ -142,7 +142,7 @@ class InvoiceController extends Controller
     {
         $error = Request::get('error');
 
-        $data = $this->service->getInvoiceViewDetails($invoiceId);
+        $data = $this->service->getInvoiceViewData($invoiceId);
 
         if (empty($error) === false)
         {

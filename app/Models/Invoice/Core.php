@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
-use Mail;
+use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -11,6 +11,8 @@ use RZP\Models\Order;
 use RZP\Models\LineItem;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Models\Merchant\Checkout;
 
 class Core extends Base\Core
 {
@@ -404,5 +406,88 @@ class Core extends Base\Core
         {
             $invoice->generateSmsStatus($input);
         }
+    }
+
+    /**
+     * Returns view data (few formatted for view purpose) of invoice,
+     * to be used in hosted page, pdf generation, mails etc.
+     *
+     * @param Entity $invoice
+     * @param string $mode
+     *
+     * @return array
+     */
+    public function getInvoiceViewData(Entity $invoice, string $mode)
+    {
+        if ($invoice->isDraft())
+        {
+            $id = $invoice->getPublicId();
+
+            throw new Exception\BadRequestValidationFailureException("Invoice with id $id is not issued yet");
+        }
+
+        $invoiceData = $this->getFormattedInvoiceDataForView($invoice);
+
+        $merchant = $invoice->merchant;
+
+        $keyId = $this->repo->key
+                            ->getKeysForMerchant($merchant->getId())
+                            ->first()
+                            ->getPublicKey($mode);
+
+        $merchantData = $this->getFormattedMerchantDataForView($merchant);
+
+        return [
+            'environment' => $this->app->environment(),
+            'key_id'      => $keyId,
+            'merchant'    => $merchantData,
+            'invoice'     => $invoiceData,
+        ];
+    }
+
+    protected function getFormattedInvoiceDataForView(Entity $invoice)
+    {
+        $invoiceData = $invoice->toArrayPublic();
+
+        $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
+
+        foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)
+        {
+            $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], "Asia/Kolkata")
+                                                    ->format('j M Y h:i a');
+        }
+
+        array_walk(
+            $invoiceData['line_items'],
+            function (& $lineItem, $i)
+            {
+                $lineItem['amount_formatted'] = number_format($lineItem['amount']/100, 2);
+            });
+
+        return $invoiceData;
+    }
+
+    protected function getFormattedMerchantDataForView(Merchant\Entity $merchant)
+    {
+        $merchantData = [
+            'color' => $merchant->getBrandColor(),
+            'image' => $merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'name'  => $merchant->getBillingLabelElseName(),
+            'id'    => $merchant->getId(),
+        ];
+
+        if ($merchant->getOrgId() !== null)
+        {
+            $merchantData['organization'] = $merchant->org->toArrayPublic();
+        }
+
+        $merchantDetail = $merchant->merchantDetail;
+
+        if ($merchantDetail !== null)
+        {
+            $merchantData['business_registered_address'] = $merchantDetail->getBusinessRegisteredAddress();
+        }
+
+        return $merchantData;
     }
 }
