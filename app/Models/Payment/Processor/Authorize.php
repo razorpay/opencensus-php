@@ -466,7 +466,7 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment)
     {
-        (new Offer\Core)->checkOfferApplicableOnPayment($payment);
+        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)

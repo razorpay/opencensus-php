@@ -496,6 +496,17 @@ class TraceCode
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
+    const OFFER_APPLIED_ON_PAYMENT                  = 'OFFER_APPLIED_ON_PAYMENT';
+    const OFFER_NOT_APPLIED_ON_PAYMENT              = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_ORDER_AMOUNT_CHECK                  = 'OFFER_ORDER_AMOUNT_CHECK';
+    const OFFER_PAYMENT_AMOUNT_CHECK                = 'OFFER_PAYMENT_AMOUNT_CHECK';
+    const OFFER_EXPIRY_CHECK                        = 'OFFER_EXPIRY_CHECK';
+    const OFFER_WALLET_CHECK                        = 'OFFER_WALLET_CHECK';
+    const OFFER_NETBANKING_CHECK                    = 'OFFER_NETBANKING_CHECK';
+    const OFFER_CARD_IIN_CHECK                      = 'OFFER_CARD_IIN_CHECK';
+    const OFFER_CARD_TYPE_CHECK                     = 'OFFER_CARD_TYPE_CHECK';
+    const OFFER_CARD_NETWORK_CHECK                  = 'OFFER_CARD_NETWORK_CHECK';
+    const OFFER_CARD_ISSUER_CHECK                   = 'OFFER_CARD_ISSUER_CHECK';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

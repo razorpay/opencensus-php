@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Offer;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -40,13 +41,6 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function delete(Entity $offer)
-    {
-        $this->repo->deleteOrFail($offer);
-
-        return $offer;
-    }
-
     public function getMerchantOffers(Merchant\Entity $merchant)
     {
         $data = [
@@ -70,7 +64,7 @@ class Core extends Base\Core
         return $offers;
     }
 
-    public function checkOfferApplicableOnPayment(Payment\Entity $payment)
+    public function validateOfferApplicableOnPayment(Payment\Entity $payment)
     {
         $order = $payment->order;
         $appliedOffer = null;
@@ -90,9 +84,19 @@ class Core extends Base\Core
 
         if ($offerChecker->checkOfferApplicableOnPayment($payment) === false);
         {
+            $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT, [
+                'payment_id' => $payment->getId(),
+                'offer_id'   => $appliedOffer->getId()
+            ]);
+
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
         }
+
+        $this->trace->info(TraceCode::OFFER_APPLIED_ON_PAYMENT, [
+            'payment_id' => $payment->getId(),
+            'offer_id'   => $appliedOffer->getId()
+        ]);
 
         return;
     }

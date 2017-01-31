@@ -2,19 +2,38 @@
 
 namespace RZP\Models\Offer;
 
+use App;
 use Carbon\Carbon;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Checker
 {
+    protected $app;
+
+    protected $trace;
+
     protected $offer;
 
     protected $order;
 
-    public function __construct(Entity $offer)
+    protected $payment;
+
+    protected $card;
+
+    // Flag to toggle verbose logging, Initialised to false by default.
+    protected $verbose;
+
+    public function __construct(Entity $offer, bool $verbose = false)
     {
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = $this->app['trace'];
+
         $this->offer = $offer;
+
+        $this->verbose = $verbose;
     }
 
     public function checkOfferApplicableOnOrder(Order\Entity $order)
@@ -63,7 +82,15 @@ class Checker
             return true;
         }
 
-        return ($offerPaymentNetwork === $this->payment->getWallet());
+        $result = ($offerPaymentNetwork === $this->payment->getWallet());
+
+        $this->traceCheckResult(TraceCode::OFFER_WALLET_CHECK, [
+            'result'         => $result,
+            'offer_wallet'   => $offerPaymentNetwork,
+            'payment_wallet' => $this->payment->getWallet()
+        ]);
+
+        return $result;
     }
 
     protected function checkNetbanking()
@@ -77,7 +104,13 @@ class Checker
             return true;
         }
 
-        return ($offerPaymentNetwork === $this->payment->getBank());
+        $result = ($offerPaymentNetwork === $this->payment->getBank());
+
+        $this->traceCheckResult(TraceCode::OFFER_NETBANKING_CHECK, [
+            'result'         => $result,
+            'offer_bank'     => $offerPaymentNetwork,
+            'payment_bank'   => $this->payment->getBank()
+        ]);
     }
 
     /**
@@ -97,27 +130,33 @@ class Checker
 
     protected function checkCard()
     {
-        $card = $this->payment->card;
+        $this->card = $this->payment->card;
 
         $iins = $this->offer->getIins();
 
         if (empty($iins) === false)
         {
-            return (in_array($card->getIin(), $iins, true) === true);
+            $result = (in_array($this->card->getIin(), $iins, true) === true);
+
+            $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
+                'result' => $result
+            ]);
+
+            return $result;
         }
 
-        $validCardType = $this->checkCardType($card);
+        $validCardType = $this->checkCardType();
 
-        $validCardNetwork = $this->checkCardNetwork($card);
+        $validCardNetwork = $this->checkCardNetwork();
 
-        $validCardIsuer = $this->checkCardIssuer($card);
+        $validCardIssuer = $this->checkCardIssuer();
 
         return (($validCardType === true) and
                 ($validCardNetwork === true) and
-                ($validCardIsser === true));
+                ($validCardIssuer === true));
     }
 
-    protected function checkCardType(Card\Entity $card)
+    protected function checkCardType()
     {
         $offerPaymentMethodType = $this->offer->getPaymentMethodType();
 
@@ -128,10 +167,18 @@ class Checker
             return true;
         }
 
-        return ($offerPaymentMethodType === $card->getType());
+        $result = ($offerPaymentMethodType === $this->card->getType());
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
+            'result' => $result,
+            'offer_card_type' => $offerPaymentMethodType,
+            'payment_card_type' => $this->card->getType()
+        ]);
+
+        return $result;
     }
 
-    protected function checkCardNetwork(Card\Entity $card)
+    protected function checkCardNetwork()
     {
         $offerPaymentNetwork = $this->offer->getPaymentNetwork();
 
@@ -142,10 +189,18 @@ class Checker
             return true;
         }
 
-        return ($offerPaymentNetwork === $card->getNetworkCode());
+        $result = ($offerPaymentNetwork === $this->card->getNetworkCode());
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_NETWORK_CHECK, [
+            'result' => $result,
+            'offer_card_network' => $offerPaymentNetwork,
+            'payment_card_network' => $this->card->getNetworkCode()
+        ]);
+
+        return $result;
     }
 
-    protected function checkCardIssuer(Card\Entity $card)
+    protected function checkCardIssuer()
     {
         $offerCardIssuer = $this->offer->getIssuer();
 
@@ -154,17 +209,41 @@ class Checker
             return true;
         }
 
-        return ($offerCardIssuer === $card->getIssuer());
+        $result = ($offerCardIssuer === $this->card->getIssuer());
+
+        $this->traceCheckResult(TraceCode::OFFER_CARD_ISSUER_CHECK, [
+            'result'              => $result,
+            'offer_card_issuer'   => $offerCardIssuer,
+            'payment_card_issuer' => $this->card->getIssuer()
+        ]);
+
+        return $result;
     }
 
     protected function checkPaymentAmount()
     {
-        return ($this->payment->getAmount() >= $this->offer->getMinAmount());
+        $result = ($this->payment->getAmount() >= $this->offer->getMinAmount());
+
+        $this->traceCheckResult(TraceCode::OFFER_PAYMENT_AMOUNT_CHECK, [
+                'result'           => $result,
+                'offer_min_amount' => $this->offer->getMinAmount(),
+                'payment_amount'   => $this->payment->getAmount()
+        ]);
+
+        return $result;
     }
 
     protected function checkOrderAmount()
     {
-         return ($this->order->getAmount() >= $this->offer->getMinAmount());
+        $result = ($this->order->getAmount() >= $this->offer->getMinAmount());
+
+        $this->traceCheckResult(TraceCode::OFFER_ORDER_AMOUNT_CHECK, [
+                'result' => $result,
+                'offer_min_amount' => $this->offer->getMinAmount(),
+                'order_amount' => $this->order->getAmount()
+        ]);
+
+        return $result;
     }
 
     protected function checkOfferActiveAndNotExpired()
@@ -173,6 +252,20 @@ class Checker
 
         $offerExpired = ($now <= $this->offer->getStartsAt()) and ($now > $this->offer->getEndsAt());
 
-        return (($this->offer->isActive() === true) and ($offerExpired === false));
+        $result = (($this->offer->isActive() === true) and ($offerExpired === false));
+
+        $this->traceCheckResult(TraceCode::OFFER_EXPIRY_CHECK, [
+            'result' => $result
+        ]);
+
+        return $result;
+    }
+
+    protected function traceCheckResult(string $traceCode, array $data)
+    {
+        if ($this->verbose === true)
+        {
+            $this->trace->info($traceCode, $data);
+        }
     }
 }
