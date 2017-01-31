@@ -321,6 +321,7 @@ class Repository extends Base\Repository
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
@@ -388,6 +389,7 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->skip($skip)
                     ->take(10)
+                    ->with('merchant', 'card')
                     ->get();
     }
 

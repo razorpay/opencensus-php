@@ -30,7 +30,7 @@ class Core extends Base\Core
 
     public function editWebhook($merchant, $webhookId, $input)
     {
-        $webhook = $this->repo->webhook->findByIdAndMerchantId($webhookId, $merchant->getId());
+        $webhook = $this->repo->webhook->findByIdAndMerchant($webhookId, $merchant);
 
         $webhook->edit($input);
 
@@ -41,6 +41,6 @@ class Core extends Base\Core
 
     public function getWebhooks($merchant)
     {
-        return $this->repo->webhook->findByMerchant($merchant);
+        return $this->repo->webhook->findMultipleByMerchant($merchant);
     }
 }
