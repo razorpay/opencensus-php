@@ -37,6 +37,7 @@ class Validator extends Base\Validator
 
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
+        Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
@@ -118,6 +119,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
         Entity::RECURRING                   => 'sometimes|in:0,1,2',
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
     protected static $axisMigsEditTerminalRules = [
@@ -136,6 +138,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    ];
+
+    protected static $cybersourceEditTerminalRules = [
+        Entity::GATEWAY_RECON_PASSWORD => 'sometimes|alpha_num',
     ];
 
     protected static $upiIciciEditTerminalRules = [
