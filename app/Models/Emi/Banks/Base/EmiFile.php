@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
@@ -37,9 +38,9 @@ class EmiFile
         $this->sendEmiFile($emiFile['path']);
 
         $this->trace->info(
-                        TraceCode::EMI_FILE_SENT,
-                        ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
-                    );
+            TraceCode::EMI_FILE_SENT,
+            ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+        );
 
         return $emiFile['url'];
     }
@@ -64,7 +65,15 @@ class EmiFile
 
         $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
 
-        return $gatewayPayment->getAuthCode();
+        $authCode = $gatewayPayment->getAuthCode();
+
+        if (empty($authCode) === true)
+        {
+            throw new Exception\LogicException(
+                'Authorization Code cannot be empty.', null, ['auth_code' => $authCode]);
+        }
+
+        return $authCode;
     }
 
     protected function fetchAndSendPassword()
@@ -97,7 +106,7 @@ class EmiFile
 
         $monthlyRate = $annualRate / 1200;
 
-        $expression = pow((1+ $monthlyRate), $tenureInMonths);
+        $expression = pow((1 + $monthlyRate), $tenureInMonths);
 
         $num = $amount * $monthlyRate * $expression;
 

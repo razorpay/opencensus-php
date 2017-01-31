@@ -8,8 +8,7 @@ use RZP\Exception;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ORG_ID      => 'required|string',
-        Entity::HOSTNAME    => 'required|string|max:255|custom|unique:org_hostname'
+        Entity::HOSTNAME    => 'required|string|max:255|unique:org_hostname|custom'
     ];
 
     protected function validateHostname($attribute, $hostname)

@@ -103,13 +103,13 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        $merchantTerminalCategory = $input['merchant']->getCategory2();
+        $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
         $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
-                                                                        $merchantTerminalCategory);
+                                                                        $category2);
 
         return ($category === $merchantTerminalCategory);
     }
@@ -118,15 +118,15 @@ class MerchantFilter extends Terminal\Filter
     {
         $merchantId = $input['payment']->getMerchantId();
 
-        $merchants = array_keys(Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST);
+        $merchantList = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST;
 
-        if (in_array($merchantId, $merchants))
+        if (isset($merchantList[$merchantId]) === true)
         {
             $gateway = $terminal->getGateway();
 
-            $excludedGateways = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST[$merchantId];
+            $excludedGateways = $merchantList[$merchantId];
 
-            if (in_array($gateway, $excludedGateways))
+            if (in_array($gateway, $excludedGateways, true) === true)
             {
                 $network = $input['payment']->card->getNetworkCode();
 

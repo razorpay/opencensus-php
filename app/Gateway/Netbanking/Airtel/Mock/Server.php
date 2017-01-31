@@ -7,7 +7,7 @@ use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Constants\HashAlgo;
 use RZP\Gateway\Base\Action;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Airtel\Status;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;

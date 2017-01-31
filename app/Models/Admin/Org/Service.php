@@ -16,12 +16,12 @@ class Service extends Base\Service
         {
             $org = $this->core()->create($input);
 
-            if (isset($input['hostname']))
+            if (isset($input['hostname']) === true)
             {
-                // create hostname
                 $hostnames = explode(',', $input['hostname']);
 
-                foreach ($hostnames as $hostname) {
+                foreach ($hostnames as $hostname)
+                {
                     (new Hostname\Core)->create($org, $hostname);
                 }
             }
@@ -84,18 +84,7 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $response = $this->repo->transactionOnLiveAndTest(function() use ($id)
-        {
-            $resp = $this->core()->delete($id);
-
-            $orgId = Entity::verifyIdAndStripSign($id);
-
-            (new Hostname\Core)->deleteHostnamesOfOrg($orgId);
-
-            return $resp;
-        });
-
-        return $response;
+        return $this->core()->delete($id);
     }
 
     public function edit(string $id, array $input)
@@ -115,12 +104,14 @@ class Service extends Base\Service
 
                 $hostnamesToDelete = array_diff($existingHostnames, $newHostnames);
 
-                foreach ($hostnamesToCreate as $hostname) {
-                    (new Hostname\Core)->create($org, $hostname);
+                foreach ($hostnamesToDelete as $hostname)
+                {
+                    (new Hostname\Core)->delete($org, $hostname);
                 }
 
-                foreach ($hostnamesToDelete as $hostname) {
-                    (new Hostname\Core)->delete($hostname);
+                foreach ($hostnamesToCreate as $hostname)
+                {
+                    (new Hostname\Core)->create($org, $hostname);
                 }
             }
 
@@ -139,8 +130,8 @@ class Service extends Base\Service
 
     protected function getArrayOfHostnames(Entity $org)
     {
-        $hostnames = array_map(create_function('$o', 'return $o->getHostname();'), $org->hostnames->all());
+        $hostnames = $org->hostnames->pluck(Hostname\Entity::HOSTNAME);
 
-        return $hostnames;
+        return $hostnames->toArray();
     }
 }

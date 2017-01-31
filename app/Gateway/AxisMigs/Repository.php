@@ -48,25 +48,24 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByPaymentIdAndCommand($paymentId, $command)
+    public function getSuccessfullyRefundedEntities($paymentId, $refundAmount)
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
-                    ->where('vpc_Command', '=', $command)
+                    ->where('vpc_Command', '=', Command::REFUND)
+                    ->where('vpc_TxnResponseCode', '=', '0')
+                    ->where('vpc_Amount', '=', $refundAmount)
                     ->get();
     }
 
+    // TODO: Rename the function to a proper one
+    // and fix the get auth code function for emi
     public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->firstOrFail();
-    }
-
-    public function findByPaymentId($paymentId)
-    {
-        return $this->findByPaymentIdAndCommand($paymentId, 'pay');
     }
 
     public function countPaymentsNearTransactionNo($txnNo, $terminalId)

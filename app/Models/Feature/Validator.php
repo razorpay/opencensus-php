@@ -16,7 +16,9 @@ class Validator extends Base\Validator
 
     protected function validateName($attribute, $value)
     {
-        if (in_array($value, Constants::$allFeatures) === false)
+        $allFeatures = array_keys(Constants::$featureValueMap);
+
+        if (in_array($value, $allFeatures) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid feature: $value",

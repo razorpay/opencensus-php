@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Merchant\Webhook;
 
-use RZP\Models\Base;
+use RZP\Constants\Entity;
 use RZP\Exception;
+use RZP\Models\Base;
 
 /**
  * The events whether they are enabled or disabled are store in bit format.
@@ -88,6 +89,16 @@ class Event
         self::P2P_REJECTED,
         self::P2P_TRANSFERRED,
     );
+
+    // Defines the mapping to entity for respective envent and also
+    // the field description to be set in mail content for webhook related mails
+    public static $eventsToEntityMap = [
+        self::PAYMENT_AUTHORIZED => Entity::PAYMENT,
+        self::PAYMENT_CAPTURED   => Entity::PAYMENT,
+        self::PAYMENT_FAILED     => Entity::PAYMENT,
+        self::INVOICE_PAID       => Entity::INVOICE,
+        self::ORDER_PAID         => Entity::ORDER,
+    ];
 
     /**
      * Takes the hex value and merges it

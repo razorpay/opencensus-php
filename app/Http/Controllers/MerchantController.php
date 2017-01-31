@@ -190,7 +190,9 @@ class MerchantController extends Controller
 
     public function getTerminals($mid)
     {
-        $data = (new Terminal\Service)->getTerminals($mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }
@@ -235,6 +237,15 @@ class MerchantController extends Controller
     public function postLiveDisable($id)
     {
         $data = (new Merchant\Service)->liveDisable($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putAction($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->action($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -614,6 +625,13 @@ class MerchantController extends Controller
         return ApiResponse::json($response);
     }
 
+    public function getActivationFiles(string $id)
+    {
+        $response = (new Detail\Service)->fetchActivationFiles($id);
+
+        return ApiResponse::json($response);
+    }
+
     public function postSaveActivationDetails()
     {
         $input = Request::all();
@@ -628,6 +646,15 @@ class MerchantController extends Controller
         $input = Request::all();
 
         $response = (new Detail\Service)->editMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantDetailMigrate()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\FileMigration)->migrateMerchantDocuments($input);
 
         return ApiResponse::json($response);
     }

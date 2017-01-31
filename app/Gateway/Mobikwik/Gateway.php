@@ -297,14 +297,14 @@ class Gateway extends Base\Gateway
         $content = array(
             'amount'       => $input['payment']['amount'] / 100,
             'cell'         => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $this->getBillingLabel($input),
+            'merchantname' => $input['merchant']->getFilteredDba(),
             'mid'          => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'      => MessageCode::OTP_GENERATE,
             'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
-        $content['merchantAlias'] = $input['merchant']['billing_label'];
+        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
 
         $request = $this->getStandardRequestArray($content);
 
@@ -341,7 +341,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $this->getBillingLabel($input),
+            'merchantname'  => $input['merchant']->getFilteredDba(),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
             'amount'        => $input['payment']['amount'] / 100,
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'orderid'       => $input['payment']['id'],
-            'merchantname'  => $input['merchant']['billing_label'],
+            'merchantname'  => $input['merchant']->getFilteredDba(),
             'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
@@ -423,7 +423,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']['billing_label'];
+        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
 
         return $content;
     }
@@ -751,19 +751,5 @@ class Gateway extends Base\Gateway
         $number = new PhoneBook($contact, true);
 
         return $number->format(PhoneBook::DOMESTIC);
-    }
-
-    protected function getBillingLabel(array $input)
-    {
-        $label = $input['merchant']['billing_label'];
-
-        if (empty($label) === true)
-        {
-            $label = $input['merchant']['name'];
-        }
-
-        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
-
-        return $filteredLabel;
     }
 }

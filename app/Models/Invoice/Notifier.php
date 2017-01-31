@@ -316,6 +316,11 @@ class Notifier extends Base\Core
 
     protected function canInvoiceBeSentNow()
     {
+        if ($this->invoice->isDraft())
+        {
+            return false;
+        }
+
         $scheduledAt = $this->invoice->getScheduledAt();
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

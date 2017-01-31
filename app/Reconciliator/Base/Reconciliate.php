@@ -216,4 +216,19 @@ class Reconciliate
     {
         return [];
     }
+
+    /**
+     * This method returns the number of lines to be skipped from end or from
+     * beginning while reading csv files. Should be overriden by any gateway
+     * specific child classes.
+     *
+     * @return  int number of lines to skip from end
+     */
+    public function getNumLinesToSkip()
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 0,
+            FileProcessor::LINES_FROM_BOTTOM => 0
+        ];
+    }
 }

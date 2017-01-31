@@ -41,6 +41,7 @@ class Metadata
     const MACOS         = 'macos';
     const ANDROID       = 'android';
     const IOS           = 'ios';
+    const UBUNTU        = 'ubuntu';
 
     const OS_VALUES = array(
         self::LINUX       => 1,
@@ -48,6 +49,7 @@ class Metadata
         self::MACOS       => 3,
         self::ANDROID     => 4,
         self::IOS         => 5,
+        self::UBUNTU      => 6,
     );
 
     // Library values
@@ -126,6 +128,11 @@ class Metadata
 
     public static function getValueForIntegration($integration)
     {
+        if (empty($integration) === true)
+        {
+            return;
+        }
+
         $integration = strtolower($integration);
 
         if (self::isValidIntegration($integration))
@@ -143,6 +150,11 @@ class Metadata
 
     public static function getValueForPlatform($platform)
     {
+        if (empty($platform) === true)
+        {
+            return;
+        }
+
         $platform = strtolower($platform);
 
         if (self::isValidPlatform($platform))
@@ -160,6 +172,11 @@ class Metadata
 
     public static function getValueForOs($os)
     {
+        if (empty($os) === true)
+        {
+            return;
+        }
+
         $os = strtolower($os);
 
         if (self::isValidOs($os))
@@ -177,6 +194,11 @@ class Metadata
 
     public static function getValueForLibrary($library)
     {
+        if (empty($library) === true)
+        {
+            return;
+        }
+
         $library = strtolower($library);
 
         if (self::isValidLibrary($library))
@@ -194,6 +216,11 @@ class Metadata
 
     public static function getValueForBrowser($browser)
     {
+        if (empty($browser) === true)
+        {
+            return;
+        }
+
         $browser = strtolower($browser);
 
         if (self::isValidBrowser($browser))
@@ -211,6 +238,11 @@ class Metadata
 
     public static function getValueForDevice($device)
     {
+        if ($device === null)
+        {
+            return;
+        }
+
         $device = strtolower($device);
 
         if (self::isValidDevice($device))
