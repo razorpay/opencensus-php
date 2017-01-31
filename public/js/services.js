@@ -804,7 +804,7 @@ angular.module('app.services', [])
       else if (key.substr(0,11) === 'base_amount') {
         return 'amount_inr';
       }
-      else if (key.substr(-6) === 'amount') {
+      else if ((key.substr(-6) === 'amount') || (key.substr(0,7) === 'amount_')) {
         return 'amount';
       }
       // All other entity links are considered here
@@ -836,13 +836,13 @@ angular.module('app.services', [])
         case 'timestamp':
           return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
         case 'amount_inr':
-          return $filter('rupee')(value);
+          return $filter('rupee')(value / 100);
         case 'amount':
           var currency = 'INR';
           if (entity.hasOwnProperty('currency')) {
             currency = entity.currency;
           }
-          return $filter('propercurrency')(value, currency);
+          return $filter('propercurrency')(value / 100, currency);
         default:
           if (value === null) {
             return 'null';
