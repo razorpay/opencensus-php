@@ -765,7 +765,7 @@ class Service extends Base\Service
                 $query->addSelect(array('merchant_id', 'submitted'));
             }))
             ->withAnyTag($tag)
-            ->whereNull('archived_at')
+            ->whereNull('suspended_at')
             ->get(['id', 'name', 'activated', 'created_at']);
     }
 
