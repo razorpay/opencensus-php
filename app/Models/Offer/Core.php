@@ -41,29 +41,6 @@ class Core extends Base\Core
         return $offer;
     }
 
-    public function getMerchantOffers(Merchant\Entity $merchant)
-    {
-        $data = [
-            'entity' => 'offers'
-        ];
-
-        $methods = Payment\Method::getAllPaymentMethods();
-
-        foreach ($methods as $method)
-        {
-            $data[$method] = $this->getOffersByMerchantAndMethod($merchant, $method);
-        }
-
-        return $data;
-    }
-
-    public function fetchOffers(Merchant\Entity $merchant)
-    {
-        $offers = $this->repo->offer->fetchOffersForMerchant($merchant);
-
-        return $offers;
-    }
-
     public function validateOfferApplicableOnPayment(Payment\Entity $payment)
     {
         $order = $payment->order;
@@ -101,10 +78,12 @@ class Core extends Base\Core
         return;
     }
 
-    private function getOffersByMerchantAndMethod(Merchant\Entity $merchant, string $method)
+    public function fetchOfferForOrder(string $orderId)
     {
-        $offers = $this->repo->offer->fetchActiveOfferByMerchantAndMethod($merchant, $method);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
 
-        return $offers->toArrayPublic();
+        $offer = $order->offer;
+
+        return $offer->toArrayPublic();
     }
 }

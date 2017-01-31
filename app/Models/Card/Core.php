@@ -117,7 +117,7 @@ class Core extends Base\Core
             }
 
             $type = $details['type'];
-            sd($type);
+
             $emi = IIN\IIN::isEmiAvailableForCard($details, $input['number']);
 
             // Since AMEX is handled as a different case,

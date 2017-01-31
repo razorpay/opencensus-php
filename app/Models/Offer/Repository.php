@@ -76,23 +76,4 @@ class Repository extends Base\Repository
 
         return $offers;
     }
-
-    // public function fetchOffersForMerchant(Merchant\Entity $merchant)
-    // {
-    //     $offers = $this->fetchMerchantOffersQuery($merchant)
-    //                     ->get();
-
-    //     return $offers;
-    // }
-
-    // private function fetchMerchantOffersQuery(Merchant\Entity $merchant)
-    // {
-    //     return $this->newQuery()
-    //                 ->leftJoin('merchant_offer', 'offers.id', '=', 'merchant_offer.offer_id')
-    //                 ->where(function ($query) use ($merchant)
-    //                 {
-    //                     $query->whereNull('merchant_offer.merchant_id')
-    //                           ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
-    //                 });
-    // }
 }

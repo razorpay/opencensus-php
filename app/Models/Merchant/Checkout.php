@@ -39,13 +39,13 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
-        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
-
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
+
+        $this->checkAndFillOfferDetails($input, $data);
 
         $this->tracePreferencesResponse($merchant, $data);
 
@@ -282,5 +282,15 @@ class Checkout
         }
 
         return $rememberCustomer;
+    }
+
+    public function checkAndFillOfferDetails(array $input, array & $data)
+    {
+        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
+
+        if ($orderId !== null)
+        {
+            $data['offer'] = (new Offer\Core)->fetchOfferForOrder($orderId);
+        }
     }
 }
