@@ -135,7 +135,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpGenerate');
 
         $response = array(
-            ResponseFields::OTP_ID         => '1asda2345',
+            ResponseFields::OTP_ID         => '1daea2345',
             ResponseFields::REDIRECT_URL   => '',
             ResponseFields::IS_IVR_ENABLED => 'false',
             ResponseFields::STATUS         => 'VERIFY',

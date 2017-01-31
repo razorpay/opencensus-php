@@ -394,7 +394,8 @@ trait Refund
     {
         try
         {
-            return $this->callGatewayFunction(Payment\Action::VALIDATE_REFUND, $data);
+            return $this->callGatewayFunction(
+                Payment\Action::VALIDATE_UNKNOWN_REFUND, $data);
         }
         catch (Exception\BaseException $ex)
         {

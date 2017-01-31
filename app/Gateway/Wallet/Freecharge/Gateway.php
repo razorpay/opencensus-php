@@ -412,7 +412,7 @@ class Gateway extends Base\Gateway
     /*
      * Validate if the refund was successfully processed on freecharge's end
      */
-    public function validateRefund(array $input)
+    public function validateUnknownRefund(array $input)
     {
         $this->action($input, Action::VERIFY);
 
@@ -432,37 +432,17 @@ class Gateway extends Base\Gateway
 
         $this->handleRequestFailed($response);
 
-        $success = null;
-
         $wallet = $this->repo->findByRefundId($input['refund']['id']);
 
         if ((isset($content[ResponseFields::STATUS]) === true) and
             ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
         {
-            $success = true;
 
-            // updateGatewayPaymentEntity takes mapped attributes
-            $refundAttr = [
-                RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
-            ];
-
-            $this->updateGatewayPaymentEntity($wallet, $refundAttr);
+            $success = $this->validateRefundOnSuccess($wallet);
         }
         else
         {
-            $this->trace->info(TraceCode::GATEWAY_REFUND_FAILED,
-                [
-                    'payment_id' => $input['payment']['id'],
-                    'gateway' => $this->gateway,
-                ]);
-
-            $sucess = false;
-
-            //
-            // if the refund failed, delete the refund entity
-            // Refund Record cron will pick it up and attempt the refund again.
-            //
-            $this->repo->deleteOrFail($wallet);
+            $success = $this->validateRefundOnFailure($wallet, $input);
         }
 
         $data = [
@@ -1298,5 +1278,37 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function validateRefundOnSuccess(WalletEntity $wallet)
+    {
+        // updateGatewayPaymentEntity takes mapped attributes
+        $refundAttr = [
+            RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
+        ];
+
+        $this->updateGatewayPaymentEntity($wallet, $refundAttr);
+
+        // return success as true
+        return true;
+    }
+
+    public function validateRefundOnFailure(
+        WalletEntity $wallet,
+        array $input)
+    {
+        $this->trace->info(TraceCode::GATEWAY_REFUND_FAILED,
+            [
+                'payment_id' => $input['payment']['id'],
+                'gateway' => $this->gateway,
+            ]);
+
+        //
+        // if the refund failed, delete the refund entity
+        // Refund Record cron will pick it up and attempt the refund again.
+        //
+        $this->repo->deleteOrFail($wallet);
+
+        return false;
     }
 }

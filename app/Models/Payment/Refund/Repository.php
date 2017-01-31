@@ -287,8 +287,7 @@ class Repository extends Base\Repository
                 AND `wallet`.`status_code` = 'INITIATED';
         */
 
-       // TODO Use getEntityWithWallet after merging #2183
-       $gatewayTable = 'wallet';
+       $gatewayTable = Table::getTableNameForEntity($gateway);
        $refundTable = Table::REFUND;
        $paymentTable = Table::PAYMENT;
 

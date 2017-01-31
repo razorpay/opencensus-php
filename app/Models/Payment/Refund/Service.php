@@ -560,13 +560,11 @@ class Service extends Base\Service
 
     public function validateGatewayRefunds(string $gateway)
     {
-
-        $now = Carbon::now()->timestamp;
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
-        # TODO consult with others to express it better
-        $repoFunc = 'fetch' . str_replace('_', '', ucwords($gateway, '_')) . 'RefundsForValidation';
+        $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';
 
         $refunds = $this->repo->refund->$repoFunc($gateway, $createdAfter);
 
