@@ -267,7 +267,9 @@ app.controller('PaymentDetailCtrl', [
     };
 
     $scope.ok = function (amount, comment) {
-      amount = parseFloat(amount);
+      // TODO: Change this so we do integers everywhere.
+      // Convert it back to a float from String
+      amount = parseFloat(amount.replace(/[, ]/, ''));
       // We get amount with 2 decimal places
       // Note: If we ever do a currency with more or less than 2 decimal places
       // refunds will break
