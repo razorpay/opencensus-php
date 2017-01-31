@@ -11,7 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Order;
 
-class CreatePayments  extends Migration
+class CreatePayments extends Migration
 {
 
     /**
@@ -137,7 +137,8 @@ class CreatePayments  extends Migration
             $table->integer(Payment::CAPTURED_AT)
                   ->nullable();
 
-            $table->string(Payment::GATEWAY);
+            $table->string(Payment::GATEWAY)
+                  ->nullable();
 
             $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
                   ->nullable();
