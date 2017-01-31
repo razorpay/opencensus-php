@@ -1,13 +1,23 @@
-import React, { Component } from 'react'
+import React, { PropTypes, Component } from 'react'
 import { connect } from 'react-redux'
 import * as InvoiceActions from 'merchant/modules/invoices/details'
+import * as ModalActions from 'merchant/modules/modals'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
+import SendInvoiceOptions from './SendInvoiceOptions'
 
 @connect(
   (state) => state.invoice,
-  InvoiceActions
+  {
+    ...InvoiceActions,
+    ...ModalActions
+  }
 )
 export default class InvoiceDetailContainer extends Component {
+  static contextTypes = {
+    ngRouter: PropTypes.object,
+    confirm: PropTypes.func
+  }
+
   constructor() {
     super(...arguments)
     this.state = {
@@ -15,6 +25,7 @@ export default class InvoiceDetailContainer extends Component {
     }
     this.notifyCustomer = ::this.notifyCustomer
     this.issueInvoice = ::this.issueInvoice
+    this.onSendInvoice = ::this.onSendInvoice
   }
 
   componentWillMount() {
@@ -40,21 +51,29 @@ export default class InvoiceDetailContainer extends Component {
   }
 
   issueInvoice() {
-    return this.props.issueInvoice(this.props.invoice).then((response) => {
-      this.setState({
-        statusMsg: {
-          type: 'success',
-          message: 'Invoice issued successfully'
-        }
-      })
-    }).catch((error) => {
-      this.setState({
-        statusMsg: {
-          type: 'error',
-          message: error.errors
-        }
+    this.context.confirm({
+      message: 'Generating payment link will mark the invoice as issued. Do you want to proceed ?',
+      affirmativeLabel: 'Generate',
+      affirmativePendingLabel: 'Generating...',
+      action: () => this.props.issueInvoice(this.props.invoice).catch((err) => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: err.errors
+          }
+        })
       })
     })
+  }
+
+  onSendInvoice() {
+    // this.props.openModal({
+    //   component: <SendInvoiceOptions
+    //     invoice={this.props.invoice}
+    //     onSave={this.showSuccessMsg}
+    //     onCancel={this.props.closeModal}
+    //   />
+    // })
   }
 
   render() {
@@ -70,6 +89,7 @@ export default class InvoiceDetailContainer extends Component {
             statusMsg={statusMsg}
             onNotify={this.notifyCustomer}
             onIssue={this.issueInvoice}
+            onSendInvoice={this.onSendInvoice}
           />
         </div>
       </div>

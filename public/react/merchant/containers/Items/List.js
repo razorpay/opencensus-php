@@ -1,7 +1,6 @@
 import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
-import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import Role from 'merchant/components/Role'
@@ -9,10 +8,11 @@ import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as ItemActions from 'merchant/modules/items'
+import * as ModalActions from 'merchant/modules/modals'
 
 @connect(
   (state) => state.items,
-  ItemActions
+  { ...ItemActions, ...ModalActions }
 )
 @reduxForm({
   form: 'newItem',
@@ -30,15 +30,18 @@ export default class ItemsListContainer extends ListContainer {
   }
 
   showItemModal(item = null) {
-    this.setState({
-      itemToEdit: item
+    this.props.openModal({
+      component: <ItemCreation
+        item={item}
+        onSave={this.highlightRowAndClose}
+        closeModal={this.props.closeModal}
+      />
     })
-    this.openModal()
   }
 
   highlightRowAndClose(item) {
     this.props.highlightItemRow(item)
-    this.closeModal()
+    this.props.closeModal()
   }
 
   deleteItem(item) {
@@ -105,18 +108,6 @@ export default class ItemsListContainer extends ListContainer {
             />
           </div>
         </div>
-
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <ItemCreation
-            item={this.state.itemToEdit}
-            onSave={this.highlightRowAndClose}
-            closeModal={this.closeModal}
-          />
-        </Modal>
       </div>
     )
   }

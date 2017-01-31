@@ -71,6 +71,20 @@ body.ReactModal__Body--open {
   }
 }
 
+// React Tooltip
+
+.__react_component_tooltip.__react_component_tooltip {
+  padding: 4px 12px;
+}
+
+.__react_component_tooltip.__react_component_tooltip.place-top:before,
+.__react_component_tooltip.__react_component_tooltip.place-top:after {
+  $caretWidth = 6px;
+  border-width: $caretWidth;
+  bottom: -($caretWidth);
+  margin-left: -($caretWidth);
+}
+
 // react-dates style overrides
 
 .SingleDatePicker {
@@ -261,4 +275,8 @@ tr:hover .row-action > .btn-group {
   font-size: 13px;
   padding-top: 5px;
   padding-bottom: 5px;
+}
+
+.btn-group > .tooltip-wrapper {
+  display: inline-block;
 }

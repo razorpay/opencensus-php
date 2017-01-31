@@ -1,6 +1,5 @@
-import React, { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import { connect } from 'react-redux'
-import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import Role from 'merchant/components/Role'
@@ -8,10 +7,11 @@ import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as CustomerActions from 'merchant/modules/customers'
+import * as ModalActions from 'merchant/modules/modals'
 
 @connect(
   (state) => state.customers,
-  CustomerActions
+  { ...CustomerActions, ...ModalActions }
 )
 export default class CustomersListContainer extends ListContainer {
   constructor() {
@@ -26,15 +26,18 @@ export default class CustomersListContainer extends ListContainer {
   }
 
   showCustomerModal(customer = null) {
-    this.setState({
-      customerToEdit: customer
+    this.props.openModal({
+      component: <CustomerCreation
+        customer={customer}
+        onSave={this.highlightRowAndClose}
+        closeModal={this.props.closeModal}
+      />
     })
-    this.openModal()
   }
 
   highlightRowAndClose(customer) {
     this.props.highlightCustomerRow(customer)
-    this.closeModal()
+    this.props.closeModal()
   }
 
   deleteCustomer(customer) {
@@ -101,18 +104,6 @@ export default class CustomersListContainer extends ListContainer {
             />
           </div>
         </div>
-
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <CustomerCreation
-            customer={this.state.customerToEdit}
-            onSave={this.highlightRowAndClose}
-            closeModal={this.closeModal}
-          />
-        </Modal>
       </div>
     )
   }

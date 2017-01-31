@@ -1,6 +1,5 @@
 import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
-import Modal from 'rzp/ui/Modal'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
 import Role from 'merchant/components/Role'
@@ -9,15 +8,15 @@ import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
 import InvoiceListFilter from 'merchant/components/Invoices/InvoiceListFilter'
 import * as InvoiceActions from 'merchant/modules/invoices/list'
+import * as ModalActions from 'merchant/modules/modals'
 
 @connect(
   (state) => state.invoices,
-  InvoiceActions
+  { ...InvoiceActions, ...ModalActions }
 )
 export default class InvoicesListContainer extends ListContainer {
   constructor() {
     super(...arguments)
-    this.state.invoiceToEdit = null
     this.editInvoice = ::this.editInvoice
     this.deleteInvoice = ::this.deleteInvoice
   }
@@ -27,10 +26,15 @@ export default class InvoicesListContainer extends ListContainer {
   }
 
   showPaymentLinkModal(invoice = null) {
-    this.setState({
-      invoiceToEdit: invoice
+    this.props.openModal({
+      component: <CreatePaymentLink
+        invoice={invoice}
+        onSave={(invoice) => {
+          this.props.highLightInvoice(invoice.id)
+        }}
+        closeModal={this.props.closeModal}
+      />
     })
-    this.openModal()
   }
 
   editInvoice(invoice) {
@@ -129,20 +133,6 @@ export default class InvoicesListContainer extends ListContainer {
             />
           </div>
         </div>
-
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <CreatePaymentLink
-            invoice={this.state.invoiceToEdit}
-            onSave={(invoice) => {
-              this.props.highLightInvoice(invoice.id)
-            }}
-            closeModal={this.closeModal}
-          />
-        </Modal>
       </div>
     )
   }

@@ -3,7 +3,6 @@ import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 import Alert from 'rzp/ui/Forms/Alert'
-import Modal from 'rzp/ui/Modal'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import PowerSelect from 'rzp/ui/Select/PowerSelect'
@@ -17,8 +16,8 @@ import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
-import ModalContainer from 'merchant/containers/ModalContainer'
 import Invoice from 'merchant/models/Invoice'
+import * as ModalActions from 'merchant/modules/modals'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -35,7 +34,8 @@ const selector = formValueSelector('newInvoice')
     fetchItemsForAutocomplete,
     saveInvoice,
     highLightInvoice,
-    fetchInvoice
+    fetchInvoice,
+    ...ModalActions
   }
 )
 @reduxForm({
@@ -52,14 +52,16 @@ const selector = formValueSelector('newInvoice')
     ]
   })
 })
-export default class InvoicesNewContainer extends ModalContainer {
+export default class InvoicesNewContainer extends Component {
   static contextTypes = {
     ngRouter: PropTypes.object
   }
 
   constructor() {
     super(...arguments)
-    this.state.errors = null
+    this.state = {
+      errors: null
+    }
     this.save = ::this.save
     this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
     this.quickCreateCustomer = ::this.quickCreateCustomer
@@ -83,11 +85,16 @@ export default class InvoicesNewContainer extends ModalContainer {
 
   selectCustomerAndCloseModal(customer) {
     this.props.change('customer_id', customer.id)
-    this.closeModal()
+    this.props.closeModal()
   }
 
   quickCreateCustomer() {
-    this.openModal()
+    this.props.openModal({
+      component: <CustomerCreation
+        onSave={this.selectCustomerAndCloseModal}
+        closeModal={this.props.closeModal}
+      />
+    })
   }
 
   save(props) {
@@ -108,17 +115,6 @@ export default class InvoicesNewContainer extends ModalContainer {
 
     return (
       <div class='react-root'>
-        <Modal
-          isOpen={this.state.isModalOpen}
-          onRequestClose={this.closeModal}
-          closeTimeoutMS={300}
-        >
-          <CustomerCreation
-            onSave={this.selectCustomerAndCloseModal}
-            closeModal={this.closeModal}
-          />
-        </Modal>
-
         {
           this.state.isLoading ?
           <div class='page-spinner-container'>

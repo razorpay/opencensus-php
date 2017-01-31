@@ -1,8 +1,6 @@
-import { PropTypes } from 'react'
-import ModalContainer from 'merchant/containers/ModalContainer'
+import { Component, PropTypes } from 'react'
 
-// Extending `ModalContainer` will be removed once modal management is moved to app's state
-export default class ListContainer extends ModalContainer {
+export default class ListContainer extends Component {
   static SKIP = 0
   static COUNT = 25
   static contextTypes = {
@@ -12,7 +10,9 @@ export default class ListContainer extends ModalContainer {
 
   constructor() {
     super(...arguments)
-    this.state.status = {}
+    this.state = {
+      status: {}
+    }
     this.search = ::this.search
     this.fetchAll = ::this.fetchAll
   }

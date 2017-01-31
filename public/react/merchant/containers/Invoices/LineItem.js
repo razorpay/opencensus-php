@@ -2,9 +2,8 @@ import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
-import Modal from 'rzp/ui/Modal'
-import ModalContainer from 'merchant/containers/ModalContainer'
 import ItemCreation from 'merchant/containers/Items/New'
+import * as ModalActions from 'merchant/modules/modals'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -12,13 +11,14 @@ const selector = formValueSelector('newInvoice')
     return {
       invoice_line_items: selector(state, 'line_items')
     }
-  }
+  },
+  ModalActions
 )
 @reduxForm({
   form: 'newInvoice',
   destroyOnUnmount: false
 })
-export default class InvoiceLineItem extends ModalContainer {
+export default class InvoiceLineItem extends Component {
   constructor() {
     super(...arguments)
     this.quickCreateItem = ::this.quickCreateItem
@@ -27,12 +27,17 @@ export default class InvoiceLineItem extends ModalContainer {
   }
 
   quickCreateItem() {
-    this.openModal()
+    this.props.openModal({
+      component: <ItemCreation
+        onSave={this.selectItemAndCloseModal}
+        closeModal={this.props.closeModal}
+      />
+    })
   }
 
   selectItemAndCloseModal(item) {
     this.updateLineItemRow(item)
-    this.closeModal()
+    this.props.closeModal()
   }
 
   updateLineItemRow(item) {
@@ -61,17 +66,6 @@ export default class InvoiceLineItem extends ModalContainer {
     return (
       <tr>
         <td>
-          <Modal
-            isOpen={this.state.isModalOpen}
-            onRequestClose={this.closeModal}
-            closeTimeoutMS={300}
-          >
-            <ItemCreation
-              onSave={this.selectItemAndCloseModal}
-              closeModal={this.closeModal}
-            />
-          </Modal>
-
           <span class='remove-row-action' onClick={() => onRemove(index)}>
             <i class='fa fa-times-circle text-danger'></i>
           </span>
