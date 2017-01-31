@@ -507,7 +507,7 @@ class FreechargeGatewayTest extends TestCase
         // i.e Freecharge does not have any refund transaction for razorpay
         // refund ID
         $data = [
-            'id'     => 'failedRefund12',
+            'id'     => 'failedRefund13',
             'amount' => 300,
         ];
 
@@ -584,7 +584,6 @@ class FreechargeGatewayTest extends TestCase
         $this->assertEquals(1, $result['total_failed_refunds']);
         $this->assertEquals(0, $result['total_success_refunds']);
         $this->assertEquals(0, $result['total_unknown_refunds']);
-
     }
 
     public function testRefundValidationUnknown()
