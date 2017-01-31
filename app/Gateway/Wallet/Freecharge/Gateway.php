@@ -409,8 +409,16 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /*
+    /**
      * Validate if the refund was successfully processed on freecharge's end
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
      */
     public function validateUnknownRefund(array $input)
     {
@@ -442,8 +450,7 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::STATUS]) === false)
         {
-            $data['success'] = $this->validateRefundOnFailure(
-                $wallet, $input);
+            $data['success'] = $this->validateRefundOnFailure($wallet, $input);
 
             return $data;
         }
@@ -460,8 +467,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Status::TRANSACTION_FAILED:
-                $data['success'] = $this->validateRefundOnFailure(
-                    $wallet, $input);
+                $data['success'] = $this->validateRefundOnFailure($wallet, $input);
                 break;
 
             default:
@@ -1314,7 +1320,8 @@ class Gateway extends Base\Gateway
         WalletEntity $wallet,
         array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_REFUND_FAILED,
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_FAILED,
             [
                 'payment_id' => $input['payment']['id'],
                 'gateway' => $this->gateway,
