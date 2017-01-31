@@ -52,6 +52,15 @@ class Core extends Base\Core
         }
     }
 
+    public function edit($token, $input)
+    {
+        $token->edit($input);
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
+    }
+
     /**
      * Get the token entity for local/global customer. $id can be token or
      * token id for now.

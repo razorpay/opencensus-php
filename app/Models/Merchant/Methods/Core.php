@@ -91,7 +91,7 @@ class Core extends Base\Core
     {
         $methods = $this->getPaymentMethods($merchant);
 
-        $supportedBanks = Netbanking::getSupportedBanks($this->mode, $merchant->isTPVRequired());
+        $supportedBanks = Netbanking::getSupportedBanks($merchant->isTPVRequired());
 
         $methods->setBanks($supportedBanks);
 

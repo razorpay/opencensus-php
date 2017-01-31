@@ -4,10 +4,6 @@ namespace RZP\Gateway\Wallet\Freecharge;
 
 class Status
 {
-    const REFUND_FAILED         = 'Failed';
-    const REFUND_INITIATED      = 'Initiated';
-    const REFUND_SUCCESS        = 'Success';
-
     const TRANSACTION_INITIATED = 'INITIATED';
     const TRANSACTION_SUCCESS   = 'SUCCESS';
     const TRANSACTION_PENDING   = 'PENDING';
