@@ -425,7 +425,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
             [
-                'content'    => $response,
+                'content'    => $content,
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
             ]);
@@ -434,22 +434,39 @@ class Gateway extends Base\Gateway
 
         $wallet = $this->repo->findByRefundId($input['refund']['id']);
 
-        if ((isset($content[ResponseFields::STATUS]) === true) and
-            ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
-        {
-
-            $success = $this->validateRefundOnSuccess($wallet);
-        }
-        else
-        {
-            $success = $this->validateRefundOnFailure($wallet, $input);
-        }
-
         $data = [
-            'success'    => $success,
+            'success'    => null,
             'refund_id'  => $input['refund']['id'],
             'payment_id' => $input['payment']['id'],
         ];
+
+        if (isset($content[ResponseFields::STATUS]) === false)
+        {
+            $data['success'] = $this->validateRefundOnFailure(
+                $wallet, $input);
+
+            return data;
+        }
+
+        switch ($content[ResponseFields::STATUS])
+        {
+            case Status::TRANSACTION_SUCCESS:
+                $data['success'] = $this->validateRefundOnSuccess($wallet);
+                break;
+
+            case Status::TRANSACTION_PENDING:
+            case Status::TRANSACTION_INITIATED:
+                $data['success'] = 'unknown';
+                break;
+
+            case Status::TRANSACTION_FAILED:
+                $data['success'] = $this->validateRefundOnFailure(
+                    $wallet, $input);
+                break;
+
+            default:
+                $data['success'] = 'unknown';
+        }
 
         return $data;
     }

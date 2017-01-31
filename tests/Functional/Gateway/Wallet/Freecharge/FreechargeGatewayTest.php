@@ -590,6 +590,7 @@ class FreechargeGatewayTest extends TestCase
         $this->assertEquals(1, $result['total_refunds']);
         $this->assertEquals(1, $result['total_failed_refunds']);
         $this->assertEquals(0, $result['total_success_refunds']);
+        $this->assertEquals(0, $result['total_unknown_refunds']);
 
     }
 
