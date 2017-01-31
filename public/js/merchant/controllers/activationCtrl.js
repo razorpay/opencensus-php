@@ -60,7 +60,13 @@ app.controller('ActivationCtrl', [
     };
     getData();
     function getData() {
-      var request = $http.get('/activation/details');
+      var url = '/activation/details';
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
+      var request = $http.get(url);
+
       request.success(function (data) {
         var steps_finished = data.data.steps_finished;
         angular.forEach(steps_finished, function (value) {
@@ -226,5 +232,18 @@ app.controller('ActivationCtrl', [
     organization.fetchCurrentOrg().then(function (data) {
       $scope.org = data.custom_code;
     });
+  }
+])
+
+.controller('AccountActivationCtrl', [
+  '$scope',
+  '$http',
+  'alertsFactory',
+  'transformRequestAsFormPost',
+  '$upload',
+  'user',
+  'organization',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $upload, user, organization) {
+    $scope.accountDetails = true;
   }
 ]);

@@ -57,7 +57,8 @@ class Entity extends Base\Entity
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
-    const AGGREGATOR = 'Aggregator';
+    const AGGREGATOR    = 'Aggregator';
+    const MARKETPLACE   = 'Marketplace';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
@@ -133,6 +134,11 @@ class Entity extends Base\Entity
     public function isAggregator()
     {
         return in_array(self::AGGREGATOR, $this->tagNames());
+    }
+
+    public function isMarketplace()
+    {
+        return in_array(self::MARKETPLACE, $this->tagNames());
     }
 
     /**

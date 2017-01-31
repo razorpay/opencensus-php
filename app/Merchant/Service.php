@@ -28,6 +28,7 @@ class Service extends Base\Service
     const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
     const SUBMERCHANT_NOT_ALLOWED       = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const ACCOUNT_CREATION_NOT_ALLOWED  = "You do have account creation privileges. Please contact support@razorpay.com";
     const BANK_ACCOUNT_NOT_FOUND        = "Could not find a Bank Account";
 
     public function __construct()
@@ -99,13 +100,25 @@ class Service extends Base\Service
     {
         $currentMerchant = $this->currentMerchant;
 
-        if(! $currentMerchant->isAggregator())
+        $isAccount = \Input::get('account') ?? false;
+
+        if ($isAccount === true)
         {
-            return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+            if ($currentMerchant->isMarketplace() === false)
+            {
+                return [[self::ACCOUNT_CREATION_NOT_ALLOWED], null];
+            }
+        }
+        else
+        {
+            if ($currentMerchant->isAggregator() === false)
+            {
+                return [[self::SUBMERCHANT_NOT_ALLOWED], null];
+            }
         }
 
         $error = (new Merchant\Validator)
-            ->validateInput('create_submerchant', $input)->messages();
+                    ->validateInput('create_submerchant', $input)->messages();
 
         if (empty($error))
         {
@@ -138,8 +151,11 @@ class Service extends Base\Service
 
             MerchantDetails\Entity::createOrFail($details);
 
-            // Finally attach the current user to the new user's team
-            $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            if ($isAccount === false)
+            {
+                // Finally attach the current user to the new user's team
+                $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
+            }
 
             return [null, $merchant->toArray()];
         }
@@ -874,7 +890,7 @@ class Service extends Base\Service
         {
             $data = $this->api->merchant->fetchProxyBankAccount()->toArray();
         }
-        catch(BadRequestError $e)
+        catch (BadRequestError $e)
         {
             $error = [self::BANK_ACCOUNT_NOT_FOUND];
         }

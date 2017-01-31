@@ -54,6 +54,7 @@ Route::group(['middleware'  =>  'auth:user'], function()
     Route::get('/user', 'UserController@getUserDetails');
     Route::get('/user/details', 'UserController@getUserDetails');
     Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
+    Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
     Route::get('/{mode}/payments', 'TransactionController@getPayments')->name('get_payments');
 
     // Order Routes

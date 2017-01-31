@@ -121,9 +121,9 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function getActivationDetails()
+    public function getActivationDetails($merchantId = null)
     {
-        $response = (new MerchantDetails\Service)->fetchDetails();
+        $response = (new MerchantDetails\Service)->fetchDetails($merchantId);
 
         return AppResponse::jsonResponse([], $response);
     }
