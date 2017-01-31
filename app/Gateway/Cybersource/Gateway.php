@@ -729,7 +729,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $vaultToken = (new Card\Toekenex)->getVaultToken($input['card']['number']);
+            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
         }
 
         $key = $this->getCacheKey($input['payment']['id']);
