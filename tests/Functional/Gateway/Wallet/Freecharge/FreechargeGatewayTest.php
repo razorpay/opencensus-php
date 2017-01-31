@@ -30,6 +30,8 @@ class FreechargeGatewayTest extends TestCase
 
         $this->gateway = 'wallet_freecharge';
 
+        $this->walletRepo = new Wallet\Base\Repository;
+
         $this->fixtures->merchant->enableWallet($this->merchantId, self::WALLET);
     }
 
@@ -134,7 +136,7 @@ class FreechargeGatewayTest extends TestCase
         $payment = $this->fixtures->create('payment', [
             'method'        => 'wallet',
             'wallet'        => self::WALLET,
-            'gateway'       => 'wallet_freecharge',
+            'gateway'       => $this->gateway,
             'otp_attempts'  => 3,
             'terminal_id'   => $this->sharedTerminal->id
         ]);
@@ -155,7 +157,7 @@ class FreechargeGatewayTest extends TestCase
         $payment = $this->fixtures->create('payment', [
             'method'        => 'wallet',
             'wallet'        => self::WALLET,
-            'gateway'       => 'wallet_freecharge',
+            'gateway'       => $this->gateway,
             'contact'       => '9111111111',
             'otp_attempts'  => 2,
             'otp_count'     => 1,
@@ -264,7 +266,7 @@ class FreechargeGatewayTest extends TestCase
             'contact'       => '9918899029',
             'method'        => 'wallet',
             'wallet'        => self::WALLET,
-            'gateway'       => 'wallet_freecharge',
+            'gateway'       => $this->gateway,
             'card_id'       => null,
             'terminal_id'   => $this->sharedTerminal->getId()
         ]);
@@ -303,7 +305,7 @@ class FreechargeGatewayTest extends TestCase
             'contact'       => '9918899029',
             'method'        => 'wallet',
             'wallet'        => self::WALLET,
-            'gateway'       => 'wallet_freecharge',
+            'gateway'       => $this->gateway,
             'card_id'       => null,
             'terminal_id'   => $this->sharedTerminal->id
         ]);
@@ -347,7 +349,7 @@ class FreechargeGatewayTest extends TestCase
             'status'        => 'captured',
             'method'        => 'wallet',
             'wallet'        => self::WALLET,
-            'gateway'       => 'wallet_freecharge',
+            'gateway'       => $this->gateway,
             'card_id'       => null,
             'terminal_id'   => $this->sharedTerminal->id
         ]);
@@ -359,7 +361,7 @@ class FreechargeGatewayTest extends TestCase
             'amount'              => $payment->getAmount(),
             'wallet'              => self::WALLET,
             'gateway_merchant_id' => 'random_id',
-            'reference1'          => '1asda2345',
+            'reference1'          => '1daea2345',
             'action'              => 'authorize',
             'status_code'         => 'SUCCESS',
             'received'            => true,
@@ -459,8 +461,7 @@ class FreechargeGatewayTest extends TestCase
         // delete the refund gateway payment entity
         $this->deleteGatewayRefundEntity($refund['id']);
 
-        $result = $this->startGatewayRefundRecordCron(
-            'wallet_freecharge');
+        $result = $this->startGatewayRefundRecordCron($this->gateway);
 
         $wallet = $this->getLastEntity('wallet', true);
         $payment = $this->getLastEntity('payment', true);
@@ -488,8 +489,7 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = $this->updateRefundEntity($refund['id'], $data);
 
-        $result = $this->startGatewayRefundRecordCron(
-            'wallet_freecharge');
+        $result = $this->startGatewayRefundRecordCron($this->gateway);
 
         $this->assertEquals(1, $result['total_applicable_refunds']);
         $this->assertEquals(0, $result['total_success_refunds']);
@@ -513,8 +513,7 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = $this->updateRefundEntity($refund['id'], $data);
 
-        $result = $this->startGatewayRefundRecordCron(
-            'wallet_freecharge');
+        $result = $this->startGatewayRefundRecordCron($this->gateway);
 
         $wallet = $this->getLastEntity('wallet', true);
         $payment = $this->getLastEntity('payment', true);
@@ -544,8 +543,7 @@ class FreechargeGatewayTest extends TestCase
 
         (new Refund\Repository)->saveOrFail($refund);
 
-        $result = $this->startGatewayRefundRecordCron(
-            'wallet_freecharge');
+        $result = $this->startGatewayRefundRecordCron($this->gateway);
 
         $wallet = $this->getLastEntity('wallet', true);
         $payment = $this->getLastEntity('payment', true);
@@ -558,13 +556,11 @@ class FreechargeGatewayTest extends TestCase
 
     public function deleteGatewayRefundEntity($id)
     {
-        $repo = new Wallet\Base\Repository;
-
         $id = Refund\Entity::verifyIdAndStripSign($id);
 
-        $wallet = $repo->findByRefundId($id);
+        $wallet = $this->walletRepo->findByRefundId($id);
 
-        $repo->deleteOrFail($wallet);
+        $this->walletRepo->deleteOrFail($wallet);
     }
 
     public function testRefundValidationFailed()
@@ -580,9 +576,6 @@ class FreechargeGatewayTest extends TestCase
 
         $refund = $this->updateRefundEntity($refund['id'], $data);
 
-        $result = $this->startGatewayRefundRecordCron(
-            'wallet_freecharge');
-
         // Run the cron to verify the refund status and edit gateway refund
         // entity status_code to SUCCESS
         $result = $this->startGatewayRefundValidateCron($this->gateway);
@@ -594,9 +587,34 @@ class FreechargeGatewayTest extends TestCase
 
     }
 
+    public function testRefundValidationUnknown()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($capturePayment['id']);
+
+        // Freecharge failed this refund explicitly after initiating it
+        $data['id'] = 'initiatedRfnd1';
+
+        $refund = $this->updateRefundEntity($refund['id'], $data);
+
+        // Run the cron to verify the refund status and edit gateway refund
+        // entity status_code to SUCCESS
+        $result = $this->startGatewayRefundValidateCron($this->gateway);
+
+        $this->assertEquals(1, $result['total_refunds']);
+        $this->assertEquals(0, $result['total_failed_refunds']);
+        $this->assertEquals(0, $result['total_success_refunds']);
+        $this->assertEquals(1, $result['total_unknown_refunds']);
+    }
+
     protected function updateRefundEntity($refundId, $attributes)
     {
         $refund['id'] = Refund\Entity::verifyIdAndSilentlyStripSign($refundId);
+
+        $wallet = $this->walletRepo->findByRefundId($refundId);
 
         $refund = (new Refund\Repository)->findOrFail($refund['id']);
 
@@ -604,6 +622,13 @@ class FreechargeGatewayTest extends TestCase
         if (isset($attributes['id']) === true)
         {
             $refund['id'] = $attributes['id'];
+
+            if ($wallet !== null)
+            {
+                $wallet['refund_id'] = $attributes['id'];
+
+                $this->walletRepo->saveOrFail($wallet);
+            }
         }
 
         $refund->fill($attributes);

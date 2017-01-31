@@ -64,16 +64,27 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::AMOUNT] = 100;
 
             // To throw failed refund data flow
-            if ($merchantTxnId === 'failedRefund12')
+            switch($merchantTxnId)
             {
-                $response[ResponseFields::STATUS] = 'FAILED';
-            }
-            else if ($merchantTxnId === 'failedRefund13')
-            {
-                // throw transaction does not exist error
-                $response = $this->getErrorResponse('E008');
+                case 'failedRefund12':
+                    $response[ResponseFields::STATUS] = 'FAILED';
+                    break;
 
-                return $response;
+                case 'pendingRefund1':
+                    $response[ResponseFields::STATUS] = 'PENDING';
+                    break;
+
+                case 'initiatedRfnd1':
+                    $response[ResponseFields::STATUS] = 'INITIATED';
+                    break;
+
+                case 'failedRefund13':
+                    // throw transaction does not exist error
+                    $response = $this->getErrorResponse('E008');
+                    return $response;
+
+                default:
+                    $response[ResponseFields::STATUS] = 'SUCCESS';
             }
 
             $response['checksum'] = $this->generateHash($response);

@@ -445,7 +445,7 @@ class Gateway extends Base\Gateway
             $data['success'] = $this->validateRefundOnFailure(
                 $wallet, $input);
 
-            return data;
+            return $data;
         }
 
         switch ($content[ResponseFields::STATUS])
