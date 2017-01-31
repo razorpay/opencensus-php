@@ -636,7 +636,7 @@ class Service extends Base\Service
             return $merchant;
         }
 
-        $data['confirmed'] = ($merchant->users()->first()->confirm_token === null);
+        $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
 
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
