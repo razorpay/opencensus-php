@@ -26,18 +26,18 @@ class OfferController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deleteOffer(string $id)
+    public function fetchOffers()
     {
-        $data = (new Offer\Service)->deleteOffer($id);
+        $input = Request::all();
+
+        $data = (new Offer\Service)->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
 
-    public function updateMerchants(string $id)
+    public function fetchOfferById(string $id)
     {
-        $input = Request::all();
-
-        $data = (new Offer\Service)->updateMerchants($id, $input);
+        $data = (new Offer\Service)->fetch($id);
 
         return ApiResponse::json($data);
     }

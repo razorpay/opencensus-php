@@ -22,6 +22,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
@@ -465,29 +466,7 @@ trait Authorize
 
     protected function validateOfferIfApplicable(Payment\Entity $payment)
     {
-        $order = $payment->order;
-
-        // Not applicable if order is not present
-        if ($order === null)
-        {
-            return;
-        }
-
-        $offerApplied = $order->offer;
-
-        // Not applicable if order has no offer
-        if ($offerApplied === null)
-        {
-            return;
-        }
-
-        if($offerApplied->checkOfferCriteriaSatisfied($payment) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
-        }
-
-        return;
+        (new Offer\Core)->checkOfferApplicableOnPayment($payment);
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)

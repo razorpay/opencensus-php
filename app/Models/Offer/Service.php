@@ -21,45 +21,24 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::OFFER_UPDATE_REQUEST, $input);
 
-        $offer = $this->repo->offer->findOrFailPublic($id);
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $offer = (new Core)->update($offer, $input);
 
         return $offer->toArrayAdmin();
     }
 
-    public function deleteOffer(string $id)
+    public function fetchMultiple(array $input)
     {
-        $offer = $this->repo->offer->findOrFailPublic($id);
+        $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
 
-        $data = (new Core)->delete($offer);
-
-        return $data;
+        return $offers->toArrayPublic();
     }
 
-    public function updateMerchants(string $id, array $input)
+    public function fetch(string $id)
     {
-        $this->trace->info(TraceCode::OFFER_MERCHANT_UPDATE_REQ, $input);
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $offer = $this->repo->offer->findOrFailPublic($id);
-
-        $offer->validateInput('merchant', $input);
-
-        $merchantIds = $input['merchant_ids'];
-
-        $action = $input['action'];
-
-        if ($action === 'add')
-        {
-            $offer->merchants()->attach($merchantIds);
-        }
-        else
-        {
-            $offer->merchants()->detach($merchantIds);
-        }
-
-        $this->repo->saveOrFail($offer);
-
-        return $offer->toArrayAdmin();
+        return $offer->toArrayPublic();
     }
 }

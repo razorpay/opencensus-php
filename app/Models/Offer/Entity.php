@@ -117,6 +117,9 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::IINS            => 'array',
         self::ACTIVE          => 'boolean',
+        self::PERCENT_RATE    => 'int',
+        self::MAX_CASHBACK    => 'int',
+        self::FLAT_CASHBACK   => 'int',
         self::MIN_AMOUNT      => 'int'
     ];
 
@@ -261,7 +264,7 @@ class Entity extends Base\PublicEntity
 
     protected function getPercentRateAttribute($percentRate)
     {
-        return $percentRate / 100;
+        return ($percentRate / 100);
     }
 
     protected function getAdditionalDetailsAttribute($additionalDetails)
@@ -288,7 +291,7 @@ class Entity extends Base\PublicEntity
         return ($orderAmount >= $this->getMinAmount());
     }
 
-    public function checkOfferCriteriaSatisfied(Payment\Entity $payment)
+    public function validateOfferApplicable(Payment\Entity $payment)
     {
         $this->payment = $payment;
 
@@ -361,7 +364,7 @@ class Entity extends Base\PublicEntity
     {
         $card = $this->payment->card;
 
-        $iins = $this->getIIns();
+        $iins = $this->getIins();
 
         if (empty($iins) === false)
         {

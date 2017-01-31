@@ -329,10 +329,10 @@ final class Route
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
         'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
-        'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
         'offer_update'                            => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
-        'offer_delete'                            => ['delete',   'offers/{id}',                                    'OfferController@deleteOffer'                                       ],
+        'offer_fetch'                             => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
+        'offer_fetch_by_id'                       => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
@@ -543,7 +543,9 @@ final class Route
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
         'offer_create',
-        'offer_update'
+        'offer_update',
+        'offer_fetch',
+        'offer_fetch_by_id'
     );
 
     public static $internal = array(
@@ -701,8 +703,6 @@ final class Route
         'merchant_activation_update',
         'merchant_activation_files',
         'admin_edit_app_auth',
-        'offers_update_merchants',
-        'offer_delete',
         'currency_update_rates',
         'currency_fetch_rates',
         'upi_psp_disallow',

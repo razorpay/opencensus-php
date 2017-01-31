@@ -3,19 +3,23 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
-
 use RZP\Base;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Card;
 use RZP\Models\Card\Network;
+use RZP\Models\Offer;
+use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Bank\IFSC;
 
 class Validator extends Base\Validator
 {
     const CASHBACK_CALCULATION_PARAMS = 'cashback_calculation_params';
     const OFFER_PERIOD                = 'offer_period';
+
+    protected $payment;
 
     protected static $createRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',

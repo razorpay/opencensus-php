@@ -42,11 +42,9 @@ class Core extends Base\Core
 
     public function delete(Entity $offer)
     {
-        $this->repo->offer->delete($offer);
+        $this->repo->deleteOrFail($offer);
 
-        return [
-            'id' => $offer->getId()
-        ];
+        return $offer;
     }
 
     public function getMerchantOffers(Merchant\Entity $merchant)
@@ -70,6 +68,33 @@ class Core extends Base\Core
         $offers = $this->repo->offer->fetchOffersForMerchant($merchant);
 
         return $offers;
+    }
+
+    public function checkOfferApplicableOnPayment(Payment\Entity $payment)
+    {
+        $order = $payment->order;
+        $appliedOffer = null;
+
+        if ($order !== null)
+        {
+            $appliedOffer = $order->offer;
+        }
+
+        // Return if offer is not present for order
+        if ($appliedOffer === null)
+        {
+            return;
+        }
+
+        $offerChecker = new Checker($appliedOffer);
+
+        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false);
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
+        }
+
+        return;
     }
 
     private function getOffersByMerchantAndMethod(Merchant\Entity $merchant, string $method)
