@@ -237,7 +237,7 @@ class Repository extends Base\Repository
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
-        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+        $gatewayTable = Table::getTableNameForEntity($gateway);
 
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);

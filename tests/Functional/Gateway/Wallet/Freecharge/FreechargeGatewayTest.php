@@ -4,6 +4,8 @@ namespace RZP\Tests\Functional\Gateway\Wallet\Freecharge;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\Wallet;
+use RZP\Models\Payment\Refund;
 use RZP\Gateway\Wallet\Base\Otp;
 use Carbon\Carbon;
 use RZP\Http\Route;
@@ -428,5 +430,129 @@ class FreechargeGatewayTest extends TestCase
         }
 
         return null;
+    }
+
+    public function testCreateRefundRecord()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($capturePayment['id'], 200);
+
+        // delete the refund gateway payment entity
+        $this->deleteGatewayRefundEntity($refund['id']);
+
+        $result = $this->startGatewayRefundRecordCron(
+            'wallet_freecharge');
+
+        $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(200, $payment['amount_refunded']);
+        $this->assertEquals(
+            Refund\Entity::verifyIdAndStripSign($refund['id']),
+            $wallet['refund_id']);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
+    }
+
+    public function testRefundRecordFailed()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($capturePayment['id'], 100);
+
+        $refund['id'] = Refund\Entity::verifyIdAndStripSign($refund['id']);
+
+        $refund = (new Refund\Repository)->findOrFail($refund['id']);
+
+        // Freecharge failed this refund explicitly after initiating it
+        $refund['id'] = 'failedRefund12';
+
+        (new Refund\Repository)->saveOrFail($refund);
+
+        $result = $this->startGatewayRefundRecordCron(
+            'wallet_freecharge');
+
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(0, $result['total_success_refunds']);
+    }
+
+    public function testRefundRecordFailed2()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($capturePayment['id'], 100);
+
+        $refund['id'] = Refund\Entity::verifyIdAndStripSign($refund['id']);
+
+        $refund = (new Refund\Repository)->findOrFail($refund['id']);
+
+        // When freecharge did not handle the refund request
+        // i.e Freecharge does not have any refund transaction for razorpay
+        // refund ID
+        $refund['id'] = 'failedRefund13';
+        $refund['amount'] = 300;
+
+        (new Refund\Repository)->saveOrFail($refund);
+
+        $result = $this->startGatewayRefundRecordCron(
+            'wallet_freecharge');
+
+        $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100, $payment['amount_refunded']);
+        $this->assertequals($refund['id'], $wallet['refund_id']);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
+    }
+
+    public function testRefundRecordAbsentRefund()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        $refund = $this->refundPayment($capturePayment['id'], 100);
+
+        $refund['id'] = Refund\Entity::verifyIdAndStripSign($refund['id']);
+
+        $refund = (new Refund\Repository)->findOrFail($refund['id']);
+
+        // Freecharge failed this refund explicitly after initiating it
+        $refund['id'] = 'failedRefund12';
+
+        // refund fails when amount is 100, Changing it to trigger successful refund
+        $refund['amount'] = 300;
+
+        (new Refund\Repository)->saveOrFail($refund);
+
+        $result = $this->startGatewayRefundRecordCron(
+            'wallet_freecharge');
+
+        $wallet = $this->getLastEntity('wallet', true);
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(100, $payment['amount_refunded']);
+        $this->assertequals($refund['id'], $wallet['refund_id']);
+        $this->assertEquals(1, $result['total_applicable_refunds']);
+        $this->assertEquals(1, $result['total_success_refunds']);
+    }
+
+    public function deleteGatewayRefundEntity($id)
+    {
+        $repo = new Wallet\Base\Repository;
+
+        $id = Refund\Entity::verifyIdAndStripSign($id);
+
+        $wallet = $repo->findByRefundId($id);
+
+        $repo->deleteOrFail($wallet);
     }
 }
