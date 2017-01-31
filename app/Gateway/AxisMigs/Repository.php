@@ -58,11 +58,13 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    // TODO: Rename the function to a proper one
+    // and fix the get auth code function for emi
     public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->firstOrFail();
     }
 
