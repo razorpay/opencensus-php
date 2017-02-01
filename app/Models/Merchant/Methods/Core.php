@@ -138,7 +138,7 @@ class Core extends Base\Core
 
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         return $this->getEnabledDisabledBanks($banks);
     }
@@ -187,7 +187,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($banks === null)
         {
@@ -200,7 +200,7 @@ class Core extends Base\Core
 
     protected function getPaymentMethods(Merchant\Entity $merchant)
     {
-        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($methods === null)
         {

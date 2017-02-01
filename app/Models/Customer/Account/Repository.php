@@ -18,6 +18,33 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
+    public function getGlobalCustomerForPayment($payment)
+    {
+        if ($payment->getGlobalCustomerId() !== null)
+        {
+            $customer = $this->findOrFail($payment->getGlobalCustomerId());
+            $payment->globalCustomer()->associate($customer);
+
+            return $customer;
+        }
+    }
+
+    public function fetchByAppToken($appToken)
+    {
+        if ($appToken->hasRelation('customer'))
+        {
+            return $appToken->customer;
+        }
+
+        $custId = $appToken->getCustomerId();
+
+        $customer = $this->findOrFail($custId);
+
+        $appToken->customer()->associate($customer);
+
+        return $customer;
+    }
+
     public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
     {
         return $this->newQuery()
