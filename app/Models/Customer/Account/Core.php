@@ -244,15 +244,12 @@ class Core extends Base\Core
     public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
-        $merchantId = null;
         $customer = null;
         $appToken = null;
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
-
-            $merchantId = $merchant->getId();
 
             Customer\Entity::verifyIdAndStripSign($customerId);
         }
@@ -268,13 +265,13 @@ class Core extends Base\Core
             {
                 $customerId = $appToken->getCustomerId();
 
-                $merchantId = Account::SHARED_ACCOUNT;
+                $merchant = $this->repo->merchant->getSharedAccount();
             }
         }
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
         }
 
         $this->trace->info(

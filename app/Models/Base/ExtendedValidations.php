@@ -213,25 +213,29 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function validateEpoch(string $attribute, $value, array $parameters, $validator)
+    protected function validateEpoch(string $attribute, $value, array $parameters)
     {
         $value = filter_var($value, FILTER_VALIDATE_INT);
 
         if ($value === false)
         {
-            throw new Exception\BadRequestValidationFailureException("$attribute must be integer.");
+            throw new Exception\BadRequestValidationFailureException("$attribute must be an integer.");
         }
 
-        array_walk($parameters, function (& $v, $i) { $v = intval($v); });
+        array_walk(
+            $parameters,
+            function (& $v, $i)
+            {
+                $v = intval($v);
+            });
 
-        $min = $parameters[0] ?? 946684800;  // 01 January 2000
-        $max = $parameters[1] ?? 4102444800; // 01 January 2100
+        $min = $parameters[0] ?? 946684800;  // 01 January 2000 GMT
+        $max = $parameters[1] ?? 4102444800; // 01 January 2100 GMT
 
-        $isValid = ($value >= $min) and ($value <= $max);
+        $isValid = (($value >= $min) and ($value <= $max));
 
         if ($isValid === false)
         {
-
             throw new Exception\BadRequestValidationFailureException("$attribute must be between $min and $max");
         }
 

@@ -111,13 +111,12 @@ class Processor
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
         $this->mode = $this->app['rzp.mode'];
+        $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $merchant->methods;
+        $this->methods = $this->getMethodsForMerchant($merchant);
 
         $this->checkMerchantPermissions();
-
-        $this->repo = $this->app['repo'];
 
         $this->paymentRepo = $this->repo->payment;
 
@@ -387,6 +386,8 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
+        $order = $this->getOrderForPayment($payment);
+
         $gateway = $payment->getGateway();
 
         // If the gateway is not async we just give a generic
@@ -581,7 +582,7 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->payment->terminal;
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
         if ($terminal === null)
         {
@@ -695,9 +696,7 @@ class Processor
 
     protected function fetchOrderFromInput($input)
     {
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-        $order = $this->orderRepo->find($orderId);
+        $order = $this->orderRepo->findbyPublicId($input['order_id']);
 
         if ($order === null)
         {
@@ -712,6 +711,8 @@ class Processor
             throw new Exception\BadRequestValidationFailureException(
                 'Order id not found');
         }
+
+        $order->merchant()->associate($this->merchant);
 
         return $order;
     }
@@ -828,6 +829,16 @@ class Processor
                                                 $id, $this->merchant);
 
         return $this->payment;
+    }
+
+    protected function getOrderForPayment($payment)
+    {
+        if ($payment->hasOrder())
+        {
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            return $order;
+        }
     }
 
     /**
@@ -1145,5 +1156,15 @@ class Processor
                 ]);
         }
 
+    }
+
+    protected function getMethodsForMerchant($merchant)
+    {
+        if ($merchant->hasRelation('methods') === false)
+        {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        return $merchant->methods;
     }
 }
