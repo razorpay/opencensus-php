@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -33,6 +34,7 @@ class Validator extends Base\Validator
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
     protected static $editTerminalGateways = [
@@ -44,7 +46,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY, Entity::CURRENCY,
     ];
 
     protected static $reassignRules = [
@@ -89,6 +91,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3'
     ];
 
     protected static $amexTerminalRules = [
@@ -240,6 +243,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\LogicException(
                 'EMI Terminals must be shared terminals');
+        }
+    }
+
+    protected function validateCurrency($input)
+    {
+        if ((isset($input['currency']) === true) and
+            in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
         }
     }
 
