@@ -52,6 +52,10 @@
           <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}">
         @endforeach
         <input type="hidden" name="razorpay_payment_id" value="{{{ $payment_id }}}">
+        @if (isset($razorpay_order_id))
+          <input type="hidden" name="razorpay_order_id" value="{{{ $razorpay_order_id }}}">
+          <input type="hidden" name="razorpay_signature" value="{{{ $razorpay_signature }}}">
+        @endif
       </form>
     @else
       <div class="card">
