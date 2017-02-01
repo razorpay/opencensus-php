@@ -32,7 +32,8 @@ ln -s phpunit-5.7.9.phar phpunit
 [Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
 
 ## Mac users
-Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
+* Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
+* Increase Docker memory to 6GB and number of cpus to 4
 
 ## Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
