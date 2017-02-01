@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Config;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -12,9 +13,12 @@ use RZP\Models\LineItem;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\InvoiceAction;
 
 class Core extends Base\Core
 {
+    use DispatchesJobs;
+
     protected $lineItemCore;
 
     public function __construct()
@@ -37,6 +41,11 @@ class Core extends Base\Core
             TraceCode::INVOICE_CREATED,
             $invoice->toArrayPublic()
         );
+
+        if ($invoice->isIssued())
+        {
+            $this->dispatch(new InvoiceAction('issued', $invoice));
+        }
 
         return $invoice;
     }
@@ -99,7 +108,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        (new Notifier($invoice))->sendNotificationToCustomer();
+        $this->dispatch(new InvoiceAction('issued', $invoice));
 
         return $invoice;
     }
@@ -246,10 +255,9 @@ class Core extends Base\Core
 
         $invoice->getValidator()->validateSendNotificationRequest($medium);
 
-        $notifier = new Notifier($invoice);
-        $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
+        $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
-        $response = $notifier->$commFunc();
+        $response = (new Notifier($invoice))->$func();
 
         $this->repo->saveOrFail($invoice);
 
@@ -271,6 +279,8 @@ class Core extends Base\Core
 
                 $this->expireInvoiceAfterChecks($invoice);
             });
+
+        $this->dispatch(new InvoiceAction('expired', $invoice));
 
         return $invoice;
     }

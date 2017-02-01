@@ -49,97 +49,78 @@ class Notifier extends Base\Core
         $this->invoice = $invoice;
     }
 
-    public function sendNotificationToCustomer()
+    public function notifyInvoiceIssuedToCustomer()
     {
-        if ($this->canInvoiceBeSentNow() === false)
+        if ($this->canCustomerBeNotifiedNow() === false)
         {
             return;
         }
 
+        //
+        // This flow will only send notifications if it's in pending state.
+        // That why following check is here. In called method, it won't check
+        // for it, as that gets invoked from other use case.
+        //
+
         if ($this->invoice->getEmailStatus() === NotifyStatus::PENDING)
         {
-            $this->sendEmailNotificationToCustomer();
+            $this->emailInvoiceIssuedToCustomer();
         }
 
         if ($this->invoice->getSmsStatus() === NotifyStatus::PENDING)
         {
-            $this->sendSmsNotificationToCustomer();
+            $this->smsInvoiceIssuedToCustomer();
         }
 
-        // Saves the new statuses of email and sms
         $this->repo->saveOrFail($this->invoice);
     }
 
-    public function sendEmailNotificationToCustomer()
+    public function notifyInvoiceExpiredToCustomer()
     {
-        $sent = $this->sendInvoiceEmail();
+        assert($this->invoice->isExpired() === true);
 
-        if ($sent === true)
-        {
-            $this->invoice->setEmailStatus(NotifyStatus::SENT);
-        }
-        else
-        {
-            $this->trace->warning(
-                TraceCode::EMAIL_SENDING_FAILED,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                ]);
-        }
-
-        return $sent;
+        $this->emailInvoiceExpiredToCustomer();
     }
 
-    public function sendSmsNotificationToCustomer()
+    public function emailInvoiceIssuedToCustomer()
+    {
+        assert(empty($this->invoice->getCustomerEmail()) === false);
+
+        $data = $this->getInvoiceIssuedMailPayload();
+
+        Mail::send('emails.invoice.generated', $data, function($message) use ($data)
+        {
+            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['email']);
+        });
+
+        $this->invoice->setEmailStatus(NotifyStatus::SENT);
+
+        return true;
+    }
+
+    public function emailInvoiceExpiredToCustomer()
+    {
+        assert(empty($this->invoice->getCustomerEmail()) === false);
+
+        //
+        // TODO:
+        // - Prepare the payload for mail
+        // - Commit a blank blade and use it
+        // - Changes in blade
+        //
+    }
+
+    public function smsInvoiceIssuedToCustomer()
     {
         $contact = $this->invoice->getCustomerContact();
 
-        if (empty($contact) === true)
-        {
-            $this->invoice->setSmsStatus(null);
-
-            return false;
-        }
-
-        $sent = $this->sendInvoiceSms($contact);
-
-        if ($sent === true)
-        {
-            $this->invoice->setSmsStatus(NotifyStatus::SENT);
-        }
-        else
-        {
-            $this->trace->error(
-                TraceCode::SMS_SENDING_FAILED,
-                [
-                    'invoice_id' => $this->invoice->getId(),
-                    'sent_status' => $sent,
-                    'contact' => $contact,
-                ]);
-        }
-
-        return $sent;
-    }
-
-    protected function sendInvoiceSms($contact)
-    {
-        try
-        {
-            $contact = Customer\Validator::validateAndParseContact($contact);
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                null,
-                null,
-                [
-                    'contact' => $contact,
-                    'invoice_id' => $this->invoice->getId(),
-                ]);
-
-            return false;
-        }
+        assert(empty($contact) === false);
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
@@ -163,92 +144,64 @@ class Notifier extends Base\Core
 
         if (isset($response['sms_id']))
         {
+            $this->invoice->setSmsStatus(NotifyStatus::SENT);
+
             return true;
         }
 
         return false;
     }
 
-    protected function sendInvoiceEmail()
+    protected function getInvoiceIssuedMailPayload()
     {
-        $customerEmail = $this->invoice->getCustomerEmail();
+        $merchant     = $this->invoice->merchant;
+        $merchantName = $merchant->getBillingLabelElseName();
 
-        if (empty($customerEmail) === true)
-        {
-            $this->invoice->setEmailStatus(null);
-
-            return false;
-        }
-
-        $merchantName = $this->invoice->merchant->getBillingLabelElseName();
-
-        $subject = $this->getSubjectForInvoiceEmail($this->invoice->getType(), $merchantName);
-
-        $data = [
-            'email'         => $this->invoice->getCustomerEmail(),
-            'date'          => date('d-M-Y H:m:s T'),
-            'subject'       => $subject,
-            'link'          => $this->invoice->getShortUrl(),
-            'name'          => $merchantName,
-            'amount'        => $this->invoice->getAmount() / 100,
-        ];
-
-        $this->trace->info(
-            TraceCode::INVOICE_EMAIL_REQUEST,
-            [
-                'invoice_id' => $this->invoice->getId(),
-                'request' => $data,
-            ]);
-
-        Mail::queue('emails.invoice.generated', $data, function($message) use ($data)
-        {
-            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($data['subject']);
-
-            $message->to($data['email']);
-        });
-
-        return true;
-    }
-
-    protected function getSubjectForInvoiceEmail($type, $merchantName)
-    {
-        switch ($type)
+        switch ($this->invoice->getType())
         {
             case Type::LINK:
             case Type::ECOD:
                 $subject = 'Payment requested by ' . $merchantName;
                 break;
+
             case Type::INVOICE:
                 $subject = 'Invoice from ' . $merchantName;
                 break;
+
             default:
                 $subject = 'Payment requested by ' . $merchantName;
         }
 
         $subject = 'Razorpay | ' . $subject;
 
-        return $subject;
+        return [
+            'email'   => $this->invoice->getCustomerEmail(),
+            'date'    => date('d-M-Y H:m:s T'),
+            'subject' => $subject,
+            'link'    => $this->invoice->getShortUrl(),
+            'name'    => $merchantName,
+            'amount'  => $this->invoice->getAmount() / 100,
+        ];
     }
 
     public function sendNotificationsInBulk()
     {
-        $smsInvoices = $this->repo->invoice->getInvoicesForNotification(Entity::SMS);
+        $smsIssuedInvoices   = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
+        $emailIssuedInvoices = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
 
-        $emailInvoices = $this->repo->invoice->getInvoicesForNotification(Entity::EMAIL);
+        $sentSmsCount = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
 
-        $sentSmsCount = $this->sendSmsInvoicesInBulk($smsInvoices);
-
-        $sentEmailCount = $this->sendEmailInvoicesInBulk($emailInvoices);
+        $sentEmailCount = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
 
         $results = [
-            'sms_pending'   => count($smsInvoices),
-            'email_pending' => count($emailInvoices),
-            'sms_sent'      => $sentSmsCount,
-            'email_sent'    => $sentEmailCount,
+            'sms_issued_pending'   => count($smsIssuedInvoices),
+            'email_issued_pending' => count($emailIssuedInvoices),
+            'sms_issued_sent'      => $sentSmsCount,
+            'email_issued_sent'    => $sentEmailCount,
         ];
 
         $this->trace->info(
@@ -256,65 +209,58 @@ class Notifier extends Base\Core
             $results
         );
 
-        $this->postSummaryToSlack($results);
-
-        return $results;
-    }
-
-    protected function postSummaryToSlack($results)
-    {
+        // Post summary to slack
         $message = 'Invoice Notify result';
+        $meta    = ['channel' => Config::get('slack.channels.tech_logs')];
 
-        $this->slack->queue($message, $results, ['channel' => Config::get('slack.channels.tech_logs')]);
+        $this->slack->queue($message, $results, $meta);
 
         return $results;
     }
 
-    protected function sendSmsInvoicesInBulk(array $smsInvoices)
+    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices)
     {
         $totalSent = 0;
 
-        foreach ($smsInvoices as $smsInvoice)
+        foreach ($invoices as $invoice)
         {
-            $this->setInvoice($smsInvoice);
+            $this->setInvoice($invoice);
 
-            $sent = $this->sendSmsNotificationToCustomer();
+            $sent = $this->smsInvoiceIssuedToCustomer();
 
             if ($sent === true)
             {
                 $totalSent += 1;
             }
 
-            // Saves the new status of sms
             $this->repo->saveOrFail($this->invoice);
         }
 
         return $totalSent;
     }
 
-    protected function sendEmailInvoicesInBulk(array $emailInvoices)
+    protected function sendEmailInvoicesInBulk(array $invoices)
     {
         $totalSent = 0;
 
-        foreach ($emailInvoices as $emailInvoice)
+        foreach ($invoices as $invoice)
         {
-            $this->setInvoice($emailInvoice);
+            $this->setInvoice($invoice);
 
-            $sent = $this->sendEmailNotificationToCustomer();
+            $sent = $this->emailInvoiceIssuedToCustomer();
 
             if ($sent === true)
             {
                 $totalSent += 1;
             }
 
-            // Saves the new status of email
             $this->repo->saveOrFail($this->invoice);
         }
 
         return $totalSent;
     }
 
-    protected function canInvoiceBeSentNow()
+    protected function canCustomerBeNotifiedNow()
     {
         if ($this->invoice->isDraft())
         {

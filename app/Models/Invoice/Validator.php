@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Customer;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BadRequestException;
 use RZP\Error\ErrorCode;
@@ -153,6 +154,8 @@ class Validator extends Base\Validator
     protected static $createValidators =[
         Entity::AMOUNT,
         Entity::CURRENCY,
+        Entity::SMS_NOTIFY,
+        Entity::EMAIL_NOTIFY,
     ];
 
     protected static $createIssuedValidators = [
@@ -161,6 +164,8 @@ class Validator extends Base\Validator
 
     protected static $editDraftValidators = [
         Entity::AMOUNT,
+        Entity::SMS_NOTIFY,
+        Entity::EMAIL_NOTIFY,
 
         //
         // Amount should not be updated by via input if line items already exists
@@ -231,6 +236,14 @@ class Validator extends Base\Validator
                 $input
             );
         }
+    }
+
+    public function validateSmsNotify(array $input)
+    {
+    }
+
+    public function validateEmailNotify(array $input)
+    {
     }
 
     public function validateSource($attribute, $value)

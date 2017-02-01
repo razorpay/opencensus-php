@@ -26,7 +26,7 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID         => 'sometimes|alpha_num',
     ];
 
-    public function getInvoicesForNotification($medium)
+    public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 

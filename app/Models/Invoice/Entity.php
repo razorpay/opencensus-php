@@ -607,7 +607,7 @@ class Entity extends Base\PublicEntity
 
     public function generateEmailStatus($input)
     {
-        $this->setAttribute(self::EMAIL_STATUS, NotifyStatus::PENDING);
+        $this->setAttribute(self::EMAIL_STATUS, NotifyStatus::SENT);
 
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::EMAIL_NOTIFY]) === true) and
@@ -619,7 +619,7 @@ class Entity extends Base\PublicEntity
 
     public function generateSmsStatus($input)
     {
-        $this->setAttribute(self::SMS_STATUS, NotifyStatus::PENDING);
+        $this->setAttribute(self::SMS_STATUS, NotifyStatus::SENT);
 
         // Should not use `empty` because the value can be 0
         if ((isset($input[self::SMS_NOTIFY]) === true) and
