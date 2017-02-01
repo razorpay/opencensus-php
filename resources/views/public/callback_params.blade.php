@@ -52,6 +52,10 @@
           <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}">
         @endforeach
         <input type="hidden" name="razorpay_payment_id" value="{{{ $payment_id }}}">
+        @if (isset($razorpay_order_id))
+          <input type="hidden" name="razorpay_order_id" value="{{{ $razorpay_order_id }}}">
+          <input type="hidden" name="razorpay_signature" value="{{{ $razorpay_signature }}}">
+        @endif
       </form>
     @else
       <div class="card">
@@ -60,7 +64,9 @@
         <p><b>Error:</b> {{ $error }}</p>
         <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
         <script>
-          var rp = Razorpay({!! $options !!});
+          var options = {!! $options !!};
+          options.callback_url = location.href;
+          var rp = Razorpay(options);
           rp.on('payment.success', function() {
             document.querySelector('.card').innerHTML = '<h2>Payment Successful.</h2><p>Just a moment now...</p>';
           })

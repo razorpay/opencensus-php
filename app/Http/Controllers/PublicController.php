@@ -17,7 +17,7 @@ class PublicController extends Controller
         return View::make('public.account', $data);
     }
 
-    public function getCallbackUrlWithParams()
+    public function postCallbackUrlWithParams()
     {
         $allParams = Request::all();
 
@@ -39,6 +39,12 @@ class PublicController extends Controller
         if (isset($allParams['razorpay_payment_id']))
         {
             $data['payment_id'] = $allParams['razorpay_payment_id'];
+
+            if (isset($allParams['razorpay_order_id']) === true)
+            {
+                $data['razorpay_order_id'] = $allParams['razorpay_order_id'];
+                $data['razorpay_signature'] = $allParams['razorpay_signature'];
+            }
         }
         else
         {

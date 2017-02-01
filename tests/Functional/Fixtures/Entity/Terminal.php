@@ -691,6 +691,16 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedNetbankingAxisTPVTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
     public function createSharedAmexTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
