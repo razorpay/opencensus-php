@@ -15,6 +15,7 @@ class Offer extends Base
             'payment_network'     => 'VISA',
             'issuer'              => 'HDFC',
             'percent_rate'        => 1000,
+            'min_amount'          => 1000,
             'payment_count'       => 2,
             'processing_time'     => 86400,
             'starts_at'           => Carbon::today('Asia/Kolkata')->timestamp,

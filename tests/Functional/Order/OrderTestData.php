@@ -237,4 +237,67 @@ return [
             ],
         ],
     ],
+
+    'testCreateOrderWithOffer' => [
+        'request' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 1100,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null
+            ],
+        ],
+    ],
+
+    'testCreateOrderWithInApplicableOffer' => [
+        'request' => [
+            'content' => [
+                'amount'        => 900,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+                'offer_id'      => null
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+        ]
+    ],
+
+    'testPaymentWithFailedOfferCheck' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT
+        ],
+    ],
 ];

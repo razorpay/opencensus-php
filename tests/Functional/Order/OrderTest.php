@@ -315,6 +315,71 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testCreateOrderWithOffer()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithInApplicableOffer()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testPaymentWithOfferAppliedOnOrder()
+    {
+        $this->testCreateOrderWithOffer();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $rzpPayment = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+    }
+
+    public function testPaymentWithFailedOfferCheck()
+    {
+        $this->fixtures->merchant->enableMobikwik();
+
+        $this->testCreateOrderWithOffer();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultWalletPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
     {
         $request = array(
