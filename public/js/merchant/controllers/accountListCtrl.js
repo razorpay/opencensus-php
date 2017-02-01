@@ -17,7 +17,6 @@ app.controller('AccountListCtrl', [
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          console.log(data.data.id);
           $scope.addDetails(data.data.id);
         } else {
           $scope.alerts.resetAlerts();
@@ -42,6 +41,7 @@ app.controller('AccountListCtrl', [
       var modalInstance = $modal.open({
         templateUrl: 'tpl/app_accounts_activation_modal.html',
         controller: 'AccountActivationCtrl',
+        size: 'lg',
         scope: function() {
             var scope = $scope.$new();
             scope.account = accId;

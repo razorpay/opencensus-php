@@ -226,7 +226,7 @@ class Service extends Base\Service
             return $this->isLockedError();
         }
 
-        // 4 is the Bank Account Details
+        // 4 is the Bank Account Details step
         // We disable this because this doesn't edit the Bank Account
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
@@ -497,7 +497,10 @@ class Service extends Base\Service
             $merchantId = $this->merchant->id;
         }
 
-        $merchantId = $this->checkAndSetAccount($merchantId);
+        if ($this->account === true)
+        {
+            $merchantId = $this->checkAndSetAccount($merchantId);
+        }
 
         Trace::debug('MISC_TRACE_CODE', [
             'info'     => "Fetching merchant details from API",

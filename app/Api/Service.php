@@ -132,8 +132,19 @@ class Service extends Base\Service
         }
     }
 
-    protected function fetchCollectionaccounts($input, $mode)
+    /**
+     * Sensitive function:
+     *
+     * Used to retrieve data for the Markerplace accounts list page
+     * uses internal auth, for API route - GET /merchants; filtered on field: parent_id
+     */
+    protected function fetchCollectionAccounts($input, $mode)
     {
+        if (isset($this->merchantId) === false)
+        {
+            return [null, null];
+        }
+
         $data = [];
 
         $error = (new Validator)->validateInput('fetch', $input)->messages();
@@ -145,6 +156,7 @@ class Service extends Base\Service
 
         $collection = [];
 
+        // Fetch merchants filtered by parent_id field
         $input['parent_id'] = $this->merchantId;
 
         try

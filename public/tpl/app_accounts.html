@@ -40,7 +40,7 @@
             <div class="input-group">
               <input type="text" class="form-control input-sm" placeholder="Search Account Id" ng-model="entity.id">
               <span class="input-group-btn">
-                <button class="btn btn-sm btn-default" type="button" ng-click="search()" busy="...">Go!</button>
+                <button class="btn btn-sm btn-default" type="button" ng-click="addDetails(entity.id); entity.id=''" busy="...">Go!</button>
                 <button class="btn btn-sm btn-default" type="button" ng-click="regenerate()" busy="...">Clear</button>
               </span>
             </div>
@@ -63,11 +63,11 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td><a target="_blank" ui-sref="app.orders.detail({id:row.id})"><code>{{row.id}}</code></a></td>
+            <td><a target="_blank" ng-click="addDetails(row.id)"><code>{{row.id}}</code></a></td>
             <td>{{row.email}}</td>
             <td data-hide="phone,tablet">{{row.name}}</td>
             <td>{{row.activated}}</td>
-            <td>{{row.activated_at*1000 | date:'medium'}}</a></td>
+            <td>{{row.activated_at && (row.activated_at*1000 | date:'medium') || ''}}</a></td>
             <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
           </tr>
           <tr ng-show="entity.count === 0">

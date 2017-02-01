@@ -1,9 +1,9 @@
 <div ng-controller="AccountActivationCtrl">
   <div class="bg-light lter b-b wrapper-md">
-    <h1 class="m-n font-thin h3">
+    <h2 class="m-n font-thin h3">
       Activation Form
       <spinner class="inline"></spinner>
-    </h1>
+    </h2>
   </div>
   <div class="wrapper-md activation-wrapper" ng-controller="ActivationCtrl" ng-init="accountDetails=true">
     <div class="text-center m-t m-b alerts">
@@ -54,18 +54,16 @@
           <label for="company_pan" class="col-sm-3 control-label">Company PAN</label>
             <div class="col-sm-8">
               <input ng-readonly="locked" type="text" class="form-control" name="company_pan" ng-model="data.company_pan" placeholder="Company PAN">
-              <span class="help-block">Mandatory for Companies</span>
             </div>
           </div>
           <div class="form-group">
-            <label for="promoter_pan" class="col-sm-3 control-label">PAN of any 1 authorised signatory/promoter/director</label>
+            <label for="promoter_pan" class="col-sm-3 control-label">Promoter/Director PAN</label>
             <div class="col-sm-8">
               <input ng-readonly="locked" type="text" class="form-control" name="promoter_pan" ng-model="data.promoter_pan" placeholder="PAN Number of Promoter" required>
             </div>
           </div>
           <div class="m-t m-b text-center prev-next">
-            <button type="button" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
-            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
+            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
             <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
           </div>
         </fieldset>
@@ -116,8 +114,8 @@
             </div>
           </div>
           <div class="m-t m-b text-center prev-next">
-            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
-            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
+            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
+            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
             <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
           </div>
         </fieldset>
@@ -148,8 +146,8 @@
             </div>
           </div>
           <div class="m-t m-b text-center prev-next">
-            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
-            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true">Next</button>
+            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
+            <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
             <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
           </div>
         </fieldset>
@@ -179,7 +177,7 @@
             <button type="submit" class="btn btn-submit btn-default btn-rounded">Click here to submit</button>
           </div>
           <div class="m-t m-b text-center prev-next">
-            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step5=true">Prev</button>
+            <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
           </div>
         </fieldset>
         </form>

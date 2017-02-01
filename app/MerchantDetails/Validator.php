@@ -104,7 +104,7 @@ class Validator extends Base\Validator
         'bank_branch_ifsc'      => 'required|alpha_num|max:11',
     ];
 
-    protected static $step2AccountValidators = [
+    protected static $step2_accountValidators = [
         'ifsc_code'
     ];
 

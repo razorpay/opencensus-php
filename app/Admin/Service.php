@@ -636,7 +636,18 @@ class Service extends Base\Service
             return $merchant;
         }
 
-        $data['confirmed'] = ($merchant->users()->first()->confirm_token === null);
+        $parentId = $data['parent_id'] ?? null;
+
+        // If parent_id is set, the merchant is a sub-account under Marketplace
+        // Such merchants are marked confirmed, without email confirmation
+        if ($parentId !== null)
+        {
+            $data['confirmed'] = true;
+        }
+        else
+        {
+            $data['confirmed'] = ($merchant->users()->first()->confirm_token === null);
+        }
 
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
 
@@ -1300,9 +1311,9 @@ class Service extends Base\Service
      * @param  array $details
      * @return array
      */
-    protected function bankAccountMap($details)
+    protected function bankAccountMap($details, $marketplaceAccount = false)
     {
-        return [
+        $data = [
             'ifsc_code'             => $details['bank_branch_ifsc'],
             'beneficiary_name'      => $details['bank_account_name'],
             'account_number'        => $details['bank_account_number'],
@@ -1317,6 +1328,21 @@ class Service extends Base\Service
             'beneficiary_email'     => $details['contact_email'],
             'beneficiary_mobile'    => $details['contact_mobile']
         ];
+
+        // For Marketplace sub-account, some bank fields are not required
+        // Setting dummy values here to pass API checks on adding bank account, for now
+        // Will decide whether to change API+DB to drop contraints around these fields
+        if ($marketplaceAccount === true)
+        {
+            $data['beneficiary_address1'] = 'NA';
+            $data['beneficiary_city'] = 'NA';
+            $data['beneficiary_state'] = 'NA';
+            $data['beneficiary_pin'] = 560001;
+            $data['beneficiary_email'] = 'dummy@email.com';
+            $data['beneficiary_mobile'] = 9999999999;
+        }
+
+        return $data;
     }
 
     /**
@@ -1344,16 +1370,20 @@ class Service extends Base\Service
             return $this->activateMerchantOnDashboard($merchant);
         }
 
-
         $this->setApiCredentials();
 
-        $bankAccount = $this->bankAccountMap($details['merchant_details']);
+        // If merchant is a Marketplace account, bank field mapping is modified
+        $marketplaceAccount = ((isset($details['parent_id']) === true) and
+                               (strlen($details['parent_id']) === 14));
+
+        $bankAccount = $this->bankAccountMap($details['merchant_details'], $marketplaceAccount);
 
         $bankAccountApi = false;
         // Check if the merchant has a bank account
         try
         {
             $ba = $this->api->merchant->fetch($id)->fetchBankAccount();
+
             $bankAccountApi = true;
         }
         catch(BadRequestError $e)
