@@ -269,7 +269,11 @@ class Core extends Base\Core
             {
                 $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-                $this->expireInvoiceAfterChecks($invoice);
+                $this->validateIfInvoiceCanBeExpired($invoice);
+
+                $invoice->setStatus(Status::EXPIRED);
+
+                $this->repo->saveOrFail($invoice);
             });
 
         return $invoice;
@@ -462,32 +466,6 @@ class Core extends Base\Core
         }
     }
 
-    protected function expireInvoiceAfterChecks(Entity $invoice)
-    {
-        //
-        // Checks
-        // - Invoice must not have a non failed payment associated with it.
-        //
-        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
-
-        if ($count !== 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
-                null,
-                [
-                    'invoice_id' => $invoice->getId(),
-                ]);
-        }
-
-        //
-        // Updates invoice status to EXPIRED
-        //
-        $invoice->setStatus(Status::EXPIRED);
-
-        $this->repo->saveOrFail($invoice);
-    }
-
     protected function validateIfInvoiceCanBeDeleted(Entity $invoice)
     {
         $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
@@ -496,6 +474,21 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVOICE_DELETE_FAILED,
+                null,
+                [
+                    'invoice_id' => $invoice->getId(),
+                ]);
+        }
+    }
+
+    protected function validateIfInvoiceCanBeExpired(Entity $invoice)
+    {
+        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
+
+        if ($count !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
                 null,
                 [
                     'invoice_id' => $invoice->getId(),
