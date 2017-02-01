@@ -498,6 +498,8 @@ class TraceCode
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
     const OFFER_APPLIED_ON_PAYMENT                  = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT              = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_APPLIED_ON_ORDER                    = 'OFFER_APPLIED_ON_ORDER';
+    const OFFER_NOT_APPLIED_ON_ORDER                = 'OFFER_NOT_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                  = 'OFFER_ORDER_AMOUNT_CHECK';
     const OFFER_PAYMENT_AMOUNT_CHECK                = 'OFFER_PAYMENT_AMOUNT_CHECK';
     const OFFER_EXPIRY_CHECK                        = 'OFFER_EXPIRY_CHECK';

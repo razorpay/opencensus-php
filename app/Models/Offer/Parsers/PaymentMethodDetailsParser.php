@@ -21,6 +21,8 @@ class PaymentMethodDetailsParser extends BaseParser
 
     protected $localPrefix = 'on';
 
+    protected $localSuffix = '.';
+
     protected function getIinsDescription()
     {
         $description = '';
@@ -37,7 +39,8 @@ class PaymentMethodDetailsParser extends BaseParser
     {
         $description = '';
 
-        if (empty($this->offer->getIins()) === false)
+        if ((empty($this->offer->getIins()) === false) or
+                ($this->offer->getPaymentMethod() !== Payment\Method::CARD))
         {
             return $description;
         }
@@ -90,11 +93,6 @@ class PaymentMethodDetailsParser extends BaseParser
             }
 
             return $description;
-        }
-
-        if ($paymentMethod !== Payment\Method::CARD)
-        {
-            $description .= 'all';
         }
 
         return $description;

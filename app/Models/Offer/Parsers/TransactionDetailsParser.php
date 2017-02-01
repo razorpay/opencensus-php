@@ -15,7 +15,7 @@ class TransactionDetailsParser extends BaseParser
 
     const PAYMENT_STRING          = 'payment';
 
-    const PAYMENT_LIMIT_STRING    = 'above';
+    const PAYMENT_LIMIT_STRING    = 'Transactions above';
 
     const CURRENCY_SYMBOL         = 'Rs';
 
@@ -27,7 +27,7 @@ class TransactionDetailsParser extends BaseParser
 
         if ($paymentCount !== null)
         {
-            $description[] = 'for';
+            $description[] = 'For';
 
             if ($paymentCount === 1)
             {

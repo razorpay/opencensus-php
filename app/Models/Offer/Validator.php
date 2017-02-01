@@ -16,8 +16,8 @@ use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    const CASHBACK_CALCULATION_PARAMS = 'cashback_calculation_params';
-    const OFFER_PERIOD                = 'offer_period';
+    const CASHBACK_CRITERIA = 'cashback_criteria';
+    const OFFER_PERIOD      = 'offer_period';
 
     protected $payment;
 
@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|in:debit,credit',
         ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
         Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
-        Entity::IINS                      => 'sometimes_without_all:payment_network,issuer|array',
+        Entity::IINS                      => 'required_without_all:payment_network,issuer|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
         Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
@@ -68,7 +68,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        self::CASHBACK_CALCULATION_PARAMS,
+        self::CASHBACK_CRITERIA,
         self::OFFER_PERIOD,
         Entity::FLAT_CASHBACK,
         Entity::PAYMENT_NETWORK,
@@ -80,7 +80,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_NETWORK
     ];
 
-    protected $cashbackCalculationParams = [
+    protected $cashbackCriteriaParams = [
         Entity::PERCENT_RATE,
         Entity::MAX_CASHBACK,
         Entity::FLAT_CASHBACK,
@@ -109,18 +109,18 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateCashbackCalculationParams(array $input)
+    protected function validateCashbackCriteria(array $input)
     {
-        if ($this->cashbackCalculationParamsPresent($input) === false)
+        if ($this->cashbackCriteriaPresent($input) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING);
+                ErrorCode::BAD_REQUEST_CASHBACK_CRITERIA_MISSING);
         }
     }
 
-    private function cashbackCalculationParamsPresent(array $input)
+    protected function cashbackCriteriaPresent(array $input)
     {
-        foreach ($this->cashbackCalculationParams as $param)
+        foreach ($this->cashbackCriteriaParams as $param)
         {
             if (isset($input[$param]) === true)
             {
@@ -155,9 +155,10 @@ class Validator extends Base\Validator
 
     protected function validateFlatCashback(array $input)
     {
-        if ($this->flatCashbackPresent($input))
+        if (empty($input[Entity::FLAT_CASHBACK]) === false)
         {
-            if ($this->percentRatePresent($input) or $this->maxCashbackPresent($input))
+            if ((empty($input[Entity::PERCENT_RATE]) === false) or
+                    (empty($input[Entity::FLAT_CASHBACK]) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
@@ -165,28 +166,7 @@ class Validator extends Base\Validator
         }
     }
 
-    private function flatCashbackPresent(array $input)
-    {
-        $flatCashback = $input[Entity::FLAT_CASHBACK] ?? 0;
-
-        return ($flatCashback > 0);
-    }
-
-    private function percentRatePresent(array $input)
-    {
-        $percentRate = $input[Entity::PERCENT_RATE] ?? 0;
-
-        return ($percentRate > 0);
-    }
-
-    private function maxCashbackPresent(array $input)
-    {
-        $maxCashback = $input[Entity::MAX_CASHBACK] ?? 0;
-
-        return ($maxCashback > 0);
-    }
-
-    private function validateCardNetwork(array $input)
+    protected function validateCardNetwork(array $input)
     {
         if (Network::isValidNetwork($input[Entity::PAYMENT_NETWORK]) === false)
         {
@@ -200,7 +180,7 @@ class Validator extends Base\Validator
         }
     }
 
-    private function validateNetbanking(array $input)
+    protected function validateNetbanking(array $input)
     {
         if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
         {

@@ -17,10 +17,15 @@ class OffersTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->privateAuth();
     }
 
     public function testCreateCardOffer()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateCardOfferWithIin()
     {
         $this->startTest();
     }
@@ -47,7 +52,7 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateOfferWithoutCashbackDefinitionParams()
+    public function testCreateOfferWithoutCashbackCriteria()
     {
         $this->startTest();
     }
@@ -95,19 +100,19 @@ class OffersTest extends TestCase
             'content' => [
                 'name' => 'Updated name'
             ],
-            'url' => '/offers/' . $offer->getId(),
-            'method' => 'PUT'
+            'url' => '/offers/' . $offer->getPublicId(),
+            'method' => 'PATCH'
         ];
 
         $expectedResponse = [
-            'id'                  => $offer->getId(),
+            'id'                  => $offer->getPublicId(),
             'name'                => "Updated name",
             "payment_method"      => "card",
             "payment_method_type" => "credit",
             "payment_network"     => "VISA",
             "issuer"              => "HDFC",
             "active"              => TRUE,
-            "percent_rate"        => 10,
+            "percent_rate"        => 1000,
             "payment_count"       => 2,
             "processing_time"     => 86400,
             "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
@@ -119,53 +124,28 @@ class OffersTest extends TestCase
         $this->assertArraySelectiveEquals($expectedResponse, $content);
     }
 
-    public function testDeleteOffer()
+    public function testGetMultipleOffers()
     {
         $offer = $this->fixtures->offer->createCardOffer();
 
         $request = [
-            'content' => [
-            ],
-            'url' => '/offers/' . $offer->getId(),
-            'method' => 'DELETE'
-        ];
-
-        $expectedResponse = [
-            'id'                  => $offer->getId()
-        ];
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($expectedResponse, $content);
-
-        $offer = $this->getLastEntity('offer', true);
-
-        $this->assertNull($offer);
-    }
-
-    public function testGetMerchantOffers()
-    {
-        $offer = $this->fixtures->offer->createCardOffer();
-
-        $request = [
-            'url' => '/merchants/' . '10000000000000' . '/offers',
+            'url' => '/offers',
             'method' => 'GET'
         ];
 
         $data = [
             'entity' => 'collection',
             'count'  => 1,
-            'admin'  => true,
             'items'  => [
                 [
-                    'id'                  => $offer->getId(),
+                    'id'                  => $offer->getPublicId(),
                     'name'                => 'Test Offer',
                     'payment_method'      => 'card',
                     'payment_method_type' => 'credit',
                     'payment_network'     => 'VISA',
                     'issuer'              => 'HDFC',
                     'active'              => TRUE,
-                    'percent_rate'        => 10,
+                    'percent_rate'        => 1000,
                     'payment_count'       => 2,
                     'processing_time'     => 86400,
                     "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
@@ -179,30 +159,26 @@ class OffersTest extends TestCase
         $this->assertArraySelectiveEquals($data, $content);
     }
 
-    public function testMerchantOfferAssignment()
+    public function testFetchOfferById()
     {
-       $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->offer->createCardOffer();
 
-       $request = [
-            'content' => [
-                'merchant_ids' => ['10000000000000'],
-                'action'       => 'add'
-            ],
-            'url' => '/offers/' . $offer->getId() . '/merchants',
-            'method' => 'PUT'
-       ];
+        $request = [
+            'url' => '/offers/' . $offer->getPublicId(),
+            'method' => 'GET'
+        ];
 
-       $data = [
-            'id'                  => $offer->getId(),
-            'name'                => "Test Offer",
-            "payment_method"      => "card",
-            "payment_method_type" => "credit",
-            "payment_network"     => "VISA",
-            "issuer"              => "HDFC",
-            "active"              => TRUE,
-            "percent_rate"        => 10,
-            "payment_count"       => 2,
-            "processing_time"     => 86400,
+        $data = [
+            'id'                  => $offer->getPublicId(),
+            'name'                => 'Test Offer',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'HDFC',
+            'active'              => TRUE,
+            'percent_rate'        => 1000,
+            'payment_count'       => 2,
+            'processing_time'     => 86400,
             "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
             "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
         ];

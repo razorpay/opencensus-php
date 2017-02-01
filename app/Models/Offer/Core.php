@@ -60,7 +60,7 @@ class Core extends Base\Core
 
         $offerChecker = new Checker($appliedOffer);
 
-        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false);
+        if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
         {
             $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT, [
                 'payment_id' => $payment->getId(),

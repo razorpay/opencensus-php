@@ -15,8 +15,7 @@ return [
                 "payment_network"     => "VISA",
                 "issuer"              => "HDFC",
                 "percent_rate"        => 1000,
-                "payment_count"       => 2,
-                "processing_time"     => "1",
+                "processing_time"     => 86400,
                 "starts_at"           => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"             => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"  => "Some more details"
@@ -26,24 +25,54 @@ return [
         ],
         'response' => [
             'content' => [
-                "custom_short_display_text" => "10% cashback on HDFC Visa credit card",
-                "custom_long_display_text"  => "Get 10% cashback on HDFC Visa credit card for first 2 payments. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 1 business day(s). Some more details",
+                "custom_short_display_text" => "10% cashback on HDFC Bank Ltd Visa credit card.",
+                "custom_long_display_text"  => "Get 10% cashback on HDFC Bank Ltd Visa credit card. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 1 business day(s). Some more details",
                 "active"                    => true,
                 "name"                      => "Test Offer",
                 "payment_method"            => "card",
                 "payment_method_type"       => "credit",
                 "payment_network"           => "VISA",
                 "issuer"                    => "HDFC",
-                "percent_rate"              => 10,
-                "payment_count"             => 2,
+                "percent_rate"              => 1000,
                 "processing_time"           => 86400,
                 "starts_at"                 => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"                   => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"        => "Some more details",
-                "admin"                     => true
             ]
         ]
     ],
+
+    'testCreateCardOfferWithIin' => [
+        'request' => [
+            'content' => [
+                "name"                => "Test Offer",
+                "payment_method"      => "card",
+                "iins"                => ["411111"],
+                "percent_rate"        => 1000,
+                "processing_time"     => 86400,
+                "starts_at"           => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                "ends_at"             => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
+                "additional_details"  => "Some more details"
+            ],
+            'url' => '/offers',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                "custom_short_display_text" => "10% cashback on selected card.",
+                "custom_long_display_text"  => "Get 10% cashback on selected card. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 1 business day(s). Some more details",
+                "active"                    => true,
+                "name"                      => "Test Offer",
+                "iins"                      => ["411111"],
+                "percent_rate"              => 1000,
+                "processing_time"           => 86400,
+                "starts_at"                 => Carbon::tomorrow('Asia/Kolkata')->timestamp,
+                "ends_at"                   => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
+                "additional_details"        => "Some more details",
+            ]
+        ]
+    ],
+
     'testCreateWalletOffer' => [
         'request' => [
             'content' => [
@@ -52,8 +81,9 @@ return [
                 "payment_network"    => "airtelmoney",
                 "percent_rate"       => 1000,
                 "max_cashback"       => 200,
+                "min_amount"         => 500,
                 "payment_count"      => 2,
-                "processing_time"    => "2",
+                "processing_time"    => 172800,
                 "starts_at"          => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"            => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details" => "Some more details"
@@ -64,19 +94,19 @@ return [
         'response' => [
             'content' => [
                 "max_cashback"              => 200,
-                "custom_short_display_text" => "10% cashback upto Rs 200 on Airtelmoney wallet",
-                "custom_long_display_text"  => "Get 10% cashback upto Rs 200 on Airtelmoney wallet for first 2 payments. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
+                "min_amount"                => 500,
+                "custom_short_display_text" => "10% cashback upto Rs 2 on Airtelmoney wallet.",
+                "custom_long_display_text"  => "Get 10% cashback upto Rs 2 on Airtelmoney wallet. For first 2 payments Transactions above Rs 5. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
                 "active"                    => true,
                 "name"                      => "Test Offer",
                 "payment_method"            => "wallet",
                 "payment_network"           => "airtelmoney",
-                "percent_rate"              => 10,
+                "percent_rate"              => 1000,
                 "payment_count"             => 2,
                 "processing_time"           => 172800,
                 "starts_at"                 => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"                   => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"        => "Some more details",
-                "admin"                     => true
             ]
         ]
     ],
@@ -90,7 +120,7 @@ return [
                 "max_cashback"       => 200,
                 'min_amount'         => 500,
                 "payment_count"      => 2,
-                "processing_time"    => "2",
+                "processing_time"    => 172800,
                 "starts_at"          => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"            => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details" => "Some more details"
@@ -102,19 +132,18 @@ return [
             'content' => [
                 "max_cashback"              => 200,
                 "min_amount"                => 500,
-                "custom_short_display_text" => "10% cashback upto Rs 200 on United Bank of India netbanking",
-                "custom_long_display_text"  => "Get 10% cashback upto Rs 200 on United Bank of India netbanking for first 2 payments above Rs 500. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
+                "custom_short_display_text" => "10% cashback upto Rs 2 on United Bank of India netbanking.",
+                "custom_long_display_text"  => "Get 10% cashback upto Rs 2 on United Bank of India netbanking. For first 2 payments Transactions above Rs 5. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
                 "active"                    => true,
                 "name"                      => "Test Offer",
                 "payment_method"            => "netbanking",
                 "payment_network"           => "UTBI",
-                "percent_rate"              => 10,
+                "percent_rate"              => 1000,
                 "payment_count"             => 2,
                 "processing_time"           => 172800,
                 "starts_at"                 => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"                   => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"        => "Some more details",
-                "admin"                     => true
             ]
         ]
     ],
@@ -127,7 +156,7 @@ return [
                 "flat_cashback"      => 300,
                 'min_amount'         => 500,
                 "payment_count"      => 2,
-                "processing_time"    => "2",
+                "processing_time"    => 172800,
                 "starts_at"          => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"            => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details" => "Some more details"
@@ -139,8 +168,8 @@ return [
             'content' => [
                 "flat_cashback"             => 300,
                 "min_amount"                => 500,
-                "custom_short_display_text" => "Rs 300 cashback on Airtelmoney wallet",
-                "custom_long_display_text"  => "Get Rs 300 cashback on Airtelmoney wallet for first 2 payments above Rs 500. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
+                "custom_short_display_text" => "Rs 3 cashback on Airtelmoney wallet.",
+                "custom_long_display_text"  => "Get Rs 3 cashback on Airtelmoney wallet. For first 2 payments Transactions above Rs 5. Valid till " .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . ". Cashback will get credited in 2 business day(s). Some more details",
                 "active"                    => true,
                 "name"                      => "Test Offer",
                 "payment_method"            => "wallet",
@@ -150,7 +179,6 @@ return [
                 "starts_at"                 => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"                   => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"        => "Some more details",
-                "admin"                     => true
             ]
         ]
     ],
@@ -164,7 +192,7 @@ return [
                 "issuer"              => "HDFC",
                 "percent_rate"        => 1000,
                 "payment_count"       => 2,
-                "processing_time"     => "1",
+                "processing_time"     => 86400,
                 "starts_at"           => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"             => Carbon::now('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"  => "Some more details"
@@ -186,7 +214,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS
         ]
     ],
-    'testCreateOfferWithoutCashbackDefinitionParams' => [
+    'testCreateOfferWithoutCashbackCriteria' => [
         'request' => [
             'content' => [
                 "name"                => "Test Offer",
@@ -195,7 +223,7 @@ return [
                 "payment_network"     => "VISA",
                 "issuer"              => "HDFC",
                 "payment_count"       => 2,
-                "processing_time"     => "1",
+                "processing_time"     => 86400,
                 "starts_at"           => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"  => "Some more details"
@@ -207,14 +235,14 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING,
+                    'description' => PublicErrorDescription::BAD_REQUEST_CASHBACK_CRITERIA_MISSING,
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING
+            'internal_error_code' => ErrorCode::BAD_REQUEST_CASHBACK_CRITERIA_MISSING
         ]
     ],
     'testCreateCardOfferWithInvalidNetwork' => [
@@ -226,7 +254,7 @@ return [
                 "payment_network"     => "XXXX",
                 "issuer"              => "DBS",
                 "percent_rate"        => 1000,
-                "processing_time"     => "1",
+                "processing_time"     => 86400,
                 "starts_at"           => Carbon::tomorrow('Asia/Kolkata')->timestamp,
                 "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
                 "additional_details"  => "Some more details"

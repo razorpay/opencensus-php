@@ -73,6 +73,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT,
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
+        self::ACTIVE,
         self::STARTS_AT,
         self::ENDS_AT,
         self::ADDITIONAL_DETAILS,
@@ -117,10 +118,14 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::IINS            => 'array',
         self::ACTIVE          => 'boolean',
+        self::PROCESSING_TIME => 'int',
         self::PERCENT_RATE    => 'int',
         self::MAX_CASHBACK    => 'int',
         self::FLAT_CASHBACK   => 'int',
-        self::MIN_AMOUNT      => 'int'
+        self::MIN_AMOUNT      => 'int',
+        self::STARTS_AT       => 'int',
+        self::ENDS_AT         => 'int',
+        self::PAYMENT_COUNT   => 'int   '
     ];
 
     public function coupons()
