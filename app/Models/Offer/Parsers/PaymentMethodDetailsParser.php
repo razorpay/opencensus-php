@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Offer\Parsers;
 
+use RZP\Models\Bank;
+use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
-use RZP\Models\Bank;
-use RZP\Models\Processor;
+use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Wallet;
-use RZP\Models\Card;
+use RZP\Models\Processor;
 
 class PaymentMethodDetailsParser extends BaseParser
 {
@@ -26,19 +27,14 @@ class PaymentMethodDetailsParser extends BaseParser
 
         $issuer = $offer->getIssuer();
 
-        $paymentMethod = $offer->getPaymentMethod();
-
         if ($issuer === null)
         {
-            if ($paymentMethod === Payment\Method::CARD)
-            {
-                $description = 'all';
-            }
+            $description = 'all';
+
+            return $description;
         }
-        else
-        {
-            $description = $issuer;
-        }
+
+        $description = Netbanking::getName($issuer);
 
         return $description;
     }
