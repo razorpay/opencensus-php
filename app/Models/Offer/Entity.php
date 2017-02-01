@@ -250,14 +250,6 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOM_SHORT_DISPLAY_TEXT] = $customShortDisplayText;
     }
 
-    /**
-     * Processing time is converted from days to seconds and stored in db
-     */
-    public function setProcessingTimeAttribute(string $processingTime)
-    {
-        $this->attributes[self::PROCESSING_TIME] = strtotime($processingTime . ' day', 0);
-    }
-
 // -----------------------Mutators end------------------------------------------
 
 // -----------------------Accessors begin---------------------------------------

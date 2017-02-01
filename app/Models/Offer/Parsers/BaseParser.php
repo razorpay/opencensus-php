@@ -29,8 +29,6 @@ class BaseParser
      * Parses the offer entity based on values present in the $properties array
      * in each Parser class and calls the associated functions to pass each attribute
      *
-     * @param  $offer Offer entity to parse
-     *
      * @return string        Result of parsing the offer entity
      */
     public function parse()
@@ -47,12 +45,19 @@ class BaseParser
         // Removes empty strings from array if any
         $description =  array_filter($description);
 
-        $description = implode($this->delimiter, $description);
+        if (empty($description) === false)
+        {
+            $description = implode($this->delimiter, $description);
 
-        $description .= $this->localSuffix;
+            $description .= $this->localSuffix;
 
-        // Removes extra spaces from string if any
-        $description = preg_replace('/\s+/', ' ', $description);
+            // Removes extra spaces from string if any
+            $description = preg_replace('/\s+/', ' ', $description);
+
+            return $description;
+        }
+
+        $description = '';
 
         return $description;
     }

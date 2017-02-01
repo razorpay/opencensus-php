@@ -36,17 +36,6 @@ class Core extends Base\Core
     {
         $offer->edit($input);
 
-        $offerParams = $offer->toArray();
-
-        // Checks if the updated offer netity has parameters matching an already existing offer
-        // before saving to db
-        $existingOffers = $this->repo->offer->fetchExistingOffers($offerParams, $this->merchant->getId());
-
-        if ($existingOffers->count() > 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
-        }
-
         $this->repo->saveOrFail($offer);
 
         return $offer;

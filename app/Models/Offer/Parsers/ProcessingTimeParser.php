@@ -34,6 +34,6 @@ class ProcessingTimeParser extends BaseParser
 
     protected function convertSecondsToDays(float $processingTime)
     {
-        return ceil($processingTime / self::NUMBER_OF_SECONDS_IN_DAY);
+        return intval($processingTime / self::NUMBER_OF_SECONDS_IN_DAY);
     }
 }
