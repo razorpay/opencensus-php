@@ -28,17 +28,17 @@ class Service extends Base\Service
         return $offer->toArrayAdmin();
     }
 
-    public function fetchMultiple(array $input)
-    {
-        $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
-
-        return $offers->toArrayPublic();
-    }
-
     public function fetch(string $id)
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $offer->toArrayPublic();
+    }
+
+    public function fetchMultiple(array $input)
+    {
+        $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
+
+        return $offers->toArrayPublic();
     }
 }

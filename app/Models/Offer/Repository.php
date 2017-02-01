@@ -62,18 +62,4 @@ class Repository extends Base\Repository
 
         return $this->fetch($offerFetchParams, $merchantId);
     }
-
-    public function fetchActiveOfferByMerchantAndMethod(Merchant\Entity $merchant, string $method)
-    {
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        $offers = $this->fetchMerchantOffersQuery($merchant)
-                        ->where(Entity::PAYMENT_METHOD, '=', $method)
-                        ->where(Entity::STARTS_AT, '<=', $now)
-                        ->where(Entity::ENDS_AT, '>', $now)
-                        ->where(Entity::ACTIVE, '=', 1)
-                        ->get();
-
-        return $offers;
-    }
 }
