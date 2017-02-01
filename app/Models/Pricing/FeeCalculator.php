@@ -42,6 +42,8 @@ class FeeCalculator
 
     protected $pricingRules = null;
 
+    protected $amount = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
@@ -57,8 +59,6 @@ class FeeCalculator
     {
         $entity = $this->entity;
 
-        $this->getRelevantPricingRule($pricing);
-
         $amount = $entity->getBaseAmount();
 
         if ($entity->merchant->isFeeBearerCustomer())
@@ -68,6 +68,10 @@ class FeeCalculator
             // 2. On validation/capture call, the fee will be set
             $amount = $amount - $entity->getFee();
         }
+
+        $this->amount = $amount;
+
+        $this->getRelevantPricingRule($pricing);
 
         list($fee, $serviceTax) = $this->getFees($amount);
 
@@ -232,7 +236,7 @@ class FeeCalculator
     {
         $payment = $this->entity;
 
-        $amount = $payment->getBaseAmount();
+        $amount = $this->amount;
 
         $filters = [
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
