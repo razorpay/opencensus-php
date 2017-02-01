@@ -268,7 +268,7 @@ class Repository extends Base\Repository
                 break;
 
             case (empty($input['pending']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                $query = $query->whereNull(Entity::ACTIVATED_AT)
                                ->whereNotNull('merchant_details.submitted_at');
                 break;
             case (empty($input['dead']) === false):
