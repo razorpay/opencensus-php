@@ -63,4 +63,4 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - 29200:9200
+      - 9200:9200
