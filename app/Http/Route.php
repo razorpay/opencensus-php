@@ -980,6 +980,7 @@ final class Route
             'transfer_fetch_multiple',
             'transfer_fetch',
             'transfer_create_reversal',
+            'merchant_sub_create',
         ],
         Feature::OPENWALLET         => [
             'customer_get_wallet_balance',

@@ -115,6 +115,7 @@ class Entity extends Base\PublicEntity
         self::LIVE,
         self::HOLD_FUNDS,
         self::PRICING_PLAN_ID,
+        self::PARENT_ID,
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
@@ -228,6 +229,11 @@ class Entity extends Base\PublicEntity
     public function isAccount()
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
+    public function isMarketplace()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
     }
 
     public function isEducationCategory()

@@ -211,7 +211,14 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
-        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
+        $validationFields = ValidationFields::DASHBOARD_FIELDS;
+
+        if ($merchantDetails->merchant->isAccount() === true)
+        {
+            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+        }
+
+        foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                (is_null($merchantDetailsArr[$key]) === true) or
