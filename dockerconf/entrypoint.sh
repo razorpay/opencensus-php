@@ -20,6 +20,7 @@ php artisan rzp:dbr --install --seed
 echo "Seeding Test database"
 APP_ENV=testing php artisan rzp:dbr --install
 echo "Starting Apache"
+export PATH=$PATH:/app/
 
 # start httpd
 mkdir /tmp/run

@@ -18,6 +18,97 @@
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
 
+### (Using Docker for Local Development)
+## Pre setup instructions
+* Download phpunit.phar file in the root api folder from https://phar.phpunit.de/phpunit.phar
+* symlink phpunit.phar to phpunit in the root api folder:
+```
+ln -s phpunit-5.7.9.phar phpunit
+```
+
+## Common Instructions for docker
+
+## Install docker
+[Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
+
+## Mac users
+Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
+
+## Install docker-compose
+[Install Docker Compose](https://docs.docker.com/compose/install/)
+
+## Run docker-compose
+[Create a github PAT](https://help.github.com/articles/creating-an-access-token-for-command-line-use/), if you do not have one.
+
+```
+GIT_TOKEN=<PAT>
+export GIT_TOKEN
+```
+or,
+add it to your `.bashrc`/`.bash_profile`
+
+## Using Docker for Local Development
+Note: Change the http port/mysql port in the `docker-compose.dev.yml` before doing the following
+```
+docker-compose -f docker-compose.dev.yml up -d --build
+```
+
+Check that docker actually works:
+```
+docker ps
+```
+See that your container actually works using the above.
+
+You should be able to access the app at:
+http://localhost:28080/ (or any other port that you have changed in `docker-compose.dev.yml`)
+
+## For Deploying docker containers
+First run (or, if code has changed):
+```
+docker-compose up -d --build
+```
+
+Subsequent runs:
+```
+docker-compose up
+```
+
+to take down your local cluster,
+```
+docker-compose down
+```
+
+in case you want to delete the existing containers
+```
+docker-compose rm
+```
+
+in case you want to delete all the containers and the corresponding images
+```
+docker rm $(docker ps -a -q)
+docker rmi $(docker images -q -a)
+rm ~/Library/Containers/com.docker.docker/Data/com.docker.driver.amd64-linux/Docker.qcow2
+```
+
+The above will take care of building a `Containerized api app` from your
+local file-system, spin up `mysql:5.6` container and establish connection
+to run the app locally.
+
+You should be able to access the app at:
+http://api.razorpay.dev:28080/
+
+## Running unit tests using dockerized containers
+```
+docker exec api_api_1 /app/phpunit --debug
+```
+
+Note: the name api_api_1 can be got from `docker ps` command
+
+## Containerization Issues
+
+Please file issues regarding Containerization on the local `api`
+issue-tracker and tag @razorpay/devops
+
 ### ( Ubuntu )
 
 * Copy over `api.razorpay.com.conf` to `/etc/apache2/sites-available/` and update the directory location where your project lies.
