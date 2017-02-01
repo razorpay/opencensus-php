@@ -76,7 +76,7 @@ class Checker
         $offerPaymentNetwork = $this->offer->getPaymentNetwork();
 
         // Return true if payment network is null for offer
-        // Offer is valid across all networks for a payment method
+        // Offer is valid across all wallets
         if ($offerPaymentNetwork === null)
         {
             return true;
@@ -98,7 +98,7 @@ class Checker
         $offerPaymentNetwork = $this->offer->getPaymentNetwork();
 
         // Return true if payment network is null for offer
-        // Offer is valid across all networks for a payment method
+        // Offer is valid across all banks
         if ($offerPaymentNetwork === null)
         {
             return true;
@@ -116,13 +116,15 @@ class Checker
     /**
      * For emi we are currently just validating against the card
      * TBD if any other validations are required
-     * @return [type] [description]
      */
     protected function checkEmi()
     {
         return $this->checkCard();
     }
 
+    /**
+     * TBD decide on checks for upi offers if any
+     */
     protected function checkUpi()
     {
         return true;
@@ -183,7 +185,7 @@ class Checker
         $offerPaymentNetwork = $this->offer->getPaymentNetwork();
 
         // Return true if payment network is null for offer
-        // Offer is valid across all networks for a payment method
+        // Offer is valid across all card networks
         if ($offerPaymentNetwork === null)
         {
             return true;
@@ -238,9 +240,9 @@ class Checker
         $result = ($this->order->getAmount() >= $this->offer->getMinAmount());
 
         $this->traceCheckResult(TraceCode::OFFER_ORDER_AMOUNT_CHECK, [
-                'result' => $result,
+                'result'           => $result,
                 'offer_min_amount' => $this->offer->getMinAmount(),
-                'order_amount' => $this->order->getAmount()
+                'order_amount'     => $this->order->getAmount()
         ]);
 
         return $result;

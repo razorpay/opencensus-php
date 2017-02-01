@@ -4,8 +4,8 @@ namespace RZP\Models\Offer;
 
 class Generator
 {
-    protected static $longDescriptionPrefix = 'Get';
-    protected static $delimiter = ' ';
+    protected $longDescriptionPrefix = 'Get';
+    protected $delimiter = ' ';
 
     const SHORT_DESCRIPTION_LENGTH = 50;
     const LONG_DESCRIPTION_LENGTH  = 200;
@@ -16,7 +16,7 @@ class Generator
     /**
      * Parsers to be called in defined order for generating a long description
      */
-    protected static $longDescriptionParsers = [
+    protected $longDescriptionParsers = [
         Parsers\CashbackDetailsParser::class,
         Parsers\PaymentMethodDetailsParser::class,
         Parsers\TransactionDetailsParser::class,
@@ -28,7 +28,7 @@ class Generator
     /**
      * Parsers to be called in defined order for generating a short description
      */
-    protected static $shortDescriptionParsers = [
+    protected $shortDescriptionParsers = [
         Parsers\CashbackDetailsParser::class,
         Parsers\PaymentMethodDetailsParser::class
     ];
@@ -42,11 +42,11 @@ class Generator
 
     public function generateLongDescription()
     {
-        $this->description[] = self::$longDescriptionPrefix;
+        $this->description[] = $this->longDescriptionPrefix;
 
-        foreach (self::$longDescriptionParsers as $parser)
+        foreach ($this->longDescriptionParsers as $parser)
         {
-            $this->description[] = (new $parser)::parse($this->offer);
+            $this->description[] = (new $parser($this->offer))->parse();
         }
 
         $descriptionStr = $this->generateDescription(self::LONG_DESCRIPTION_LENGTH);
@@ -56,9 +56,9 @@ class Generator
 
     public function generateShortDescription()
     {
-        foreach (self::$shortDescriptionParsers as $parser)
+        foreach ($this->shortDescriptionParsers as $parser)
         {
-            $this->description[] = (new $parser)::parse($this->offer);
+            $this->description[] = (new $parser($this->offer))->parse();
         }
 
         $descriptionStr = $this->generateDescription(self::SHORT_DESCRIPTION_LENGTH);
@@ -71,7 +71,7 @@ class Generator
         // Removes empty string from $description array
         $this->description = array_filter($this->description);
 
-        $descriptionStr = implode(self::$delimiter, $this->description);
+        $descriptionStr = implode($this->delimiter, $this->description);
 
         if (strlen($descriptionStr) > $maxLength)
         {

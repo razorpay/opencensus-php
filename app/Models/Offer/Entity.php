@@ -262,11 +262,6 @@ class Entity extends Base\PublicEntity
 
 // -----------------------Accessors begin---------------------------------------
 
-    protected function getPercentRateAttribute($percentRate)
-    {
-        return ($percentRate / 100);
-    }
-
     protected function getAdditionalDetailsAttribute($additionalDetails)
     {
         if ($additionalDetails === null)

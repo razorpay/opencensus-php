@@ -7,17 +7,17 @@ use Carbon\Carbon;
 
 class OfferTimeValidityParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
         Offer\Entity::ENDS_AT
     ];
 
-    protected static $localPrefix = 'Valid till';
+    protected $localPrefix = 'Valid till';
 
-    protected static $localSuffix = '.';
+    protected $localSuffix = '.';
 
-    public static function getEndsAtDescription(Offer\Entity $offer)
+    protected function getEndsAtDescription()
     {
-        $endsAt = $offer->getAttribute(Offer\Entity::ENDS_AT);
+        $endsAt = $this->offer->getAttribute(Offer\Entity::ENDS_AT);
 
         $format = 'd-m-Y';
 

@@ -6,12 +6,12 @@ use RZP\Models\Offer;
 
 class AdditionalDetailsParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
         Offer\Entity::ADDITIONAL_DETAILS
     ];
 
-    public static function getAdditionalDetailsDescription(Offer\Entity $offer)
+    protected function getAdditionalDetailsDescription()
     {
-        return $offer->getAdditionalDetails();
+        return $this->offer->getAdditionalDetails();
     }
 }

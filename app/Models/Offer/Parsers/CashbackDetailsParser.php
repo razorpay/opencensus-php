@@ -6,7 +6,7 @@ use RZP\Models\Offer;
 
 class CashbackDetailsParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
         Offer\Entity::PERCENT_RATE,
         Offer\Entity::FLAT_CASHBACK,
         Offer\Entity::MAX_CASHBACK
@@ -20,50 +20,50 @@ class CashbackDetailsParser extends BaseParser
 
     const CASHBACK_LIMIT_STRING = 'upto';
 
-    public static function getPercentRateDescription(Offer\Entity $offer)
+    protected function getPercentRateDescription()
     {
         $description = [];
 
-        $percentRate = $offer->getPercentRate();
+        $percentRate = ($this->offer->getPercentRate() / 100);
 
         if ($percentRate > 0)
         {
-            $description = [$percentRate . static::PERCENT_SYMBOL, static::CASHBACK_STRING];
+            $description = [$percentRate . self::PERCENT_SYMBOL, self::CASHBACK_STRING];
         }
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
         return $description;
     }
 
-    public static function getFlatCashbackDescription(Offer\Entity $offer)
+    protected function getFlatCashbackDescription()
     {
-        $flatCashback = $offer->getFlatCashback();
+        $flatCashback = ($this->offer->getFlatCashback() / 100);
 
         $description = [];
 
         if ($flatCashback > 0)
         {
-            $description = [static::CURRENCY_SYMBOL, $flatCashback, static::CASHBACK_STRING];
+            $description = [self::CURRENCY_SYMBOL, $flatCashback, self::CASHBACK_STRING];
         }
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
         return $description;
     }
 
-    public static function getMaxCashbackDescription(Offer\Entity $offer)
+    protected function getMaxCashbackDescription()
     {
-        $maxCashback = $offer->getMaxCashback();
+        $maxCashback = ($this->offer->getMaxCashback() / 100);
 
         $description = [];
 
         if ($maxCashback > 0)
         {
-            $description = [static::CASHBACK_LIMIT_STRING, static::CURRENCY_SYMBOL, $maxCashback];
+            $description = [self::CASHBACK_LIMIT_STRING, self::CURRENCY_SYMBOL, $maxCashback];
         }
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
         return $description;
     }

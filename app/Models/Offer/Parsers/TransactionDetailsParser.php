@@ -6,12 +6,12 @@ use RZP\Models\Offer;
 
 class TransactionDetailsParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
         Offer\Entity::PAYMENT_COUNT,
         Offer\Entity::MIN_AMOUNT
     ];
 
-    protected static $localSuffix = '.';
+    protected $localSuffix = '.';
 
     const PAYMENT_STRING          = 'payment';
 
@@ -19,9 +19,9 @@ class TransactionDetailsParser extends BaseParser
 
     const CURRENCY_SYMBOL         = 'Rs';
 
-    public static function getPaymentCountDescription(Offer\Entity $offer)
+    protected function getPaymentCountDescription()
     {
-        $paymentCount = $offer->getPaymentCount();
+        $paymentCount = $this->offer->getPaymentCount();
 
         $description = [];
 
@@ -31,31 +31,31 @@ class TransactionDetailsParser extends BaseParser
 
             if ($paymentCount === 1)
             {
-                $description = array_merge($description, ['first', static::PAYMENT_STRING]);
+                $description = array_merge($description, ['first', self::PAYMENT_STRING]);
             }
             else
             {
-                $description = array_merge($description, ['first', $paymentCount, static::PAYMENT_STRING  . 's']);
+                $description = array_merge($description, ['first', $paymentCount, self::PAYMENT_STRING  . 's']);
             }
         }
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
         return $description;
     }
 
-    public static function getMinAmountDescription(Offer\Entity $offer)
+    protected function getMinAmountDescription()
     {
-        $minAmount = $offer->getMinAmount();
+        $minAmount = ($this->offer->getMinAmount() / 100);
 
         $description = [];
 
         if ($minAmount > 0)
         {
-            $description = [static::PAYMENT_LIMIT_STRING, static::CURRENCY_SYMBOL, $minAmount];
+            $description = [self::PAYMENT_LIMIT_STRING, self::CURRENCY_SYMBOL, $minAmount];
         }
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
         return $description;
     }

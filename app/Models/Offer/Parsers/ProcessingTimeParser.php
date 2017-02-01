@@ -6,25 +6,25 @@ use RZP\Models\Offer;
 
 class ProcessingTimeParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
         Offer\Entity::PROCESSING_TIME
     ];
 
-    protected static $localSuffix  = '.';
+    protected $localSuffix  = '.';
 
-    protected static $delimiter    = ' ';
+    protected $delimiter    = ' ';
 
     const NUMBER_OF_SECONDS_IN_DAY = 86400;
 
-    public static function getProcessingTimeDescription(Offer\Entity $offer)
+    protected function getProcessingTimeDescription()
     {
         $description = '';
 
-        $processingTime = $offer->getProcessingTime();
+        $processingTime = $this->offer->getProcessingTime();
 
         if ($processingTime > 0)
         {
-            $processingTimeInDays = static::convertSecondsToDays($processingTime);
+            $processingTimeInDays = $this->convertSecondsToDays($processingTime);
 
             $description .= 'Cashback will get credited in ' . $processingTimeInDays . ' business day(s)';
         }
@@ -32,8 +32,8 @@ class ProcessingTimeParser extends BaseParser
         return $description;
     }
 
-    public static function convertSecondsToDays(float $processingTime)
+    protected function convertSecondsToDays(float $processingTime)
     {
-        return ceil($processingTime / static::NUMBER_OF_SECONDS_IN_DAY);
+        return ceil($processingTime / self::NUMBER_OF_SECONDS_IN_DAY);
     }
 }

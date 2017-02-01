@@ -6,17 +6,24 @@ use RZP\Models\Offer;
 
 class BaseParser
 {
+    protected $offer;
+
     // Offer properties on which to run parser methods. Should be defined by each parser
-    protected static $properties = [];
+    protected $properties = [];
 
     // Delimiter to be used for parsing
-    protected static $delimiter = ' ';
+    protected $delimiter = ' ';
 
     // Prefix to be used by each parser
-    protected static $localPrefix = '';
+    protected $localPrefix = '';
 
     // Suffix to be used by each parser
-    protected static $localSuffix = '';
+    protected $localSuffix = '';
+
+    public function __construct(Offer\Entity $offer)
+    {
+        $this->offer = $offer;
+    }
 
     /**
      * Parses the offer entity based on values present in the $properties array
@@ -26,23 +33,23 @@ class BaseParser
      *
      * @return string        Result of parsing the offer entity
      */
-    public static function parse(Offer\Entity $offer)
+    public function parse()
     {
-        $description = [static::$localPrefix];
+        $description = [$this->localPrefix];
 
-        foreach (static::$properties as $prop)
+        foreach ($this->properties as $prop)
         {
-            $methodName = 'static::' . 'get' . studly_case($prop) . 'Description';
+            $methodName = 'get' . studly_case($prop) . 'Description';
 
-            $description[] = call_user_func($methodName, $offer);
+            $description[] = $this->$methodName();
         }
 
         // Removes empty strings from array if any
         $description =  array_filter($description);
 
-        $description = implode(static::$delimiter, $description);
+        $description = implode($this->delimiter, $description);
 
-        $description .= static::$localSuffix;
+        $description .= $this->localSuffix;
 
         // Removes extra spaces from string if any
         $description = preg_replace('/\s+/', ' ', $description);

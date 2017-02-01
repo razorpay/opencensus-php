@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Offer\Parsers;
 
-use RZP\Models\Bank;
 use RZP\Models\Card;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -12,20 +11,38 @@ use RZP\Models\Processor;
 
 class PaymentMethodDetailsParser extends BaseParser
 {
-    protected static $properties = [
+    protected $properties = [
+        Offer\Entity::IINS,
         Offer\Entity::ISSUER,
         Offer\Entity::PAYMENT_NETWORK,
         Offer\Entity::PAYMENT_METHOD_TYPE,
         Offer\Entity::PAYMENT_METHOD
     ];
 
-    protected static $localPrefix = 'on';
+    protected $localPrefix = 'on';
 
-    public static function getIssuerDescription(Offer\Entity $offer)
+    protected function getIinsDescription()
     {
         $description = '';
 
-        $issuer = $offer->getIssuer();
+        if (empty($this->offer->getIins()) === false)
+        {
+            $description = 'selected';
+        }
+
+        return $description;
+    }
+
+    protected function getIssuerDescription()
+    {
+        $description = '';
+
+        if (empty($this->offer->getIins()) === false)
+        {
+            return $description;
+        }
+
+        $issuer = $this->offer->getIssuer();
 
         if ($issuer === null)
         {
@@ -39,22 +56,20 @@ class PaymentMethodDetailsParser extends BaseParser
         return $description;
     }
 
-    public static function getPaymentNetworkDescription(Offer\Entity $offer)
+    protected function getPaymentNetworkDescription()
     {
-        $paymentNetwork = $offer->getPaymentNetwork();
+        $paymentNetwork = $this->offer->getPaymentNetwork();
 
-        $paymentMethod = $offer->getPaymentMethod();
+        $paymentMethod = $this->offer->getPaymentMethod();
 
         $description = '';
 
-        if ($paymentNetwork === null)
+        if (empty($this->offer->getIins()) === false)
         {
-            if ($paymentMethod !== Payment\Method::CARD)
-            {
-                $description .= 'all';
-            }
+            return $description;
         }
-        else
+
+        if ($paymentNetwork !== null)
         {
             switch ($paymentMethod)
             {
@@ -63,7 +78,7 @@ class PaymentMethodDetailsParser extends BaseParser
                     break;
 
                 case Payment\Method::NETBANKING:
-                    $description .= Bank\Name::getName($paymentNetwork);
+                    $description .= Netbanking::getName($paymentNetwork);
                     break;
 
                 case Payment\Method::CARD:
@@ -73,16 +88,28 @@ class PaymentMethodDetailsParser extends BaseParser
                 default:
                     break;
             }
+
+            return $description;
+        }
+
+        if ($paymentMethod !== Payment\Method::CARD)
+        {
+            $description .= 'all';
         }
 
         return $description;
     }
 
-    public static function getPaymentMethodTypeDescription(Offer\Entity $offer)
+    protected function getPaymentMethodTypeDescription()
     {
-        $paymentMethodType = $offer->getPaymentMethodType();
+        $paymentMethodType = $this->offer->getPaymentMethodType();
 
         $description = '';
+
+        if (empty($this->offer->getIins()) === false)
+        {
+            return $description;
+        }
 
         if ($paymentMethodType !== null)
         {
@@ -92,8 +119,8 @@ class PaymentMethodDetailsParser extends BaseParser
         return $description;
     }
 
-    public static function getPaymentMethodDescription(Offer\Entity $offer)
+    protected function getPaymentMethodDescription()
     {
-        return $offer->getPaymentMethod();
+        return $this->offer->getPaymentMethod();
     }
 }
