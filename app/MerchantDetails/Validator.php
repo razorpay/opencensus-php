@@ -89,6 +89,25 @@ class Validator extends Base\Validator
         'bank_beneficiary_pin'       => 'required|integer|digits:6'
     );
 
+    // Rules for vendor account validation
+    protected static $step1AccountRules = [
+        'business_type'                 => 'required|numeric|digits_between:1,10',
+        'business_name'                 => 'required|max:255',
+        'company_pan'                   => 'alpha_num|max:15',
+        'promoter_pan'                  => 'required|alpha_num|max:15',
+    ];
+
+    protected static $step2AccountRules = [
+        'bank_account_number'   => 'required|alpha_num|between:5,20',
+        'bank_account_name'     => 'required|alpha_space_num|max:40',
+        'bank_account_type'     => 'required|alpha_space|max:20',
+        'bank_branch_ifsc'      => 'required|alpha_num|max:11',
+    ];
+
+    protected static $step2AccountValidators = [
+        'ifsc_code'
+    ];
+
     const UPLOAD_KEYS = array(
         'business_proof',
         'business_operation_proof',

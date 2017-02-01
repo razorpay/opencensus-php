@@ -72,6 +72,10 @@ Route::group(['middleware'  =>  'auth:user'], function()
         Route::post('{id}/retry', 'MerchantController@retryBatchFile')->name('batch_retry');
     });
 
+    // Account Routes
+    Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
+
+
     Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment')->name('payment_get_single');
     Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData')->name('card_get_single');
     Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds')->name('payment_get_refunds');
@@ -137,8 +141,11 @@ Route::group(['middleware'  =>  'auth:user'], function()
 
     Route::post('/password', 'UserController@postPassword');
     Route::post('/activation', 'MerchantController@postActivation')->name('post_activation');
+    Route::post('/activation/{merchantId}', 'MerchantController@postActivation')->name('post_activation');
     Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
+    Route::post('/activation/save/step/{id}/{merchantId}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
     Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
+    Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
     Route::post('/{mode}/keys', 'MerchantController@postKeys')->name('post_keys');
     Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
     Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment')->name('post_capture');

@@ -43,7 +43,12 @@ app.controller('ActivationCtrl', [
       promoter_address_proof: alertsFactory.getHandler()
     };
     $scope.submit = function (step) {
-      if (step !== 6) {
+      var finalStep = 6;
+      if ($scope.accountDetails) {
+        finalStep = 4;
+      }
+
+      if (step !== finalStep) {
         saveStep(step);
       } else {
         submitForm(step);
@@ -109,7 +114,13 @@ app.controller('ActivationCtrl', [
     }
     function saveStep(step) {
       var data = $scope.data;
-      if (step === 4) {
+
+      var bankStep = 4;
+      if ($scope.accountDetails) {
+        bankStep = 2;
+      }
+
+      if (step === bankStep) {
         if (data.bank_account_number !== data.bank_account_number_confirmation) {
           $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
           return;
@@ -118,9 +129,14 @@ app.controller('ActivationCtrl', [
         delete data.bank_account_number_confirmation;
       }
 
+      var url = '/activation/save/step/' + step;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $http({
         method: 'post',
-        url: '/activation/save/step/' + step,
+        url: url,
         transformRequest: transformRequestAsFormPost,
         data: data
       });
@@ -159,8 +175,14 @@ app.controller('ActivationCtrl', [
       }
       $scope.locked = true;
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
+
+      var url = '/activation/save/file' ;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $upload.upload({
-        url: '/activation/save/file',
+        url: url,
         method: 'POST',
         file: file,
         fileFormDataName: fieldname,
@@ -201,9 +223,15 @@ app.controller('ActivationCtrl', [
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;
       }
+
+      var url = '/activation' ;
+      if ($scope.accountDetails) {
+        url += '/' + $scope.account;
+      }
+
       var request = $http({
         method: 'post',
-        url: '/activation',
+        url: url,
         transformRequest: transformRequestAsFormPost
       });
       request.success(function (data) {
@@ -237,13 +265,7 @@ app.controller('ActivationCtrl', [
 
 .controller('AccountActivationCtrl', [
   '$scope',
-  '$http',
-  'alertsFactory',
-  'transformRequestAsFormPost',
-  '$upload',
-  'user',
-  'organization',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $upload, user, organization) {
+  function ($scope) {
     $scope.accountDetails = true;
   }
 ]);

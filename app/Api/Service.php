@@ -132,6 +132,37 @@ class Service extends Base\Service
         }
     }
 
+    protected function fetchCollectionaccounts($input, $mode)
+    {
+        $data = [];
+
+        $error = (new Validator)->validateInput('fetch', $input)->messages();
+
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $collection = [];
+
+        $input['parent_id'] = $this->merchantId;
+
+        try
+        {
+            $this->setApiCredentials();
+
+            $collection = $this->api->merchant->all($input)->toArray();
+
+            $this->mapKeys($collection);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return array($error, $collection);
+    }
+
     public function fetchPaymentRefunds($id, $mode)
     {
         $data = array();

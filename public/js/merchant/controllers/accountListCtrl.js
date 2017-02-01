@@ -30,14 +30,10 @@ app.controller('AccountListCtrl', [
       });
     };
 
-    $scope.saveAccountDetails = function (data) {
-      alert('asd');
-    };
-
     $scope.addAccount = function () {
       var modalInstance = $modal.open({
         templateUrl: 'addAccountModal.html',
-        controller: 'addAccountCtrl'
+        controller: 'AddAccountCtrl'
       });
       modalInstance.result.then($scope.createAccount, $.noop);
     };
@@ -52,13 +48,11 @@ app.controller('AccountListCtrl', [
             return scope;
         }(),
       });
-      modalInstance.result.then($scope.saveAccountDetails, $.noop);
     }
-
   }
 ])
 
-.controller('addAccountCtrl', [
+.controller('AddAccountCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {

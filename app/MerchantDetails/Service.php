@@ -10,6 +10,7 @@ use Carbon\Carbon;
 use Config;
 use Mail;
 use App\Base;
+use App\Merchant;
 use Queue;
 use App\Mailers\MerchantMailer;
 use Requests;
@@ -69,6 +70,20 @@ class Service extends Base\Service
             'promoter_address_url'        => 5,
     ];
 
+    const STEP_MAP_ACCOUNTS = [
+            'business_type'               => 1,
+            'business_name'               => 1,
+            'company_pan'                 => 1,
+            'promoter_pan'                => 1,
+
+            'bank_branch_ifsc'            => 2,
+            'bank_account_number'         => 2,
+            'bank_account_type'           => 2,
+            'bank_account_name'           => 2,
+
+            'address_proof_url'           => 3,
+    ];
+
      const UPLOAD_KEYS = [
          'business_proof_url'           => 'business_proof',
          'business_operation_proof_url' => 'business_operation_proof',
@@ -79,7 +94,8 @@ class Service extends Base\Service
          'promoter_address_url'         => 'promoter_address_proof',
     ];
 
-    const STEP_FINISHED  = [1, 2, 3, 4, 5];
+    const STEP_FINISHED           = [1, 2, 3, 4, 5];
+    const STEP_FINISHED_ACCOUNTS  = [1, 2, 3];
 
     public function __construct()
     {
@@ -97,11 +113,18 @@ class Service extends Base\Service
     {
         $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
+        $steps = self::STEP_FINISHED;
+
+        if ($this->account === true)
+        {
+            $steps = self::STEP_FINISHED_ACCOUNTS;
+        }
+
         if ($merchantDetails !== null)
         {
             if ($merchantDetails['can_submit'] === true)
             {
-                $merchantDetails['steps_finished'] = json_encode([1, 2, 3, 4, 5]);
+                $merchantDetails['steps_finished'] = json_encode($steps);
 
                 $merchantDetails['activation_progress'] = 100;
             }
@@ -113,7 +136,7 @@ class Service extends Base\Service
                 {
                     $unfinishedSteps = array_unique($stepFinished);
 
-                    $finishedSteps = array_values(array_diff(self::STEP_FINISHED, $unfinishedSteps));
+                    $finishedSteps = array_values(array_diff($steps, $unfinishedSteps));
 
                     $merchantDetails['steps_finished'] = json_encode($finishedSteps);
 
@@ -138,19 +161,28 @@ class Service extends Base\Service
         return $merchantDetails;
     }
 
-    public function submitDetails()
+    public function submitDetails($merchantId = null)
     {
         $input = ['submit' => true];
 
+        if ($merchantId !== null)
+        {
+            $merchantId = $this->checkAndSetAccount($merchantId);
+        }
+        else
+        {
+            $merchantId = $this->merchant->id;
+        }
+
         //TODO: Move this check on API side
-        $merchantDetails =  Entity::findorfail($this->merchant->id);
+        $merchantDetails =  Entity::findorfail($merchantId);
 
         if ($merchantDetails->submitted === 1)
         {
             return;
         }
 
-        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
+        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input, $merchantId);
 
         if (empty($error))
         {
@@ -173,9 +205,18 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function saveDetails($step, array $input)
+    public function saveDetails($step, array $input, $merchantId = null)
     {
         $step = intval($step);
+
+        $bankStep = 4;
+
+        if ($merchantId !== null)
+        {
+            $merchantId = $this->checkAndSetAccount($merchantId);
+
+            $bankStep = 2;
+        }
 
         // Check if already finished
         $merchantDetails = $this->merchantDetails;
@@ -189,12 +230,12 @@ class Service extends Base\Service
         // We disable this because this doesn't edit the Bank Account
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
-        if ($this->merchant->isActive() and ($step === 4))
+        if ($this->merchant->isActive() and ($step === $bankStep))
         {
             return ['Editing bank account is not permitted for activated merchants'];
         }
 
-        $error = $merchantDetails->finishStep($step, $input);
+        $error = $merchantDetails->finishStep($step, $input, $this->account);
 
         // Save the finished steps if there are no errors
         if (empty($error))
@@ -202,7 +243,7 @@ class Service extends Base\Service
             $merchantDetails->saveOrFail();
 
             // Save to API
-            $this->saveDetailsOnAPI($input);
+            $this->saveDetailsOnAPI($input, $merchantId);
         }
 
         return $error;
@@ -241,9 +282,14 @@ class Service extends Base\Service
         return $response;
     }
 
-    public function checkUploads()
+    public function checkUploads($merchantId = null)
     {
-        $error = array();
+        $error = [];
+
+        if ($merchantId !== null)
+        {
+            $merchantId = $this->checkAndSetAccount($merchantId);
+        }
 
         $merchantDetails = $this->merchantDetails;
 
@@ -252,7 +298,7 @@ class Service extends Base\Service
             return $this->isLockedError();
         }
 
-        $error = $merchantDetails->checkUploadedFiles();
+        $error = $merchantDetails->checkUploadedFiles($this->account);
 
         if (empty($error))
         {
@@ -288,8 +334,13 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function saveUploadedFile($input)
+    public function saveUploadedFile($input, $merchantId = null)
     {
+        if ($merchantId !== null)
+        {
+            $merchantId = $this->checkAndSetAccount($merchantId);
+        }
+
         $merchantDetails = $this->merchantDetails;
 
         if ($merchantDetails->locked)
@@ -386,7 +437,7 @@ class Service extends Base\Service
         );
 
         $user = Auth::user();
-        $mailer = new MerchantMailer($user->currentMerchant);
+        $mailer = new MerchantMailer($this->merchant);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();
 
@@ -445,6 +496,8 @@ class Service extends Base\Service
         {
             $merchantId = $this->merchant->id;
         }
+
+        $merchantId = $this->checkAndSetAccount($merchantId);
 
         Trace::debug('MISC_TRACE_CODE', [
             'info'     => "Fetching merchant details from API",
@@ -579,20 +632,26 @@ class Service extends Base\Service
             return $stepFinished;
         }
 
+        $stepMap = self::STEP_MAP;
+
+        if ($this->account === true)
+        {
+            $stepMap = self::STEP_MAP_ACCOUNTS;
+        }
+
         if (isset($response['verification']['required_fields']))
         {
             foreach ($response['verification']['required_fields'] as $key)
             {
-                if (array_key_exists($key, self::STEP_MAP))
+                if (array_key_exists($key, $stepMap))
                 {
-                    $stepFinished[] = self::STEP_MAP[$key];
+                    $stepFinished[] = $stepMap[$key];
                 }
             }
         }
 
         return $stepFinished;
     }
-
 
     protected function getFileDetails($merchantId)
     {
@@ -616,5 +675,31 @@ class Service extends Base\Service
         }
 
         return $fileResponse;
+    }
+
+    protected function checkAndSetAccount($accountId)
+    {
+        if ($this->account === false)
+        {
+            return $this->merchant->id;
+        }
+
+        $this->setApiCredentials();
+
+        $account = $this->api->merchant->fetch($accountId);
+
+        if ($account->parent_id !== $this->merchant->id)
+        {
+            Trace::debug('MISC_TRACE_CODE', [
+                    'error'     => "Accessing details of unlinked account"
+            ]);
+
+            return null;
+        }
+
+        $this->merchant = Merchant\Entity::findorfail($account->id);
+        $this->merchantDetails = $this->merchant->MerchantDetails;
+
+        return $account->id;
     }
 }

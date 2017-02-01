@@ -160,8 +160,12 @@ class Entity extends Base\Entity
         'business_proof_url'    => "Please upload business proof",
         'business_pan_url'      => "Please upload business pan card scan.",
         'address_proof_url'     => "Please upload address proof.",
-        'promoter_address_url'  => "Please upload authorised signatory address  proof."
+        'promoter_address_url'  => "Please upload authorised signatory address proof."
     );
+
+    const UPLOAD_DOCUMENTS_ACCOUNTS = [
+        'address_proof_url'     => "Please upload bank account proof, as specified.",
+    ];
 
     public function merchant()
     {
@@ -251,11 +255,18 @@ class Entity extends Base\Entity
         ));
     }
 
-    public function checkUploadedFiles()
+    public function checkUploadedFiles($isAccount = false)
     {
         $error = array();
 
-        foreach (self::UPLOAD_DOCUMENTS as $key => $document)
+        $documentsRequired = self::UPLOAD_DOCUMENTS;
+
+        if ($isAccount === true)
+        {
+            $documentsRequired = self::UPLOAD_DOCUMENTS_ACCOUNTS;
+        }
+
+        foreach ($documentsRequired as $key => $document)
         {
             if ($this->getAttribute($key) == null)
             {
@@ -326,9 +337,16 @@ class Entity extends Base\Entity
         return array_diff($steps, $stepsFinished);
     }
 
-    public function finishStep($step, $input)
+    public function finishStep($step, $input, $account = false)
     {
-        $error = $this->edit($input, 'step'.$step);
+        $operation = 'step' . $step;
+
+        if ($account === true)
+        {
+            $operation .= '_account';
+        }
+
+        $error = $this->edit($input, $operation);
 
         if (empty($error))
         {

@@ -5,8 +5,8 @@
   </h1>
 </h1>
 </div>
-<div class="wrapper-md">
-<!-- <div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('order')"> -->
+
+<div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('account')">
   <div class="panel panel-default" ng-controller="AccountListCtrl" >
 
     <div class="panel-heading">
@@ -49,7 +49,6 @@
       </div>
     </div>
 
-    <!-- LIST
     <div class="table-responsive">
       <table class="orders-table table table-striped b-t b-light" ui-jq="footable">
         <thead>
@@ -57,9 +56,8 @@
             <th data-toggle="true">Account Id</th>
             <th>Email</th>
             <th data-hide="phone,tablet">Name</th>
-            <th>Balance</th>
             <th>Activated</th>
-            <th>Locked</th>
+            <th>Activated At</th>
             <th data-hide="phone">Created At</th>
           </tr>
         </thead>
@@ -68,14 +66,13 @@
             <td><a target="_blank" ui-sref="app.orders.detail({id:row.id})"><code>{{row.id}}</code></a></td>
             <td>{{row.email}}</td>
             <td data-hide="phone,tablet">{{row.name}}</td>
-            <td>{{row.balance/100 | rupee:""}}</td>
             <td>{{row.activated}}</td>
-            <td>{{row.receipt}}</a></td>
+            <td>{{row.activated_at*1000 | date:'medium'}}</a></td>
             <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="6" class="text-center">
-            No Orders
+            No Accounts added
             </td>
           </tr>
 
@@ -86,7 +83,7 @@
       <div class="row">
         <div class="text-center m-t m-b">
           <small>
-            You can find documentation for Marketplace
+            You can find documentation for Marketplace APIs
             <a target="_blank" href="https://docs.razorpay.com/v1/page/marketplace" class="highlight">here</a>
           </small>
         </div>
@@ -104,7 +101,6 @@
         </div>
       </div>
     </footer>
-    END LIST -->
   </div>
 </div>
 
