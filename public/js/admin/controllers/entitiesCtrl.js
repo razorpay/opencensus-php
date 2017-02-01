@@ -294,20 +294,21 @@ app.controller('EntitiesCtrl', [
       },
       invoice: {
         merchant_id: ['Merchant Id'],
-        type: [
-          'all',
-          'link',
-          'invoice',
-          'ecod',
-        ],
-        receipt: ['Receipt'],
+        order_id: ['Order Id'],
         payment_id: ['Payment Id'],
+        receipt: ['Receipt'],
         status: [
           'all',
           'draft',
           'issued',
           'paid',
           'expired',
+        ],
+        type: [
+          'all',
+          'link',
+          'invoice',
+          'ecod',
         ],
       },
       key: {
@@ -399,6 +400,7 @@ app.controller('EntitiesCtrl', [
         global_token_id: ['Global Token Id'],
         iin: ['Card IIN'],
         international: booleanList,
+        invoice_id: ['Invoice Id'],
         last4: ['Card Last 4'],
         merchant_id: ['Merchant Id'],
         method: methodList,
