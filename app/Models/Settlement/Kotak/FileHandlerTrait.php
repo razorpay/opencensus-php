@@ -79,15 +79,7 @@ trait FileHandlerTrait
 
     public function writeToExcelFile($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
-
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -97,16 +89,9 @@ trait FileHandlerTrait
     }
 
 
-    public function writeToExcelFileH2H($data, $name)
+    public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -117,6 +102,21 @@ trait FileHandlerTrait
         $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
 
         return $url;
+    }
+
+    public function createExcelFile($data, $name, $dir)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+
+        $fullpath = $fileMetadata['full'];
+
+        return $fullpath;
     }
 
     public function getH2HFileFromAws($key)
