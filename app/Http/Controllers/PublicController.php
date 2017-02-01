@@ -17,50 +17,66 @@ class PublicController extends Controller
         return View::make('public.account', $data);
     }
 
+    /**
+     * Works on checkout onyx protocol.
+     */
     public function postCallbackUrlWithParams()
     {
-        $allParams = Request::all();
+        $postParams = Request::instance()->request->all();
+        $getParams = Request::query();
+
+        // Relevant info for re-directing to merchant url.
 
         $data = [
-            // merchant site url, to create "go back to merchant website" link
-            // this is required because otherwise there is no escape for
-            // customer until payment is successful.
-            // This is automatically picked from previous page.
-            'back' => $allParams['back'],
+            // actual callback_url, picked from checkout page form action
+            'url'       => $getParams['url'],
+            'method'    => strtoupper($getParams['method']) ?? 'POST',
+            'target'    => $getParams['target'] ?? '_self',
+            'version'   => $getParams['version'] ?? 1,
+            'options'   => $getParams['options'],
 
             // parameters to be converted into POST.
             // Reason we're going through this maneuver
-            'params' => json_decode($allParams['params']),
-
-            // actual callback_url, picked from checkout page form action
-            'url' => $allParams['url']
+            'params' => $getParams['params'],
         ];
 
-        if (isset($allParams['razorpay_payment_id']))
+        if (isset($postParams['razorpay_payment_id']))
         {
-            $data['payment_id'] = $allParams['razorpay_payment_id'];
+            //
+            // It's successful payment so pass all post params directly to
+            // the merchant url. Merge it with already existing POST params
+            // that have been defined by the merchant
+            //
 
-            if (isset($allParams['razorpay_order_id']) === true)
-            {
-                $data['razorpay_order_id'] = $allParams['razorpay_order_id'];
-                $data['razorpay_signature'] = $allParams['razorpay_signature'];
-            }
+            $data['params'] = array_merge($data['params'], $postParams);
+            $data['retry'] = false;
+        }
+        else if (isset($postParams['error']))
+        {
+            assert (isset($postParams['action']) === false);
+
+            // just pass in error.
+            $data['error'] = $postParams['error'];
+
+            // Relevant info for re-opening checkout because we have to give re-try.
+            $data = [
+                // merchant site url, to create "go back to merchant website" link
+                // this is required because otherwise there is no escape for
+                // customer until payment is successful.
+                // This is automatically picked from previous page.
+                'back'  => $getParams['back'],
+
+                'options' => $getParams['options'],
+            ];
+            $data['retry'] = true;
         }
         else
         {
-            // Fill basic error codes if it error parameter does not exist.
-            if ((isset($allParams['error']) === false) or
-                (isset($allParams['error']['description']) === false))
-            {
-                $allParams['error'] = ['description' => 'Something went wrong'];
-            }
-
-            // just pass in printable error.
-            $data['error'] = $allParams['error']['description'];
-
-            // Razorpay frontend initialization object as json string
-            $data['options'] = $allParams['options'];
+            throw new Exception\ServerErrorException('Should not have reached here');
         }
+
+        $checkout = $this->getCheckoutCommon();
+        $data['checkout'] = $checkout['checkout'] . '/v1/checkout.js';
 
         return View::make('public.callback_params', $data);
     }
