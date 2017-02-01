@@ -710,7 +710,7 @@ class Service extends Base\Service
 
     public function getWebhook($id)
     {
-        $webhook = $this->repo->webhook->findByIdAndMerchantId($id, $this->merchant->getId());
+        $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
         return $webhook->toArray();
     }

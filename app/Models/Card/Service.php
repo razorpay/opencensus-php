@@ -10,9 +10,7 @@ class Service extends Base\Service
 {
     public function fetchById($id)
     {
-        Card\Entity::verifyIdAndStripSign($id);
-
-        $card = $this->repo->card->findByIdAndMerchantId($id, $this->merchant->getId());
+        $card = $this->repo->card->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $card->toArrayPublic();
     }

@@ -298,13 +298,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVerifyAttributes($content);
 
-        // Late authorization case
-        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
-        {
-            $gatewayPayment->fill($attributes);
+        $gatewayPayment->fill($attributes);
 
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }

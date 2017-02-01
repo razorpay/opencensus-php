@@ -235,6 +235,16 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
 
+            if ($approvalCode === 'N:100')
+            {
+                $data = [
+                    'approval_code' => $gatewayEntity->getApprovalCode(),
+                    'error_msg'     => $gatewayErrorDesc,
+                ];
+
+                throw new Exception\RuntimeException('Internal Error in FirstData Gateway', $data);
+            }
+
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
         }
     }

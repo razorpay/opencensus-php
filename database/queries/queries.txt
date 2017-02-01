@@ -1596,7 +1596,7 @@ UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
 
-# ----------------------------------- TODO ---------------------------------------
+# --- TODO : Marketplace + Openwallet ---
 
 ALTER TABLE merchant_banks
     ADD COLUMN openwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;

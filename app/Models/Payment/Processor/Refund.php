@@ -67,7 +67,8 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($refund->payment);
+            $data['card'] = $card->toArray();
         }
 
         $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
@@ -439,6 +440,19 @@ trait Refund
 
         try
         {
+            // This has already been refunded on Billdesk.
+            // We'll run create record later after this is refunded.
+            $paymentId = $data['payment']['id'];
+            $refAmount = $data['amount'];
+
+            if ((($paymentId === '76xxvf76XSDOhE') and ($refAmount === 25440)) or
+                (($paymentId === '76ucv3KB99NVjI') and ($refAmount === 45850)) or
+                (($paymentId === '76XitTS4KLTTP6') and ($refAmount === 21880)) or
+                (($paymentId === '76r7XQIVAJJSsX') and ($refAmount === 20768)))
+            {
+                return;
+            }
+
             $this->callGatewayFunction(Payment\Action::REFUND, $data);
         }
         catch (Exception\GatewayTimeoutException $ex)
@@ -586,7 +600,9 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $this->refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($this->refund->payment);
+
+            $data['card'] = $card->toArray();
         }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $input)

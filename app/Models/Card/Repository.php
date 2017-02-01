@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Customer\Token;
 
 class Repository extends Base\Repository
 {
@@ -47,6 +48,34 @@ class Repository extends Base\Repository
         }
 
         return $query->get();
+    }
+
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('card'))
+        {
+            return $payment->card;
+        }
+
+        $card = $this->findOrFail($payment->getCardId());
+
+        $payment->setRelation('card', $card);
+
+        return $card;
+    }
+
+    public function fetchForToken(Token\Entity $token)
+    {
+        if ($token->hasRelation('card'))
+        {
+            return $token->card;
+        }
+
+        $card = $this->findOrFail($token->getCardId());
+
+        $token->setRelation('card', $card);
+
+        return $card;
     }
 
     protected function addQueryParamInternational($query, $params)
