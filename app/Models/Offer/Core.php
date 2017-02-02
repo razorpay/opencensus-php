@@ -85,6 +85,11 @@ class Core extends Base\Core
 
         $offer = $order->offer;
 
-        return $offer->toArrayPublic();
+        if ($offer !== null)
+        {
+            return $offer->toArrayPublic();
+        }
+
+        return null;
     }
 }
