@@ -47,8 +47,8 @@
   <body @if ($retry === false) onload="document.forms[0].submit()" @endif>
     @if ($retry === false)
       @include('partials.loader')
-      <form method="{{{ $method }}}" action="{{{ $url }}}" target="{{{ $target }}}">
-        @foreach ($params as $key => $value)
+      <form method="{{{ $request['method'] }}}" action="{{{ $request['url'] }}}" target="{{{ $request['target'] }}}">
+        @foreach ($request['content'] as $key => $value)
           <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}">
         @endforeach
       </form>

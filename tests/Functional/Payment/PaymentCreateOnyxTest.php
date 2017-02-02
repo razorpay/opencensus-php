@@ -25,18 +25,20 @@ class PaymentCreateOnyxTest extends TestCase
         //
 
         $getUrlContent = [
-            'url' => 'http://random.com',
-            'params' => [
-                'a' => 1,
-                'b' => 2,
+            'request' => [
+                'url' => 'http://random.com',
+                'content' => [
+                    'a' => 1,
+                    'b' => 2,
+                ],
+                'method' => 'POST',
+                'target' => '',
             ],
             'options' => [
                 'key' => 'rzp_test_1DP5mmOlF5G5ag',
                 'amount' => 100,
             ],
             'back' => 'http://abc.com',
-            'method' => 'POST',
-            'target' => null,
         ];
 
         $params = http_build_query($getUrlContent);
