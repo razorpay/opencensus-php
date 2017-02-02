@@ -128,11 +128,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_COUNT   => 'int   '
     ];
 
-    public function coupons()
-    {
-        return $this->hasMany('RZP\Models\Offer\Coupon\Entity', Coupon\Entity::OFFER_ID);
-    }
-
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');

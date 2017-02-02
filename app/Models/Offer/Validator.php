@@ -158,7 +158,7 @@ class Validator extends Base\Validator
         if (empty($input[Entity::FLAT_CASHBACK]) === false)
         {
             if ((empty($input[Entity::PERCENT_RATE]) === false) or
-                    (empty($input[Entity::FLAT_CASHBACK]) === false))
+                    (empty($input[Entity::MAX_CASHBACK]) === false))
             {
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
