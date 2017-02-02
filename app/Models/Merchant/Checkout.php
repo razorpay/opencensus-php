@@ -288,6 +288,8 @@ class Checkout
     {
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
+        $data['offer'] = null;
+
         if ($orderId !== null)
         {
             $data['offer'] = (new Offer\Core)->fetchOfferForOrder($orderId);
