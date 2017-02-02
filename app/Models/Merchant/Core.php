@@ -67,6 +67,11 @@ class Core extends Base\Core
             $subMerchant->parent()->associate($aggregatorMerchant);
         }
 
+        $org = $this->repo->org->findOrFailPublic($aggregatorMerchant->getOrgId());
+
+        // Link sub-merchant to aggregator org
+        $subMerchant->org()->associate($org);
+
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant);
