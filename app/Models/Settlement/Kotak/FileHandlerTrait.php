@@ -57,19 +57,9 @@ trait FileHandlerTrait
         }
     }
 
-    public function writeToCsvFile($data, $name, $fullName = null)
+    public function writeToCsvFile($data, $name, $fullName = null, $dir = 'files/settlement')
     {
-        $excelObject = $this->createExcelObject($data, $name);
-
-        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
-
-        $fullpath = $fileMetadata['full'];
-
-        if ($fullName != null)
-        {
-            rename($fullpath, $fullName);
-            $fullpath = $fullName;
-        }
+        $fullpath = $this->createCsvFile($data, $name, $fullName, $dir);
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -115,6 +105,23 @@ trait FileHandlerTrait
         $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
 
         $fullpath = $fileMetadata['full'];
+
+        return $fullpath;
+    }
+
+    public function createCsvFile($data, $name, $fullName, $dir)
+    {
+        $excelObject = $this->createExcelObject($data, $name);
+
+        $fileMetadata = $excelObject->store('csv', storage_path($dir), true);
+
+        $fullpath = $fileMetadata['full'];
+
+        if ($fullName != null)
+        {
+            rename($fullpath, $fullName);
+            $fullpath = $fullName;
+        }
 
         return $fullpath;
     }

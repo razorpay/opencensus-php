@@ -143,13 +143,13 @@ class Report extends Core
 
         $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
 
-        $fullpath = $this->createExcelFile($data, $fileName, 'files/report');
+        $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report');
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        $csvMimeType = 'text/csv';
 
-        $key = 'report/' . $fileName . '.xlsx';
+        $key = 'report/' . $fileName . '.csv';
 
-        $url = $this->saveToAws($key, $fullpath, $xlsxMimeType);
+        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
 
         $signedUrl = $this->getPreSignedUrlFromAws($key);
 
