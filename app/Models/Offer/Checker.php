@@ -4,16 +4,13 @@ namespace RZP\Models\Offer;
 
 use App;
 use Carbon\Carbon;
+use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 
-class Checker
+class Checker extends Base\Core
 {
-    protected $app;
-
-    protected $trace;
-
     protected $offer;
 
     protected $order;
@@ -27,9 +24,7 @@ class Checker
 
     public function __construct(Entity $offer, bool $verbose = false)
     {
-        $this->app = App::getFacadeRoot();
-
-        $this->trace = $this->app['trace'];
+        parent::__construct();
 
         $this->offer = $offer;
 
