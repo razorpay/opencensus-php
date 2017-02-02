@@ -34,7 +34,7 @@ class Repository extends Base\Repository
             return $payment->terminal;
         }
 
-        $terminal = $this->findOrFail($payment->getTerminalId());
+        $terminal = $this->getById($payment->getTerminalId());
 
         $payment->setRelation('terminal', $terminal);
 
