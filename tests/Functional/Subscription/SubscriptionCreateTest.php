@@ -54,7 +54,37 @@ class SubscriptionCreateTest extends TestCase
     {
         $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
 
+        $response = $this->startTest($requestContent);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($response['id'], $invoice['subscription_id']);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals(2000, $invoice['amount']);
+    }
+
+    public function testCreateSubscriptionWithNoStartAtAndWithUpfrontAmount()
+    {
+        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+
+        $response = $this->startTest($requestContent);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($response['id'], $invoice['subscription_id']);
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals(2300, $invoice['amount']);
+    }
+
+    public function testCreateSubscriptionWithStartAtAndUpfrontAmount()
+    {
+        $requestContent = $this->getCreateSubscriptionRequestContent(__FUNCTION__);
+
         $this->startTest($requestContent);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertNull($invoice);
     }
 
     public function testCreateSubscriptionWithOneYearLateStartAt()
@@ -82,6 +112,10 @@ class SubscriptionCreateTest extends TestCase
         $response = $this->startTest($requestContent);
 
         $this->assertEquals($planId, $response['plan_id']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertNull($invoice);
     }
 
     public function testCreateSubscriptionWithEndAt()

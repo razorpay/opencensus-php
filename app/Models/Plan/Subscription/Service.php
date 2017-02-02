@@ -23,19 +23,10 @@ class Service extends Base\Service
     public function create(array $input, string $planId)
     {
         $customerId = $input[Entity::CUSTOMER_ID];
-        // We will create the token during the payment
-        // itself and associate that with the subscription
-        // $tokenId = $input[Entity::TOKEN_ID];
-
-        //Customer\Entity::verifyIdAndStripSign($customerId);
-        // Token\Entity::verifyIdAndStripSign($tokenId);
-        //Plan\Entity::verifyIdAndStripSign($planId);
 
         $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $this->merchant);
         $plan = $this->repo->plan->findByPublicIdAndMerchant($planId, $this->merchant);
-        // $token = $this->repo->token->findByIdAndCustomer($tokenId, $customer);
 
-        // $subscription = $this->core->create($input, $plan, $token);
         $subscription = $this->core->create($input, $plan, $customer);
 
         return $subscription->toArrayPublic();
@@ -117,7 +108,7 @@ class Service extends Base\Service
         }
 
         $summary = [
-            'total' => $subscriptionsToCharge->count(),
+            'total' => $invoicesToCharge->count(),
             'queued' => $queued,
             'failed' => $failed,
             'failure_subscriptions' => $failures,

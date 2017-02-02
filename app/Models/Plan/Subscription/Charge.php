@@ -232,10 +232,8 @@ class Charge
 
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
     {
-        $billingPeriod = $this->getBillingPeriod($subscription);
-
-        $invoice->setBillingStart($billingPeriod['start']);
-        $invoice->setBillingEnd($billingPeriod['end']);
+        $invoice->setBillingStart($subscription->getCurrentStart());
+        $invoice->setBillingEnd($subscription->getCurrentEnd());
     }
 
     protected function getBillingPeriod(Entity $subscription)

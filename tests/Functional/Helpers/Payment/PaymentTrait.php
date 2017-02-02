@@ -365,7 +365,22 @@ trait PaymentTrait
     public function makeChargeCronRequest()
     {
         $request = [
-            'url'     => '/subscriptions/charge',
+            'url'     => '/subscriptions/invoices/charge',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
+    public function makeCreateSubscriptionInvoicesRequest()
+    {
+        $request = [
+            'url'     => '/subscriptions/invoices',
             'action'  => 'post',
             'content' => [],
         ];

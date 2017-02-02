@@ -310,11 +310,18 @@ class Validator extends Base\Validator
             ]);
     }
 
-    public function validateSendNotificationRequest(string $medium)
+    public function validateSendNotificationRequest(string $medium, $isSubscription = false)
     {
         $invoice = $this->entity;
 
-        $this->validateOperation('sendNotification');
+        if ($isSubscription)
+        {
+            $this->validateOperation('sendSubscriptionNotification');
+        }
+        else
+        {
+            $this->validateOperation('sendNotification');
+        }
 
         if (NotifyMedium::isMediumValid($medium) === false)
         {
@@ -355,6 +362,13 @@ class Validator extends Base\Validator
             case 'sendNotification':
                 $allowedStatuses = [
                     Status::ISSUED,
+                ];
+
+                break;
+
+            case 'sendSubscriptionNotification':
+                $allowedStatuses = [
+                    Status::PAID,
                 ];
 
                 break;

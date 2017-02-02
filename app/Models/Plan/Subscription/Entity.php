@@ -101,6 +101,7 @@ class Entity extends Base\PublicEntity
         self::CURRENT_END       => 'int',
         self::TOTAL_COUNT       => 'int',
         self::PAID_COUNT        => 'int',
+        self::UPFRONT_AMOUNT    => 'int',
     ];
 
     protected $publicSetters = [

@@ -109,7 +109,70 @@ return [
                 'end_at' => null,
                 'upfront_amount' => null,
                 'total_count' => 6,
-                'paid_count' => 0
+                'paid_count' => 0,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithNoStartAtAndWithUpfrontAmount' => [
+        'request' => [
+            'url' => '/plans/plan_1000000000plan/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'    => 'cust_100000customer',
+                'quantity'       => 1,
+                'total_count'    => 6, // Every two months
+                'upfront_amount' => 300,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => null,
+                'start_at' => null,
+                'end_at' => null,
+                'upfront_amount' => 300,
+                'total_count' => 6,
+                'paid_count' => 0,
+            ],
+        ],
+    ],
+
+    'testCreateSubscriptionWithStartAtAndUpfrontAmount' => [
+        'request' => [
+            'url' => '/plans/plan_1000000000plan/subscriptions',
+            'method' => 'post',
+            'content' => [
+                'customer_id'    => 'cust_100000customer',
+                'quantity'       => 1,
+                'start_at'       => 1516386600, // 1-20-2017, 12:00:00 AM
+                'total_count'    => 6, // Every two months
+                'upfront_amount' => 300,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'customer_id' => 'cust_100000customer',
+                'status' => 'created',
+                'current_start' => null,
+                'current_end' => null,
+                'ended_at' => null,
+                'quantity' => 1,
+                'token_id' => null,
+                'notes' => [],
+                'charge_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'start_at' => 1516386600, // 1-20-2018, 12:00:00 AM
+                'end_at' => 1545244200, // 12-20-2018, 12:00:00 AM
+                'upfront_amount' => 300,
+                'total_count' => 6,
+                'paid_count' => 0,
             ],
         ],
     ],

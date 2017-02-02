@@ -37,15 +37,20 @@ class Core extends Base\Core
                 // This is being done for the `run` association.
                 $subscription->generateId();
 
-                $this->fillEndAtAndTotalCount($subscription, $plan, $input);
+                $this->fillEndAtAndTotalCount($subscription, $plan);
 
                 $this->associateEntitiesToSubscription($subscription, $plan, $customer);
 
                 $this->createRun($subscription, $plan, $input);
 
-                $this->createInvoiceIfApplicable($subscription);
-
                 $this->repo->saveOrFail($subscription);
+
+                //
+                // This needs to be done after saving the subscription
+                // because invoice is created and saved in the following step,
+                // with the subscription_id.
+                //
+                $this->createInvoiceIfApplicable($subscription);
             });
 
         return $subscription;
@@ -339,15 +344,16 @@ class Core extends Base\Core
         $subscriptionAmount = $subscription->getChargeableAmount();
         $customer = $subscription->customer;
         $tokenId = $subscription->token->getPublicId();
+        $order = $invoice->order;
 
         $recurringPayload = [
             Payment\Entity::AMOUNT          => $subscriptionAmount,
             Payment\Entity::CURRENCY        => Payment\Entity::DEFAULT_CURRENCY,
             Payment\Entity::RECURRING       => '1',
             Payment\Entity::SUBSCRIPTION_ID => $subscription->getPublicId(),
-            Payment\Entity::INVOICE_ID      => $invoice->getPublicId(),
             Payment\Entity::TOKEN           => $tokenId,
             Payment\Entity::CUSTOMER_ID     => $customer->getPublicId(),
+            Payment\Entity::ORDER_ID        => $order->getPublicId(),
             Payment\Entity::EMAIL           => $customer->getEmail(),
             Payment\Entity::CONTACT         => $customer->getContact(),
             Payment\Entity::DESCRIPTION     => 'Recurring Payment via Subscription',
@@ -361,14 +367,11 @@ class Core extends Base\Core
         Plan\Entity $plan,
         Customer\Entity $customer)
     {
-        //$customer = $token->customer;
-
         $merchant = $customer->merchant;
 
         $subscription->merchant()->associate($merchant);
         $subscription->plan()->associate($plan);
         $subscription->customer()->associate($customer);
-        //$subscription->token()->associate($token);
     }
 
     protected function calculateAndSetEndAt(Entity $subscription, Plan\Entity $plan)

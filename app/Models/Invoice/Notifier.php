@@ -72,9 +72,9 @@ class Notifier extends Base\Core
         $this->repo->saveOrFail($this->invoice);
     }
 
-    public function sendEmailNotificationToCustomer()
+    public function sendEmailNotificationToCustomer($isSubscription = false)
     {
-        $sent = $this->sendInvoiceEmail();
+        $sent = $this->sendInvoiceEmail($isSubscription);
 
         if ($sent === true)
         {
@@ -171,7 +171,7 @@ class Notifier extends Base\Core
         return false;
     }
 
-    protected function sendInvoiceEmail()
+    protected function sendInvoiceEmail($isSubscription = false)
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
@@ -182,7 +182,7 @@ class Notifier extends Base\Core
             return false;
         }
 
-        if ($this->invoice->getSubscriptionId() !== null)
+        if ($isSubscription)
         {
             return $this->sendSubscriptionInvoiceEmail();
         }

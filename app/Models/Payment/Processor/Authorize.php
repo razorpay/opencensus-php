@@ -1447,6 +1447,11 @@ trait Authorize
         // TODO: This function should be in a transaction because
         // we update invoice billing period also.
 
+        if ($payment->hasSubscription() === false)
+        {
+            return;
+        }
+
         $subscription = $payment->subscription;
 
         if ($subscription === null)
@@ -1528,8 +1533,7 @@ trait Authorize
             //
             $this->updateSubscriptionDetails($subscription, $payment);
 
-            // TODO: An invoice needs to be created for the first charge also.
-            $invoice = null;
+            $invoice = $payment->invoice;
 
             (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }

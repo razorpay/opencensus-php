@@ -227,7 +227,7 @@ class Core extends Base\Core
         return $invoice;
     }
 
-    public function sendNotification(Entity $invoice, $medium)
+    public function sendNotification(Entity $invoice, string $medium)
     {
         $this->trace->info(
             TraceCode::INVOICE_SEND_NOTIFICATION,
@@ -237,12 +237,20 @@ class Core extends Base\Core
                 'medium'         => $medium,
             ]);
 
-        $invoice->getValidator()->validateSendNotificationRequest($medium);
+        $isSubscription = false;
+
+        if ($invoice->getSubscriptionId() !== null)
+        {
+            $isSubscription = true;
+        }
+
+        $invoice->getValidator()->validateSendNotificationRequest($medium, $isSubscription);
 
         $notifier = new Notifier($invoice);
+
         $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
 
-        $response = $notifier->$commFunc();
+        $response = $notifier->$commFunc($isSubscription);
 
         $this->repo->saveOrFail($invoice);
 

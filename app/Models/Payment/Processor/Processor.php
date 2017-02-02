@@ -641,7 +641,7 @@ class Processor
      * This is required when the first charge is done via auth transaction.
      * We need to use the invoice which was created during subscription
      * creation.
-     * 
+     *
      * @param array          $input
      * @param Payment\Entity $payment
      *
@@ -674,7 +674,7 @@ class Processor
         {
             throw new Exception\LogicException(
                 'There should have been one invoice created for a newly created subscription',
-                ErrorCode::BAD_REQUEST_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                ErrorCode::SERVER_ERROR_INCORRECT_NUMBER_OF_INVOICES_FOUND,
                 [
                     'invoices_count'    => $subscriptionInvoices->count(),
                     'subscription_id'   => $subscriptionId,
@@ -684,7 +684,7 @@ class Processor
 
         $subscriptionInvoice = $subscriptionInvoices->first();
 
-        $input[Payment\Entity::ORDER_ID] = $subscriptionInvoice->getOrderId();
+        $input[Payment\Entity::ORDER_ID] = Order\Entity::getSignedId($subscriptionInvoice->getOrderId());
     }
 
     protected function createDummyPaymentEntity($input)

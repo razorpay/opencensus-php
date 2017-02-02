@@ -57,6 +57,16 @@ class SubscriptionChargeTest extends TestCase
 
         Carbon::setTestNow(Carbon::createFromTimestamp($subscription['charge_at'], 'Asia/Kolkata'));
 
+        $result = $this->makeCreateSubscriptionInvoicesRequest();
+
+        $this->assertEquals(1, $result['total']);
+        $this->assertEquals(1, $result['invoices_created']);
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals('issued', $invoice['status']);
+        $this->assertEquals($subscription['id'], $invoice['subscription_id']);
+
         $result = $this->makeChargeCronRequest();
 
         $this->assertEquals(1, $result['total']);
