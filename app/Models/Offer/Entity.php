@@ -35,8 +35,6 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'offer';
 
-    protected $payment;
-
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
