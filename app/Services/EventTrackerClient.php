@@ -22,11 +22,11 @@ class EventTrackerClient extends Base\Core
 
     protected $ljConfig;
 
-    protected $events = array();
+    protected $events = [];
 
-    protected $defaults = array();
+    protected $defaults = [];
 
-    protected $paymentContext = array();
+    protected $paymentContext = [];
 
     const CONTEXT_KEYS = [
         Analytics::IP,
@@ -115,11 +115,11 @@ class EventTrackerClient extends Base\Core
 
             $options = ['json' => $this->defaults];
 
-            /*if (($this->mock) or
+            if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
-            }*/
+            }
 
             $response = $client->request('POST', $url, $options);
         }
@@ -130,6 +130,7 @@ class EventTrackerClient extends Base\Core
         }
 
         $this->events = [];
+
         $this->defaults = [];
     }
 
@@ -416,15 +417,28 @@ class EventTrackerClient extends Base\Core
 
             foreach (self::CONTEXT_KEYS as $key)
             {
-                // generates getter function
-                $getterName = 'get'.studly_case($key);
+               try
+               {
+                   // generates getter function
+                   $getterName = 'get'.studly_case($key);
 
-                $getterValue = $pa->$getterName();
+                   $getterValue = $pa->$getterName();
 
-                if (empty($getterValue) === false)
-                {
-                    $analytics[$key] = $getterValue;
-                }
+                   if (empty($getterValue) === false)
+                   {
+                       $analytics[$key] = $getterValue;
+                   }
+
+               }
+               catch(\Exception $e)
+               {
+                    $msg = [
+                            'getterName' => $getterName,
+                            'key' => $key
+                    ];
+
+                   $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMNENT_CONTEXT, $msg);
+               }
             }
 
             $this->paymentContext[$paymentId] = $analytics;
