@@ -64,7 +64,7 @@ class PublicController extends Controller
                 // this is required because otherwise there is no escape for
                 // customer until payment is successful.
                 // This is automatically picked from previous page.
-                'back'  => $getParams['back'],
+                'back'  => $getParams['back'] ?? null,
 
                 'options' => $getParams['options'],
             ];
