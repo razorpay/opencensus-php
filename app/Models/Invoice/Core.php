@@ -454,7 +454,7 @@ class Core extends Base\Core
         foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)
         {
             $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], "Asia/Kolkata")
-                                                    ->format('j M Y h:i a');
+                                                    ->format('j M Y');
         }
 
         array_walk(
@@ -462,6 +462,7 @@ class Core extends Base\Core
             function (& $lineItem, $i)
             {
                 $lineItem['amount_formatted'] = number_format($lineItem['amount']/100, 2);
+                $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity'])/100, 2);
             });
 
         return $invoiceData;
