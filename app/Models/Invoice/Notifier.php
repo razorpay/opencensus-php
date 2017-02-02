@@ -49,18 +49,16 @@ class Notifier extends Base\Core
         $this->invoice = $invoice;
     }
 
+    //
+    // Methods to notify (via sms|email) events (issued|expired) of invoice.
+    //
+
     public function notifyInvoiceIssuedToCustomer()
     {
         if ($this->canCustomerBeNotifiedNow() === false)
         {
             return;
         }
-
-        //
-        // This flow will only send notifications if it's in pending state.
-        // That why following check is here. In called method, it won't check
-        // for it, as that gets invoked from other use case.
-        //
 
         if ($this->invoice->getEmailStatus() === NotifyStatus::PENDING)
         {
@@ -82,22 +80,15 @@ class Notifier extends Base\Core
         $this->emailInvoiceExpiredToCustomer();
     }
 
+    //  -------------------------------------------------------------------
+
     public function emailInvoiceIssuedToCustomer()
     {
         if (empty($this->invoice->getCustomerEmail()) === true) return false;
 
         $data = $this->getInvoiceIssuedMailPayload();
 
-        Mail::send('emails.invoice.generated', $data, function($message) use ($data)
-        {
-            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($data['subject']);
-
-            $message->to($data['email']);
-        });
+        $this->dispatchMail('emails.invoice.generated', $data);
 
         $this->invoice->setEmailStatus(NotifyStatus::SENT);
 
@@ -110,16 +101,7 @@ class Notifier extends Base\Core
 
         $data = $this->getInvoiceExpiredMailPayload();
 
-        Mail::send('emails.invoice.expired', $data, function($message) use ($data)
-        {
-            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($data['subject']);
-
-            $message->to($data['email']);
-        });
+        $this->dispatchMail('emails.invoice.customer.expired', $data);
 
         return true;
     }
@@ -158,6 +140,33 @@ class Notifier extends Base\Core
         }
 
         return false;
+    }
+
+    protected function emailInvoiceExpiringToCustomer()
+    {
+        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+
+        $data = $this->getInvoiceExpiringMailPayload();
+
+        $this->dispatchMail('emails.invoice.customer.expiring', $data);
+
+        return true;
+    }
+
+    // -------------------------------------------------------------------
+
+    protected function dispatchMail(string $template, array $data)
+    {
+        Mail::send($template, $data, function($message) use ($data)
+        {
+            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['email']);
+        });
     }
 
     protected function getInvoiceIssuedMailPayload()
@@ -201,7 +210,7 @@ class Notifier extends Base\Core
         {
             case Type::LINK:
             case Type::ECOD:
-                $subject = "Payment link from $merchantName has expired";
+                $subject = "Payment request from $merchantName has expired";
                 break;
 
             case Type::INVOICE:
@@ -236,7 +245,7 @@ class Notifier extends Base\Core
         {
             case Type::LINK:
             case Type::ECOD:
-                $subject = "Payment link from $merchantName will expire $diff";
+                $subject = "Payment request from $merchantName will expire $diff";
                 break;
 
             case Type::INVOICE:
@@ -361,26 +370,6 @@ class Notifier extends Base\Core
         }
 
         return $totalSent;
-    }
-
-    protected function emailInvoiceExpiringToCustomer()
-    {
-        if (empty($this->invoice->getCustomerEmail()) === true) return false;
-
-        $data = $this->getInvoiceExpiringMailPayload();
-
-        Mail::send('emails.invoice.expiring', $data, function($message) use ($data)
-        {
-            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
-
-            $message->replyTo('support@razorpay.com', 'Razorpay Support');
-
-            $message->subject($data['subject']);
-
-            $message->to($data['email']);
-        });
-
-        return true;
     }
 
     protected function canCustomerBeNotifiedNow()
