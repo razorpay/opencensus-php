@@ -29,4 +29,5 @@ class Account
     {
         return in_array($id, self::$nodalAccounts);
     }
+
 }

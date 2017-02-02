@@ -125,7 +125,7 @@ class Entity extends Base\PublicEntity
         self::MIN_AMOUNT      => 'int',
         self::STARTS_AT       => 'int',
         self::ENDS_AT         => 'int',
-        self::PAYMENT_COUNT   => 'int   '
+        self::PAYMENT_COUNT   => 'int'
     ];
 
     public function merchant()
