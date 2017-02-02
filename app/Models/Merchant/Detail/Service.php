@@ -69,7 +69,13 @@ class Service extends Base\Service
             $this->markSubmitted($merchantDetails);
         }
 
-        return $this->createResponse($merchantDetails);
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
     }
 
     public function uploadActivationFile(array $input)
@@ -98,9 +104,13 @@ class Service extends Base\Service
 
         $merchantDetails->fill($params);
 
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
         $this->repo->saveOrFail($merchantDetails);
 
-        return $this->createResponse($merchantDetails);
+        return $response;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -166,14 +176,7 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
-        $verificationStatus = $response['verification']['status'];
-
-        if ($verificationStatus === 'disabled')
-        {
-            return 100 - intval(count($response['verification']['required_fields']) * 100 / count(ValidationFields::DASHBOARD_FIELDS));
-        }
-
-        return 100;
+        return $response['verification']['activation_progress'];
     }
 
     protected function canSubmit($input, $response)
@@ -229,6 +232,8 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
+        $totalFields = count(ValidationFields::DASHBOARD_FIELDS);
+
         foreach (ValidationFields::DASHBOARD_FIELDS as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
@@ -242,17 +247,23 @@ class Service extends Base\Service
 
         if (count($requiredFields) > 0)
         {
+            $remainingFields = count($requiredFields);
+
             $response['verification'] = [
-                'status'            => 'disabled',
-                'disabled_reason'   => 'required_fields',
-                'required_fields'   => $requiredFields
+                'status'              => 'disabled',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => $requiredFields,
+                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
             $response['can_submit'] = false;
         }
         else
         {
-            $response['verification'] = ['status' => 'pending'];
+            $response['verification'] = [
+                'status'              => 'pending',
+                'activation_progress' => 100,
+            ];
 
             $response['can_submit'] = true;
         }

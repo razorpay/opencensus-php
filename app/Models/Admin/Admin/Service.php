@@ -568,9 +568,13 @@ class Service extends Base\Service
         {
             $merchant['referrer'] = $responseHash[$merchant->getId()];
 
-            $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant->getId());
+            //TODO: Remove this later
+            if ($merchant['activation_progress'] === 0)
+            {
+                $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant->getId());
 
-            $merchant['activation_progress'] = $activationProgress;
+                $merchant['activation_progress'] = $activationProgress;
+            }
         }
 
         return $merchants->toArray();

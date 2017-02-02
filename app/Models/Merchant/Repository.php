@@ -253,6 +253,8 @@ class Repository extends Base\Repository
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
         $stepsFinished = $this->manager->merchant_detail
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
+        $activationProgress = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
 
         $query = $this->newQuery()
                       ->select(Entity::ID,
@@ -264,6 +266,7 @@ class Repository extends Base\Repository
                                Entity::ARCHIVED_AT,
                                Entity::SUSPENDED_AT,
                                $stepsFinished,
+                               $activationProgress,
                                $submittedAt)
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
