@@ -248,6 +248,12 @@ class Generator extends Base\Core
 
         $this->createAndAssociateOrderForInvoice();
 
+        // TODO: We may not want to generate a link at all
+        // in case of subscriptions. The reason being, there's
+        // a gap between issuing the invoice and automatically
+        // paying it.
+        // We may want to explicitly generate a link when the
+        // authorization fails after multiple retries.
         $this->setShortUrl();
     }
 

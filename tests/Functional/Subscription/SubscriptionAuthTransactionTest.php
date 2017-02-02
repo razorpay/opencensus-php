@@ -361,6 +361,7 @@ class SubscriptionAuthTransactionTest extends TestCase
             'order',
             [
                 'amount' => $amount,
+                'payment_capture' => 1,
             ]);
 
         $invoice = $this->fixtures->create(

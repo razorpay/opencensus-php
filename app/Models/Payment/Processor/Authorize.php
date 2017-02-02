@@ -1499,10 +1499,6 @@ trait Authorize
 
     protected function processNewSubscription(Subscription\Entity $subscription, Payment\Entity $payment)
     {
-        $this->updateSubscriptionToken($subscription, $payment);
-
-        $subscription->setStatus(Subscription\Status::ACTIVATED);
-
         //
         // We don't do this in the normal auth and capture flow because we need
         // to do some things after authorization and before capture.
@@ -1512,6 +1508,10 @@ trait Authorize
         {
             $this->autoCapturePayment($payment);
         }
+
+        $this->updateSubscriptionToken($subscription, $payment);
+
+        $subscription->setStatus(Subscription\Status::ACTIVATED);
 
         //
         // This signifies that the auth transaction also
@@ -1526,6 +1526,12 @@ trait Authorize
         //
         if ($authTxnCharge)
         {
+            // TODO: If the payment is not in captured state here,
+            // should we throw an exception?
+            // If we throw an exception here, it'll get handled as auth failure
+            // in Charge class. There, we would have to check if it's authorized
+            // but not captured and then set some error attributes.
+
             //
             // If this is auth txn charge, it means that start_at was null. This,
             // in turn, means that some fields were not filled when the subscription
