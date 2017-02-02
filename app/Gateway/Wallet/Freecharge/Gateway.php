@@ -1313,7 +1313,7 @@ class Gateway extends Base\Gateway
         $this->updateGatewayPaymentEntity($wallet, $refundAttr);
 
         // return success as true
-        return true;
+        return 'true';
     }
 
     public function validateRefundOnFailure(
@@ -1333,6 +1333,6 @@ class Gateway extends Base\Gateway
         //
         $this->repo->deleteOrFail($wallet);
 
-        return false;
+        return 'false';
     }
 }

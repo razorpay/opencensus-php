@@ -810,11 +810,25 @@ trait Refund
         $this->recordTransactionAndUpdatePaymentForRefund();
     }
 
-    public function validateGatewayRefund(Payment\Refund\Entity $refund)
+    public function validateUnknownGatewayRefund(Payment\Refund\Entity $refund)
     {
         $payment = $refund->payment;
 
         $this->setPaymentAndRefundInfo($refund, $payment);
+
+        assert ($refund->getTransactionId() !== null);
+
+        assert ($payment->getTransactionId() !== null);
+
+        $gateway = $payment->getGateway();
+        $supportedGateways = Payment\Gateway::UNKNOWN_REFUNDS_VALIDATION_GATEWAYS;
+
+        if (in_array($gateway, $supportedGateways, true) === false)
+        {
+            $message = 'Cannot validate unknown refunds for the given gateway';
+
+            throw Exception\LogicException($message);
+        }
 
         $data = [
             'payment'   => $payment->toArrayGateway(),

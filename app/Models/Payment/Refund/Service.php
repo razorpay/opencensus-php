@@ -558,7 +558,7 @@ class Service extends Base\Service
         return $processor;
     }
 
-    public function validateGatewayRefunds(string $gateway)
+    public function validateUnknownGatewayRefunds(string $gateway)
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -583,22 +583,24 @@ class Service extends Base\Service
             $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
 
             $refundData = $this->getNewProcessor($merchant)
-                               ->validateGatewayRefund($refund);
+                               ->validateUnknownGatewayRefund($refund);
 
-            if ($refundData['success'] === true)
+            switch ($refundData['success'])
             {
-                $success++;
-                $successRefundData[] = $refundData;
-            }
-            else if($refundData['success'] === 'unknown')
-            {
-                $unknown++;
-                $unknownRefunds[] = $refundData;
-            }
-            else if ($refundData['success'] === false)
-            {
-                $failed++;
-                $failedRefundData[] = $refundData;
+                case 'true':
+                    $success++;
+                    $successRefundData[] = $refundData;
+                    break;
+
+                case 'false':
+                    $failed++;
+                    $failedRefundData[] = $refundData;
+                    break;
+
+                case 'unknown':
+                    $unknown++;
+                    $unknownRefunds[] = $refundData;
+                    break;
             }
         }
 
