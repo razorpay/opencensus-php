@@ -1370,7 +1370,7 @@ trait Authorize
 
             if (($token->isLocal()) and
                 ($payment->isCard()) and
-                ($payment->isRecurring() == true) and
+                ($payment->isRecurring() === true) and
                 ($token->isRecurring() === false))
             {
                 $token->setRecurring(true);
@@ -1444,6 +1444,9 @@ trait Authorize
     {
         // TODO: Need to do proper exception handling in this flow.
 
+        // TODO: This function should be in a transaction because
+        // we update invoice billing period also.
+
         $subscription = $payment->subscription;
 
         if ($subscription === null)
@@ -1483,7 +1486,9 @@ trait Authorize
         {
             $this->autoCapturePayment($payment);
 
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
+            $invoice = $payment->invoice;
+
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
     }
 
@@ -1523,7 +1528,10 @@ trait Authorize
             //
             $this->updateSubscriptionDetails($subscription, $payment);
 
-            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment);
+            // TODO: An invoice needs to be created for the first charge also.
+            $invoice = null;
+
+            (new Subscription\Charge)->handleCaptureSuccess($subscription, $payment, $invoice);
         }
 
         $this->autoRefundAuthTransactionIfApplicable($payment, $subscription);

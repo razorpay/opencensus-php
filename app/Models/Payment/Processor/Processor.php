@@ -611,6 +611,8 @@ class Processor
             $this->verifyProvidedFee($payment, $input);
         }
 
+        $this->addOrderIdToInputForSubscriptionIfApplicable($input, $payment);
+
         $this->setOrderDetails($payment, $input);
 
         $this->setInvoiceDetails($payment);
@@ -633,6 +635,56 @@ class Processor
         $this->payment = $payment;
 
         return $payment;
+    }
+
+    /**
+     * This is required when the first charge is done via auth transaction.
+     * We need to use the invoice which was created during subscription
+     * creation.
+     * 
+     * @param array          $input
+     * @param Payment\Entity $payment
+     *
+     * @throws Exception\LogicException
+     */
+    protected function addOrderIdToInputForSubscriptionIfApplicable(array & $input, Payment\Entity $payment)
+    {
+        if (isset ($input[Payment\Entity::SUBSCRIPTION_ID]) === false)
+        {
+            return;
+        }
+
+        $subscriptionId = $input[Payment\Entity::SUBSCRIPTION_ID];
+
+        $subscription = $this->repo->subscription->findByPublicIdAndMerchant($subscriptionId, $this->merchant);
+
+        if ($subscription->isCreated() === false)
+        {
+            return;
+        }
+
+        if ($subscription->getStartAt() !== null)
+        {
+            return;
+        }
+
+        $subscriptionInvoices = $this->repo->invoice->fetchIssuedInvoicesOfSubscription($subscription);
+
+        if ($subscriptionInvoices->count() !== 1)
+        {
+            throw new Exception\LogicException(
+                'There should have been one invoice created for a newly created subscription',
+                ErrorCode::BAD_REQUEST_INCORRECT_NUMBER_OF_INVOICES_FOUND,
+                [
+                    'invoices_count'    => $subscriptionInvoices->count(),
+                    'subscription_id'   => $subscriptionId,
+                    'payment_id'        => $payment->getId(),
+                ]);
+        }
+
+        $subscriptionInvoice = $subscriptionInvoices->first();
+
+        $input[Payment\Entity::ORDER_ID] = $subscriptionInvoice->getOrderId();
     }
 
     protected function createDummyPaymentEntity($input)
@@ -911,7 +963,7 @@ class Processor
         //
         // We do an auto capture only if payment is associated with an order.
         //
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasOrder() === false)
         {
             return false;
         }
@@ -930,6 +982,19 @@ class Processor
                     'status'        => $payment->getStatus()
                 ]);
 
+            return false;
+        }
+
+        //
+        // The flow would reach till here because subscription creates
+        // an invoice, which in turn creates an order.
+        //
+        // Auto capturing a subscription payment is handled in a different
+        // flow, because of some pre-processing and post-processing
+        // that requires to be done.
+        //
+        if ($payment->hasSubscription())
+        {
             return false;
         }
 

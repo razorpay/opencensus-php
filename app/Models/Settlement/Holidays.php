@@ -179,8 +179,10 @@ class Holidays
      *
      * This includes checks for bank holiday, non working saturday, sundays
      *
-     * @param Carbon\Carbon $date
-     * @return boolean
+     * @param Carbon $date
+     * @param bool   $ignoreBankHolidays
+     *
+     * @return bool
      */
     public static function isWorkingDay($date, $ignoreBankHolidays = false)
     {

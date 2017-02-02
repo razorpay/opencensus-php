@@ -107,7 +107,7 @@ class Type
      */
     public static function isTypeForSharedAccount(string $type)
     {
-        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES) == true)
+        if (in_array($type, self::SHARED_ACCOUNT_ALLOWED_TYPES, true) === true)
         {
             return true;
         }

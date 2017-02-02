@@ -43,6 +43,8 @@ class Core extends Base\Core
 
                 $this->createRun($subscription, $plan, $input);
 
+                $this->createInvoiceIfApplicable($subscription);
+
                 $this->repo->saveOrFail($subscription);
             });
 
@@ -53,8 +55,10 @@ class Core extends Base\Core
     {
         $startAt = $subscription->getStartAt();
 
+        //
         // We get the start_at at the time of first charge.
         // We fill end_at and total_count at that time.
+        //
         if ($startAt === null)
         {
             return;
@@ -86,9 +90,67 @@ class Core extends Base\Core
 
     public function createInvoice(Entity $subscription)
     {
+        $merchant = $subscription->merchant;
+
+        $invoiceInput = $this->getInvoiceInput($subscription);
+
+        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+            [
+                'invoice_id' => $invoice->getId(),
+                'subscription_id' => $subscription->getId(),
+                'invoice_details' => $invoice->toArray(),
+            ]);
+    }
+
+    /**
+     * We create an invoice only if the auth transaction includes the
+     * first charge also. This invoice will be used when the payment
+     * for the auth txn (first charge) is made.
+     *
+     * If the auth txn also includes the upfront_amount, the invoice
+     * will be made for plan_amount + upfront_amount.
+     *
+     * But, if the auth txn only includes the upfront_amount,
+     * we do not create any invoice at all.
+     *
+     * @param Entity $subscription
+     */
+    protected function createInvoiceIfApplicable(Entity $subscription)
+    {
+        if ($subscription->getStartAt() !== null)
+        {
+            return;
+        }
+
+        $merchant = $subscription->merchant;
+
+        $invoiceInput = $this->getInvoiceInput($subscription);
+
+        $lineItemAmount = & $invoiceInput[Invoice\Entity::LINE_ITEMS][0][LineItem\Entity::AMOUNT];
+
+        if ($subscription->getUpfrontAmount() !== null)
+        {
+            $lineItemAmount += $subscription->getUpfrontAmount();
+        }
+
+        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+
+        $this->trace->info(
+            TraceCode::SUBSCRIPTION_INVOICE_CREATED,
+            [
+                'invoice_id' => $invoice->getId(),
+                'subscription_id' => $subscription->getId(),
+                'invoice_details' => $invoice->toArray(),
+            ]);
+    }
+
+    protected function getInvoiceInput(Entity $subscription)
+    {
         $plan = $subscription->plan;
         $customer = $subscription->customer;
-        $merchant = $subscription->merchant;
 
         // TODO: The amount here may differ in cases of prorate.
         $lineItems = [
@@ -106,7 +168,7 @@ class Core extends Base\Core
             Invoice\Entity::EMAIL_NOTIFY => '0',
         ];
 
-        $invoice = (new Invoice\Core)->create($invoiceInput, $merchant, $subscription);
+        return $invoiceInput;
     }
 
     public function charge(Entity $subscription, Invoice\Entity $invoice)

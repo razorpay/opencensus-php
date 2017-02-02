@@ -361,7 +361,7 @@ class Inferno
 
                 // Webhook is now inactive
                 // So let's just delete the job
-                if ($jobDeleted == 0)
+                if ($jobDeleted === 0)
                 {
                     $job->delete();
                 }

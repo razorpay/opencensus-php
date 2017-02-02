@@ -10,6 +10,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Plan;
+use RZP\Models\Invoice;
 
 class Charge
 {
@@ -196,7 +197,7 @@ class Charge
         return $capturedPayment;
     }
 
-    public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment)
+    public function handleCaptureSuccess(Entity $subscription, Payment\Entity $capturedPayment, Invoice\Entity $invoice)
     {
         $plan = $subscription->plan;
 
@@ -204,7 +205,14 @@ class Charge
 
         $this->resetErrorStatusForSuccessfulCapture($subscription, $capturedPayment);
 
+        //
+        // Even though we are updating it in the invoice now,
+        // we will be keeping the current billing cycle period
+        // in subscriptions also.
+        //
         $this->setCurrentPeriod($subscription, $plan);
+
+        $this->setInvoiceBillingPeriod($subscription, $invoice);
 
         $this->setNextChargeAt($subscription, $plan);
 
@@ -213,21 +221,61 @@ class Charge
         $this->setEndedAtIfApplicable($subscription);
 
         $this->setProcessedAt($subscription, $capturedPayment);
+
+        $this->sendInvoiceEmail($invoice);
     }
 
-    public function handleCaptureSuccessAfterFirstTransaction(Entity $subscription)
+    protected function sendInvoiceEmail(Invoice\Entity $invoice)
+    {
+        (new Invoice\Core)->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+    }
+
+    protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)
+    {
+        $billingPeriod = $this->getBillingPeriod($subscription);
+
+        $invoice->setBillingStart($billingPeriod['start']);
+        $invoice->setBillingEnd($billingPeriod['end']);
+    }
+
+    protected function getBillingPeriod(Entity $subscription)
     {
         $plan = $subscription->plan;
 
-        // TODO: Add concept of sub_status?
+        $billingPeriod = [];
 
-        $subscription->setStatus(Status::PROCESSED);
+        $period = $plan->getPeriod();
 
-        $this->setCurrentPeriod($subscription, $plan);
+        $carbonAddFunc = Plan\Cycle::getCarbonFunction($period, 'add');
 
-        $this->setNextChargeAt($subscription, $plan);
+        $interval = $plan->getInterval();
 
-        $this->incrementPaidCount($subscription);
+        if ($subscription->getPaidCount() === 0)
+        {
+            $currentStart = $subscription->getStartAt();
+
+            $billingPeriod['start'] = $currentStart;
+
+            $currentEnd = Carbon::createFromTimestamp($currentStart)
+                                ->$carbonAddFunc($interval);
+
+            $billingPeriod['end'] = $currentEnd->timestamp;
+        }
+        else
+        {
+            $currentStart = Carbon::createFromTimestamp($subscription->getCurrentStart());
+
+            $currentStart->$carbonAddFunc($interval)->timestamp;
+
+            $billingPeriod['start'] = $currentStart;
+
+            // To get $currentEnd, we need to add the same period to $currentStart (new $currentStart).
+            $currentStart->$carbonAddFunc($interval)->timestamp;
+
+            $billingPeriod['end'] = $currentStart;
+        }
+
+        return $billingPeriod;
     }
 
     protected function resetErrorStatusForSuccessfulCapture(Entity $subscription, Payment\Entity $capturedPayment)
@@ -333,32 +381,10 @@ class Charge
      */
     protected function setCurrentPeriod(Entity $subscription, Plan\Entity $plan)
     {
-        $period = $plan->getPeriod();
+        $billingPeriod = $this->getBillingPeriod($subscription);
 
-        $carbonAddFunc = Plan\Cycle::getCarbonFunction($period, 'add');
-
-        $interval = $plan->getInterval();
-
-        if ($subscription->getPaidCount() === 0)
-        {
-            $currentStart = $subscription->getStartAt();
-            $subscription->setCurrentStart($currentStart);
-
-            $currentEnd = Carbon::createFromTimestamp($currentStart)
-                                ->$carbonAddFunc($interval);
-            $subscription->setCurrentEnd($currentEnd->timestamp);
-        }
-        else
-        {
-            $currentStart = Carbon::createFromTimestamp($subscription->getCurrentStart());
-
-            $currentStart->$carbonAddFunc($interval)->timestamp;
-            $subscription->setCurrentStart($currentStart);
-
-            // To get $currentEnd, we need to add the same period to $currentStart (new $currentStart).
-            $currentStart->$carbonAddFunc($interval)->timestamp;
-            $subscription->setCurrentEnd($currentStart);
-        }
+        $subscription->setCurrentStart($billingPeriod['start']);
+        $subscription->setCurrentEnd($billingPeriod['end']);
     }
 
     /**

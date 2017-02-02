@@ -751,7 +751,7 @@ class Service extends Base\Service
             $today = Carbon::today('Asia/Kolkata');
         }
 
-        if (Holidays::isWorkingDay($today) == false)
+        if (Holidays::isWorkingDay($today) === false)
         {
             return ['message' => 'Today is a holiday! Happy holidays :)'];
         }

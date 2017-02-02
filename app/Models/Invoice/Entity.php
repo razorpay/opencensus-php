@@ -358,6 +358,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getSubscriptionId()
+    {
+        return $this->getAttribute(self::SUBSCRIPTION_ID);
+    }
+
     public function getPaidAt()
     {
         return $this->getAttribute(self::PAID_AT);
@@ -475,6 +480,16 @@ class Entity extends Base\PublicEntity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setBillingStart($billingStart)
+    {
+        $this->setAttribute(self::BILLING_START, $billingStart);
+    }
+
+    public function setBillingEnd($billingEnd)
+    {
+        $this->setAttribute(self::BILLING_END, $billingEnd);
     }
 
     // -------------------------------------- End Setters --------------------------------------

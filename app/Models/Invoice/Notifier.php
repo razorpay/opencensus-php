@@ -7,6 +7,8 @@ use Config;
 use Mail;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Exception\BadRequestException;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
@@ -180,6 +182,11 @@ class Notifier extends Base\Core
             return false;
         }
 
+        if ($this->invoice->getSubscriptionId() !== null)
+        {
+            return $this->sendSubscriptionInvoiceEmail();
+        }
+
         $merchantName = $this->invoice->merchant->getBillingLabelElseName();
 
         $subject = $this->getSubjectForInvoiceEmail($this->invoice->getType(), $merchantName);
@@ -210,6 +217,27 @@ class Notifier extends Base\Core
 
             $message->to($data['email']);
         });
+
+        return true;
+    }
+
+    protected function sendSubscriptionInvoiceEmail()
+    {
+        // TODO: Decide on the email content and other things.
+
+        $subscription = $this->invoice->subscription;
+
+        if ($this->invoice->hasBeenPaid() === false)
+        {
+            throw new BadRequestException(
+                ErrorCode::BAD_REQUEST_SUBSCRIPTION_INVOICE_NOT_PAID,
+                null,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                    'subscription_id' => $subscription->getId(),
+                    'invoice_status' => $this->invoice->getStatus(),
+                ]);
+        }
 
         return true;
     }

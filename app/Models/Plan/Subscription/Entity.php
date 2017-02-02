@@ -196,6 +196,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::ACTIVATED_AT) !== null);
     }
 
+    public function isCreated()
+    {
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
+    }
+
     // --------------------- END GETTERS ---------------------
 
     // --------------------- SETTERS ---------------------

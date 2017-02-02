@@ -577,6 +577,11 @@ trait Capture
         $this->repo->saveOrFail($invoice);
     }
 
+    /**
+     * THIS IS RELEVANT ONLY FOR THE RETRY FLOW. NOT IN THE NORMAL FLOW.
+     * 
+     * @param Payment\Entity $payment
+     */
     protected function updateSubscriptionStatus(Payment\Entity $payment)
     {
         $subscription = $payment->subscription;

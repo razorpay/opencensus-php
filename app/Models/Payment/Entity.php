@@ -700,7 +700,7 @@ class Entity extends Base\PublicEntity
 
     public function isCreated()
     {
-        return ($this->getAttribute(self::STATUS) == Status::CREATED);
+        return ($this->getAttribute(self::STATUS) === Status::CREATED);
     }
 
     /**
@@ -750,6 +750,11 @@ class Entity extends Base\PublicEntity
     public function hasOrder()
     {
         return ($this->isAttributeNotNull(self::ORDER_ID));
+    }
+
+    public function hasSubscription()
+    {
+        return ($this->isAttributeNotNull(self::SUBSCRIPTION_ID));
     }
 
     public function hasInvoice()

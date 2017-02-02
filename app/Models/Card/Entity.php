@@ -188,7 +188,7 @@ class Entity extends Base\PublicEntity
         }
 
         if ((isset($input['expiry_year'])) and
-            (strlen($input['expiry_year']) == 2))
+            (strlen($input['expiry_year']) === 2))
         {
             $input['expiry_year'] = '20'.$input['expiry_year'];
         }
