@@ -30,7 +30,7 @@ class PublicController extends Controller
         $data = [
             // actual callback_url, picked from checkout page form action
             'url'       => $getParams['url'],
-            'method'    => strtoupper($getParams['method']) ?? 'POST',
+            'method'    => $getParams['method'] ?? 'POST',
             'target'    => $getParams['target'] ?? '_self',
             'version'   => $getParams['version'] ?? 1,
             'options'   => $getParams['options'],
