@@ -108,12 +108,20 @@ class Notifier extends Base\Core
     {
         if (empty($this->invoice->getCustomerEmail()) === true) return false;
 
-        //
-        // TODO:
-        // - Prepare the payload for mail
-        // - Commit a blank blade and use it
-        // - Changes in blade
-        //
+        $data = $this->getInvoiceExpiredMailPayload();
+
+        Mail::send('emails.invoice.expired', $data, function($message) use ($data)
+        {
+            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['email']);
+        });
+
+        return true;
     }
 
     public function smsInvoiceIssuedToCustomer()
@@ -184,24 +192,103 @@ class Notifier extends Base\Core
         ];
     }
 
+    protected function getInvoiceExpiredMailPayload()
+    {
+        $merchant     = $this->invoice->merchant;
+        $merchantName = $merchant->getBillingLabelElseName();
+
+        switch ($this->invoice->getType())
+        {
+            case Type::LINK:
+            case Type::ECOD:
+                $subject = "Payment link from $merchantName has expired";
+                break;
+
+            case Type::INVOICE:
+                $subject = "Invoice from $merchantName has expired";
+                break;
+
+            default:
+                $subject = "Payment from $merchantName has expired";
+        }
+
+        $subject = 'Razorpay | ' . $subject;
+
+        return [
+            'email'   => $this->invoice->getCustomerEmail(),
+            'date'    => date('d-M-Y H:m:s T'),
+            'subject' => $subject,
+            'link'    => $this->invoice->getShortUrl(),
+            'name'    => $merchantName,
+        ];
+    }
+
+    protected function getInvoiceExpiringMailPayload()
+    {
+        $merchant     = $this->invoice->merchant;
+        $merchantName = $merchant->getBillingLabelElseName();
+
+        $now      = Carbon::now('Asia/Kolkata');
+        $expireBy = Carbon::createFromTimestamp($invoice->getExpireBy(), 'Asia/Kolkata');
+        $diff     = $expireBy->diffForHumans($now);
+
+        switch ($this->invoice->getType())
+        {
+            case Type::LINK:
+            case Type::ECOD:
+                $subject = "Payment link from $merchantName will expire $diff";
+                break;
+
+            case Type::INVOICE:
+                $subject = "Invoice from $merchantName will expire $diff";
+                break;
+
+            default:
+                $subject = "Payment from $merchantName will expire $diff";
+        }
+
+        $subject = 'Razorpay | ' . $subject;
+
+        return [
+            'email'   => $this->invoice->getCustomerEmail(),
+            'date'    => date('d-M-Y H:m:s T'),
+            'subject' => $subject,
+            'link'    => $this->invoice->getShortUrl(),
+            'name'    => $merchantName,
+        ];
+    }
+
     public function sendNotificationsInBulk()
     {
-        $smsIssuedInvoices   = $this->repo
-                                    ->invoice
-                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
-        $emailIssuedInvoices = $this->repo
-                                    ->invoice
-                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
+        //
+        // Following two are not required just now.
+        // We will introduce these when we implement scheduled_by, due_by stuff.
+        //
 
-        $sentSmsCount = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+        // $smsIssuedInvoices   = $this->repo
+        //                             ->invoice
+        //                             ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
+        // $emailIssuedInvoices = $this->repo
+        //                             ->invoice
+        //                             ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
 
-        $sentEmailCount = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
+        // $sentSmsCount = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+
+        // $sentEmailCount = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
+
+        $expiringInvoices = $this->repo
+                                 ->invoice
+                                 ->getInvoicesForExpiringNotificationToCustomer();
+
+        $expiringEmailsSentCount = $this->emailInvoiceExpiringToCustomerInBulk($expiringInvoices);
 
         $results = [
-            'sms_issued_pending'   => count($smsIssuedInvoices),
-            'email_issued_pending' => count($emailIssuedInvoices),
-            'sms_issued_sent'      => $sentSmsCount,
-            'email_issued_sent'    => $sentEmailCount,
+            // 'sms_issued_pending'   => count($smsIssuedInvoices),
+            // 'email_issued_pending' => count($emailIssuedInvoices),
+            // 'sms_issued_sent'      => $sentSmsCount,
+            // 'email_issued_sent'    => $sentEmailCount,
+            'email_expiring_pending'  => $expiringInvoices->count(),
+            'email_expiring_sent'     => $expiringEmailsSentCount,
         ];
 
         $this->trace->info(
@@ -239,7 +326,7 @@ class Notifier extends Base\Core
         return $totalSent;
     }
 
-    protected function sendEmailInvoicesInBulk(array $invoices)
+    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices)
     {
         $totalSent = 0;
 
@@ -258,6 +345,42 @@ class Notifier extends Base\Core
         }
 
         return $totalSent;
+    }
+
+    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices)
+    {
+        $totalSent = 0;
+
+        foreach ($invoices as $invoice)
+        {
+            $this->setInvoice($invoice);
+
+            $sent = $this->emailInvoiceExpiringToCustomer();
+
+            if ($sent === true) ++$totalSent;
+        }
+
+        return $totalSent;
+    }
+
+    protected function emailInvoiceExpiringToCustomer()
+    {
+        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+
+        $data = $this->getInvoiceExpiringMailPayload();
+
+        Mail::send('emails.invoice.expiring', $data, function($message) use ($data)
+        {
+            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['email']);
+        });
+
+        return true;
     }
 
     protected function canCustomerBeNotifiedNow()

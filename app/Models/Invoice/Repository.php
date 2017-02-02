@@ -53,6 +53,19 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function getInvoicesForExpiringNotificationToCustomer()
+    {
+        //
+        // TODO:
+        // - As there is no status attached with this mail, use logic to avoids
+        // sending reminder twice.
+        // - Start with fix value (how before to send the expiring mails), though this
+        // needs to be tuned based on created_at and expire_by values.
+        //
+
+        return [];
+    }
+
     public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;

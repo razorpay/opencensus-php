@@ -161,6 +161,8 @@ class TraceCode
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
     const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+    const INVOICE_ACTION_JOB_RECEIVED               = 'INVOICE_ACTION_JOB_RECEIVED';
+    const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';

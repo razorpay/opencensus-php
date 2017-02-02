@@ -135,12 +135,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals('1', $address['primary']);
         $this->assertEquals($response['customer_id'], $address['entity_id']);
         $this->assertEquals('customer', $address['entity_type']);
-
-        // TODO:
-        // Add a test to assert it becomes sent | stays pending :)
-        // Change query to filter based on contact|email existence
-
-        // $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testCreateInvoiceWithSmsNotifyFalseAndEmailNotifyTrue()
