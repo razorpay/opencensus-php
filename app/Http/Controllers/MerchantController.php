@@ -480,6 +480,15 @@ class MerchantController extends Controller
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
     }
 
+    public function getPublicEntityReportUrl($entity)
+    {
+        $input = Request::all();
+
+        $data = (new \RZP\Models\Base\Report)->getReportUrl($input, $entity);
+
+        return ApiResponse::json($data);
+    }
+
     public function getBrokerTransactionReport()
     {
         $input = Request::all();

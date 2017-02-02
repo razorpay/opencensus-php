@@ -16,6 +16,7 @@ final class Route
 
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
+        'callback_params'                         => ['post',     'callback_params',                                'PublicController@postCallbackUrlWithParams'                        ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
@@ -263,6 +264,7 @@ final class Route
         'reports_monthly_invoice'                 => ['get',      'reports/invoice',                                'MerchantController@getInvoiceReport'                               ],
         'reports_monthly_invoice_v2'              => ['get',      'reports/invoice/v2',                             'MerchantController@getInvoiceReportV2'                             ],
         'reports_public_entity'                   => ['get',      'reports/{entity}',                               'MerchantController@getPublicEntityReport'                          ],
+        'reports_public_entity_file'              => ['get',      'reports/{entity}/file',                          'MerchantController@getPublicEntityReportUrl'                       ],
         'customer_create'                         => ['post',     'customers',                                      'CustomerController@createLocalCustomer'                            ],
         'customer_update'                         => ['put',      'customers/{id}',                                 'CustomerController@updateCustomer'                                 ],
         'customer_fetch_by_id'                    => ['get',      'customers/{id}',                                 'CustomerController@getCustomer'                                    ],
@@ -734,6 +736,7 @@ final class Route
         'reports_monthly_invoice',
         'reports_monthly_invoice_v2',
         'reports_public_entity',
+        'reports_public_entity_file',
         'bank_account_fetch',
         'merchant_edit_config',
         'merchant_edit_config_logo',
@@ -848,6 +851,7 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
+        'callback_params',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
