@@ -29,6 +29,22 @@ class EntityReportTest extends TestCase
         assert((count($paymentReport) + count($refundReport)) === count($combinedReport));
     }
 
+    public function testEntityReportFile()
+    {
+        $this->testEntityReports();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+        $data = $this->fetchReportAsFile('transaction', $input);
+
+        $this->assertNotNull($data['url']);
+    }
+
     public function testInvoice()
     {
         // We need to setup a terminal for the netbanking payment
