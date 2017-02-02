@@ -560,7 +560,7 @@ class Service extends Base\Service
     {
         $responseHash = $this->getMerchantIds($orgId, $adminId);
 
-        // (new Admin\Validator)->validateInput('filter', $input);
+        (new Validator)->validateInput('filter', $input);
 
         $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
 
