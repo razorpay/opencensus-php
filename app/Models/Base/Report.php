@@ -147,7 +147,7 @@ class Report extends Core
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
-        $key = '/report/' . $fileName . '.xlsx';
+        $key = 'report/' . $fileName . '.xlsx';
 
         $url = $this->saveToAws($key, $fullpath, $xlsxMimeType);
 
