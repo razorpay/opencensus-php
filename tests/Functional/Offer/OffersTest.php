@@ -106,17 +106,17 @@ class OffersTest extends TestCase
 
         $expectedResponse = [
             'id'                  => $offer->getPublicId(),
-            'name'                => "Updated name",
-            "payment_method"      => "card",
-            "payment_method_type" => "credit",
-            "payment_network"     => "VISA",
-            "issuer"              => "HDFC",
-            "active"              => true,
-            "percent_rate"        => 1000,
-            "payment_count"       => 2,
-            "processing_time"     => 86400,
-            "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-            "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
+            'name'                => 'Updated name',
+            'payment_method'      => 'card',
+            'payment_method_type' => 'credit',
+            'payment_network'     => 'VISA',
+            'issuer'              => 'HDFC',
+            'active'              => true,
+            'percent_rate'        => 1000,
+            'payment_count'       => 2,
+            'processing_time'     => 86400,
+            'starts_at'           => Carbon::today('Asia/Kolkata')->timestamp,
+            'ends_at'             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -148,8 +148,8 @@ class OffersTest extends TestCase
                     'percent_rate'        => 1000,
                     'payment_count'       => 2,
                     'processing_time'     => 86400,
-                    "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-                    "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
+                    'starts_at'           => Carbon::today('Asia/Kolkata')->timestamp,
+                    'ends_at'             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
                 ]
             ]
         ];
@@ -179,8 +179,8 @@ class OffersTest extends TestCase
             'percent_rate'        => 1000,
             'payment_count'       => 2,
             'processing_time'     => 86400,
-            "starts_at"           => Carbon::today('Asia/Kolkata')->timestamp,
-            "ends_at"             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
+            'starts_at'           => Carbon::today('Asia/Kolkata')->timestamp,
+            'ends_at'             => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
