@@ -248,11 +248,11 @@ class Repository extends Base\Repository
         $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
 
         $merchantId = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Details\Entity::MERCHANT_ID);
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
         $submittedAt = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Details\Entity::SUBMITTED_AT);
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
         $stepsFinished = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Details\Entity::STEPS_FINISHED);
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
 
         $query = $this->newQuery()
                       ->select(Entity::ID,

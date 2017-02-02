@@ -326,7 +326,7 @@ class OrganizationController extends Controller
         return ApiResponse::json($merchantIds);
     }
 
-    public function getMerchantsByFilter($id, $adminId)
+    public function getMerchants($id, $adminId)
     {
         $input = Request::all();
 
