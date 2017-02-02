@@ -40,7 +40,9 @@ class Gateway extends Base\Gateway
         Entity::VPA                       => Entity::VPA,
         ResponseFields::PAYER_VA          => Entity::VPA,
         ResponseFields::STATUS            => Entity::STATUS_CODE,
+        // This is a 5 digit number that is the reference ID on the HDFC side
         ResponseFields::UPI_TXN_ID        => Entity::GATEWAY_PAYMENT_ID,
+        // NPCI provided RRN for the transaction
         ResponseFields::NPCI_UPI_TXN_ID   => Entity::NPCI_REFERENCE_ID,
     ];
 
@@ -88,11 +90,19 @@ class Gateway extends Base\Gateway
      */
     protected function getGatewayEntityAttributes(array $input, string $action = Action::AUTHORIZE)
     {
-        return [
+        $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
             Entity::VPA     => $input['payment']['vpa'],
             Entity::ACTION  => $action,
+            // Entity::AMOUNT  => $amount,
         ];
+
+        if ($action === Action::REFUND)
+        {
+            $attrs[Entity::REFUND_ID] = $input['refund']['id'];
+        }
+
+        return $attrs;
     }
 
     /**
@@ -410,15 +420,15 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getGatewayEntityAttributes($input, Action::REFUND);
 
-        $refund = $this->createGatewayPaymentEntity($attributes);
+        $refund = $this->createGatewayRefundEntity($attributes);
 
         $request =  $this->getRefundRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
-        $response = $this->parseGatewayResponse($response->body);
+        $response = $this->parseGatewayResponse($response->body, Action::REFUND);
 
-        // TODO: Process Refund
+        sd($response);
     }
 
     public function verify(array $input)
@@ -465,15 +475,14 @@ class Gateway extends Base\Gateway
             $input['refund']['id'],
             $input['payment']['id'],
             $gatewayPayment->getGatewayPaymentId(),
-            'NA',
+            $gatewayPayment->getNpciReferenceId(),
             $this->getRefundRemark($input),
             $this->formatAmount($input['refund']['amount']),
             $input['refund']['currency'],
-            $this->getPaymentRemark($input),
             // Transaction Type
-            self::P2P,
+            self::P2M,
             // Type of Payment (Pay or Collect)
-            Action::COLLECT,
+            'C',
         ];
 
         $content = $this->transformRequestArrayToContent($data);

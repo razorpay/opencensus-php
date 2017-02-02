@@ -18,6 +18,7 @@ class Entity extends Base\Entity
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
     const GATEWAY_PAYMENT_ID    = 'gateway_payment_id';
     const NPCI_REFERENCE_ID     = 'npci_reference_id';
+    const REFUND_ID             = 'refund_id';
     const PAYMENT_ID            = 'payment_id';
     const REFUND_ID             = 'refund_id';
     const RECEIVED              = 'received';
@@ -41,6 +42,7 @@ class Entity extends Base\Entity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
+        self::REFUND_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
@@ -60,6 +62,7 @@ class Entity extends Base\Entity
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_PAYMENT_ID,
         self::NPCI_REFERENCE_ID,
+        self::REFUND_ID,
         self::PAYMENT_ID,
         self::REFUND_ID,
         self::RECEIVED,
@@ -104,6 +107,16 @@ class Entity extends Base\Entity
     public function getGatewayPaymentId()
     {
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
+    }
+
+    public function getNpciReferenceId()
+    {
+        return $this->getAttribute(self::NPCI_REFERENCE_ID);
+    }
+
+    public function getRefundId()
+    {
+        return $this->getAttribute(self::REFUND_ID);
     }
 
     public function extractProviderFromVpa()

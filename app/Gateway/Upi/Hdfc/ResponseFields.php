@@ -51,7 +51,7 @@ class ResponseFields
 
     const REFUND        = [
         self::UPI_TXN_ID,
-        self::PAYMENT_ID,
+        self::REFUND_ID,
         self::AMOUNT,
         self::TXN_AUTH_DATE,
         self::STATUS,
@@ -59,9 +59,8 @@ class ResponseFields
         self::RESPCODE,
         self::APPROVAL_NO,
         self::PAYER_VA,
-        self::APPROVAL_NO,
-        self::TXN_ID,
-        self::CUSTOMER_REFERENCE_ID,
+        self::NPCI_UPI_TXN_ID,
+        self::REFERENCE_ID,
     ];
 
     const CALLBACK      = [

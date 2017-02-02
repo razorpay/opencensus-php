@@ -64,7 +64,11 @@ class CreateUpi extends Migration
             $table->string(Upi::STATUS_CODE)
                   ->nullable();
 
-            $table->string(Upi::NPCI_REFERENCE_ID)->nullable();
+            $table->string(Upi::NPCI_REFERENCE_ID)
+                  ->nullable();
+
+            $table->char(Upi::REFUND_ID, UniqueIdEntity::ID_LENGTH)
+                ->nullable();
 
             $table->integer(Upi::CREATED_AT);
             $table->integer(Upi::UPDATED_AT);
@@ -80,6 +84,7 @@ class CreateUpi extends Migration
             $table->index(Upi::BANK);
             $table->index(Upi::STATUS_CODE);
             $table->index(Upi::NPCI_REFERENCE_ID);
+            $table->index(Upi::REFUND_ID);
         });
     }
 

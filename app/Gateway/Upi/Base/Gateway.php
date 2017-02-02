@@ -39,9 +39,13 @@ class Gateway extends Base\Gateway
 
         $refund = $this->getNewGatewayPaymentEntity();
 
+        $refund->setPaymentId($this->input['payment']['id']);
+
+        $refund->setAmount($this->input['refund']['amount']);
+
         $refund->generate($attr);
 
-        $refund->setAction(Action::REFUND);
+        $refund->setAction(Base\Action::REFUND);
 
         $refund->setAcquirer(static::ACQUIRER);
 
