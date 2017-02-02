@@ -358,7 +358,7 @@ final class Route
         'admin_edit'                              => ['put',      'orgs/{orgId}/admins/{id}',                       'OrganizationController@editAdmin'                                  ],
         'admin_edit_app_auth'                     => ['put',      'orgs/{orgId}/admin-app-auth/{id}',               'OrganizationController@editAdmin'                                  ],
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
-        'admin_fetch_merchant_by_filter'          => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchantsByFilter'                       ],
+        'admin_fetch_merchant_by_filter'          => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                       ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],

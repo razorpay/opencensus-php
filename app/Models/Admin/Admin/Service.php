@@ -560,13 +560,15 @@ class Service extends Base\Service
     {
         $responseHash = $this->getMerchantIds($orgId, $adminId);
 
+        (new Admin\Validator)->validateInput('filter', $input);
+
         $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
 
         foreach ($merchants as $merchant)
         {
-            $merchant['referrer'] = $responseHash[$merchant['id']];
+            $merchant['referrer'] = $responseHash[$merchant->getId()];
 
-            $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant['id']);
+            $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant->getId());
 
             $merchant['activation_progress'] = $activationProgress;
         }

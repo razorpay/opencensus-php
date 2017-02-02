@@ -244,18 +244,28 @@ class Repository extends Base\Repository
 
     public function fetchMerchantsByFilter(array $merchantIds, array $input)
     {
+        $merchantCreatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+
+        $merchantId = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Details\Entity::MERCHANT_ID);
+        $submittedAt = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Details\Entity::SUBMITTED_AT);
+        $stepsFinished = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Details\Entity::STEPS_FINISHED);
+
         $query = $this->newQuery()
                       ->select(Entity::ID,
                                Entity::NAME,
                                Entity::EMAIL,
                                Entity::ACTIVATED,
-                               'merchants.created_at',
-                               'merchants.updated_at',
+                               $merchantCreatedAt,
+                               $merchantUpdatedAt,
                                Entity::ARCHIVED_AT,
                                Entity::SUSPENDED_AT,
-                               'merchant_details.steps_finished',
-                               'merchant_details.submitted_at')
-                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', 'merchant_id')
+                               $stepsFinished,
+                               $submittedAt)
+                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 
         switch (true)
@@ -274,11 +284,12 @@ class Repository extends Base\Repository
 
             case (empty($input['pending']) === false):
                 $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull('merchant_details.submitted_at');
+                               ->whereNotNull($submittedAt);
                 break;
+
             case (empty($input['dead']) === false):
-                $query = $query->where('merchants.created_at', '<', time() - 24 * 7 * 3600)
-                               ->whereNull('merchant_details.submitted_at');
+                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
+                               ->whereNull($submittedAt);
                 break;
 
             default:

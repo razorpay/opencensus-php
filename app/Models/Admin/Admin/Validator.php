@@ -74,6 +74,10 @@ class Validator extends Base\Validator
         Org\Entity::AUTH_TYPE         => 'required|string|in:password',
     ];
 
+    protected static $filterRules = [
+
+    ];
+
     protected static $createValidators = [
         Entity::PASSWORD
     ];
