@@ -1320,7 +1320,9 @@ trait Authorize
         }
         else
         {
-            $trigger = Notify::AUTHORIZED;
+            $hasInvoice = $this->payment->hasInvoice();
+
+            $trigger = $hasInvoice ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::AUTHORIZED;
         }
 
         $notifier->trigger($trigger);

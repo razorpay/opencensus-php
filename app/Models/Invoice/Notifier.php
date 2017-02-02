@@ -159,7 +159,7 @@ class Notifier extends Base\Core
     {
         Mail::send($template, $data, function($message) use ($data)
         {
-            $message->from('invoices@razorpay.com', 'Razorpay Invoices');
+            $message->from('invoices@razorpay.com', $data['name']);
 
             $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
@@ -189,7 +189,7 @@ class Notifier extends Base\Core
                 $subject = 'Payment requested by ' . $merchantName;
         }
 
-        $subject = 'Razorpay | ' . $subject;
+        $subject = $subject . ' | Razorpay';
 
         return [
             'email'   => $this->invoice->getCustomerEmail(),
@@ -221,7 +221,7 @@ class Notifier extends Base\Core
                 $subject = "Payment from $merchantName has expired";
         }
 
-        $subject = 'Razorpay | ' . $subject;
+        $subject = $subject . ' | Razorpay';
 
         return [
             'email'   => $this->invoice->getCustomerEmail(),
@@ -256,7 +256,7 @@ class Notifier extends Base\Core
                 $subject = "Payment from $merchantName will expire $diff";
         }
 
-        $subject = 'Razorpay | ' . $subject;
+        $subject = $subject . ' | Razorpay';
 
         return [
             'email'   => $this->invoice->getCustomerEmail(),
