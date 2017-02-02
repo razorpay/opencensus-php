@@ -169,14 +169,6 @@ class Server extends Base\Mock\Server
     {
         if (hash_equals($actual, $generated) === false)
         {
-            $this->trace->info(
-                TraceCode::GATEWAY_CHECKSUM_VERIFY_FAILED,
-                [
-                    'actual'    => $actual,
-                    'generated' => $generated
-                ]
-            );
-
             throw new Exception\RuntimeException('Failed checksum verification');
         }
     }
