@@ -27,6 +27,20 @@ class Repository extends Base\Repository
         Entity::ENABLED             => 'sometimes|in:0,1',
     );
 
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('terminal'))
+        {
+            return $payment->terminal;
+        }
+
+        $terminal = $this->findOrFail($payment->getTerminalId());
+
+        $payment->setRelation('terminal', $terminal);
+
+        return $terminal;
+    }
+
     public function addQueryParamDeleted($query, $params)
     {
         if ($params['deleted'] === '1')
@@ -168,6 +182,26 @@ class Repository extends Base\Repository
                     ->whereIn(Terminal\Entity::ID, $sharedTerminalIds)
                     ->enabled()
                     ->get();
+    }
+
+    public function getTpvTerminalIdsForGateway($gateway)
+    {
+        $tpvCategories = Category::getTPVCategories();
+
+        return $this->newQuery()
+                    ->where(Terminal\Entity::GATEWAY, $gateway)
+                    ->whereIn(Terminal\Entity::NETWORK_CATEGORY, $tpvCategories)
+                    ->enabled()
+                    ->get([Entity::ID]);
+    }
+
+    public function getTerminalIdsForGateway($gateway, $exclude = [])
+    {
+        return $this->newQuery()
+                    ->where(Terminal\Entity::GATEWAY, $gateway)
+                    ->whereNotIn(Terminal\Entity::ID, $exclude)
+                    ->enabled()
+                    ->get([Entity::ID]);
     }
 
     public function deleteOrFail($entity)

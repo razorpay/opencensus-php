@@ -125,6 +125,8 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
+            $table->index(Entity::TYPE);
+            $table->index(Entity::SOURCE);
 
             $table->unique([Entity::MERCHANT_ID, Entity::RECEIPT]);
 

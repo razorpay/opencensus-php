@@ -14,7 +14,10 @@ class Service extends Base\Service
 
         $org = $this->repo->org->findOrFailPublic($orgId);
 
-        $group = $this->core()->create($input, $org);
+        $group = $this->repo->transactionOnLiveAndTest(function() use ($org, $input)
+        {
+            return $this->core()->create($input, $org);
+        });
 
         return $group->toArrayPublic();
     }
@@ -36,7 +39,10 @@ class Service extends Base\Service
     {
         $group = $this->repo->group->findByPublicIdAndOrgId($groupId, $orgId);
 
-        $this->core()->edit($group, $input);
+        $group = $this->repo->transactionOnLiveAndTest(function() use ($group, $input)
+        {
+            return $this->core()->edit($group, $input);
+        });
 
         return $group->toArrayPublic();
     }
@@ -83,6 +89,27 @@ class Service extends Base\Service
         $filteredGroups = $this->filterEligibleParents($orgId, $group, $allGroups);
 
         return $filteredGroups;
+    }
+
+    public function getChildrenHierarchy($orgId, $groupId)
+    {
+        $nodes = [];
+
+        // Get all direct children of incoming groupId
+        $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
+
+        // Throw all direct children in the rejected node list
+        $nodes = $childrenGroups;
+
+        foreach ($childrenGroups as $group)
+        {
+            // For every child group, check its further direct children
+            $rejects = $this->getChildrenHierarchy($orgId, $group['id']);
+
+            $nodes = array_merge($nodes, $rejects);
+        }
+
+        return $nodes;
     }
 
     /**
@@ -157,27 +184,6 @@ class Service extends Base\Service
         }
 
         return $rejectNodes;
-    }
-
-    public function getChildrenHierarchy($orgId, $groupId)
-    {
-        $nodes = [];
-
-        // Get all direct children of incoming groupId
-        $childrenGroups = $this->getChildrenGroups($orgId, $groupId)->toArray();
-
-        // Throw all direct children in the rejected node list
-        $nodes = $childrenGroups;
-
-        foreach ($childrenGroups as $group)
-        {
-            // For every child group, check its further direct children
-            $rejects = $this->getChildrenHierarchy($orgId, $group['id']);
-
-            $nodes = array_merge($nodes, $rejects);
-        }
-
-        return $nodes;
     }
 
     protected function getRejectSiblings($orgId, $groupId)

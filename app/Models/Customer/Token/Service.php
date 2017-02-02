@@ -10,6 +10,13 @@ use RZP\Exception;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Token\Core;
+    }
+
     /**
      * Note that this is on internal auth and not private auth
      * Adds token for a customer
@@ -18,9 +25,7 @@ class Service extends Base\Service
      */
     public function add($id, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $token = (new Token\Core)->create($customer, $input);
 
@@ -36,13 +41,11 @@ class Service extends Base\Service
      */
     public function edit($id, $tokenId, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-        $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
-
-        $token = (new Token\Core)->edit($token, $input);
+        $token = $this->core->edit($token, $input);
 
         return $token->toArrayPublic();
     }
@@ -56,9 +59,7 @@ class Service extends Base\Service
      */
     public function fetch($id, $tokenId)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
 
@@ -70,14 +71,12 @@ class Service extends Base\Service
      * @param  string $customerId
      * @return entity tokens
      */
-    public function fetchMultiple($customerId)
+    public function fetchMultiple($id)
     {
-        Customer\Entity::verifyIdAndStripSign($customerId);
-
         // This is needed to ensure that the merchant is getting only HIS customer's details
-        $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $tokens = $this->repo->token->getByCustomerId($customerId);
+        $tokens = $this->repo->token->getByCustomer($customer);
 
         return $tokens->toArrayPublic();
     }
@@ -109,9 +108,7 @@ class Service extends Base\Service
      */
     public function deleteTokenForLocalCustomer($id, $token)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $this->deleteTokenForCustomer($token, $customer);
     }

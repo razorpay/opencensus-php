@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
@@ -43,11 +44,18 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($payment, $merchant)
+    public function findForPaymentAndMerchant($payment, $merchant)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->merchantId($merchant->getId())
+                    ->get();
+    }
+
+    public function findForPayment($payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->get();
     }
 
@@ -167,6 +175,50 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchRefundsForTpvBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $tpvEnabled = false)
+    {
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `refunds`.`created_at` >= $from
+        //   AND `refunds`.`created_at` < $to
+        //   AND `payments`.`bank` = $gatewayCode
+        //   AND `payments`.`gateway` = $gateway
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $pRepo = $this->manager->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $tRepo = $this->manager->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+        $pType = $pRepo->getAttributeWithTableName($type);
+        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $pTerminalId = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
+
+        $tId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
+        $tTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->join($tTableName, $pTerminalId, '=', $tId)
+                    ->where($rCreatedAt, '>=', $from)
+                    ->where($rCreatedAt, '<=', $to)
+                    ->where($pType, '=', $gatewayCode)
+                    ->where($pGateway, '=', $gateway)
+                    ->where($tTpv, '=', $tpvEnabled)
+                    ->with('payment')
+                    ->get();
+    }
+
     /**
      * Join with the corresponding gateway and check that this particular payment
      * has no gateway entity for the refund.
@@ -192,7 +244,7 @@ class Repository extends Base\Repository
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
-        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+        $gatewayTable = Table::getTableNameForEntity($gateway);
 
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);

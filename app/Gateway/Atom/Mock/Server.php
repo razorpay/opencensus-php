@@ -12,27 +12,20 @@ use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->repo = new Atom\Repository;
-    }
-
     public function atomPaymentChooseOrg($input)
     {
         $this->checkReferer();
 
         $this->verifyTxn1stStageInput($input);
 
-        $atom = $this->repo->findByToken($input['token']);
+        $atom = $this->repo->atom->findByToken($input['token']);
 
         $merchant = \BasicAuth::getMerchant();
 
         $paymentId = $atom->getKey();
 
-        $payment = (new Payment\Repository)->findByIdAndMerchantId(
-                                            $paymentId, $merchant->getId());
+        $payment = $this->repo->payment->findByIdAndMerchant(
+                                            $paymentId, $merchant);
 
         $data['url'] = $this->getRzpPaymentPageUrl();
 
@@ -102,7 +95,7 @@ class Server extends Base\Mock\Server
 
         $atom = $this->getAtomPaymentByTempTxnId($input['tempTxnId']);
 
-        $payment = (new \RZP\Models\Payment\Repository)->findOrFail($atom['id']);
+        $payment = $this->repo->payment->findOrFail($atom['id']);
 
         $bankTxnId = random_integer(6);
 
@@ -134,7 +127,7 @@ class Server extends Base\Mock\Server
 
         $paymentId = $atom['id'];
 
-        $payment = (new Payment\Repository)->findOrFail($paymentId);
+        $payment = $this->repo->payment->findOrFail($paymentId);
         $method = $payment['method'];
         $card = null;
 
@@ -167,10 +160,12 @@ class Server extends Base\Mock\Server
         {
             $data['discriminator'] = 'DC';
 
-            $card = $payment->card;
+            $card = $this->repo->card->fetchForPayment($payment);
 
             if ($card->getType() === Card\Type::CREDIT)
+            {
                 $data['discriminator'] = 'CC';
+            }
 
             $xx = str_repeat('X', $card['length'] - 10);
             $data['CardNumber'] = $card['iin'] . $xx . $card['last4'];
@@ -194,7 +189,7 @@ class Server extends Base\Mock\Server
         $publicId = $id;
 
         $id = Atom\Entity::verifyIdAndStripSign($id);
-        $payment = (new Atom\Repository)->find($id);
+        $payment = $this->repo->atom->find($id);
 
         $status = (bool) $payment['success'];
         $verified = ($status) ? 'SUCCESS' : 'FAILED';
@@ -234,7 +229,7 @@ class Server extends Base\Mock\Server
 
     protected function getAtomPaymentByTempTxnId($tempTxnId)
     {
-        return (new Atom\Repository)->findByGatewayPaymentId($tempTxnId);
+        return $this->repo->atom->findByGatewayPaymentId($tempTxnId);
     }
 
     protected function generateAtomToken()

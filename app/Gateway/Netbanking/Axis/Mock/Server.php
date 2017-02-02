@@ -79,7 +79,7 @@ class Server extends Base\Mock\Server
 
         $crypto = new AESCrypto($masterKey);
 
-        $encryptedString = urlencode($crypto->encryptString($query));
+        $encryptedString = $crypto->encryptString($query);
 
         $content[ResponseFields::ENCRYPTED_STRING] = $encryptedString;
 

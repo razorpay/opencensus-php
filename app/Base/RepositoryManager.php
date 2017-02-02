@@ -9,18 +9,11 @@ use RZP\Exception;
 
 class RepositoryManager extends \Illuminate\Support\Manager
 {
-    /**
-     * Holds the default database connection.
-     * @var string
-     */
-    protected $defaultConn;
-
     public function __construct($app)
     {
         parent::__construct($app);
 
         $this->db = $app['db'];
-        $this->defaultConn = $app['config']->get('database.default');
     }
 
     public function __get($entity)
@@ -185,6 +178,15 @@ class RepositoryManager extends \Illuminate\Support\Manager
 
     public function transactionOnLiveAndTest(callable $callback)
     {
+        //
+        // We need to grab and assign the default connection here
+        // because in the callback code, the functions try to change
+        // the default connection. This is again required because of
+        // lack of eloquent's support for taking specific connection
+        // instance on relationship based queries.
+        //
+        $currentConnection = $this->getDefaultDbConn();
+
         $this->db->connection(Mode::TEST)->beginTransaction();
         $this->db->connection(Mode::LIVE)->beginTransaction();
 
@@ -211,9 +213,19 @@ class RepositoryManager extends \Illuminate\Support\Manager
         }
         finally
         {
-            $this->app['config']->set('database.default', $this->defaultConn);
+            $this->setDefaultDbConn($currentConnection);
         }
 
         return $result;
+    }
+
+    protected function getDefaultDbConn()
+    {
+        return $this->app['config']->get('database.default');
+    }
+
+    protected function setDefaultDbConn($conn)
+    {
+        $this->app['config']->set('database.default', $conn);
     }
 }

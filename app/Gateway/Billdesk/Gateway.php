@@ -25,9 +25,9 @@ class Gateway extends Base\Gateway
     protected $response;
     const CHECKSUM_ATTRIBUTE = 'Checksum';
 
-    protected $tpv;
-
     protected $accountType;
+
+    protected $tpv;
 
     public function authorize(array $input)
     {
@@ -116,8 +116,6 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                 $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->setAccountType($input['terminal']);
-
         $this->setTpv($gatewayPayment);
 
         $requestContent = $this->getPaymentRefundRequestContent($gatewayPayment, $input);
@@ -163,10 +161,6 @@ class Gateway extends Base\Gateway
     public function verify(array $input)
     {
         parent::verify($input);
-
-        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
-
-        $this->setAccountType($input['terminal']);
 
         $verify = new Base\Verify($this->gateway, $input);
 
@@ -430,10 +424,6 @@ class Gateway extends Base\Gateway
      */
     protected function verifyIfRefunded(array $input)
     {
-        $gatewayMerchantId = $input['terminal']['gateway_merchant_id'];
-
-        $this->setAccountType($input['terminal']);
-
         $verify = new Base\Verify($this->gateway, $input);
 
         $verify->payment = $this->repo->findByPaymentIdAndAction(
@@ -756,7 +746,7 @@ class Gateway extends Base\Gateway
         $refundAmount = (float) ($input['refund']['amount']);
 
         // The amount should have exact two decimal places, otherwise billdesk gives error
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $refundAmount = (string) number_format($refundAmount / 100, 2, '.', '');
         $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
 
         $content = [
@@ -866,8 +856,6 @@ class Gateway extends Base\Gateway
     protected function getAuthRequestContentArray($input)
     {
         $bankId = BankCodes::$bankCodeMap[$input['payment']['bank']];
-
-        $this->setAccountType($input['terminal']);
 
         $content = [
             'MerchantID'                => $input['terminal']['gateway_merchant_id'],
@@ -994,34 +982,44 @@ class Gateway extends Base\Gateway
     {
         $accountType = $this->accountType;
 
-        switch($accountType)
+        switch ($accountType)
         {
             case AccountType::PRIMARY:
-                return $this->config["live_access_code"];
+                $accessCode = $this->config['live_access_code'];
+                break;
 
             case AccountType::SECONDARY:
-                return $this->config["live_access_code_sec"];
+                $accessCode = $this->config['live_access_code_sec'];
+                break;
 
-            case 'default':
-                return $this->config["live_access_code"];
+            default:
+                $accessCode = $this->config['live_access_code'];
+                break;
         }
+
+        return $accessCode;
     }
 
     public function getSecret()
     {
         $accountType = $this->accountType;
 
-        switch($accountType)
+        switch ($accountType)
         {
             case AccountType::PRIMARY:
-                return $this->config["live_hash_secret"];
+                $secret = $this->config['live_hash_secret'];
+                break;
 
             case AccountType::SECONDARY:
-                return $this->config["live_hash_secret_sec"];
+                $secret = $this->config['live_hash_secret_sec'];
+                break;
 
-            case 'default':
-                return $this->config["live_hash_secret"];
+            default:
+                $secret = $this->config['live_hash_secret'];
+                break;
         }
+
+        return $secret;
     }
 
     protected function isTPVEnabled()
@@ -1052,19 +1050,24 @@ class Gateway extends Base\Gateway
         $this->tpv = $gatewayPayment->isTpv();
     }
 
+    public function setTerminal($terminal)
+    {
+        parent::setTerminal($terminal);
+
+        $this->setAccountType($terminal);
+    }
+
     protected function setAccountType($terminal)
     {
-        $merchantId = $terminal['gateway_merchant_id'];
+        $gatewayMerchantId = $terminal['gateway_merchant_id'];
 
-        $merchantIdKey = substr($merchantId, 0, 2);
+        $prefix = substr($gatewayMerchantId, 0, 2);
 
-        if (in_array($merchantIdKey, array_keys(AccountType::ACCOUNT_MAP)) === true)
+        $this->accountType = AccountType::PRIMARY;
+
+        if (isset(AccountType::ACCOUNT_MAP[$prefix]) === true)
         {
-            $this->accountType = AccountType::ACCOUNT_MAP[$merchantIdKey];
-        }
-        else
-        {
-            $this->accountType = AccountType::UNKNOWN;
+            $this->accountType = AccountType::ACCOUNT_MAP[$prefix];
         }
     }
 

@@ -221,7 +221,8 @@ trait Capture
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($payment);
+            $data['card'] = $card->toArray();
         }
 
         if ($payment->getConvertCurrency() === true)
@@ -478,7 +479,7 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->transaction === null);
+        $auth = ($payment->hasTransaction() === false);
 
         $feesSplit = new PublicCollection;
 
@@ -507,24 +508,28 @@ trait Capture
 
     protected function verifyOrderUnpaid(Payment\Entity $payment)
     {
-        $order = $this->repo->order->getOrderForPayment($payment);
-
-        if ((empty($order) === false) and
-            ($order->getStatus() === Order\Status::PAID))
+        if ($payment->hasOrder())
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Corresponding order already has a captured payment.');
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            if ($order->getStatus() === Order\Status::PAID)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Corresponding order already has a captured payment.');
+            }
         }
     }
 
     protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
-        $order = $payment->order;
-
-        if (empty($order) === true)
+        if ($payment->hasOrder() === false)
         {
             return;
         }
+
+        $order = $payment->order;
+
+        $order->setStatus(Order\Status::PAID);
 
         $this->trace->info(
             TraceCode::ORDER_STATUS_PAID,
@@ -532,8 +537,6 @@ trait Capture
                 'payment_id' => $payment->getId(),
                 'order_id' => $order->getId(),
             ]);
-
-        $order->setStatus(Order\Status::PAID);
 
         $this->repo->saveOrFail($order);
 

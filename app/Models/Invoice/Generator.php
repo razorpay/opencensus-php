@@ -64,8 +64,6 @@ class Generator extends Base\Core
 
         $this->elfin = $this->app['elfin'];
 
-        $this->setElfinServices();
-
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
@@ -358,26 +356,6 @@ class Generator extends Base\Core
         {
             $this->invoice->customer()->associate($customer);
             $this->invoice->setCustomerDetails($customer);
-        }
-    }
-
-    /**
-     * This has been put in place temporarily to test uptime of gimli and avoid
-     * extra latency in case gimli fails for some reason.
-     *
-     * By default GIMLI is the first preferece. But for now overriding it to
-     * allow the same for only 30% of the traffic.
-     *
-     * @return null
-     *
-     */
-    protected function setElfinServices()
-    {
-        $randInt = mt_rand(0, 100);
-
-        if ($randInt >= 70)
-        {
-            $this->elfin->setServices([Elfin::BITLY, Elfin::GIMLI]);
         }
     }
 }

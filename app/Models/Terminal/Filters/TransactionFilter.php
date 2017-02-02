@@ -38,6 +38,7 @@ class TransactionFilter extends Terminal\Filter
         'currency',
         'international',
         'bank',
+        'amount',
         'maestro',
         'netbanking_billdesk',
         'recurring',
@@ -287,6 +288,22 @@ class TransactionFilter extends Terminal\Filter
         $emiDuration = $input['payment']->emiPlan->getDuration();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+    }
 
+    public function amountFilter(Terminal\Entity $terminal, array $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        $gateway = $terminal->getGateway();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $category = $terminal->getNetworkCategory();
+
+        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
+
+        $amount = $input['payment']->getAmount();
+
+        return ($amount >= $minAmount);
     }
 }
