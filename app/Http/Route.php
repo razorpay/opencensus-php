@@ -936,7 +936,6 @@ final class Route
     public static $slaveRoutes = [
         // TODO: Uncomment this when slave variables issue is fixed.
         //'es_migrate_entity',
-        'reports_public_entity',
         'reports_public_entity_file',
     ];
 
