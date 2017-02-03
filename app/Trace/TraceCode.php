@@ -625,10 +625,6 @@ class TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
-
-        self::ADD_GATEWAY_PRIORITY_REQUEST              => 'Add gateway priority',
-        self::FETCH_GATEWAY_PRIORITY_RESPONSE           => 'Gateway priority response',
-        self::REMOVE_GATEWAY_PRIORITY_REQUEST           => 'Remove gateway priority request'
     );
 
     /**
