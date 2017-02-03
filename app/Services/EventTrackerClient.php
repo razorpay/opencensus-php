@@ -324,7 +324,6 @@ class EventTrackerClient extends Base\Core
     {
         try
         {
-
             $data = [
                 'id'        => $terminal->getPublicId(),
                 'gateway'   => $terminal->getGateway(),
@@ -332,7 +331,6 @@ class EventTrackerClient extends Base\Core
                 'category'  => $terminal->getCategory(),
                 'shared'    => $terminal->getShared(),
                 'recurring' => $terminal->getRecurring(),
-
             ];
 
             return $data;
@@ -371,7 +369,7 @@ class EventTrackerClient extends Base\Core
             // filter metadata for required keys
             foreach (self::CONTEXT_KEYS as $key)
             {
-                if (isset($key, $metadata) === true)
+                if (isset($metadata[$key]) === true)
                 {
                     $analytics[$key] = $metadata[$key];
                 }
@@ -428,16 +426,15 @@ class EventTrackerClient extends Base\Core
                    {
                        $analytics[$key] = $getterValue;
                    }
-
                }
-               catch(\Exception $e)
+               catch (Exception $e)
                {
                     $msg = [
-                            'getterName' => $getterName,
-                            'key' => $key
+                        'getterName' => $getterName,
+                        'key' => $key
                     ];
 
-                   $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMNENT_CONTEXT, $msg);
+                   $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
                }
             }
 
