@@ -7,6 +7,7 @@ use Carbon\Carbon;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
+use RZP\Constants\Table;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
@@ -250,7 +251,7 @@ class Service extends Base\Service
 
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
         }
@@ -359,8 +360,16 @@ class Service extends Base\Service
 
     public function createGatewayRefundRecords($gateway)
     {
-        // Currently, we are running this for billdesk refund timeouts only.
-        assert ($gateway === Payment\Gateway::BILLDESK);
+        // Currently, we are running this for billdesk and freecharge refund timeouts only.
+        if (in_array($gateway, Payment\Gateway::REFUND_TIMEOUT_HANDLED_GATEWAYS, true) === false)
+        {
+            throw new Exception\LogicException(
+                'Cannot create a refund record on the gateway entity for the given gateway',
+                null,
+                [
+                    'gateway' => $gateway
+                ]);
+        }
 
         $createdAfter = time() - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
@@ -368,11 +377,10 @@ class Service extends Base\Service
 
         $data = [];
 
-        // We get all the Billdesk refunds. We return back data for applicable and if success.
-
+        // We get all the gateway refunds. We return back data for applicable and if success.
         foreach ($refunds as $refund)
         {
-            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($refund);
         }

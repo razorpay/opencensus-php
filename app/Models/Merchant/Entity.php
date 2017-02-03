@@ -420,6 +420,15 @@ class Entity extends Base\PublicEntity
         return $label;
     }
 
+    public function getFilteredDba()
+    {
+        $label = $this->getBillingLabelElseName();
+
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        return $filteredLabel;
+    }
+
     public function getPricingPlanId()
     {
         return $this->getAttribute(self::PRICING_PLAN_ID);
