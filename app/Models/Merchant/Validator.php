@@ -150,7 +150,7 @@ class Validator extends Base\Validator
             ($account->getParentId() !== $merchant->getId()))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_TRANSFER_UNSUPPORTED_ACCOUNT_ID,
+                ErrorCode::BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID,
                 'transfer_id'
             );
         }

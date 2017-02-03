@@ -81,6 +81,13 @@ class Core extends Base\Core
         return $txn;
     }
 
+    /**
+     * Update the corresponding transaction when
+     * Payment hold is updated
+     *
+     * @param  Payment\Entity       $payment
+     * @return Transaction\Entity
+     */
     public function updateOnHoldToggle(Payment\Entity $payment)
     {
         $txn = $payment->transaction;
@@ -601,7 +608,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Record and associate a transaction from a transfer payment action.
+     * Record and associate a transaction for a payment transfer.
      *
      * @param  Transfer\Entity      $transfer Transfer entity
      * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/merchant)

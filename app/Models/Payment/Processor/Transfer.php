@@ -16,15 +16,7 @@ trait Transfer
      */
     public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
     {
-        $paymentData = [
-            Payment\Entity::AMOUNT          => $input['amount'],
-            Payment\Entity::CONTACT         => $input['contact'] ?? null,
-            Payment\Entity::EMAIL           => $input['email'] ?? null,
-            Payment\Entity::CURRENCY        => $input['currency'],
-            Payment\Entity::ON_HOLD         => $input['on_hold'] ?? 0,
-            Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
-            Payment\Entity::METHOD          => Payment\Method::TRANSFER,
-        ];
+        $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
         $payment = $this->createPaymentEntity($paymentData);
 
@@ -57,6 +49,28 @@ trait Transfer
         return $payment;
     }
 
+    protected function getTransferPaymentData(array $input, $originPayment)
+    {
+        $paymentData = [
+            Payment\Entity::AMOUNT          => $input['amount'],
+            Payment\Entity::CONTACT         => $input['contact'] ?? null,
+            Payment\Entity::EMAIL           => $input['email'] ?? null,
+            Payment\Entity::CURRENCY        => $input['currency'],
+            Payment\Entity::ON_HOLD         => $input['on_hold'] ?? 0,
+            Payment\Entity::ON_HOLD_UNTIL   => $input['on_hold_until'] ?? null,
+            Payment\Entity::METHOD          => Payment\Method::TRANSFER,
+        ];
+
+        if ($originPayment !== null)
+        {
+            $paymentData[Payment\Entity::CONTACT] = $originPayment->getContact();
+
+            $paymentData[Payment\Entity::EMAIL]   = $originPayment->getEmail();
+        }
+
+        return $paymentData;
+    }
+
     /**
      * Set the base amount for the transfer payment
      * derived from the conversion rate applied to the
@@ -84,16 +98,16 @@ trait Transfer
         }
         else
         {
-            // different transfer currency
+            // @todo: Different transfer currency
             //
-            // Validate currency supported and convert allowed for marketplace.
+            // Validate if 1. currency supported and 2. convert allowed for marketplace.
             //
             // If orignial payment date = today:
             // call processCurrencyConversions()
             //
             // else:
             // get historical rate on payment date, for transfer currency
-            // set baseAmount
+            // calc and set baseAmount
         }
     }
 

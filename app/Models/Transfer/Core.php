@@ -160,6 +160,13 @@ class Core extends Base\Core
         return $transfer;
     }
 
+    /**
+     * If a transfer hold is modified, also update its corresponding payment
+     * and transaction records with the new hold values
+     *
+     * @param  Entity $transfer
+     * @param  array  $input
+     */
     protected function updatePaymentHold(Entity $transfer, array $input)
     {
         $this->trace->info(
@@ -186,10 +193,17 @@ class Core extends Base\Core
         $this->repo->saveOrFail($txn);
     }
 
-    protected function updatePaymentAmountTransferred($payment, int $amount)
+    /**
+     * Called on payment transfer operation
+     * Updates the value of amount_transferred in Payments
+     *
+     * @param  Payment\Entity $payment
+     * @param  int            $amount
+     */
+    protected function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
     {
         $this->trace->info(
-            TraceCode::PAYMENY_UPDATE_AMOUNT_TRANSFERRED,
+            TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
             [
                 'payment_id'    => $payment->getId(),
                 'amount'        => $amount,
@@ -289,16 +303,7 @@ class Core extends Base\Core
 
         (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $merchant);
 
-        if (($source instanceof Payment\Entity) === true)
-        {
-            $originPayment = $source;
-
-            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId, $merchant);
-
-            $input['contact'] = $originPayment->getContact();
-
-            $input['email']   = $originPayment->getEmail();
-        }
+        $originPayment = $this->checkAndSetSourcePayment($source, $accountId, $merchant);
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
@@ -321,8 +326,33 @@ class Core extends Base\Core
     }
 
     /**
-     * Check that: A transfer can only be done once to an account
-     * for a payment
+     * If the transfer source is a Payment, set
+     * $originPayment for the transfer and validate
+     *
+     * Returns null if not.
+     *
+     * @param  mixed                  $source
+     * @param  string                 $accountId
+     * @param  Merchant\Entity        $source
+     * @return mixed
+     */
+    protected function checkAndSetSourcePayment($source, string $accountId, Merchant\Entity $merchant)
+    {
+        $originPayment = null;
+
+        if (($source instanceof Payment\Entity) === true)
+        {
+            $originPayment = $source;
+
+            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId, $merchant);
+        }
+
+        return $originPayment;
+    }
+
+    /**
+     * A transfer can only be done once to an account
+     * from a source payment. This function validates that.
      *
      * @param  string           $paymentId
      * @param  string           $accountId

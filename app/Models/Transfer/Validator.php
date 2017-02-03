@@ -35,6 +35,8 @@ class Validator extends Base\Validator
         Merchant\Balance\Entity $merchantBalance,
         array $transfers)
     {
+        // Array of recipient ID types sent in the
+        // transfer request. (possible: customer, account)
         $keys = [];
 
         $transferCount = 0;
@@ -56,6 +58,8 @@ class Validator extends Base\Validator
                 }
             }
 
+            // Fail if atleast one of the values in
+            // ToType::$allowedTypes is not set for a transfer
             if ($keySet === false)
             {
                 throw new Exception\BadRequestException(
@@ -72,6 +76,7 @@ class Validator extends Base\Validator
     {
         $uniqueKeys = array_unique($keys);
 
+        // Allow only one transfer to customer per request
         if ((count($uniqueKeys) === 1) and
             ($uniqueKeys[0] === ToType::CUSTOMER) and
             ($transferCount !== 1))
@@ -80,6 +85,8 @@ class Validator extends Base\Validator
                     ErrorCode::BAD_REQUEST_PAYMENT_TRANSFER_MORE_THAN_ONE_CUSTOMER);
         }
 
+        // Allow a transfer to only either customer or account per
+        // request, not both.
         if (count($uniqueKeys) > 1)
         {
             throw new Exception\BadRequestException(
@@ -102,8 +109,8 @@ class Validator extends Base\Validator
                 Payment\Entity::CURRENCY,
                 [
                     'transfer_currency' => $currency,
-                    'payment_currency' => $payment->getCurrency(),
-                    'payment_id'       => $payment->getId(),
+                    'payment_currency'  => $payment->getCurrency(),
+                    'payment_id'        => $payment->getId(),
                 ]);
         }
     }
