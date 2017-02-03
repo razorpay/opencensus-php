@@ -57,19 +57,9 @@ trait FileHandlerTrait
         }
     }
 
-    public function writeToCsvFile($data, $name, $fullName = null)
+    public function writeToCsvFile($data, $name, $fullName = null, $dir = 'files/settlement')
     {
-        $excelObject = $this->createExcelObject($data, $name);
-
-        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
-
-        $fullpath = $fileMetadata['full'];
-
-        if ($fullName != null)
-        {
-            rename($fullpath, $fullName);
-            $fullpath = $fullName;
-        }
+        $fullpath = $this->createCsvFile($data, $name, $fullName, $dir);
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -78,6 +68,33 @@ trait FileHandlerTrait
     }
 
     public function writeToExcelFile($data, $name, $dir = 'files/settlement')
+    {
+        $fullpath = $this->createExcelFile($data, $name, $dir);
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
+
+        return $url;
+    }
+
+
+    public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
+    {
+        $fullpath = $this->createExcelFile($data, $name, $dir);
+
+        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+
+        $bucket = 'h2h_bucket';
+
+        $metadata = $this->getH2HMetadata();
+
+        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
+
+        return $url;
+    }
+
+    public function createExcelFile($data, $name, $dir)
     {
         \Config::set('excel::export.calculate', true);
 
@@ -89,34 +106,24 @@ trait FileHandlerTrait
 
         $fullpath = $fileMetadata['full'];
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
-
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType);
-
-        return $url;
+        return $fullpath;
     }
 
-
-    public function writeToExcelFileH2H($data, $name)
+    public function createCsvFile($data, $name, $fullName, $dir)
     {
-        \Config::set('excel::export.calculate', true);
+        $excelObject = $this->createExcelObject($data, $name);
 
-        $columnFormat = $this->getColumnFormatForExcel();
+        $fileMetadata = $excelObject->store('csv', storage_path($dir), true);
 
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
         $fullpath = $fileMetadata['full'];
 
-        $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+        if ($fullName != null)
+        {
+            rename($fullpath, $fullName);
+            $fullpath = $fullName;
+        }
 
-        $bucket = 'h2h_bucket';
-
-        $metadata = $this->getH2HMetadata();
-
-        $url = $this->saveToAws($name.'.xlsx', $fullpath, $xlsxMimeType, $bucket, $metadata);
-
-        return $url;
+        return $fullpath;
     }
 
     public function getH2HFileFromAws($key)

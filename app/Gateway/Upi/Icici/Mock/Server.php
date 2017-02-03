@@ -47,8 +47,8 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $content = array(
-            'response'          => $this->getResponseCode(),
+        $content = [
+            'response'          => $this->getAuthorizeResponseCode(),
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
             'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
             'message'           => 'Transaction initiated',
             'merchantTranId'    => $input['merchantTranId'],
             'BankRRN'           => '1234567',
-        );
+        ];
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
 
@@ -94,21 +94,44 @@ class Server extends Base\Mock\Server
             }
         }
 
-        $response = array(
-            'response'          => '0',
+        $responseCode = $this->getVerifyResponseCode($payment['vpa']);
+
+        $response = [
+            'response'          => $responseCode,
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => '1234',
             'terminalId'        => '1234',
-            'success'           => 'true',
+            'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
             'status'            => $status
-        );
+        ];
 
         $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
 
         return $this->makeResponse($response, $encrypt);
+    }
+
+    protected function getSuccess($responseCode)
+    {
+        if ($responseCode === '0')
+        {
+            return 'true';
+        }
+
+        return 'false';
+    }
+
+    protected function getVerifyResponseCode($vpa)
+    {
+        switch($vpa)
+        {
+            case 'missingpayment@icici':
+                return '5006';
+            default:
+                return '0';
+        }
     }
 
     /**
@@ -119,22 +142,22 @@ class Server extends Base\Mock\Server
      *
      * >All other values of response codes = Transaction has failed
      */
-    protected function getResponseCode()
+    protected function getAuthorizeResponseCode()
     {
         switch($this->input['payerVa'])
         {
             // Just make sure that this doesn't return 92
             case 'unknownresponse@icici':
                 // Always return 93 error code
-                return 93;
+                return '93';
             case 'invalidvpa@icici':
-                return 5007;
+                return '5007';
             case 'user@invalidbank':
-                return 5008;
+                return '5008';
             case 'serverdown@icici':
-                return 5009;
+                return '5009';
             default:
-                return 92;
+                return '92';
         }
     }
 

@@ -37,6 +37,30 @@ class AuthPolicyTest extends TestCase
         $this->assertArrayHasKey('token', $result);
     }
 
+    public function testAdminLoginWhenLocked()
+    {
+        $this->ba->appAuth();
+
+        $admin = $this->fixtures->create('admin', [
+            'email' => 'randomemail@rzp.com',
+            'org_id' => $this->org->getId(),
+            'failed_attempts' => 10,
+            'locked' => true
+        ]);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
+        $admin = $this->getEntityById('admin', $admin->getId(), true);
+
+        $this->assertNull($admin['last_login_at']);
+    }
+
     public function testWeakPassword()
     {
         $url = $this->testData[__FUNCTION__]['request']['url'];
@@ -181,7 +205,12 @@ class AuthPolicyTest extends TestCase
         $admin = $this->adminRepo->findOrFailPublic($admin->getId());
 
         $this->assertTrue(Hash::check('@#12$%^&dfghq', $admin['password']));
-        $this->assertFalse(in_array('$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW', $admin['old_passwords']));
+        $this->assertFalse(
+            in_array(
+                '$2y$10$Iu5YElMOC8ZRKRhQh46.SODijpx0UQfUfnVvUHG4XZfS4jOQKFjkW',
+                $admin['old_passwords']
+            )
+        );
     }
 
     public function testPasswordChangedAtPolicy()
