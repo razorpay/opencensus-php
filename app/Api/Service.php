@@ -6,6 +6,8 @@ use Carbon\Carbon;
 use App\Http\AppResponse;
 use Auth;
 use App\Base;
+
+use App\Trace\TraceCode;
 use Trace;
 
 class Service extends Base\Service
@@ -23,6 +25,12 @@ class Service extends Base\Service
         {
             $this->merchantId = 'anonymous';
         }
+
+        $app = \App::getFacadeRoot();
+
+        $this->app = $app;
+
+        $this->trace = $app['trace'];
     }
 
     public function fetchEntity($id, $mode, $entity)
@@ -281,7 +289,6 @@ class Service extends Base\Service
     public function generateResourceReport($mode, $resource, $params = [])
     {
         $data = $error = [];
-        $file = null;
 
         // Increase the time limit for the excel generation
         set_time_limit(600);
@@ -289,6 +296,30 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+            $data = $this->api
+                         ->transaction
+                         ->generateEntityReportFile($resource, $params)
+                         ->toArray();
+        }
+        catch(\Razorpay\Api\Errors\Error $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $data];
+    }
+
+    public function generateTransactionBrokingReport($mode, $resource, $params = [])
+    {
+        $data = $error = [];
+        $file = null;
+        // Increase the time limit for the excel generation
+        set_time_limit(600);
+
+        try
+        {
+            $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api
                          ->transaction
                          ->generateEntityReport($resource, $params)
@@ -304,14 +335,15 @@ class Service extends Base\Service
             if (count($data) >= 1)
             {
                 $traceData['first_row'] = $data[0];
+
                 $file = $this->generateTransactionReportAsExcel($data, $resource);
             }
             else
             {
                 $traceData['empty'] = true;
+
                 $error = ['No data found for given range'];
             }
-
             Trace::debug('MISC_TRACE_CODE', $traceData);
 
             return array($error, $file);

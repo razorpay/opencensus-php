@@ -28,6 +28,13 @@ class Transaction extends Entity
         return $this->longRequest('GET', $relativeUrl, $params);
     }
 
+    public function generateEntityReportFile($entity, $params)
+    {
+        $relativeUrl = "reports/$entity/file";
+
+        return $this->longRequest('GET', $relativeUrl, $params);
+    }
+
     public function getInvoiceData($params)
     {
         $relativeUrl = "reports/invoice";
