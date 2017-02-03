@@ -72,16 +72,14 @@ return array(
                 'strict'    => true
             ],
 
-            // TODO: Currently using master data. Add slave credentials later.
-
             'slave-live' => [
                 // Slave must have the same driver and DB names as the master.
                 'driver'    => env('DB_LIVE_DRIVER'),
-                'host'      => env('DB_LIVE_HOST'),
-                'port'      => env('DB_LIVE_PORT'),
+                'host'      => env('SLAVE_DB_LIVE_HOST'),
+                'port'      => env('SLAVE_DB_LIVE_PORT'),
                 'database'  => env('DB_LIVE_DATABASE'),
-                'username'  => env('DB_LIVE_USERNAME'),
-                'password'  => env('DB_LIVE_PASSWORD'),
+                'username'  => env('SLAVE_DB_LIVE_USERNAME'),
+                'password'  => env('SLAVE_DB_LIVE_PASSWORD'),
                 'charset'   => 'utf8',
                 'collation' => 'utf8_bin',
                 'prefix'    => '',
@@ -90,11 +88,11 @@ return array(
 
             'slave-test' => [
                 'driver'    => env('DB_TEST_DRIVER'),
-                'host'      => env('DB_TEST_HOST'),
-                'port'      => env('DB_TEST_PORT'),
+                'host'      => env('SLAVE_DB_TEST_HOST'),
+                'port'      => env('SLAVE_DB_TEST_PORT'),
                 'database'  => env('DB_TEST_DATABASE'),
-                'username'  => env('DB_TEST_USERNAME'),
-                'password'  => env('DB_TEST_PASSWORD'),
+                'username'  => env('SLAVE_DB_TEST_USERNAME'),
+                'password'  => env('SLAVE_DB_TEST_PASSWORD'),
                 'charset'   => 'utf8',
                 'collation' => 'utf8_bin',
                 'prefix'    => '',

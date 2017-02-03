@@ -182,10 +182,18 @@ class Repository extends \Razorpay\Spine\Repository
         $relationships = array();
         $objects = array();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $relationships[$entity->$typeCol][] = $entity->$idCol;
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
 
         foreach ($relationships as $type => $ids)
         {
@@ -197,12 +205,20 @@ class Repository extends \Razorpay\Spine\Repository
             }
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $typeEntity = $objects[$entity->$idCol];
 
             $entity->setRelation($relation, $typeEntity);
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
 
         return $entities;
     }
