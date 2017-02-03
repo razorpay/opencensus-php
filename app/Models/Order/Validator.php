@@ -11,7 +11,7 @@ use RZP\Error\ErrorCode;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        Entity::AMOUNT          =>  'required|integer|min:100|max:50000000',
+        Entity::AMOUNT          =>  'required|integer|min:100',
         Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
         Entity::RECEIPT         =>  'required|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',
@@ -25,7 +25,23 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
+        Entity::AMOUNT,
     ];
+
+    protected function validateAmount($input)
+    {
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+
+        $amount = $input['amount'];
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount exceeds maximum amount allowed.',
+                'amount',
+                ['amount' => $amount]);
+        }
+    }
 
     public function validateOrderNotPaid($order)
     {
