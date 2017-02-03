@@ -210,6 +210,8 @@ trait Capture
                 ]);
         }
 
+        $payment->getValidator()->captureAmountValidate($payment, $amount);
+
         $payment->getValidator()->captureValidate($payment, $amount, $currency);
 
         $data = array(

@@ -174,6 +174,18 @@ trait EntityActionTrait
         return $this->makeRequestAndGetContent($request);
     }
 
+    protected function fetchReportAsFile($entity, $content, $id = Account::TEST_ACCOUNT)
+    {
+        $request = array(
+            'url' => '/reports/'.$entity.'/file',
+            'method' => 'get',
+            'content' => $content);
+
+        $this->ba->proxyAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function fetchBalance($mid = Account::TEST_ACCOUNT)
     {
         return $this->getEntityById('balance', $mid, true);
