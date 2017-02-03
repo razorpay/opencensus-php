@@ -23,26 +23,32 @@ class PublicController extends Controller
     public function postCallbackUrlWithParams()
     {
         $postParams = Request::instance()->request->all();
-        $getParams = Request::query();
+        $getParams = Request::query('data');
+
+        // decode base64 string
+        $data = json_decode(base64_decode($getParams), true);
 
         // Relevant info for re-directing to merchant url.
 
-        $data = [
-            'request' => $getParams['request'],
-            'options' => $getParams['options'],
-            'version' => $getParams['version'] ?? 1,
-        ];
+        $data['version'] = $data['version'] ?? 1;
 
         if (isset($postParams['razorpay_payment_id']))
         {
+            $data['request']['method'] = $data['request']['method'] ?? 'GET';
+            $data['request']['target'] = $data['request']['target'] ?? '_self';
+
             //
             // It's successful payment so pass all post params directly to
             // the merchant url. Merge it with already existing POST params
             // that have been defined by the merchant
             //
-
-            $data['request']['content'] = array_merge(
-                $data['request']['content'], $postParams);
+            if (isset($data['request']['content'])) {
+                $data['request']['content'] = array_merge(
+                    $data['request']['content'], $postParams);
+            }
+            else {
+                $data['request']['content'] = $postParams;
+            }
 
             $data['retry'] = false;
         }
