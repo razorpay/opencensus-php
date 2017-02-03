@@ -199,4 +199,11 @@ class Service extends Base\Service
 
         return (new ViewDataSerializer($invoice))->get($mode);
     }
+
+    public function getInvoicePdf(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+
+        return [$invoice->getPdfDisplayName(), $this->core->getInvoicePdf($invoice)];
+    }
 }

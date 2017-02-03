@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use Response;
 use View;
 use ApiResponse;
 use RZP\Models\Invoice;
@@ -158,5 +159,16 @@ class InvoiceController extends Controller
 
         return View::make('invoice.index')
                    ->with('data', $data);
+    }
+
+    public function getInvoicePdf($id)
+    {
+        list($displayName, $path) = $this->service->getInvoicePdf($id);
+
+        $download = Request::input('download', false);
+
+        if ($download) return Response::download($path, $displayName);
+
+        return Response::file($path);
     }
 }
