@@ -136,8 +136,6 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        // $txns = $this->fetchAssociatedRelations($txns, 'source');
-
         return $txns;
     }
 
