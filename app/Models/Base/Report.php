@@ -76,10 +76,6 @@ class Report extends Core
         $this->KKCessMonth = Carbon::createFromDate(
             self::KK_COMPLEX_CASE['year'],
             self::KK_COMPLEX_CASE['month']);
-
-        $conn = 'slave-' . $this->mode;
-
-        $this->app['config']->set('database.default', $conn);
     }
 
     public function getReport($input, $entity)
