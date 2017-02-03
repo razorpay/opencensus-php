@@ -336,7 +336,7 @@ final class Route
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
-        'gateway_validate_refund'                 => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
+        'gateway_validate_unknown_refund'         => ['post',     'refunds/{gateway}/validate',                     'RefundController@postGatewayValidateRefund'                        ],
 
         // Routes for the admin roles project
         'org_create'                              => ['post',     'orgs',                                           'OrganizationController@postOrganization'                           ],
@@ -670,7 +670,7 @@ final class Route
         'gateway_fetch_absence',
         'order_refund_multiple_authorized',
         'refund_create_gateway_record',
-        'gateway_validate_refund',
+        'gateway_validate_unknown_refund',
         'scorecard',
         'billdesk_reconcile_cancelled',
         'schedule_create',
@@ -905,6 +905,7 @@ final class Route
             'batch_process_file',
             'order_refund_multiple_authorized',
             'refund_create_gateway_record',
+            'gateway_validate_unknown_refund',
             'merchant_migrate_features',
             'currency_update_rates',
             'refund_gateway_refunded_txns',

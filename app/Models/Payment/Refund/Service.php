@@ -572,8 +572,6 @@ class Service extends Base\Service
         $failed = 0;
         $unknown = 0;
         $failedRefundData = [];
-        $successRefundData = [];
-        $unknownRefunds = [];
         $success = 0;
 
         foreach ($refunds as $refund)
@@ -589,7 +587,6 @@ class Service extends Base\Service
             {
                 case 'true':
                     $success++;
-                    $successRefundData[] = $refundData;
                     break;
 
                 case 'false':
@@ -599,7 +596,6 @@ class Service extends Base\Service
 
                 case 'unknown':
                     $unknown++;
-                    $unknownRefunds[] = $refundData;
                     break;
             }
         }
@@ -611,8 +607,6 @@ class Service extends Base\Service
             'total_success_refunds' => $success,
             'total_unknown_refunds' => $unknown,
             'failed_refunds'        => $failedRefundData,
-            'success_refunds'       => $successRefundData,
-            'unknown_refunds'       => $unknownRefunds,
         ];
 
         $this->trace->info(

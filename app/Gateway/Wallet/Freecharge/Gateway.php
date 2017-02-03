@@ -345,7 +345,16 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
-        $this->createGatewayRefundEntity($attributes);
+        $wallet = $this->repo->findByRefundId($attributes['refund_id']);
+
+        if ($wallet !== null)
+        {
+            $this->updateGatewayRefundEntity($wallet, $attributes, false);
+        }
+        else
+        {
+            $this->createGatewayRefundEntity($attributes);
+        }
     }
 
     public function alreadyRefunded(array $input)
@@ -450,7 +459,9 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::STATUS]) === false)
         {
-            $data['success'] = $this->validateRefundOnFailure($wallet, $input);
+            $data['success'] = 'false';
+
+            $this->handleRefundOnValidationFailure($input);
 
             return $data;
         }
@@ -467,7 +478,10 @@ class Gateway extends Base\Gateway
                 break;
 
             case Status::TRANSACTION_FAILED:
-                $data['success'] = $this->validateRefundOnFailure($wallet, $input);
+                $data['success'] = 'false';
+
+                $this->handleRefundOnValidationFailure($input);
+
                 break;
 
             default:
@@ -1316,23 +1330,20 @@ class Gateway extends Base\Gateway
         return 'true';
     }
 
-    public function validateRefundOnFailure(
-        WalletEntity $wallet,
+    public function handleRefundOnValidationFailure(
         array $input)
     {
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_FAILED,
             [
                 'payment_id' => $input['payment']['id'],
-                'gateway' => $this->gateway,
+                'refund_id'  => $input['refund']['id'],
+                'gateway'    => $this->gateway,
             ]);
 
         //
-        // if the refund failed, delete the refund entity
-        // Refund Record cron will pick it up and attempt the refund again.
+        // If the refund failed, attempt the refund again.
         //
-        $this->repo->deleteOrFail($wallet);
-
-        return 'false';
+        $this->refund($input);
     }
 }

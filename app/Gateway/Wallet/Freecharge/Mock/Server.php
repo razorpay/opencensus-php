@@ -123,7 +123,7 @@ class Server extends Base\Mock\Server
         $response = [
             ResponseFields::STATUS                 => Freecharge\Status::TRANSACTION_INITIATED,
             ResponseFields::REFUND_TXN_ID          => random_integer(5),
-            ResponseFields::REFUND_MERCHANT_TXN_ID => uniqid(),
+            ResponseFields::REFUND_MERCHANT_TXN_ID => $input[RequestFields::REFUND_MERCHANT_TXN_ID],
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,

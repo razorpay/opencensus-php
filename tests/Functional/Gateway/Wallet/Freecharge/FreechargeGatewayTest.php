@@ -575,11 +575,16 @@ class FreechargeGatewayTest extends TestCase
         $data['id'] = 'failedRefund12';
 
         $refund = $this->updateRefundEntity($refund['id'], $data);
+        $wallet = $this->getLastEntity('wallet', true);
 
         // Run the cron to verify the refund status and edit gateway refund
         // entity status_code to SUCCESS
         $result = $this->startGatewayRefundValidateCron($this->gateway);
+        $newWallet = $this->getLastEntity('wallet', true);
 
+        $this->assertNotEquals(
+            $wallet['gateway_refund_id'],
+            $newWallet['gateway_refund_id']);
         $this->assertEquals(1, $result['total_refunds']);
         $this->assertEquals(1, $result['total_failed_refunds']);
         $this->assertEquals(0, $result['total_success_refunds']);
