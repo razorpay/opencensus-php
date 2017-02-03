@@ -9,6 +9,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -309,7 +310,7 @@ class Core extends Base\Core
 
                 $this->trace->traceException(
                     $e,
-                    null,
+                    Trace::ERROR,
                     TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
                     [
                         'id' => $invoice->getId(),

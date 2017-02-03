@@ -93,8 +93,8 @@ class Entity extends Base\PublicEntity
     const DEFAULT_DUE_DAYS      = 60;
 
     //
-    // For now it's defaul value is same across merchants, later it can be
-    // configurale at merchant's level.
+    // For now the default value is same across merchants,
+    // later it can be configurable at merchant's level.
     //
     const DEFAULT_EXPIRY_DAYS   = 60;
 
