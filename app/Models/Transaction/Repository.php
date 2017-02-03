@@ -128,6 +128,7 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
+                      ->with('source')
                       ->latest()
                       ->get();
 
@@ -135,7 +136,7 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        $txns = $this->fetchAssociatedRelations($txns, 'source');
+        // $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
     }
