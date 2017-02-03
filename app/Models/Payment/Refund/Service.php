@@ -578,7 +578,7 @@ class Service extends Base\Service
         {
             $totalRefunds++;
 
-            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $refundData = $this->getNewProcessor($merchant)
                                ->validateUnknownGatewayRefund($refund);
