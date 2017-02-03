@@ -22,9 +22,11 @@ class Core extends Base\Core
             $input
         );
 
-        $order = (new Entity)->build($input);
+        $order = new Entity;
 
         $order->merchant()->associate($merchant);
+
+        $order->build($input);
 
         $order->getValidator()->validateMerchantSpecificData($order);
 
