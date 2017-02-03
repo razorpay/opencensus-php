@@ -23,8 +23,25 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+        Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
+
+    public function fetchForOrder($order)
+    {
+        $invoice = $this->newQuery()
+                        ->where(Entity::ORDER_ID, '=', $order->getId())
+                        ->first();
+
+        if ($invoice !== null)
+        {
+            $order->setRelation('invoice', $invoice);
+
+            $invoice->order()->associate($order);
+        }
+
+        return $invoice;
+    }
 
     public function getInvoicesForNotification($medium)
     {
@@ -58,6 +75,13 @@ class Repository extends Base\Repository
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
+    }
+
+    protected function addQueryParamOrderId($query, $params)
+    {
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryPayment($query)

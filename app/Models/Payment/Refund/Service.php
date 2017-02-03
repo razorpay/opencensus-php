@@ -251,7 +251,7 @@ class Service extends Base\Service
 
             $refund = $this->repo->refund->findOrFailPublic($refundId);
 
-            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->verifyRefund($refund);
         }
@@ -380,7 +380,7 @@ class Service extends Base\Service
         // We get all the gateway refunds. We return back data for applicable and if success.
         foreach ($refunds as $refund)
         {
-            $merchant = $this->repo->merchant->getMerchantFromEntity($refund);
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
 
             $data[] = $this->getNewProcessor($merchant)->createGatewayRefundRecord($refund);
         }

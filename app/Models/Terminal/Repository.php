@@ -27,6 +27,20 @@ class Repository extends Base\Repository
         Entity::ENABLED             => 'sometimes|in:0,1',
     );
 
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('terminal'))
+        {
+            return $payment->terminal;
+        }
+
+        $terminal = $this->getById($payment->getTerminalId());
+
+        $payment->setRelation('terminal', $terminal);
+
+        return $terminal;
+    }
+
     public function addQueryParamDeleted($query, $params)
     {
         if ($params['deleted'] === '1')

@@ -65,7 +65,8 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($refund->payment);
+            $data['card'] = $card->toArray();
         }
 
         $msg = $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $refund)
@@ -574,7 +575,9 @@ trait Refund
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $this->refund->payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($this->refund->payment);
+
+            $data['card'] = $card->toArray();
         }
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)

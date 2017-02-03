@@ -731,7 +731,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
+    }
+
+    public function hasCard()
+    {
+        return ($this->isAttributeNotNull(self::CARD_ID));
     }
 
     public function hasOrder()
@@ -1175,11 +1180,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->localToken;
+            $token = $this->getRelation('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->globalToken;
+            $token = $this->getRelation('globalToken');
         }
 
         return $token;
@@ -1258,6 +1263,8 @@ class Entity extends Base\PublicEntity
         $this->terminal()->associate($terminal);
 
         $this->setGateway($terminal->getGateway());
+
+        $this->setRelation('terminal', $terminal);
     }
 
 // ----------------------- Getters Ends-----------------------------------------
