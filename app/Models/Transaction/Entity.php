@@ -428,6 +428,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
     }
 
+    public function setSettledAt($settledAt)
+    {
+        $this->setAttribute(self::SETTLED_AT, $settledAt);
+    }
+
     public function setEscrowBalance($balance)
     {
         assert ($balance >= 0);
