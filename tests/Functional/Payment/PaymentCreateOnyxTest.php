@@ -41,7 +41,9 @@ class PaymentCreateOnyxTest extends TestCase
             'back' => 'http://abc.com',
         ];
 
-        $params = http_build_query($getUrlContent);
+        $params = http_build_query([
+            'data' => base64_encode(json_encode($getUrlContent));
+        ]);
 
         $url = 'v1/callback_params?' . $params;
 
