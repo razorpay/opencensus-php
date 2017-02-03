@@ -53,6 +53,8 @@ class Validator extends Base\Validator
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
+        Entity::LOCKED                => 'sometimes|in:0,1',
+        Entity::DISABLED              => 'sometimes|in:0,1',
     ];
 
     protected static $loginRules = [
