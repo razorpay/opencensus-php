@@ -58,15 +58,6 @@ class PublicController extends Controller
 
             // just pass in error.
             $data['error'] = $postParams['error'];
-
-            //
-            // Merchant site url, to create "go back to merchant website" link
-            // this is required because otherwise there is no escape for
-            // customer until payment is successful.
-            // This is automatically picked from automatic-checkout page.
-            //
-            $data['back'] = $getParams['back'] ?? null;
-
             $data['retry'] = true;
         }
         else

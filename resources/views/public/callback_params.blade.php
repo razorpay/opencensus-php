@@ -67,7 +67,9 @@
           })
         </script>
         <button onclick="rp.open()">Retry Payment</button>
-        <a href="{{ $back }}">← Go back to website</a>
+        @if (isset($back))
+          <a href="{{ $back }}">← Go back to website</a>
+        @endif
       </div>
     @endif
   </body>
