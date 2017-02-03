@@ -1029,6 +1029,25 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedUpiHdfcTerminal(array $attributes)
+    {
+        $termId = Shared::UPI_HDFC_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'upi_hdfc',
+            'gateway_merchant_id'       => 'razorpay upi hdfc',
+            'gateway_terminal_id'       => 'nodal account upi icici',
+            'gateway_terminal_password' => 'razorpay_password',
+            'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDirectTerminalForNonTestMerchant(array $attributes)
     {
         $defaultValues = [
