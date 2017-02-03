@@ -18,7 +18,7 @@ class PaymentCreateOnyxTest extends TestCase
             'razorpay_signature' => 'abcde'];
 
         //
-        // @shk: https://api.razorpay.com/v1/callback_params?url=123&params={"a":1}&options={"key": "rzp_test_1DP5mmOlF5G5ag", "amount": 100}&back=http://qq.com
+        // @shk: https://api.razorpay.com/v1/payments/create/onyx?url=123&params={"a":1}&options={"key": "rzp_test_1DP5mmOlF5G5ag", "amount": 100}&back=http://qq.com
         // * url
         // * params
         // * options
@@ -42,10 +42,10 @@ class PaymentCreateOnyxTest extends TestCase
         ];
 
         $params = http_build_query([
-            'data' => base64_encode(json_encode($getUrlContent));
+            'data' => base64_encode(json_encode($getUrlContent))
         ]);
 
-        $url = 'v1/callback_params?' . $params;
+        $url = 'v1/payments/create/onyx?' . $params;
 
         $request = ['url' => $url, 'content' => $postContent, 'method' => 'POST'];
 

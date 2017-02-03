@@ -38,15 +38,17 @@ class PublicController extends Controller
             $data['request']['target'] = $data['request']['target'] ?? '_self';
 
             //
-            // It's successful payment so pass all post params directly to
-            // the merchant url. Merge it with already existing POST params
-            // that have been defined by the merchant
+            // It's successful payment merge all post params
+            // with already existing POST params that have been
+            // defined by the merchant
             //
-            if (isset($data['request']['content'])) {
+            if (isset($data['request']['content']))
+            {
                 $data['request']['content'] = array_merge(
                     $data['request']['content'], $postParams);
             }
-            else {
+            else
+            {
                 $data['request']['content'] = $postParams;
             }
 
