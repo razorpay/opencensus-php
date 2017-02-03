@@ -1597,4 +1597,4 @@ UPDATE merchant_details
     where promoter_address_url LIKE "file_%";
 
 ALTER TABLE merchant_details
-    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finishes;
+    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
