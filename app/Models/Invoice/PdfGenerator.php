@@ -37,15 +37,16 @@ class PdfGenerator extends Base\Core
 
         $pdf = new \mikehaertl\wkhtmlto\Pdf($html);
 
-        (new FileStore\Creator())
-            ->name($this->invoice->getPdfKey())
-            ->content($pdf->toString())
-            ->extension(FileStore\Format::PDF)
-            ->mime('application/pdf')
-            ->store(FileStore\Store::LOCAL)
-            ->entity($this->invoice)
-            ->type(FileStore\Type::INVOICE_PDF)
-            ->save();
+        return (new FileStore\Creator())
+                    ->name($this->invoice->getPdfKey())
+                    ->content($pdf->toString())
+                    ->extension(FileStore\Format::PDF)
+                    ->mime('application/pdf')
+                    ->store(FileStore\Store::LOCAL)
+                    ->entity($this->invoice)
+                    ->type(FileStore\Type::INVOICE_PDF)
+                    ->save()
+                    ->getFullFilePath();
     }
 
     protected function getHtml(array $viewPayload)

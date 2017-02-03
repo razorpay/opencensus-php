@@ -164,6 +164,7 @@ class TraceCode
     const INVOICE_ACTION_JOB_RECEIVED               = 'INVOICE_ACTION_JOB_RECEIVED';
     const INVOICE_ACTION_JOB_HANDLED                = 'INVOICE_ACTION_JOB_HANDLED';
     const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
+    const INVOICE_PDF_GEN_FAILED                    = 'INVOICE_PDF_GEN_FAILED';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';

@@ -21,16 +21,18 @@ class Notifier extends Base\Core
      * @var Entity
      */
     protected $invoice;
-    protected $invoiceLink;
+    protected $issuedPdfPath;
     protected $mode;
     protected $raven;
     protected $slack;
 
-    public function __construct($invoice = null)
+    public function __construct($invoice = null, string $issuedPdfPath = null)
     {
         parent::__construct();
 
         $this->invoice = $invoice;
+
+        $this->issuedPdfPath = $issuedPdfPath;
 
         $this->mode = Mode::TEST;
 
@@ -88,7 +90,20 @@ class Notifier extends Base\Core
 
         $data = $this->getInvoiceIssuedMailPayload();
 
-        $this->dispatchMail('emails.invoice.generated', $data);
+        $this->dispatchMail(
+            'emails.invoice.generated',
+            $data,
+            function($message)
+            {
+                if ($this->issuedPdfPath !== null)
+                {
+                    $pdfDisplayName = $this->invoice->getPdfDisplayName();
+
+                    $message->attach(
+                        $this->issuedPdfPath,
+                        ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
+                }
+            });
 
         $this->invoice->setEmailStatus(NotifyStatus::SENT);
 
@@ -155,9 +170,9 @@ class Notifier extends Base\Core
 
     // -------------------------------------------------------------------
 
-    protected function dispatchMail(string $template, array $data)
+    protected function dispatchMail(string $template, array $data, $callback = null)
     {
-        Mail::send($template, $data, function($message) use ($data)
+        Mail::send($template, $data, function($message) use ($data, $callback)
         {
             $message->from('invoices@razorpay.com', $data['name']);
 
@@ -166,6 +181,8 @@ class Notifier extends Base\Core
             $message->subject($data['subject']);
 
             $message->to($data['email']);
+
+            if ($callback !== null) call_user_func($callback, $message);
         });
     }
 

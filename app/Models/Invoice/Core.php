@@ -14,18 +14,29 @@ use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Jobs\InvoiceAction;
+use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
+    const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
+
     use DispatchesJobs;
 
     protected $lineItemCore;
+    protected $pdfGenerator;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->lineItemCore = new LineItem\Core;
+
+        $this->pdfGenerator = null;
+    }
+
+    public function setPdfGenerator(Entity $invoice)
+    {
+        $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
     public function create(array $input, Merchant\Entity $merchant)
@@ -257,7 +268,16 @@ class Core extends Base\Core
 
         $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
-        $response = (new Notifier($invoice))->$func();
+        if ($medium === NotifyMedium::EMAIL)
+        {
+            $pdfPath = $this->getInvoicePdf($invoice);
+        }
+        else
+        {
+            $pdfPath = null;
+        }
+
+        $response = (new Notifier($invoice, $pdfPath))->$func();
 
         $this->repo->saveOrFail($invoice);
 
@@ -420,6 +440,25 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoice);
     }
 
+    public function getInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false) return null;
+
+        $pdf = $invoice->pdf();
+
+        if ($pdf !== null)
+        {
+            return (new FileStore\Accessor())
+                        ->id($pdf->getId())
+                        ->merchantId($invoice->getMerchantId())
+                        ->getFile();
+        }
+
+        $this->setPdfGenerator($invoice);
+
+        return $this->generatePdfWithRetry($invoice->getId());
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
@@ -503,6 +542,27 @@ class Core extends Base\Core
                 [
                     'invoice_id' => $invoice->getId(),
                 ]);
+        }
+    }
+
+    protected function generatePdfWithRetry(string $id, int $attempt = 1)
+    {
+        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS) return false;
+
+        try
+        {
+            return $this->pdfGenerator->generate();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+            $this->trace->error(TraceCode::INVOICE_PDF_GEN_FAILED,
+                [
+                    'id'       => $id,
+                    'attempts' => $attempt,
+                ]);
+
+            $this->generatePdfWithRetry($id, ++$attempt);
         }
     }
 }

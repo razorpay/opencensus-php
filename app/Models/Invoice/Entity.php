@@ -330,6 +330,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHORT_URL);
     }
 
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
     public function getOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
@@ -358,6 +363,16 @@ class Entity extends Base\PublicEntity
     public function getPaymentId()
     {
         return $this->getAttribute(self::PAYMENT_ID);
+    }
+
+    public function getReceiptElsePublicId()
+    {
+        $receipt = $this->getAttribute(self::RECEIPT);
+
+        if ($receipt !== null) return $receipt;
+
+        return $this->getPublicId();
+
     }
 
     public function getPaidAt()
@@ -415,9 +430,28 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CUST_BILLING_ADDR_ID) !== null);
     }
 
+    public function isTypeInvoice()
+    {
+        return ($this->getType() === Type::INVOICE);
+    }
+
     public function getPdfKey()
     {
         return self::PDF_PREFIX . $this->getId();
+    }
+
+    public function getPdfDisplayName()
+    {
+        //
+        // Expected format:
+        // Invoice <Reciept/Invoice ID> from <Company> (<Paid/Unpaid>).pdf
+        //
+
+        $receipt = $this->getReceiptElsePublicId();
+        $from    = $this->merchant->getBillingLabelElseName();
+        $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
+
+        return "Invoice $receipt from $from ($status)";
     }
 
     // -------------------------------------- End Getters --------------------------------------

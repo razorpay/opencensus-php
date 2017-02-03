@@ -53,7 +53,7 @@ class InvoiceAction extends Job implements ShouldQueue
         }
     }
 
-    protected function init()
+    private function init()
     {
         $this->app   = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
@@ -69,7 +69,25 @@ class InvoiceAction extends Job implements ShouldQueue
         $this->core = new Invoice\Core;
     }
 
-    protected function handleException(\Throwable $e)
+    //
+    // Handlers for various events
+    //
+
+    private function handleIssued()
+    {
+        $pdfPath = $this->core->getInvoicePdf($this->invoice);
+
+        (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+    }
+
+    private function handleExpired()
+    {
+        (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
+    }
+
+    // ------------------------------------------------------------
+
+    private function handleException(\Throwable $e)
     {
         $this->trace->traceException($e);
         $this->trace->error(TraceCode::INVOICE_ACTION_JOB_ERROR, $this->getTracePayload());
@@ -84,7 +102,7 @@ class InvoiceAction extends Job implements ShouldQueue
         }
     }
 
-    protected function getTracePayload(array $with = [])
+    private function getTracePayload(array $with = [])
     {
         $payload = [
             'invoice_id'     => $this->invoice->getId(),
@@ -94,17 +112,5 @@ class InvoiceAction extends Job implements ShouldQueue
         ];
 
         return $payload + $with;
-    }
-
-    protected function handleIssued()
-    {
-        (new Invoice\PdfGenerator($this->invoice))->generate();
-
-        (new Invoice\Notifier($this->invoice))->notifyInvoiceIssuedToCustomer();
-    }
-
-    protected function handleExpired()
-    {
-        (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
     }
 }

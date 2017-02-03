@@ -425,7 +425,7 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFilePath()
+    public function getFullFilePath()
     {
         return $this->getStorageDir() . $this->file->getName() . '.' .$this->file->getExtension();
     }
