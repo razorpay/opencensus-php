@@ -45,6 +45,12 @@ class Entity extends Base\Entity
              ->where(self::ID, '!=', $currentSessionId)->delete();
     }
 
+    public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
+    {
+        $this->where(self::USER_ID, $userId)
+             ->where(self::ID, '!=', $currentSessionId)->delete();
+    }
+
     public function deleteOneSessionForAdmin($sessionId)
     {
         $this->where(self::ID, $sessionId)->delete();
