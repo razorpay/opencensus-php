@@ -11,9 +11,12 @@ use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Address;
+use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
+    const PDF_PREFIX = 'pdf_';
+
     use NotesTrait;
 
     use SoftDeletes;
@@ -412,6 +415,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CUST_BILLING_ADDR_ID) !== null);
     }
 
+    public function getPdfKey()
+    {
+        return self::PDF_PREFIX . $this->getId();
+    }
+
     // -------------------------------------- End Getters --------------------------------------
 
 
@@ -750,6 +758,18 @@ class Entity extends Base\PublicEntity
     public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
+    }
+
+    public function files()
+    {
+        return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
+    }
+
+    public function pdf()
+    {
+        return $this->files()
+                    ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)
+                    ->first();
     }
 
     // -------------------------------------- End Relations --------------------------------------

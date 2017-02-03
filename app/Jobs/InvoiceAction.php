@@ -35,11 +35,17 @@ class InvoiceAction extends Job implements ShouldQueue
         {
             $this->init();
 
+            $timeStarted = microtime(true);
+
             $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_RECEIVED, $this->getTracePayload());
 
             $this->{$this->handler}();
 
             $this->delete();
+
+            $timeTaken = microtime(true) - $timeStarted;
+
+            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_HANDLED, $this->getTracePayload(['time_taken' => $timeTaken]));
         }
         catch (\Throwable $e)
         {
@@ -78,18 +84,22 @@ class InvoiceAction extends Job implements ShouldQueue
         }
     }
 
-    protected function getTracePayload()
+    protected function getTracePayload(array $with = [])
     {
-        return [
+        $payload = [
             'invoice_id'     => $this->invoice->getId(),
             'invoice_status' => $this->invoice->getStatus(),
             'handler'        => $this->handler,
             'job_attempts'   => $this->attempts(),
         ];
+
+        return $payload + $with;
     }
 
     protected function handleIssued()
     {
+        (new Invoice\PdfGenerator($this->invoice))->generate();
+
         (new Invoice\Notifier($this->invoice))->notifyInvoiceIssuedToCustomer();
     }
 

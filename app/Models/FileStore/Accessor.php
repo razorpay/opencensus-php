@@ -101,7 +101,7 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $file = $this->getEntity();
+        $file = $this->get();
 
         if ($file instanceof Base\PublicCollection)
         {

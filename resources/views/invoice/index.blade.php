@@ -17,7 +17,7 @@
     </script>
     @endif
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <script src="http://127.0.0.1:8080/dist/invoice.js"></script>
+    <script src="http://invoicejs.razorpay.dev/dist/invoice.js"></script>
   </head>
   <body>
     <div id="invoice-container"></div>

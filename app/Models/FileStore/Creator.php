@@ -332,6 +332,7 @@ class Creator extends Base\Core
         {
             case Format::TXT:
             case Format::ENC:
+            case Format::PDF:
                 $this->writeTextFile();
                 break;
 
@@ -343,7 +344,7 @@ class Creator extends Base\Core
 
                 break;
 
-            case 'default':
+            default:
                 throw new Exception\LogicException('Not A Valid Extension');
         }
     }

@@ -29,6 +29,7 @@ class Service extends Base\Service
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($id, $this->merchant);
 
+
         return $invoice->toArrayPublic();
     }
 
@@ -196,6 +197,6 @@ class Service extends Base\Service
 
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
-        return $this->core->getInvoiceViewData($invoice, $mode);
+        return (new ViewDataSerializer($invoice))->get($mode);
     }
 }
