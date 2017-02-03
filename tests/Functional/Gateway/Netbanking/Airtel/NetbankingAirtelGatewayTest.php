@@ -127,6 +127,20 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    public function testNullVerifyResponse()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockNullVerifyResponse();
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
     // Authorization fails, but verify shows success
     // Results in a payment verification error
     public function testAuthFailedVerifySuccess()
@@ -215,6 +229,14 @@ class NetbankingAirtelGatewayTest extends TestCase
 
             $content['txns'][0]['txnid'] = $gatewayPayment['bank_payment_id'];
             $content['txns'][0]['status'] = 'FAL';
+        });
+    }
+
+    protected function mockNullVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['txns'] = [];
         });
     }
 

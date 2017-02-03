@@ -29,18 +29,9 @@ class Gateway extends Base\Gateway
         AuthFields::AMOUNT => Base\Entity::AMOUNT
     ];
 
-    const REVERSAL               = 'ECOMM_REVERSAL';
-
     const TIME_FORMAT            = 'dmYhis';
 
     const ACTION_ERROR           = 'Action not set correctly';
-
-    protected static $traceCodeArray = [
-        Action::AUTHORIZE => TraceCode::PAYMENT_AUTHORIZE_FAILED,
-        Action::CALLBACK  => TraceCode::PAYMENT_CALLBACK_FAILURE,
-        Action::VERIFY    => TraceCode::PAYMENT_VERIFY_FAILED,
-        Action::REFUND    => TraceCode::PAYMENT_REFUND_FAILURE
-    ];
 
     public function authorize(array $input)
     {
@@ -135,7 +126,7 @@ class Gateway extends Base\Gateway
 
         $errorCode = $response[VerifyFields::ERROR_CODE];
 
-        $verify->payment = $this->saveVerifyContentIfNeeded($verify, $authContent, $errorCode);
+        $verify->payment = $this->saveVerifyContent($verify, $authContent, $errorCode);
     }
 
     protected function getVerifyMatchStatus($verify, $authContent)
@@ -241,7 +232,7 @@ class Gateway extends Base\Gateway
         return json_encode($data);
     }
 
-    protected function saveVerifyContentIfNeeded($verify, $content, $errorCode)
+    protected function saveVerifyContent($verify, $content, $errorCode)
     {
         $input = $verify->input;
 
@@ -249,13 +240,9 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVerifyAttributes($content, $errorCode);
 
-        // Late authorization case
-        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
-        {
-            $gatewayPayment->fill($attributes);
+        $gatewayPayment->fill($attributes);
 
-            $this->repo->saveOrFail($gatewayPayment);
-        }
+        $this->repo->saveOrFail($gatewayPayment);
 
         return $gatewayPayment;
     }
@@ -264,7 +251,7 @@ class Gateway extends Base\Gateway
     {
         if ($content[VerifyFields::STATUS] === Status::SUCCESS)
         {
-            $merchantCode = ErrorCodes::getSuccessField();
+            $merchantCode = ErrorCodes::SUCCESS;
         }
         else
         {
@@ -295,7 +282,7 @@ class Gateway extends Base\Gateway
 
         if (empty($response[VerifyFields::TRANSACTION]) === true)
         {
-            $authContent = [];
+            $authContent = $this->mockFailedVerifyTransaction();
         }
         else
         {
@@ -351,7 +338,6 @@ class Gateway extends Base\Gateway
             RefundFields::SESSION_ID        => uniqid(),
             RefundFields::TRANSACTION_ID    => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RefundFields::TRANSACTION_DATE  => $this->getFormattedDate($input),
-            RefundFields::REQUEST           => self::REVERSAL,
             RefundFields::MERCHANT_ID       => $this->getMerchantId(),
             RefundFields::AMOUNT            => (string) $this->getFormattedAmount($input),
         ];
@@ -592,7 +578,7 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
 
-        $successValue = ErrorCodes::getSuccessField();
+        $successValue = ErrorCodes::SUCCESS;
 
         if ((isset($content[$statusField]) === false) or
             ($content[$statusField] !== $successValue))
@@ -608,12 +594,6 @@ class Gateway extends Base\Gateway
 
         $errorCode = ErrorCodes::getErrorCodeMap(
             $content[$statusField]);
-
-        $traceCode = self::$traceCodeArray[$this->action];
-
-        $this->trace->info(
-            $traceCode,
-            ['content' => $content]);
 
         // Payment fails, throw exception
         throw new Exception\GatewayErrorException($errorCode, $statusField, $errorDescription);

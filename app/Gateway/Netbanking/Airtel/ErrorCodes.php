@@ -6,7 +6,7 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
-    protected static $success   = '000';
+    CONST SUCCESS   = '000';
 
     protected static $errorCodeDesc = [
         '000'       => 'Success',
@@ -55,15 +55,5 @@ class ErrorCodes
         }
 
         return ErrorCode::GATEWAY_ERROR_REQUEST_ERROR;
-    }
-
-    public static function getSuccessField()
-    {
-        return self::$success;
-    }
-
-    public static function getRandomAuthError()
-    {
-        return self::$randomAuthFailure;
     }
 }

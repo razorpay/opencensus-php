@@ -283,11 +283,19 @@ class Server extends Base\Mock\Server
     {
         $merchantId = $this->getGatewayInstance()->getMerchantId();
 
-        $verifyArray = $content[VerifyFields::TRANSACTION][0];
+        if ($content[VerifyFields::TRANSACTION] === [])
+        {
+            $json = "[]";
+        }
+        else
+        {
+            $verifyArray = $content[VerifyFields::TRANSACTION][0];
+            $json = '['.json_encode($verifyArray).']';
+        }
 
         $hashArray = [
             $merchantId,
-            '['.json_encode($verifyArray).']',
+            $json,
             $content[VerifyFields::ERROR_CODE],
         ];
 
