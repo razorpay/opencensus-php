@@ -38,6 +38,12 @@ class AdminAccess
 
             $admin = $this->ba->getAdmin();
 
+            if ($admin->isDisabled() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED);
+            }
+
             $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
 
             $merchant = $this->getMerchant($request);
