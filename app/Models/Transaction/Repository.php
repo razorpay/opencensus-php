@@ -112,7 +112,7 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForReport($merchantId, $from, $to)
     {
-        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to, ['source']);
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
         $setlIds = $setls->modelKeys();
 
@@ -128,6 +128,7 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
+                      ->with('source')
                       ->latest()
                       ->get();
 
