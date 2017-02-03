@@ -7,6 +7,8 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception\LogicException;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
 
@@ -19,8 +21,8 @@ class InvoiceAction extends Job implements ShouldQueue
 
     protected $event;
     protected $invoice;
-
-    protected $core;
+    protected $trace;
+    protected $handler;
 
     public function __construct($event, Invoice\Entity $invoice)
     {
@@ -35,7 +37,9 @@ class InvoiceAction extends Job implements ShouldQueue
         {
             $this->init();
 
-            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_RECEIVED, $this->getTracePayload());
+            $this->trace->debug(
+                TraceCode::INVOICE_ACTION_JOB_RECEIVED,
+                $this->getTracePayload());
 
             $this->{$this->handler}();
 
@@ -49,18 +53,20 @@ class InvoiceAction extends Job implements ShouldQueue
 
     protected function init()
     {
-        $this->app   = App::getFacadeRoot();
-        $this->trace = $this->app['trace'];
+        $app = App::getFacadeRoot();
+        $this->trace = $app['trace'];
 
         $this->handler = 'handle' . studly_case($this->event);
 
         if (method_exists($this, $this->handler) === false)
         {
-            throw new \LogicException("InvoiceAction: Handler - $this->handler not found.");
+            throw new LogicException(
+                "InvoiceAction: Handler - $this->handler not found.",
+                ErrorCode::SERVER_ERROR_MISSING_HANDLER,
+                [
+                    'invoice_id' => $this->invoice->getId(),
+                ]);
         }
-
-
-        $this->core = new Invoice\Core;
     }
 
     protected function handleException(\Throwable $e)

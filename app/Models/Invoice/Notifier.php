@@ -84,7 +84,10 @@ class Notifier extends Base\Core
 
     public function emailInvoiceIssuedToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+        if (empty($this->invoice->getCustomerEmail()) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceIssuedMailPayload();
 
@@ -238,7 +241,7 @@ class Notifier extends Base\Core
         $merchantName = $merchant->getBillingLabelElseName();
 
         $now      = Carbon::now('Asia/Kolkata');
-        $expireBy = Carbon::createFromTimestamp($invoice->getExpireBy(), 'Asia/Kolkata');
+        $expireBy = Carbon::createFromTimestamp($this->invoice->getExpireBy(), 'Asia/Kolkata');
         $diff     = $expireBy->diffForHumans($now);
 
         switch ($this->invoice->getType())
