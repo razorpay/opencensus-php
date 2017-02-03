@@ -24,6 +24,8 @@ class Core extends Base\Core
 
         $order = new Entity;
 
+        // Needs to be associated first cause merchant entity is required
+        // in orders create validators.
         $order->merchant()->associate($merchant);
 
         $order->build($input);
