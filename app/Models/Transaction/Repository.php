@@ -112,7 +112,7 @@ class Repository extends Base\Repository
 
     public function fetchEntitiesForReport($merchantId, $from, $to)
     {
-        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
+        $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to, ['source']);
 
         $setlIds = $setls->modelKeys();
 
@@ -135,7 +135,7 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        $txns = $this->fetchAssociatedRelations($txns, 'source');
+        // $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
     }
