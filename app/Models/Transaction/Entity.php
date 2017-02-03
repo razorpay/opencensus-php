@@ -158,24 +158,6 @@ class Entity extends Base\PublicEntity
         return $this->morphTo('source', 'type', 'entity_id');
     }
 
-    // public function source()
-    // {
-    //     $type = $this->getAttribute(self::TYPE);
-
-    //     Transaction\Type::validateType($type);
-
-    //     $class = 'RZP\\Models\\';
-
-    //     if ($type === Transaction\Type::REFUND)
-    //     {
-    //         $class .= 'Payment\\';
-    //     }
-
-    //     $class .= ucfirst($type).'\\'.'Entity';
-
-    //     return $this->belongsTo($class, self::ENTITY_ID);
-    // }
-
     /**
      * Associates the entity id and validates that the entity id is unique.
      * @param $entity
