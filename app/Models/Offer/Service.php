@@ -25,7 +25,7 @@ class Service extends Base\Service
 
         $offer = (new Core)->update($offer, $input);
 
-        return $offer->toArrayAdmin();
+        return $offer->toArrayPublic();
     }
 
     public function fetch(string $id)
