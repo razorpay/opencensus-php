@@ -328,6 +328,26 @@ return [
         ],
     ],
 
+    'testDisabledAdminAccess' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_ACCOUNT_DISABLED
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED
+        ]
+    ],
+
     'testLoginOAuth' => [
         'request' => [
             'url' => '/orgs/%s/admin/oauth_login',

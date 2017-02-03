@@ -678,7 +678,7 @@ class Processor
         if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
+                'Payment failed because fees or service tax was tampered');
         }
     }
 

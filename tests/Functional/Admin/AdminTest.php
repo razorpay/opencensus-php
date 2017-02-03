@@ -311,6 +311,35 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
+    public function testDisabledAdminAccess()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'disabled' => true,
+            'org_id' => $this->orgId
+        ]);
+
+        $now = Carbon::now();
+
+        $token = $this->fixtures->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'created_at' => $now->timestamp,
+            'expires_at' => $now->addYear(1)->timestamp,
+        ]);
+
+        $token = $token->getValidToken();
+
+        // Replace auth with this route
+        $this->ba->adminAuth('test', $token);
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/orgs/' .
+            $this->org->getPublicId() .
+            '/admins/' .
+            $admin->getPublicId();
+
+        $this->startTest();
+    }
+
     public function testGetMerchantIds()
     {
         $grp = $this->fixtures->create(
@@ -734,7 +763,7 @@ class AdminTest extends TestCase
         // Check if the associated token is deleted on logout
         $allTokens = $this->getEntities('admin_token', [], true);
 
-        $remainingTokens =[];
+        $remainingTokens = [];
 
         foreach ($allTokens['items'] as $t)
         {

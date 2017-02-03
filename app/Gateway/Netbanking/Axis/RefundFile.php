@@ -10,7 +10,7 @@ use RZP\Models\FileStore;
 class RefundFile extends Base\RefundFile
 {
     // Have to check this
-    protected static $fileToWriteName = 'IConnect_Refund_Razorpay';
+    protected static $fileToWriteName = 'IConnect_Refund_RAZORPAY';
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking refunds file to the operations team';
 

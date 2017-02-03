@@ -144,6 +144,7 @@ class Entity extends Base\Entity
     protected $casts = [
         self::FAILED_ATTEMPTS     => 'int',
         self::ALLOW_ALL_MERCHANTS => 'bool',
+        self::DISABLED            => 'bool',
     ];
 
     protected $publicSetters = [
@@ -435,6 +436,11 @@ class Entity extends Base\Entity
         }
 
         return false;
+    }
+
+    public function isDisabled()
+    {
+        return $this->getAttribute(self::DISABLED);
     }
 
     public function matchPassword(string $password)
