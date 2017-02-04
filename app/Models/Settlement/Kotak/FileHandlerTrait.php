@@ -135,6 +135,8 @@ trait FileHandlerTrait
                 $first = false;
             }
 
+            $row = $this->flatten($row);
+
             fputcsv($handle, $row);
         }
 
@@ -159,6 +161,26 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $row)
+    {
+        foreach ($row as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = json_encode($value);
+            }
+        }
+
+        return $row;
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
