@@ -255,7 +255,8 @@ class AuthorizeTest extends TestCase
 
         $this->assertEquals($time, $payment['authorized_at']);
 
-        $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['public_id'].'/fix_authorized_at';
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
+        $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
 
         $this->ba->appAuth();
 
