@@ -445,7 +445,7 @@ class Core extends Base\Core
 
             $paymentTxn = $payment->transaction;
 
-            if ($paymentTxn->isSettled() === 0)
+            if ($paymentTxn->isSettled() === false)
             {
                 $paymentTxn->setSettledAt($settledAt);
 
