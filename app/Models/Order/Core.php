@@ -38,7 +38,7 @@ class Core extends Base\Core
         {
             $offerId = $input[Entity::OFFER_ID];
 
-            $order = $this->validateAndAssociateOffer($order, $offerId);
+            $this->validateAndAssociateOffer($order, $offerId);
         }
 
         $this->repo->saveOrFail($order);
@@ -69,6 +69,6 @@ class Core extends Base\Core
 
         $order->offer()->associate($offer);
 
-        return $order;
+        // return $order;
     }
 }

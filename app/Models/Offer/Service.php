@@ -12,7 +12,7 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
 
-        $offer = (new Core)->create($input);
+        $offer = (new Core)->create($input, $this->merchant);
 
         return $offer->toArrayPublic();
     }

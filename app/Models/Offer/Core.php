@@ -11,12 +11,12 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input)
+    public function create(array $input, Merchant\Entity $merchant)
     {
         // Check to see if there are any offers with same values for the set of attributes
         // required to uniquely define an offer
 
-        $existingOffers = $this->repo->offer->fetchExistingOffers($input, $this->merchant->getId());
+        $existingOffers = $this->repo->offer->fetchExistingOffers($input, $merchant->getId());
 
         if ($existingOffers->count() > 0)
         {
@@ -25,7 +25,7 @@ class Core extends Base\Core
 
         $offer = (new Entity)->build($input);
 
-        $offer->merchant()->associate($this->merchant);
+        $offer->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($offer);
 
@@ -79,9 +79,9 @@ class Core extends Base\Core
         return;
     }
 
-    public function fetchOfferForOrder(string $orderId)
+    public function fetchForOrder(string $orderId, Merchant\Entity $merchant)
     {
-        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $this->merchant);
+        $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
         $offer = $order->offer;
 

@@ -247,7 +247,7 @@ class Checker extends Base\Core
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $offerExpired = ($now <= $this->offer->getStartsAt()) and ($now > $this->offer->getEndsAt());
+        $offerExpired = ($now <= $this->offer->getStartsAt()) or ($now > $this->offer->getEndsAt());
 
         $result = (($this->offer->isActive() === true) and ($offerExpired === false));
 
@@ -262,7 +262,7 @@ class Checker extends Base\Core
     {
         if ($this->verbose === true)
         {
-            $this->trace->info($traceCode, $data);
+            $this->trace->debug($traceCode, $data);
         }
     }
 }

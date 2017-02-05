@@ -45,7 +45,7 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
-        $this->checkAndFillOfferDetails($input, $data);
+        $this->checkAndFillOfferDetails($merchant, $input, $data);
 
         $this->tracePreferencesResponse($merchant, $data);
 
@@ -284,7 +284,7 @@ class Checkout
         return $rememberCustomer;
     }
 
-    public function checkAndFillOfferDetails(array $input, array & $data)
+    public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
@@ -292,7 +292,7 @@ class Checkout
 
         if ($orderId !== null)
         {
-            $data['offer'] = (new Offer\Core)->fetchOfferForOrder($orderId);
+            $data['offer'] = (new Offer\Core)->fetchForOrder($orderId, $merchant);
         }
     }
 }
