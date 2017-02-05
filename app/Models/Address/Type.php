@@ -54,7 +54,7 @@ class Type
         return $entity;
     }
 
-    public static  function getValidTypes(string $entityType)
+    public static function getValidTypes(string $entityType)
     {
         self::validateEntityType($entityType);
 

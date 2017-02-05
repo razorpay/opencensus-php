@@ -22,8 +22,6 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
-    const SHIPPING_ADDRESS      = 'shipping_address';
-
     const FAIL_EXISTING         = 'fail_existing';
 
     const VPAS                  = 'vpas';
@@ -37,6 +35,7 @@ class Entity extends Base\PublicEntity
     // Additional input keys. Not attributes of entity.
     //
     const BILLING_ADDRESS       = 'billing_address';
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected $generateIdOnCreate = true;
 
