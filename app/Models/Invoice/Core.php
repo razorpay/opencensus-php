@@ -549,7 +549,7 @@ class Core extends Base\Core
 
     protected function generatePdfWithRetry(string $id, int $attempt = 1)
     {
-        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS) return false;
+        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS) return null;
 
         try
         {
@@ -557,12 +557,15 @@ class Core extends Base\Core
         }
         catch (\Throwable $e)
         {
-            $this->trace->traceException($e);
-            $this->trace->error(TraceCode::INVOICE_PDF_GEN_FAILED,
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::INVOICE_PDF_GEN_FAILED,
                 [
                     'id'       => $id,
                     'attempts' => $attempt,
-                ]);
+                ]
+            );
 
             $this->generatePdfWithRetry($id, ++$attempt);
         }

@@ -314,11 +314,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SHORT_URL);
     }
 
-    public function getMerchantId()
-    {
-        return $this->getAttribute(self::MERCHANT_ID);
-    }
-
     public function getOrderId()
     {
         return $this->getAttribute(self::ORDER_ID);
@@ -363,10 +358,12 @@ class Entity extends Base\PublicEntity
     {
         $receipt = $this->getAttribute(self::RECEIPT);
 
-        if ($receipt !== null) return $receipt;
+        if ($receipt !== null)
+        {
+            return $receipt;
+        }
 
         return $this->getPublicId();
-
     }
 
     public function getPaidAt()
