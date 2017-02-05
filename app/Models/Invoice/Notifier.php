@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
 
 class Notifier extends Base\Core
 {
@@ -25,6 +26,7 @@ class Notifier extends Base\Core
     protected $mode;
     protected $raven;
     protected $slack;
+    protected $mailSubjectTemplates;
 
     public function __construct($invoice = null, string $issuedPdfPath = null)
     {
@@ -44,6 +46,10 @@ class Notifier extends Base\Core
         $this->raven = $this->app['raven'];
 
         $this->slack = $this->app['slack'];
+
+        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+
+        $this->setMailSubjectTemplates();
     }
 
     public function setInvoice($invoice)
@@ -86,12 +92,15 @@ class Notifier extends Base\Core
 
     public function emailInvoiceIssuedToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+        if (empty($this->invoice->getCustomerEmail()) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceIssuedMailPayload();
 
         $this->dispatchMail(
-            'emails.invoice.generated',
+            'emails.invoice.customer.generated',
             $data,
             function($message)
             {
@@ -188,92 +197,25 @@ class Notifier extends Base\Core
 
     protected function getInvoiceIssuedMailPayload()
     {
-        $merchant     = $this->invoice->merchant;
-        $merchantName = $merchant->getBillingLabelElseName();
-
-        switch ($this->invoice->getType())
-        {
-            case Type::LINK:
-            case Type::ECOD:
-                $subject = 'Payment requested by ' . $merchantName;
-                break;
-
-            case Type::INVOICE:
-                $subject = 'Invoice from ' . $merchantName;
-                break;
-
-            default:
-                $subject = 'Payment requested by ' . $merchantName;
-        }
-
-        $subject = $subject . ' | Razorpay';
-
-        return [
-            'email'   => $this->invoice->getCustomerEmail(),
-            'date'    => date('d-M-Y H:m:s T'),
-            'subject' => $subject,
-            'link'    => $this->invoice->getShortUrl(),
-            'name'    => $merchantName,
-            'amount'  => $this->invoice->getAmount() / 100,
-        ];
+        return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
     protected function getInvoiceExpiredMailPayload()
     {
-        $merchant     = $this->invoice->merchant;
-        $merchantName = $merchant->getBillingLabelElseName();
-
-        switch ($this->invoice->getType())
-        {
-            case Type::LINK:
-            case Type::ECOD:
-                $subject = "Payment request from $merchantName has expired";
-                break;
-
-            case Type::INVOICE:
-                $subject = "Invoice from $merchantName has expired";
-                break;
-
-            default:
-                $subject = "Payment from $merchantName has expired";
-        }
-
-        $subject = $subject . ' | Razorpay';
-
-        return [
-            'email'   => $this->invoice->getCustomerEmail(),
-            'date'    => date('d-M-Y H:m:s T'),
-            'subject' => $subject,
-            'link'    => $this->invoice->getShortUrl(),
-            'name'    => $merchantName,
-        ];
+        return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
     protected function getInvoiceExpiringMailPayload()
     {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceMailPayload(string $callee)
+    {
         $merchant     = $this->invoice->merchant;
         $merchantName = $merchant->getBillingLabelElseName();
 
-        $now      = Carbon::now('Asia/Kolkata');
-        $expireBy = Carbon::createFromTimestamp($invoice->getExpireBy(), 'Asia/Kolkata');
-        $diff     = $expireBy->diffForHumans($now);
-
-        switch ($this->invoice->getType())
-        {
-            case Type::LINK:
-            case Type::ECOD:
-                $subject = "Payment request from $merchantName will expire $diff";
-                break;
-
-            case Type::INVOICE:
-                $subject = "Invoice from $merchantName will expire $diff";
-                break;
-
-            default:
-                $subject = "Payment from $merchantName will expire $diff";
-        }
-
-        $subject = $subject . ' | Razorpay';
+        $subject = $this->getInvoiceMailSubject($callee, $merchantName);
 
         return [
             'email'   => $this->invoice->getCustomerEmail(),
@@ -281,50 +223,54 @@ class Notifier extends Base\Core
             'subject' => $subject,
             'link'    => $this->invoice->getShortUrl(),
             'name'    => $merchantName,
+            'amount'  => $this->invoice->getFormattedAmount(),
         ];
+    }
+
+    protected function getInvoiceMailSubject(string $callee, string $merchantName)
+    {
+        if (in_array($callee, array_keys($this->mailSubjectTemplates), true) === false)
+        {
+            throw new Exception\LogicException("No templates found for callee: $callee");
+        }
+
+        $type = $this->invoice->getType();
+
+        return sprintf($this->mailSubjectTemplates[$callee][$type], $merchantName);
     }
 
     public function sendNotificationsInBulk()
     {
-        //
-        // Following two are not required just now.
-        // We will introduce these when we implement scheduled_by, due_by stuff.
-        //
+        $smsIssuedInvoices   = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
 
-        // $smsIssuedInvoices   = $this->repo
-        //                             ->invoice
-        //                             ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
-        // $emailIssuedInvoices = $this->repo
-        //                             ->invoice
-        //                             ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
+        $emailIssuedInvoices = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
 
-        // $sentSmsCount = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+        $expiringInvoices    = $this->repo
+                                    ->invoice
+                                     ->getInvoicesForExpiringNotificationToCustomer();
 
-        // $sentEmailCount = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
-
-        $expiringInvoices = $this->repo
-                                 ->invoice
-                                 ->getInvoicesForExpiringNotificationToCustomer();
-
+        $sentSmsCount            = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+        $sentEmailCount          = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
         $expiringEmailsSentCount = $this->emailInvoiceExpiringToCustomerInBulk($expiringInvoices);
 
         $results = [
-            // 'sms_issued_pending'   => count($smsIssuedInvoices),
-            // 'email_issued_pending' => count($emailIssuedInvoices),
-            // 'sms_issued_sent'      => $sentSmsCount,
-            // 'email_issued_sent'    => $sentEmailCount,
-            'email_expiring_pending'  => $expiringInvoices->count(),
-            'email_expiring_sent'     => $expiringEmailsSentCount,
+            'sms_issued_pending'     => count($smsIssuedInvoices),
+            'email_issued_pending'   => count($emailIssuedInvoices),
+            'sms_issued_sent'        => $sentSmsCount,
+            'email_issued_sent'      => $sentEmailCount,
+            'email_expiring_pending' => $expiringInvoices->count(),
+            'email_expiring_sent'    => $expiringEmailsSentCount,
         ];
 
-        $this->trace->info(
-            TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY,
-            $results
-        );
+        $this->trace->info(TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY, $results);
 
         // Post summary to slack
         $message = 'Invoice Notify result';
-        $meta    = ['channel' => Config::get('slack.channels.tech_logs')];
+        $meta    = ['channel' => $this->slackTechLogsChannel];
 
         $this->slack->queue($message, $results, $meta);
 
@@ -438,5 +384,26 @@ class Notifier extends Base\Core
             ]);
 
         return $request;
+    }
+
+    protected function setMailSubjectTemplates()
+    {
+        $this->mailSubjectTemplates = [
+            'getInvoiceIssuedMailPayload' => [
+                Type::LINK    => 'Payment requested by %s',
+                Type::ECOD    => 'Payment requested by %s',
+                Type::INVOICE => 'Invoice from %s',
+            ],
+            'getInvoiceExpiredMailPayload' => [
+                Type::LINK    => 'Payment requested from %s has expired',
+                Type::ECOD    => 'Payment requested from %s has expired',
+                Type::INVOICE => 'Invoice from %s from has expired',
+            ],
+            'getInvoiceExpiringMailPayload' => [
+                Type::LINK    => 'Payment request from %s is expiring',
+                Type::ECOD    => 'Payment request from %s is expiring',
+                Type::INVOICE => 'Invoice from %s is expiring',
+            ],
+        ];
     }
 }

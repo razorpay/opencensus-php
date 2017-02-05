@@ -23,64 +23,48 @@ class Entity extends Base\PublicEntity
 
     // ------------------ Entity Keys --------------------------------
 
-    const ORDER_ID              = 'order_id';
-    // Invoice receipt provided by merchant for his own references
-    const RECEIPT               = 'receipt';
-    const MERCHANT_ID           = 'merchant_id';
-    const CUSTOMER_ID           = 'customer_id';
-    const CUSTOMER_NAME         = 'customer_name';
-    const CUSTOMER_EMAIL        = 'customer_email';
-    const CUST_BILLING_ADDR_ID  = 'cust_billing_addr_id';
-    const CUSTOMER_CONTACT      = 'customer_contact';
-    // Invoice status
-    const STATUS                = 'status';
-    const DATE                  = 'date';
-    const DUE_BY                = 'due_by';
-    const SCHEDULED_AT          = 'scheduled_at';
-    const ISSUED_AT             = 'issued_at';
-    const PAID_AT               = 'paid_at';
-    const EXPIRED_AT            = 'expired_at';
-
-    //
-    // Past expire_by, invoice status will change to EXPIRED
-    //
-    const EXPIRE_BY             = 'expire_by';
-
-    // Email & SMS communication status
-    const EMAIL_STATUS          = 'email_status';
-    const SMS_STATUS            = 'sms_status';
-
-    const DESCRIPTION           = 'description';
-    const TERMS                 = 'terms';
-    const NOTES                 = 'notes';
-    const SHORT_URL             = 'short_url';
-    const VIEW_LESS             = 'view_less';
-
-    const AMOUNT                = 'amount';
-    const CURRENCY              = 'currency';
-
-    const USER_ID               = 'user_id';
-    const SOURCE                = 'source';
-    const TYPE                  = 'type';
-    const DELETED_AT            = 'deleted_at';
+    const ORDER_ID                 = 'order_id';
+    const RECEIPT                  = 'receipt';
+    const MERCHANT_ID              = 'merchant_id';
+    const CUSTOMER_ID              = 'customer_id';
+    const CUSTOMER_NAME            = 'customer_name';
+    const CUSTOMER_EMAIL           = 'customer_email';
+    const CUSTOMER_BILLING_ADDR_ID = 'customer_billing_addr_id';
+    const CUSTOMER_CONTACT         = 'customer_contact';
+    const STATUS                   = 'status';
+    const DATE                     = 'date';
+    const DUE_BY                   = 'due_by';
+    const SCHEDULED_AT             = 'scheduled_at';
+    const ISSUED_AT                = 'issued_at';
+    const PAID_AT                  = 'paid_at';
+    const EXPIRED_AT               = 'expired_at';
+    const EXPIRE_BY                = 'expire_by';
+    const EMAIL_STATUS             = 'email_status';
+    const SMS_STATUS               = 'sms_status';
+    const DESCRIPTION              = 'description';
+    const TERMS                    = 'terms';
+    const NOTES                    = 'notes';
+    const SHORT_URL                = 'short_url';
+    const VIEW_LESS                = 'view_less';
+    const AMOUNT                   = 'amount';
+    const CURRENCY                 = 'currency';
+    const USER_ID                  = 'user_id';
+    const SOURCE                   = 'source';
+    const TYPE                     = 'type';
+    const DELETED_AT               = 'deleted_at';
 
     // ---------------------- Input Keys -------------------------------------
 
-    // Input key for sending line item details
-    const LINE_ITEMS            = 'line_items';
-    // Input key for sending customer details
-    const CUSTOMER              = 'customer';
-
-    // Input key on whether to notify the customer by email|sms
-    const EMAIL_NOTIFY          = 'email_notify';
-    const SMS_NOTIFY            = 'sms_notify';
-
-    // Input key to send whether the invoice should be created in draft state
-    const DRAFT                 = 'draft';
+    const LINE_ITEMS               = 'line_items';
+    const CUSTOMER                 = 'customer';
+    const EMAIL_NOTIFY             = 'email_notify';
+    const SMS_NOTIFY               = 'sms_notify';
+    const DRAFT                    = 'draft';
 
     // ---------------------- Input Keys End -------------------------------------
 
     // ------------------------- Output Keys --------------------------------------
+
     const CUSTOMER_DETAILS         = 'customer_details';
     const CUSTOMER_ADDRESS         = 'customer_address';
     const CUSTOMER_BILLING_ADDRESS = 'customer_billing_address';
@@ -89,23 +73,23 @@ class Entity extends Base\PublicEntity
     // ------------------------ Output Keys End -----------------------------------
 
 
-    const EMAIL                 = 'email';
-    const SMS                   = 'sms';
-    const ITEMS                 = 'items';
+    const EMAIL                    = 'email';
+    const SMS                      = 'sms';
+    const ITEMS                    = 'items';
 
-    const DEFAULT_DUE_DAYS      = 60;
+    const DEFAULT_DUE_DAYS         = 60;
 
     //
-    // For now it's defaul value is same across merchants, later it can be
-    // configurale at merchant's level.
+    // For now the default value is same across merchants,
+    // later it can be configurable at merchant's level.
     //
-    const DEFAULT_EXPIRY_DAYS   = 60;
+    const DEFAULT_EXPIRY_DAYS      = 60;
 
-    protected static $sign      = 'inv';
+    protected static $sign         = 'inv';
 
-    protected $entity           = 'invoice';
+    protected $entity              = 'invoice';
 
-    protected $generateIdOnCreate = true;
+    protected $generateIdOnCreate  = true;
 
     protected $validOperations = [
         'create',
@@ -121,29 +105,29 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         // This is null by default because we don't create an order
         // when the invoice is being generated in a draft state.
-        self::ORDER_ID            => null,
+        self::ORDER_ID                 => null,
         // For a draft state, it has to be sent explicitly in the request.
         // It's created in the issued state otherwise.
-        self::STATUS              => Status::ISSUED,
+        self::STATUS                   => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
-        self::DATE                => null,
-        self::ISSUED_AT           => null,
-        self::PAID_AT             => null,
-        self::EXPIRED_AT          => null,
-        self::RECEIPT             => null,
-        self::DESCRIPTION         => null,
-        self::NOTES               => [],
-        self::SHORT_URL           => null,
-        self::VIEW_LESS           => 1,
-        self::TYPE                => Type::INVOICE,
-        self::USER_ID             => null,
-        self::AMOUNT              => null,
-        self::CURRENCY            => 'INR',
-        self::CUSTOMER_NAME       => null,
-        self::CUSTOMER_EMAIL      => null,
-        self::CUSTOMER_CONTACT    => null,
-        self::CUST_BILLING_ADDR_ID => null,
+        self::DATE                     => null,
+        self::ISSUED_AT                => null,
+        self::PAID_AT                  => null,
+        self::EXPIRED_AT               => null,
+        self::RECEIPT                  => null,
+        self::DESCRIPTION              => null,
+        self::NOTES                    => [],
+        self::SHORT_URL                => null,
+        self::VIEW_LESS                => 1,
+        self::TYPE                     => Type::INVOICE,
+        self::USER_ID                  => null,
+        self::AMOUNT                   => null,
+        self::CURRENCY                 => 'INR',
+        self::CUSTOMER_NAME            => null,
+        self::CUSTOMER_EMAIL           => null,
+        self::CUSTOMER_CONTACT         => null,
+        self::CUSTOMER_BILLING_ADDR_ID => null,
     ];
 
     // Generates fields to be filled in the DB.
@@ -345,6 +329,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getFormattedAmount()
+    {
+        return number_format($this->getAmount()/100, 2);
+    }
+
+    public function getFormattedAmountWithCurrency()
+    {
+        return $this->getCurrency() . ' ' . number_format($this->getAmount()/100, 2);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
@@ -427,7 +421,7 @@ class Entity extends Base\PublicEntity
 
     public function hasCustomerBillingAddress()
     {
-        return ($this->getAttribute(self::CUST_BILLING_ADDR_ID) !== null);
+        return ($this->getAttribute(self::CUSTOMER_BILLING_ADDR_ID) !== null);
     }
 
     public function isTypeInvoice()
@@ -485,7 +479,7 @@ class Entity extends Base\PublicEntity
 
     public function setCustBillingAddrId($customerBillingAddressId)
     {
-        $this->setAttribute(self::CUST_BILLING_ADDR_ID, $customerBillingAddressId);
+        $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $customerBillingAddressId);
     }
 
     public function setCustomerEmail($customerEmail)
@@ -786,7 +780,7 @@ class Entity extends Base\PublicEntity
 
     public function address()
     {
-        return $this->belongsTo('RZP\Models\Address\Entity', 'cust_billing_addr_id');
+        return $this->belongsTo('RZP\Models\Address\Entity', 'customer_billing_addr_id');
     }
 
     public function payments()

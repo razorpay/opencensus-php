@@ -105,8 +105,8 @@ class Notify
         self::INVOICE_PAYMENT_CAPTURED => [
             'merchant' => [
                 'view' => [
-                    'html' => 'emails.invoice.merchant',
-                    'text' => 'emails.invoice.merchant_text',
+                    'html' => 'emails.invoice.merchant.captured',
+                    'text' => 'emails.invoice.merchant.captured_text',
                 ]
             ]
         ],
@@ -624,7 +624,7 @@ class Notify
         {
             $data['invoice'] = [
                 'id'         => $this->invoice->getId(),
-                'amount'     => "INR ".number_format($this->invoice->getAmount()/100, 2),
+                'amount'     => $this->invoice->getFormattedAmountWithCurrency(),
                 'timestamp'  => $this->invoice->getCreatedAt(),
                 'payment_id' => $this->invoice->getPaymentId(),
                 'public_id'  => $this->invoice->getPublicId(),

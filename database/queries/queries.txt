@@ -1547,9 +1547,9 @@ ALTER TABLE settlements
 ALTER TABLE invoices ADD COLUMN expire_by int(11) DEFAULT NULL;
 ALTER TABLE invoices ADD INDEX invoices_expire_by_index (expire_by);
 
-ALTER TABLE invoices ADD COLUMN cust_billing_addr_id char(14) DEFAULT NULL AFTER customer_id;
-ALTER TABLE invoices ADD INDEX invoices_cust_billing_addr_id_foreign (cust_billing_addr_id);
-ALTER TABLE invoices ADD CONSTRAINT invoices_cust_billing_addr_id_foreign FOREIGN KEY (cust_billing_addr_id) REFERENCES addresses (id);
+ALTER TABLE invoices ADD COLUMN customer_billing_addr_id char(14) DEFAULT NULL AFTER customer_id;
+ALTER TABLE invoices ADD INDEX invoices_customer_billing_addr_id_foreign (customer_billing_addr_id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_billing_addr_id_foreign FOREIGN KEY (customer_billing_addr_id) REFERENCES addresses (id);
 
 -- POST deployment of invoices-expired-by branch
 

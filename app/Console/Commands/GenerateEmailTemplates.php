@@ -63,8 +63,6 @@ class GenerateEmailTemplates extends Command {
             'emails/refund/common',
 
             'emails/admin/user',
-
-            'emails/invoice/customer/expired',
         ];
 
         $view_directory = app_path().'/../resources/views/';

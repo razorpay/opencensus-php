@@ -10,6 +10,7 @@ use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -32,6 +33,10 @@ class Core extends Base\Core
         $this->lineItemCore = new LineItem\Core;
 
         $this->pdfGenerator = null;
+
+        $this->slack = $this->app['slack'];
+
+        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -339,11 +344,10 @@ class Core extends Base\Core
 
                 $this->trace->traceException(
                     $e,
-                    null,
+                    Trace::ERROR,
                     TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
-                    [
-                        'id' => $invoice->getId(),
-                    ]);
+                    ['id' => $invoice->getId()]
+                );
             }
         }
 
@@ -353,11 +357,9 @@ class Core extends Base\Core
 
         $this->trace->debug(TraceCode::INVOICES_EXPIRE_CRON_SUMMARY, $summary);
 
-        $slack   = $this->app['slack'];
-        $channel = Config::get('slack.channels.tech_logs');
-        $message = 'Invoices past expire_by, marked expired via cron.';
+        $slackMessage = 'Invoices past expire_by, marked expired via cron.';
 
-        $slack->queue($message, $summary, ['channel' => $channel]);
+        $this->slack->queue($slackMessage, $summary, ['channel' => $this->slackTechLogsChannel]);
 
         return $summary;
     }
