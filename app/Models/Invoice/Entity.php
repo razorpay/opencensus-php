@@ -321,6 +321,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::AMOUNT);
     }
 
+    public function getFormattedAmountWithCurrency()
+    {
+        return $this->getCurrency() . ' ' . number_format($this->getAmount()/100, 2);
+    }
+
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);

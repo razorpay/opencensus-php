@@ -91,7 +91,7 @@ class Notifier extends Base\Core
 
         $data = $this->getInvoiceIssuedMailPayload();
 
-        $this->dispatchMail('emails.invoice.generated', $data);
+        $this->dispatchMail('emails.invoice.customer.generated', $data);
 
         $this->invoice->setEmailStatus(NotifyStatus::SENT);
 

@@ -326,9 +326,8 @@ class Core extends Base\Core
                     $e,
                     Trace::ERROR,
                     TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
-                    [
-                        'id' => $invoice->getId(),
-                    ]);
+                    ['id' => $invoice->getId()]
+                );
             }
         }
 

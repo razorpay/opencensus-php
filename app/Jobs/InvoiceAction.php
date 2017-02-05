@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Invoice;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class InvoiceAction extends Job implements ShouldQueue
@@ -71,8 +72,12 @@ class InvoiceAction extends Job implements ShouldQueue
 
     protected function handleException(\Throwable $e)
     {
-        $this->trace->traceException($e);
-        $this->trace->error(TraceCode::INVOICE_ACTION_JOB_ERROR, $this->getTracePayload());
+        $this->trace->traceException(
+            $e,
+            Trace::ERROR,
+            TraceCode::INVOICE_ACTION_JOB_ERROR,
+            $this->getTracePayload()
+        );
 
         if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
         {
