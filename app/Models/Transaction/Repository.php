@@ -110,7 +110,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
@@ -129,6 +129,8 @@ class Repository extends Base\Repository
                         }
                       })
                       ->with('source')
+                      ->take($count)
+                      ->skip($skip)
                       ->latest()
                       ->get();
 
