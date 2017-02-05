@@ -23,6 +23,10 @@ class Core extends Base\Core
         parent::__construct();
 
         $this->lineItemCore = new LineItem\Core;
+
+        $this->slack = $this->app['slack'];
+
+        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
     }
 
     public function create(array $input, Merchant\Entity $merchant)
@@ -324,11 +328,9 @@ class Core extends Base\Core
 
         $this->trace->debug(TraceCode::INVOICES_EXPIRE_CRON_SUMMARY, $summary);
 
-        $slack   = $this->app['slack'];
-        $channel = Config::get('slack.channels.tech_logs');
-        $message = 'Invoices past expire_by, marked expired via cron.';
+        $slackMessage = 'Invoices past expire_by, marked expired via cron.';
 
-        $slack->queue($message, $summary, ['channel' => $channel]);
+        $this->slack->queue($slackMessage, $summary, ['channel' => $this->slackTechLogsChannel]);
 
         return $summary;
     }

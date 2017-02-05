@@ -8,6 +8,7 @@ use RZP\Base;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
@@ -319,7 +320,13 @@ class Validator extends Base\Validator
     {
         $invoice = $this->entity;
 
-        assert(in_array($operation, $invoice->getValidOperations(), true));
+        if (in_array($operation, $invoice->getValidOperations(), true) === false)
+        {
+            throw new LogicException(
+                "Invoice validator: $operation is not a valid",
+                null,
+                ['id' => $invoice->getId()]);
+        }
 
         switch ($operation)
         {
