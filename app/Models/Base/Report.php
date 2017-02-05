@@ -153,6 +153,11 @@ class Report extends Core
 
         $signedUrl = $this->getPreSignedUrlFromAws($key);
 
+        if (file_exists($fullpath))
+        {
+            unlink($fullpath);
+        }
+
         return ['url' => $signedUrl];
     }
 

@@ -186,12 +186,14 @@ trait Capture
      * Captures the payment.
      *
      * @param  Payment\Entity $payment
-     * @param  integer        $amount
+     * @param                 $captureAmount
      * @param                 $currency
      *
      * @return Payment\Entity
+     * @throws Exception\BadRequestException
+     * @internal param int $amount
      */
-    protected function capturePayment($payment, $amount, $currency)
+    protected function capturePayment(Payment\Entity $payment, int $captureAmount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -199,22 +201,36 @@ trait Capture
         //
         if ($this->merchant->isFeeBearerCustomer())
         {
-            $amount = $amount + $payment->getFee();
+            $captureAmount = $captureAmount + $payment->getFee();
 
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
-                    'payment_id' => $payment->getId(),
-                    'amount'     => $amount,
-                    'message'    => 'Adds fee to the amount because fee bearer is customer',
+                    'payment_id'        => $payment->getId(),
+                    'capture_amount'    => $captureAmount,
+                    'message'           => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
-        $payment->getValidator()->captureValidate($payment, $amount, $currency);
+        if ($captureAmount !== $payment->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                Payment\Entity::AMOUNT,
+                [
+                    'capture_amount' => $captureAmount,
+                    'payment_amount' => $payment->getAmount(),
+                    'payment_id'     => $payment->getId(),
+                ]);
+        }
+
+        //$payment->getValidator()->captureAmountValidate($payment, $amount);
+
+        $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
         $data = array(
             'payment'   => $payment->toArrayGateway(),
-            'amount'    => $amount,
+            'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
         );
 
