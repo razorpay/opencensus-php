@@ -64,7 +64,7 @@ class Repository extends Base\Repository
         // needs to be tuned based on created_at and expire_by values.
         //
 
-        return [];
+        return new Base\PublicCollection;
     }
 
     public function getIssuedAndPastExpiredByInvoices()

@@ -38,13 +38,13 @@ class InvoiceAction extends Job implements ShouldQueue
         {
             $this->init();
 
-            $this->trace->debug(
-                TraceCode::INVOICE_ACTION_JOB_RECEIVED,
-                $this->getTracePayload());
+            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_RECEIVED, $this->getTracePayload());
 
             $this->{$this->handler}();
 
             $this->delete();
+
+            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_HANDLED, $this->getTracePayload());
         }
         catch (\Throwable $e)
         {
