@@ -4,7 +4,6 @@ namespace RZP\Models\DataStore\PrioritySet;
 
 use RZP\Exception;
 use RZP\Models\Base;
-// use RZP\Models\DataStore\PrioritySet\Implementation;
 
 class Factory extends Base\Core
 {
@@ -19,6 +18,12 @@ class Factory extends Base\Core
         $this->mock = $mock;
     }
 
+    /**
+     * Returns the store implementation to be used as per the store tyoe
+     * @param  string $storeType Type of store driver
+     *
+     * @return Store implementation to be used
+     */
     public function getStore(string $storeType)
     {
         $this->storeType = $storeType;

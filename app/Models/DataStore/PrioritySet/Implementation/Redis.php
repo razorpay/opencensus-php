@@ -8,7 +8,7 @@ use RZP\Exception;
 use RZP\Models\DataStore\PrioritySet;
 
 /**
- * This class is used to store a sorted set data type in redis
+ * This class is used to store priority set data type in redis
  * More info about sorted set here https://redis.io/topics/data-types-intro
  */
 class Redis extends PrioritySet\Base

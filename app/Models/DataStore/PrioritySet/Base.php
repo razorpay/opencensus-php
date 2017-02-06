@@ -4,6 +4,10 @@ namespace RZP\Models\DataStore\PrioritySet;
 
 use RZP\Models\Base\Core;
 
+/**
+ * Defines the abstract class to be extended by child classes. Defines the contract
+ * to be implemented by any PrioritySet implementation
+ */
 abstract class Base extends Core
 {
     protected $key;
