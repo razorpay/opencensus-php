@@ -258,7 +258,18 @@ class TransactionController extends Controller
         $this->checkMode($mode);
         $input = Input::all();
 
-        list($error, $file) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
+        list($error, $response) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getTransactionBrokingReport($mode, $resource)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $file) = (new Api\Service)->generateTransactionBrokingReport($mode, $resource, $input);
 
         if (empty($error) === false)
         {

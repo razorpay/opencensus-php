@@ -76,21 +76,7 @@ app.controller('GenerateReportCtrl', [
         win.focus();
     };
 
-    $scope.generateReport = function () {
-
-      var data = {
-        'month': $scope.report.month,
-        'year' : $scope.report.year,
-      };
-
-      if ($scope.report.entity === 'invoice') {
-        return openInvoicePopup(data);
-      }
-
-      if ($scope.report.type=='daily') {
-        data.day = $scope.report.day;
-      }
-
+    var brokingReport = function (data){
       var request = $http({
         method: 'GET',
         responseType: 'arraybuffer',
@@ -112,6 +98,42 @@ app.controller('GenerateReportCtrl', [
       }).error(function (data) {
         $scope.alerts.resetAlerts();
          $scope.alerts.addAlert('danger', 'No data found for given time range');
+      });
+    };
+
+    $scope.generateReport = function () {
+
+      var data = {
+        'month': $scope.report.month,
+        'year' : $scope.report.year,
+      };
+
+      if ($scope.report.entity === 'invoice') {
+        return openInvoicePopup(data);
+      }
+
+      if ($scope.report.type=='daily') {
+        data.day = $scope.report.day;
+      }
+
+      if ($scope.report.entity === 'broking'){
+        return brokingReport(data);
+      }
+
+      var request = $http({
+        method: 'GET',
+        url: '/' + $scope.mode + '/reports/' + $scope.report.entity,
+        params: data,
+      });
+
+      request.success(function (data) {
+        if (data) {
+          $scope.alerts.addAlert('success', 'Your report will download shortly', true);
+          location.href = data.data.url;
+        }
+      }).error(function (data) {
+        $scope.alerts.resetAlerts();
+        $scope.alerts.addAlert('danger', 'No data found for given time range');
       });
     };
   }

@@ -46,7 +46,7 @@ class AdminTest extends TestCase
         try
         {
             $input = ['method' => 'get'];
-            $adminGetRoute = 'admins/get-multiple-app-auth?email=testoauth@testcases.com';
+            $adminGetRoute = 'admins/get-multiple-app-auth?email=testoauth@razorpay.com';
             list($error, $this->admin) = (new Generic\Service)->makeRawApiCallInternal($input, $adminGetRoute);
             $this->merchant_details = MerchantDetails\Entity::firstorfail();
             $this->merchant = $this->merchant_details->merchant();
@@ -322,6 +322,8 @@ class AdminTest extends TestCase
      */
     public function testManageAdmins()
     {
+        $this->markTestSkipped();
+
         $this->currentWindow()->size(array(
           'width' => 2560,
           'height' => 1600,
