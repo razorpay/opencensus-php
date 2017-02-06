@@ -116,7 +116,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($type, $attribute, $value) {
             $this->assertTrue($this->displayedByXPath($type, $attribute, $value));
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitAndClickByXPath($type, $attribute, $value)
@@ -124,7 +124,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($type, $attribute, $value) {
             $this->clickByXPath($type, $attribute, $value);
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitAndClickByClassName($class)
@@ -133,7 +133,7 @@ trait BrowserHelper
 			$this->assertTrue($this->displayedByClassName($class));
             $this->clickByClassName($class);
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitAndClickById($id)
@@ -142,7 +142,7 @@ trait BrowserHelper
 			$this->assertTrue($this->displayedById($id));
             $this->clickById($id);
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitAndClickByLinkText($text)
@@ -150,7 +150,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($text) {
             $this->clickByLinkText($text);
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilDisplayedByCss($selector)
@@ -158,7 +158,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($selector) {
             $this->assertTrue($this->displayedByCss($selector));
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilDisplayedByClassName($class)
@@ -166,7 +166,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($class) {
             $this->assertTrue($this->displayedByClassName($class));
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilDisplayedByName($name)
@@ -174,7 +174,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($name) {
             $this->assertTrue($this->displayedByName($name));
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilDisplayedById($id)
@@ -182,7 +182,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use ($id) {
             $this->assertTrue($this->displayedById($id));
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilContainsByCss($selector, $text)
@@ -191,7 +191,7 @@ trait BrowserHelper
             $span = $this->findByCss($selector);
             $this->assertContains($text, $span->text());
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function waitUntilContainsByClassName($class, $text)
@@ -200,10 +200,10 @@ trait BrowserHelper
             $span = $this->findByClassName($class);
             $this->assertContains($text, $span->text());
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
-	public function waitUntilAbsentByCss($selector, $time=20000)
+	public function waitUntilAbsentByCss($selector, $time=600000)
 	{
         // waitUntil runs till the inner method returns non-null
 		$this->waitUntil(function() use ($selector){
@@ -266,7 +266,7 @@ trait BrowserHelper
 		$this->waitUntil(function() use($class, $option){
             $this->selectByNameAndValue($class, $option);
             return true;
-        }, 20000);
+        }, 600000);
 	}
 
 	public function execScript($script)
@@ -279,7 +279,7 @@ trait BrowserHelper
 
   public function execAsyncScript($script, $timeout)
   {
-    $this->timeouts()->asyncScript(20000);
+    $this->timeouts()->asyncScript(600000);
     $script = 'var callback = arguments[0];
                window.setTimeout(function() {
                    callback('.$script.');

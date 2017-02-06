@@ -70,7 +70,6 @@ app.controller('MerchantsCtrl', [
           $scope.merchants = data.data.data;
           $scope.count = data.data.count;
           angular.forEach($scope.merchants, function (i) {
-            i.activation_progress = parseInt($.parseJSON(i.steps_finished).length * 100 / 5);
             i.tags = i.tagged.map(function(tagModel) {
               return tagModel.tag_name;
             });
