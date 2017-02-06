@@ -98,9 +98,11 @@
             <td>{{act.parsed_user_agent.ua.family}}({{act.parsed_user_agent.ua.major}}.{{act.parsed_user_agent.ua.minor}}.{{act.parsed_user_agent.ua.patch}}) {{act.parsed_user_agent.os.family}}</td>
             <td>{{act.ip_address}}</td>
             <td>{{act.parsed_last_activity}}</td>
-            <td><a class="btn-admin-delete" ng-show="row.username != admin.username" ng-confirm-click="Are you sure you want to delete this session?" ng-click="deleteSession(act.id)">
+            <td>
+              <a class="btn-admin-delete" ng-show="!act.current" ng-confirm-click="Are you sure you want to delete this session?" ng-click="deleteSession(act.id)">
                 <i class="fa fa-user-times text-danger" tooltip="Delete"></i>
-              </a></td>
+              </a>
+            </td>
           </tr>
         </tbody>
       </table>

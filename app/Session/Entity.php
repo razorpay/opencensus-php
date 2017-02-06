@@ -3,6 +3,8 @@
 namespace App\Session;
 
 use App\Base;
+use Redis;
+use Session;
 
 class Entity extends Base\Entity
 {
@@ -36,7 +38,22 @@ class Entity extends Base\Entity
 
     public function getAllSessionsForAdmin($id)
     {
-        return $this->where(self::ADMIN_ID, $id)->get(self::$public);
+        $sessions = [];
+
+        $sessionIds = Redis::smembers("admins:$id:sessions");
+
+        foreach ($sessionIds as $sessionId)
+        {
+            $hash = Redis::hgetall("dashboard_:$sessionId");
+
+            $hash['id'] = $sessionId;
+
+            $sessions[] = $hash;
+        }
+
+        return $sessions;
+
+        // return $this->where(self::ADMIN_ID, $id)->get(self::$public);
     }
 
     public function deleteAllOtherSessionsForAdmin($id, $currentSessionId)
@@ -53,11 +70,38 @@ class Entity extends Base\Entity
 
     public function deleteOneSessionForAdmin($sessionId)
     {
-        $this->where(self::ID, $sessionId)->delete();
+        $hash = Redis::hgetall("dashboard_:$sessionId");
+
+        // Remove from admins:adminId:sessions
+        if ($hash['admin_id'])
+        {
+            $key = "admins:".$hash['admin_id'].":sessions";
+
+            Redis::srem($key, $sessionId);
+        }
+
+        Redis::del("dashboard_:$sessionId");
+
+        // $this->where(self::ID, $sessionId)->delete();
     }
 
     public function deleteAllSessionsForAdmin($adminId)
     {
-        $this->where(self::ADMIN_ID, $adminId)->delete();
+        // Get all the members of set
+        $setKey = "admins:".$adminId.":sessions";
+
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            // Delete individual session entities
+            $key = "dashboard_:$sessionId";
+
+            Redis::del($key);
+        }
+
+        Redis::del($setKey);
+
+        // $this->where(self::ADMIN_ID, $adminId)->delete();
     }
 }

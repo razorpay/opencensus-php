@@ -8,6 +8,8 @@ use Illuminate\Contracts\Auth\Guard;
 class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessionHandler
 {
 
+    protected $sessionNamespace = 'sessions';
+
     public function read($sessionId)
     {
         $key = $this->cache->getStore()->getPrefix().$sessionId;
@@ -30,7 +32,19 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
         $key = $this->cache->getStore()->getPrefix().$sessionId;
 
-        return $this->cache->connection()->hmset($key, $data);
+        // Write to the main cache (hash)
+
+        $response = $this->cache->connection()->hmset($key, $data);
+
+        // Write to admins:ID:sessions
+        if (isset($data['admin_id']))
+        {
+            $key = 'admins:'.$data['admin_id'].':sessions';
+
+            $this->cache->connection()->sadd($key, $sessionId);
+        }
+
+        return $response;
 
         // return $this->cache->put($sessionId, $data, $this->minutes);
     }
@@ -44,7 +58,10 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         }
 
         if ($container->bound(Guard::class)) {
-            $payload['user_id'] = $container->make(Guard::class)->id();
+            if (! empty($container->make(Guard::class)->id()))
+            {
+                $payload['user_id'] = $container->make(Guard::class)->id();
+            }
         }
 
         if ($container->bound('request')) {
