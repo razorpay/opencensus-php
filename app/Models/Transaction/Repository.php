@@ -141,7 +141,7 @@ class Repository extends Base\Repository
         return $txns;
     }
 
-    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip)
     {
         $txns = $this->newQuery()
                      ->merchantId($merchantId)
