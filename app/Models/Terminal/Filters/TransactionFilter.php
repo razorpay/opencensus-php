@@ -42,6 +42,7 @@ class TransactionFilter extends Terminal\Filter
         'maestro',
         'netbanking_billdesk',
         'recurring',
+        'wallet',
     ];
 
     public function methodFilter($terminal, $input)
@@ -304,5 +305,51 @@ class TransactionFilter extends Terminal\Filter
         $amount = $input['payment']->getAmount();
 
         return ($amount >= $minAmount);
+    }
+
+    public function walletFilter($terminal, $input, $applicableTerminals)
+    {
+        //
+        // For wallets, payments have to go through their assigned terminal
+        // because gateway has requested it and gives cashbacks, settlements
+        // nuances based on the terminal
+        //
+        $gateway = $terminal->getGateway();
+
+        // wallets for which only direct assigned terminal must be accessed.
+        $wallets = [
+            Gateway::WALLET_FREECHARGE,
+            Gateway::WALLET_AIRTELMONEY,
+        ];
+
+        if (in_array($gateway, $wallets, true) === false)
+        {
+            return true;
+        }
+
+        // If the wallet terminal is not shared, return the terminal
+        if ($terminal->isShared() === false)
+        {
+            return true;
+        }
+
+        $directTerminalPresent = false;
+
+        foreach ($applicableTerminals as $currentTerminal)
+        {
+            if ($currentTerminal->isShared() === false)
+            {
+                $directTerminalPresent = true;
+                break;
+            }
+        }
+
+        // Direct terminal is present, this shared terminal should not be used
+        if ($directTerminalPresent === true)
+        {
+            return false;
+        }
+
+        return true;
     }
 }
