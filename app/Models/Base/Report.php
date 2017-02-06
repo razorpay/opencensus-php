@@ -32,7 +32,7 @@ class Report extends Core
         'skip'  =>  'sometimes|integer|min:0',
     ];
 
-    const BATCH_LIMIT = 10000;
+    const BATCH_LIMIT = 20000;
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -94,7 +94,7 @@ class Report extends Core
         // so overwriting the limits for now
         list($count, $skip) = [200000, 0];
 
-        $data = $this->getReportData($entity, $from, $to, $count, $skip);
+        list($data, $count) = $this->getReportData($entity, $from, $to, $count, $skip);
 
         return $data;
     }
@@ -115,11 +115,9 @@ class Report extends Core
 
         while ($count === self::BATCH_LIMIT)
         {
-            $data = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
+            list($data, $count) = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
 
             $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
-
-            $count = count($data);
 
             $skip += $count;
 
@@ -163,6 +161,8 @@ class Report extends Core
         $entities = $this->fetchEntitiesForReport(
                                 $merchantId, $entity, $from, $to, $count, $skip);
 
+        $fetchCount = $entities->count();
+
         $timeTaken = time() - $begin;
 
         $this->trace->debug(
@@ -189,7 +189,7 @@ class Report extends Core
                 'time_taken'    => $timeTaken
             ]);
 
-        return $data;
+        return [$data, $fetchCount];
     }
 
     protected function preReportProcessing($input, $entity)
