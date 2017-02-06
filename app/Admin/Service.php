@@ -1305,7 +1305,7 @@ class Service extends Base\Service
                 $zapierData = $this->activationZapierData($details);
                 Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
 
-                $this->logActionToSlack($merchant, Actions::ACTIVATED);
+                $this->logActionToSlack($id, Actions::ACTIVATED);
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
