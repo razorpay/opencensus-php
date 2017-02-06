@@ -14,6 +14,10 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID => 'sometimes|string|size:18',
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+
+        EsRepository::QUERY => 'sometimes|string',
+        Entity::DESCRIPTION => 'sometimes|string',
+        Entity::TERMS       => 'sometimes|string',
     ];
 
     protected $proxyFetchParamRules = [

@@ -6,6 +6,7 @@ use App;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class EsRepository extends \Razorpay\Spine\Repository
@@ -170,7 +171,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
     public function createIndexIfNotExists()
     {
-        $settings = EsMappping::$defaultIndexSettings;
+        $settings = EsMappping::$indexSettings;
 
         $mappings = EsMappping::mappings($this->fields, $this->fieldMappings);
 
@@ -344,7 +345,7 @@ class EsRepository extends \Razorpay\Spine\Repository
             $params['body'][] = $document;
         }
 
-        $this->esDao->bulkUpdate($params);
+        return $this->esDao->bulkUpdate($params);
     }
 
     public function deleteDocument(string $id)
@@ -366,7 +367,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $entity = $query->find($id);
 
-        $serialized = array_dot($entity->toArray());
+        $serialized = $entity->toArray();
 
         return array_only($serialized, $this->fields);
     }
@@ -383,7 +384,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $mapper = function($v)
                   {
-                      return array_only(array_dot($v), $this->fields);
+                      return array_only($v, $this->fields);
                   };
 
         return array_map($mapper, $serialized);
@@ -417,7 +418,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         }
         catch(\Exception $e)
         {
-            $this->trace->traceException($e, null, null, [$data]);
+            $this->trace->traceException($e, Trace::ERROR, null, [$data]);
 
             if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
             {

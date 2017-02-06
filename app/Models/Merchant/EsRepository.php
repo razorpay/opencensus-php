@@ -28,8 +28,8 @@ class EsRepository extends Base\EsRepository
     public function setFieldMappings()
     {
         $this->fieldMappings = [
-            Entity::NAME                                           => Base\EsMappping::$defaultTextFieldMapping,
-            Entity::EMAIL                                          => Base\EsMappping::$defaultTextFieldMapping,
+            Entity::NAME                                           => Base\EsMappping::$textFieldMapping,
+            Entity::EMAIL                                          => Base\EsMappping::$textFieldMapping,
             Entity::ACTIVATED                                      => Base\EsMappping::$booleanFieldMapping,
 
             E::MERCHANT_DETAIL . '.' . Detail\Entity::CREATED_AT   => Base\EsMappping::$dateFieldMapping,

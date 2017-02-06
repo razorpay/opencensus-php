@@ -6,6 +6,7 @@ use Illuminate\Console\Command;
 use App;
 
 use RZP\Constants\Entity;
+use RZP\Trace\Trace;
 
 /**
  * Indexes entity into es for search purposes.
@@ -89,7 +90,7 @@ class Index extends Command
 
                 $this->trace->traceException(
                     $e,
-                    null,
+                    Trace::ERROR,
                     null,
                     [
                         'mode'   => $this->mode,

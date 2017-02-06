@@ -4,11 +4,15 @@ namespace RZP\Models\Base;
 
 class EsMappping
 {
-    public static $defaultFieldMapping = [
+    //
+    // Default mappings for different types of fields
+    //
+
+    public static $keywordFieldMapping = [
         'type' => 'keyword',
     ];
 
-    public static $defaultTextFieldMapping = [
+    public static $textFieldMapping = [
         'type'            => 'text',
         'analyzer'        => 'edge_ngram_analyzer',
         'search_analyzer' => 'standard',
@@ -23,7 +27,15 @@ class EsMappping
         'type' => 'date',
     ];
 
-    public static $defaultIndexSettings = [
+    public static $objectFieldMapping = [
+        'type' => 'object',
+    ];
+
+    //
+    // Default index settings and type mappings
+    //
+
+    public static $indexSettings = [
         'analysis' => [
             'analyzer' => [
                 'edge_ngram_analyzer' => [
@@ -50,7 +62,7 @@ class EsMappping
         ]
     ];
 
-    public static $defaultTypeMappings = [
+    public static $typeMappings = [
         '_default_' => [
             'properties' => [],
             'dynamic_templates' => [
@@ -69,17 +81,27 @@ class EsMappping
         ],
     ];
 
+    /**
+     * Returns mapping put with default values in case it doesn't exists
+     * for a given field.
+     *
+     * @param array $fields
+     * @param array $fieldMappings
+     *
+     * @return array
+     */
     public static function mappings(array $fields, array $fieldMappings)
     {
         foreach ($fields as $field)
         {
             if (isset($fieldMappings[$field]) === false)
             {
-                $fieldMappings[$field] = self::$defaultFieldMapping;
+                $fieldMappings[$field] = self::$keywordFieldMapping;
             }
         }
 
-        $mappings                            = self::$defaultTypeMappings;
+        $mappings = self::$typeMappings;
+
         $mappings['_default_']['properties'] = $fieldMappings;
 
         return $mappings;

@@ -75,7 +75,7 @@ class EsDao
 
     public function bulkUpdate(array $params)
     {
-        $this->es->bulkUpdate($params);
+        return $this->es->bulkUpdate($params);
     }
 
     public function delete(array $params)

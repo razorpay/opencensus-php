@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\App;
 use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Repository extends \Razorpay\Spine\Repository
@@ -257,6 +258,11 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
+        if ($this->isEntityInOldEsFlow($entity->getEntity()) === false)
+        {
+            return;
+        }
+
         $this->setEsRepo();
 
         try
@@ -292,12 +298,12 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function syncToEs($entity, $action = 'upsert')
     {
-        if ($this->isEntityInOldEsFlow($entity->getEntity()))
+        if ($this->doesEsRepoExists() === false)
         {
             return;
         }
 
-        if ($this->doesEsRepoExists() === false)
+        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
         {
             return;
         }
@@ -316,10 +322,15 @@ class Repository extends \Razorpay\Spine\Repository
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException($e, null, null, [
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                null,
+                [
                     'entity_id' => $entity->getId(),
                     'action'    => $action,
-                ]);
+                ]
+            );
         }
     }
 
