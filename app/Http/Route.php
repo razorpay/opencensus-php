@@ -19,6 +19,7 @@ final class Route
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
         'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
+        'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@postCheckoutHosted'                               ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
@@ -874,6 +875,7 @@ final class Route
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
         'checkout_onyx',
+        'checkout_hosted',
     );
 
     public static $internalApps = array(
