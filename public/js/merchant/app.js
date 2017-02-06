@@ -57,7 +57,8 @@ var app = angular.module('app', [
   '$compileProvider',
   '$filterProvider',
   '$provide',
-  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
+  '$httpProvider',
+  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide, $httpProvider) {
     // lazy controller, directive and service
     app.controller = $controllerProvider.register;
     app.directive = $compileProvider.directive;
@@ -73,6 +74,9 @@ var app = angular.module('app', [
       }
       return '/app/dashboard'
     });
+
+    $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,
