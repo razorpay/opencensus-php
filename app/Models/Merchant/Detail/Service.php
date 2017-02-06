@@ -176,7 +176,13 @@ class Service extends Base\Service
 
         $response = $this->createResponse($merchantDetails);
 
-        return $response['verification']['activation_progress'];
+        $activationProgress = $response['verification']['activation_progress'];
+
+        $merchantDetails->setActivationProgress($activationProgress);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $activationProgress;
     }
 
     protected function canSubmit($input, $response)
