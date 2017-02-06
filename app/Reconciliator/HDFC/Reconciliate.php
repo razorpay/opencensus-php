@@ -9,7 +9,7 @@ use RZP\Constants\Entity;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const WEIRD_TERMINAL_IDS = [
+    const CYBERSOURCE_HDFC_TERMINAL_IDS = [
         '89050258',
         '89050055'
     ];
@@ -49,7 +49,7 @@ class Reconciliate extends Base\Reconciliate
     {
         $terminalId = explode('-', $fileDetails['file_name'])[0];
 
-        if (in_array($terminalId, self::WEIRD_TERMINAL_IDS))
+        if (in_array($terminalId, self::CYBERSOURCE_HDFC_TERMINAL_IDS, true))
         {
             $terminalId = 'hdfc_' . $terminalId;
         }
