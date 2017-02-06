@@ -104,6 +104,39 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function manualGatewayCapture(array $input)
+    {
+        $canManualCapture = $this->canForceCapture($input);
+
+        if ($canManualCapture)
+        {
+            $this->capture($input);
+
+            // Successfully captured on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not capture on the gateway side
+            return false;
+        }
+    }
+
+    protected function canForceCapture($input)
+    {
+        $paymentId = $input['payment'][PaymentModel\Entity::ID];
+
+        $gatewayPaymentEntity = $this->repo->findSuccessfulCapturedEntity($paymentId);
+
+        if (($gatewayPaymentEntity !== null) and
+            ($gatewayPaymentEntity->getAmount() === $input['amount']))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
     public function callback(array $input)
     {
         parent::callback($input);

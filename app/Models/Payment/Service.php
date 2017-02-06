@@ -417,6 +417,27 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function manualGatewayCapture($paymentId)
+    {
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $merchantId = $payment->getMerchantId();
+
+        $merchant = $this->repo->merchant->findOrFail($merchantId);
+
+        $data = $this->getNewProcessor($merchant)->manualGatewayCapture($payment);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_MANUAL_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]
+        );
+
+        return $data;
+    }
+
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
