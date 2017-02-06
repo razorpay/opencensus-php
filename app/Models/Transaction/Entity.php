@@ -155,20 +155,7 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $type = $this->getAttribute(self::TYPE);
-
-        Transaction\Type::validateType($type);
-
-        $class = 'RZP\\Models\\';
-
-        if ($type === Transaction\Type::REFUND)
-        {
-            $class .= 'Payment\\';
-        }
-
-        $class .= ucfirst($type).'\\'.'Entity';
-
-        return $this->belongsTo($class, self::ENTITY_ID);
+        return $this->morphTo('source', 'type', 'entity_id');
     }
 
     /**
@@ -178,7 +165,9 @@ class Entity extends Base\PublicEntity
     public function sourceAssociate($entity)
     {
         $this->source()->associate($entity);
+
         $this->validateEntityIdUnique();
+
         $entity->transaction()->associate($this);
     }
 
@@ -426,6 +415,11 @@ class Entity extends Base\PublicEntity
     public function setGatewayServiceTax($gatewayServiceTax)
     {
         $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
+    }
+
+    public function setSettledAt($settledAt)
+    {
+        $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
     public function setEscrowBalance($balance)
