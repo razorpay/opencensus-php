@@ -148,7 +148,31 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'You have exceeded maxmium number of login attempts.',
+                    'description' => 'You have exceeded maxmium number of login attempts. Your account has been locked.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestValidationFailureException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testAdminLoginWhenLocked' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/authenticate',
+            'method' => 'post',
+            'content' => [
+                'username'  => 'randomemail@rzp.com',
+                'password'  => 'test123456'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Your account has been locked',
                 ],
             ],
             'status_code' => 400,

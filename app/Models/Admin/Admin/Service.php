@@ -210,6 +210,13 @@ class Service extends Base\Service
 
         $this->core()->updatePassword($admin, $input, true);
 
+        if ($admin->isLocked())
+        {
+            $admin->unlock();
+        }
+
+        $this->repo->admin->saveOrFail($admin);
+
         // Flush the key so that the link cannot be used again.
         Cache::forget($key);
 
@@ -620,7 +627,7 @@ class Service extends Base\Service
 
     protected function getCacheKeyForResetToken(string $orgId, string $adminId)
     {
-        return  sprintf(
+        return sprintf(
             self::ADMIN_PASSWORD_RESET_TOKEN_KEY,
             $orgId, $adminId);
     }

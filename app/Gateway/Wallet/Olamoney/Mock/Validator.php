@@ -8,7 +8,7 @@ use RZP\Gateway\Wallet\Olamoney\RequestFields;
 
 class Validator extends Base\Validator
 {
-    protected static $creditRules   = array(
+    protected static $creditRules   = [
         'paymentId'                                                         => 'required|string',
         RequestFields::BILL                                                 => 'required|array',
         RequestFields::BILL . '.' . RequestFields::MERCHANT_REFERENCE_ID    => 'required|alpha_num',
@@ -23,23 +23,23 @@ class Validator extends Base\Validator
         RequestFields::BILL . '.' . RequestFields::COMMENTS                 => 'sometimes|string',
         RequestFields::BILL . '.' . RequestFields::UDF                      => 'required|string',
         RequestFields::PHONE                                                => 'sometimes|string|size:10',
-    );
+    ];
 
-    protected static $otpGenerateRules = array(
+    protected static $otpGenerateRules = [
         RequestFields::PHONE    => 'required|string|size:10',
         RequestFields::EMAIL    => 'required|email'
-    );
+    ];
 
-    protected static $otpSubmitRules = array(
+    protected static $otpSubmitRules = [
         RequestFields::PHONE    => 'required|string|size:10',
         RequestFields::OTP      => 'required|string|size:6'
-    );
+    ];
 
-    protected static $checkBalanceRules = array(
+    protected static $checkBalanceRules = [
         RequestFields::USER_ACCESS_TOKEN    => 'required|string',
-    );
+    ];
 
-    protected static $debitRules = array(
+    protected static $debitRules = [
         RequestFields::ACCESS_TOKEN         => 'required|string',
         RequestFields::COMMAND              => 'required|in:debit',
         RequestFields::UNIQUE_ID            => 'required|string',
@@ -52,9 +52,9 @@ class Validator extends Base\Validator
         RequestFields::COUPON_CODE          => 'required|string',
         RequestFields::USER_ACCESS_TOKEN    => 'required|string',
         RequestFields::HASH                 => 'required|regex:"^[a-f0-9]+$"',
-    );
+    ];
 
-    protected static $refundRules = array(
+    protected static $refundRules = [
         RequestFields::ACCESS_TOKEN     => 'required|string',
         RequestFields::COMMAND          => 'required|in:refund',
         RequestFields::UNIQUE_ID        => 'required|string',
@@ -68,12 +68,12 @@ class Validator extends Base\Validator
         RequestFields::BALANCE_NAME     => 'required|string',
         RequestFields::SALE_ID          => 'required|string',
         RequestFields::CURRENCY         => 'required|in:INR'
-    );
+    ];
 
-    protected static $verifyRules = array(
+    protected static $verifyRules = [
         RequestFields::UNIQUE_BILL_ID   => 'required|string',
         RequestFields::ACCESS_TOKEN     => 'required|string',
         RequestFields::TIMESTAMP        => 'required|date_format:Y-m-d H:i:s',
         RequestFields::HASH             => 'required|regex:"^[a-f0-9]+$"',
-    );
+    ];
 }

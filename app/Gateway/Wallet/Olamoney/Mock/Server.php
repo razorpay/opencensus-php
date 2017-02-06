@@ -26,7 +26,7 @@ class Server extends Base\Mock\Server
 
         $bill = $input['bill'];
 
-        $content = array(
+        $content = [
             ResponseFields::TYPE              => 'credit',
             ResponseFields::STATUS            => Status::SUCCESS,
             ResponseFields::MERCHANT_BILL_ID  => $bill[RequestFields::MERCHANT_REFERENCE_ID],
@@ -35,7 +35,7 @@ class Server extends Base\Mock\Server
             ResponseFields::COMMENTS          => $bill[RequestFields::COMMENTS],
             ResponseFields::UDF               => $bill[RequestFields::UDF],
             ResponseFields::TIMESTAMP         => time(),
-        );
+        ];
 
         $content[ResponseFields::HASH] = $this->generateHash($content);
 
@@ -58,12 +58,20 @@ class Server extends Base\Mock\Server
         {
             $responseContent = [ResponseFields::STATUS => Status::ERROR];
         }
+        elseif ($input['phone'] === '9022219027')
+        {
+            $responseContent = [
+                ResponseFields::STATUS  => Status::FAILED,
+                ResponseFields::MESSAGE =>
+                    'The email ID provided is already registered with us. Please try with a different email ID.',
+            ];
+        }
         else
         {
-            $responseContent = array(
+            $responseContent = [
                 ResponseFields::STATUS    => Status::SUCCESS,
                 ResponseFields::MESSAGE   => '',
-            );
+            ];
         }
 
         $response = $this->makeResponse($responseContent);
@@ -80,28 +88,28 @@ class Server extends Base\Mock\Server
     {
         $this->validateActionInput($input, 'otpSubmit');
 
-        $responseContent = array(
+        $responseContent = [
             ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::MESSAGE         => '',
             ResponseFields::ACCESS_TOKEN    => 'success_access_token',
             ResponseFields::REFRESH_TOKEN   => 'success_refresh_token',
-        );
+        ];
 
         if ($input[RequestFields::OTP] === Otp::INCORRECT)
         {
-            $responseContent = array(
+            $responseContent = [
                 ResponseFields::STATUS      => 'FAILED',
                 ResponseFields::MESSAGE     => 'Invalid OTP',
-            );
+            ];
         }
         else if ($input[RequestFields::OTP] === Otp::INSUFFICIENT_BALANCE)
         {
-            $responseContent = array(
+            $responseContent = [
                 ResponseFields::STATUS          => Status::SUCCESS,
                 ResponseFields::MESSAGE         => '',
                 ResponseFields::ACCESS_TOKEN    => 'insufficient_balance_access_token',
                 ResponseFields::REFRESH_TOKEN   => 'insufficient_balance_refresh_token',
-            );
+            ];
         }
 
         return $this->makeResponse($responseContent);
@@ -120,12 +128,12 @@ class Server extends Base\Mock\Server
             $balance = 0;
         }
 
-        $responseContent = array(
+        $responseContent = [
             ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::COMMENTS        => 'olaComments',
             ResponseFields::AMOUNT          => $balance,
             ResponseFields::BALANCE_TYPE    => 'olaBalanceType',
-        );
+        ];
 
         return $this->makeResponse($responseContent);
     }
@@ -137,9 +145,7 @@ class Server extends Base\Mock\Server
 
         $this->topupRequest = $input;
 
-        $response = array(
-            'status' => 'success',
-        );
+        $response = ['status' => 'success'];
 
         return $this->makeResponse($response);
     }
@@ -150,7 +156,7 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, Command::DEBIT);
 
-        $responseContent = array(
+        $responseContent = [
             ResponseFields::TYPE                    => 'debit',
             ResponseFields::STATUS                  => Status::SUCCESS,
             ResponseFields::MERCHANT_BILL_ID        => $input[RequestFields::UNIQUE_ID],
@@ -161,7 +167,7 @@ class Server extends Base\Mock\Server
             ResponseFields::IS_CASHBACK_ATTEMPTED   => 'NA',
             ResponseFields::IS_CASHBACK_SUCCESSFUL  => 'NA',
             ResponseFields::TIMESTAMP               => time(),
-        );
+        ];
 
         $responseContent[ResponseFields::HASH] = $this->generateHash($responseContent);
 
@@ -178,15 +184,15 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, Command::REFUND);
 
-        $responseContent = array(
-                ResponseFields::TYPE              => 'refund',
-                ResponseFields::TRANSACTION_ID    => 'bgho5botne16',
-                ResponseFields::MERCHANT_BILL_ID  => 'cd1501cea88e4654898d8b2a266bc467',
-                ResponseFields::AMOUNT            => '20.0',
-                ResponseFields::TIMESTAMP         => '1439473847354',
-                ResponseFields::COMMENTS          => 'test',
-                ResponseFields::UDF               => 'test',
-            );
+        $responseContent = [
+            ResponseFields::TYPE              => 'refund',
+            ResponseFields::TRANSACTION_ID    => 'bgho5botne16',
+            ResponseFields::MERCHANT_BILL_ID  => 'cd1501cea88e4654898d8b2a266bc467',
+            ResponseFields::AMOUNT            => '20.0',
+            ResponseFields::TIMESTAMP         => '1439473847354',
+            ResponseFields::COMMENTS          => 'test',
+            ResponseFields::UDF               => 'test',
+        ];
 
         // error amount
         if ($input[RequestFields::AMOUNT] === '13.00')
@@ -207,12 +213,12 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($this->mockRequest['content']);
 
-        $response = array(
+        $response = [
             ResponseFields::STATUS          => 'completed',
             ResponseFields::AMOUNT          => '500.00',
             ResponseFields::TYPE            => 'debit',
             ResponseFields::UNIQUE_BILL_ID  => 'bgho5botne16',
-        );
+        ];
 
         return $this->makeResponse($response);
     }

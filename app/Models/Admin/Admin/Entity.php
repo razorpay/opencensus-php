@@ -144,6 +144,7 @@ class Entity extends Base\Entity
     protected $casts = [
         self::FAILED_ATTEMPTS     => 'int',
         self::ALLOW_ALL_MERCHANTS => 'bool',
+        self::LOCKED              => 'bool',
         self::DISABLED            => 'bool',
     ];
 
@@ -436,6 +437,11 @@ class Entity extends Base\Entity
         }
 
         return false;
+    }
+
+    public function isLocked()
+    {
+        return $this->getAttribute(self::LOCKED);
     }
 
     public function isDisabled()
