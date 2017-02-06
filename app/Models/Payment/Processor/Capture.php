@@ -186,7 +186,7 @@ trait Capture
         // we want to add more asserts around it.
         $manualGatewayCaptureResult = $this->callGatewayForManualCapture($data);
 
-        // Here, $manualGatewayRefundResult=true means that the payment is captured on the gateway side.
+        // Here, $manualGatewayCaptureResult=true means that the payment is captured on the gateway side.
         if ($manualGatewayCaptureResult === true)
         {
             $msg = 'Successfully created a capture on gateway';

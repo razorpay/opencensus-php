@@ -428,7 +428,7 @@ class Service extends Base\Service
         $data = $this->getNewProcessor($merchant)->manualGatewayCapture($payment);
 
         $this->trace->info(
-            TraceCode::GATEWAY_MANUAL_CAPTURE_RESPONSE,
+            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
             [
                 'payment_id'    => $paymentId,
                 'data'          => $data
