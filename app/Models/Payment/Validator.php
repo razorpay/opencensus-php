@@ -185,7 +185,8 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount', $amount);
+                'amount',
+                ['amount' => $amount]);
         }
     }
 
@@ -348,13 +349,14 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $amount, $currency)
+    public function captureValidate(Payment\Entity $payment, int $amount, string $currency)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->captureAmountValidate($payment, $amount);
+        // Removing this temporarily
+        // $this->captureAmountValidate($payment, $amount);
 
         $this->captureCurrencyValidate($payment, $currency);
     }
@@ -373,10 +375,8 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function captureAmountValidate($payment, $amount)
+    public function captureAmountValidate(Payment\Entity $payment, int $amount)
     {
-        $amount = (int) $amount;
-
         if ($amount !== $payment->getAmount())
         {
             throw new Exception\BadRequestException(

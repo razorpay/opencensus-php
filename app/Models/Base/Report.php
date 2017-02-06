@@ -10,9 +10,12 @@ use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class Report extends Core
 {
+    use FileHandlerTrait;
+
     protected $allowed = array(
         E::ORDER,
         E::REFUND,
@@ -130,6 +133,32 @@ class Report extends Core
             ]);
 
         return $data;
+    }
+
+    public function getReportUrl($input, $entity)
+    {
+        $data = $this->getReport($input, $entity);
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+
+        $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report');
+
+        $csvMimeType = 'text/csv';
+
+        $key = 'report/' . $fileName . '.csv';
+
+        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+
+        $signedUrl = $this->getPreSignedUrlFromAws($key);
+
+        if (file_exists($fullpath))
+        {
+            unlink($fullpath);
+        }
+
+        return ['url' => $signedUrl];
     }
 
     protected function fetchFormattedDataForReport($entities)

@@ -100,9 +100,11 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFixAuthorizedAt($id)
+    public function postFixAuthorizedAt()
     {
-        $data = $this->payment->fixAuthorizeAt($id);
+        $input = Request::all();
+
+        $data = $this->payment->fixAuthorizeAt($input);
 
         return ApiResponse::json($data);
     }

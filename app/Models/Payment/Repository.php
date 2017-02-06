@@ -16,6 +16,7 @@ use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
 
 class Repository extends Base\Repository
 {
@@ -32,6 +33,7 @@ class Repository extends Base\Repository
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
+        Entity::INVOICE_ID         => 'sometimes|string|max:18',
     ];
 
     // These are admin allowed params to search on.
@@ -557,6 +559,13 @@ class Repository extends Base\Repository
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $orderId);
+    }
+
+    protected function addQueryParamInvoiceId($query, $params)
+    {
+        $invoiceId = (new Invoice\Entity)->verifyIdAndSilentlyStripSign($params[Entity::INVOICE_ID]);
+
+        $query->where(Entity::INVOICE_ID, '=', $invoiceId);
     }
 
     protected function joinQueryCard($query)
