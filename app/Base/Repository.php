@@ -40,7 +40,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         //
         // Currently, using $this->manager because
-        // we have $this->repo being used for creting queries.
+        // we have $this->repo being used for creating queries.
         // Once we shift to the new way of querying via newQuery()
         // then we can change this back to $this->repo. Till then,
         // we will need to keep use of $this->manager to minimum.

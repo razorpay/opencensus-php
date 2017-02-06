@@ -189,7 +189,7 @@ class Service extends Base\Service
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Detail\Entity::SUBMIT]) === true) and
-                    ($input[Detail\Entity::SUBMIT] === '1'));
+                ($input[Detail\Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)

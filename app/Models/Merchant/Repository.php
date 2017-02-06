@@ -248,27 +248,47 @@ class Repository extends Base\Repository
         $merchantCreatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
         $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
 
-        $merchantId = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
-        $submittedAt = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
-        $stepsFinished = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
-        $activationProgress = $this->manager->merchant_detail
-                                             ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
+        $merchantId = $this->manager
+                           ->merchant_detail
+                           ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
+
+        $submittedAt = $this->manager
+                            ->merchant_detail
+                            ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+
+        $stepsFinished = $this->manager
+                              ->merchant_detail
+                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
+
+        $activationProgress = $this->manager
+                                   ->merchant_detail
+                                   ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
+
+        $submitted = $this->manager
+                          ->merchant_detail
+                          ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED);
+
+        $updatedAt = $this->manager
+                          ->merchant_detail
+                          ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
+
 
         $query = $this->newQuery()
+                      ->with('features')
                       ->select(Entity::ID,
                                Entity::NAME,
                                Entity::EMAIL,
                                Entity::ACTIVATED,
+                               Entity::PARENT_ID,
                                $merchantCreatedAt,
                                $merchantUpdatedAt,
                                Entity::ARCHIVED_AT,
                                Entity::SUSPENDED_AT,
                                $stepsFinished,
                                $activationProgress,
-                               $submittedAt)
+                               $submitted,
+                               $submittedAt,
+                               $updatedAt)
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 
@@ -300,6 +320,19 @@ class Repository extends Base\Repository
                 $query = $query->whereNull(Entity::ARCHIVED_AT)
                                ->whereNull(Entity::SUSPENDED_AT);
                 break;
+        }
+
+        // Marketplace accounts filter
+        if (empty($input['sub_accounts']) === false)
+        {
+            if ($input['sub_accounts'] === '1')
+            {
+                $query = $query->whereNotNull(Entity::PARENT_ID);
+            }
+            else
+            {
+                $query = $query->where(Entity::PARENT_ID, $input['sub_accounts']);
+            }
         }
 
         return $query->get();

@@ -573,15 +573,21 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
+            $merchant['is_marketplace'] = $merchant->isMarketplace();
+
             $merchant['referrer'] = $responseHash[$merchant->getId()];
 
             //TODO: Remove this later
             if ($merchant['activation_progress'] === 0)
             {
-                $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant->getId());
+                $activationProgress = (new Merchant\Detail\Service)
+                                        ->calculateActivationProgress($merchant->getId());
 
                 $merchant['activation_progress'] = $activationProgress;
             }
+
+            // Unset eager loaded relations
+            unset ($merchant['features']);
         }
 
         return $merchants->toArray();

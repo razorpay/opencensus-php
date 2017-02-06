@@ -251,7 +251,13 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->features(), true);
+        $merchantFeatures = $this->features()->get();
+
+        $features = $merchantFeatures
+                        ->pluck(\RZP\Models\Feature\Entity::NAME)
+                        ->toArray();
+
+        return in_array($feature, $features, true);
     }
 
     public function activate()
@@ -393,6 +399,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\Merchant\Webhook\Entity');
+    }
+
+    public function features()
+    {
+        return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
     }
 
     public function merchantDetail()
@@ -570,12 +581,6 @@ class Entity extends Base\PublicEntity
     public function convertOnApi()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
-    }
-
-    public function features()
-    {
-        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
-                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()
