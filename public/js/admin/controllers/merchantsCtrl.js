@@ -8,6 +8,10 @@ app.controller('MerchantsCtrl', [
 
     $scope.regenerate = function () {
       $scope.merchant_type = '1';
+      $scope.sub_accounts = {
+        'all': false,
+        'id': ''
+      };
       $scope.tags = '';
       $scope.filter();
     };
@@ -41,6 +45,14 @@ app.controller('MerchantsCtrl', [
           break;
       }
 
+      if ($scope.sub_accounts.all === true) {
+        query.sub_accounts = 1;
+      }
+
+      if ($scope.sub_accounts.id !== '') {
+        query.sub_accounts = $scope.sub_accounts.id;
+      }
+
       // If we have tags in the list, send them as well
       if ($scope.tags !== '') {
         query.tags = $scope.tags;
@@ -57,7 +69,8 @@ app.controller('MerchantsCtrl', [
       // Pending is a different view, and we only filter on that
       if ($scope.pending) {
         query = {
-          pending: 1
+          pending: 1,
+          sub_accounts: query.sub_accounts
         };
       }
 
