@@ -315,126 +315,40 @@ class Service extends Base\Service
 
         $orgId = $user->org_id;
 
+        $response = [];
+
         try
         {
-            $merchantIds = $this->getMerchantIdsToList($orgId, $adminId)->toArray();
+            $merchants = $this->getMerchants($orgId, $adminId, $input)->toArray();
+
+            $merchantIds = array_column($merchants, 'id');
+
+            $data = Merchant\Entity::select(['merchants.id'])
+                                    ->with('tagged')
+                                    ->whereIn('merchants.id', $merchantIds);
+
+            if (isset($input['tags']))
+            {
+                $data = $data->withAllTags($input['tags']);
+            }
+
+            $data = $data->get()->toArray();
+
+            foreach ($merchants as $merchant)
+            {
+                $key = array_search($merchant['id'], array_column($data, 'id'));
+
+                if ($key !== false)
+                {
+                    unset($data[$key]['referrer']);
+
+                    $response[] = array_merge($merchant, $data[$key]);
+                }
+            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             // something went wrong
-        }
-
-        // $merchantIdsToList = [];
-        //
-        // // Need to understand how it can be passed better and change. This is temp
-        // foreach($merchantIds as $value)
-        // {
-        //     $merchantIdsToList[] = $value;
-        // }
-
-        // $merchantIdsToList = isset($merchantIdsToList) ? $merchantIdsToList : [];
-
-        $selectFields = [
-            'merchants.id',
-            'merchants.name',
-            'merchants.email',
-            'merchants.activated',
-            'merchant_details.steps_finished',
-            'merchants.created_at',
-            'merchants.updated_at',
-            'merchant_details.submitted_at',
-            'merchants.archived_at',
-            'merchants.suspended_at'
-        ];
-
-        $data = Merchant\Entity::join('merchant_details', 'merchants.id', '=', 'merchant_details.merchant_id')
-            ->select($selectFields)
-            ->with('tagged')
-            ->whereIn('merchants.id', array_keys($merchantIds));
-
-        if (isset($input['tags']))
-        {
-            $data = $data->withAllTags($input['tags']);
-        }
-
-        if (isset($input['suspended']))
-        {
-            $data = $data->whereNotNull('suspended_at');
-        }
-
-        else if (isset($input['archived']))
-        {
-            $data = $data->whereNotNull('archived_at');
-        }
-        else
-        {
-            $data = $data->whereNull('archived_at')
-                         ->whereNull('suspended_at');
-        }
-
-        $data = $data->get();
-
-        // $data = Merchant\Entity::with('merchantDetails')->where('archived', '', 0)->get();
-
-        if (reset($input) !== false)
-        {
-            list($key, $value) = each($input);
-
-            switch ($key)
-            {
-                case "suspended":
-                    $response = $data->filter(function($merchant) use($value)
-                    {
-                        return ($merchant->suspended_at !== null);
-                    });
-                    break;
-
-                case "archived":
-                    $response = $data->filter(function($merchant) use($value)
-                    {
-                        return ($merchant->archived_at !== null);
-                    });
-                    break;
-
-                case "activated":
-                    $response = $data->filter(function($merchant) use($value)
-                    {
-                        return ($merchant->activated == $value);
-                    });
-                    break;
-
-                case "pending":
-
-                    $response = $data->filter(function($merchant)
-                    {
-                        return ($merchant->activated == 0 and $merchant->merchantDetails->submitted == 1);
-                    });
-                    break;
-
-                case "dead":
-                    $response = $data->filter(function($merchant) use($value)
-                    {
-                        if($value)
-                            return ($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
-                        else
-                            return !($merchant->created_at < time() - 24*7*3600 and empty($merchant->merchant_details->steps_finished));
-                    });
-                    break;
-
-                default:
-                   $response = $data;
-            }
-        }
-        else
-        {
-            $response = $data;
-        }
-
-        $response = $response->toArray();
-
-        foreach ($response as $key => $res)
-        {
-            $response[$key]['referrer'] = $merchantIds[$res['id']];
         }
 
         return [
@@ -449,6 +363,14 @@ class Service extends Base\Service
 
         return $this->api->admin->fetchMerchantIds($orgId, $adminId);
     }
+
+    public function getMerchants(string $orgId, string $adminId, array $input)
+    {
+        $this->setAdminCredentials();
+
+        return $this->api->admin->fetchMerchants($orgId, $adminId, $input);
+    }
+
 
     public function getAdmins()
     {
@@ -646,7 +568,14 @@ class Service extends Base\Service
         }
         else
         {
-            $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
+            try
+            {
+                $data['confirmed'] = ($merchant->primaryOwner()->getConfirmToken() === null);
+            }
+            catch (\Exception $e)
+            {
+                $data['confirmed'] = true;
+            }
         }
 
         $merchantDetail = (new MerchantDetails\Service)->fetchDetails($id);
@@ -1355,19 +1284,15 @@ class Service extends Base\Service
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
-        $merchant = Merchant\Entity::findorfail($id);
+        $this->setApiCredentials();
+
+        $merchant = $this->api->merchant->fetch($id);
 
         $details = $this->fetchMerchantDetails($id);
 
         if ((int)$details['submitted'] === 0)
         {
             return array('Activation form has not been submitted by merchant yet.');
-        }
-
-        // Double equals because its probably a string
-        if ($dashboardOnly == true)
-        {
-            return $this->activateMerchantOnDashboard($merchant);
         }
 
         $this->setApiCredentials();
@@ -1379,6 +1304,7 @@ class Service extends Base\Service
         $bankAccount = $this->bankAccountMap($details['merchant_details'], $marketplaceAccount);
 
         $bankAccountApi = false;
+
         // Check if the merchant has a bank account
         try
         {
@@ -1393,6 +1319,8 @@ class Service extends Base\Service
 
         try
         {
+            $this->setApiCredentials();
+
             // Only if the merchant doesn't have the Bank Account associated
             // Do we add a bank account
             if ($bankAccountApi === false)
@@ -1400,18 +1328,23 @@ class Service extends Base\Service
                 $this->api->merchant->fetch($id)->setBankAccount($bankAccount);
             }
 
-            $this->api->merchant->fetch($id)->activate();
+            if ($merchant['activated'] === false)
+            {
+                $this->api->merchant->fetch($id)->activate();
 
-            // Log activation on marketing google spreadsheet
-            $zapierData = $this->activationZapierData($details);
-            Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
+                // Log activation on marketing google spreadsheet
+                $zapierData = $this->activationZapierData($details);
+                Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
 
-            $this->logActionToSlack($merchant, Actions::ACTIVATED);
+                $this->logActionToSlack($merchant, Actions::ACTIVATED);
+            }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
             return array($e->getMessage());
         }
+
+        $merchant = Merchant\Entity::findorfail($id);
 
         return $this->activateMerchantOnDashboard($merchant);
     }
@@ -1478,29 +1411,24 @@ class Service extends Base\Service
 
     public function liveEnableMerchant($id)
     {
-        $error = array();
-
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if ((int)$merchant->activated === 0 or $merchant->archived_at !== null)
-        {
-            return array(
-                'Merchant must be active & unarchived before enabling/disabling live transactions.');
-        }
+        $error = [];
 
         $this->setApiCredentials();
 
         try
+
         {
             $this->api->merchant->fetch($id)->enable();
+
+            $merchant = Merchant\Entity::findOrSoftFail($id);
             $this->logActionToSlack($merchant, Actions::LIVE_ENABLED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            $error = $e->getMessage();
         }
 
-        return array();
+        return $error;
     }
 
     /**
@@ -1513,121 +1441,87 @@ class Service extends Base\Service
      */
     public function archiveMerchant($id)
     {
-        $error = [];
+        $error = $this->actions($id, 'archive');
 
-        $merchant = Merchant\Entity::findOrSoftFail($id);
-
-        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
-
-        if ($merchant->archived_at !== null)
+        if (empty($error))
         {
-            $error = [self::ALREADY_ARCHIVED];
-        }
-
-        if(($merchantDetails->submitted_at !== null) and
-            ((int) $merchantDetails->locked === 1) and
-            ((int) $merchant->activated === 0))
-        {
-            $this->logActionToSlack($merchant, Actions::ARCHIVED);
+            // For backward compatibility
+            $merchant = Merchant\Entity::findOrSoftFail($id);
             $merchant->archive();
 
-            $this->actions($id, 'archive');
-
-            // Return empty array in case of success
-            return [];
+            $this->logActionToSlack($merchant, Actions::ARCHIVED);
         }
 
-        return [self::CANT_ARCHIVE_MERCHANT];
+        return $error;
     }
 
     public function unarchiveMerchant($id)
     {
-        $error = array();
+        $error = $this->actions($id, 'unarchive');
 
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if($merchant->archived_at === null)
+        if (empty($error))
         {
-            return array("Merchant not archived.");
+            // For backward compatibility
+            $merchant = Merchant\Entity::findorfail($id);
+            $merchant->archived_at = null;
+            $merchant->save();
+
+            $this->logActionToSlack($merchant, Actions::UNARCHIVED);
         }
 
-        $this->logActionToSlack($merchant, Actions::UNARCHIVED);
-
-        $merchant->archived_at = null;
-        $merchant->save();
-
-        $this->actions($id, 'unarchive');
-
-        return array();
+        return $error;
     }
 
     public function suspendMerchant($id)
     {
-        $error = [];
-        $merchant = Merchant\Entity::findOrSoftFail($id);
+        $error = $this->actions($id, 'suspend');
 
-        if ($merchant->suspended_at !== null)
+        if (empty($error))
         {
-            $error = [self::ALREADY_SUSPENDED];
+            $merchant = Merchant\Entity::findOrSoftFail($id);
+            $merchant->suspend();
+
+            $this->logActionToSlack($merchant, Actions::SUSPENDED);
         }
 
-        $this->logActionToSlack($merchant, Actions::SUSPENDED);
-        $merchant->suspend();
-
-        $this->liveDisableMerchant($id);
-
-        $this->postEditMerchant($id, ['hold_funds' => 1]);
-
-        $this->actions($id, 'suspend');
-
-        return [];
+        return $error;
     }
 
     public function unsuspendMerchant($id)
     {
-        $error = array();
+        $error = $this->actions($id, 'unsuspend');
 
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if($merchant->suspended_at === null)
+        if (empty($error))
         {
-            return array("Merchant not suspended.");
+            $merchant = Merchant\Entity::findorfail($id);
+            $merchant->suspended_at = null;
+            $merchant->save();
+
+            $this->logActionToSlack($merchant, Actions::UNSUSPENDED);
         }
 
-        $this->logActionToSlack($merchant, Actions::UNSUSPENDED);
-
-        $merchant->suspended_at = null;
-        $merchant->save();
-
-        $this->actions($id, 'unsuspend');
-
-        return array();
+        return $error;
     }
 
     public function liveDisableMerchant($id)
     {
-        $error = array();
-
-        $merchant = Merchant\Entity::findorfail($id);
-
-        if ((int)$merchant->activated === 0)
-        {
-            return array('Merchant must be active before enabling/disabling live transactions.');
-        }
+        $error = [];
 
         $this->setApiCredentials();
 
         try
         {
             $this->api->merchant->fetch($id)->disable();
+
+            $merchant = Merchant\Entity::findOrSoftFail($id);
             $this->logActionToSlack($merchant, Actions::LIVE_DISABLED);
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            $error = $e->getMessage;
         }
 
-        return array();
+        return $error;
     }
 
     /**
@@ -1641,8 +1535,6 @@ class Service extends Base\Service
     public function editMethods($id, $methods)
     {
         $error = [];
-
-        $merchant = Merchant\Entity::findorfail($id);
 
         $this->setApiCredentials();
 
@@ -2892,5 +2784,7 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
+
+        return $error;
     }
 }

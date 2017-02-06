@@ -78,6 +78,7 @@ class AdminTest extends TestCase
                     ->confirmMerchantById($this->merchant->id);
             }
 
+
             catch(\Razorpay\Api\Errors\Error $e)
             {
                 $error = [$e->getMessage()];
@@ -176,11 +177,12 @@ class AdminTest extends TestCase
           'width' => 2560,
           'height' => 1600,
         ));
+
         $this->waitAndClickById('merchantsNav');
         $this->assertTrue($this->displayedByClassName('merchant_type'));
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
-        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->waitUntilDisplayedByClassName('merchants-table-body');
         $this->clickByLinkText($this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -249,7 +251,7 @@ class AdminTest extends TestCase
         $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
-        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->waitUntilDisplayedByClassName('merchants-table-body');
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -273,7 +275,7 @@ class AdminTest extends TestCase
         $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
-        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->waitUntilDisplayedByClassName('merchants-table-body');
         $this->clickByXPath('a','text', $this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
@@ -304,7 +306,7 @@ class AdminTest extends TestCase
         $this->waitAndClickById('merchantsNav');
         $this->execScript('$(".merchant_type").val("0").trigger("change")');
         $this->execScript('$(".merchant_go").click()');
-        $this->assertTrue($this->displayedByClassName('merchants-table-body'));
+        $this->waitUntilDisplayedByClassName('merchants-table-body');
         $this->clickByXPath('a','text',$this->merchant->id);
         $this->window($this->windowHandles()[1]);
         $this->waitUntilDisplayedByClassName('merchant-wrapper');
