@@ -28,7 +28,11 @@ class Report extends Core
         'year'  =>  'required|digits:4',
         'month' =>  'required|digits_between:1,2',
         'day'   =>  'sometimes|digits_between:1,2',
+        'count' =>  'sometimes|integer|min:1',
+        'skip'  =>  'sometimes|integer|min:0',
     ];
+
+    const BATCH_LIMIT = 10000;
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -80,19 +84,69 @@ class Report extends Core
 
     public function getReport($input, $entity)
     {
-        $this->checkAllowedEntity($entity);
-
-        $this->increaseAllowedSystemLimits();
-
-        $begin = time();
-
-        $merchantId = $this->merchant->getId();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        date_default_timezone_set('Asia/Kolkata');
+        $this->preReportProcessing($input, $entity);
 
         list($from, $to) = $this->getTimestamps($input);
+
+        //list($count, $skip) = $this->getFetchLimits($input);
+
+        // currently limiting the api response can break the merchant integration
+        // so overwriting the limits for now
+        list($count, $skip) = [200000, 0];
+
+        $data = $this->getReportData($entity, $from, $to, $count, $skip);
+
+        return $data;
+    }
+
+    public function getReportUrl($input, $entity)
+    {
+        $this->preReportProcessing($input, $entity);
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        list($count, $skip) = $this->getFetchLimits($input);
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+
+        $append = false;
+
+        while ($count === self::BATCH_LIMIT)
+        {
+            $data = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
+
+            $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
+
+            $count = count($data);
+
+            $skip += $count;
+
+            $append = true;
+        }
+
+        $csvMimeType = 'text/csv';
+
+        $key = 'report/' . $fileName . '.csv';
+
+        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+
+        $signedUrl = $this->getPreSignedUrlFromAws($key);
+
+        if (file_exists($fullpath))
+        {
+            unlink($fullpath);
+        }
+
+        return ['url' => $signedUrl];
+    }
+
+    public function getReportData($entity, $from, $to, $count, $skip)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $begin = time();
 
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -100,11 +154,14 @@ class Report extends Core
                 'entity'        => $entity,
                 'from'          => $from,
                 'to'            => $to,
+                'count'         => $count,
+                'skip'          => $skip,
                 'merchantId'    => $merchantId,
                 'time_started'  => $begin
             ]);
 
-        $entities = $this->fetchEntitiesForReport($merchantId, $from, $to, $entity);
+        $entities = $this->fetchEntitiesForReport(
+                                $merchantId, $entity, $from, $to, $count, $skip);
 
         $timeTaken = time() - $begin;
 
@@ -135,30 +192,15 @@ class Report extends Core
         return $data;
     }
 
-    public function getReportUrl($input, $entity)
+    protected function preReportProcessing($input, $entity)
     {
-        $data = $this->getReport($input, $entity);
+        $this->checkAllowedEntity($entity);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $this->increaseAllowedSystemLimits();
 
-        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
-        $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report');
-
-        $csvMimeType = 'text/csv';
-
-        $key = 'report/' . $fileName . '.csv';
-
-        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
-
-        $signedUrl = $this->getPreSignedUrlFromAws($key);
-
-        if (file_exists($fullpath))
-        {
-            unlink($fullpath);
-        }
-
-        return ['url' => $signedUrl];
+        date_default_timezone_set('Asia/Kolkata');
     }
 
     protected function fetchFormattedDataForReport($entities)
@@ -166,11 +208,11 @@ class Report extends Core
         return $entities->toArrayReport();
     }
 
-    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
+    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
     {
         $repo = $this->repo->$entity;
 
-        return $repo->fetchEntitiesForReport($merchantId, $from, $to);
+        return $repo->fetchEntitiesForReport($merchantId, $from, $to, $count, $skip);
     }
 
     public function getInvoiceV2($input)
@@ -383,6 +425,24 @@ class Report extends Core
         }
 
         return [$from, $to];
+    }
+
+    protected function getFetchLimits($input)
+    {
+        $count = self::BATCH_LIMIT;
+        $skip = 0;
+
+        if (isset($input['count']))
+        {
+            $count = min($count, (int) $input['count']);
+        }
+
+        if (isset($input['skip']))
+        {
+            $skip = (int) $input['skip'];
+        }
+
+        return [$count, $skip];
     }
 
     protected function checkAllowedEntity($entity)
