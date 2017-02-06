@@ -583,20 +583,17 @@ class Service extends Base\Service
             $refundData = $this->getNewProcessor($merchant)
                                ->validateUnknownGatewayRefund($refund);
 
-            switch ($refundData['success'])
+            if ($refundData['success'] === true)
             {
-                case 'true':
-                    $success++;
-                    break;
-
-                case 'false':
-                    $failed++;
-                    $failedRefundData[] = $refundData;
-                    break;
-
-                case 'unknown':
-                    $unknown++;
-                    break;
+                $success++;
+            }
+            else if ($refundData['success'] === false)
+            {
+                $failed++;
+            }
+            else if ($refundData['success'] === 'unknown')
+            {
+                $unknown++;
             }
         }
 
