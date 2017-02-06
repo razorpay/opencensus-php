@@ -137,7 +137,7 @@ return [
                     [
                         'customer' => null,
                         'amount'   => null,
-                        'currency'=> 'INR',
+                        'currency' => 'INR',
                     ],
                 ]
             ]

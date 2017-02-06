@@ -23,6 +23,10 @@ class Entity extends Base\PublicEntity
     const ON_HOLD_UNTIL         = 'on_hold_until';
     const TRANSACTION_ID        = 'transaction_id';
 
+    // Public Attribute keys for SOURCE_ID and TO_ID
+    const SOURCE                = 'source';
+    const RECIPIENT             = 'recipient';
+
     protected static $sign = 'trf';
 
     protected $entity = 'transfer';
@@ -55,14 +59,14 @@ class Entity extends Base\PublicEntity
         self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
         self::ID,
         self::ENTITY,
-        self::SOURCE_ID,
-        self::TO_ID,
+        self::SOURCE,
+        self::RECIPIENT,
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
@@ -75,8 +79,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::TRANSACTION_ID,
-        self::TO_ID,
-        self::SOURCE_ID,
+        self::SOURCE,
+        self::RECIPIENT,
     ];
 
     protected $casts = [
@@ -214,7 +218,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setPublicToIdAttribute(array & $attributes)
+    public function setPublicRecipientAttribute(array & $attributes)
     {
         $toId = $this->getAttribute(self::TO_ID);
 
@@ -229,11 +233,12 @@ class Entity extends Base\PublicEntity
 
         if ($toId !== null)
         {
-            $attributes[self::TO_ID] = $entity::getSignedId($toId);
+            $attributes[self::RECIPIENT] = $entity::getSignedId($toId);
+            $attributes[self::TO_ID]     = $entity::getSignedId($toId);
         }
     }
 
-    public function setPublicSourceIdAttribute(array & $attributes)
+    public function setPublicSourceAttribute(array & $attributes)
     {
         $sourceId = $this->getAttribute(self::SOURCE_ID);
 
@@ -248,6 +253,7 @@ class Entity extends Base\PublicEntity
 
         if ($sourceId !== null)
         {
+            $attributes[self::SOURCE]    = $entity::getSignedId($sourceId);
             $attributes[self::SOURCE_ID] = $entity::getSignedId($sourceId);
         }
     }

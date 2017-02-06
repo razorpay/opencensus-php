@@ -110,8 +110,8 @@ return [
         ],
         'response'  => [
             'content' => [
-                'source_id'     => 'acc_10000000000000',
-                'to_id'         => 'acc_10000000000001',
+                'source'        => 'acc_10000000000000',
+                'recipient'     => 'acc_10000000000001',
                 'amount'        => 1000,
                 'currency'      => 'INR',
             ],

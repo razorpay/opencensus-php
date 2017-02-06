@@ -248,7 +248,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Transfer to a customer account
+     * Transfer to a customer wallet account
      *
      * @param  string               $customerId
      * @param  Base\Entity          $source
