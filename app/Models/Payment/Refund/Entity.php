@@ -29,8 +29,6 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
-    protected $with = ['payment'];
-
     protected static $generators = [
         self::ID,
         self::AMOUNT,

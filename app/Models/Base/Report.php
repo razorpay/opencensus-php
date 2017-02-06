@@ -88,7 +88,11 @@ class Report extends Core
 
         list($from, $to) = $this->getTimestamps($input);
 
-        list($count, $skip) = $this->getFetchLimits($input);
+        //list($count, $skip) = $this->getFetchLimits($input);
+
+        // currently limiting the api response can break the merchant integration
+        // so overwriting the limits for now
+        list($count, $skip) = [200000, 0];
 
         $data = $this->getReportData($entity, $from, $to, $count, $skip);
 
