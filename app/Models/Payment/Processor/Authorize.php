@@ -337,6 +337,11 @@ trait Authorize
                 'Can force authorize only on axis migs gateway');
         }
 
+        if ($payment->hasCard())
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+        }
+
         $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
@@ -487,7 +492,7 @@ trait Authorize
 
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
-        if ($payment->order)
+        if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
@@ -526,13 +531,8 @@ trait Authorize
 
     protected function runInternationalChecks($payment)
     {
-        if ($payment->getMethod() !== Method::CARD)
-        {
-            return;
-        }
-
         // return if method is not card or card is not international
-        if (($payment->getMerchantId() !== '2aTeFCKTYWwfrF') and
+        if (($payment->getMethod() !== Method::CARD) or
             ($payment->card->isInternational() === false))
         {
             return;
@@ -581,7 +581,7 @@ trait Authorize
 
             if ($payment->isMethodCardOrEmi())
             {
-                $data['card'] = $payment->card->toArray();
+                $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
@@ -1170,7 +1170,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
@@ -1205,7 +1205,19 @@ trait Authorize
     protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
-        $this->updatePaymentAuthorized($wasFailed);
+        $updated = $this->updatePaymentAuthorized($wasFailed);
+
+        //
+        // If payment has not been updated to authorized, we don't fire the webhook
+        // or send an email to customer/merchant.
+        // This can happen due to race conditions where this function will be called
+        // twice. The first time it gets called, it would fire the webhook and notify.
+        // We don't need to do that, the second time it gets called.
+        //
+        if ($updated === false)
+        {
+            return;
+        }
 
         $this->eventPaymentAuthorized();
 
@@ -1216,10 +1228,10 @@ trait Authorize
 
     protected function updateAuthorizedOrderStatus($payment)
     {
-        $order = $payment->order;
-
-        if (isset($order))
+        if ($payment->hasOrder())
         {
+            $order = $payment->order;
+
             $order->setAuthorized(true);
 
             $this->trace->info(
@@ -1562,7 +1574,7 @@ trait Authorize
      */
     protected function associateAndGetCardArrayForSavedToken($token, array & $input)
     {
-        $card = $token->card;
+        $card = $this->repo->card->fetchForToken($token);
 
         $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
 
@@ -1590,6 +1602,7 @@ trait Authorize
      */
     protected function createCardEntityFromSavedToken($token, array & $input)
     {
+        $card = $this->repo->card->fetchForToken($token);
         $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -1762,7 +1775,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $this->repo->transaction(function() use ($payment, $wasFailed)
+        $updated = $this->repo->transaction(function() use ($payment, $wasFailed)
         {
             $this->lockForUpdateAndReload($payment);
 
@@ -1772,7 +1785,7 @@ trait Authorize
             // and got marked as failed to be authorized again.
             if ($payment->hasBeenAuthorized() === true)
             {
-                return;
+                return false;
             }
 
             $payment->setErrorNull();
@@ -1827,7 +1840,11 @@ trait Authorize
             $this->segment->trackPayment($payment, TraceCode::PAYMENT_AUTH_SUCCESS, $customProperties);
 
             $this->tracePaymentInfo(TraceCode::PAYMENT_AUTH_SUCCESS);
+
+            return true;
         });
+
+        return $updated;
     }
 
     protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)
@@ -1835,12 +1852,11 @@ trait Authorize
         $gateway = $payment->getGateway();
 
         $networkCode = null;
-        $paymentCard = $payment->card;
 
         // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
+        if ($payment->hasCard())
         {
-            $networkCode = $paymentCard->getNetworkCode();
+            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);

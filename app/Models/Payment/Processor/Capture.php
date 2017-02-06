@@ -186,12 +186,14 @@ trait Capture
      * Captures the payment.
      *
      * @param  Payment\Entity $payment
-     * @param  integer        $amount
+     * @param                 $captureAmount
      * @param                 $currency
      *
      * @return Payment\Entity
+     * @throws Exception\BadRequestException
+     * @internal param int $amount
      */
-    protected function capturePayment($payment, $amount, $currency)
+    protected function capturePayment(Payment\Entity $payment, int $captureAmount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -199,28 +201,43 @@ trait Capture
         //
         if ($this->merchant->isFeeBearerCustomer())
         {
-            $amount = $amount + $payment->getFee();
+            $captureAmount = $captureAmount + $payment->getFee();
 
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
-                    'payment_id' => $payment->getId(),
-                    'amount'     => $amount,
-                    'message'    => 'Adds fee to the amount because fee bearer is customer',
+                    'payment_id'        => $payment->getId(),
+                    'capture_amount'    => $captureAmount,
+                    'message'           => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
-        $payment->getValidator()->captureValidate($payment, $amount, $currency);
+        if ($captureAmount !== $payment->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                Payment\Entity::AMOUNT,
+                [
+                    'capture_amount' => $captureAmount,
+                    'payment_amount' => $payment->getAmount(),
+                    'payment_id'     => $payment->getId(),
+                ]);
+        }
+
+        //$payment->getValidator()->captureAmountValidate($payment, $amount);
+
+        $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
         $data = array(
             'payment'   => $payment->toArrayGateway(),
-            'amount'    => $amount,
+            'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
         );
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($payment);
+            $data['card'] = $card->toArray();
         }
 
         if ($payment->getConvertCurrency() === true)
@@ -475,7 +492,7 @@ trait Capture
     {
         $txnCore = new Transaction\Core;
 
-        $auth = ($payment->transaction === null);
+        $auth = ($payment->hasTransaction() === false);
 
         $feesSplit = new PublicCollection;
 
@@ -504,37 +521,41 @@ trait Capture
 
     protected function verifyOrderUnpaid($payment)
     {
-        $order = $this->repo->order->getOrderForPayment($payment);
-
-        if ((empty($order) === false) and
-            ($order->getStatus() === Order\Status::PAID))
+        if ($payment->hasOrder())
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Corresponding order already has a captured payment.');
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            if ($order->getStatus() === Order\Status::PAID)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Corresponding order already has a captured payment.');
+            }
         }
     }
 
     protected function updatePaidOrderStatus(Payment\Entity $payment)
     {
+        if ($payment->hasOrder() === false)
+        {
+            return;
+        }
+
         $order = $payment->order;
 
-        if (isset($order) === true)
+        $order->setStatus(Order\Status::PAID);
+
+        $this->trace->info(
+            TraceCode::ORDER_STATUS_PAID,
+            [
+                'payment_id' => $payment->getId(),
+                'order_id' => $order->getId(),
+            ]);
+
+        $this->repo->saveOrFail($order);
+
+        if ($order->invoice !== null)
         {
-            $order->setStatus(Order\Status::PAID);
-
-            $this->trace->info(
-                TraceCode::ORDER_STATUS_PAID,
-                [
-                    'payment_id' => $payment->getId(),
-                    'order_id' => $order->getId(),
-                ]);
-
-            $this->repo->saveOrFail($order);
-
-            if ($order->invoice !== null)
-            {
-                $this->updatePaidInvoiceStatus($order, $payment);
-            }
+            $this->updatePaidInvoiceStatus($order, $payment);
         }
     }
 

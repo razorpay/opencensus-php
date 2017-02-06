@@ -2,9 +2,6 @@
 
 namespace RZP\Models\Order;
 
-use DB;
-
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
@@ -15,10 +12,6 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
         Entity::RECEIPT         => 'sometimes|string|max:40',
-        /**
-         * TODO: Remove this, Added for testing.
-         */
-        Entity::NOTES           => 'sometimes|string',
     ];
 
     protected $proxyFetchParamRules = [
@@ -31,16 +24,18 @@ class Repository extends Base\Repository
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
     ];
 
-    public function getOrderForPayment($payment)
+    public function fetchForPayment($payment)
     {
+        if ($payment->hasRelation('order'))
+        {
+            return $payment->order;
+        }
+
         $orderId = $payment->getApiOrderId();
 
-        $order = $this->find($orderId);
+        $order = $this->findOrFail($orderId);
 
-        if ($order !== null)
-        {
-            $payment->order()->associate($order);
-        }
+        $payment->order()->associate($order);
 
         return $order;
     }
@@ -62,10 +57,11 @@ class Repository extends Base\Repository
         $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
         $orderId = $this->getAttributeWithTableName(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
+        $pTable = $this->manager->payment->getTableName();
 
         $results = $this->newQuery()
             ->join(
-                Table::PAYMENT,
+                $pTable,
                 $paymentOrderId, '=', $orderId)
             ->selectRaw('count(*), ' . $orderId)
             ->whereIn($paymentStatus, $paymentStatusArray)

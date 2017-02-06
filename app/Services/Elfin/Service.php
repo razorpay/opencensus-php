@@ -71,7 +71,7 @@ class Service extends Impl\Base
      * @param bool|boolean $fail - If fail is passed as true it'll bubble up ex.
      *
      * @return string
-     * @throws Exception\RuntimeException
+     * @throws \Throwable
      * @throws null
      */
     public function shorten(string $url, bool $fail = false)
@@ -84,7 +84,11 @@ class Service extends Impl\Base
             {
                 return $this->driver($service)->shorten($url);
             }
-            catch (Exception\RuntimeException $e)
+            /**
+             * Catching \Throwable as it is the base most interface and covers
+             * Error as well as Exceptions of any kind.
+             */
+            catch (\Throwable $e)
             {
                 $data = ['service' => $service, 'url' => $url];
 
@@ -98,7 +102,7 @@ class Service extends Impl\Base
         }
 
         // If failing is allowed, and exception is thrown earlier, then
-        // rethrow it here.
+        // re-throw it here.
         if (($fail === true) and ($e !== null))
         {
             throw $e;

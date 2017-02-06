@@ -11,28 +11,33 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payment';
 
     // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
+    protected $entityFetchParamRules = [
+        Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-    );
+    ];
 
     // These are proxy allowed params to search on.
-    protected $proxyFetchParamRules = array(
+    protected $proxyFetchParamRules = [
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-    );
+        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+    ];
 
     // These are admin allowed params to search on.
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
@@ -54,7 +59,7 @@ class Repository extends Base\Repository
         Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
-    );
+    ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
@@ -316,6 +321,7 @@ class Repository extends Base\Repository
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
@@ -383,6 +389,7 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->skip($skip)
                     ->take(10)
+                    ->with('merchant', 'card')
                     ->get();
     }
 
@@ -399,6 +406,7 @@ class Repository extends Base\Repository
         $paymentId = $this->getAttributeWithTableName(Entity::ID);
 
         $txnRepo = $this->manager->transaction;
+
         $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
 
         $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
@@ -412,6 +420,49 @@ class Repository extends Base\Repository
                     ->where($transactionEntityType, '=', 'payment')
                     ->whereBetween($transactionReconciledAt, [$from, $to])
                     ->whereIn(Entity::STATUS, $status)
+                    ->get();
+    }
+
+    public function fetchReconciledPaymentsForTpv($from, $to, $gateway, $status, $tpvEnabled = false)
+    {
+        // SELECT `payments`.*
+        // FROM `payments`
+        // INNER JOIN `transactions` ON `payments`.`id` = `transactions`.`entity_id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `payments`.`gateway` = $gateway
+        //   AND `transactions`.`type` = 'payment'
+        //   AND `transactions`.`reconciled_at` BETWEEN $from AND $to
+        //   AND `payments`.`status` IN ( $status ) // status is an array
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
+        $paymentAttrs = $this->getAttributeWithTableName('*');
+
+        $paymentId = $this->getAttributeWithTableName(Entity::ID);
+        $paymentTerminalId = $this->getAttributeWithTableName(Entity::TERMINAL_ID);
+        $paymentGateway = $this->getAttributeWithTableName(Entity::GATEWAY);
+        $paymentStatus = $this->getAttributeWithTableName(Entity::STATUS);
+
+        $txnRepo = $this->manager->transaction;
+
+        $tRepo = $this->manager->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $transactionPaymentId = $txnRepo->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+        $transactionEntityType = $txnRepo->getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionReconciledAt = $txnRepo->getAttributeWithTableName(Transaction\Entity::RECONCILED_AT);
+
+        $terminalId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
+        $terminalTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+
+        return $this->newQuery()
+                    ->select($paymentAttrs)
+                    ->join($txnRepo->getTableName(), $paymentId, '=', $transactionPaymentId)
+                    ->join($tRepo->getTableName(), $paymentTerminalId, '=', $terminalId)
+                    ->where($paymentGateway, '=', $gateway)
+                    ->where($transactionEntityType, '=', 'payment')
+                    ->whereBetween($transactionReconciledAt, [$from, $to])
+                    ->whereIn($paymentStatus, $status)
+                    ->where($terminalTpv, '=', $tpvEnabled)
                     ->get();
     }
 
@@ -484,11 +535,32 @@ class Repository extends Base\Repository
         }
     }
 
+    protected function addQueryParamEmail($query, $params)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        if (($this->auth->isPrivateAuth() === true) and
+            ($this->auth->isProxyAuth() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_EMAIL_FETCH) === false))
+        {
+            throw new Exception\ExtraFieldsException('email');
+        }
+
+        return parent::addQueryParamEmail($query, $params);
+    }
+
     protected function addQueryParamOrderId($query, $params)
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $orderId);
+    }
+
+    protected function addQueryParamInvoiceId($query, $params)
+    {
+        $invoiceId = (new Invoice\Entity)->verifyIdAndSilentlyStripSign($params[Entity::INVOICE_ID]);
+
+        $query->where(Entity::INVOICE_ID, '=', $invoiceId);
     }
 
     protected function joinQueryCard($query)

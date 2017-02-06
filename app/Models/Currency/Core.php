@@ -31,7 +31,7 @@ class Core extends Base\Core
 
         $this->redis->forever($key, $rates);
 
-        return ['success' => true];
+        return $rates;
     }
 
     public function getRates($currency)
@@ -43,6 +43,18 @@ class Core extends Base\Core
         return $rates;
     }
 
+    public function getOrUpdateRates($currency)
+    {
+        $rates = $this->getRates($currency);
+
+        if (empty($rates) === true)
+        {
+            $rates = $this->updateRates($currency);
+        }
+
+        return $rates;
+    }
+
     public function getBaseAmount($amount, $currency)
     {
         if ($currency === Currency::INR)
@@ -50,7 +62,7 @@ class Core extends Base\Core
             return $amount;
         }
 
-        $rates = $this->getRates($currency);
+        $rates = $this->getOrUpdateRates($currency);
 
         $denominationFactorINR = Currency::DENOMINATION_FACTOR[Currency::INR];
 

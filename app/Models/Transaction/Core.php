@@ -57,7 +57,7 @@ class Core extends Base\Core
 
     public function updateOnCapture(Payment\Entity $payment)
     {
-        $txn = $payment->transaction;
+        $txn = $this->repo->transaction->fetchByEntityAndAssociateMerchant($payment);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
@@ -417,7 +417,7 @@ class Core extends Base\Core
     {
         $payment = $refund->payment;
 
-        assert ($payment->transaction !== null);
+        assert ($payment->hasTransaction() === true);
 
         $settledAt = 1;
 
@@ -442,6 +442,15 @@ class Core extends Base\Core
         if ($payment->hasBeenCaptured())
         {
             $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+
+            $paymentTxn = $payment->transaction;
+
+            if ($paymentTxn->isSettled() === false)
+            {
+                $paymentTxn->setSettledAt($settledAt);
+
+                $this->repo->saveOrFail($paymentTxn);
+            }
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;

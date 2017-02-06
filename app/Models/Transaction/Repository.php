@@ -26,6 +26,20 @@ class Repository extends Base\Repository
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
 
+    public function fetchByEntityAndAssociateMerchant($entity)
+    {
+        $txn = $this->newQuery()
+                    ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+                    ->firstOrFail();
+
+        $entity->transaction()->associate($txn);
+        $txn->source()->associate($entity);
+
+        $txn->merchant()->associate($entity->merchant);
+
+        return $txn;
+    }
+
     public function fetchTxnsExpectedToSettle($timestamp)
     {
         return $this->newQuery()
@@ -114,14 +128,13 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
+                      ->with('source')
                       ->latest()
                       ->get();
 
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
-
-        $txns = $this->fetchAssociatedRelations($txns, 'source');
 
         return $txns;
     }
@@ -319,10 +332,10 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlementId($setlId)
+    public function fetchBySettlement($setl)
     {
         return $this->newQuery()
-                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
                     ->get();
     }
 
@@ -415,5 +428,19 @@ class Repository extends Base\Repository
                             ->get();
 
         return $transactions;
+    }
+
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('transaction'))
+        {
+            return $payment->transaction;
+        }
+
+        $transaction = $this->findOrFail($payment->getTransactionId());
+
+        $payment->setRelation('transaction', $transaction);
+
+        return $transaction;
     }
 }

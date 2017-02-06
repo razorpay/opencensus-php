@@ -4,10 +4,11 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Constants\Mode;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'IConnect_Claim_Razorpay';
+    protected static $fileToWriteName = 'IConnect_Claims_RAZORPAY';
 
     const EMAIL_BODY = 'Please forward the Axis Netbanking claims file to the operations team';
 
@@ -88,6 +89,11 @@ class ClaimsFile extends Base\RefundFile
     protected function getFileToWriteNameWithoutExt()
     {
         $time = Carbon::now('Asia/Kolkata')->format('Ymd');
+
+        if ($this->mode === Mode::TEST)
+        {
+            return static::$fileToWriteName . '_' . $time . '_' . $this->mode . '_1';
+        }
 
         return static::$fileToWriteName.'_'.$time.'_1';
     }

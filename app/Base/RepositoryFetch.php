@@ -318,9 +318,13 @@ trait RepositoryFetch
 
     public function findByIdAndMerchant($id, Merchant\Entity $merchant)
     {
-        return $this->newQuery()
+        $entity = $this->newQuery()
                     ->merchantId($merchant->getId())
                     ->findOrFailPublic($id);
+
+        $entity->merchant()->associate($merchant);
+
+        return $entity;
     }
 
     public function findByIdAndMerchantId($id, $merchantId)
