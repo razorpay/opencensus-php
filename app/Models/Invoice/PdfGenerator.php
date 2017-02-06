@@ -12,13 +12,26 @@ use RZP\Exception;
 
 class PdfGenerator extends Base\Core
 {
-    const INVOICE_PDF_TEMPLATE_KEY  = 'invoice_pdf_template_key';
-    const INVOICE_PDF_CSS_KEY       = 'invoice_pdf_css_key';
+    //
+    // Following is cache key to get which holds templates data
+    //
+
+    const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
+
+    const TEMPLATE_FILE             = 'template_file';
+    const CSS_FILE                  = 'css_file';
+
+    //
+    // If cache hit is a miss, following invoicejs host path will be used
+    // to fetch the templates.
+    //
+
     const INVOICE_PDF_TEMPLATE_PATH = '/dist/invoice_standard.mustache';
     const INVOICE_PDF_CSS_PATH      = '/dist/invoice.css';
 
     protected $invoicejsBaseUrl;
     protected $invoice;
+    protected $redis;
 
     public function __construct(Entity $invoice)
     {
@@ -27,6 +40,8 @@ class PdfGenerator extends Base\Core
         $this->invoice = $invoice;
 
         $this->invoicejsBaseUrl = Config::get('app.invoicejs_base_url');
+
+        $this->redis = Redis::getFacadeRoot();
     }
 
     public function generate()
@@ -51,9 +66,10 @@ class PdfGenerator extends Base\Core
 
     protected function getHtml(array $viewPayload)
     {
-        $template = $this->getFileFromRedisOrRemote(self::INVOICE_PDF_TEMPLATE_KEY, self::INVOICE_PDF_TEMPLATE_PATH);
+        $result = $this->getFilesFromRedisOrRemote();
 
-        $css      = $this->getFileFromRedisOrRemote(self::INVOICE_PDF_CSS_KEY, self::INVOICE_PDF_CSS_PATH);
+        $template = $result[self::TEMPLATE_FILE];
+        $css      = $result[self::CSS_FILE];
 
         $body = (new \Mustache_Engine())->render($template, $viewPayload);
 
@@ -72,15 +88,28 @@ class PdfGenerator extends Base\Core
         ";
     }
 
-    protected function getFileFromRedisOrRemote(string $key, string $path)
+    protected function getFilesFromRedisOrRemote()
     {
-        $hit = Redis::get($key);
+        $result = $this->redis->get(self::INVOICE_PDF_TEMPLATES_KEY);
 
-        if ($hit !== null)
+        if ($result !== null)
         {
-            return $hit;
+            return json_decode($result, true);
         }
 
+        $result = [];
+
+        $result[self::TEMPLATE_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_TEMPLATE_PATH);
+
+        $result[self::CSS_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_CSS_PATH);
+
+        $this->redis->set(self::INVOICE_PDF_TEMPLATES_KEY, json_encode($result));
+
+        return $result;
+    }
+
+    protected function getFileFromRemote(string $path)
+    {
         $url = $this->invoicejsBaseUrl . $path;
 
         $res = Requests::get($url);
@@ -90,10 +119,6 @@ class PdfGenerator extends Base\Core
             throw new Exception\LogicException("Received $res->status_code for $url]");
         }
 
-        $body = $res->body;
-
-        Redis::set($key, $body);
-
-        return $body;
+        return $res->body;
     }
 }

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Invoice;
 
+use Redis;
+
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\LineItem;
@@ -9,12 +11,15 @@ use RZP\Models\LineItem;
 class Service extends Base\Service
 {
     protected $core;
+    protected $redis;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->core = new Core();
+
+        $this->redis = Redis::getFacadeRoot();
     }
 
     public function create($input)
@@ -205,5 +210,10 @@ class Service extends Base\Service
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
         return [$invoice->getPdfDisplayName(), $this->core->getInvoicePdf($invoice)];
+    }
+
+    public function clearTemplatesCache(int $ttl)
+    {
+        return $this->redis->expire(PdfGenerator::INVOICE_PDF_TEMPLATES_KEY, $ttl);
     }
 }
