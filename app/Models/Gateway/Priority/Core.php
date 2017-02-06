@@ -4,34 +4,27 @@ namespace RZP\Models\Gateway\Priority;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\DataStore;
+use RZP\Models\DataStore\PrioritySet;
 use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
 {
     const ALLOWED_METHODS = [Method::CARD, Method::NETBANKING];
 
-    protected $store;
+    protected $factory;
 
     protected $validator;
 
     // Namespace used for storing the data in store provider
-    protected static $storeNameSpace = 'gateway_priority';
+    protected $storeNameSpace = 'gateway_priority';
 
     protected function init()
     {
         $this->validator = new Validator;
 
-        $storeMock = $this->app['config']->get('app.data_store.mock');
+        $mock = $this->app['config']->get('app.data_store.mock');
 
-        if ($storeMock === true)
-        {
-            $this->store = new DataStore\Mock\Manager;
-
-            return;
-        }
-
-        $this->store = new DataStore\Manager;
+        $this->factory = new PrioritySet\Factory($mock);
     }
 
     public function addPriorityForMethod(string $method, array $priorityData)
@@ -42,7 +35,7 @@ class Core extends Base\Core
 
         $priority->setData($priorityData);
 
-        $priority = $this->store->saveOrFail($priority);
+        $priority = $priority->saveOrFail();
 
         return $priority;
     }
@@ -55,12 +48,21 @@ class Core extends Base\Core
         {
             $priority = $this->getPrioritySet($method);
 
-            $priority = $this->store->fetchOrFail($priority);
+            $priority = $priority->fetchOrFail();
 
             $result->push($priority->toArray());
         }
 
         return $result;
+    }
+
+    public function addOrUpdatePriorityForMethod(string $method, array $priorityData)
+    {
+        $priority = $this->addPriorityForMethod($method, $priorityData);
+
+        $priority = $priority->fetchOrFail();
+
+        return $priority;
     }
 
     public function removePriorityForMethod(string $method, array $gateways)
@@ -71,9 +73,9 @@ class Core extends Base\Core
 
         $priority->setData($gateways);
 
-        $priority = $this->store->deleteOrFail($priority);
+        $priority = $priority->deleteOrFail();
 
-        $priority = $this->store->fetchOrFail($priority);
+        $priority = $priority->fetchOrFail();
 
         return $priority;
     }
@@ -109,7 +111,7 @@ class Core extends Base\Core
 
         try
         {
-            $priority = $this->store->fetchOrFail($priority);
+            $priority = $priority->fetchOrFail();
         }
         catch(Exception\ServerErrorException $e)
         {
@@ -123,13 +125,21 @@ class Core extends Base\Core
      * While fetching gateways we only fetcg gateways with positive scores.
      * Gateways with zero scores are ignored
      */
-    protected function getGateways(DataStore\PrioritySet $priority)
+    protected function getGateways(PrioritySet\Base $priority)
     {
         return $priority->getSetMembersWithPositiveScore();
     }
 
     protected function getPrioritySet(string $method)
     {
-        return (new DataStore\PrioritySet(self::$storeNameSpace, $method));
+        $gatewayPriorityStoreType = $this->app['config']->get('app.gateway_priority.store_type');
+
+        $prioritySet = $this->factory->getStore($gatewayPriorityStoreType);
+
+        $prioritySet->setPrefix($this->storeNameSpace);
+
+        $prioritySet->setKey($method);
+
+        return $prioritySet;
     }
 }

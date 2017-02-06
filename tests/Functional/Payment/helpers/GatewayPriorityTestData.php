@@ -102,7 +102,7 @@ return [
     'testRemoveGatewayPriority' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priorities/card/remove',
             'method' => 'PATCH'
         ],
         'response' => [
@@ -120,7 +120,7 @@ return [
     'testRemoveGatewayPriorityWithException' => [
         'request' => [
             'content' => ['hdfc'],
-            'url' => '/gateway/priorities/card',
+            'url' => '/gateway/priorities/card/remove',
             'method' => 'PATCH'
         ],
         'response' => [
@@ -189,6 +189,27 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD
+        ]
+    ],
+
+    'testUpdateGatewayPriority' => [
+         'request' => [
+            'content' => [
+                'hdfc'        => '60',
+            ],
+            'url' => '/gateway/priorities/card/add',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'card' => [
+                    'hdfc'        => '60',
+                    'axis_migs'   => '50',
+                    'amex'        => '30',
+                    'cybersource' => '20',
+                    'first_data'  => '10'
+                ]
+            ]
         ]
     ]
 ];

@@ -261,5 +261,9 @@ return array(
 
     'data_store' => [
         'mock' => env('DATA_STORE_MOCK', false)
+    ],
+
+    'gateway_priority' => [
+        'store_type' => env('GATEWAY_PRIORITY_STORE_TYPE')
     ]
 );

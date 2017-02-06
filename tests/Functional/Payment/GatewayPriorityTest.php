@@ -146,6 +146,35 @@ class GatewayPriorityTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateGatewayPriority()
+    {
+        // Setting the config to false here so that real service is used for fetch
+        config(['app.data_store.mock' => false]);
+
+        Redis::shouldReceive('zadd')
+            ->once()
+            ->andReturnUsing(function ()
+            {
+                return 6;
+            });
+
+        Redis::shouldReceive('zrevrange')
+            ->once()
+            ->with('gateway_priority:card', 0, -1, 'WITHSCORES')
+            ->andReturnUsing(function ()
+            {
+                return [
+                    'hdfc'        => '60',
+                    'axis_migs'   => '50',
+                    'amex'        => '30',
+                    'cybersource' => '20',
+                    'first_data'  => '10',
+                ];
+            });
+
+        $this->startTest();
+    }
+
     public function testUnsupportedPaymentMethod()
     {
         $this->startTest();
