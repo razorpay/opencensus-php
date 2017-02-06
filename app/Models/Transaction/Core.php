@@ -61,7 +61,7 @@ class Core extends Base\Core
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
-        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $settledAt);
+        $txn->setSettledAt($settledAt);
 
         $this->updateCredits($txn, $payment);
 
@@ -445,12 +445,7 @@ class Core extends Base\Core
 
             $paymentTxn = $payment->transaction;
 
-            if ($paymentTxn->isSettled() === false)
-            {
-                $paymentTxn->setSettledAt($settledAt);
-
-                $this->repo->saveOrFail($paymentTxn);
-            }
+            $this->repo->transaction->updateSettledAtToNow($paymentTxn);
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;
