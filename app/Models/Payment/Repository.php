@@ -645,7 +645,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -672,7 +672,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
