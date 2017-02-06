@@ -273,14 +273,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
         }
-
-        if (!(($merchantDetails->isSubmitted() === true) and
-            ($merchantDetails->isLocked() === true) and
-            ($merchant->isActivated() === false)))
-        {
-            throw new Exception\BadRequestException(
-            ErrorCode::BAD_REQUEST_MERCHANT_CANNOT_BE_ARCHIVED);
-        }
     }
 
     protected function validateUnarchive()

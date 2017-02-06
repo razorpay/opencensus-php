@@ -14,6 +14,12 @@ class Validator extends Base\Validator
     const TOKEN = 'token';
     const RESET_PASSWORD_URL = 'reset_password_url';
 
+    const SUSPENDED = 'suspended';
+    const ARCHIVED  = 'archived';
+    const ACTIVATED = 'activated';
+    const PENDING   = 'pending';
+    const DEAD      = 'dead';
+
     protected static $createRules = [
         // The unique validation on email will run only on rows that have deleted_at = NULL
         // Referred to https://github.com/laravel/framework/issues/1820#issuecomment-32828216 for this validation
@@ -74,6 +80,14 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email|max:255',
         self::RESET_PASSWORD_URL      => 'required|string',
         Org\Entity::AUTH_TYPE         => 'required|string|in:password',
+    ];
+
+    protected static $filterRules = [
+        self::SUSPENDED => 'sometimes|boolean',
+        self::ARCHIVED  => 'sometimes|boolean',
+        self::ACTIVATED => 'sometimes|boolean',
+        self::PENDING   => 'sometimes|boolean',
+        self::DEAD      => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [
