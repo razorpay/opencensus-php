@@ -9,6 +9,11 @@ use RZP\Constants\Entity;
 
 class Reconciliate extends Base\Reconciliate
 {
+    const WEIRD_TERMINAL_IDS = [
+        '89050258',
+        '89050055'
+    ];
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -43,6 +48,11 @@ class Reconciliate extends Base\Reconciliate
     public function getReconPassword($fileDetails)
     {
         $terminalId = explode('-', $fileDetails['file_name'])[0];
+
+        if (in_array($terminalId, self::WEIRD_TERMINAL_IDS))
+        {
+            $terminalId = 'hdfc_' . $terminalId;
+        }
 
         $terminalRepo = App::getFacadeRoot()['repo']->terminal;
 
