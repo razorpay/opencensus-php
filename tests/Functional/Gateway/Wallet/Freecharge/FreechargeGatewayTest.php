@@ -376,7 +376,7 @@ class FreechargeGatewayTest extends TestCase
 
         $wallet = $this->getLastEntity('wallet', true);
 
-        //$this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
     public function testRefundPayment()

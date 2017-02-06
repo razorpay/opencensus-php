@@ -329,8 +329,10 @@ class Gateway extends Base\Gateway
                 Trace::ERROR,
                 TraceCode::GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS,
                 [
-                    'payment_id' => $input['payment']['id'],
-                    'input' => $input
+                    'payment_id'    => $input['payment']['id'],
+                    'refund_id'     => $input['refund']['id'],
+                    'refund_amount' => $input['refund']['amount'],
+                    'gateway'       => $this->gateway
                 ]);
 
             //
@@ -345,7 +347,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
-        $wallet = $this->repo->findByRefundId($attributes['refund_id']);
+        $wallet = $this->repo->findByRefundId($input['refund']['id']);
 
         if ($wallet !== null)
         {
@@ -459,7 +461,7 @@ class Gateway extends Base\Gateway
 
         if (isset($content[ResponseFields::STATUS]) === false)
         {
-            $data['success'] = 'false';
+            $data['success'] = false;
 
             $this->handleRefundOnValidationFailure($input);
 
@@ -478,7 +480,7 @@ class Gateway extends Base\Gateway
                 break;
 
             case Status::TRANSACTION_FAILED:
-                $data['success'] = 'false';
+                $data['success'] = false;
 
                 $this->handleRefundOnValidationFailure($input);
 
@@ -1324,17 +1326,16 @@ class Gateway extends Base\Gateway
             RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
         ];
 
-        $this->updateGatewayPaymentEntity($wallet, $refundAttr);
+        $this->updateGatewayRefundEntity($wallet, $refundAttr);
 
         // return success as true
-        return 'true';
+        return true;
     }
 
-    public function handleRefundOnValidationFailure(
-        array $input)
+    public function handleRefundOnValidationFailure(array $input)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_REFUND_FAILED,
+            TraceCode::GATEWAY_REFUND_VALIDATION_FAILED,
             [
                 'payment_id' => $input['payment']['id'],
                 'refund_id'  => $input['refund']['id'],

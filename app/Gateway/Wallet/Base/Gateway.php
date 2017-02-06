@@ -81,11 +81,17 @@ class Gateway extends Base\Gateway
 
     /**
      * Updates the gateway refund entity
+     *
+     * @param      $gatewayPayment
+     * @param      $attributes
+     * @param bool $mapped
+     *
+     * @return
      */
     protected function updateGatewayRefundEntity(
         $gatewayPayment,
         $attributes,
-        $mapped=true)
+        $mapped = true)
     {
         if ($mapped === true)
         {
