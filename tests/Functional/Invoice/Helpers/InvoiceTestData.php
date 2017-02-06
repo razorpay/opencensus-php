@@ -95,11 +95,11 @@ return [
         'response' => [
             'content' => [
                 'receipt'       => null,
-                'customer_details' => [
-                    'customer_email'   => 'test@razorpay.com',
-                    'customer_contact' => '9999999999',
-                    'customer_name'    => 'test',
-                    'customer_billing_address'  => [
+                'customer'      => [
+                    'name' => 'test',
+                    'email' => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'billing_address' => [
                         'type'    => "billing_address",
                         'primary' => true,
                         'line1'   => "Line One Etc",
@@ -109,6 +109,12 @@ return [
                         'state'   => "Karnataka",
                         'country' => "in",
                     ]
+                ],
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '9999999999',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [

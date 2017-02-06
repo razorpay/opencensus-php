@@ -171,6 +171,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT,
         self::STATUS,
         self::CUSTOMER_ID,
+        self::CUSTOMER,
         self::MERCHANT_ID,
         self::ORDER_ID,
         self::PAYMENT_ID,
@@ -207,6 +208,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::RECEIPT,
         self::CUSTOMER_ID,
+        self::CUSTOMER,
         self::CUSTOMER_DETAILS,
         self::ORDER_ID,
         self::LINE_ITEMS,
@@ -247,8 +249,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
+        self::CUSTOMER,
         self::ORDER_ID,
-        // self::USER_ID,
     ];
 
     protected $casts = [
@@ -422,11 +424,11 @@ class Entity extends Base\PublicEntity
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
 
-        $customerBillingAddress = $customer->getCurrentAddressOfType(Address\Type::BILLING_ADDRESS);
+        $billingAddress = $customer->getCurrentAddressOfType(Address\Type::BILLING_ADDRESS);
 
-        if ($customerBillingAddress !== null)
+        if ($billingAddress !== null)
         {
-            $this->setCustBillingAddrId($customerBillingAddress->getId());
+            $this->setCustomerBillingAddrId($billingAddress->getId());
         }
     }
 
@@ -435,7 +437,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CUSTOMER_NAME, $customerName);
     }
 
-    public function setCustBillingAddrId($customerBillingAddressId)
+    public function setCustomerBillingAddrId($customerBillingAddressId)
     {
         $this->setAttribute(self::CUSTOMER_BILLING_ADDR_ID, $customerBillingAddressId);
     }
@@ -500,23 +502,20 @@ class Entity extends Base\PublicEntity
 
     // -------------------------------------- Accessors --------------------------------------
 
+    /**
+     * DEPRECATED, WILL BE REMOVED.
+     * Replaced with setPublicCustomerAttribute method.
+     *
+     * @return array
+     */
     protected function getCustomerDetailsAttribute()
     {
-        $customerDetails = [
+        return [
             self::CUSTOMER_NAME            => $this->attributes[self::CUSTOMER_NAME],
             self::CUSTOMER_EMAIL           => $this->attributes[self::CUSTOMER_EMAIL],
             self::CUSTOMER_CONTACT         => $this->attributes[self::CUSTOMER_CONTACT],
-            // Following line is kept to avoid backward compatibility issues
             self::CUSTOMER_ADDRESS         => null,
-            self::CUSTOMER_BILLING_ADDRESS => null,
         ];
-
-        if ($this->hasCustomerBillingAddress())
-        {
-            $customerDetails[self::CUSTOMER_BILLING_ADDRESS] = $this->address->toArrayPublic();
-        }
-
-        return $customerDetails;
     }
 
     protected function getLineItemsAttribute()
@@ -560,6 +559,22 @@ class Entity extends Base\PublicEntity
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
         $array[self::CUSTOMER_ID] = Customer\Entity::getSignedIdOrNull($customerId);
+    }
+
+    protected function setPublicCustomerAttribute(array & $array)
+    {
+        $array[self::CUSTOMER] = [
+            Customer\Entity::NAME    => $this->attributes[self::CUSTOMER_NAME],
+            Customer\Entity::EMAIL   => $this->attributes[self::CUSTOMER_EMAIL],
+            Customer\Entity::CONTACT => $this->attributes[self::CUSTOMER_CONTACT],
+        ];
+
+        if ($this->hasCustomerBillingAddress() === true)
+        {
+            $billingAddress = $this->customerBillingAddress->toArrayPublic();
+
+            $array[self::CUSTOMER][Customer\Entity::BILLING_ADDRESS] = $billingAddress;
+        }
     }
 
     protected function setPublicOrderIdAttribute(array & $array)
@@ -736,7 +751,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function address()
+    public function customerBillingAddress()
     {
         return $this->belongsTo('RZP\Models\Address\Entity', 'customer_billing_addr_id');
     }
