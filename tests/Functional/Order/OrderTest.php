@@ -2,8 +2,8 @@
 
 namespace RZP\Tests\Functional\Order;
 
-use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\TestCase;
 
 class OrderTest extends TestCase
 {
@@ -329,6 +329,15 @@ class OrderTest extends TestCase
     public function testCreateOrderWithInApplicableOffer()
     {
         $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithExpiredOffer()
+    {
+        $offer = $this->fixtures->offer->createExpiredOffer();
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
