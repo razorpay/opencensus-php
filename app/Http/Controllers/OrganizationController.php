@@ -326,6 +326,15 @@ class OrganizationController extends Controller
         return ApiResponse::json($merchantIds);
     }
 
+    public function getMerchants($id, $adminId)
+    {
+        $input = Request::all();
+
+        $response = (new Admin\Admin\Service)->getMerchants($id, $adminId, $input);
+
+        return ApiResponse::json($response);
+    }
+
     public function postLockBulkAccounts(Admin\Admin\Service $adminService)
     {
         $response = $adminService->lockUnusedAccounts();

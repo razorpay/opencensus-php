@@ -563,6 +563,30 @@ class Service extends Base\Service
         return $responseHash;
     }
 
+    public function getMerchants($orgId, $adminId, $input)
+    {
+        $responseHash = $this->getMerchantIds($orgId, $adminId);
+
+        (new Validator)->validateInput('filter', $input);
+
+        $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
+
+        foreach ($merchants as $merchant)
+        {
+            $merchant['referrer'] = $responseHash[$merchant->getId()];
+
+            //TODO: Remove this later
+            if ($merchant['activation_progress'] === 0)
+            {
+                $activationProgress = (new Merchant\Detail\Service)->calculateActivationProgress($merchant->getId());
+
+                $merchant['activation_progress'] = $activationProgress;
+            }
+        }
+
+        return $merchants->toArray();
+    }
+
     public function lockUnusedAccounts()
     {
         $timestamp = Carbon::now()->subDays(30)->timestamp;
