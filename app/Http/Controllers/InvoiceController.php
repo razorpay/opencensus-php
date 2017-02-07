@@ -6,6 +6,7 @@ use Request;
 use View;
 use ApiResponse;
 use RZP\Models\Invoice;
+use RZP\Exception\BaseException;
 
 class InvoiceController extends Controller
 {
@@ -142,7 +143,14 @@ class InvoiceController extends Controller
     {
         $error = Request::get('error');
 
-        $data = $this->service->getInvoiceViewData($invoiceId);
+        try
+        {
+            $data = $this->service->getInvoiceViewData($invoiceId);
+        }
+        catch (BaseException $e)
+        {
+            $data = $e->getError()->toPublicArray();
+        }
 
         if (empty($error) === false)
         {
