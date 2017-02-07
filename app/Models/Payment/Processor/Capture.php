@@ -173,6 +173,8 @@ trait Capture
         // Just making sure that the payment has the transaction id.
         assert ($payment->getTransactionId() !== null);
 
+        assert ($payment->hasBeenCaptured());
+
         $data = $this->getGatewayDataForCapture($payment);
 
         if ($payment->isMethodCardOrEmi())
@@ -202,7 +204,7 @@ trait Capture
 
         return [
             'manual_gateway_capture' => $msg,
-            'payment_id'            => $payment->getId(),
+            'payment_id'             => $payment->getId(),
         ];
     }
 

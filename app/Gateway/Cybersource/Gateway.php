@@ -11,8 +11,9 @@ use SoapClient;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Models\Card;
 use RZP\Gateway\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -124,7 +125,7 @@ class Gateway extends Base\Gateway
 
     protected function canForceCapture($input)
     {
-        $paymentId = $input['payment'][PaymentModel\Entity::ID];
+        $paymentId = $input['payment'][Payment\Entity::ID];
 
         $gatewayPaymentEntity = $this->repo->findSuccessfulCapturedEntity($paymentId);
 

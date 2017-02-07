@@ -432,8 +432,7 @@ class Service extends Base\Service
             [
                 'payment_id'    => $paymentId,
                 'data'          => $data
-            ]
-        );
+            ]);
 
         return $data;
     }
