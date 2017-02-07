@@ -15,9 +15,6 @@
       path {
         fill: #6DCA00;
       }
-      h3 {
-        font-weight: normal;
-      }
       .card {
         background: #fff;
         border-radius: 2px;
@@ -36,31 +33,69 @@
         display: none;
       }
     </style>
-    <script>
-      var options = {!! $options !!};
-
-      options.handler = function() {
-      }
-
-      if (!options.modal) {
-        options.modal = {};
-      }
-
-      options.modal.escape = false;
-      options.modal.confirm_close = true;
-      options.modal.ondismiss = function() {
-      }
-
-      function showCheckout() {
-        Razorpay.open(options);
-      }
-    </script>
   </head>
   <body onload="showCheckout()">
     @include('partials.loader')
     <div id="success" class="card">
       <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm-1.959 17l-4.5-4.319 1.395-1.435 3.08 2.937 7.021-7.183 1.422 1.409-8.418 8.591z"/></svg>
       <h3>Payment Successful!</h3>
+      Just a moment now...
     </div>
+    <form style="visibility: hidden" method="post" action="{{$url_callback}}" target="_self"></form>
+    <script>
+      var form = document.forms[0];
+      var options = {!! $options !!};
+
+      if (window.btoa) {
+        var data = btoa(JSON.stringify({
+          request: {
+            url: form.action,
+            method: form.method,
+            target: '_self'
+          },
+
+          options: JSON.stringify(options),
+
+          back: "{{ $url_cancel }}"
+        }));
+      }
+
+      options.handler = function(data) {
+        document.querySelector('#success').style.display = 'block';
+        var h = '';
+        for (var i in data) {
+          h += '<input name="' + i + '" value=" ' + data[i] + ' ">';
+        }
+        form.innerHTML = h;
+        form.submit();
+      };
+
+      if (!options.modal) {
+        options.modal = {};
+      }
+
+      if (!('escape' in options.modal)) {
+        options.modal.escape = false;
+      }
+
+      if (!('confirm_close' in options.modal)) {
+        options.modal.confirm_close = true;
+      }
+
+      if (!options.theme) {
+        options.theme = {};
+      }
+
+      // darker shade, because there is nothing behind backdrop
+      if (!options.theme.backdrop_color) {
+        options.theme.backdrop_color = 'rgba(0, 0, 0, 0.8)';
+      }
+
+      var razorpay = Razorpay(options);
+      function showCheckout() {
+        razorpay.open();
+        document.querySelector('.loader').style.display = 'none';
+      }
+    </script>
   </body>
 </html>

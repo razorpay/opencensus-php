@@ -77,9 +77,13 @@ class PublicController extends Controller
         $postParams = Request::instance()->request->all();
         $checkout = $this->getCheckoutCommon();
 
+        assert(isset($postParams['url']['callback']));
+
         $data = [
-            'options'   => json_encode($postParams['options']),
-            'checkout'  => $checkout['checkout'] . '/v1/checkout.js'
+            'options'       => json_encode($postParams['options']),
+            'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
+            'url_callback'  => $postParams['url']['callback'],
+            'url_cancel'    => $postParams['url']['cancel'] ?? $postParams['url']['callback'],
         ];
 
         return View::make('public.hosted', $data);
