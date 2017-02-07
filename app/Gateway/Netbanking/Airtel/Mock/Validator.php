@@ -29,7 +29,7 @@ class Validator extends Base\Validator
         VerifyFields::SESSION_ID                => 'required|alpha_num',
         VerifyFields::TRANSACTION_REFERENCE_NO  => 'required|alpha_num',
         VerifyFields::TRANSACTION_DATE          => 'required|string',
-        RefundFields::REQUEST                   => 'required|in:ECOMM_INQ',
+        VerifyFields::REQUEST                   => 'required|in:ECOMM_INQ',
         VerifyFields::MERCHANT_ID               => 'required|numeric',
         VerifyFields::HASH                      => 'required',
         VerifyFields::AMOUNT                    => 'required|string',

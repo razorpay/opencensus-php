@@ -29,13 +29,13 @@ class Gateway extends Base\Gateway
         AuthFields::AMOUNT => Base\Entity::AMOUNT
     ];
 
-    const REFUND_REQUEST  = 'ECOMM_REVERSAL';
+    const REVERSAL     = 'ECOMM_REVERSAL';
 
-    const INQUIRY_REQUEST = 'ECOMM_INQ';
+    const INQUIRY      = 'ECOMM_INQ';
 
-    const TIME_FORMAT     = 'dmYhis';
+    const TIME_FORMAT  = 'dmYhis';
 
-    const ACTION_ERROR    = 'Action not set correctly';
+    const ACTION_ERROR = 'Action not set correctly';
 
     public function authorize(array $input)
     {
@@ -227,7 +227,7 @@ class Gateway extends Base\Gateway
             VerifyFields::SESSION_ID               => uniqid(),
             VerifyFields::TRANSACTION_REFERENCE_NO => $input['payment']['id'],
             VerifyFields::TRANSACTION_DATE         => $this->getFormattedDate($input),
-            VerifyFields::REQUEST                  => self::INQUIRY_REQUEST,
+            VerifyFields::REQUEST                  => self::INQUIRY,
             VerifyFields::MERCHANT_ID              => $this->getMerchantId(),
             VerifyFields::AMOUNT                   => (string) $this->getFormattedAmount($input)
         ];
@@ -344,7 +344,7 @@ class Gateway extends Base\Gateway
             RefundFields::TRANSACTION_ID    => $gatewayPayment[Base\Entity::BANK_PAYMENT_ID],
             RefundFields::TRANSACTION_DATE  => $this->getFormattedDate($input),
             RefundFields::MERCHANT_ID       => $this->getMerchantId(),
-            RefundFields::REQUEST           => self::REFUND_REQUEST,
+            RefundFields::REQUEST           => self::REVERSAL,
             RefundFields::AMOUNT            => (string) $this->getFormattedAmount($input),
         ];
 
