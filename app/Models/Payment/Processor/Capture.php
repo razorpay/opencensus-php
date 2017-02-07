@@ -382,7 +382,7 @@ trait Capture
         //
         if (($ex instanceof Exception\BadRequestValidationFailureException) or
             ($ex instanceof Exception\BadRequestException) or
-            ($ex instanceof Exception\GatewayRequestException))
+            ($ex instanceof Exception\GatewayErrorException))
         {
             throw $ex;
         }
