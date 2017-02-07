@@ -1596,6 +1596,12 @@ UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
 
+# Before deploying: invoices_fetch_by_cust_contact
+
+ALTER TABLE invoices ADD INDEX invoices_customer_contact_index (customer_contact);
+ALTER TABLE invoices ADD INDEX invoices_customer_email_index (customer_email);
+ALTER TABLE invoices ADD INDEX invoices_customer_name_index (customer_name);
+
 ALTER TABLE merchant_details
     ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
 

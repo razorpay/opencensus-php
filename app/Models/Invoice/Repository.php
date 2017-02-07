@@ -17,9 +17,12 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::USER_ID => 'sometimes|alpha_num',
-        Entity::STATUS  => 'sometimes|string',
-        Entity::TYPE    => 'sometimes|string|max:16',
+        Entity::USER_ID          => 'sometimes|alpha_num',
+        Entity::STATUS           => 'sometimes|string',
+        Entity::TYPE             => 'sometimes|string|max:16',
+        Entity::CUSTOMER_NAME    => 'sometimes|string|max:255',
+        Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
+        Entity::CUSTOMER_EMAIL   => 'sometimes|email',
     ];
 
     protected $appFetchParamRules = [
