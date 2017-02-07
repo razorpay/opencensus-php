@@ -46,6 +46,13 @@ class Entity extends Base\Entity
         {
             $hash = Redis::hgetall("dashboard_:$sessionId");
 
+            if (empty($hash))
+            {
+                Redis::srem("admins:$id:sessions", $sessionId);
+
+                continue;
+            }
+
             $hash['id'] = $sessionId;
 
             $sessions[] = $hash;
@@ -58,8 +65,22 @@ class Entity extends Base\Entity
 
     public function deleteAllOtherSessionsForAdmin($id, $currentSessionId)
     {
-        $this->where(self::ADMIN_ID, $id)
-             ->where(self::ID, '!=', $currentSessionId)->delete();
+        $sessionIds = Redis::smembers("admins:$id:sessions");
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ($sessionId === $currentSessionId)
+            {
+                continue;
+            }
+
+            Redis::del("dashboard_:$sessionId");
+
+            Redis::srem("admins:$id:sessions", $sessionId);
+        }
+
+        // $this->where(self::ADMIN_ID, $id)
+        //      ->where(self::ID, '!=', $currentSessionId)->delete();
     }
 
     public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
