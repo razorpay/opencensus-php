@@ -352,9 +352,11 @@ app.controller('EntityDetailCtrl', [
   'current',
   'subMerchants',
   'mode',
-  function ($scope, $modalInstance, $http, current, subMerchants, mode) {
+  'alertsFactory',
+  function ($scope, $modalInstance, $http, current, subMerchants, mode, alertsFactory) {
     // This is the current terminal current
     $scope.subMerchants = subMerchants;
+    $scope.alerts = alertsFactory.getHandler();
 
     $scope.deleteSubMerchant = function (merchantId) {
       var request = $http.delete('/admin/' + mode + '/terminal/' + current.id + '/merchant/' + merchantId);
