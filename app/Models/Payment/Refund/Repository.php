@@ -44,11 +44,18 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($payment, $merchant)
+    public function findForPaymentAndMerchant($payment, $merchant)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->merchantId($merchant->getId())
+                    ->get();
+    }
+
+    public function findForPayment($payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->get();
     }
 
@@ -79,10 +86,10 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['payment']);
+                        $merchantId, $from, $to, $count, $skip, ['payment']);
     }
 
     public function fetchRefundSummaryBetweenTimestamp($from, $to)

@@ -11,29 +11,33 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payment';
 
     // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
+    protected $entityFetchParamRules = [
+        Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-    );
+    ];
 
     // These are proxy allowed params to search on.
-    protected $proxyFetchParamRules = array(
+    protected $proxyFetchParamRules = [
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-    );
+        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+    ];
 
     // These are admin allowed params to search on.
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
@@ -55,7 +59,7 @@ class Repository extends Base\Repository
         Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
-    );
+    ];
 
     protected $esWhitelistedParams = [
         Entity::NOTES
@@ -321,6 +325,7 @@ class Repository extends Base\Repository
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
@@ -388,13 +393,14 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->skip($skip)
                     ->take(10)
+                    ->with('merchant', 'card')
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['card']);
+                        $merchantId, $from, $to, $count, $skip, ['card']);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
@@ -533,11 +539,32 @@ class Repository extends Base\Repository
         }
     }
 
+    protected function addQueryParamEmail($query, $params)
+    {
+        $merchant = $this->auth->getMerchant();
+
+        if (($this->auth->isPrivateAuth() === true) and
+            ($this->auth->isProxyAuth() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_EMAIL_FETCH) === false))
+        {
+            throw new Exception\ExtraFieldsException('email');
+        }
+
+        return parent::addQueryParamEmail($query, $params);
+    }
+
     protected function addQueryParamOrderId($query, $params)
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
         $query->where(Entity::ORDER_ID, '=', $orderId);
+    }
+
+    protected function addQueryParamInvoiceId($query, $params)
+    {
+        $invoiceId = (new Invoice\Entity)->verifyIdAndSilentlyStripSign($params[Entity::INVOICE_ID]);
+
+        $query->where(Entity::INVOICE_ID, '=', $invoiceId);
     }
 
     protected function joinQueryCard($query)
@@ -618,7 +645,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -645,7 +672,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 

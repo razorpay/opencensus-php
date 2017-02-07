@@ -26,6 +26,20 @@ class Repository extends Base\Repository
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
 
+    public function fetchByEntityAndAssociateMerchant($entity)
+    {
+        $txn = $this->newQuery()
+                    ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+                    ->firstOrFail();
+
+        $entity->transaction()->associate($txn);
+        $txn->source()->associate($entity);
+
+        $txn->merchant()->associate($entity->merchant);
+
+        return $txn;
+    }
+
     public function fetchTxnsExpectedToSettle($timestamp)
     {
         return $this->newQuery()
@@ -96,7 +110,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
@@ -114,6 +128,9 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
+                      ->with('source')
+                      ->take($count)
+                      ->skip($skip)
                       ->latest()
                       ->get();
 
@@ -121,12 +138,10 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        $txns = $this->fetchAssociatedRelations($txns, 'source');
-
         return $txns;
     }
 
-    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip)
     {
         $txns = $this->newQuery()
                      ->merchantId($merchantId)
@@ -210,10 +225,10 @@ class Repository extends Base\Repository
 
         // Total fee includes our cut + service tax
         return [
-            'total_fee'         =>  $fee,
+            'total_fee'         => $fee,
             // This is a combined tax column
             // and includes more than just service_tax (sb cess, kk cess)
-            'tax'               =>  $serviceTax
+            'tax'               => $serviceTax
         ];
     }
 
@@ -244,6 +259,16 @@ class Repository extends Base\Repository
         }
 
         return $txns2;
+    }
+
+    public function updateSettledAtToNow($txn)
+    {
+        $id = $txn->getId();
+
+        return $this->newQuery()
+                    ->where(Transaction\Entity::ID, '=', $id)
+                    ->where(Transaction\Entity::SETTLED, '=', false)
+                    ->update([Transaction\Entity::SETTLED_AT  => 1]);
     }
 
     public function settled($txns, $settledAt)
@@ -319,10 +344,10 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlementId($setlId)
+    public function fetchBySettlement($setl)
     {
         return $this->newQuery()
-                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
                     ->get();
     }
 
@@ -415,5 +440,19 @@ class Repository extends Base\Repository
                             ->get();
 
         return $transactions;
+    }
+
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('transaction'))
+        {
+            return $payment->transaction;
+        }
+
+        $transaction = $this->findOrFail($payment->getTransactionId());
+
+        $payment->setRelation('transaction', $transaction);
+
+        return $transaction;
     }
 }

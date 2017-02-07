@@ -154,17 +154,19 @@ trait Callback
 
         if ($payment->getGlobalCustomerId() !== null)
         {
-            $input['customer'] = $payment->globalCustomer;
+            $input['customer'] = $this->repo->customer->getGlobalCustomerForPayment($payment);
         }
 
         if ($payment->getGlobalTokenId() !== null)
         {
-            $input['token'] = $payment->globalToken->toArray();
+            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+            $input['token'] = $token->toArray();
         }
 
-        if ($payment->card !== null)
+        if ($payment->hasCard())
         {
-            $input['card'] = $payment->card->toArray();
+            $card = $this->repo->card->fetchForPayment($payment);
+            $input['card'] = $card->toArray();
         }
 
         try

@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -33,17 +34,19 @@ class Validator extends Base\Validator
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
+        Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
     ];
 
     protected static $createValidators = [
-        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY, Entity::CURRENCY,
     ];
 
     protected static $reassignRules = [
@@ -88,6 +91,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3'
     ];
 
     protected static $amexTerminalRules = [
@@ -118,6 +122,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
         Entity::RECURRING                   => 'sometimes|in:0,1,2',
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
     protected static $axisMigsEditTerminalRules = [
@@ -136,6 +141,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    ];
+
+    protected static $cybersourceEditTerminalRules = [
+        Entity::GATEWAY_RECON_PASSWORD => 'sometimes|alpha_num',
+        Entity::GATEWAY                => 'sometimes|in:cybersource',
+        Entity::CARD                   => 'sometimes|boolean|in:1',
     ];
 
     protected static $upiIciciEditTerminalRules = [
@@ -183,8 +194,7 @@ class Validator extends Base\Validator
 
     protected static $netbankingAxisTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_axis',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string'
     ];
 
     protected function validateGateway($input)
@@ -232,6 +242,16 @@ class Validator extends Base\Validator
         {
             throw new Exception\LogicException(
                 'EMI Terminals must be shared terminals');
+        }
+    }
+
+    protected function validateCurrency($input)
+    {
+        if ((isset($input['currency']) === true) and
+            in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
         }
     }
 

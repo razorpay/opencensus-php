@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
@@ -63,7 +64,7 @@ class DailyFiles extends Base\DailyFiles
                 'santosh.sakpal@axisbank.com'
             ];
 
-            $message->from('settlement@razorpay.com', $bankName . ' Netbanking Refunds');
+            $message->from('refunds@razorpay.com', $bankName . ' Netbanking Refunds');
 
             $message->subject($data['subject']);
 
@@ -78,6 +79,10 @@ class DailyFiles extends Base\DailyFiles
             {
                 $message->attach($data['refundsFile']);
             }
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
         });
     }
 }
