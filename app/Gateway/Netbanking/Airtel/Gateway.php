@@ -237,13 +237,13 @@ class Gateway extends Base\Gateway
         return json_encode($data);
     }
 
-    protected function saveVerifyContent($verify, $content)
+    protected function saveVerifyContent($verify, $authContent)
     {
         $input = $verify->input;
 
         $gatewayPayment = $verify->payment;
 
-        $attributes = $this->getVerifyAttributes($content);
+        $attributes = $this->getVerifyAttributes($authContent);
 
         $gatewayPayment->fill($attributes);
 
@@ -252,9 +252,9 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes($content)
+    protected function getVerifyAttributes($authContent)
     {
-        if ($content[VerifyFields::STATUS] === Status::SUCCESS)
+        if ($authContent[VerifyFields::STATUS] === Status::SUCCESS)
         {
             $merchantCode = ErrorCodes::SUCCESS;
         }
@@ -267,15 +267,15 @@ class Gateway extends Base\Gateway
 
         $contentToSave = [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[VerifyFields::STATUS],
+            Base\Entity::STATUS          => $authContent[VerifyFields::STATUS],
             Base\Entity::MERCHANT_CODE   => $merchantCode,
             Base\Entity::ERROR_MESSAGE   => $message,
         ];
 
-        if (isset($content[VerifyFields::TRANSACTION_ID]) === true)
+        if (isset($authContent[VerifyFields::TRANSACTION_ID]) === true)
         {
-            $contentToSave[Base\Entity::BANK_PAYMENT_ID] = $content[VerifyFields::TRANSACTION_ID];
-            $contentToSave[Base\Entity::DATE]   = $content[VerifyFields::TRANSACTION_DATE];
+            $contentToSave[Base\Entity::BANK_PAYMENT_ID] = $authContent[VerifyFields::TRANSACTION_ID];
+            $contentToSave[Base\Entity::DATE]   = $authContent[VerifyFields::TRANSACTION_DATE];
         }
 
         return $contentToSave;
