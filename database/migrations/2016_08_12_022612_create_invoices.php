@@ -118,6 +118,9 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
+            $table->index(Entity::CUSTOMER_NAME);
+            $table->index(Entity::CUSTOMER_CONTACT);
+            $table->index(Entity::CUSTOMER_EMAIL);
             $table->index(Entity::TYPE);
             $table->index(Entity::SOURCE);
 
