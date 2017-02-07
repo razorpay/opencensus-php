@@ -39,7 +39,15 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         // Write to admins:ID:sessions
         if (isset($data['admin_id']))
         {
-            $key = 'admins:'.$data['admin_id'].':sessions';
+            $key = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
+
+            $this->cache->connection()->sadd($key, $sessionId);
+        }
+
+        // Write to users:ID:sessions
+        if (isset($data['user_id']))
+        {
+            $key = "users:{$data['user_id']}:{$this->sessionNamespace}";
 
             $this->cache->connection()->sadd($key, $sessionId);
         }

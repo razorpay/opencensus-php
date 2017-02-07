@@ -74,9 +74,17 @@ class Entity extends Base\Entity
                 continue;
             }
 
+            $hash = Redis::hgetall("dashboard_:$sessionId");
+
             Redis::del("dashboard_:$sessionId");
 
             Redis::srem("admins:$id:sessions", $sessionId);
+
+            // Delete from admins:adminId:sessions set as well
+            if (isset($hash['user_id']))
+            {
+                Redis::srem("users:{$hash['user_id']}:sessions", $sessionId);
+            }
         }
 
         // $this->where(self::ADMIN_ID, $id)
@@ -85,8 +93,32 @@ class Entity extends Base\Entity
 
     public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
     {
-        $this->where(self::USER_ID, $userId)
-             ->where(self::ID, '!=', $currentSessionId)->delete();
+        $setKey = "users:$userId:sessions";
+
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ($sessionId === $currentSessionId)
+            {
+                continue;
+            }
+
+            $hash = Redis::hgetall("dashboard_:$sessionId");
+
+            Redis::del("dashboard_:$sessionId");
+
+            // Delete from admins:adminId:sessions set as well
+            if (isset($hash['admin_id']))
+            {
+                Redis::srem("admins:{$hash['admin_id']}:sessions", $sessionId);
+            }
+
+            Redis::srem($setKey, $sessionId);
+        }
+
+        // $this->where(self::USER_ID, $userId)
+        //      ->where(self::ID, '!=', $currentSessionId)->delete();
     }
 
     public function deleteOneSessionForAdmin($sessionId)
@@ -99,6 +131,12 @@ class Entity extends Base\Entity
             $key = "admins:".$hash['admin_id'].":sessions";
 
             Redis::srem($key, $sessionId);
+        }
+
+        // Remove from users:userId:sessions as well
+        if (isset($hash['user_id']))
+        {
+            Redis::srem("users:{$hash['user_id']}:sessions", $sessionId);
         }
 
         Redis::del("dashboard_:$sessionId");
@@ -118,7 +156,15 @@ class Entity extends Base\Entity
             // Delete individual session entities
             $key = "dashboard_:$sessionId";
 
+            $hash = Redis::hgetall($key);
+
             Redis::del($key);
+
+            // Delete from users:userId:sessions set as well
+            if (isset($hash['user_id']))
+            {
+                Redis::srem("users:{$hash['user_id']}:sessions", $sessionId);
+            }
         }
 
         Redis::del($setKey);
