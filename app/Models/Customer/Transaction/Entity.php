@@ -100,22 +100,22 @@ class Entity extends Base\PublicEntity
 
     public function getBalance()
     {
-        return (int) $this->getAttribute(self::BALANCE);
+        return $this->getAttribute(self::BALANCE);
     }
 
     public function getDebit()
     {
-        return (int) $this->getAttribute(self::DEBIT);
+        return $this->getAttribute(self::DEBIT);
     }
 
     public function getCredit()
     {
-        return (int) $this->getAttribute(self::CREDIT);
+        return $this->getAttribute(self::CREDIT);
     }
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function setBalance($amount)
@@ -147,5 +147,4 @@ class Entity extends Base\PublicEntity
     {
         $this->setAttribute(self::ENTITY_ID, $id);
     }
-
 }

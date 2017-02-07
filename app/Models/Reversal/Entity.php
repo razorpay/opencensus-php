@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const CURRENCY          = 'currency';
     const TRANSACTION_ID    = 'transaction_id';
 
-    protected static $sign = 'revsl';
+    protected static $sign = 'rvrsl';
 
     protected $entity = 'reversal';
 

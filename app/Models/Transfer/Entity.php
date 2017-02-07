@@ -108,9 +108,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function transfers()
+    public function source()
     {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'entity');
+        return $this->morphTo();
     }
 
     // -------------------- End Relations -----------------------

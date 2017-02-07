@@ -450,7 +450,7 @@ class Entity extends Base\PublicEntity
 
     public function setMarketplaceGateway()
     {
-        $this->setGateway('marketplace');
+        $this->setGateway(Gateway::MARKETPLACE);
     }
 
     public function setError($errorCode, $errorDesc, $internalErrorCode)
@@ -1526,7 +1526,7 @@ class Entity extends Base\PublicEntity
 
     public function transfers()
     {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'entity');
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
     }
 
     public function netbanking()

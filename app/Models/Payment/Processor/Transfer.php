@@ -5,6 +5,8 @@ namespace RZP\Models\Payment\Processor;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait Transfer
 {
@@ -19,6 +21,8 @@ trait Transfer
         $paymentData = $this->getTransferPaymentData($input, $originPayment);
 
         $payment = $this->createPaymentEntity($paymentData);
+
+        $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $payment->getId(), 'input' => $input]);
 
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
 

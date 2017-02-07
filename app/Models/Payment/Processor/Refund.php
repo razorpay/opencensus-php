@@ -240,14 +240,32 @@ trait Refund
      */
     public function refundPaymentWithTransfers(array $input)
     {
-        (new Payment\Refund\Validator)->validateReversalsRequired($input);
+        if (isset($input['reversals']) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'The reversals parameter is required for this refund request');
+        }
 
-        // Refund each transfer payment and reverse the transfers
+        // For each transfer_id provided in the `reversals` array
+        // we fetch and refund the transfer payment, and then reverse the transfer
         foreach ($input['reversals'] as $reversal)
         {
             $transfer = $this->repo
                              ->transfer
                              ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
+
+            $amountUnreversed = $transfer->getAmountUnreversed();
+
+            if ($reversal['amount'] > $amountUnreversed)
+            {
+                $message = 'Reversal amount specified exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
+
+                throw new Exception\BadRequestValidationFailureException(
+                    $message,
+                    'reversal_amount',
+                    ['unreversed_amount' => $amountUnreversed]
+                    );
+            }
 
             $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
         }
@@ -343,10 +361,11 @@ trait Refund
 
     /**
      * Get the type of refund being processed - FULL / PARTIAL,
-     * based on the amount input and amount already refunded
+     * based on the input amount and amount already refunded
      *
      * @param  Payment\Entity $payment
      * @param  array          $input
+     * @return string
      */
     protected function getPaymentRefundType(Payment\Entity $payment, array $input)
     {
@@ -597,7 +616,7 @@ trait Refund
 
         $data = $this->getGatewayDataForRefund($this->refund, $payment);
 
-        if ($payment->isMethodCardOrEmi())
+        if ($payment->isMethodCardOrEmi() === true)
         {
             $card = $this->repo->card->fetchForPayment($this->refund->payment);
 
@@ -633,7 +652,7 @@ trait Refund
             $success = $this->recordTransactionForRefund();
 
             //
-            // `recordTransactionForRefund` may have made modifications to the refund
+            // `recordTransactionForRefund()` may have made modifications to the refund
             // entity which we don't want to update, since recording transaction failed.
             //
             if ($success === false)
@@ -774,7 +793,7 @@ trait Refund
     }
 
     /**
-     * Refund a marketplace payment of method = transfer
+     * Refund an internal marketplace payment (of method = transfer)
      *
      * @param  Payment\Entity $payment
      * @param  int            $amount

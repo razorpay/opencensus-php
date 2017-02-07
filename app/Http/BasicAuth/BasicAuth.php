@@ -1117,7 +1117,10 @@ class BasicAuth
     protected function invalidAccountKey()
     {
         $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER, ['key_id' => $this->getKey()]);
+            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER, [
+                'key_id' => $this->getKey(),
+                'account_id' => $this->getAccountKey()
+            ]);
 
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT);

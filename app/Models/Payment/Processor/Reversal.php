@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
@@ -9,8 +10,8 @@ use RZP\Models\Transfer;
 trait Reversal
 {
     /**
-     * Refund the transfer payment
-     * and create a reversal for the transfer
+     * Refund the transfer payment and
+     * create a reversal for the transfer
      *
      * @param  Payment\Entity $payment
      * @param  string         $accountId
@@ -53,6 +54,8 @@ trait Reversal
             return false;
         }
 
+        $transfers = null;
+
         $reverseAll = $this->checkReversalsOnRefundType($payment, $input, $transfers);
 
         if ((isset($input['reversals']) === false) and
@@ -64,6 +67,16 @@ trait Reversal
         return true;
     }
 
+    /**
+     * Based on the type of refund being processed, providing the
+     * `reversals` array in input may be optional or mandatory. This
+     * function validates the logic around this.
+     *
+     * @param  Payment\Entity           $payment
+     * @param  array                    $input
+     * @param  PublicCollection         $transfers
+     * @return bool
+     */
     protected function checkReversalsOnRefundType(Payment\Entity $payment, array $input, & $transfers) : bool
     {
         $refundType = $this->getPaymentRefundType($payment, $input);
@@ -86,14 +99,14 @@ trait Reversal
 
             if ($transferCount > 1)
             {
-                // Reversals need to be provided only if there are
-                // multiple transfers created on a payment.
+                // `reversals` must be provided only if there are multiple
+                // transfers created on the payment on partial refund
                 (new Payment\Refund\Validator)->validateReversalsRequired($input);
             }
             else if ($transferCount === 1)
             {
-                // When only a single transfer exists, we reverse
-                // the amount on it.
+                // When only a single transfer exists, we auto-reverse
+                // the full transfer amount
                 $reverseAll = true;
             }
         }
@@ -107,10 +120,10 @@ trait Reversal
 
     /**
      * When reversals are to be processed but not provided,
-     * we fetch and implicitly add reversals
+     * in input, we  implicitly add reversals for the transfers
+     * corresponding to the paymment being refunded
      *
      * @param  PublicCollection     $transfers
-     * @param  Payment\Entity       $payment
      * @param  array                $input
      */
     protected function implicitAddReversalsForFullRefund($transfers, array & $input)

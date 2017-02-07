@@ -308,7 +308,7 @@ class Processor
 
         $validator->validateInput('transfer', $input);
 
-        $validator->validateIsCaptured($payment);
+        $validator->validateIsCaptured();
 
         return $this->repo->transaction(function () use ($payment, $input)
         {
@@ -320,7 +320,7 @@ class Processor
             $transferIds = implode(' , ', $transfers->getIds());
 
             $this->trace->info(
-                TraceCode::PAYMENT_TRANSFER_REQUEST,
+                TraceCode::PAYMENT_TRANSFER_SUCCESS,
                 ['transfer_ids' => $transferIds]);
 
             return $transfers;

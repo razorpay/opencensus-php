@@ -24,6 +24,13 @@ class Core extends Base\Core
      */
     public function createForMarketplaceRefund(Transfer\Entity $transfer, Merchant\Entity $merchant, int $amount) : Entity
     {
+        $this->trace->info(
+            TraceCode::TRANSFER_REVERSAL_REQUEST,
+            [
+                'transfer_id' => $transfer->getId(),
+                'amount'      => $amount
+            ]);
+
         $transfer->reverseAmount($amount);
 
         $this->repo->saveOrFail($transfer);
@@ -41,6 +48,8 @@ class Core extends Base\Core
         $reversal->transaction()->associate($txn);
 
         $this->repo->saveOrFail($reversal);
+
+        $this->traceSuccess($reversal);
 
         return $reversal;
     }
@@ -72,7 +81,7 @@ class Core extends Base\Core
         // @todo: Change flow to create reversals for both customer/account transfers
         assert ($transfer->getToType() === E::MERCHANT);
 
-        // If amount not sent in input,
+        // If amount is not sent in input,
         // reverse the entire transfer amount pending
         $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
 
@@ -81,13 +90,7 @@ class Core extends Base\Core
             $reversal = (new Payment\Processor\Processor($merchant))
                             ->refundPaymentAndReverseTransfer($transfer, $amount);
 
-            $traceMessage = [
-                'transfer_id'       => $reversal->getTransferId(),
-                'reversal_id'       => $reversal->getId(),
-                'refund_amount'     => $reversal->getAmount()
-            ];
-
-            $this->trace->info(TraceCode::TRANSFER_REVERSAL_SUCCESS, $traceMessage);
+            $this->traceSuccess($reversal);
 
             return $reversal;
         });
@@ -107,4 +110,14 @@ class Core extends Base\Core
         return $reversal;
     }
 
+    protected function traceSuccess(Entity $reversal)
+    {
+        $traceMessage = [
+            'transfer_id'       => $reversal->getTransferId(),
+            'reversal_id'       => $reversal->getId(),
+            'refund_amount'     => $reversal->getAmount()
+        ];
+
+        $this->trace->info(TraceCode::TRANSFER_REVERSAL_SUCCESS, $traceMessage);
+    }
 }

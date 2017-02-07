@@ -150,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS   => 'integer',
         self::FEE_MODEL     => 'integer',
         self::FEE_BEARER    => 'integer',
-        self::ON_HOLD        => 'bool',
+        self::ON_HOLD       => 'bool',
     ];
 
     public function merchant()

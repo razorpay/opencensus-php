@@ -454,7 +454,7 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Customer\Balance\Entity::class, [
-            'merchant_id'   => '10000gcustomer',
+            'customer_id'   => 'factory:RZP\Models\Customer\Entity',
             'merchant_id'   => '10000000000000',
             'balance'       => 0,
             'daily_usage'   => 0,

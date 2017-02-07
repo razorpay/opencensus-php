@@ -169,6 +169,19 @@ class DefaultPlan
                     'created_at'     => time(),
                     'updated_at'     => time()
                 ),
+
+                array(
+                    'id'             => '1b03wh9jXAH42g',
+                    'plan_id'        => '2atGxLIYLyHWg7',
+                    'plan_name'      => 'Startup Plan',
+                    'feature'        => 'payment',
+                    'payment_method' => 'transfer',
+                    'percent_rate'   => '0',
+                    'fixed_rate'     => '0',
+                    'expired_at'     => null,
+                    'created_at'     => time(),
+                    'updated_at'     => time()
+                ),
             );
     }
 

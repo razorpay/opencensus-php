@@ -115,7 +115,19 @@ class Pricing extends Base
                         'fixed_rate'          => 0,
                     ),
                     array(
-                        'id'                  => '1zE3CYf21zbyaE',
+                        'id'                  => '1zE3CYqf1zbyaF',
+                        'plan_id'             => '1hDYlICobzOCYt',
+                        'plan_name'           => 'testDefaultPlan',
+                        'feature'             => 'payment',
+                        'payment_method'      => 'upi',
+                        'payment_method_type' => null,
+                        'payment_network'     => null,
+                        'payment_issuer'      => null,
+                        'percent_rate'        => 250,
+                        'fixed_rate'          => 0,
+                    ),
+                    array(
+                        'id'                  => '1zE3CYf21zbybG',
                         'plan_id'             => '1hDYlICobzOCYt',
                         'plan_name'           => 'testDefaultPlan',
                         'feature'             => 'payment',
@@ -125,18 +137,6 @@ class Pricing extends Base
                         'payment_issuer'      => null,
                         'percent_rate'        => 0,
                         'fixed_rate'          => 0,
-                    ),
-                    array(
-                        'id' => '1zE3CYqf1zbyaF',
-                        'plan_id' => '1hDYlICobzOCYt',
-                        'plan_name' => 'testDefaultPlan',
-                        'feature'   =>  'payment',
-                        'payment_method' => 'upi',
-                        'payment_method_type' => null,
-                        'payment_network' => null,
-                        'payment_issuer' => null,
-                        'percent_rate' => 250,
-                        'fixed_rate' => 0,
                     ),
                 );
 
@@ -177,6 +177,15 @@ class Pricing extends Base
                         'percent_rate'   => 2000,
                         'fixed_rate'     => 0,
                     ),
+                    array(
+                        'id'             => '1pteg2FFEebmgG',
+                        'plan_id'        => '1A0Fkd38fGZPVC',
+                        'plan_name'      => 'standard_plan',
+                        'feature'        => 'payment',
+                        'payment_method' => 'transfer',
+                        'percent_rate'   => 0,
+                        'fixed_rate'     => 0,
+                    ),
                 );
 
         $this->addPricingRulesToDb($rows);
@@ -213,6 +222,15 @@ class Pricing extends Base
                         'plan_name'      => 'ZeroPricingPlan',
                         'feature'        => 'payment',
                         'payment_method' => 'wallet',
+                        'percent_rate'   => 0,
+                        'fixed_rate'     => 0,
+                    ),
+                    array(
+                        'id'             => '1ZeroPricingR4',
+                        'plan_id'        => '10ZeroPricingP',
+                        'plan_name'      => 'ZeroPricingPlan',
+                        'feature'        => 'payment',
+                        'payment_method' => 'transfer',
                         'percent_rate'   => 0,
                         'fixed_rate'     => 0,
                     ),

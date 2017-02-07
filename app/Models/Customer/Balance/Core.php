@@ -24,15 +24,7 @@ class Core extends Base\Core
      */
     protected function create(Customer\Entity $customer, Merchant\Entity $merchant) : Entity
     {
-        $number = new PhoneBook($customer->getContact(), true);
-
-        $country = $number->getRegionCodeForNumber();
-
-        if ($country !== 'IN')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
-        }
+        $this->validateIndianContact($customer->getContact());
 
         $balance = new Entity;
 
@@ -78,6 +70,8 @@ class Core extends Base\Core
 
         $balance->addBalance($amount);
 
+        // For all credits to the wallet, other than refunds,
+        // update daily/weekly/month usage values
         if ($isRefund === false)
         {
             $this->updateUsages($balance, $amount);
@@ -128,6 +122,27 @@ class Core extends Base\Core
                         ->getCustomerBalanceLockForUpdate($customerId);
 
         return $this->credit($balance, $amount, true);
+    }
+
+    /**
+     * Wallets can only be created for customers having
+     * Indian numbers
+     *
+     * @param   string        $number
+     * @return  null
+     * @throws  Exception\BadRequestException
+     */
+    protected function validateIndianContact(string $number)
+    {
+        $number = new PhoneBook($number, true);
+
+        $country = $number->getRegionCodeForNumber();
+
+        if ($country !== 'IN')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+        }
     }
 
     /**

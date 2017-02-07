@@ -108,11 +108,6 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Batch\Entity', self::BATCH_ID);
     }
 
-    public function transfers()
-    {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'entity');
-    }
-
     public function netbanking()
     {
         return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');

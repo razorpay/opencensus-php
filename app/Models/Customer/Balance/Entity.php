@@ -66,6 +66,14 @@ class Entity extends Base\PublicEntity
         self::MONTHLY_USAGE     => 'int',
     ];
 
+    protected $amounts = [
+        self::BALANCE,
+        self::MAX_BALANCE,
+        self::DAILY_USAGE,
+        self::WEEKLY_USAGE,
+        self::MONTHLY_USAGE,
+    ];
+
     // -------------------- Relations ---------------------------
 
     public function customer()

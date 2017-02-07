@@ -13,6 +13,8 @@ class Validator extends Base\Validator
         'amount'                => 'sometimes|integer|min:100',
         'notes'                 => 'sometimes|notes',
         'reversals'             => 'sometimes|array',
+        'reversals.*.transfer'  => 'required|string|size:18',
+        'reversals.*.amount'    => 'required|integer|min:100',
     ];
 
     protected static $createValidators = [

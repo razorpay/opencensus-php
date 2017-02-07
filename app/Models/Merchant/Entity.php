@@ -406,6 +406,11 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
     }
 
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
+    }
+
     public function merchantDetail()
     {
         return $this->hasOne('RZP\Models\Merchant\Detail\Entity', 'merchant_id', self::ID);

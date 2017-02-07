@@ -33,12 +33,11 @@ class Validator extends Base\Validator
         'notes.merchant_order_id' =>  'required_with:signature',
         'callback_url'            =>  'sometimes|url',
         'order_id'                =>  'sometimes',
-        'customer_id'             =>  'sometimes',
+        'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
         'on_hold'                 =>  'required_with:on_hold_until|boolean',
@@ -55,9 +54,8 @@ class Validator extends Base\Validator
         'amount'                  => 'sometimes|integer',
         'notes'                   => 'sometimes|notes',
         'reversals'               => 'sometimes|array',
-        'reversals.*.transfer'    => 'required_with:reversals|string|min:14',
-        'reversals.*.amount'      => 'required_with:reversals|integer|min:100',
-        'reversals.*.currency'    => 'required_with:reversals|string|size:3'
+        'reversals.*.transfer'    => 'required|string|size:14',
+        'reversals.*.amount'      => 'required|integer|min:100'
     ];
 
     protected static $transferRules = [
@@ -366,9 +364,9 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function validateIsCaptured($payment)
+    public function validateIsCaptured()
     {
-        if ($payment->isCaptured() === false)
+        if ($this->entity->isCaptured() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
