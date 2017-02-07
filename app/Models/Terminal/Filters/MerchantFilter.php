@@ -175,8 +175,6 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        $directTerminalPresent = false;
-
         foreach ($applicableTerminals as $currentTerminal)
         {
             if ($currentTerminal->isShared() === false)
