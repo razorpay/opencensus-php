@@ -60,7 +60,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction('issued', $invoice));
+            $this->dispatch(new InvoiceAction($this->mode, 'issued', $invoice));
         }
 
         return $invoice;
@@ -124,7 +124,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction('issued', $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, 'issued', $invoice));
 
         return $invoice;
     }
@@ -309,7 +309,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction('expired', $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, 'expired', $invoice));
 
         return $invoice;
     }
@@ -553,7 +553,7 @@ class Core extends Base\Core
 
         try
         {
-            return $this->pdfGenerator->generate();
+            return $this->pdfGenerator->generate($this->mode);
         }
         catch (\Throwable $e)
         {

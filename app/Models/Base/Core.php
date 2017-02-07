@@ -54,4 +54,9 @@ class Core
 
         $this->device = $this->app['basicauth']->getDevice();
     }
+
+    public function setMode(string $mode)
+    {
+        $this->mode = $mode;
+    }
 }

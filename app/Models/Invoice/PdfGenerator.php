@@ -44,9 +44,9 @@ class PdfGenerator extends Base\Core
         $this->redis = Redis::getFacadeRoot();
     }
 
-    public function generate()
+    public function generate(string $mode)
     {
-        $viewPayload = (new ViewDataSerializer($this->invoice))->get('test');
+        $viewPayload = (new ViewDataSerializer($this->invoice))->get($mode);
 
         $html = $this->getHtml($viewPayload);
 

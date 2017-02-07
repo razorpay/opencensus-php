@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
+use Config;
 use Carbon\Carbon;
 
 use RZP\Models\Base;
@@ -48,11 +49,14 @@ class ViewDataSerializer extends Base\Core
 
         $merchantData = $this->getFormattedMerchantDataForView();
 
+        $invoiceJsBaseUrl = Config::get('app.invoicejs_base_url');
+
         return [
-            'environment' => $this->app->environment(),
-            'key_id'      => $keyId,
-            'merchant'    => $merchantData,
-            'invoice'     => $invoiceData,
+            'environment'        => $this->app->environment(),
+            'invoicejs_base_url' => $invoiceJsBaseUrl,
+            'key_id'             => $keyId,
+            'merchant'           => $merchantData,
+            'invoice'            => $invoiceData,
         ];
     }
 

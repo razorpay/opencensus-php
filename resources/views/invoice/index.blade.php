@@ -180,7 +180,7 @@
             </script>
           @endif
         @else
-          <script src="http://127.0.0.1:8080/dist/invoice.js"></script>
+          <script src="{{$data['invoicejs_base_url']}}/dist/invoice.js"></script>
           <div id="invoice-container"></div>
           <script type="text/javascript">
             var data = {!!utf8_json_encode($data)!!};

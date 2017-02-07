@@ -20,14 +20,17 @@ class InvoiceAction extends Job implements ShouldQueue
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
 
+    protected $mode;
     protected $event;
     protected $invoice;
     protected $trace;
     protected $core;
     protected $handler;
 
-    public function __construct($event, Invoice\Entity $invoice)
+    public function __construct(string $mode, string $event, Invoice\Entity $invoice)
     {
+        $this->mode    = $mode;
+
         $this->event   = $event;
 
         $this->invoice = $invoice;
@@ -59,6 +62,8 @@ class InvoiceAction extends Job implements ShouldQueue
 
     private function init()
     {
+        \Database\DefaultConnection::set($this->mode);
+
         $app = App::getFacadeRoot();
         $this->trace = $app['trace'];
 
@@ -75,6 +80,8 @@ class InvoiceAction extends Job implements ShouldQueue
         }
 
         $this->core = new Invoice\Core;
+
+        $this->core->setMode($this->mode);
     }
 
     //
