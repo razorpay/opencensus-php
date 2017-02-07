@@ -264,9 +264,6 @@ class Repository extends \Razorpay\Spine\Repository
      * @param string       $id
      * @param bool|boolean $withTrashed - Whether to include soft deleted results?
      *
-     * TODO:
-     * - $withTrashed should go in findOrFail() in spine?
-     *
      * @return Models\Base\PublicEntity
      */
     public function lockForUpdate(string $id, bool $withTrashed = false)
