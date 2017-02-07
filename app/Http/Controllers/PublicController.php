@@ -86,7 +86,8 @@ class PublicController extends Controller
             'options'       => json_encode($postParams['options'], JSON_FORCE_OBJECT),
             'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
             'url_callback'  => $postParams['url']['callback'],
-            'url_cancel'    => $postParams['url']['cancel'] ?? $postParams['url']['callback'],
+            'url_cancel'    => $postParams['url']['cancel'] ?? null,
+            'retry'         => $postParams['retry'] ?? false,
         ];
 
         return View::make('public.hosted', $data);
@@ -97,10 +98,11 @@ class PublicController extends Controller
         $postParamRules = [
             'url'                   =>  'required',
             'options'               =>  'required',
-            'url.cancel'            =>  'required|url',
+            'url.cancel'            =>  'sometimes|url',
             'url.callback'          =>  'required|url',
             'options.key'           =>  'required',
             'options.amount'        =>  'required|integer',
+            'retry'                 =>  'sometimes'
         ];
 
         (new JitValidator)->rules($postParamRules)

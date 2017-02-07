@@ -41,24 +41,32 @@
       <h3>Payment Successful!</h3>
       Just a moment now...
     </div>
-    <form style="visibility: hidden" method="post" action="{{$url_callback}}" target="_self"></form>
+    <form style="visibility: hidden" method="post" action="{{ $url_callback }}" target="_self"></form>
     <script>
       var form = document.forms[0];
       var options = {!! $options !!};
 
+      @if ($retry)
       if (window.btoa) {
-        var data = btoa(JSON.stringify({
-          request: {
-            url: form.action,
-            method: form.method,
-            target: '_self'
-          },
+        try {
+          var data = btoa(JSON.stringify({
+            request: {
+              url: form.action,
+              method: form.method,
+              target: '_self'
+            },
 
-          options: JSON.stringify(options),
+            options: JSON.stringify(options),
 
-          back: "{{ $url_cancel }}"
-        }));
+            back: "{{ $url_cancel }}"
+          }));
+
+          options.callback_url =  location.protocol + '//' + location.hostname + '/v1/checkout/onyx?data=' + data;
+        } catch(e){}
       }
+      @else
+      options.callback_url = "{{ $url_callback }}";
+      @endif
 
       options.handler = function(data) {
         document.querySelector('#success').style.display = 'block';
@@ -85,6 +93,14 @@
       if (!options.theme) {
         options.theme = {};
       }
+
+      @if ($url_cancel)
+      options.modal.ondismiss = function() {
+        location.href = "{{$url_cancel}}";
+      }
+      @else
+      options.theme.close_button = false;
+      @endif
 
       // darker shade, because there is nothing behind backdrop
       if (!options.theme.backdrop_color) {
