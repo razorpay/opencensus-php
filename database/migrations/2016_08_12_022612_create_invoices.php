@@ -90,6 +90,9 @@ class CreateInvoices extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->text(Entity::COMMENT)
+                  ->nullable();
+
             $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
 
@@ -119,6 +122,9 @@ class CreateInvoices extends Migration
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
             $table->index(Entity::EXPIRE_BY);
+            $table->index(Entity::CUSTOMER_NAME);
+            $table->index(Entity::CUSTOMER_CONTACT);
+            $table->index(Entity::CUSTOMER_EMAIL);
             $table->index(Entity::TYPE);
             $table->index(Entity::SOURCE);
 
