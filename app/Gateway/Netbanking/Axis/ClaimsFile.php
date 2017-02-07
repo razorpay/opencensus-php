@@ -51,7 +51,7 @@ class ClaimsFile extends Base\RefundFile
                 $row['gateway']['bank_payment_id'],
                 strtoupper($row['payment']['id']),
                 $row['payment']['id'],
-                $row['payment']['amount'] /100,
+                number_format($row['payment']['amount'] /100, 2, '.', ''),
                 $date
             ];
 
