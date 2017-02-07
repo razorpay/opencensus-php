@@ -7,6 +7,7 @@ class VerifyFields
     // request
     const AMOUNT                    = 'amount';
     const SESSION_ID                = "feSessionId";
+    const REQUEST                   = 'request';
 
     // response
     const TRANSACTION_AMOUNT        = 'txnAmount';
