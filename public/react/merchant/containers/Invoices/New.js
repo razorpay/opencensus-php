@@ -42,7 +42,7 @@ const selector = formValueSelector('newInvoice')
   form: 'newInvoice',
   initialValues: new Invoice({
     date: Math.ceil(new Date().getTime()/1000),
-    draft: 1,
+    draft: 0,
     type: 'invoice',
     line_items: [
       {
@@ -168,7 +168,7 @@ export default class InvoicesNewContainer extends Component {
                           placeholder='Select a customer'
                           onQuickAdd={this.quickCreateCustomer}
                           disabled={isIssued}
-                          onChange={(selectedCustomer) => {
+                          onOptionChange={(selectedCustomer) => {
                             this.props.change('customer_id', selectedCustomer.id || '')
                           }}
                           validate={required('Please provide the customer')}
@@ -220,13 +220,14 @@ export default class InvoicesNewContainer extends Component {
                       pendingText='Saving...'
                       onClick={handleSubmit(this.save)}
                     />
-                    <AsyncButton
+{/*                    <AsyncButton
                       type='button'
                       class='btn btn-default btn-rounded'
                       text='Save as draft'
                       pendingText='Saving...'
                       onClick={handleSubmit(this.save)}
                     />
+*/}
                     <a
                       href='#/app/invoices/list'
                       class='btn btn-default btn-rounded'

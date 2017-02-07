@@ -26,7 +26,6 @@ Modal.defaultStyles.content = {
 class ModalDialog extends Component {
   render() {
     let props = this.props
-    debugger
     return (
       <div>
         <Modal

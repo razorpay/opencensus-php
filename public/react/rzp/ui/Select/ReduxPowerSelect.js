@@ -11,7 +11,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
     optionLabelPath,
     optionValuePath = 'id',
     onQuickAdd,
-    onChange = () => {},
+    onOptionChange = () => {},
     ...otherProps
   } = props
 
@@ -38,7 +38,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
       }
       onChange={(option = '') => {
         // input.onChange(option[input.name] || '')
-        onChange(option)
+        onOptionChange(option)
       }}
     />
   )

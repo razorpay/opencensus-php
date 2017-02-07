@@ -32,7 +32,7 @@ export default class DatePickerField extends Component {
     return (
       <div class='datepicker-container'>
         <SingleDatePicker
-          id={name}
+          id={input.name}
           date={date}
           focused={focused}
           isOutsideRange={isOutsideRange}
@@ -61,8 +61,4 @@ DatePickerField.defaultProps = {
   numberOfMonths: 1,
   enableOutsideDays: true,
   displayFormat: 'DD MMM YYYY'
-}
-
-DatePickerField.propTypes = {
-  name: PropTypes.string.isRequired
 }
