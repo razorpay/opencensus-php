@@ -452,7 +452,9 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
-        if ($content['success'] !== 'true')
+        // 5006 = The payment was not created at the gateway end
+        //        And we can safely mark this payment as failed
+        if (($content['success'] !== 'true') and ($content[ResponseFields::RESPONSE] !== '5006'))
         {
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
