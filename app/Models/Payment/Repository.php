@@ -408,10 +408,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['card']);
+                        $merchantId, $from, $to, $count, $skip, ['card']);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
@@ -656,7 +656,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -683,7 +683,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 

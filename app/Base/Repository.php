@@ -165,7 +165,7 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
-    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
+    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
 
@@ -174,7 +174,9 @@ class Repository extends \Razorpay\Spine\Repository
             $query->with(...$relations);
         }
 
-        return $query->get();
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
     }
 
     public function fetchAssociatedRelations($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
