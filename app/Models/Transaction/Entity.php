@@ -597,7 +597,7 @@ class Entity extends Base\PublicEntity
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
             $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
-            if ($payment->getOrderId() !== null)
+            if ($payment->getApiOrderId() !== null)
             {
                 $order = $payment->order;
 
