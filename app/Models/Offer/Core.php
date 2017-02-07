@@ -16,14 +16,14 @@ class Core extends Base\Core
         // Check to see if there are any offers with same values for the set of attributes
         // required to uniquely define an offer
 
-        $existingOffers = $this->repo->offer->fetchExistingOffers($input, $merchant->getId());
+        $offer = (new Entity)->build($input);
+
+        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $merchant->getId());
 
         if ($existingOffers->count() > 0)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
         }
-
-        $offer = (new Entity)->build($input);
 
         $offer->merchant()->associate($merchant);
 

@@ -21,17 +21,6 @@ class Repository extends Base\Repository
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|alpha',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
         Entity::ISSUER                    => 'sometimes|alpha',
-        Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
-        Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
-        Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::STARTS_AT                 => 'sometimes|integer',
-        Entity::ENDS_AT                   => 'sometimes|integer',
-        Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
-        Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
     ];
 
     /**
@@ -48,18 +37,29 @@ class Repository extends Base\Repository
         Entity::FLAT_CASHBACK
     ];
 
-    public function fetchExistingOffers(array $input, string $merchantId)
+    public function fetchExistingOffers(Entity $newOffer, string $merchantId)
     {
-        $offerFetchParams = [];
+        $query = $this->buildQuery($newOffer, $merchantId);
+
+        $query->where(Entity::ACTIVE, '=', true)
+                ->where(Entity::STARTS_AT, '<=', $newOffer->getAttribute(Entity::ENDS_AT))
+                ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
+
+        return $query->get();
+    }
+
+    protected function buildQuery(Entity $newOffer, string $merchantId)
+    {
+        $query = $this->newQuery()->where(Entity::MERCHANT_ID, '=', $merchantId);
 
         foreach ($this->offerFetchAttributes as $attribute)
         {
-            if (isset($input[$attribute]) === true)
+            if ($newOffer->getAttribute($attribute) !== null)
             {
-                $offerFetchParams[$attribute] = $input[$attribute];
+                $query->where($attribute, '=', $newOffer->getAttribute($attribute));
             }
         }
 
-        return $this->fetch($offerFetchParams, $merchantId);
+        return $query;
     }
 }
