@@ -78,9 +78,11 @@ class PublicController extends Controller
         $checkout = $this->getCheckoutCommon();
 
         assert(isset($postParams['url']['callback']));
+        assert(isset($postParams['options']));
+        assert(is_array($postParams['options']));
 
         $data = [
-            'options'       => json_encode($postParams['options']),
+            'options'       => json_encode($postParams['options'], JSON_FORCE_OBJECT),
             'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
             'url_callback'  => $postParams['url']['callback'],
             'url_cancel'    => $postParams['url']['cancel'] ?? $postParams['url']['callback'],
