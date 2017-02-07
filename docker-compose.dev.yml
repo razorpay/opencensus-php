@@ -8,39 +8,29 @@ services:
     volumes:
       - .:/app
     links:
-      - db_live
-      - db_test
+      - api_db
     ports:
       - 28080:80
     depends_on:
-      - db_live
-      - db_test
+      - api_db
     environment:
-      DB_LIVE_HOST: db_live
-      SLAVE_DB_LIVE_HOST: db_live
-      DB_TEST_HOST: db_test
-      SLAVE_DB_TEST_HOST: db_test
+      DB_LIVE_HOST: api_db
+      DB_TEST_HOST: api_db
+      SLAVE_DB_LIVE_HOST: api_db
+      SLAVE_DB_TEST_HOST: api_db
       REDIS_HOST: cache
       SECURE_REDIS_HOST: cache
       QUEUE_REDIS_HOST: cache
-  db_live:
+  api_db:
     image: mysql:5.6
     ports:
       - 23306:3306
     environment:
       MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: api_live
-      MYSQL_USER: api_live
+      MYSQL_USER: api_user
       MYSQL_PASSWORD: 123
-  db_test:
-    image: mysql:5.6
-    ports:
-      - 23307:3306
-    environment:
-      MYSQL_ROOT_PASSWORD: 123
-      MYSQL_DATABASE: api_test
-      MYSQL_USER: api_test
-      MYSQL_PASSWORD: 123
+    volumes:
+      - ./dockerconf/api_db.sql:/docker-entrypoint-initdb.d/init.sql
   cache:
     image: redis:2.8
     ports:
