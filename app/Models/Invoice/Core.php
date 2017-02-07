@@ -39,6 +39,11 @@ class Core extends Base\Core
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
     }
 
+    public function setMode(string $mode)
+    {
+        $this->mode = $mode;
+    }
+
     public function setPdfGenerator(Entity $invoice)
     {
         $this->pdfGenerator = new PdfGenerator($invoice);
