@@ -441,7 +441,7 @@ class Notify
                 break;
             case self::INVOICE_PAYMENT_AUTHORIZED:
             case self::INVOICE_PAYMENT_CAPTURED:
-                $action = 'Invoice';
+                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
                 break;
             default:
                 $action = 'Payment';
@@ -630,6 +630,7 @@ class Notify
                 'public_id'  => $this->invoice->getPublicId(),
                 'paid_at'    => $this->invoice->getPaidAt(),
                 'issued_at'  => $this->invoice->getIssuedAt(),
+                'type_label' => ucfirst($this->invoice->getTypeLabel()),
             ];
         }
 

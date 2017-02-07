@@ -168,13 +168,13 @@ class Notifier extends Base\Core
     {
         Mail::send($template, $data, function($message) use ($data)
         {
-            $message->from('invoices@razorpay.com', $data['name']);
+            $message->from('invoices@razorpay.com', $data['merchant']['name']);
 
             $message->replyTo('support@razorpay.com', 'Razorpay Support');
 
             $message->subject($data['subject']);
 
-            $message->to($data['email']);
+            $message->to($data['invoice']['customer']['email']);
         });
     }
 
@@ -200,13 +200,23 @@ class Notifier extends Base\Core
 
         $subject = $this->getInvoiceMailSubject($callee, $merchantName);
 
+        $invoicePayload = $this->invoice->toArrayPublic();
+
+        $extraInvoicePayload = [
+            'formatted_amount' => $this->invoice->getFormattedAmount(),
+            'type_label'       => ucwords($this->invoice->getTypeLabel()),
+        ];
+
+        $invoicePayload += $extraInvoicePayload;
+
+        $merchantPayload = [
+            'name' => $merchantName,
+        ];
+
         return [
-            'email'   => $this->invoice->getCustomerEmail(),
-            'date'    => date('d-M-Y H:m:s T'),
+            'invoice' => $invoicePayload,
+            'merchant' => $merchantPayload,
             'subject' => $subject,
-            'link'    => $this->invoice->getShortUrl(),
-            'name'    => $merchantName,
-            'amount'  => $this->invoice->getFormattedAmount(),
         ];
     }
 
@@ -373,19 +383,19 @@ class Notifier extends Base\Core
     {
         $this->mailSubjectTemplates = [
             'getInvoiceIssuedMailPayload' => [
-                Type::LINK    => 'Payment requested by %s',
-                Type::ECOD    => 'Payment requested by %s',
-                Type::INVOICE => 'Invoice from %s',
+                Type::LINK    => ' Razorpay | Payment requested by %s',
+                Type::ECOD    => ' Razorpay | Payment requested by %s',
+                Type::INVOICE => ' Razorpay | Invoice from %s',
             ],
             'getInvoiceExpiredMailPayload' => [
-                Type::LINK    => 'Payment requested from %s has expired',
-                Type::ECOD    => 'Payment requested from %s has expired',
-                Type::INVOICE => 'Invoice from %s from has expired',
+                Type::LINK    => ' Razorpay | Payment requested from %s has expired',
+                Type::ECOD    => ' Razorpay | Payment requested from %s has expired',
+                Type::INVOICE => ' Razorpay | Invoice from %s from has expired',
             ],
             'getInvoiceExpiringMailPayload' => [
-                Type::LINK    => 'Payment request from %s is expiring',
-                Type::ECOD    => 'Payment request from %s is expiring',
-                Type::INVOICE => 'Invoice from %s is expiring',
+                Type::LINK    => ' Razorpay | Payment request from %s is expiring',
+                Type::ECOD    => ' Razorpay | Payment request from %s is expiring',
+                Type::INVOICE => ' Razorpay | Invoice from %s is expiring',
             ],
         ];
     }
