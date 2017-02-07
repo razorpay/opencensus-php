@@ -12,12 +12,13 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|size:18',
-        Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
+        Entity::PAYMENT_ID        => 'sometimes|string|size:18',
+        Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
 
-        EsRepository::QUERY => 'sometimes|string',
-        Entity::DESCRIPTION => 'sometimes|string',
-        Entity::TERMS       => 'sometimes|string',
+        EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
+        Entity::DESCRIPTION       => 'sometimes|string|min:1|max:100',
+        Entity::TERMS             => 'sometimes|string|min:1|max:100',
     ];
 
     protected $proxyFetchParamRules = [

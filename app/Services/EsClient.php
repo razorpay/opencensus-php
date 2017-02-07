@@ -126,6 +126,11 @@ class EsClient
 
     public function delete($params)
     {
+        if ($this->esMock === true)
+        {
+            return null;
+        }
+
         return $this->client->delete($params);
     }
 

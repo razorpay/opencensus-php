@@ -16,10 +16,10 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
-    protected $originalFetchParamRules;
+    // protected $originalFetchParamRules;
 
     /**
-     * Temporary
+     * *Temporary: Will be removed once notes index is migrated to new flow.
      */
     protected $entitiesInOldFlow = [
         Constants\Entity::ORDER,
@@ -39,7 +39,9 @@ trait RepositoryFetch
       // Default params
 //    protected $defaultFetchParams = array();
 
-    protected $params = array();
+    protected $params      = [];
+    protected $mysqlParams = [];
+    protected $esParams    = [];
 
     protected $merchantIdRequiredForMultipleFetch = true;
 
@@ -58,55 +60,53 @@ trait RepositoryFetch
      */
     public function fetch(array $params, $merchantId = null)
     {
-        // In case there are keys, but no values in the query params.
         $params = $this->unsetEmptyParams($params);
+
+        $this->addDefaultParams($params);
+
+        //
+        // validateFetchParams modifies fetchParamRules.
+        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
+        //
+
+        $this->originalFetchParamRules = $this->fetchParamRules;
+
+        $this->validateFetchParams($params);
+
+        //
+        // Checks if need to fetch from ES. This is done based on fetch params
+        // sent. Also, sets esParams and mysqlParams.
+        //
+
+        $isEs = $this->isEsFetch($params);
+
+        if ($isEs === true)
+        {
+            return $this->runEsFetch($this->esParams, $merchantId);
+        }
+
+        //
+        // Form MySQL query and do fetch
+        //
 
         $query = $this->newQuery();
 
         $this->addCommonQueryParamMerchantId($query, $merchantId);
 
-        // In case some params like count are not mentioned in the query params.
-        $this->addDefaultParams($params);
-
-        // validateFetchParams modifies fetchParamRules.
-        // To check for ES fetch, we needs the original set of fetchParamRules (basically the default set)
-        $this->originalFetchParamRules = $this->fetchParamRules;
-
-        // Validate the rules against each query param.
-        $this->validateFetchParams($params);
-
-        // Check if the params need to be searched via ES.
-        $isEs = $this->isEsFetch($params);
-
-        if ($isEs === true)
-        {
-            return $this->runEsFetch($params, $merchantId);
-        }
-
-        /*
-         * Create the query.
-         */
-        $query = $this->buildFetchQuery($query, $params);
+        $query = $this->buildFetchQuery($query, $this->mysqlParams);
 
         return $query->get();
     }
 
-
-    /*
-     * Returns `false` if there is no es repo for the entity.
-     * If default params such as 'from', 'to', 'skip' are present, it removes
-     * them before checking. It also removes default params set for the entity, before checking.
-     * If the remaining params, after removing the default params, are present in esFields,
-     * ES Fetch is used.
-     * Example : If query params contain notes and count, ES fetch is used, since count is part of default param
-     * and is hence removed.
-     * If query params contain notes and contact, ES fetch is not used, since contact is not part of either
-     * default param or esFields. For ES fetch to be used, all the params remaining after removing
-     * default params should be part of esFields.
-     * If query params contain status, ES fetch is not used, since it's not part of esFields.
-     * If after removing the default params, no params are left, ES fetch is not used.
+    /**
+     * TODO:
+     * - Update the comment here.
+     *
+     * @param array $params
+     *
+     * @return boolean
      */
-    protected function isEsFetch($params)
+    protected function isEsFetch(array $params)
     {
         if ($this->doesEsRepoExists() === false)
         {
@@ -115,35 +115,38 @@ trait RepositoryFetch
 
         $this->setEsRepo();
 
-        $esFields = $this->esRepo->getFields();
+        //
+        // Removes common params, eg. count, skip etc.
+        // Also, removes additional default params from repository class.
+        //
 
-        $esFields[] = EsRepository::QUERY;
-
-        // Gets the query param list without the default params
-        $rawParams = array_diff_key($params, $this->originalFetchParamRules);
+        $params = array_diff_key($params, $this->originalFetchParamRules);
 
         if (isset($this->defaultFetchParams) === true)
         {
-            // array_flip is not required here since defaultFetchParams will be an associative array.
-            // array_diff_key is used when only the key needs to be considered and not the value.
-            $rawParams = array_diff_key($rawParams, $this->defaultFetchParams);
+            $params = array_diff_key($params, $this->defaultFetchParams);
         }
 
-        // If there are no raw query params, don't do ES search.
-        if (empty($rawParams) === true)
+        //
+        // Split params into esParams and mysqlParams.
+        // And currently, we prefer Es even if one param is found to be for es.
+        //
+
+        $esFields = $this->esRepo->getPossibleFieldsInParam();
+
+        foreach ($params as $k => $v)
         {
-            return false;
+            if (in_array($k, $esFields, true) === true)
+            {
+                $this->esParams[$k] =  $v;
+            }
+            else
+            {
+                $this->mysqlParams[$k] = $v;
+            }
         }
 
-        // Checks if the raw query params are present in the esFields list.
-        // ($params - $esFields) should be 0.
-        // Currently, not supporting ES+MySQL search through query params.
-        if (empty(array_diff_key($rawParams, array_flip($esFields))) === true)
-        {
-            return true;
-        }
-
-        return false;
+        return (count($this->esParams) > 0);
     }
 
     protected function runEsFetch($params, $merchantId)

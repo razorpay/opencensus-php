@@ -18,9 +18,10 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected static $table;
 
     const MAX_JOB_ATTEMPTS = 10;
-    // This is in seconds
     const JOB_RELEASE_WAIT = 120;
+
     const QUERY            = 'q';
+    const SEARCH_HITS      = 'search_hits';
 
     /**
      * Fields indexed in es and their mappings.
@@ -57,6 +58,11 @@ class EsRepository extends \Razorpay\Spine\Repository
     public function getFields()
     {
         return $this->fields;
+    }
+
+    public function getPossibleFieldsInParam()
+    {
+        return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
     }
 
     public function fetch($params, $merchantId)
