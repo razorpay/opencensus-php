@@ -25,13 +25,6 @@ class InvoiceCommunicationTest extends TestCase
     {
         $this->startTest();
 
-        //
-        // TODO:
-        // - Need to test, if flow dispatches jobs properly
-        //   Tried in some ways but not working. Will come to this later.
-        //
-        // - Need to test InvoiceAction somehow too
-
         $this->assertStatusesWithLastEntity(['sms_status' => 'sent', 'email_status' => 'sent']);
     }
 
@@ -58,10 +51,9 @@ class InvoiceCommunicationTest extends TestCase
 
     public function testInvoiceSendNotificationsInBulk()
     {
+        //
         // TODO:
-        // Not getting used as of now.
-        // Will come into picture - when we introduce scheduled_at , due_by etc.
-        // Let's think about it then. Leaving for now.
+        // Add this post beta launch.
         //
     }
 

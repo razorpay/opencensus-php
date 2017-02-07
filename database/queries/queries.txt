@@ -1612,3 +1612,15 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
+
+ALTER TABLE merchant_details
+    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
+
+# Changes default value of gateway and terminal
+ALTER TABLE payments
+    MODIFY COLUMN gateway VARCHAR(255) NULL,
+
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE payments
+    MODIFY COLUMN terminal_id VARCHAR(14) NULL;
+SET FOREIGN_KEY_CHECKS=1;

@@ -65,6 +65,7 @@ class Entity extends Base\PublicEntity
     const ROLE                              =      'role';
     const DEPARTMENT                        =      'department';
     const STEPS_FINISHED                    =      'steps_finished';
+    const ACTIVATION_PROGRESS               =      'activation_progress';
     const LOCKED                            =      'locked';
     const SUBMITTED                         =      'submitted';
     const SUBMITTED_AT                      =      'submitted_at';
@@ -177,6 +178,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE_PRICING,
         self::WEBSITE_LOGIN,
         self::STEPS_FINISHED,
+        self::ACTIVATION_PROGRESS,
         self::LOCKED,
         self::SUBMITTED,
         self::SUBMITTED_AT,
@@ -199,13 +201,15 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
-        self::SUBMITTED_AT   => null,
+        self::SUBMITTED_AT        => null,
+        self::ACTIVATION_PROGRESS => 0,
     ];
 
     protected $casts = [
         self::LOCKED                 => 'bool',
         self::SUBMITTED              => 'bool',
         self::BUSINESS_INTERNATIONAL => 'bool',
+        self::ACTIVATION_PROGRESS    => 'int',
     ];
 
     const UPLOADED_FIELDS = [
@@ -241,5 +245,15 @@ class Entity extends Base\PublicEntity
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
+    }
+
+    public function setActivationProgress($activationProgress)
+    {
+        $this->setAttribute(self::ACTIVATION_PROGRESS, $activationProgress);
+    }
+
+    public function getActivationProgress()
+    {
+        $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 }
