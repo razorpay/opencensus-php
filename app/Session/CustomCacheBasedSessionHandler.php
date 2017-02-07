@@ -3,6 +3,7 @@
 namespace App\Session;
 
 use Auth;
+use Illuminate\Support\Arr;
 use Illuminate\Contracts\Auth\Guard;
 
 class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessionHandler
@@ -28,28 +29,36 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
     public function write($sessionId, $data)
     {
+        $lifetime = $this->getSessionLifetimeInSeconds();
+
         $data = $this->getDefaultPayload($data, app());
 
-        $key = $this->cache->getStore()->getPrefix().$sessionId;
+        $sessionKey = $this->cache->getStore()->getPrefix().$sessionId;
 
         // Write to the main cache (hash)
 
-        $response = $this->cache->connection()->hmset($key, $data);
+        $response = $this->cache->connection()->hmset($sessionKey, $data);
+
+        $this->cache->connection()->expire($sessionKey, $lifetime);
 
         // Write to admins:ID:sessions
         if (isset($data['admin_id']))
         {
-            $key = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
+            $adminKey = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
 
-            $this->cache->connection()->sadd($key, $sessionId);
+            $this->cache->connection()->sadd($adminKey, $sessionId);
+
+            $this->cache->connection()->expire($adminKey, $lifetime);
         }
 
         // Write to users:ID:sessions
         if (isset($data['user_id']))
         {
-            $key = "users:{$data['user_id']}:{$this->sessionNamespace}";
+            $userKey = "users:{$data['user_id']}:{$this->sessionNamespace}";
 
-            $this->cache->connection()->sadd($key, $sessionId);
+            $this->cache->connection()->sadd($userKey, $sessionId);
+
+            $this->cache->connection()->expire($userKey, $lifetime);
         }
 
         return $response;
@@ -57,7 +66,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         // return $this->cache->put($sessionId, $data, $this->minutes);
     }
 
-    public function getDefaultPayload($data, $container = null)
+    protected function getDefaultPayload($data, $container = null)
     {
         $payload = ['payload' => $data, 'last_activity' => time()];
 
@@ -88,5 +97,12 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         }
 
         return $payload;
+    }
+
+    protected function getSessionLifetimeInSeconds()
+    {
+        $config = app('config')['session'];
+
+        return Arr::get($config, 'lifetime') * 60;
     }
 }
