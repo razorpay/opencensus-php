@@ -24,7 +24,23 @@ class Validator extends Base\Validator
 
     protected static $createValidators = [
         Entity::ACCOUNT_NUMBER,
+        Entity::AMOUNT,
     ];
+
+    protected function validateAmount($input)
+    {
+        $maxAmountAllowed = $this->entity->merchant->getMaxPaymentAmount();
+
+        $amount = $input['amount'];
+
+        if ($amount > $maxAmountAllowed)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Amount exceeds maximum amount allowed.',
+                'amount',
+                ['amount' => $amount]);
+        }
+    }
 
     public function validateOrderNotPaid($order)
     {

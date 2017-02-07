@@ -461,7 +461,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setAuthorizeAtNull()
+    public function setAuthorizedAtNull()
     {
         $this->setAttribute(self::AUTHORIZED_AT, null);
     }
