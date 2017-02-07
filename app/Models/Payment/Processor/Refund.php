@@ -236,7 +236,6 @@ trait Refund
     /**
      * Refund a payment that has Marketplace transfers
      *
-     * @param  Payment\Entity   $payment
      * @param  array            $input
      */
     public function refundPaymentWithTransfers(array $input)
@@ -779,6 +778,9 @@ trait Refund
      *
      * @param  Payment\Entity $payment
      * @param  int            $amount
+     *
+     * @return Payment\Refund\Entity
+     * @throws Exception\BadRequestException
      */
     protected function refundTransferPayment(Payment\Entity $payment, int $amount)
     {
