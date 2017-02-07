@@ -109,7 +109,7 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    public function createCsvFile($data, $name, $fullName, $dir)
+    public function createCsvFile($data, $name, $fullName, $dir, $append = false)
     {
         $dir = storage_path($dir);
 
@@ -120,13 +120,14 @@ trait FileHandlerTrait
 
         $fullpath = $dir . '/' . $name . '.csv';
 
-        $handle = fopen($fullpath, 'w');
+        // open the file in append mode
+        $handle = fopen($fullpath, 'a');
 
         $first = true;
 
         foreach ($data as $row)
         {
-            if ($first === true)
+            if (($append === false) and ($first === true))
             {
                 $headers = array_keys($row);
 
