@@ -110,7 +110,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
@@ -129,6 +129,8 @@ class Repository extends Base\Repository
                         }
                       })
                       ->with('source')
+                      ->take($count)
+                      ->skip($skip)
                       ->latest()
                       ->get();
 
@@ -139,7 +141,7 @@ class Repository extends Base\Repository
         return $txns;
     }
 
-    public function fetchEntitiesForBrokerReport($merchantId, $from, $to)
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip)
     {
         $txns = $this->newQuery()
                      ->merchantId($merchantId)
@@ -223,10 +225,10 @@ class Repository extends Base\Repository
 
         // Total fee includes our cut + service tax
         return [
-            'total_fee'         =>  $fee,
+            'total_fee'         => $fee,
             // This is a combined tax column
             // and includes more than just service_tax (sb cess, kk cess)
-            'tax'               =>  $serviceTax
+            'tax'               => $serviceTax
         ];
     }
 
@@ -257,6 +259,16 @@ class Repository extends Base\Repository
         }
 
         return $txns2;
+    }
+
+    public function updateSettledAtToNow($txn)
+    {
+        $id = $txn->getId();
+
+        return $this->newQuery()
+                    ->where(Transaction\Entity::ID, '=', $id)
+                    ->where(Transaction\Entity::SETTLED, '=', false)
+                    ->update([Transaction\Entity::SETTLED_AT  => 1]);
     }
 
     public function settled($txns, $settledAt)
