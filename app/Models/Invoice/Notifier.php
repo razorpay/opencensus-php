@@ -11,6 +11,7 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Notifier extends Base\Core
 {
@@ -185,9 +186,11 @@ class Notifier extends Base\Core
         $subject = $this->getSubjectForInvoiceEmail($this->invoice->getType(), $merchantName);
 
         $data = [
+            'invoice_id'    => $this->invoice->getPublicId(),
             'email'         => $this->invoice->getCustomerEmail(),
             'date'          => date('d-M-Y H:m:s T'),
             'subject'       => $subject,
+            'label'         => $this->getLabel($this->invoice->getType()),
             'link'          => $this->invoice->getShortUrl(),
             'name'          => $merchantName,
             'amount'        => $this->invoice->getAmount() / 100,
@@ -209,6 +212,12 @@ class Notifier extends Base\Core
             $message->subject($data['subject']);
 
             $message->to($data['email']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', $data['invoice_id']);
+
+            $headers->addTextHeader('x-mailgun-tag', $data['label']);
         });
 
         return true;
@@ -232,6 +241,23 @@ class Notifier extends Base\Core
         $subject = 'Razorpay | ' . $subject;
 
         return $subject;
+    }
+
+    protected function getLabel($type)
+    {
+        switch ($type)
+        {
+            case Type::ECOD:
+                $label = MailTags::ECOD;
+                break;
+            case Type::INVOICE:
+                $label = MailTags::INVOICE;
+                break;
+            default:
+                $label = MailTags::INVOICE;
+        }
+
+        return $label;
     }
 
     public function sendNotificationsInBulk()

@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -325,6 +326,10 @@ class Reconciler3
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 

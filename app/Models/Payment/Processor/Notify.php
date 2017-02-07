@@ -9,6 +9,7 @@ use Mail;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Notify
 {
@@ -162,7 +163,7 @@ class Notify
      *
      * @return null
      */
-    protected function sendMail($view, $subject, $to, $from = 'reports')
+    protected function sendMail($view, $subject, $label, $to, $from = 'reports')
     {
         $from       = $this->getCompleteEmail($from);
         $replyTo    = $this->getCompleteEmail('support');
@@ -173,7 +174,7 @@ class Notify
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId, $label)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -186,6 +187,8 @@ class Notify
                 $headers = $message->getHeaders();
 
                 $headers->addTextHeader('x-mailgun-tag', $paymentId);
+
+                $headers->addTextHeader('x-mailgun-tag', $label);
 
                 // to might be an array
                 if (is_array($to))
@@ -240,16 +243,18 @@ class Notify
 
             $from = (isset($struct['from'])) ? $struct['from'] : null;
 
+            $label = $this->getLabel($event);
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
                 if ($from !== null)
                 {
-                    $this->sendMail($view, $subject, $to, $from);
+                    $this->sendMail($view, $subject, $label, $to, $from);
                 }
                 else
                 {
-                    $this->sendMail($view, $subject, $to);
+                    $this->sendMail($view, $subject, $label, $to);
                 }
 
             }
@@ -378,6 +383,32 @@ class Notify
 
             $this->trace->traceException($e);
         }
+    }
+
+    protected function getLabel($event)
+    {
+        switch ($event)
+        {
+            case self::AUTHORIZED:
+                $label = MailTags::PAYMENT_SUCCESSFUL;
+                break;
+            case self::REFUNDED:
+                $label = MailTags::REFUND_SUCCESSFUL;
+                break;
+            case self::INVOICE_PAID:
+                $label = MailTags::INVOICE_PAID;
+                break;
+            case self::FAILED_TO_AUTHORIZED:
+                $label = MailTags::FAILED_TO_AUTHORIZED;
+                break;
+            case self::CARD_SAVED:
+                $label = MailTags::CARD_SAVING;
+                break;
+            default:
+                $label = MailTags::PAYMENT_SUCCESSFUL;
+        }
+
+        return $label;
     }
 
     protected function getSubject($event, $merchant = true)

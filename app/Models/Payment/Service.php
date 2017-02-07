@@ -16,6 +16,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -1007,6 +1008,8 @@ class Service extends Base\Service
                 $message->subject($subject);
 
                 $headers = $message->getHeaders();
+
+                $headers->addTextHeader('x-mailgun-tag', MailTags::AUTH_REMINDER);
 
                 foreach ($data['payments'] as $payment) {
                     $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());

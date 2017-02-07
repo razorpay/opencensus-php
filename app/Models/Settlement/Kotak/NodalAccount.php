@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\MailTags;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -222,6 +223,10 @@ class NodalAccount
 
             $message->attach($file . '.xlsx');
             $message->attach($file . '.txt');
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::KOTAK_SETTLEMENT_FILES);
         });
     }
 }

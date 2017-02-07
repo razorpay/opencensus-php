@@ -7,9 +7,38 @@ class MailTags
     /**
      * Defines tags associated with emails
      */
-    const KOTAK_BENEFICIARY_MAIL                = 'kotak_beneficiary_mail';
-    const HDFC_NETBANKING_REFUNDS_MAIL          = 'hdfc_netbanking_refunds_mail';
-    const AXIS_NETBANKING_REFUNDS_MAIL          = 'axis_netbanking_refunds_mail';
+    const KOTAK_BENEFICIARY_MAIL       = 'kotak_beneficiary_mail';
+    const KOTAK_SETTLEMENT_FILES       = 'kotak_settlement_files';
+
+    const ICICI_SETTLEMENT_FILES       = 'icici_settlement_files';
+
+    const HDFC_NETBANKING_REFUNDS_MAIL = 'hdfc_netbanking_refunds_mail';
+    const AXIS_NETBANKING_REFUNDS_MAIL = 'axis_netbanking_refunds_mail';
+    const AIRTEL_MONEY_REFUNDS_MAIL    = 'airtel_money_refunds_mail';
+    const PAYU_MONEY_REFUNDS_MAIL      = 'payu_money_refunds_mail';
+    const ICICI_UPI_REFUNDS_MAIL       = 'icici_upi_refunds_mail';
+
+    const PAYMENT_SUCCESSFUL           = 'payment_successful';
+    const REFUND_SUCCESSFUL            = 'refund_successful';
+    const FAILED_TO_AUTHORIZED         = 'failed_to_authorized';
+    const INVOICE_PAID                 = 'invoice_paid';
+    const CARD_SAVING                  = 'card_saving';
+
+    const INVOICE                      = 'invoice';
+    const ECOD                         = 'ecod';
+
+    const DAILY_REPORT                 = 'daily_report';
+    const AUTH_REMINDER                = 'auth_reminder';
+    const HOLIDAY_NOTIFICATION         = 'holiday_notification';
+    const WEBHOOK                      = 'webhook';
+
+    const EMI_FILE                     = 'emi_file';
+
+    const SCORECARD                    = 'scorecard';
+
+    const ACCOUNT_CHANGED              = 'account_changed';
+
+    const ICICI_FILES                  = 'icici_files';
 
     /**
      * Email tags that should respond to the mailgun failure webhook

@@ -8,6 +8,7 @@ use Requests;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Inferno
 {
@@ -147,6 +148,10 @@ class Inferno
             $message->subject($mailData['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::WEBHOOK);
         });
     }
 
