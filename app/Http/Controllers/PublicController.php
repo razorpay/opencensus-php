@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use View, Request;
+use RZP\Base\JitValidator;
 
 class PublicController extends Controller
 {
@@ -73,13 +74,13 @@ class PublicController extends Controller
         return View::make('public.callback_params', $data);
     }
 
-    public function postCheckoutHosted() {
+    public function postCheckoutHosted()
+    {
         $postParams = Request::instance()->request->all();
+
         $checkout = $this->getCheckoutCommon();
 
-        assert(isset($postParams['url']['callback']));
-        assert(isset($postParams['options']));
-        assert(is_array($postParams['options']));
+        $this->validateHostedPostParams($postParams);
 
         $data = [
             'options'       => json_encode($postParams['options'], JSON_FORCE_OBJECT),
@@ -89,5 +90,21 @@ class PublicController extends Controller
         ];
 
         return View::make('public.hosted', $data);
+    }
+
+    protected function validateHostedPostParams($postParams)
+    {
+        $postParamRules = [
+            'url'                   =>  'required',
+            'options'               =>  'required',
+            'url.cancel'            =>  'required|url',
+            'url.callback'          =>  'required|url',
+            'options.key'           =>  'required',
+            'options.amount'        =>  'required|integer',
+        ];
+
+        (new JitValidator)->rules($postParamRules)
+                          ->input($postParams)
+                          ->validate();
     }
 }
