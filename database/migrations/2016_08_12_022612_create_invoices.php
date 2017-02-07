@@ -87,6 +87,9 @@ class CreateInvoices extends Migration
 
             $table->text(Entity::NOTES);
 
+            $table->text(Entity::COMMENT)
+                  ->nullable();
+
             $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
 

@@ -1596,6 +1596,12 @@ UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
 
+# Pre deployment of branch invoice_new_field_comment
+
+ALTER TABLE invoices ADD COLUMN comment text AFTER notes;
+
+# --
+
 # Before deploying: invoices_fetch_by_cust_contact
 
 ALTER TABLE invoices ADD INDEX invoices_customer_contact_index (customer_contact);
