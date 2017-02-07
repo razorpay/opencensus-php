@@ -6,7 +6,8 @@ use RZP\Error\ErrorCode;
 
 class ErrorCodes
 {
-    CONST SUCCESS   = '000';
+    CONST SUCCESS      = '000';
+    CONST RANDOM_ERROR = '10000';
 
     protected static $errorCodeDesc = [
         '000'       => 'Success',
@@ -20,6 +21,7 @@ class ErrorCodes
         '923'       => 'Sum of all reversal amounts is greater than transaction amount',
         '999'       => 'Any other Airtel Payment Bank failure',
         '9002'      => 'Invalid parameter in request',
+        '10000'     => 'Random Authorization Error',
         '999999'    => 'Any other Airtel Payment Bank failure'
     ];
 

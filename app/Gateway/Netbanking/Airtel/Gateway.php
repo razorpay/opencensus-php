@@ -103,11 +103,13 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $responseArray = $this->jsonToArray($response->body);
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $responseArray);
+            [
+                'response' => $response->body
+            ]);
+
+        $responseArray = $this->jsonToArray($response->body);
 
         $verify->verifyResponseContent = $responseArray;
 
@@ -128,9 +130,7 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        $errorCode = $response[VerifyFields::ERROR_CODE];
-
-        $verify->payment = $this->saveVerifyContent($verify, $authContent, $errorCode);
+        $verify->payment = $this->saveVerifyContent($verify, $authContent);
     }
 
     protected function getVerifyMatchStatus($verify, $authContent)
@@ -237,13 +237,13 @@ class Gateway extends Base\Gateway
         return json_encode($data);
     }
 
-    protected function saveVerifyContent($verify, $content, $errorCode)
+    protected function saveVerifyContent($verify, $content)
     {
         $input = $verify->input;
 
         $gatewayPayment = $verify->payment;
 
-        $attributes = $this->getVerifyAttributes($content, $errorCode);
+        $attributes = $this->getVerifyAttributes($content);
 
         $gatewayPayment->fill($attributes);
 
@@ -252,7 +252,7 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes($content, $errorCode)
+    protected function getVerifyAttributes($content)
     {
         if ($content[VerifyFields::STATUS] === Status::SUCCESS)
         {
@@ -260,7 +260,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $merchantCode = ErrorCodes::getErrorCodeDescription($errorCode);
+            $merchantCode = ErrorCodes::RANDOM_ERROR;
         }
 
         $message = ErrorCodes::getErrorCodeDescription($merchantCode);

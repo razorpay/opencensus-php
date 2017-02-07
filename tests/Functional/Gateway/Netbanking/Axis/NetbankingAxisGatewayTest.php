@@ -362,9 +362,12 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function mockSetBankPaymentId()
     {
+        sd('111');
         $this->mockServerContentFunction(function(& $content, $action = null)
         {
             $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+            sd($content);
 
             $content['BID'] = $gatewayEntity['bank_payment_id'];
         });

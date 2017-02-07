@@ -1065,8 +1065,8 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
                 'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
                 'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
+                'created_at'            => time(),
+                'updated_at'            => time(),
             ]
         );
     }
