@@ -166,9 +166,13 @@ trait Capture
 
     public function manualGatewayCapture(Payment\Entity $payment)
     {
+        $this->setPayment($payment);
+
         // Currently doing it for only Cybersource. In case when other gateways start
         // getting similar issues, we will start supporting for them too.
         assert ($payment->getGateway() === Payment\Gateway::CYBERSOURCE);
+
+        assert ($payment->getStatus() === Payment\Status::CAPTURED);
 
         // Just making sure that the payment has the transaction id.
         assert ($payment->getTransactionId() !== null);

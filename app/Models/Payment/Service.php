@@ -419,6 +419,8 @@ class Service extends Base\Service
 
     public function manualGatewayCapture($paymentId)
     {
+        Entity::verifyIdAndSilentlyStripSign($paymentId);
+
         $payment = $this->repo->payment->findOrFail($paymentId);
 
         $merchantId = $payment->getMerchantId();

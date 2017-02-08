@@ -75,7 +75,7 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::capture($input);
+        parent::action($input, Action::CAPTURE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
@@ -116,11 +116,9 @@ class Gateway extends Base\Gateway
             // Successfully captured on the gateway
             return true;
         }
-        else
-        {
-            // Did not capture on the gateway side
-            return false;
-        }
+
+        // Did not capture on the gateway side
+        return false;
     }
 
     protected function canForceCapture($input)
@@ -132,10 +130,10 @@ class Gateway extends Base\Gateway
         if (($gatewayPaymentEntity !== null) and
             ($gatewayPaymentEntity->getAmount() === $input['amount']))
         {
-            return true;
+            return false;
         }
 
-        return false;
+        return true;
     }
 
     public function callback(array $input)
