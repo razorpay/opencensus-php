@@ -1298,8 +1298,7 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         // If merchant is a Marketplace account, bank field mapping is modified
-        $marketplaceAccount = ((isset($details['parent_id']) === true) and
-                               (strlen($details['parent_id']) === 14));
+        $marketplaceAccount = (empty($details['parent_id']) === false);
 
         $bankAccount = $this->bankAccountMap($details['merchant_details'], $marketplaceAccount);
 

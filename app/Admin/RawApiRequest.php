@@ -90,7 +90,7 @@ class RawApiRequest
                 $this->setApiCredentials($input['mode']);
                 break;
             case 'account':
-                $this->setAccountCredentials($input['mode'], $input['merchant_id'], $input['account_id']);
+                $this->setAccountCredentials($input['mode'], $input['account_id'], $input['merchant_id']);
                 break;
         }
     }
@@ -100,7 +100,7 @@ class RawApiRequest
         $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }
 
-    protected function setApiCredentials($mode, $merchantId='')
+    protected function setApiCredentials($mode, $merchantId = '')
     {
         $id = 'rzp_'.$mode;
 
@@ -115,7 +115,7 @@ class RawApiRequest
         $this->params['auth'] = [$id, $secret];
     }
 
-    protected function setAccountCredentials($mode, $merchantId = '', $accountId)
+    protected function setAccountCredentials($mode, $accountId, $merchantId = '')
     {
         $this->setApiCredentials($mode, $merchantId);
 

@@ -52,7 +52,7 @@ class Service
         $this->api = new Api($key, null);
     }
 
-    public function setApiCredentialsForAccountAuth($merchantId = null, $mode = 'live', $accountId)
+    public function setApiCredentialsForAccountAuth($accountId, $merchantId = null, $mode = 'live')
     {
         ApiRequest::addHeader('X-Razorpay-Account', $accountId);
 
