@@ -210,11 +210,15 @@ class Gateway extends Base\Gateway
         $attributes = [
             Base\Entity::RECEIVED        => true,
             Base\Entity::STATUS          => $content[AuthFields::STATUS],
-            Base\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID],
             Base\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
             Base\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
-            Base\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE],
         ];
+
+        if (array_key_exists(AuthFields::TRANSACTION_ID, $content) === true)
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[AuthFields::TRANSACTION_ID];
+            $attributes[Base\Entity::DATE]            = $content[AuthFields::TRANSACTION_DATE];
+        }
 
         return $attributes;
     }
@@ -403,7 +407,7 @@ class Gateway extends Base\Gateway
                 break;
         }
 
-        return $input[$field]['amount'] / 100;
+        return number_format($input[$field]['amount'] / 100, 2, '.', '');
     }
 
     protected function getFormattedDate($input)
@@ -476,7 +480,10 @@ class Gateway extends Base\Gateway
 
         $salt = $this->getSecret();
 
-        array_push($data, $salt);
+        if (in_array($salt, $data) === false)
+        {
+            array_push($data, $salt);
+        }
 
         return implode($glue, $data);
     }
@@ -504,13 +511,27 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackResponseHashArray($content)
     {
-        $hashArray = [
-            $content[AuthFields::MERCHANT_ID],
-            $content[AuthFields::TRANSACTION_ID],
-            $content[AuthFields::TRANSACTION_REFERENCE_NO],
-            $content[AuthFields::TRANSACTION_AMOUNT],
-            $content[AuthFields::TRANSACTION_DATE],
-        ];
+        if ($content[AuthFields::CODE] === ErrorCodes::SUCCESS)
+        {
+            $hashArray = [
+                $content[AuthFields::MERCHANT_ID],
+                $content[AuthFields::TRANSACTION_ID],
+                $content[AuthFields::TRANSACTION_REFERENCE_NO],
+                $content[AuthFields::TRANSACTION_AMOUNT],
+                $content[AuthFields::TRANSACTION_DATE],
+            ];
+        }
+        else
+        {
+            $hashArray = [
+                $content[AuthFields::MERCHANT_ID],
+                $content[AuthFields::TRANSACTION_REFERENCE_NO],
+                $content[AuthFields::TRANSACTION_AMOUNT],
+                $this->getSecret(),
+                $content[AuthFields::CODE],
+                $content[AuthFields::STATUS]
+            ];
+        }
 
         return $hashArray;
     }

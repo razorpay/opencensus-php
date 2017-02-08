@@ -10,6 +10,7 @@ use RZP\Gateway\Base\Action;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Netbanking\Airtel\Status;
 use RZP\Gateway\Netbanking\Airtel\AuthFields;
+use RZP\Gateway\Netbanking\Airtel\ErrorCodes;
 use RZP\Gateway\Netbanking\Airtel\VerifyFields;
 use RZP\Gateway\Netbanking\Airtel\RefundFields;
 
@@ -26,8 +27,6 @@ class Server extends Base\Mock\Server
         $this->verifySecureHash($input);
 
         $content = $this->createCallbackResponseArray($input);
-
-        $this->content($content);
 
         $callbackUrl = $input[AuthFields::SUCCESS_URL] . '?' .
                         http_build_query($content);
@@ -103,7 +102,12 @@ class Server extends Base\Mock\Server
             AuthFields::TRANSACTION_CURRENCY      => Currency::INR,
         ];
 
-        $response[AuthFields::HASH] = $this->generateHash($response, 'response');
+        $this->content($response);
+
+        if (array_key_exists(AuthFields::HASH, $response) === false)
+        {
+            $response[AuthFields::HASH] = $this->generateHash($response, 'response');
+        }
 
         return $response;
     }
@@ -205,7 +209,10 @@ class Server extends Base\Mock\Server
 
         $salt = $this->getGatewayInstance()->getSecret();
 
-        array_push($data, $salt);
+        if (in_array($salt, $data) === false)
+        {
+            array_push($data, $salt);
+        }
 
         return implode($glue, $data);
     }
@@ -225,18 +232,33 @@ class Server extends Base\Mock\Server
             $content[AuthFields::SERVICE],
         ];
 
+
         return $hashArray;
     }
 
-    protected function getCallbackResponseHashArray($input)
+    protected function getCallbackResponseHashArray($content)
     {
-        $hashArray = [
-            $input[AuthFields::MERCHANT_ID],
-            $input[AuthFields::TRANSACTION_ID],
-            $input[AuthFields::TRANSACTION_REFERENCE_NO],
-            $input[AuthFields::TRANSACTION_AMOUNT],
-            $input[AuthFields::TRANSACTION_DATE],
-        ];
+        if ($content[AuthFields::CODE] === ErrorCodes::SUCCESS)
+        {
+            $hashArray = [
+                $content[AuthFields::MERCHANT_ID],
+                $content[AuthFields::TRANSACTION_ID],
+                $content[AuthFields::TRANSACTION_REFERENCE_NO],
+                $content[AuthFields::TRANSACTION_AMOUNT],
+                $content[AuthFields::TRANSACTION_DATE],
+            ];
+        }
+        else
+        {
+            $hashArray = [
+                $content[AuthFields::MERCHANT_ID],
+                $content[AuthFields::TRANSACTION_REFERENCE_NO],
+                $content[AuthFields::TRANSACTION_AMOUNT],
+                $this->getGatewayInstance()->getSecret(),
+                $content[AuthFields::CODE],
+                $content[AuthFields::STATUS]
+            ];
+        }
 
         return $hashArray;
     }

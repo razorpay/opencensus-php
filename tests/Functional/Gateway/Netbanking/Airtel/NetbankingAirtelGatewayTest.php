@@ -244,7 +244,19 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $hash = $content['HASH'];
+            $hashArray = [
+                $content['MID'],
+                $content['TXN_REF_NO'],
+                $content['TRAN_AMT'],
+                'askjdhas',
+                $content['CODE'],
+                $content['STATUS']
+            ];
+
+            $stringToHash = implode('#', $hashArray);
+
+            $hash = hash('SHA512', $stringToHash);
+
             $content['HASH'] = str_shuffle($hash);
         });
     }
