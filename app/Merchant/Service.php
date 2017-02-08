@@ -131,7 +131,7 @@ class Service extends Base\Service
                 $email = $currentMerchant->email;
             }
 
-            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email);
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email, $isAccount);
 
             try
             {
