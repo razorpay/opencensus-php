@@ -33,39 +33,42 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
     {
         $connection = $this->cache->connection();
 
-        $lifetime = $this->minutes * 60;
-
-        $data = $this->getDefaultPayload($data, app());
-
-        $sessionKey = $this->cache->getStore()->getPrefix().$sessionId;
-
-        // Write to the main cache (hash)
-
-        $response = $connection->hmset($sessionKey, $data);
-
-        $connection->expire($sessionKey, $lifetime);
-
-        // Write to admins:ID:sessions
-        if (isset($data['admin_id']))
+        $responses = $connection->transaction(function ($tx) use ($sessionId, $data)
         {
-            $adminKey = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
+            $lifetime = $this->minutes * 60;
 
-            $connection->sadd($adminKey, $sessionId);
+            $data = $this->getDefaultPayload($data, app());
 
-            $connection->expire($adminKey, $lifetime);
-        }
+            $sessionKey = $this->cache->getStore()->getPrefix().$sessionId;
 
-        // Write to users:ID:sessions
-        if (isset($data['user_id']))
-        {
-            $userKey = "users:{$data['user_id']}:{$this->sessionNamespace}";
+            // Write to the main cache (hash)
 
-            $connection->sadd($userKey, $sessionId);
+            $tx->hmset($sessionKey, $data);
 
-            $connection->expire($userKey, $lifetime);
-        }
+            $tx->expire($sessionKey, $lifetime);
 
-        return $response;
+            // Write to admins:ID:sessions
+            if (isset($data['admin_id']))
+            {
+                $adminKey = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
+
+                $tx->sadd($adminKey, $sessionId);
+
+                $tx->expire($adminKey, $lifetime);
+            }
+
+            // Write to users:ID:sessions
+            if (isset($data['user_id']))
+            {
+                $userKey = "users:{$data['user_id']}:{$this->sessionNamespace}";
+
+                $tx->sadd($userKey, $sessionId);
+
+                $tx->expire($userKey, $lifetime);
+            }
+        });
+
+        return $responses;
 
         // return $this->cache->put($sessionId, $data, $this->minutes);
     }
