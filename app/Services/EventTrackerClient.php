@@ -166,6 +166,7 @@ class EventTrackerClient extends Base\Core
                 $defaults = array(
                     'key'           => $this->ljConfig['key'],
                     'context'       => $this->fetchAndFilterMetadata($payment),
+                    'mode'          => $this->mode,
                 );
 
                 $this->defaults = $defaults;
@@ -267,7 +268,6 @@ class EventTrackerClient extends Base\Core
 
             $properties = [
                 'payment_id'        => $payment->getPublicId(),
-                'mode'              => $this->mode,
                 'merchant_id'       => $payment->merchant->getId(),
                 'merchant_name'     => $payment->merchant->getBillingLabelElseName(),
                 'amount'            => $payment->getAmount(),
