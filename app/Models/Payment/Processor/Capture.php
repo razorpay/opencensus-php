@@ -335,8 +335,7 @@ trait Capture
         // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
-        if (($paymentGateway !== Payment\Gateway::HDFC) and
-            ($paymentGateway !== Payment\Gateway::CYBERSOURCE))
+        if ($paymentGateway !== Payment\Gateway::HDFC)
         {
             throw $ex;
         }
@@ -348,13 +347,6 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
             ['payment_id' => $this->payment->getId()]);
-
-        // We will be removing this piece of code once the capture queue is written
-        // for Cybersource to handle. Being tracked in the issue #1842
-        if ($paymentGateway === Payment\Gateway::CYBERSOURCE)
-        {
-            return;
-        }
 
         //
         // Adding a delay here because some gateways return back an error if a capture request

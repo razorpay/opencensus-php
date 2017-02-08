@@ -29,6 +29,24 @@ class EntityReportTest extends TestCase
         assert((count($paymentReport) + count($refundReport)) === count($combinedReport));
     }
 
+    /**
+     * Data for this test case needs to imported separately
+     */
+    public function testEntityReportTLE()
+    {
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => 2017,
+            'month' => 2,
+            'day' => 3
+        );
+
+        $data = $this->fetchReportAsFile('transaction', $input);
+
+        $this->assertNotNull($data['url']);
+    }
+
     public function testEntityReportFile()
     {
         $this->testEntityReports();
