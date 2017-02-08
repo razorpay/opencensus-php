@@ -117,6 +117,9 @@ app.controller('EntityDetailCtrl', [
             $scope.alerts.addAlert('success', 'Sub Merchant added successfully');
 
             $scope.entity.sub_merchants.unshift(merchant_id);
+
+            // Page refresh
+            window.location.reload();
           } else {
             alert(data.errors);
           }
@@ -352,9 +355,11 @@ app.controller('EntityDetailCtrl', [
   'current',
   'subMerchants',
   'mode',
-  function ($scope, $modalInstance, $http, current, subMerchants, mode) {
+  'alertsFactory',
+  function ($scope, $modalInstance, $http, current, subMerchants, mode, alertsFactory) {
     // This is the current terminal current
     $scope.subMerchants = subMerchants;
+    $scope.alerts = alertsFactory.getHandler();
 
     $scope.deleteSubMerchant = function (merchantId) {
       var request = $http.delete('/admin/' + mode + '/terminal/' + current.id + '/merchant/' + merchantId);
@@ -367,9 +372,12 @@ app.controller('EntityDetailCtrl', [
           }
 
           $scope.alerts.addAlert('success', 'Sub merchant unassigned from the terminal successfully');
+
+          // Page refresh
+          window.location.reload();
         }
         else {
-          alert(data.errors);
+          $scope.alerts.addAlert(data.errors);
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', 'There was an error while removing the merchant from the terminal');
