@@ -44,7 +44,7 @@ class EventTrackerTest extends TestCase
         $this->assertEquals($this->testData['responseLjFailed'], $response->getBody()->getContents());
     }
 
-    public function testCorrectAuth()
+    public function testIncorrectKey()
     {
         $config = $this->config;
 
@@ -68,7 +68,42 @@ class EventTrackerTest extends TestCase
 
         $response = $client->request('POST', $url, $options);
 
+        $this->assertEquals($this->testData['responseLjFailed'], $response->getBody()->getContents());
+    }
+
+    public function testEventTrackSuccess()
+    {
+        $config = $this->config;
+
+        $key = $config['key'];
+
+        $secret = $config['secret'];
+
+        $signature = hash_hmac('sha1', $key, $secret);
+
+        $headers = [
+            'content-type'  => 'application/json',
+            'x-signature'   =>  $signature,
+            'x-identifier'  =>  $config['identifier'],
+        ];
+
+        $url = $config['url'] . 'track';
+
+        $data = $this->testData['dummyPayload'];
+
+        unset($data['key']);
+
+        $data['key'] = $key;
+
+        $options = ['json' => $data];
+
+        $client = new Client(['headers' => $headers, 'http_errors' => false]);
+
+        $response = $client->request('POST', $url, $options);
+
         $this->assertEquals($this->testData['responseLjSuccess'], $response->getBody()->getContents());
+
+
     }
 
 }
