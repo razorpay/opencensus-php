@@ -253,7 +253,7 @@ return array(
 
     'invoice' => env('INVOICE_URL'),
 
-    'invoicejs_base_url' => env('INVOICEJS_BASE_URL'),
+    'cdn_v1_url' => env('CDN_V1_URL'),
 
     'proxy_enabled' => env('PROXY_ENABLED'),
 

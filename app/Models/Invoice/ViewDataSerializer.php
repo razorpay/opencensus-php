@@ -49,14 +49,14 @@ class ViewDataSerializer extends Base\Core
 
         $merchantData = $this->getFormattedMerchantDataForView();
 
-        $invoiceJsBaseUrl = Config::get('app.invoicejs_base_url');
+        $invoiceJsUrl = Config::get('app.cdn_v1_url') . '/invoice.js';
 
         return [
-            'environment'        => $this->app->environment(),
-            'invoicejs_base_url' => $invoiceJsBaseUrl,
-            'key_id'             => $keyId,
-            'merchant'           => $merchantData,
-            'invoice'            => $invoiceData,
+            'environment'   => $this->app->environment(),
+            'invoicejs_url' => $invoiceJsUrl,
+            'key_id'        => $keyId,
+            'merchant'      => $merchantData,
+            'invoice'       => $invoiceData,
         ];
     }
 

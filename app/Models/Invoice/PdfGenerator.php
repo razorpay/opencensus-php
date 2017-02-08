@@ -5,10 +5,13 @@ namespace RZP\Models\Invoice;
 use Illuminate\Support\Facades\Redis;
 use Requests;
 use Config;
+use mikehaertl\wkhtmlto\Pdf;
+use Mustache_Engine;
 
 use RZP\Models\Base;
 use RZP\Models\FileStore;
 use RZP\Exception;
+use RZP\Trace\TraceCode;
 
 class PdfGenerator extends Base\Core
 {
@@ -21,13 +24,15 @@ class PdfGenerator extends Base\Core
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
 
+    const WKHTMLTOPDF_BIN           = 'vendor/bin/wkhtmltopdf-amd64';
+
     //
     // If cache hit is a miss, following invoicejs host path will be used
     // to fetch the templates.
     //
 
-    const INVOICE_PDF_TEMPLATE_PATH = '/dist/invoice_standard.mustache';
-    const INVOICE_PDF_CSS_PATH      = '/dist/invoice.css';
+    const INVOICE_PDF_TEMPLATE_PATH = '/invoice_standard.mustache';
+    const INVOICE_PDF_CSS_PATH      = '/invoice.css';
 
     protected $invoicejsBaseUrl;
     protected $invoice;
@@ -39,7 +44,7 @@ class PdfGenerator extends Base\Core
 
         $this->invoice = $invoice;
 
-        $this->invoicejsBaseUrl = Config::get('app.invoicejs_base_url');
+        $this->invoicejsBaseUrl = Config::get('app.cdn_v1_url');
 
         $this->redis = Redis::getFacadeRoot();
     }
@@ -48,20 +53,49 @@ class PdfGenerator extends Base\Core
     {
         $viewPayload = (new ViewDataSerializer($this->invoice))->get($mode);
 
+        $timeStarted = microtime(true);
+
         $html = $this->getHtml($viewPayload);
 
-        $pdf = new \mikehaertl\wkhtmlto\Pdf($html);
+        $pdfContent = $this->getPdfContent($html);
+
+        $timeTaken = microtime(true) - $timeStarted;
+
+        $this->trace->debug(
+            TraceCode::INVOICE_PDF_GEN_TIME_TAKEN,
+            [
+                'id'         => $this->invoice->getId(),
+                'time_taken' => $timeTaken,
+            ]
+        );
 
         return (new FileStore\Creator())
                     ->name($this->invoice->getPdfKey())
-                    ->content($pdf->toString())
+                    ->content($pdfContent)
                     ->extension(FileStore\Format::PDF)
                     ->mime('application/pdf')
-                    ->store(FileStore\Store::LOCAL)
+                    ->store(FileStore\Store::S3)
                     ->entity($this->invoice)
                     ->type(FileStore\Type::INVOICE_PDF)
                     ->save()
                     ->getFullFilePath();
+    }
+
+    protected function getPdfContent(string $html)
+    {
+        $options = [
+            'binary' => base_path(self::WKHTMLTOPDF_BIN),
+            'ignoreWarnings' => false,
+        ];
+
+        $pdfContent = (new Pdf($options))->addPage($html)->toString();
+
+        if ($pdfContent === false)
+        {
+            throw new Exception\LogicException('Pdf generation failed: Content is empty.');
+        }
+
+        return $pdfContent;
     }
 
     protected function getHtml(array $viewPayload)
@@ -71,7 +105,7 @@ class PdfGenerator extends Base\Core
         $template = $result[self::TEMPLATE_FILE];
         $css      = $result[self::CSS_FILE];
 
-        $body = (new \Mustache_Engine())->render($template, $viewPayload);
+        $body = (new Mustache_Engine())->render($template, $viewPayload);
 
         return "
             <!DOCTYPE html>
