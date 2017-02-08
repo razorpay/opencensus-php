@@ -153,7 +153,7 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpGenerateRequestArray($input);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST,
             [
                 'request' => $request,
                 'payment_id' => $input['payment']['id']
@@ -175,7 +175,7 @@ class Gateway extends Base\Gateway
         $content = $this->parseResponseBody($response);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE,
             [
                 'response' => $content,
                 'payment_id' => $input['payment']['id']
@@ -208,7 +208,7 @@ class Gateway extends Base\Gateway
         $request = $this->getOtpSubmitRequestArray($input);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST,
             [
                 'request' => $request,
                 'payment_id' => $input['payment']['id']
@@ -231,7 +231,7 @@ class Gateway extends Base\Gateway
         }
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE,
             [
                 'content' => $content,
                 'payment_id' => $input['payment']['id']
@@ -267,7 +267,7 @@ class Gateway extends Base\Gateway
         $request = $this->getStandardRequestArray();
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            TraceCode::GATEWAY_CHECK_BALANCE_REQUEST,
             [
                 'request' => $request,
                 'payment_id' => $input['payment']['id']
@@ -282,7 +282,7 @@ class Gateway extends Base\Gateway
         $content = $this->parseResponseBody($response);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE,
             [
                 'response' => $content,
                 'payment_id' => $input['payment']['id']
@@ -323,7 +323,7 @@ class Gateway extends Base\Gateway
         $content = $this->parseResponseBody($response);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE,
             [
                 'response' => $content,
                 'payment_id' => $input['payment']['id']
@@ -367,7 +367,7 @@ class Gateway extends Base\Gateway
         $traceContent[RequestFields::HASH] = '';
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST,
             [
                 'request' => $request,
                 'content' => $traceContent
@@ -413,7 +413,7 @@ class Gateway extends Base\Gateway
     protected function callbackTopupFlow(array $input)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK,
             [
                 'request'       => $input['gateway'],
                 'gateway'       => $this->gateway,
@@ -500,7 +500,7 @@ class Gateway extends Base\Gateway
         $content[RequestFields::HASH] = '';
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST,
             [
                 'request' => $request,
                 'content' => $content

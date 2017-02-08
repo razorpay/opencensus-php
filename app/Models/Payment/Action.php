@@ -14,6 +14,7 @@ class Action
     const AUTHORIZE             = 'authorize';
     const CALLBACK              = 'callback';
     const CAPTURE               = 'capture';
+    const OTP_GENERATE          = 'otp_generate';
     const REFUND                = 'refund';
     const VOID                  = 'void';
     const REVERSE               = 'reverse';
