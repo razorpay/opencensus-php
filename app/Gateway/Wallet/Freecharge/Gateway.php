@@ -107,13 +107,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpGenerateRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE);
 
         $this->handleRequestFailed($response);
 
@@ -162,13 +162,13 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpResendRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
         $content = $this->jsonToArray($response->body);
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE);
 
         $this->handleRequestFailed($response);
 
@@ -210,7 +210,7 @@ class Gateway extends Base\Gateway
             $content[ResponseFields::REFRESH_TOKEN] = '';
         }
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE);
 
         $callbackResponse = $this->getCallbackResponseData($input);
 
@@ -229,7 +229,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE);
 
         $this->handleRequestFailed($response);
 
@@ -290,7 +290,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRefundRequestArray($input);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_REFUND_REQUEST);
 
         try
         {
@@ -298,7 +298,7 @@ class Gateway extends Base\Gateway
 
             $content = $this->jsonToArray($response->body);
 
-            $this->traceGatewayPaymentResponse($content, $input);
+            $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_REFUND_RESPONSE);
 
             $this->handleRequestFailed($response);
         }
@@ -566,7 +566,6 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-
         // If transaction is not found, treat it as refund failed.
         if ((isset($response[ResponseFields::ERROR_CODE]) === true) and
             (ResponseCode::isTransactionAbsent($response[ResponseFields::ERROR_CODE]) === true))
@@ -725,7 +724,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE);
 
         if (isset($content[ResponseFields::WALLET_BALANCE]))
         {
@@ -748,7 +747,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID    => $this->getMerchantId($input['terminal']),
         ];
 
-        $this->traceGatewayPaymentRequest($content, $input);
+        $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_CHECK_BALANCE_REQUEST);
 
         $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
@@ -770,7 +769,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
         );
 
-        $this->traceGatewayPaymentRequest($content, $input);
+        $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
 
         $content[RequestFields::ACCESS_TOKEN] = $input['token']['gateway_token'];
 
@@ -826,7 +825,7 @@ class Gateway extends Base\Gateway
             RequestFields::MERCHANT_ID             => $this->getMerchantId($input['terminal']),
         );
 
-        $this->traceGatewayPaymentRequest($content, $input);
+        $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST);
 
         $content[RequestFields::OTP] = $input['gateway']['otp'];
 
@@ -869,13 +868,7 @@ class Gateway extends Base\Gateway
             RequestFields::METADATA     => $input['payment']['public_id'],
         );
 
-        $this->trace->info(
-            TraceCode::PAYMENT_TOPUP_REQUEST,
-            [
-                'request'    => $content,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST);
 
         $content[RequestFields::LOGIN_TOKEN] = $this->generateLoginToken($input['token']['gateway_token']);
 
@@ -937,13 +930,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getVerifyRequestArray($input);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            [
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -951,13 +938,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            [
-                'content'    => $content,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE);
 
         if ((isset($content[ResponseFields::STATUS]) === true) and
             ($content[ResponseFields::STATUS] === Status::TRANSACTION_SUCCESS))
@@ -1160,7 +1141,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getExchangeTokenRequestArray($input, $callback);
 
-        $this->traceGatewayPaymentRequest($request, $input);
+        $this->traceGatewayPaymentRequest($request, $input, TraceCode::GATEWAY_EXCHANGE_TOKEN_REQUEST);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -1176,12 +1157,12 @@ class Gateway extends Base\Gateway
 
             $content[ResponseFields::REFRESH_TOKEN] = '';
 
-            $this->traceGatewayPaymentResponse($content, $input);
+            $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_EXCHANGE_TOKEN_RESPONSE);
 
             return $data;
         }
 
-        $this->traceGatewayPaymentResponse($content, $input);
+        $this->traceGatewayPaymentResponse($content, $input, TraceCode::GATEWAY_EXCHANGE_TOKEN_RESPONSE);
     }
 
     protected function getExchangeTokenRequestArray(array $input, $callback)
