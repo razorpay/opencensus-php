@@ -13,9 +13,11 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
     public function read($sessionId)
     {
+        $connection = $this->cache->connection();
+
         $key = $this->cache->getStore()->getPrefix().$sessionId;
 
-        $data = $this->cache->connection()->hgetall($key);
+        $data = $connection->hgetall($key);
 
         if (isset($data['payload']))
         {
@@ -29,7 +31,9 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
     public function write($sessionId, $data)
     {
-        $lifetime = $this->getSessionLifetimeInSeconds();
+        $connection = $this->cache->connection();
+
+        $lifetime = $this->minutes * 60;
 
         $data = $this->getDefaultPayload($data, app());
 
@@ -37,18 +41,18 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
         // Write to the main cache (hash)
 
-        $response = $this->cache->connection()->hmset($sessionKey, $data);
+        $response = $connection->hmset($sessionKey, $data);
 
-        $this->cache->connection()->expire($sessionKey, $lifetime);
+        $connection->expire($sessionKey, $lifetime);
 
         // Write to admins:ID:sessions
         if (isset($data['admin_id']))
         {
             $adminKey = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
 
-            $this->cache->connection()->sadd($adminKey, $sessionId);
+            $connection->sadd($adminKey, $sessionId);
 
-            $this->cache->connection()->expire($adminKey, $lifetime);
+            $connection->expire($adminKey, $lifetime);
         }
 
         // Write to users:ID:sessions
@@ -56,9 +60,9 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         {
             $userKey = "users:{$data['user_id']}:{$this->sessionNamespace}";
 
-            $this->cache->connection()->sadd($userKey, $sessionId);
+            $connection->sadd($userKey, $sessionId);
 
-            $this->cache->connection()->expire($userKey, $lifetime);
+            $connection->expire($userKey, $lifetime);
         }
 
         return $response;
@@ -97,12 +101,5 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         }
 
         return $payload;
-    }
-
-    protected function getSessionLifetimeInSeconds()
-    {
-        $config = app('config')['session'];
-
-        return Arr::get($config, 'lifetime') * 60;
     }
 }
