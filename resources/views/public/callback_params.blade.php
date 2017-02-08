@@ -44,25 +44,20 @@
       }
     </style>
   </head>
-  <body @if (isset($payment_id)) onload="document.forms[0].submit()" @endif>
-    @if (isset($payment_id))
+  <body @if ($retry === false) onload="document.forms[0].submit()" @endif>
+    @if ($retry === false)
       @include('partials.loader')
-      <form method="post" action="{{{ $url }}}">
-        @foreach ($params as $key => $value)
+      <form method="{{{ $request['method'] }}}" action="{{{ $request['url'] }}}" target="{{{ $request['target'] }}}">
+        @foreach ($request['content'] as $key => $value)
           <input type="hidden" name="{{{ $key }}}" value="{{{ $value }}}">
         @endforeach
-        <input type="hidden" name="razorpay_payment_id" value="{{{ $payment_id }}}">
-        @if (isset($razorpay_order_id))
-          <input type="hidden" name="razorpay_order_id" value="{{{ $razorpay_order_id }}}">
-          <input type="hidden" name="razorpay_signature" value="{{{ $razorpay_signature }}}">
-        @endif
       </form>
     @else
       <div class="card">
         <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"><path d="M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.538l-4.592-4.548 4.546-4.587-1.416-1.403-4.545 4.589-4.588-4.543-1.405 1.405 4.593 4.552-4.547 4.592 1.405 1.405 4.555-4.596 4.591 4.55 1.403-1.416z"/></svg>
         <h2>Payment Failed</h2>
-        <p><b>Error:</b> {{ $error }}</p>
-        <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+        <p><b>Error:</b> {{ $error['description'] }}</p>
+        <script src="{{{ $checkout }}}"></script>
         <script>
           var options = {!! $options !!};
           options.callback_url = location.href;
@@ -72,7 +67,9 @@
           })
         </script>
         <button onclick="rp.open()">Retry Payment</button>
-        <a href="{{ $back }}">← Go back to website</a>
+        @if (isset($back))
+          <a href="{{ $back }}">← Go back to website</a>
+        @endif
       </div>
     @endif
   </body>

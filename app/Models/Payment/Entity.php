@@ -238,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
         self::SIGNED               => 0,
+        self::GATEWAY              => null,
         self::VERIFIED             => null,
         self::GATEWAY_CAPTURED     => null,
         self::CAPTURED_AT          => null,
@@ -468,7 +469,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setAuthorizeAtNull()
+    public function setAuthorizedAtNull()
     {
         $this->setAttribute(self::AUTHORIZED_AT, null);
     }

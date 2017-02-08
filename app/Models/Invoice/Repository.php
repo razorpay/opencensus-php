@@ -18,13 +18,17 @@ class Repository extends Base\Repository
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::USER_ID => 'sometimes|alpha_num',
-        Entity::STATUS  => 'sometimes|string',
-        Entity::TYPE    => 'sometimes|string|max:16',
+        Entity::USER_ID          => 'sometimes|alpha_num',
+        Entity::STATUS           => 'sometimes|string',
+        Entity::TYPE             => 'sometimes|string|max:16',
+        Entity::CUSTOMER_NAME    => 'sometimes|string|max:255',
+        Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
+        Entity::CUSTOMER_EMAIL   => 'sometimes|email',
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID => 'sometimes|alpha_num',
+        Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
 
     public function fetchForOrder($order)
@@ -104,6 +108,13 @@ class Repository extends Base\Repository
         $query->where($paymentIdAttribute, '=', $paymentId);
 
         $query->select($query->getModel()->getTable() . '.*');
+    }
+
+    protected function addQueryParamOrderId($query, $params)
+    {
+        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+
+        $query->where(Entity::ORDER_ID, '=', $orderId);
     }
 
     protected function joinQueryPayment($query)

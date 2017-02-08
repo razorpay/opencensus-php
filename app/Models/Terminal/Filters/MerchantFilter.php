@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal\Filters;
 
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
@@ -14,6 +15,7 @@ class MerchantFilter extends Terminal\Filter
         'incompatible',
         'category',
         'gateway',
+        'wallet',
     ];
 
 
@@ -135,6 +137,50 @@ class MerchantFilter extends Terminal\Filter
                 {
                     return false;
                 }
+            }
+        }
+
+        return true;
+    }
+
+    public function walletFilter($terminal, $input, $applicableTerminals)
+    {
+        //
+        // For wallets, payments have to go through their assigned terminal
+        // because gateway has requested it and gives cashbacks, settlements
+        // nuances based on the terminal
+        //
+        $gateway = $terminal->getGateway();
+
+        // Filter only applicable for wallets
+        if ($input['payment']->getMethod() !== Method::WALLET)
+        {
+            return true;
+        }
+
+        // wallets for which only direct assigned terminal must be accessed.
+        $wallets = [
+            Gateway::WALLET_FREECHARGE,
+            Gateway::WALLET_AIRTELMONEY,
+        ];
+
+        if (in_array($gateway, $wallets, true) === false)
+        {
+            return true;
+        }
+
+        // If the wallet terminal is not shared, return the terminal
+        if ($terminal->isShared() === false)
+        {
+            return true;
+        }
+
+        foreach ($applicableTerminals as $currentTerminal)
+        {
+            if ($currentTerminal->isShared() === false)
+            {
+                // direct terminals exists, do not use shared terminals
+                return false;
             }
         }
 

@@ -105,6 +105,7 @@ class Gateway extends Base\Gateway
 
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
+        $message = substr($message, 0, 255);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;

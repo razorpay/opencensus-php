@@ -292,6 +292,27 @@ return [
         ],
     ],
 
+    'testLockedAdminAccess' => [
+        'request' => [
+            'url' => '/orgs/%s/admins/%s',
+            'method' => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_ACCOUNT_LOCKED
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ACCOUNT_LOCKED
+        ]
+    ],
+
     'testGetMerchantIds' => [
         'request' => [
             'url' => '/orgs/%s/admins/%s/merchant_ids',
@@ -328,7 +349,27 @@ return [
         ],
     ],
 
-    'testLoginOAuth' => [
+    'testDisabledAdminAccess' => [
+        'request' => [
+            'method' => 'GET',
+            'content' => []
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_USER_ACCOUNT_DISABLED
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED
+        ]
+    ],
+
+    'testLoginOauth' => [
         'request' => [
             'url' => '/orgs/%s/admin/oauth_login',
             'method' => 'post',
@@ -344,7 +385,7 @@ return [
         ],
     ],
 
-    'testFailedLoginOAuth' => [
+    'testFailedLoginOauth' => [
         'request' => [
             'url' => '/orgs/%s/admin/oauth_login',
             'method' => 'post',
@@ -424,6 +465,23 @@ return [
         ],
     ],
 
+    'testAdminUnlockOnResetPasswordSuccess' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true,
+            ],
+        ],
+    ],
+
     'testForgotPasswordInvalidUser' => [
         'request' => [
             'url' => '/orgs/%s/admin/forgot_password',
@@ -483,6 +541,32 @@ return [
             'content' => [
                 'success' => true,
             ],
+        ],
+    ],
+
+    'testAdminUnlockFailOnPasswordResetFail' => [
+        'request' => [
+            'url' => '/orgs/%s/admin/reset_password',
+            'method' => 'post',
+            'content' => [
+                'email'                 => 'abc@razorpay.com',
+                'password'              => 'Heimdall!4#2',
+                'password_confirmation' => 'Heimdall!4#2',
+                'token'                 => 'dummytoken'
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN,
         ],
     ],
 

@@ -44,11 +44,11 @@ class BrokerTransactionReport extends Report
         E::TRANSACTION
     ];
 
-    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
+    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
     {
         $repo = $this->repo->$entity;
 
-        return $repo->fetchEntitiesForBrokerReport($merchantId, $from, $to);
+        return $repo->fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip);
     }
 
     protected function fetchFormattedDataForReport($entities)
