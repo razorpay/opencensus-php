@@ -11,7 +11,6 @@ const webpackConfig = {
       moment: 'moment/min/moment.min.js',
       react: path.resolve(__dirname, 'node_modules/react'),
       'redux-form': path.resolve(__dirname, 'node_modules/@selvagsz/redux-form'),
-      'react-simple-dropdown': path.resolve(__dirname, 'node_modules/@selvagsz/react-simple-dropdown')
     },
     modules: [
       path.resolve(__dirname, 'node_modules'),

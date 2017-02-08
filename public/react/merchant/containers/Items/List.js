@@ -3,7 +3,7 @@ import { connect } from 'react-redux'
 import { reduxForm } from 'redux-form'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
-import Role from 'merchant/components/Role'
+import ShowWhen from 'merchant/components/ShowWhen'
 import ItemsList from 'merchant/components/Items/ItemsList'
 import ItemCreation from 'merchant/containers/Items/New'
 import ListContainer from 'merchant/containers/ListContainer'
@@ -73,7 +73,7 @@ export default class ItemsListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support'>
+        <ShowWhen notMyRole='support'>
           <div class='btn-toolbar'>
             <button
               class='pull-right btn btn-primary btn-rounded'
@@ -83,7 +83,7 @@ export default class ItemsListContainer extends ListContainer {
               <span>New Item</span>
             </button>
           </div>
-        </Role>
+        </ShowWhen>
 
         <div class='content-wrapper'>
           <Alert

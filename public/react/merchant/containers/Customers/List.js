@@ -2,7 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
-import Role from 'merchant/components/Role'
+import ShowWhen from 'merchant/components/ShowWhen'
 import CustomersList from 'merchant/components/Customers/CustomersList'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import ListContainer from 'merchant/containers/ListContainer'
@@ -69,7 +69,7 @@ export default class CustomersListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support'>
+        <ShowWhen notMyRole='support'>
           <div class='btn-toolbar'>
             <button
               class='pull-right btn btn-primary btn-rounded'
@@ -79,7 +79,7 @@ export default class CustomersListContainer extends ListContainer {
               <span>New Customer</span>
             </button>
           </div>
-        </Role>
+        </ShowWhen>
 
         <div class='content-wrapper'>
           <Alert

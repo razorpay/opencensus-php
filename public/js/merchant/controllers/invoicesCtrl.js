@@ -1,8 +1,11 @@
 app.controller('InvoicesCtrl', [
   '$rootScope',
+  'user',
   '$scope',
   '$state',
-  function ($rootScope, $scope, $state) {
+  function ($rootScope, user, $scope, $state) {
+    $scope.user = user.getIdentity();
+
     var titleHash = {
       'app.invoices.list': 'Invoices',
       'app.invoices.details': 'Invoice Detail',

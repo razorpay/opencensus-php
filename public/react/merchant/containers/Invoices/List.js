@@ -2,7 +2,7 @@ import React, { Component, PropTypes } from 'react'
 import { connect } from 'react-redux'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
-import Role from 'merchant/components/Role'
+import ShowWhen from 'merchant/components/ShowWhen'
 import InvoicesList from 'merchant/components/Invoices/InvoicesList'
 import ListContainer from 'merchant/containers/ListContainer'
 import CreatePaymentLink from './CreatePaymentLink'
@@ -76,7 +76,7 @@ export default class InvoicesListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
-        <Role notMyRole='support'>
+        <ShowWhen notMyRole='support'>
           <div class='btn-toolbar'>
             <button
               class='btn btn-primary btn-rounded'
@@ -86,7 +86,7 @@ export default class InvoicesListContainer extends ListContainer {
               <span>Create Payment Link</span>
             </button>
 
-            <Role notMyRole='sellerapp'>
+            <ShowWhen notMyRole='sellerapp' featureEnabled='Invoice'>
               <a
                 href='#/app/invoices/new'
                 class='btn btn-primary btn-rounded'
@@ -94,9 +94,9 @@ export default class InvoicesListContainer extends ListContainer {
                 <i class='fa fa-plus'></i>
                 <span>New Invoice</span>
               </a>
-            </Role>
+            </ShowWhen>
           </div>
-        </Role>
+        </ShowWhen>
 
         <div class='content-wrapper'>
           <div class='panel panel-default'>
