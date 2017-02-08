@@ -8,6 +8,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
     input,
     meta,
     selected,
+    selectedLabel,
     optionLabelPath,
     optionValuePath = 'id',
     onQuickAdd,
@@ -25,7 +26,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
       {...otherProps}
       selected={selectedOption}
       searchIndices={searchIndices}
-      selectedLabel={optionLabelPath}
+      selectedLabel={selectedLabel || optionLabelPath}
       optionComponent={({ option, select }) =>
         <HighlightedOption
           option={option}

@@ -168,7 +168,7 @@ const runWebpack = (webpackConfig, cb) => {
       colors: true
     }))
     if (stats.hasErrors()) {
-      throw new Error('Webpack failed')
+      // throw new Error('Webpack failed')
     }
     cb()
   })

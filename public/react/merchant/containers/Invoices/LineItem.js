@@ -1,9 +1,11 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
+import InlineField from 'rzp/ui/Forms/InlineField'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import ItemCreation from 'merchant/containers/Items/New'
 import * as ModalActions from 'merchant/modules/modals'
+import { findBy } from 'rzp/utils/rzp-utils'
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -71,7 +73,8 @@ export default class InvoiceLineItem extends Component {
           </span>
 
           <div class='item-ac-container'>
-            <Field
+            <InlineField
+              formName='newInvoice'
               name={`${fieldName}.item_id`}
               component={TypeAhead}
               options={items}
@@ -81,11 +84,19 @@ export default class InvoiceLineItem extends Component {
               onOptionChange={this.updateLineItemRow}
               onQuickAdd={this.quickCreateItem}
               disabled={disabled}
+              normalizeValue={(value) => {
+                let selected = findBy(items || [], 'id', value) || selectedOption
+                if (selected) {
+                  return selected.name
+                }
+                return value
+              }}
             />
-            <Field
+            <InlineField
+              formName='newInvoice'
               name={`${fieldName}.description`}
               component='textarea'
-              class='form-control'
+              class='form-control input-xs'
               placeholder='Enter item description'
             />
           </div>
@@ -93,22 +104,22 @@ export default class InvoiceLineItem extends Component {
 
         <td>
           <Field
-            name={`${fieldName}.quantity`}
+            name={`${fieldName}.amountInINR`}
             component='input'
-            class='form-control text-right'
+            class='form-control text-right input-xs'
             type='number'
-            min={1}
-            disabled={disabled}
+            disabled={true}
           />
         </td>
 
         <td>
           <Field
-            name={`${fieldName}.amountInINR`}
+            name={`${fieldName}.quantity`}
             component='input'
-            class='form-control text-right'
+            class='form-control text-right input-xs'
             type='number'
-            disabled={true}
+            min={1}
+            disabled={disabled}
           />
         </td>
 

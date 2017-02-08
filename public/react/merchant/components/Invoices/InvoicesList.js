@@ -33,7 +33,7 @@ const InvoiceListItem = (props) => {
       <td>
         <div class='row-action'>
           <div class='btn-group'>
-            <div data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}>
+            <div class='tooltip-wrapper' data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}>
               <button
                 class='btn btn-xs btn-default'
                 disabled={!invoice.isEditable}
@@ -43,7 +43,7 @@ const InvoiceListItem = (props) => {
                 <span>edit</span>
               </button>
             </div>
-            <div data-tip={!invoice.isEditable ? 'Paid invoice cannot be deleted' : ''}>
+            <div class='tooltip-wrapper' data-tip={!invoice.isEditable ? 'Paid invoice cannot be deleted' : ''}>
               <button
                 class='btn btn-xs btn-default'
                 disabled={!invoice.isEditable}

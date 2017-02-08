@@ -20,6 +20,15 @@
   :-ms-input-placeholder { /* Internet Explorer 10-11 */
     color: #aaa;
   }
+
+  h3, h2 {
+    margin: 0;
+  }
+
+  h3 {
+    font-weight: bold;
+    font-size: 20px;
+  }
 }
 
 .content-wrapper {
@@ -141,19 +150,6 @@ body.ReactModal__Body--open {
   border-color: #23b7e5;
 }
 
-.datepicker-container {
-  position: relative;
-
-  .picker-icon {
-    position: absolute;
-    right: 1px;
-    top: 1px;
-    padding: 6px 10px;
-    background-color: #ededed;
-    cursor: pointer;
-  }
-}
-
 // End of third party style overrides
 
 .butterbar {
@@ -178,10 +174,11 @@ body.ReactModal__Body--open {
 }
 
 .quick-create {
-  padding: 8px 12px;
+  padding: 2px 5px;
   background-color: rgba(195, 195, 195, 0.23);
   color: #337ab7;
   cursor: pointer;
+  font-size: 12px;
 }
 
 .row-action > .btn-group {
@@ -217,6 +214,10 @@ tr:hover .row-action > .btn-group {
 
 .table > tbody > tr.luminate > td {
   animation: luminate 4s linear;
+}
+
+.table > tbody > tr > td.no-border {
+  border-bottom-color: transparent;
 }
 
 .alert-sm {
@@ -280,3 +281,23 @@ tr:hover .row-action > .btn-group {
 .btn-group > .tooltip-wrapper {
   display: inline-block;
 }
+
+.label-draft {
+  background-color: #ccc;
+  color: #fff;
+}
+
+.breadcrumb__backNav {
+  padding: 0;
+  background-color: transparent;
+  margin-bottom: 25px;
+}
+
+.breadcrumb__backNav--heading {
+  display: inline-block;
+}
+
+.breadcrumb__backNav--heading + .label-draft {
+  margin-left: 5px;
+}
+

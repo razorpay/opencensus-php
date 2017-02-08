@@ -27,21 +27,20 @@ export default (props) => {
           <div class='invoice-header'>
             {
               invoice.status === 'draft' ?
-              <AsyncButton
+              <button
                 class='btn btn-primary btn-sm pull-right'
-                text='Mark as Issued'
-                pendingText='Saving...'
                 onClick={props.onIssue}
-              /> :
-              <DropdownButton
-                title='Send'
-                class='pull-right'
-                btnTriggerClass='btn-primary btn-sm'
               >
-                <MenuItem onClick={() => props.onNotify('sms')}>Send via SMS</MenuItem>
-                <MenuItem onClick={() => props.onNotify('email')}>Send via Email</MenuItem>
-              </DropdownButton>
+                Get Payment Link
+              </button> :
+              <button
+                class='btn btn-primary btn-sm pull-right'
+                onClick={props.onSendInvoice}
+              >
+                Send Invoice
+              </button>
             }
+
             <h3>{invoice.id}</h3>
           </div>
 

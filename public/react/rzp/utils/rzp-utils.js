@@ -69,3 +69,5 @@ export const objectDiff = (oldObj = {}, newObj = {}) => {
     return prev
   }, {})
 }
+
+export const noop = () => {}

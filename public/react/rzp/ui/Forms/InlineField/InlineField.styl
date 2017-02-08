@@ -1,0 +1,142 @@
+.inlineField {
+  display: block;
+  position: relative;
+  margin-left: -5px;
+  margin-right: -5px;
+  white-space: pre;
+
+  .form-control:focus,
+  .powerselect--open,
+  .datepicker--focused {
+    + .inlineField__value-container {
+      .inlineField__value {
+        display: none;
+      }
+      .inlineField__placeholder {
+        color: #C4C4C4;
+      }
+    }
+  }
+
+  .form-control,
+  .powerselect,
+  .SingleDatePickerInput {
+    background: transparent;
+    border-color: transparent;
+    color: transparent;
+
+    &:hover {
+      border-color: #cfdadd;
+    }
+  }
+
+  .form-control:focus,
+  .powerselect--open,
+  .datepicker--focused .SingleDatePickerInput,
+  .datepicker--focused .DateInput__display-text {
+    border-color: #cfdadd;
+    color: #555;
+  }
+
+  .powerselect__trigger-status {
+    border-top-color: transparent;
+  }
+
+  .powerselect:hover .powerselect__trigger-status,
+  .powerselect:focus .powerselect__trigger-status {
+    border-top-color: #cfdadd;
+  }
+
+  .input-xs,
+  .powerselect,
+  .DateInput__display-text,
+  .inlineField__value-container {
+    padding: 0 5px;
+    line-height: 20px;
+    font-size: 14px;
+  }
+
+  input.input-xs, .powerselect {
+    height: 22px;
+  }
+
+  .powerselect:not(.powerselect--open) {
+    border-radius: 2px;
+  }
+
+  .powerselect__trigger {
+    padding: 0;
+  }
+
+  .powerselect__trigger-input {
+    height: 20px;
+    padding-right: 10px;
+    padding-left: 0;
+  }
+
+  .powerselect__trigger-status {
+    right: 0;
+    top: 10px;
+  }
+
+  .SingleDatePicker {
+    display: inline-block;
+    width: 120px;
+  }
+
+  .DateInput__display-text {
+    color: transparent;
+  }
+
+  .DateInput {
+    line-height: 22px;
+    display: block;
+  }
+}
+
+.inlineField__value-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  pointer-events: none;
+  border: 1px solid transparent;
+
+  &.left {
+    .inlineField__value {
+      padding-right: 0;
+      padding-left: 15px;
+    }
+
+    .fa-pencil {
+      left: 0;
+      right: auto;
+    }
+  }
+}
+
+.inlineField__value,
+.inlineField__placeholder {
+  display: inline-block;
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 18px;
+  position: relative;
+
+  .fa-pencil {
+    position: absolute;
+    right: 0;
+    top: 3px;
+  }
+}
+
+.inlineField__placeholder {
+  color: #7266ba;
+}
+
+.powerselect__option {
+  padding: 0 5px;
+  line-height: 20px;
+  font-size: 14px;
+}

@@ -47,6 +47,12 @@ acorn@^4.0.3:
   version "4.0.4"
   resolved "https://registry.yarnpkg.com/acorn/-/acorn-4.0.4.tgz#17a8d6a7a6c4ef538b814ec9abac2779293bf30a"
 
+airbnb-prop-types@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/airbnb-prop-types/-/airbnb-prop-types-2.1.0.tgz#3d265e91b6b1a9351feadb1581b17a8c0b28a27f"
+  dependencies:
+    has "^1.0.1"
+
 ajv-keywords@^1.1.1:
   version "1.4.1"
   resolved "https://registry.yarnpkg.com/ajv-keywords/-/ajv-keywords-1.4.1.tgz#f080e635e230baae26537ce727f260ae62b43802"
@@ -3623,13 +3629,14 @@ react-async-button@^0.0.5:
   dependencies:
     classnames "^2.2.5"
 
-react-dates@^4.0.2:
-  version "4.3.0"
-  resolved "https://registry.yarnpkg.com/react-dates/-/react-dates-4.3.0.tgz#eaf55ebbb6de6b074860f4223ef7e0eb3f48c3e8"
+react-dates@^6.0.1:
+  version "6.0.1"
+  resolved "https://registry.yarnpkg.com/react-dates/-/react-dates-6.0.1.tgz#37246dd12da26969b043c16fd7d3521f83f5b844"
   dependencies:
+    airbnb-prop-types "^2.1.0"
     array-includes "^3.0.2"
     classnames "^2.2.5"
-    react-moment-proptypes "^1.2.0"
+    react-moment-proptypes "^1.2.1"
     react-portal "^3.0.0"
 
 react-dom@^15.3.2:
@@ -3648,7 +3655,7 @@ react-modal@^1.5.2:
     exenv "1.2.0"
     lodash.assign "^4.2.0"
 
-react-moment-proptypes@^1.2.0:
+react-moment-proptypes@^1.2.1:
   version "1.2.1"
   resolved "https://registry.yarnpkg.com/react-moment-proptypes/-/react-moment-proptypes-1.2.1.tgz#f672cb07e49f2a32c08f2c02ac30cb255850dc0a"
   dependencies:
