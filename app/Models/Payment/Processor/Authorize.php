@@ -384,6 +384,8 @@ trait Authorize
         $this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
+
+        $this->runInternationalChecks($payment);
     }
 
     protected function validateS2SIfApplicable(Payment\Entity $payment)
@@ -468,11 +470,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
-        // International card validation happens here because we want to save the failure.
-        // For payment creation, gateway is compulsory field which is only finalized in
-        // previous step.
-        $this->runInternationalChecks($payment);
-
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.

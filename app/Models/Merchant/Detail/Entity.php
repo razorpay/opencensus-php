@@ -80,6 +80,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
