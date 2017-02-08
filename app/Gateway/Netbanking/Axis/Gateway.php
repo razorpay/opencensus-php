@@ -296,11 +296,16 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $verify->payment;
 
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
         $attributes = $this->getVerifyAttributes($content);
 
-        $gatewayPayment->fill($attributes);
+        if ($bankPaymentId === null)
+        {
+            $gatewayPayment->fill($attributes);
 
-        $this->repo->saveOrFail($gatewayPayment);
+            $this->repo->saveOrFail($gatewayPayment);
+        }
 
         return $gatewayPayment;
     }

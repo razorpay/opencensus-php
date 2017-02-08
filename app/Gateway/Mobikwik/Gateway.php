@@ -45,7 +45,13 @@ class Gateway extends Base\Gateway
 
     protected function callbackNormalFlow(array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -56,14 +62,6 @@ class Gateway extends Base\Gateway
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'request' => $input['gateway'],
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         $this->verifyPaymentCallbackResponse($input['gateway']);
 
@@ -82,7 +80,7 @@ class Gateway extends Base\Gateway
         $content = $this->xmlToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content' => $content,
                 'gateway' => 'mobikwik',
@@ -197,12 +195,12 @@ class Gateway extends Base\Gateway
         $content = http_build_query($content);
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
@@ -229,12 +227,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_USER_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_USER_RESPONSE, $content);
 
         $content['received'] = 1;
 
@@ -269,12 +267,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_RESPONSE, $content);
 
         $code = $content['statuscode'];
 
@@ -308,12 +306,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE, $content);
 
         $code = $content['statuscode'];
 
@@ -353,12 +351,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $responseArray = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE, $responseArray);
 
         $code = $responseArray['statuscode'];
 
@@ -478,12 +476,20 @@ class Gateway extends Base\Gateway
 
         $content['orderid'] = $input['payment']['id'];
 
+        $contentToTrace = http_build_query($content);
+
         $content['checksum'] = $this->getHashForVerifyRequest(
                                     $content['mid'], $content['orderid']);
 
         $content = http_build_query($content);
 
         $request = $this->getStandardRequestArray($content);
+
+        $requestToTrace = $request;
+
+        $requestToTrace['content'] = $contentToTrace;
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $requestToTrace);
 
         return $request;
     }

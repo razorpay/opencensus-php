@@ -1613,6 +1613,9 @@ UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
 
+ALTER TABLE merchant_details
+    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
+
 # Pre deployment of branch invoice_new_field_comment
 
 ALTER TABLE invoices ADD COLUMN comment text AFTER notes;
@@ -1624,9 +1627,6 @@ ALTER TABLE invoices ADD COLUMN comment text AFTER notes;
 ALTER TABLE invoices ADD INDEX invoices_customer_contact_index (customer_contact);
 ALTER TABLE invoices ADD INDEX invoices_customer_email_index (customer_email);
 ALTER TABLE invoices ADD INDEX invoices_customer_name_index (customer_name);
-
-ALTER TABLE merchant_details
-    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
 
 # Changes default value of gateway and terminal
 ALTER TABLE payments
