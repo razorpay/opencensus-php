@@ -1453,11 +1453,6 @@ trait Authorize
 
         $subscription = $payment->subscription;
 
-        if ($subscription === null)
-        {
-            return;
-        }
-
         $subscriptionStatus = $subscription->getStatus();
 
         if ($subscriptionStatus === Subscription\Status::CREATED)

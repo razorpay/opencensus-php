@@ -67,7 +67,7 @@ class Generator extends Base\Core
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
-    public function generate(array $input, $subscription = null)
+    public function generate(array $input, $subscription)
     {
         $this->generateInvoiceSkeleton($input);
 
@@ -113,7 +113,7 @@ class Generator extends Base\Core
         return $this->invoice;
     }
 
-    protected function preProcessGeneration(array $input, $subscription = null)
+    protected function preProcessGeneration(array $input, $subscription)
     {
         $this->associateCustomerWithInvoice($input);
 
