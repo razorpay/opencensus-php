@@ -971,11 +971,14 @@ class Gateway extends Base\Gateway
             ['gateway_soap_request' => $request]);
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->scrubCardInfo($request['content']);
 
-        parent::traceGatewayPaymentRequest($request, $input);
+        parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
 
     protected function traceGatewayCallback($gatewayCallback)
