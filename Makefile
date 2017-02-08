@@ -35,7 +35,7 @@ up:
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 
 down:
-	$(DOCKER_COMPOSE) down
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) down
 
 all: build
 
