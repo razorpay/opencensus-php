@@ -46,6 +46,14 @@ class Notify
         self::FAILED_TO_AUTHORIZED
     ];
 
+    const MAIL_TAG_MAP = [
+        self::AUTHORIZED           => MailTags::PAYMENT_SUCCESSFUL,
+        self::REFUNDED             => MailTags::REFUND_SUCCESSFUL,
+        self::INVOICE_PAID         => MailTags::INVOICE_PAID,
+        self::FAILED_TO_AUTHORIZED => MailTags::FAILED_TO_AUTHORIZED,
+        self::CARD_SAVED           => MailTags::CARD_SAVING,
+    ];
+
     // TODO: Shift to constants once we update PHP
     protected $mailViews = [
         self::AUTHORIZED    =>  [
@@ -387,28 +395,7 @@ class Notify
 
     protected function getLabel($event)
     {
-        switch ($event)
-        {
-            case self::AUTHORIZED:
-                $label = MailTags::PAYMENT_SUCCESSFUL;
-                break;
-            case self::REFUNDED:
-                $label = MailTags::REFUND_SUCCESSFUL;
-                break;
-            case self::INVOICE_PAID:
-                $label = MailTags::INVOICE_PAID;
-                break;
-            case self::FAILED_TO_AUTHORIZED:
-                $label = MailTags::FAILED_TO_AUTHORIZED;
-                break;
-            case self::CARD_SAVED:
-                $label = MailTags::CARD_SAVING;
-                break;
-            default:
-                $label = MailTags::PAYMENT_SUCCESSFUL;
-        }
-
-        return $label;
+        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
     }
 
     protected function getSubject($event, $merchant = true)

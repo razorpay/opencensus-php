@@ -18,6 +18,11 @@ class Notifier extends Base\Core
     // 300 seconds (5*60)
     const SCHEDULE_TIME_LEEWAY = 300;
 
+    const MAIL_TAG_MAP = [
+        Type::ECOD    => MailTags::ECOD,
+        Type::INVOICE => MailTags::INVOICE,
+    ];
+
     /**
      * @var Entity
      */
@@ -245,19 +250,7 @@ class Notifier extends Base\Core
 
     protected function getLabel($type)
     {
-        switch ($type)
-        {
-            case Type::ECOD:
-                $label = MailTags::ECOD;
-                break;
-            case Type::INVOICE:
-                $label = MailTags::INVOICE;
-                break;
-            default:
-                $label = MailTags::INVOICE;
-        }
-
-        return $label;
+        return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
     }
 
     public function sendNotificationsInBulk()

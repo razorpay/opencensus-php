@@ -17,6 +17,7 @@ class MailTags
     const AIRTEL_MONEY_REFUNDS_MAIL    = 'airtel_money_refunds_mail';
     const PAYU_MONEY_REFUNDS_MAIL      = 'payu_money_refunds_mail';
     const ICICI_UPI_REFUNDS_MAIL       = 'icici_upi_refunds_mail';
+    const BATCH_REFUNDS_FILE           = 'batch_refunds_file';
 
     const PAYMENT_SUCCESSFUL           = 'payment_successful';
     const REFUND_SUCCESSFUL            = 'refund_successful';
@@ -35,8 +36,13 @@ class MailTags
     const EMI_FILE                     = 'emi_file';
 
     const SCORECARD                    = 'scorecard';
+    const CRITICAL_ERROR               = 'critical_error';
 
     const ACCOUNT_CHANGED              = 'account_changed';
+    const FORGOT_PASSWORD              = 'forgot_password';
+    const ADMIN_CREATE                 = 'admin_create';
+    const WELCOME                      = 'welcome';
+    const ACCOUNT_ACTIVATED            = 'account_activated';
 
     const ICICI_FILES                  = 'icici_files';
 

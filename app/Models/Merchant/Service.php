@@ -26,6 +26,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Constants\MailTags;
 
 class Service extends Base\Service
 {
@@ -804,6 +805,10 @@ class Service extends Base\Service
             {
                 $message->cc($data['cc_email'], $data['name']);
             }
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::WELCOME);
         });
     }
 
