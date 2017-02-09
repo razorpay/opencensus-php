@@ -205,6 +205,8 @@ class Gateway extends Base\Gateway
 
         $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
 
+        assertTrue($input['payment']['id'] === $content[ResponseFields::GATEWAY_PAYMENT_ID]);
+
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
@@ -223,6 +225,8 @@ class Gateway extends Base\Gateway
     protected function callbackAuthFailureFlow(array $input)
     {
         $content = $input['gateway'];
+
+        assertTrue($input['payment']['id'] === $content[ResponseFields::GATEWAY_PAYMENT_ID]);
 
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
