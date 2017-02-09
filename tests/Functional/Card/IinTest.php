@@ -63,6 +63,27 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testIinRangeUploadWithType()
+    {
+        $input = [
+            'range' => ['min' => 652850, 'max' => 652855],
+            'network' => 'RuPay',
+            'type' => 'DC',
+        ];
+
+        $testData = &$this->testData['testIinRangeUploadWithType'];
+
+        $testData['request']['content'] = $input;
+
+        $this->startTest();
+
+        $iin = $this->getEntityById('iin', 652851, true);
+
+        $this->assertEquals('credit', $iin['type']);
+        $this->assertEquals('RuPay', $iin['network']);
+        $this->assertEquals(null, $iin['issuer']);
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

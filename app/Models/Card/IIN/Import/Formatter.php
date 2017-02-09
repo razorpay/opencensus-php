@@ -18,23 +18,23 @@ use RZP\Exception;
  */
 class Formatter
 {
-    public $creditCard          =   0;
-    public $debitCard           =   0;
-    public $otherCardType       =   0;
-    public $unknownNetworkType  =   0;
+    public $creditCard          = 0;
+    public $debitCard           = 0;
+    public $otherCardType       = 0;
+    public $unknownNetworkType  = 0;
 
     public static $cardTypeMap = array(
-        'FC'    =>  'credit',
-        'DC'    =>  'credit',
-        'FD'    =>  'debit',
-        'DD'    =>  'debit'
+        'FC'    => 'credit',
+        'DC'    => 'credit',
+        'FD'    => 'debit',
+        'DD'    => 'debit'
     );
 
     public static $countryMap = array(
-        'DC'    =>  'IN',
-        'DD'    =>  'IN',
-        'FD'    =>  NULL,
-        'FC'    =>  NULL
+        'DC'    => 'IN',
+        'DD'    => 'IN',
+        'FD'    => null,
+        'FC'    => null,
     );
 
     /**
@@ -86,6 +86,37 @@ class Formatter
             }
 
             $iins[] = $input;
+        }
+
+        return $iins;
+    }
+
+    public function formatIinDataRange($input, $range)
+    {
+        $data = [];
+
+        unset($input['range']);
+
+        foreach ($input as $key => $value)
+        {
+            $value = trim($value);
+
+            switch (strtolower($key))
+            {
+                case 'type':
+                    $data[IIN::COUNTRY] = self::$countryMap[$value];
+                    $data[IIN::TYPE] = self::$cardTypeMap[$value];
+                    break;
+            }
+        }
+
+        $iins = new Base\PublicCollection;
+
+        for ($i = $range['min']; $i <= $range['max']; $i++)
+        {
+            $data[IIN::IIN] = $i;
+
+            $iins[] = $data;
         }
 
         return $iins;

@@ -101,10 +101,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'duplicates'  => [
-                ],
-                'db_conflicts'=> [
-                ],
+                'duplicates' => [],
+                'db_conflicts' => [],
                 'network_errors' => [
                     '497522' => [
                         8,
@@ -130,7 +128,7 @@ return [
             'content' => [
                 'duplicates'  => [
                 ],
-                'db_conflicts'=> [
+                'db_conflicts' => [
                 ],
                 'network_errors' => [
                     '497522' => [
@@ -138,6 +136,21 @@ return [
                     ]
                 ],
                 'success' => 5,
+            ],
+        ],
+    ],
+
+    'testIinRangeUploadWithType' => [
+        'request' => [
+            'url' => '/iins/range/upload',
+            'method' => 'post',
+        ],
+        'response' => [
+            'content' => [
+                'duplicates'  => [],
+                'db_conflicts' => [],
+                'network_errors' => [],
+                'success' => 6,
             ],
         ],
     ],

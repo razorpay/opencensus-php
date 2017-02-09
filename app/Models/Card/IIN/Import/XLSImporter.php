@@ -8,22 +8,14 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\IIN\Import\Base as BaseImport;
 
 /**
  * This class is called by the service function with the input data.
  * The handles the rest of processing.
  */
-class XLSImporter
+class XLSImporter extends BaseImport
 {
-    protected $app;
-
-    public function __construct()
-    {
-        $this->app = App::getFacadeRoot();
-
-        $this->trace = \Trace::getFacadeRoot();
-    }
-
     /**
      * This is the main function.
      *
@@ -36,7 +28,8 @@ class XLSImporter
     {
         if (isset($input['network']) === false)
         {
-            throw new Exception\BadRequestException("please pass network name as input for given file");
+            throw new Exception\BadRequestValidationFailureException(
+                'Please pass network name as input for given file');
         }
 
         // Extracts and returns the columns and data
@@ -66,7 +59,6 @@ class XLSImporter
     public function importWithoutNetwork($file)
     {
         $ret = (new XLSFileHandler)->getCsvData($file);
-
 
         // Header of Csv data
         $ret['columns'] = array(
@@ -136,62 +128,9 @@ class XLSImporter
             'Debit Card'        => $formatter->debitCard,
             'Other Card'        => $formatter->otherCardType,
             'Unknown Network'   => $formatter->unknownNetworkType,
-            'Failed Count'      => sizeof($errArray),
-            'Sucessful Entries' => sizeof($formattedData) - sizeof($errArray),
+            'Failed Count'      => count($errArray),
+            'Sucessful Entries' => count($formattedData) - count($errArray),
         );
-    }
-    /**
-     * This enter the unique entries into the database.
-     *
-     * The input array should be associative and contian uniqe entries.
-     *
-     * @param array $cleaned        the input entries.
-     */
-    protected function enterIntoDB($cleaned, $chunkSize = 5000)
-    {
-        // Too many entries crashes the sql query
-        foreach (array_chunk($cleaned, $chunkSize) as $chunks)
-        {
-            $iins = new Base\PublicCollection;
-
-            foreach ($chunks as & $chunk)
-            {
-                $iinEntity = (new IIN\Entity)->build($chunk);
-
-                $iins->push($iinEntity);
-            }
-
-            $this->app['repo']->saveOrFailCollection($iins);
-        }
-    }
-
-    protected function updateIntoDB(& $conflicts)
-    {
-        $columns = array(IIN\Entity::TYPE, IIN\Entity::COUNTRY, IIN\Entity::ISSUER);
-
-        foreach ($conflicts as $iinId => $entry)
-        {
-            list($input, $conflict, $diff) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
-
-            if (($conflict === false) and
-                (empty($input) === false))
-            {
-                $entity = $this->app['repo']->iin->find($iinId);
-
-                $entity->edit($input);
-
-                $this->app['repo']->saveOrFail($entity);
-            }
-
-            if ($conflict === false)
-            {
-                unset($conflicts[$iinId]);
-            }
-            else
-            {
-                $conflicts[$iinId] = $diff;
-            }
-        }
     }
 
     protected function getInputForIinUpdate($dbEntry, $fileEntry, $columns)
