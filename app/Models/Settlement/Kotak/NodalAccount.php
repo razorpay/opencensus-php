@@ -105,6 +105,8 @@ class NodalAccount
             $amount = $settlement->getAmount() / 100;
             $totalAmount += $amount;
 
+            $type = 'NEFT';
+
             $ifsc = $ba->getIfscCode();
 
             $ifscFirstFour = substr($ifsc, 0, 4);
@@ -112,6 +114,7 @@ class NodalAccount
             if (($ifscFirstFour === 'KKBK') or
                 ($ifscFirstFour === 'VYSA'))
             {
+                $type = 'IFT';
                 $iftAmount += $amount;
                 $iftCount++;
             }
@@ -124,6 +127,7 @@ class NodalAccount
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
+                'Payment_Type'          => $type,
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
