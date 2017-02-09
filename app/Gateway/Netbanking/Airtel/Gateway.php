@@ -217,6 +217,9 @@ class Gateway extends Base\Gateway
         if (array_key_exists(AuthFields::TRANSACTION_ID, $content) === true)
         {
             $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[AuthFields::TRANSACTION_ID];
+        }
+        if (array_key_exists(AuthFields::DATE, $content) === true)
+        {
             $attributes[Base\Entity::DATE]            = $content[AuthFields::TRANSACTION_DATE];
         }
 
@@ -478,13 +481,6 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
 
-        $salt = $this->getSecret();
-
-        if (in_array($salt, $data) === false)
-        {
-            array_push($data, $salt);
-        }
-
         return implode($glue, $data);
     }
 
@@ -504,6 +500,7 @@ class Gateway extends Base\Gateway
             $content[AuthFields::AMOUNT],
             $content[AuthFields::DATE],
             $content[AuthFields::SERVICE],
+            $this->getSecret()
         ];
 
         return $hashArray;
@@ -519,6 +516,7 @@ class Gateway extends Base\Gateway
                 $content[AuthFields::TRANSACTION_REFERENCE_NO],
                 $content[AuthFields::TRANSACTION_AMOUNT],
                 $content[AuthFields::TRANSACTION_DATE],
+                $this->getSecret()
             ];
         }
         else
@@ -543,6 +541,7 @@ class Gateway extends Base\Gateway
             $data[VerifyFields::TRANSACTION_REFERENCE_NO],
             $data[VerifyFields::AMOUNT],
             $data[VerifyFields::TRANSACTION_DATE],
+            $this->getSecret()
         ];
 
         return $hashArray;
@@ -553,7 +552,8 @@ class Gateway extends Base\Gateway
         $hashArray = [
             $content[VerifyFields::MERCHANT_ID],
             json_encode($content[VerifyFields::TRANSACTION]),
-            $content[VerifyFields::ERROR_CODE]
+            $content[VerifyFields::ERROR_CODE],
+            $this->getSecret()
         ];
 
         return $hashArray;
@@ -566,6 +566,7 @@ class Gateway extends Base\Gateway
             $data[RefundFields::TRANSACTION_ID],
             $data[RefundFields::AMOUNT],
             $data[RefundFields::TRANSACTION_DATE],
+            $this->getSecret()
         ];
 
         return $hashArray;
@@ -579,7 +580,8 @@ class Gateway extends Base\Gateway
             $data[RefundFields::AMOUNT],
             $data[RefundFields::TRANSACTION_ID],
             $data[RefundFields::TRANSACTION_DATE],
-            $data[RefundFields::STATUS]
+            $data[RefundFields::STATUS],
+            $this->getSecret()
         ];
 
         return $hashArray;

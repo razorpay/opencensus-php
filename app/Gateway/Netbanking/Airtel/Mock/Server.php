@@ -104,10 +104,7 @@ class Server extends Base\Mock\Server
 
         $this->content($response);
 
-        if (array_key_exists(AuthFields::HASH, $response) === false)
-        {
-            $response[AuthFields::HASH] = $this->generateHash($response, 'response');
-        }
+        $response[AuthFields::HASH] = $this->generateHash($response, 'response');
 
         return $response;
     }
@@ -207,13 +204,6 @@ class Server extends Base\Mock\Server
                 throw new Exception\RuntimeException('Action not set correctly');
         }
 
-        $salt = $this->getGatewayInstance()->getSecret();
-
-        if (in_array($salt, $data) === false)
-        {
-            array_push($data, $salt);
-        }
-
         return implode($glue, $data);
     }
 
@@ -230,6 +220,7 @@ class Server extends Base\Mock\Server
             $content[AuthFields::AMOUNT],
             $content[AuthFields::DATE],
             $content[AuthFields::SERVICE],
+            $this->getGatewayInstance()->getSecret()
         ];
 
 
@@ -246,6 +237,7 @@ class Server extends Base\Mock\Server
                 $content[AuthFields::TRANSACTION_REFERENCE_NO],
                 $content[AuthFields::TRANSACTION_AMOUNT],
                 $content[AuthFields::TRANSACTION_DATE],
+                $this->getGatewayInstance()->getSecret()
             ];
         }
         else
@@ -270,6 +262,7 @@ class Server extends Base\Mock\Server
             $data[RefundFields::TRANSACTION_ID],
             $data[RefundFields::AMOUNT],
             $data[RefundFields::TRANSACTION_DATE],
+            $this->getGatewayInstance()->getSecret()
         ];
 
         return $hashArray;
@@ -283,7 +276,8 @@ class Server extends Base\Mock\Server
             $content[RefundFields::AMOUNT],
             $content[RefundFields::TRANSACTION_ID],
             $content[RefundFields::TRANSACTION_DATE],
-            $content[RefundFields::STATUS]
+            $content[RefundFields::STATUS],
+            $this->getGatewayInstance()->getSecret()
         ];
 
         return $hashArray;
@@ -296,6 +290,7 @@ class Server extends Base\Mock\Server
             $data[VerifyFields::TRANSACTION_REFERENCE_NO],
             $data[VerifyFields::AMOUNT],
             $data[VerifyFields::TRANSACTION_DATE],
+            $this->getGatewayInstance()->getSecret()
         ];
 
         return $hashArray;
@@ -319,6 +314,7 @@ class Server extends Base\Mock\Server
             $merchantId,
             $json,
             $content[VerifyFields::ERROR_CODE],
+            $this->getGatewayInstance()->getSecret()
         ];
 
         return $hashArray;
