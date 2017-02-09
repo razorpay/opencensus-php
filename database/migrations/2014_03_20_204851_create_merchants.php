@@ -29,7 +29,8 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Merchant::NAME);
+            $table->string(Merchant::NAME)
+                  ->nullable();
 
             $table->string(Merchant::EMAIL, 255);
 
