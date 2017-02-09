@@ -85,9 +85,14 @@ class PublicController extends Controller
         $data = [
             'options'       => json_encode($postParams['options'], JSON_FORCE_OBJECT),
             'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
+            // This is used directly in JS side
+            'urls'          => json_encode([
+                'callback'  => $postParams['url']['callback'],
+                'cancel'    => $postParams['url']['cancel'] ?? null,
+            ], JSON_FORCE_OBJECT),
+            // This is used in PHP
             'url_callback'  => $postParams['url']['callback'],
-            'url_cancel'    => $postParams['url']['cancel'] ?? null,
-            'retry'         => $postParams['retry'] ?? false,
+            'retry'         => (bool) Request::get('retry', false) ,
         ];
 
         return View::make('public.hosted', $data);
@@ -96,8 +101,8 @@ class PublicController extends Controller
     protected function validateHostedPostParams($postParams)
     {
         $postParamRules = [
-            'url'                   =>  'required',
-            'options'               =>  'required',
+            'url'                   =>  'required|array',
+            'options'               =>  'required|array',
             'url.cancel'            =>  'sometimes|url',
             'url.callback'          =>  'required|url',
             'options.key'           =>  'required',

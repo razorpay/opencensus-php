@@ -41,10 +41,11 @@
       <h3>Payment Successful!</h3>
       Just a moment now...
     </div>
-    <form style="visibility: hidden" method="post" action="{{ $url_callback }}" target="_self"></form>
+    <form style="visibility: hidden" method="post" action="@html_attr($url_callback)" target="_self"></form>
     <script>
       var form = document.forms[0];
       var options = {!! $options !!};
+      var urls    = {!! $urls !!};
 
       @if ($retry)
       if (window.btoa) {
@@ -58,21 +59,22 @@
 
             options: JSON.stringify(options),
 
-            back: "{{ $url_cancel }}"
+            back: urls.cancel
           }));
 
           options.callback_url =  location.protocol + '//' + location.hostname + '/v1/checkout/onyx?data=' + data;
         } catch(e){}
       }
       @else
-      options.callback_url = "{{ $url_callback }}";
+
+      options.callback_url = urls.callback;
       @endif
 
       options.handler = function(data) {
         document.querySelector('#success').style.display = 'block';
         var h = '';
         for (var i in data) {
-          h += '<input name="' + i + '" value=" ' + data[i] + ' ">';
+          h += '<input name="' + i + '" value="' + data[i] + '">';
         }
         form.innerHTML = h;
         form.submit();
@@ -94,13 +96,14 @@
         options.theme = {};
       }
 
-      @if ($url_cancel)
-      options.modal.ondismiss = function() {
-        location.href = "{{$url_cancel}}";
+      if (urls.cancel) {
+        options.modal.ondismiss = function() {
+            location.href = urls.cancel;
+        }
       }
-      @else
-      options.theme.close_button = false;
-      @endif
+      else {
+        options.theme.close_button = false;
+      }
 
       // darker shade, because there is nothing behind backdrop
       if (!options.theme.backdrop_color) {
