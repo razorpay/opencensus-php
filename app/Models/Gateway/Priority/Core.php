@@ -3,6 +3,7 @@
 namespace RZP\Models\Gateway\Priority;
 
 use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\DataStore\PrioritySet;
 use RZP\Models\Payment\Method;
