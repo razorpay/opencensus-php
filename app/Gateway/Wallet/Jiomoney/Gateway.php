@@ -13,7 +13,7 @@ use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Currency;
+use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Wallet\Base\Entity;
