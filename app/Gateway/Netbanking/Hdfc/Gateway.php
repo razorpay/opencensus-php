@@ -92,7 +92,7 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackChecksum($input);
 
-        $this->assertPaymentId($input['gateway']['MerchRefNo'], $input['payment']);
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
 
         unset($input['gateway']['CheckSum']);
 

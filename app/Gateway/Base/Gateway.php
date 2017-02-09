@@ -260,12 +260,15 @@ class Gateway
         $this->mock = $mock;
     }
 
-    protected function assertPaymentId($gatewayPaymentId, $payment)
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
     {
-        if ($gatewayPaymentId !== $payment['id'])
+        if ($actualPaymentId !== $expectedPaymentId)
         {
             throw new Exception\LogicException(
-                'Data tampering found.');
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual' => $actualPaymentId
+                ]);
         }
     }
 
