@@ -11,9 +11,9 @@ cd /app/ && chmod 777 -R storage
 cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf && \
 cp environment/.env.docker environment/.env.dev && \
 cp environment/.env.docker environment/.env.testing && \
-sed -i '' 's/DB_LIVE_DATABASE=api_live/DB_LIVE_DATABASE=api_testing_live/g' environment/.env.testing && \
-sed -i '' 's/DB_TEST_DATABASE=api_test/DB_TEST_DATABASE=api_testing_test/g' environment/.env.testing && \
-cp environment/env.sample.php environment/env.php 
+cp environment/env.sample.php environment/env.php && \
+sed -i 's/DB_LIVE_DATABASE=api_live/DB_LIVE_DATABASE=api_testing_live/g' environment/.env.testing
+sed -i 's/DB_TEST_DATABASE=api_test/DB_TEST_DATABASE=api_testing_test/g' environment/.env.testing 
 
 ## This is a bad workaround for increasing php's memory to to 3G enable running tests locally
 ## Mac's sed idiosyncrasies :(

@@ -1088,14 +1088,16 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
 
-        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+        $url = $this->getUrl($route, $parameters, $key);
+
+        return $url;
     }
 
     public function getPublicCallbackUrlWithHash($pid, $key = '')
