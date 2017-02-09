@@ -395,6 +395,7 @@ class ErrorCode
     const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
     const SERVER_ERROR_MULTIPLE_REFUNDS_FOUND                                       = 'SERVER_ERROR_MULTIPLE_REFUNDS_FOUND';
     const SERVER_ERROR_GATEWAY_NOT_REFUNDED                                         = 'SERVER_ERROR_GATEWAY_NOT_REFUNDED';
+    const SERVER_ERROR_REDIS_EXCEPTION                                              = 'SERVER_ERROR_REDIS_EXCEPTION';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -447,4 +448,8 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    // Gateway Priority API error codes
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
 }
