@@ -392,13 +392,6 @@ class EventTrackerClient extends Base\Core
     */
     protected function fetchPaymentAnalytics(Payment\Entity $payment)
     {
-        // if payment does not have analytics relation set
-        // return
-        if (count($payment->analytics) === 0)
-        {
-            return;
-        }
-
         $paymentId = $payment->getId();
 
         // caching paymentContext
