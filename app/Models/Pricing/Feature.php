@@ -18,4 +18,11 @@ class Feature
                 'Not a valid Pricing feature: ' . $feature);
         }
     }
+
+    public static function getFeatures()
+    {
+        $reflectionClass = new \ReflectionClass(__CLASS__);
+
+        return $reflectionClass->getConstants();
+    }
 }
