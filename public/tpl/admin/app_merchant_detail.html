@@ -389,6 +389,10 @@
             Payzapp
           </div>
           <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.jiomoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.jiomoney == true, 'fa-times text-danger':merchant.details.methods.jiomoney == false}"></i></span>
+            Jiomoney
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
@@ -686,6 +690,7 @@
              <option value="upi_icici">UPI/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
+             <option value="wallet_jiomoney">Jiomoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>

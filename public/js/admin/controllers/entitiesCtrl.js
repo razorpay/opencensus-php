@@ -77,6 +77,7 @@ app.controller('EntitiesCtrl', [
       'wallet_olamoney',
       'wallet_airtelmoney',
       'wallet_freecharge',
+      'wallet_jiomoney',
       'wallet_openwallet'
     ];
     var walletList = [
@@ -429,7 +430,7 @@ app.controller('EntitiesCtrl', [
         settlement_id: ['Settlement Id']
       },
       terminal: {
-        emnabled: booleanList,
+        enabled: booleanList,
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         shared: booleanList
