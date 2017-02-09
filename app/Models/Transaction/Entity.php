@@ -3,7 +3,9 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Models\Base;
+use RZP\Models\Adjustment;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
