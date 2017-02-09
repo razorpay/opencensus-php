@@ -40,8 +40,8 @@ class Validator extends Base\Validator
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
-        'on_hold'                 =>  'required_with:on_hold_until|boolean',
-        'on_hold_until'           =>  'sometimes|integer',
+        'on_hold'                 =>  'sometimes|boolean',
+        // 'on_hold_until'           =>  'sometimes|integer',
         '_'                       =>  'sometimes'
     ];
 

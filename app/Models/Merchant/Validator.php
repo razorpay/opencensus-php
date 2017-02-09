@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Exception;
@@ -143,7 +144,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantForMarketplaceTransfer($account, Entity $merchant)
+    public function validateMerchantForMarketplaceTransfer($account, Entity $merchant, $mode)
     {
         if (($account === null) or
             ($account->isAccount() === false) or
@@ -154,6 +155,15 @@ class Validator extends Base\Validator
                 'transfer_id'
             );
         }
+
+        if (($mode === Mode::LIVE) and
+            ($account->isActivated() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED
+            );
+        }
+
     }
 
     protected function validateCsvEmail($input)

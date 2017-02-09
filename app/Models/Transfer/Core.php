@@ -101,10 +101,10 @@ class Core extends Base\Core
 
         $transfer->edit($input);
 
-        if ($transfer->getOnHold() === false)
-        {
-            $transfer->setOnHoldUntil(null);
-        }
+        // if ($transfer->getOnHold() === false)
+        // {
+        //     $transfer->setOnHoldUntil(null);
+        // }
 
         return $this->repo->transaction(function () use ($transfer, $input)
         {
@@ -184,7 +184,7 @@ class Core extends Base\Core
 
         $payment->setOnHold($transfer->getOnHold());
 
-        $payment->setOnHoldUntil($transfer->getOnHoldUntil());
+        // $payment->setOnHoldUntil($transfer->getOnHoldUntil());
 
         $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
 
@@ -301,7 +301,7 @@ class Core extends Base\Core
                    ->merchant
                    ->fetchByAccountIdAndMerchant($accountId, $merchant);
 
-        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $merchant);
+        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $merchant, $this->mode);
 
         $originPayment = $this->checkAndSetSourcePayment($source, $accountId, $merchant);
 

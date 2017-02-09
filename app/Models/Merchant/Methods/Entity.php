@@ -237,13 +237,12 @@ class Entity extends Base\PublicEntity
 
     public function isTransferEnabled()
     {
-        return $this->merchant
-                    ->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+        return $this->merchant->isAccount();
     }
 
     public function isMethodEnabled($method)
     {
-        $func = 'is'.ucfirst($method).'Enabled';
+        $func = 'is' . ucfirst($method) . 'Enabled';
 
         return $this->$func();
     }
@@ -254,7 +253,7 @@ class Entity extends Base\PublicEntity
 
         foreach ($this->wallets as $wallet)
         {
-            $func = 'is'.ucfirst($wallet).'Enabled';
+            $func = 'is' . ucfirst($wallet) . 'Enabled';
 
             if ($this->$func())
             {

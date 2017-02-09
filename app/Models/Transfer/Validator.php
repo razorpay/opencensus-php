@@ -17,13 +17,13 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer',
         Entity::CURRENCY       => 'required|size:3',
-        Entity::ON_HOLD        => 'required_with:on_hold_until|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        Entity::ON_HOLD        => 'sometimes|boolean',
+        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editRules = [
         Entity::ON_HOLD        => 'required|boolean',
-        Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
     protected static $editValidators = [
@@ -39,10 +39,12 @@ class Validator extends Base\Validator
         // transfer request. (possible: customer, account)
         $keys = [];
 
-        $transferCount = 0;
+        $transferCount = $transferSum = 0;
 
         foreach ($transfers as $transfer)
         {
+            $transferSum += $transfer['amount'];
+
             $this->validateTransferCurrency($payment, $transfer['currency']);
 
             $keySet = false;
@@ -69,7 +71,7 @@ class Validator extends Base\Validator
 
         $this->validateTransferEntities($keys, $transferCount);
 
-        $this->validateTransferAmount($payment, $merchantBalance, $transfers);
+        $this->validateTransferAmount($payment, $merchantBalance, $transferSum);
     }
 
     protected function validateTransferEntities(array $keys, int $transferCount)
@@ -115,18 +117,14 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateTransferAmount(Payment\Entity $payment, Merchant\Balance\Entity $merchantBalance, array $transfers)
+    protected function validateTransferAmount(
+        Payment\Entity $payment,
+        Merchant\Balance\Entity $merchantBalance,
+        int $transferSum)
     {
         // For now -
         // 1. Sum of transfers cant be greater than the capture amount
         // 2. Sum of transfers should be greater than merchant balance
-
-        $transferSum = 0;
-
-        foreach ($transfers as $transfer)
-        {
-            $transferSum += $transfer['amount'];
-        }
 
         if ($transferSum > $payment->getAmount())
         {
@@ -150,7 +148,7 @@ class Validator extends Base\Validator
     public function validateHoldParameters(array $input)
     {
         if ((isset($input['on_hold']) === false) and
-            (isset($input['hold_until']) === false))
+            (isset($input['on_hold_until']) === false))
         {
             return;
         }

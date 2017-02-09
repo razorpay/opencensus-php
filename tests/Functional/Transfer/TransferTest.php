@@ -41,6 +41,16 @@ class TransferTest extends TestCase
         $this->checkPaymentAndTxnRecords($transfer);
     }
 
+    public function testLiveModeTransferToNonActivatedAccount()
+    {
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => true]);
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function()
+        {
+            $this->createTransfer('account', [], 'live');
+        });
+    }
+
     public function testTransferToWallet()
     {
         // @todo: not implemented for wallet yet
@@ -78,6 +88,8 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilInvalid()
     {
+        $this->markTestSkipped();
+
         $body = $this->getTransferRequestBody('account')['content'];
 
         unset($body['on_hold']);
@@ -90,6 +102,8 @@ class TransferTest extends TestCase
 
     public function testTransferOnHoldUntilOnHoldFalse()
     {
+        $this->markTestSkipped();
+
         $body = $this->getTransferRequestBody('account')['content'];
 
         $body['on_hold'] = '0';
@@ -119,6 +133,8 @@ class TransferTest extends TestCase
 
     public function testPatchTransferOnHoldUntilOnHoldFalse()
     {
+        $this->markTestSkipped();
+
         $transfer = $this->createTransfer('account');
 
         $body = $this->getTransferRequestBody('account', 'patch')['content'];
@@ -193,11 +209,11 @@ class TransferTest extends TestCase
 
     // ---- Helpers -----
 
-    protected function createTransfer($type, $data = [])
+    protected function createTransfer($type, $data = [], $mode = 'test')
     {
         $request = $this->getTransferRequestBody($type, 'create');
 
-        return $this->getResponse($request, $data);
+        return $this->getResponse($request, $data, $mode);
     }
 
     protected function patchTransfer(string $type, string $id, array $data = [])
@@ -221,7 +237,7 @@ class TransferTest extends TestCase
         return $this->getResponse($request);
     }
 
-    protected function getResponse(array $request, array $data = [])
+    protected function getResponse(array $request, array $data = [], $mode = 'test')
     {
         if (empty($data) === false)
         {
@@ -229,6 +245,11 @@ class TransferTest extends TestCase
         }
 
         $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
 
         return $this->makeRequestAndGetContent($request);
     }

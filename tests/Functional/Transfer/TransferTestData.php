@@ -22,7 +22,7 @@ return [
         'amount'        => 1000,
         'currency'      => 'INR',
         'on_hold'       => '1',
-        'on_hold_until' => 1586055431,
+        // 'on_hold_until' => 1586055431,
     ],
 
     'createCustomerTransferRequest' => [
@@ -30,12 +30,28 @@ return [
         'amount'        => 1000,
         'currency'      => 'INR',
         'on_hold'       => '1',
-        'on_hold_until' => 1586055431,
+        // 'on_hold_until' => 1586055431,
     ],
 
     'patchAccountTransferRequest' => [
         'on_hold'       => '1',
-        'on_hold_until' => 1586055431,
+        // 'on_hold_until' => 1586055431,
+    ],
+
+    'testLiveModeTransferToNonActivatedAccount' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED,
+        ],
     ],
 
     'testTransferInvalidType' => [
