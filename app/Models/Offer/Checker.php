@@ -37,9 +37,11 @@ class Checker extends Base\Core
 
         $validOrderAmount = $this->checkOrderAmount();
 
-        $offerActiveAndNotExpired = $this->checkOfferActiveAndNotExpired();
+        $offerActive = $this->offer->isActive();
 
-        return (($validOrderAmount === true) and ($offerActiveAndNotExpired === true));
+        $validOfferPeriod = $this->checkOfferPeriod();
+
+        return (($validOrderAmount === true) and ($offerActive === true) and ($validOfferPeriod === true));
     }
 
     public function checkOfferApplicableOnPayment(Payment\Entity $payment)
@@ -50,11 +52,14 @@ class Checker extends Base\Core
 
         $validPaymentAmount = $this->checkPaymentAmount();
 
-        $offerActiveAndNotExpired = $this->checkOfferActiveAndNotExpired();
+        $offerActive = $this->offer->isActive();
+
+        $validOfferPeriod = $this->checkOfferPeriod();
 
         return (($validPaymentMethod === true) and
                 ($validPaymentAmount === true) and
-                ($offerActiveAndNotExpired === true));
+                ($offerActive === true) and
+                ($validOfferPeriod === true));
     }
 
     protected function checkPaymentMethod()
@@ -115,14 +120,6 @@ class Checker extends Base\Core
     protected function checkEmi()
     {
         return $this->checkCard();
-    }
-
-    /**
-     * TBD decide on checks for upi offers if any
-     */
-    protected function checkUpi()
-    {
-        return true;
     }
 
     protected function checkCard()
@@ -243,15 +240,13 @@ class Checker extends Base\Core
         return $result;
     }
 
-    protected function checkOfferActiveAndNotExpired()
+    protected function checkOfferPeriod()
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $offerExpired = (($now <= $this->offer->getStartsAt()) or ($now > $this->offer->getEndsAt()));
+        $result = (($now <= $this->offer->getStartsAt()) or ($now > $this->offer->getEndsAt()));
 
-        $result = (($this->offer->isActive() === true) and ($offerExpired === false));
-
-        $this->traceCheckResult(TraceCode::OFFER_EXPIRY_CHECK, [
+        $this->traceCheckResult(TraceCode::OFFER_PERIOD_CHECK, [
             'result' => $result
         ]);
 

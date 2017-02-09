@@ -521,7 +521,7 @@ class TraceCode
     const OFFER_NOT_APPLIED_ON_ORDER                = 'OFFER_NOT_APPLIED_ON_ORDER';
     const OFFER_ORDER_AMOUNT_CHECK                  = 'OFFER_ORDER_AMOUNT_CHECK';
     const OFFER_PAYMENT_AMOUNT_CHECK                = 'OFFER_PAYMENT_AMOUNT_CHECK';
-    const OFFER_EXPIRY_CHECK                        = 'OFFER_EXPIRY_CHECK';
+    const OFFER_PERIOD_CHECK                        = 'OFFER_PERIOD_CHECK';
     const OFFER_WALLET_CHECK                        = 'OFFER_WALLET_CHECK';
     const OFFER_NETBANKING_CHECK                    = 'OFFER_NETBANKING_CHECK';
     const OFFER_CARD_IIN_CHECK                      = 'OFFER_CARD_IIN_CHECK';

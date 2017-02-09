@@ -3,7 +3,6 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
-
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Order;
@@ -19,6 +18,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_NETWORK           = 'payment_network';
     const ISSUER                    = 'issuer';
     const ACTIVE                    = 'active';
+    const TYPE                      = 'type';
     const PERCENT_RATE              = 'percent_rate';
     const MIN_AMOUNT                = 'min_amount';
     const MAX_CASHBACK              = 'max_cashback';
@@ -30,6 +30,10 @@ class Entity extends Base\PublicEntity
     const ADDITIONAL_DETAILS        = 'additional_details';
     const CUSTOM_SHORT_DISPLAY_TEXT = 'custom_short_display_text';
     const CUSTOM_LONG_DISPLAY_TEXT  = 'custom_long_display_text';
+
+    // Offer types
+    const INSTANT  = 'instant';
+    const DEFERRED = 'deferred';
 
     protected $entity      = 'offer';
 
@@ -50,6 +54,8 @@ class Entity extends Base\PublicEntity
         self::FLAT_CASHBACK,
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
+        self::ACTIVE,
+        self::TYPE,
         self::STARTS_AT,
         self::ENDS_AT,
         self::ADDITIONAL_DETAILS,
@@ -72,6 +78,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
         self::ACTIVE,
+        self::TYPE,
         self::STARTS_AT,
         self::ENDS_AT,
         self::ADDITIONAL_DETAILS,
@@ -99,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::CUSTOM_SHORT_DISPLAY_TEXT,
         self::CUSTOM_LONG_DISPLAY_TEXT,
         self::ACTIVE,
+        self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -211,6 +219,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENDS_AT);
     }
 
+    public function deactivate()
+    {
+        $this->active = false;
+    }
+
 // -----------------------Mutators begin----------------------------------------
     /**
      * Sets the custom_long_display_text value if present else generates a long
@@ -246,6 +259,15 @@ class Entity extends Base\PublicEntity
         }
 
         $array[self::CUSTOM_SHORT_DISPLAY_TEXT] = $customShortDisplayText;
+    }
+
+    public function addIins(array $newIins)
+    {
+        $this->getValidator()->validateIins($newIins);
+
+        $existingIins = $this->getAttribute(self::IINS);
+
+        $this->iins = array_unique(array_merge($existingIins, $newIins));
     }
 
 // -----------------------Mutators end------------------------------------------

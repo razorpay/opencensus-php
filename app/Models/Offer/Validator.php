@@ -27,7 +27,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|in:debit,credit',
         ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
         Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
-        Entity::IINS                      => 'required_without_all:payment_network,issuer|array',
+        Entity::IINS                      => 'sometimes_if:payment_method,card|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
         Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
@@ -43,28 +43,9 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
-        Entity::PAYMENT_METHOD            => 'sometimes|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
-        ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
-        Entity::IINS                      => 'sometimes_without_all:payment_network,issuer|array',
-        Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
-        Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
-        Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::STARTS_AT                 => 'sometimes|integer',
-        Entity::ENDS_AT                   => 'sometimes|integer',
-        Entity::ACTIVE                    => 'sometimes|boolean',
         Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
         Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
         Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
-    ];
-
-    protected static $merchantRules = [
-        'merchant_ids'      => 'required|array',
-        'action'            => 'required|string|in:add,remove'
     ];
 
     protected static $createValidators = [
@@ -72,12 +53,6 @@ class Validator extends Base\Validator
         self::OFFER_PERIOD,
         Entity::FLAT_CASHBACK,
         Entity::PAYMENT_NETWORK,
-    ];
-
-    protected static $editValidators = [
-        self::OFFER_PERIOD,
-        Entity::FLAT_CASHBACK,
-        Entity::PAYMENT_NETWORK
     ];
 
     protected $cashbackCriteriaParams = [
@@ -93,19 +68,25 @@ class Validator extends Base\Validator
             return;
         }
 
-        $paymentMethod =  $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
+        $paymentMethod =  $input[Entity::PAYMENT_METHOD];
 
-        if ($paymentMethod === Payment\Method::WALLET)
+        switch ($paymentMethod)
         {
-            Wallet::validateExists($input[Entity::PAYMENT_NETWORK]);
-        }
-        elseif ($paymentMethod === Payment\Method::CARD)
-        {
-            $this->validateCardNetwork($input);
-        }
-        elseif ($paymentMethod === Payment\Method::NETBANKING)
-        {
-            $this->validateNetbanking($input);
+            case Payment\Method::CARD:
+                $this->validateCardNetwork($input);
+                break;
+            case Payment\Method::WALLET:
+                Wallet::validateExists($input[Entity::PAYMENT_NETWORK]);
+                break;
+            case Payment\Method::NETBANKING:
+                $this->validateNetbanking($input);
+                break;
+            case Payment\Method::EMI:
+                $this->validateCardNetwork($input);
+                break;
+            default:
+                throw new Exception\BadRequestException("Invalid payment method used");
+                break;
         }
     }
 
@@ -133,9 +114,9 @@ class Validator extends Base\Validator
 
     protected function validateOfferPeriod(array $input)
     {
-        $startsAt = $input[Entity::STARTS_AT] ?? $this->entity->getAttribute(Entity::STARTS_AT);
+        $startsAt = $input[Entity::STARTS_AT];
 
-        $endsAt = $input[Entity::ENDS_AT] ?? $this->entity->getAttribute(Entity::ENDS_AT);
+        $endsAt = $input[Entity::ENDS_AT];
 
         if ($startsAt >= $endsAt)
         {
@@ -187,5 +168,23 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Payment network for bank should be a valid bank name');
         }
+    }
+
+    public function validateIins(array $iins)
+    {
+        if ($this->entity->getPaymentMethod() !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER);
+        }
+
+        if ($this->isAssociativeArray($iins) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS);
+        }
+    }
+
+    protected function isAssociativeArray(array $input)
+    {
+        return array_keys($input) !== range(0, count($input) - 1);
     }
 }

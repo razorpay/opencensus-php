@@ -67,11 +67,6 @@ class PaymentMethodDetailsParser extends BaseParser
 
         $description = '';
 
-        if (empty($this->offer->getIins()) === false)
-        {
-            return $description;
-        }
-
         if ($paymentNetwork !== null)
         {
             switch ($paymentMethod)

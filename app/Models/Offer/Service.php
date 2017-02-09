@@ -41,4 +41,22 @@ class Service extends Base\Service
 
         return $offers->toArrayPublic();
     }
+
+    public function addIins(string $id, array $input)
+    {
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $offer = (new Core)->addIins($offer, $input);
+
+        return $offer->toArrayPublic();
+    }
+
+    public function deactivate(string $id)
+    {
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $offer = (new Core)->deactivate($offer);
+
+        return $offer->toArrayPublic();
+    }
 }

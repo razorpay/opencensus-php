@@ -44,6 +44,9 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::ACTIVE)
                     ->default(1);
 
+            $table->enum(Offer::TYPE, [Offer::INSTANT, Offer::DEFERRED])
+                    ->default(Offer::DEFERRED);
+
             $table->integer(Offer::PERCENT_RATE)
                     ->nullable();
 

@@ -92,4 +92,28 @@ class Core extends Base\Core
 
         return null;
     }
+
+    public function addIins(Entity $offer, array $newIins)
+    {
+        $offer->addIins($newIins);
+
+        $this->repo->saveOrFail($offer);
+
+        return $offer;
+    }
+
+    public function deactivate(Entity $offer)
+    {
+        if ($offer->isActive() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_OFFER_ALREADY_DEACTIVATED);
+        }
+
+        $offer->deactivate();
+
+        $this->repo->saveOrFail($offer);
+
+        return $offer;
+    }
 }

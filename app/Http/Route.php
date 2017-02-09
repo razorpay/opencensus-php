@@ -127,7 +127,6 @@ final class Route
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
-        'merchant_get_offers'                     => ['get',      'merchants/{mid}/offers',                         'MerchantController@getOffers'                                      ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
@@ -336,6 +335,8 @@ final class Route
         'offer_update'                            => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
         'offer_fetch'                             => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
         'offer_fetch_by_id'                       => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
+        'offer_iins_add'                          => ['patch',    'offers/{id}/iins/add',                           'OfferController@addIins'                                           ],
+        'offer_deactivate'                        => ['patch',    'offers/{id}/deactivate',                         'OfferController@deactivateOffer'                                   ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
@@ -547,9 +548,11 @@ final class Route
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
         'offer_create',
+        'offer_iins_add',
+        'offer_deactivate',
         'offer_update',
         'offer_fetch',
-        'offer_fetch_by_id'
+        'offer_fetch_by_id',
     );
 
     public static $internal = array(
@@ -582,7 +585,6 @@ final class Route
         'merchant_put_payment_methods',
         'merchant_get_banks',
         'merchant_set_banks',
-        'merchant_get_offers',
         'merchant_edit_free_credits',
         'merchant_beneficiary_file',
         'merchant_fetch_webhooks',
