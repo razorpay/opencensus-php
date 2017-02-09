@@ -193,10 +193,10 @@ class Validator extends Base\Validator
     ];
 
     protected static $walletJiomoneyTerminalRules = [
-        Entity::GATEWAY               => 'required|in:wallet_jiomoney',
-        Entity::GATEWAY_MERCHANT_ID   => 'required|string',
-        Entity::GATEWAY_ACCESS_CODE   => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET => 'required|string',
+        Entity::GATEWAY                   => 'required|in:wallet_jiomoney',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [

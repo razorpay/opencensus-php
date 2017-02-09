@@ -716,6 +716,16 @@ class Gateway extends Base\Gateway
         return $this->input['terminal']['gateway_access_code'];
     }
 
+    protected function getSecret()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestSecret();
+        }
+
+        return $this->input['terminal']['gateway_terminal_password'];
+    }
+
     protected function getFormattedDateFromTimeStamp(
         $timestamp, $format = self::DATE_FORMAT)
     {
