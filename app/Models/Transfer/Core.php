@@ -128,7 +128,11 @@ class Core extends Base\Core
      * @param  int                $amount
      * @return Transfer\Entity
      */
-    protected function createTransfer(Base\Entity $source, Base\Entity $to, array $input, Merchant\Entity $merchant) : Entity
+    protected function createTransfer(
+        Base\Entity $source,
+        Base\Entity $to,
+        array $input,
+        Merchant\Entity $merchant) : Entity
     {
         $transferData = [
             Entity::TO_ID           => $to->getId(),
@@ -149,6 +153,7 @@ class Core extends Base\Core
 
         $transfer->merchant()->associate($merchant);
 
+        // Create a transaction for the transfer; debits the source merchant
         $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
 
         $this->repo->saveOrFail($txn);
@@ -256,7 +261,11 @@ class Core extends Base\Core
      * @param  Merchant\Entity      $merchant
      * @return Transfer\Entity
      */
-    protected function customerTransfer(string $customerId, Base\Entity $source, array $input, Merchant\Entity $merchant) : Entity
+    protected function customerTransfer(
+        string $customerId,
+        Base\Entity $source,
+        array $input,
+        Merchant\Entity $merchant) : Entity
     {
         $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
 
@@ -287,7 +296,7 @@ class Core extends Base\Core
      * @param  Merchant\Entity      $merchant
      * @return Transfer\Entity
      */
-    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant) : Entity
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant)
     {
         $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
@@ -328,7 +337,6 @@ class Core extends Base\Core
     /**
      * If the transfer source is a Payment, set
      * $originPayment for the transfer and validate
-     *
      * Returns null if not.
      *
      * @param  mixed                  $source

@@ -83,7 +83,7 @@ class Core extends Base\Core
 
     /**
      * Update the corresponding transaction when
-     * Payment hold is updated
+     * hold attributes of a Payment are updated
      *
      * @param  Payment\Entity       $payment
      * @return Transaction\Entity
@@ -94,7 +94,7 @@ class Core extends Base\Core
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
-        $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
+        // $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
         $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
 

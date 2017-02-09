@@ -160,6 +160,7 @@ class Entity extends Base\PublicEntity
         self::CARD_ID,
         self::MERCHANT_ID,
         self::TERMINAL_ID,
+        self::TRANSFER_ID,
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,

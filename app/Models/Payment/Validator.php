@@ -65,7 +65,7 @@ class Validator extends Base\Validator
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
         'transfers.*.on_hold'        => 'sometimes|boolean',
-        'transfers.*.on_hold_until'  => 'sometimes|integer',
+        // 'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
 
     protected static $createValidators = [

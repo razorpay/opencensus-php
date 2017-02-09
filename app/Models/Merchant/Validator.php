@@ -163,7 +163,6 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED
             );
         }
-
     }
 
     protected function validateCsvEmail($input)

@@ -236,7 +236,7 @@ trait Refund
     /**
      * Refund a payment that has Marketplace transfers
      *
-     * @param  array            $input
+     * @param  array    $input
      */
     public function refundPaymentWithTransfers(array $input)
     {
@@ -246,29 +246,7 @@ trait Refund
                     'The reversals parameter is required for this refund request');
         }
 
-        // For each transfer_id provided in the `reversals` array
-        // we fetch and refund the transfer payment, and then reverse the transfer
-        foreach ($input['reversals'] as $reversal)
-        {
-            $transfer = $this->repo
-                             ->transfer
-                             ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
-
-            $amountUnreversed = $transfer->getAmountUnreversed();
-
-            if ($reversal['amount'] > $amountUnreversed)
-            {
-                $message = 'Reversal amount specified exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
-
-                throw new Exception\BadRequestValidationFailureException(
-                    $message,
-                    'reversal_amount',
-                    ['unreversed_amount' => $amountUnreversed]
-                    );
-            }
-
-            $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
-        }
+        $this->processReversals($input['reversals']);
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
@@ -660,6 +638,7 @@ trait Refund
                 $this->refund = $refundCopy;
             }
 
+            // Determine if transfer reversals should be processed along with the refund
             $processReversals = $this->shouldProcessReversals($this->payment, $input);
 
             // Record refund since it's refunded on gateway

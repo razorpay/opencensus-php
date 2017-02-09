@@ -973,6 +973,10 @@ final class Route
         'merchant_methods',
     );
 
+    /**
+     * Maps features to the routes allowed
+     * A route name can belong to multiple features
+     */
     public static $featureToAllowedRoutesMap = [
         Feature::AGGREGATOR         => [
             'merchant_sub_create',
@@ -1290,17 +1294,22 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function getFeaturesForRoute()
+    /**
+     * Returns an array of feature names to which the current route is mapped under
+     *
+     * @return array
+     */
+    public function getFeaturesForRoute() : array
     {
-        $route = $this->getCurrentRouteName();
+        $currentRoute = $this->getCurrentRouteName();
 
         $features = self::$featureToAllowedRoutesMap;
 
         $routeFeatures = [];
 
-        foreach ($features as $feature => $routes)
+        foreach ($features as $feature => $mappedRoutes)
         {
-            if (in_array($route, $routes, true) === true)
+            if (in_array($currentRoute, $mappedRoutes, true) === true)
             {
                 $routeFeatures[] = $feature;
             }

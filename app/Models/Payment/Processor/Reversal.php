@@ -19,23 +19,54 @@ trait Reversal
      */
     public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, int $amount)
     {
+
         $transferPayment = $this->repo
                                 ->payment
                                 ->findByTransferIdAndMerchant(
                                     $transfer->getId(), $transfer->getToId());
 
-        // Refund the transfer payment
+        // Refund the transfer payment - this debits the account balance
         (new Processor($transferPayment->merchant))
             ->refundTransferPayment($transferPayment, $amount);
 
-        // Reverse the associated transfer
+        // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
                     ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
     }
 
     /**
-     * Check if the refund should be processed with Marketplace reversals,
-     * Also modifies input to add reversals, if required
+     * Process reversal of transfers send in the `reversals` attribute
+     *
+     * @param  array  $reversals
+     */
+    protected function processReversals(array $reversals)
+    {
+        foreach ($reversals as $reversal)
+        {
+            $transfer = $this->repo
+                             ->transfer
+                             ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
+
+            $amountUnreversed = $transfer->getAmountUnreversed();
+
+            if ($reversal['amount'] > $amountUnreversed)
+            {
+                $message = 'Reversal amount exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
+
+                throw new Exception\BadRequestValidationFailureException(
+                    $message,
+                    'reversal_amount',
+                    ['unreversed_amount' => $amountUnreversed]
+                    );
+            }
+
+            $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+        }
+    }
+
+    /**
+     * Check if the refund should be processed with Marketplace transfer reversals,
+     * This also modifies the input array to add reversals, if required
      *
      * @param  Payment\Entity   $payment
      * @param  array            $input
@@ -99,14 +130,14 @@ trait Reversal
 
             if ($transferCount > 1)
             {
-                // `reversals` must be provided only if there are multiple
-                // transfers created on the payment on partial refund
+                // `reversals` must be provided when there are multiple
+                // transfers created on the payment, on partial refund
                 (new Payment\Refund\Validator)->validateReversalsRequired($input);
             }
             else if ($transferCount === 1)
             {
                 // When only a single transfer exists, we auto-reverse
-                // the full transfer amount
+                // the entire transfer amount
                 $reverseAll = true;
             }
         }
@@ -119,7 +150,7 @@ trait Reversal
     }
 
     /**
-     * When reversals are to be processed but not provided,
+     * When reversals are to be processed but not provided
      * in input, we  implicitly add reversals for the transfers
      * corresponding to the paymment being refunded
      *

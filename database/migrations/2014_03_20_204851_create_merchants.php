@@ -74,9 +74,6 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(Merchant::FEATURES)
-                  ->nullable();
-
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 

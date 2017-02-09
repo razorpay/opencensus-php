@@ -241,6 +241,11 @@ class BasicAuth
         $this->creds['key'] = $keyId;
     }
 
+    /**
+     * Validate and store if an account_id was sent in the request
+     *
+     * @param  mixed $accountKey
+     */
     protected function checkAndSetAccountKey($accountKey)
     {
         if ($accountKey === null)
@@ -517,23 +522,27 @@ class BasicAuth
 // --------------------- Verifiers ---------------------------------------------
 
     /**
-     * Checks if the accessed route is a beta feature route, if yes
+     * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
      */
     public function verifyFeatureAccess()
     {
         $route = $this->getCurrentRouteName();
 
-        // Get an array of $features assigned to a route
-        // when current route is defined in $featureToAllowedRoutesMap
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features for the route
+        //
         $features = $this->route->getFeaturesForRoute();
 
         if (empty($features) === false)
         {
             $allowed = false;
 
-            // If any of the features in $features array
-            // is enabled for merchant, allow the request
+            //
+            // If the merchant has atleast one of the features
+            // in the $features array enabled, we allow the request
+            //
             foreach ($features as $feature)
             {
                 if ($this->merchant->isFeatureEnabled($feature) === true)
@@ -669,9 +678,21 @@ class BasicAuth
 
         $this->fetchMerchantOfKey($keyEntity);
 
+        //
+        // For Marketplace account auth:
+        // We accept account_id in a customer header - X-Razorpay-Account
+        // The account ID is used in private auth requests from Marketplace
+        // merchants to allow them to use their key-secret to access APIs as
+        // the linked account
+        //
         $accountKey = $this->getAccountKey();
 
-        // If the linked-account header was sent, find and set that as the merchant
+        //
+        // If account_id was sent, fetch the entity that corresponds to the
+        // account_id provided and set that as the merchant for the request.
+        // This validates that the account is a child of the Merchant whose
+        // key-secret was sent in the request
+        //
         if ($accountKey !== '')
         {
             $account = $this->fetchAccountForMerchant($accountKey, $this->merchant);
@@ -709,7 +730,6 @@ class BasicAuth
         $device = $this->repo->device->findByAuthToken($deviceToken);
 
         $this->device = $device;
-
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
@@ -1070,6 +1090,13 @@ class BasicAuth
         return $this->merchant;
     }
 
+    /**
+     * Used in account auth: Fetches a Marketplace account and sets it as the
+     * Merchant for the scope of the current request.
+     *
+     * @param  string          $accountId
+     * @param  Merchant\Entity $merchant
+     */
     protected function fetchAccountForMerchant(string $accountId, Merchant\Entity $merchant)
     {
         $merchant = $this->repo->merchant->fetchByAccountIdAndMerchant($accountId, $merchant);

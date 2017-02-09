@@ -49,8 +49,6 @@ class RecurringPaymentTest extends TestCase
 
         $payment = $this->getDefaultRecurringPaymentArray();
 
-        $this->fixtures->merchant->editFeatures('');
-
         $data = $this->testData[__FUNCTION__];
 
         $this->runRequestResponseFlow($data, function() use ($payment)

@@ -251,7 +251,7 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        $merchantFeatures = $this->features()->get();
+        $merchantFeatures = $this->features;
 
         $features = $merchantFeatures
                         ->pluck(\RZP\Models\Feature\Entity::NAME)
