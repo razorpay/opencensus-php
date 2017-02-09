@@ -26,7 +26,7 @@ class PdfGenerator extends Base\Core
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
 
-    const WKHTMLTOPDF_BIN           = 'vendor/bin/wkhtmltopdf-amd64';
+    const WKHTMLTOPDF_BIN           = 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64';
 
     //
     // If cache hit is a miss, following invoicejs host path will be used
