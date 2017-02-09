@@ -12,6 +12,13 @@ class TerminalSelectionTest extends TestCase
 {
     use PaymentTrait;
 
+    public function setUp()
+    {
+        $this->testDataFilePath = __DIR__.'/helpers/TerminalSelectionTestData.php';
+
+        parent::setUp();
+    }
+
     public function testChooseGatewayWithSharedTerminals()
     {
         $this->fixtures->create('terminal:multiple_netbanking_terminals');
@@ -65,11 +72,96 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
 
+        $this->assignSubMerchant($tid, $mid);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($tid, $payment['terminal_id']);
+
         $url = '/terminals/' . $tid . '/merchants/' . $mid;
 
         $request = [
             'url'    => $url,
-            'method' => 'PUT'
+            'method' => 'DELETE',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+    }
+
+    protected function assignSubMerchant(string $tid ,string $mid)
+    {
+        $url = '/terminals/' . $tid . '/merchants/' . $mid;
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+    }
+
+    public function testSubMerchantAssignWithMultipleAssignments()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
+
+        $mid = Merchant\Account::TEST_ACCOUNT;
+
+        $tid = '10BillDirTrmn2';
+
+        $this->assignSubMerchant($tid, $mid);
+
+        $data = $this->testData['testSubMerchantAssignWithMultipleAssignments'];
+
+        $this->runRequestResponseFlow($data, function() use ($tid, $mid)
+        {
+            $this->assignSubMerchant($tid, $mid);
+        });
+    }
+
+    public function testMerchantAssign()
+    {
+        $this->ba->appAuth();
+
+        $this->fixtures->create('terminal:multiple_netbanking_terminals');
+
+        $this->fixtures->create('terminal:direct_terminal_for_non_test_merchant');
+
+        $mid = Merchant\Account::TEST_ACCOUNT;
+
+        $tid = '10BillDirTrmn2';
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
+
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  $mid];
+
+        $request = [
+            'url'    => $url,
+            'method' => 'PUT',
+            'content' => $requestContent,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -82,9 +174,14 @@ class TerminalSelectionTest extends TestCase
 
         $this->assertEquals($tid, $payment['terminal_id']);
 
+        $url = '/terminals/' . $tid . '/reassign';
+
+        $requestContent = ['merchant_id' =>  '1MercShareTerm'];
+
         $request = [
-            'url'    => $url,
-            'method' => 'DELETE'
+            'url'     => $url,
+            'method'  => 'PUT',
+            'content' => $requestContent,
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -262,6 +359,25 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('ShAmexEduTrmnl', $payment['terminal_id']);
     }
 
+    public function testTerminalCategoryChoiceNoOverride()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+        $this->fixtures->merchant->enableMethod('10000000000000', 'amex');
+        $this->fixtures->create('terminal:all_shared_terminals');
+        $this->fixtures->create('terminal:shared_amex_terminal');
+        $this->fixtures->create('terminal:shared_amex_category_terminals');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['card']['number'] = '341111111111111';
+        $payment['card']['cvv'] = '8888';
+
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // Payment should have been made through amex education services terminal
+        $this->assertEquals('ShRetailSvcsTl', $payment['terminal_id']);
+    }
+
     public function testTerminalCategoryCorporate()
     {
         $this->fixtures->merchant->editCategory2('corporate');
@@ -279,6 +395,7 @@ class TerminalSelectionTest extends TestCase
                                 ['id' => 'SharNbKtkTrmnl']);
 
         $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['amount'] = '5000000';
         $payment['bank'] = 'KKBK';
 
         $content = $this->doAuthAndCapturePayment($payment);
@@ -366,6 +483,7 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['amount'] = '500000';
         $payment['bank'] = 'KKBK';
 
         $this->doAuthAndCapturePayment($payment);
@@ -411,6 +529,34 @@ class TerminalSelectionTest extends TestCase
         $payment2 = $this->getLastEntity('payment', true);
 
         $this->assertEquals('SharNbKtkTmnl2', $payment2['terminal_id']);
+    }
+
+    public function testAmountFilterForTerminals()
+    {
+        $this->fixtures->merchant->editCategory2('corporate');
+
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DCrpNbKtkTrmnl', 'network_category' => 'corporate']);
+        $this->fixtures->create('terminal:netbanking_kotak_terminal',
+                                ['id' => 'DrctNbKtkTrmnl', 'network_category' => 'ecommerce']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+        $payment['amount'] = 100000;
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // ecomm KKBK terminal
+        $this->assertEquals('DrctNbKtkTrmnl', $payment['terminal_id']);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment['bank'] = 'KKBK';
+        $payment['amount'] = 300000;
+        $content = $this->doAuthAndCapturePayment($payment);
+        $payment = $this->getLastEntity('payment', true);
+
+        // KKBK corporate category terminal
+        $this->assertEquals('DCrpNbKtkTrmnl', $payment['terminal_id']);
     }
 
     protected function getPaymentForTPV($attributes = [])

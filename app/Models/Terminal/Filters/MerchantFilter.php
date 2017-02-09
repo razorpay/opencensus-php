@@ -4,6 +4,7 @@ namespace RZP\Models\Terminal\Filters;
 
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
@@ -14,6 +15,7 @@ class MerchantFilter extends Terminal\Filter
         'incompatible',
         'category',
         'gateway',
+        'wallet',
     ];
 
 
@@ -103,13 +105,13 @@ class MerchantFilter extends Terminal\Filter
             return true;
         }
 
-        $merchantTerminalCategory = $input['merchant']->getCategory2();
+        $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
         $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
-                                                                        $merchantTerminalCategory);
+                                                                        $category2);
 
         return ($category === $merchantTerminalCategory);
     }
@@ -118,15 +120,15 @@ class MerchantFilter extends Terminal\Filter
     {
         $merchantId = $input['payment']->getMerchantId();
 
-        $merchants = array_keys(Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST);
+        $merchantList = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST;
 
-        if (in_array($merchantId, $merchants))
+        if (isset($merchantList[$merchantId]) === true)
         {
             $gateway = $terminal->getGateway();
 
-            $excludedGateways = Merchant\Preferences::MERCHANT_TERMINAL_EXCLUDE_LIST[$merchantId];
+            $excludedGateways = $merchantList[$merchantId];
 
-            if (in_array($gateway, $excludedGateways))
+            if (in_array($gateway, $excludedGateways, true) === true)
             {
                 $network = $input['payment']->card->getNetworkCode();
 
@@ -135,6 +137,50 @@ class MerchantFilter extends Terminal\Filter
                 {
                     return false;
                 }
+            }
+        }
+
+        return true;
+    }
+
+    public function walletFilter($terminal, $input, $applicableTerminals)
+    {
+        //
+        // For wallets, payments have to go through their assigned terminal
+        // because gateway has requested it and gives cashbacks, settlements
+        // nuances based on the terminal
+        //
+        $gateway = $terminal->getGateway();
+
+        // Filter only applicable for wallets
+        if ($input['payment']->getMethod() !== Method::WALLET)
+        {
+            return true;
+        }
+
+        // wallets for which only direct assigned terminal must be accessed.
+        $wallets = [
+            Gateway::WALLET_FREECHARGE,
+            Gateway::WALLET_AIRTELMONEY,
+        ];
+
+        if (in_array($gateway, $wallets, true) === false)
+        {
+            return true;
+        }
+
+        // If the wallet terminal is not shared, return the terminal
+        if ($terminal->isShared() === false)
+        {
+            return true;
+        }
+
+        foreach ($applicableTerminals as $currentTerminal)
+        {
+            if ($currentTerminal->isShared() === false)
+            {
+                // direct terminals exists, do not use shared terminals
+                return false;
             }
         }
 

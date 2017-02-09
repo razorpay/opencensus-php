@@ -58,8 +58,6 @@ class Gateway extends Base\Gateway
      */
     protected $model = null;
 
-    const INR_CODE = 356;
-
     /**
      * If during the payment flow, we detect an
      * error, or the payment fails for any reason,
@@ -396,6 +394,41 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) ($refundEntity->getAmount() * 100);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function manualGatewayRefund(array $input)
     {
         $canManualRefund = $this->canForceRefund($input);
@@ -476,13 +509,6 @@ class Gateway extends Base\Gateway
         {
             // send the request and get response
             $response['response'] = $this->postRequest($request);
-
-            // uncomment this to simulate an exception here for s2s - strictly for testing only
-            /*if (($this->mode === Mode::TEST) and
-                (App::environment('testing') === false))
-            {
-                throw new \Requests_Exception("operation timed out", "operation timed out");
-            }*/
         }
         catch (Exception\GatewayTimeoutException $e)
         {
@@ -665,33 +691,7 @@ class Gateway extends Base\Gateway
         $this->trace->addRecord($level, $message, $context);
     }
 
-// -------------------------Exceptions -----------------------------------------
-
-    protected function throwGatewayTimeoutException($code, $safeRetry = false)
-    {
-        $msg = null;
-        $e = null;
-
-        if ($this->exception !== null)
-        {
-            $e = $this->exception;
-            $msg = $e->getMessage();
-        }
-        else
-        {
-            $msg = ErrorCode::$errorMessages[$code];
-        }
-
-        $exception = new Exception\GatewayTimeoutException($msg, $e, $safeRetry);
-
-        $desc = Hdfc\ErrorCode::$errorMessages[$code];
-
-        $exception->setGatewayErrorCodeAndDesc(
-            $code,
-            $desc);
-
-        throw $exception;
-    }
+    // -------------------------Exceptions -----------------------------------------
 
     protected function throwException($error, $safeRetry = false)
     {
@@ -700,24 +700,16 @@ class Gateway extends Base\Gateway
         $this->error = false;
 
         $gatewayErrorCode = $error['code'];
-
-        if (($gatewayErrorCode === Hdfc\ErrorCode::RP00003) or
-            ($gatewayErrorCode === Hdfc\ErrorCode::RP00004) or
-            ($gatewayErrorCode === Hdfc\ErrorCode::RP00013))
-        {
-            $this->throwGatewayTimeoutException($gatewayErrorCode, $safeRetry);
-        }
-
         $gatewayErrorDesc = $error['text'];
 
         if (Hdfc\ErrorHandler::isValidErrorCode($gatewayErrorCode))
         {
             $apiErrorCode = Hdfc\ErrorHandler::getMappedError($gatewayErrorCode);
 
-            /**
-             * For error codes returned by gateway, the error messages are in a format
-             * which we don't parse. So get the standard messages for those from here.
-             */
+            //
+            // For error codes returned by gateway, the error messages are in a format
+            // which we don't parse. So get the standard messages for those from here.
+            //
             $gatewayErrorDesc = Hdfc\ErrorHandler::getErrorMessage($gatewayErrorCode);
         }
         else
@@ -739,23 +731,33 @@ class Gateway extends Base\Gateway
 
         switch ($apiErrorCode)
         {
+            case Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT:
+                $exception = new Exception\GatewayTimeoutException('');
+                break;
+
+            case Error\ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE:
+                $exception = new Exception\GatewayRequestException;
+                break;
+
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_UDF:
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_DENIED_NEGATIVE_BIN:
             case Error\ErrorCode::GATEWAY_ERROR_PAYMENT_INVALID_AMOUNT:
-                $exception = new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $gatewayErrorCode,
-                    $gatewayErrorDesc);
+                $exception = new Exception\GatewayErrorException($apiErrorCode);
 
                 break;
+
             default:
 
-                $exception = new Exception\GatewayErrorException(
-                    $apiErrorCode,
-                    $gatewayErrorCode,
-                    $gatewayErrorDesc);
-
+                $exception = new Exception\GatewayErrorException($apiErrorCode);
                 break;
+        }
+
+        $exception->setGatewayErrorCodeAndDesc($gatewayErrorCode, $gatewayErrorDesc);
+
+        if (($safeRetry === true) and
+            ($exception instanceof Exception\GatewayRequestException))
+        {
+            $exception->markSafeRetryTrue();
         }
 
         throw $exception;

@@ -247,8 +247,11 @@ class SettlementTest extends TestCase
 
         foreach ($payments as $payment)
         {
-            $attrs = ['payment' => $payments[0],
-                      'amount'  => '100'];
+            $attrs = [
+                'payment' => $payments[0],
+                'amount'  => '100'
+            ];
+
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
             $refunds[] = $refund;
         }
@@ -265,9 +268,12 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        // $request = array('url' => '/settlements/details', 'method' => 'post');
-        // $content = $this->makeRequestAndGetContent($request);
-        // sd($content);
+        $batchSetl = $this->getLastEntity('batch_settlement', true);
+
+        $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
+
+        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $batchSetl['id']]);
+        $content = $this->makeRequestAndGetContent($request);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -411,21 +417,34 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $time = $setl['created_at'] - 1;
-
-        $this->fixtures->edit('settlement', $setl['id'],
-            [
-                'created_at' => $time
-            ]);
-
         $request = array(
             'url' => '/settlements/file/generate',
-            'method' => 'POST'
+            'method' => 'POST',
+            'content' => [
+                'batch_settlement_id' => $setl['batch_settlement_id']
+            ]
         );
 
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertNotEquals($content, null);
+    }
+
+    public function testIciciNodalTransfer()
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/nodal/transfer/icici',
+            'method'  => 'POST',
+            'content' => [
+                'amount' => 1076
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content['file']);
     }
 
     protected function createAndAssignSchedule()

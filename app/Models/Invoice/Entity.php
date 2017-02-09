@@ -4,6 +4,7 @@ namespace RZP\Models\Invoice;
 
 use App;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -13,6 +14,8 @@ use RZP\Models\Order;
 class Entity extends Base\PublicEntity
 {
     use NotesTrait;
+
+    use SoftDeletes;
 
     // ------------------ Entity Keys --------------------------------
 
@@ -40,6 +43,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION           = 'description';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
+    // A text field to keep merchant's comment to customer
+    const COMMENT               = 'comment';
     const SHORT_URL             = 'short_url';
     const VIEW_LESS             = 'view_less';
 
@@ -49,6 +54,7 @@ class Entity extends Base\PublicEntity
     const USER_ID               = 'user_id';
     const SOURCE                = 'source';
     const TYPE                  = 'type';
+    const DELETED_AT            = 'deleted_at';
 
     // ---------------------- Input Keys -------------------------------------
 
@@ -85,8 +91,25 @@ class Entity extends Base\PublicEntity
 
     protected $generateIdOnCreate = true;
 
+    protected $validOperations = [
+        'create',
+        'update',
+        'delete',
+        'sendNotification',
+        'addLineItems',
+        'addManyLineItems',
+        'updateLineItem',
+        'removeLineItem',
+        'removeManyLineItems',
+    ];
+
     protected $defaults = [
-        // self::STATUS            => null,
+        // This is null by default because we don't create an order
+        // when the invoice is being generated in a draft state.
+        self::ORDER_ID          => null,
+        // For a draft state, it has to be sent explicitly in the request.
+        // It's created in the issued state otherwise.
+        self::STATUS            => Status::ISSUED,
         // self::ADJUSTMENT        => 0,
         // self::SHIPPING          => 0,
         self::DATE              => null,
@@ -96,11 +119,12 @@ class Entity extends Base\PublicEntity
         self::RECEIPT           => null,
         self::DESCRIPTION       => null,
         self::NOTES             => [],
+        self::COMMENT           => null,
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
-        self::TYPE              => null,
+        self::TYPE              => Type::INVOICE,
         self::USER_ID           => null,
-        self::AMOUNT            => 0,
+        self::AMOUNT            => null,
         self::CURRENCY          => 'INR',
         self::CUSTOMER_NAME     => null,
         self::CUSTOMER_EMAIL    => null,
@@ -117,6 +141,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED_AT,
         self::EMAIL_STATUS,
         self::SMS_STATUS,
+        self::STATUS,
     ];
 
     // Fields that can be inserted by ->fill() directly
@@ -127,10 +152,11 @@ class Entity extends Base\PublicEntity
         self::EMAIL_STATUS,
         self::SMS_STATUS,
         self::DATE,
-        // self::TERMS,
+        self::TERMS,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
+        self::COMMENT,
         self::RECEIPT,
         self::VIEW_LESS,
         self::CURRENCY,
@@ -169,6 +195,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
+        self::COMMENT,
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
@@ -178,6 +205,7 @@ class Entity extends Base\PublicEntity
         self::USER_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::DELETED_AT,
     ];
 
     // Fields to be exposed to the client
@@ -198,10 +226,11 @@ class Entity extends Base\PublicEntity
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
-        // self::TERMS,
+        self::TERMS,
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
+        self::COMMENT,
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
@@ -235,7 +264,6 @@ class Entity extends Base\PublicEntity
         self::AMOUNT    => 'int',
         self::DATE      => 'int',
     ];
-
 
     // -------------------------------------- Mutators --------------------------------------
 
@@ -304,6 +332,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getDescription()
+    {
+        return $this->getAttribute(self::DESCRIPTION);
+    }
+
     public function getViewLess()
     {
         return $this->getAttribute(self::VIEW_LESS);
@@ -327,6 +360,26 @@ class Entity extends Base\PublicEntity
     public function getType()
     {
         return $this->getAttribute(self::TYPE);
+    }
+
+    public function hasBeenPaid()
+    {
+        return ($this->getPaidAt() !== null);
+    }
+
+    public function getDueBy()
+    {
+        return $this->getAttribute(self::DUE_BY);
+    }
+
+    public function isDraft()
+    {
+        return ($this->getStatus() === Status::DRAFT);
+    }
+
+    public function isIssued()
+    {
+        return ($this->getStatus() === Status::ISSUED);
     }
 
     // -------------------------------------- End Getters --------------------------------------
@@ -436,9 +489,20 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
+        $orderId = $this->getOrderId();
+
+        //
+        // Order gets created when invoice moves in ISSUED state.
+        // Order Id will be null for invoices in draft status.
+        //
+        if ($orderId === null)
+        {
+            return null;
+        }
+
         $repo = App::getFacadeRoot()['repo'];
 
-        $payment = $repo->payment->getCapturedPaymentForOrder($this->getOrderId());
+        $payment = $repo->payment->getCapturedPaymentForOrder($orderId);
 
         if ($payment !== null)
         {
@@ -463,7 +527,7 @@ class Entity extends Base\PublicEntity
     {
         $orderId = $this->getAttribute(self::ORDER_ID);
 
-        $array[self::ORDER_ID] = Order\Entity::getSignedId($orderId);
+        $array[self::ORDER_ID] = Order\Entity::getSignedIdOrNull($orderId);
     }
 
     protected function setPublicUserIdAttribute(array & $array)
@@ -548,6 +612,15 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
     }
 
+    public function generateStatus($input)
+    {
+        if (isset($input[self::DRAFT]) and
+            ($input[self::DRAFT] === '1'))
+        {
+            $this->setAttribute(self::STATUS, Status::DRAFT);
+        }
+    }
+
     // public function generateDiscount($input)
     // {
     //     if (isset($input[self::DISCOUNT_FLAT]))
@@ -622,5 +695,10 @@ class Entity extends Base\PublicEntity
         return $query->where(Entity::STATUS, '=', $status);
     }
 
-// -------------------------------------- Query scopes section ends --------------------------------------
+    // -------------------------------------- Query scopes section ends --------------------------------------
+
+    public function getValidOperations()
+    {
+        return $this->validOperations;
+    }
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Processor;
 
 use App;
 use BasicAuth;
+use Carbon\Carbon;
 
 use RZP\Constants\Mode;
 use RZP\Dashboard\Dashboard;
@@ -110,13 +111,12 @@ class Processor
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
         $this->mode = $this->app['rzp.mode'];
+        $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $merchant->methods;
+        $this->methods = $this->getMethodsForMerchant($merchant);
 
         $this->checkMerchantPermissions();
-
-        $this->repo = $this->app['repo'];
 
         $this->paymentRepo = $this->repo->payment;
 
@@ -183,20 +183,7 @@ class Processor
         // Performing dummy set of processing for the same
         $this->dummyPrePaymentAuthorizeProcessing($payment, $input);
 
-        if (($this->app->runningUnitTests() === false) and
-            ($payment->merchant->isFeatureEnabled(Feature::NOZEROPRICING) === false) and
-            ($payment->isCard() === true) and
-            ($payment->card->isInternational() === false) and
-            ($payment->card->isDebit() === true) and
-            (time() < 1483228800))
-        {
-            $fee = 0;
-            $serviceTax = 0;
-        }
-        else
-        {
-            list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
-        }
+        list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
 
         $data = array(
             'originalAmount'    => $input['amount'],
@@ -387,6 +374,8 @@ class Processor
     public function getAsyncResponse($id)
     {
         $payment = $this->retrieve($id);
+
+        $order = $this->getOrderForPayment($payment);
 
         $gateway = $payment->getGateway();
 
@@ -582,7 +571,7 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->payment->terminal;
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
         if ($terminal === null)
         {
@@ -689,16 +678,14 @@ class Processor
         if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
+                'Payment failed because fees or service tax was tampered');
         }
     }
 
 
     protected function fetchOrderFromInput($input)
     {
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-        $order = $this->orderRepo->find($orderId);
+        $order = $this->orderRepo->findbyPublicId($input['order_id']);
 
         if ($order === null)
         {
@@ -713,6 +700,8 @@ class Processor
             throw new Exception\BadRequestValidationFailureException(
                 'Order id not found');
         }
+
+        $order->merchant()->associate($this->merchant);
 
         return $order;
     }
@@ -778,12 +767,12 @@ class Processor
             return;
         }
 
-        if ($this->order->invoice === null)
+        $invoice = $this->repo->invoice->fetchForOrder($this->order);
+
+        if ($invoice === null)
         {
             return;
         }
-
-        $invoice = $this->order->invoice;
 
         $payment->invoice()->associate($invoice);
     }
@@ -825,6 +814,16 @@ class Processor
                                                 $id, $this->merchant);
 
         return $this->payment;
+    }
+
+    protected function getOrderForPayment($payment)
+    {
+        if ($payment->hasOrder())
+        {
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            return $order;
+        }
     }
 
     /**
@@ -909,25 +908,141 @@ class Processor
         return $ba;
     }
 
-    protected function shouldAutoCapture($payment)
+    protected function shouldAutoCapture(Payment\Entity $payment)
     {
-        // If payment is not authorized or if it's late authorized,
-        // do not auto capture it, irrespective of it being a signed
-        // payment or marked for auto capture.
-        if (($payment->isAuthorized() === false) or
-            ($payment->isLateAuthorized() === true))
+        // We do an auto capture only if payment is associated with an order.
+        if ($payment->getApiOrderId() === null)
         {
             return false;
         }
 
-        // If payment order was marked as auto capture
-        if (($payment->order !== null) and
-            ($payment->order->getPaymentCapture() === true))
+        // The payment should always be in authorized if it has reached this point.
+        // Ideally, this should throw an exception. But, we do not want to fail
+        // the payment because of an internal issue.
+        if ($payment->isAuthorized() === false)
         {
-            return true;
+            $this->trace->error(
+                TraceCode::PAYMENT_AUTO_CAPTURE_NOT_AUTHORIZED,
+                [
+                    'payment_id'    => $payment->getId(),
+                    'status'        => $payment->getStatus()
+                ]);
+
+            return false;
+        }
+
+        $order = $payment->order;
+
+        //
+        // Assume a case where the first payment failed.
+        // The second payment is getting authorized.
+        // The first payment is now getting late authorized.
+        // If the second payment gets captured, we need to ensure that we don't capture
+        // the first payment. We do a reload here to ensure that we get the latest
+        // status of the order before marking the payment as captured.
+        // An order must not have more than one captured payment.
+        //
+        $this->repo->reload($order);
+
+        if (($order->isPaid() === true) or
+            ($order->getPaymentCapture() === false))
+        {
+            return false;
+        }
+
+        if ($payment->isLateAuthorized())
+        {
+            return $this->shouldAutoCaptureLateAuthorized($payment);
+        }
+
+        return true;
+    }
+
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
+    {
+        $merchant        = $payment->merchant;
+        $autoRefundDelay = $merchant->getAutoRefundDelay();
+
+        $createdAt = $payment->getCreatedAt();
+
+        $shouldRefundAt = $createdAt + $autoRefundDelay;
+
+        if ($autoRefundDelay === null)
+        {
+            $shouldRefundAt = Carbon::createFromTimestamp($createdAt)
+                                    ->addDays(Processor::AUTO_REFUND_TIME_PERIOD)
+                                    ->timestamp;
+        }
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $this->trace->info(
+            TraceCode::LATE_AUTHORIZE_AUTO_CAPTURE,
+            [
+                'payment_id'        => $payment->getId(),
+                'status'            => $payment->getStatus(),
+                'refund_delay'      => $autoRefundDelay,
+                'should_refund_at'  => $shouldRefundAt,
+                'current_time'      => $currentTime,
+            ]);
+
+        //
+        // If the payment is supposed to get refunded by now,
+        // do not auto capture it.
+        //
+        if ($currentTime > $shouldRefundAt)
+        {
+            return false;
+        }
+
+        // For now, we would be auto capturing only payments with an invoice.
+        // This will be removed later.
+        if ($payment->getInvoiceId() === null)
+        {
+            return false;
+        }
+
+        // Auto capturing a late authorized invoice has a little different logic.
+        // Later, we would add logic for auto capturing a payment which is not
+        // associated with an invoice also.
+        if ($payment->hasInvoice())
+        {
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
         }
 
         return false;
+    }
+
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
+    {
+        //
+        // Invoice related checks
+        // - Check if now is not past invoice due date
+        // - Check if invoice status is ISSUED
+        //
+
+        $invoice = $payment->invoice;
+
+        $this->repo->reload($invoice);
+
+        if (($invoice->isIssued() === false) or
+            ($currentTime >= $invoice->getDueBy()))
+        {
+            $this->trace->debug(
+                TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
+                [
+                    'payment_id'        => $payment->getId(),
+                    'status'            => $payment->getStatus(),
+                    'invoice_id'        => $invoice->getId(),
+                    'invoice_status'    => $invoice->getStatus(),
+                    'invoice_due_by'    => $invoice->getDueBy(),
+                    'current_time'      => $currentTime,
+                ]);
+
+            return false;
+        }
+
+        return true;
     }
 
     protected function acquireMutexOnPayment($payment)
@@ -1020,5 +1135,15 @@ class Processor
                 ]);
         }
 
+    }
+
+    protected function getMethodsForMerchant($merchant)
+    {
+        if ($merchant->hasRelation('methods') === false)
+        {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        return $merchant->methods;
     }
 }

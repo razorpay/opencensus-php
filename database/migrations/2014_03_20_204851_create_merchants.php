@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\FeeModel;
 
 class CreateMerchants extends Migration
 {
@@ -36,6 +37,12 @@ class CreateMerchants extends Migration
                   ->default(0);
 
             $table->integer(Merchant::ACTIVATED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::SUSPENDED_AT)
                   ->nullable();
 
             $table->tinyInteger(Merchant::LIVE)
@@ -69,6 +76,9 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+
+            $table->tinyInteger(Merchant::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();

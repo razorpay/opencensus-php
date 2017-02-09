@@ -44,6 +44,9 @@ class Entity extends Base\Entity
     const PASSWORD_CHANGED_AT   = 'password_changed_at';
     const EXPIRED_AT            = 'expired_at';
     const DELETED_AT            = 'deleted_at';
+    const ROLES                 = 'roles';
+    const MERCHANTS             = 'merchants';
+    const GROUPS                = 'groups';
     const ALLOW_ALL_MERCHANTS   = 'allow_all_merchants';
 
     protected $dontKeepRevisionOf = [
@@ -141,6 +144,8 @@ class Entity extends Base\Entity
     protected $casts = [
         self::FAILED_ATTEMPTS     => 'int',
         self::ALLOW_ALL_MERCHANTS => 'bool',
+        self::LOCKED              => 'bool',
+        self::DISABLED            => 'bool',
     ];
 
     protected $publicSetters = [
@@ -271,6 +276,16 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::FAILED_ATTEMPTS);
     }
 
+    public function getName()
+    {
+        return $this->getAttribute(self::NAME);
+    }
+
+    public function getFirstName()
+    {
+        return explode(' ', $this->getName())[0];
+    }
+
     public function getOAuthAccessToken()
     {
         return $this->getAttribute(self::OAUTH_ACCESS_TOKEN);
@@ -303,7 +318,9 @@ class Entity extends Base\Entity
         // $policy = $this->org->policy;
         $policy = new Org\AuthPolicy\Entity;
 
-        $maxPasswordsToRetain = $policy->getMaxPasswordToRetain();
+        $policy = $policy->toArray();
+
+        $maxPasswordsToRetain = $policy[Org\AuthPolicy\Entity::MAX_PASSWORD_RETAIN];
 
         $oldPasswords = $this->getAttribute(self::OLD_PASSWORDS);
 
@@ -346,7 +363,6 @@ class Entity extends Base\Entity
     {
         $this->attributes[self::OLD_PASSWORDS] = json_encode($oldPasswords);
     }
-
 
     /*
      * Setters
@@ -421,6 +437,16 @@ class Entity extends Base\Entity
         }
 
         return false;
+    }
+
+    public function isLocked()
+    {
+        return $this->getAttribute(self::LOCKED);
+    }
+
+    public function isDisabled()
+    {
+        return $this->getAttribute(self::DISABLED);
     }
 
     public function matchPassword(string $password)

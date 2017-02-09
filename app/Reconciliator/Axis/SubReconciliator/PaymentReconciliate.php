@@ -46,24 +46,15 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $columnPaymentId = null;
-
-        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
             if (isset($row[$cpi]) === true)
             {
-                $columnPaymentId = $cpi;
-                break;
+                return $row[$cpi];
             }
         }
 
-        if ($columnPaymentId === null)
-        {
-            return null;
-        }
-
-        $paymentId = $row[$columnPaymentId];
-        return $paymentId;
+        return null;
     }
 
     protected function getGatewayServiceTax($row)
@@ -269,7 +260,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             ]
         );
 
-        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
+        if ((empty($response['status']) === false) and 
+            ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;
         }

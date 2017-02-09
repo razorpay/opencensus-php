@@ -141,9 +141,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
 
@@ -206,9 +204,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->verify($payment);
 
@@ -231,7 +227,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
@@ -286,36 +282,55 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
 
-    public function fixAuthorizeAt($id)
+    public function fixAuthorizeAt($input)
     {
-        $payment = $this->core->retrieveById($id);
+        $paymentIds = $input['payment_ids'];
 
-        if (($payment->isFailed() === false) or
-            ($payment->hasBeenCaptured() === true))
+        $failurePayments = [];
+
+        $successes = $failures = 0;
+
+        $total = count($paymentIds);
+
+        foreach ($paymentIds as $paymentId)
         {
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+            $payment = $this->core->retrieveById($paymentId);
+
+            if (($payment->isFailed() === false) or
+                ($payment->hasBeenCaptured() === true))
+            {
+                $failures++;
+                $failurePayments[] = $paymentId;
+                continue;
+            }
+
+            $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+                'payment_id' => $paymentId,
+                'old_authorized_at' => $payment->getAuthorizeTimestamp()
+            ]);
+
+            $payment->setAuthorizedAtNull();
+
+            $this->repo->saveOrFail($payment);
+
+            $successes++;
         }
 
-        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
-            'payment_id' => $id,
-            'old_authorized_at' => $payment->getAuthorizeTimestamp()
-        ]);
+        $data = [
+            'success_count'     => $successes,
+            'failure_count'     => $failures,
+            'failure_payments'  => $failurePayments,
+            'total'             => $total,
+        ];
 
-        $payment->setAuthorizeAtNull();
-
-        $this->repo->saveOrFail($payment);
-
-        return $payment->toArray();
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -333,31 +348,25 @@ class Service extends Base\Service
 
     public function getCardForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $card = $payment->card;
+        $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
     }
 
     public function retrieveRefundsForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
+        $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
 
     public function fetchTransactionByPaymentId($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
 
@@ -408,6 +417,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function manualGatewayCapture($paymentId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]);
+
+        return $data;
+    }
+
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
@@ -427,11 +454,9 @@ class Service extends Base\Service
 
     public function s2sCallback($id, $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicId($id);
 
-        $payment = $this->repo->payment->findOrFailPublic($id);
-
-        $merchant = $payment->merchant;
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         // TODO: Hack to prevent S2S callback processing for TPV Merchants.
         // All TPV Merchant transactions will be made through BILLDESK.

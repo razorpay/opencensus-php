@@ -40,9 +40,16 @@ class FileProcessor
 
     // This map should have all the extensions mentioned in Validator::ACCEPTED_EXTENSIONS_MAP
     const FILE_TYPES_MAPPINGS     = [
-        self::EXCEL => ['xls', 'xlsx'],
+        self::EXCEL => ['xls', 'xlsx', 'xlsb'],
         self::CSV   => ['txt', 'csv', 'text']
     ];
+
+    /******************************
+     * csv file handling constants
+     ******************************/
+
+    const LINES_FROM_TOP    = 'lines_from_top';
+    const LINES_FROM_BOTTOM = 'lines_from_bottom';
 
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 

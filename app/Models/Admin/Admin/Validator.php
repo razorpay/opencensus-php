@@ -5,10 +5,21 @@ namespace RZP\Models\Admin\Admin;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Models\Admin\Org;
 use RZP\Models\Admin\Org\AuthPolicy;
+use RZP\Models\Admin\Action;
 
 class Validator extends Base\Validator
 {
+    const TOKEN = 'token';
+    const RESET_PASSWORD_URL = 'reset_password_url';
+
+    const SUSPENDED = 'suspended';
+    const ARCHIVED  = 'archived';
+    const ACTIVATED = 'activated';
+    const PENDING   = 'pending';
+    const DEAD      = 'dead';
+
     protected static $createRules = [
         // The unique validation on email will run only on rows that have deleted_at = NULL
         // Referred to https://github.com/laravel/framework/issues/1820#issuecomment-32828216 for this validation
@@ -48,6 +59,8 @@ class Validator extends Base\Validator
         Entity::MERCHANTS             => 'sometimes|array',
         Entity::GROUPS                => 'sometimes|array',
         Entity::ALLOW_ALL_MERCHANTS   => 'sometimes|in:0,1',
+        Entity::LOCKED                => 'sometimes|in:0,1',
+        Entity::DISABLED              => 'sometimes|in:0,1',
     ];
 
     protected static $loginRules = [
@@ -59,7 +72,22 @@ class Validator extends Base\Validator
         Entity::EMAIL                 => 'required|email|max:255',
         Entity::PASSWORD              => 'required|string|confirmed',
         Entity::PASSWORD_CONFIRMATION => 'required|string',
-        Entity::OLD_PASSWORD          => 'sometimes',
+        self::TOKEN                   => 'required|string',
+        Org\Entity::AUTH_TYPE         => 'required|string|in:password',
+    ];
+
+    protected static $forgotRules = [
+        Entity::EMAIL                 => 'required|email|max:255',
+        self::RESET_PASSWORD_URL      => 'required|string',
+        Org\Entity::AUTH_TYPE         => 'required|string|in:password',
+    ];
+
+    protected static $filterRules = [
+        self::SUSPENDED => 'sometimes|boolean',
+        self::ARCHIVED  => 'sometimes|boolean',
+        self::ACTIVATED => 'sometimes|boolean',
+        self::PENDING   => 'sometimes|boolean',
+        self::DEAD      => 'sometimes|boolean',
     ];
 
     protected static $createValidators = [
@@ -84,7 +112,7 @@ class Validator extends Base\Validator
         if (in_array($domain, $emailDomains) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_ADMIN_EMAIL_IS_NOT_VALID, 'email', $email);
+                ErrorCode::BAD_REQUEST_INVALID_ADMIN_EMAIL, 'email', $email);
         }
     }
 
@@ -104,20 +132,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED);
-        }
-    }
-
-    public function validateOrgSupportsPasswordReset(string $authType)
-    {
-        $passwordResetTypes = ['password'];
-
-        if (in_array($authType, $passwordResetTypes) === false)
-        {
-            $this->entity->setAuditAction(
-                Action::RESET_PASSWORD_INVALID_AUTH_TYPE);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'The AuthType does not support password-reset');
         }
     }
 }

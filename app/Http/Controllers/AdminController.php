@@ -19,6 +19,19 @@ class AdminController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getTerminalById($id)
+    {
+        // For Single Terminal fetch we want to display sub merchants
+        // Setting sub_merchant will give sub_merchant associated with terminal
+        $subMerchantFlag = true;
+
+        $type = 'terminal';
+
+        $data = (new Admin\Service)->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
+
+        return ApiResponse::json($data);
+    }
+
     public function getEntityById($type, $id)
     {
         $data = (new Admin\Service)->fetchEntityById($type, $id);
@@ -70,13 +83,6 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = (new Admin\Scorecard)->generateScorecard($input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postInternationalRates($currency)
-    {
-        $data = (new Admin\Service)->postInternationalRates($currency);
 
         return ApiResponse::json($data);
     }

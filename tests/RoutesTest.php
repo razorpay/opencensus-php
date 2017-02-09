@@ -3,6 +3,7 @@
 namespace RZP\Tests;
 
 use Mailgun\Mailgun;
+use RZP\Http\Route;
 
 class RoutesTest extends TestCase
 {
@@ -21,9 +22,38 @@ class RoutesTest extends TestCase
         // Route::enableFilters();
     }
 
-    public function testJSONPRoute()
+    public function testAuthGroupsAreDisjoint()
     {
-        ;
+        $groups = [
+            Route::$internal,
+            Route::$private,
+            Route::$public,
+            Route::$publicCallback,
+            Route::$proxy,
+            Route::$device,
+            Route::$admin,
+            Route::$direct,
+        ];
+
+        $uniqueRoutes = [];
+
+        // Loop through every route in the auth groups and
+        // add them to a hash set. isset checks if the route
+        // has already been added, in constant time.
+
+        foreach ($groups as $group)
+        {
+            foreach ($group as $route)
+            {
+                $this->assertEquals(
+                    false,
+                    isset($uniqueRoutes[$route]),
+                    "$route route appears in two distinct auth groups"
+                );
+
+                $uniqueRoutes[$route] = true;
+            }
+        }
     }
 
     public function testMailgunRoute()

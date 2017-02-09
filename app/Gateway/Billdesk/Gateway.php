@@ -25,6 +25,8 @@ class Gateway extends Base\Gateway
     protected $response;
     const CHECKSUM_ATTRIBUTE = 'Checksum';
 
+    protected $accountType;
+
     protected $tpv;
 
     public function authorize(array $input)
@@ -265,6 +267,48 @@ class Gateway extends Base\Gateway
         // The transaction id for the refund should be present. Otherwise, it means that
         // the refund should come via normal flow and not via manualGatewayRefund.
         assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findRefundByRefundId($refundId);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = (int) ($refundEntity->getRefundAmount() * 100);
+        $processStatus = $refundEntity->getProcessStatus();
+        $refundStatus = $refundEntity->getRefStatus();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input' => $input,
+                'refund_payment_id' => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'process_status' => $processStatus,
+                'refund_status' => $refundStatus,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($processStatus !== 'Y') or
+            (($refundStatus !== RefundStatus::REFUNDED) and
+             ($refundStatus !== RefundStatus::CANCELLED)))
+        {
+            return false;
+        }
 
         return true;
     }
@@ -702,7 +746,7 @@ class Gateway extends Base\Gateway
         $refundAmount = (float) ($input['refund']['amount']);
 
         // The amount should have exact two decimal places, otherwise billdesk gives error
-        $refundAmount = (string) number_format($refundAmount/100, 2, '.', '');
+        $refundAmount = (string) number_format($refundAmount / 100, 2, '.', '');
         $txnAmount = (string) number_format($payment['TxnAmount'], 2, '.', '');
 
         $content = [
@@ -936,24 +980,46 @@ class Gateway extends Base\Gateway
 
     protected function getSecurityId()
     {
-        if ($this->isTPVEnabled())
+        $accountType = $this->accountType;
+
+        switch ($accountType)
         {
-            return $this->config['live_access_code_sec'];
+            case AccountType::PRIMARY:
+                $accessCode = $this->config['live_access_code'];
+                break;
+
+            case AccountType::SECONDARY:
+                $accessCode = $this->config['live_access_code_sec'];
+                break;
+
+            default:
+                $accessCode = $this->config['live_access_code'];
+                break;
         }
 
-        return $this->config['live_access_code'];
+        return $accessCode;
     }
 
     public function getSecret()
     {
-        if ($this->isTPVEnabled())
-        {
-            $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
+        $accountType = $this->accountType;
 
-            return $this->config['live_hash_secret_sec'];
+        switch ($accountType)
+        {
+            case AccountType::PRIMARY:
+                $secret = $this->config['live_hash_secret'];
+                break;
+
+            case AccountType::SECONDARY:
+                $secret = $this->config['live_hash_secret_sec'];
+                break;
+
+            default:
+                $secret = $this->config['live_hash_secret'];
+                break;
         }
 
-        return $this->config['live_hash_secret'];
+        return $secret;
     }
 
     protected function isTPVEnabled()
@@ -982,6 +1048,27 @@ class Gateway extends Base\Gateway
     protected function setTpv(Entity $gatewayPayment)
     {
         $this->tpv = $gatewayPayment->isTpv();
+    }
+
+    public function setTerminal($terminal)
+    {
+        parent::setTerminal($terminal);
+
+        $this->setAccountType($terminal);
+    }
+
+    protected function setAccountType($terminal)
+    {
+        $gatewayMerchantId = $terminal['gateway_merchant_id'];
+
+        $prefix = substr($gatewayMerchantId, 0, 2);
+
+        $this->accountType = AccountType::PRIMARY;
+
+        if (isset(AccountType::ACCOUNT_MAP[$prefix]) === true)
+        {
+            $this->accountType = AccountType::ACCOUNT_MAP[$prefix];
+        }
     }
 
     public function isPaymentTpvEnabled(Entity $gatewayPayment, Payment\Entity $payment)

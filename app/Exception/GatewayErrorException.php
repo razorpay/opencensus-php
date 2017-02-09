@@ -7,7 +7,6 @@ use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
 {
-
     protected $twoFaError = false;
 
     protected $twoFaErrorCodes = [
@@ -63,6 +62,11 @@ class GatewayErrorException extends RecoverableException
         }
 
         return false;
+    }
+
+    public function setGatewayErrorCodeAndDesc($code, $desc)
+    {
+        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
     }
 
     protected function isTwoFaError($errorCode)

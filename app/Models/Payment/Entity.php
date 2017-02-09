@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
+use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Order;
 use RZP\Models\Invoice;
@@ -229,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
         self::SIGNED               => 0,
+        self::GATEWAY              => null,
         self::VERIFIED             => null,
         self::GATEWAY_CAPTURED     => null,
         self::CAPTURED_AT          => null,
@@ -459,7 +461,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setAuthorizeAtNull()
+    public function setAuthorizedAtNull()
     {
         $this->setAttribute(self::AUTHORIZED_AT, null);
     }
@@ -586,6 +588,13 @@ class Entity extends Base\PublicEntity
 
     protected function setContactAttribute($contact)
     {
+        if ($contact === null)
+        {
+            $this->attributes[self::CONTACT] = null;
+
+            return;
+        }
+
         $number = new PhoneBook($contact, true);
 
         if ($number->isValidNumber() === true)
@@ -624,11 +633,15 @@ class Entity extends Base\PublicEntity
     {
         $contact = $this->attributes[self::CONTACT];
 
+        if ($contact === null)
+        {
+            return null;
+        }
+
         $phoneBook = new PhoneBook($contact, true);
 
         return (string) $phoneBook;
     }
-
 
     protected function getVerifiedAttribute()
     {
@@ -719,7 +732,12 @@ class Entity extends Base\PublicEntity
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNotNull(self::TRANSACTION_ID) === false);
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
+    }
+
+    public function hasCard()
+    {
+        return ($this->isAttributeNotNull(self::CARD_ID));
     }
 
     public function hasOrder()
@@ -844,15 +862,7 @@ class Entity extends Base\PublicEntity
 
     public function getBaseAmount()
     {
-        $amount = $this->getAttribute(self::BASE_AMOUNT);
-
-        // hack to avoid
-        if ($amount === null)
-        {
-            return $this->getAttribute(self::AMOUNT);
-        }
-
-        return $amount;
+        return $this->getAttribute(self::BASE_AMOUNT);
     }
 
     public function getAmountRefunded()
@@ -1171,11 +1181,11 @@ class Entity extends Base\PublicEntity
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->localToken;
+            $token = $this->getRelation('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->globalToken;
+            $token = $this->getRelation('globalToken');
         }
 
         return $token;
@@ -1254,6 +1264,8 @@ class Entity extends Base\PublicEntity
         $this->terminal()->associate($terminal);
 
         $this->setGateway($terminal->getGateway());
+
+        $this->setRelation('terminal', $terminal);
     }
 
 // ----------------------- Getters Ends-----------------------------------------
@@ -1330,7 +1342,7 @@ class Entity extends Base\PublicEntity
             ($this->getConvertCurrency() === true))
         {
             $data['amount'] = $this->getBaseAmount();
-            $data['currency'] = Payment\Currency::INR;
+            $data['currency'] = Currency\Currency::INR;
             $data['amount_refunded'] = $this->getBaseAmountRefunded();
         }
 

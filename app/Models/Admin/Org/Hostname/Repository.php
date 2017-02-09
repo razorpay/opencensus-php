@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Org\Hostname;
 
-use RZP\Models\Base;
+use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
@@ -19,11 +19,12 @@ class Repository extends Base\Repository
         Entity::HOSTNAME => 'sometimes|string|max:255',
     );
 
-    public function findByHostname(string $hostname)
+    public function findByOrgIdAndHostname(string $orgId, string $hostname)
     {
         return $this->newQuery()
                     ->where(Entity::HOSTNAME, '=', $hostname)
-                    ->first();
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->firstOrFailPublic();
     }
 
     public function getHostsByOrgId(string $orgId)
