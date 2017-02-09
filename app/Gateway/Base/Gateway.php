@@ -267,7 +267,7 @@ class Gateway
             throw new Exception\LogicException(
                 'Data tampering found.', null, [
                     'expected' => $expectedPaymentId,
-                    'actual' => $actualPaymentId
+                    'actual'   => $actualPaymentId
                 ]);
         }
     }
