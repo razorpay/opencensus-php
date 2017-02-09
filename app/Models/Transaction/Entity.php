@@ -601,11 +601,9 @@ class Entity extends Base\PublicEntity
             {
                 $order = $payment->order;
 
-                $reportTxn[Payment\Entity::ORDER_ID] = $order->getId();
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
                 $reportTxn['order_receipt'] = $order->getReceipt();
             }
-
-
         }
         else if ($this->isTypeRefund())
         {
@@ -621,6 +619,14 @@ class Entity extends Base\PublicEntity
             $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
 
             $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
+
+            if ($payment->getApiOrderId() !== null)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
+            }
         }
         else if ($this->isTypeSettlement())
         {
