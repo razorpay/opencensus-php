@@ -423,11 +423,7 @@ class Service extends Base\Service
 
         $payment = $this->repo->payment->findOrFail($paymentId);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
-
-        $data = $this->getNewProcessor($merchant)->manualGatewayCapture($payment);
+        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
 
         $this->trace->info(
             TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,

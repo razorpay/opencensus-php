@@ -75,6 +75,9 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
+        // We are using action to allow force capture on
+        // already captured payment entity, when they are not
+        // captured on gateway
         parent::action($input, Action::CAPTURE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(

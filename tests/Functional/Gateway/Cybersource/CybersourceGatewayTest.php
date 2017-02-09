@@ -482,6 +482,11 @@ class CybersourceGatewayTest extends TestCase
         $this->ba->appAuth();
 
         $this->runRequestResponseFlow($data);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('capture', $cybersource['action']);
+        $this->assertEquals('captured', $cybersource['status']);
     }
 
     // @todo: refactor
