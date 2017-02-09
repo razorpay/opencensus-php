@@ -3,10 +3,10 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN\Entity as IIN;
+use RZP\Models\Base as BaseModel;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\Name;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Base;
 use RZP\Exception;
 
 /**
@@ -47,7 +47,7 @@ class Formatter
      */
     public function formatData($columns, $data)
     {
-        $iins = new Base\PublicCollection;
+        $iins = new BaseModel\PublicCollection;
 
         foreach ($data as $row)
         {
@@ -110,7 +110,7 @@ class Formatter
             }
         }
 
-        $iins = new Base\PublicCollection;
+        $iins = new BaseModel\PublicCollection;
 
         for ($i = $range['min']; $i <= $range['max']; $i++)
         {
