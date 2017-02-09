@@ -42,13 +42,12 @@ export default class InvoiceLineItemTable extends Component {
           </thead>
           <tbody>
             {
-              fields.map((fieldName, idx, item) =>
+              fields.map((fieldName, idx) =>
                 <LineItem
                   key={`line_item_${idx}`}
                   index={idx}
                   disabled={disabled}
                   fieldName={fieldName}
-                  fieldItem={item}
                   items={items}
                   onRemove={(index) => {
                     fields.remove(index)

@@ -234,7 +234,7 @@ export default class InvoicesNewContainer extends Component {
                             onOptionChange={(selectedCustomer) => {
                               this.props.change('customer_id', selectedCustomer.id || '')
                             }}
-                            validate={required('Please provide the customer')}
+                            validate={required()}
                             normalizeValue={(value) => {
                               let selected = findBy(this.props.customers || [], 'id', value)
                               if (selected) {
@@ -301,10 +301,12 @@ export default class InvoicesNewContainer extends Component {
                       <AsyncButton
                         type='button'
                         class='btn btn-primary btn-block btn-lg'
-                        text='Finalize and Issue'
                         disabled={this.state.isSaving}
                         onClick={handleSubmit(this.save)}
-                      />
+                      >
+                        <i class='fa fa-check'></i>
+                        <span>Finalize and Issue</span>
+                      </AsyncButton>
 
                       <div class='btn-group-vertical'>
                         <AsyncButton
@@ -314,13 +316,17 @@ export default class InvoicesNewContainer extends Component {
                           pendingText='Saving...'
                           disabled={this.state.isSaving}
                           onClick={handleSubmit(this.save)}
-                        />
+                        >
+                          <i class='fa fa-floppy-o'></i>
+                          <span>Save Changes</span>
+                        </AsyncButton>
                         <a
                           href='#/app/invoices/list'
                           class='btn btn-default btn-block btn-lg'
                           disabled={this.state.isSaving}
-                      >
-                          Delete Invoice
+                        >
+                          <i class='fa fa-times'></i>
+                          <span>Delete Invoice</span>
                         </a>
                       </div>
                     </div>

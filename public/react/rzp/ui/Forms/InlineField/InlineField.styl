@@ -1,3 +1,6 @@
+$errorBgColor = #FFF5F5
+$errorTextColor = #F65656
+
 .inlineField {
   display: block;
   position: relative;
@@ -36,6 +39,20 @@
   .datepicker--focused .DateInput__display-text {
     border-color: #cfdadd;
     color: #555;
+  }
+
+  .powerselect.error {
+    background-color: $errorBgColor;
+
+    .powerselect__trigger-input {
+      background-color: $errorBgColor;
+    }
+
+    + .inlineField__value-container {
+      .inlineField__placeholder {
+        color: $errorTextColor;
+      }
+    }
   }
 
   .powerselect__trigger-status {

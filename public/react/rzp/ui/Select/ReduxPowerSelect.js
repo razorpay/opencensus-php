@@ -24,6 +24,7 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
   return (
     <PowerSelectComponent
       {...otherProps}
+      className={`${(meta.submitFailed && meta.error) ? 'error' : ''}`}
       selected={selectedOption}
       searchIndices={searchIndices}
       selectedLabel={selectedLabel || optionLabelPath}
