@@ -64,16 +64,6 @@ trait Authorize
 
     protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
     {
-        // Disabling rotation in case of netbanking. This is with the
-        // understanding that the terminal that is available on top is the only
-        // that should be used.
-        if ($payment->isMethod(Payment\Method::NETBANKING))
-        {
-            $this->selectedTerminals = [
-                    $this->selectedTerminals[0]
-                ];
-        }
-
         $totalTerminals = count($this->selectedTerminals);
 
         $maxRetryAttempts = min($totalTerminals, self::MAX_RETRY_ATTEMPTS);
