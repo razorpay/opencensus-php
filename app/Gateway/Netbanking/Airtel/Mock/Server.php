@@ -106,6 +106,8 @@ class Server extends Base\Mock\Server
 
         $response[AuthFields::HASH] = $this->generateHash($response, 'response');
 
+        $this->content($response, 'hash');
+
         return $response;
     }
 

@@ -175,8 +175,6 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function testAuthResponseHashFailure()
     {
-        $this->markTestSkipped();
-
         $this->mockAuthHashFailure();
 
         $data = $this->testData[__FUNCTION__];
@@ -246,20 +244,11 @@ class NetbankingAirtelGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            $hashArray = [
-                $content['MID'],
-                $content['TXN_REF_NO'],
-                $content['TRAN_AMT'],
-                'askjdhas',
-                $content['CODE'],
-                $content['STATUS']
-            ];
-
-            $stringToHash = implode('#', $hashArray);
-
-            $hash = hash('SHA512', $stringToHash);
-
-            $content['HASH'] = str_shuffle($hash);
+            if($action === 'hash')
+            {
+                $hash = $content['HASH'];
+                $content['HASH'] = str_shuffle($hash);
+            }
         });
     }
 
