@@ -261,7 +261,7 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      daily_settlement: {},
+      batch_settlement: {},
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
@@ -270,6 +270,10 @@ app.controller('EntitiesCtrl', [
         entity_id: ['Entity Id'],
         entity_type: ['Entity Type'],
         name: ['Name']
+      },
+      file_store: {
+        entity_id: ['Entity Id'],
+        type: ['Type']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -291,26 +295,31 @@ app.controller('EntitiesCtrl', [
           'credit',
           'debit',
           'unknown'
-        ],
+        ]
       },
-      invoice: {
-        merchant_id: ['Merchant Id'],
-        order_id: ['Order Id'],
+      invoice:
+      {
         payment_id: ['Payment Id'],
         receipt: ['Receipt'],
+        user_id: ['User Id'],
         status: [
           'all',
           'draft',
           'issued',
           'paid',
-          'expired',
+          'expired'
         ],
         type: [
           'all',
-          'link',
-          'invoice',
           'ecod',
+          'link',
+          'invoice'
         ],
+        merchant_id: ['Merchant Id'],
+        order_id: ['Order Id'],
+        customer_name: ['Customer Name'],
+        customer_email: ['Customer Email'],
+        customer_contact: ['Customer Contact']
       },
       key: {
         merchant_id: ['Merchant Id']
@@ -348,7 +357,6 @@ app.controller('EntitiesCtrl', [
             'all',
             1, 2, 3, 4, 5
         ],
-        hold_funds: booleanList
       },
       merchant_detail: {
 
@@ -375,15 +383,16 @@ app.controller('EntitiesCtrl', [
         received: booleanList
       },
       order: {
+        account_number: ['Account Number'],
+        authorized: booleanList,
         merchant_id: ['Merchant Id'],
+        receipt: ['Receipt'],
         status: [
           'all',
           'created',
           'attempted',
           'paid',
-        ],
-        authorized: booleanList,
-        receipt: ['Receipt']
+        ]
       },
       payment_analytics: {
         checkout_id: ['Checkout Id'],
@@ -406,6 +415,7 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         method: methodList,
         notes: ['Notes'],
+        order_id: ['Order Id'],
         refund_status: [
           'all',
           'null',
