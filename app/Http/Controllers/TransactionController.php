@@ -161,9 +161,9 @@ class TransactionController extends Controller
 
         $id = Input::get('razorpay_payment_id');
 
-        $amount = Input::get('amount');
+        $input = Input::except('razorpay_payment_id');
 
-        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
+        $error = (new Api\Service)->capturePayment($id, $mode, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -187,9 +187,9 @@ class TransactionController extends Controller
     {
         $this->checkMode($mode);
 
-        $amount = Input::get('amount');
+        $input = Input::all();
 
-        $error = (new Api\Service)->capturePayment($id, $amount, $mode);
+        $error = (new Api\Service)->capturePayment($id, $mode, $input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -258,7 +258,18 @@ class TransactionController extends Controller
         $this->checkMode($mode);
         $input = Input::all();
 
-        list($error, $file) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
+        list($error, $response) = (new Api\Service)->generateResourceReport($mode, $resource, $input);
+
+        return AppResponse::jsonResponse($error, $response);
+    }
+
+    public function getTransactionBrokingReport($mode, $resource)
+    {
+        $this->checkMode($mode);
+
+        $input = Input::all();
+
+        list($error, $file) = (new Api\Service)->generateTransactionBrokingReport($mode, $resource, $input);
 
         if (empty($error) === false)
         {

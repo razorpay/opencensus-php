@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account." ng-show="(unconfirmed===true) && (admin.permissions.indexOf('edit_merchant_confirm') !== -1)" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
+        <a tooltip="Confirm merchant Account." ng-show="(merchant.details.confirmed === false) && (admin.permissions.indexOf('edit_merchant_confirm') !== -1)" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
@@ -281,8 +281,8 @@
           Activation Date
         </div>
         <div class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
-            <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
+          <span class="pull-right" tooltip="{{merchant.details.confirmed == true ? 'Confirmed' : 'Not Confirmed'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirmed == true, 'fa-times text-danger':merchant.details.confirmed == false}"></i>
           </span>
           Confirmed
         </div>
@@ -401,6 +401,10 @@
         <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived
+        </div>
+         <div class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.suspended_at == null ? 'Not Suspended' : 'Suspended'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.suspended_at != null, 'fa-times text-danger':merchant.details.suspended_at == null}"></i></span>
+          Suspended
         </div>
         <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>

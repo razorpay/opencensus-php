@@ -108,6 +108,44 @@ app.controller('EntityDetailCtrl', [
         }).error(function () {
           alert('There was an error while enabling the terminal');
         });
+      },
+      addSubMerchant: function(id, merchant_id) {
+        var request = $http.put('/admin/' + $scope.mode + '/terminal/' + id + '/merchant/' + merchant_id);
+
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Sub Merchant added successfully');
+
+            $scope.entity.sub_merchants.unshift(merchant_id);
+
+            // Page refresh
+            window.location.reload();
+          } else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', 'There was an error while adding the merchant to the terminal');
+        });
+      },
+      changePrimaryMerchant: function (terminal_id, merchant_id) {
+        var url = '/admin/' + $scope.mode + '/terminal/' + terminal_id + '/reassign';
+        var request = $http.put(url, {
+          merchant_id: merchant_id
+        });
+
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Primary merchant changed successfully');
+
+            // Page refresh
+            window.location.reload();
+          }
+          else {
+            alert(data.errors);
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', 'There was an issue while changing the primary merchant');
+        });
       }
     };
 
@@ -209,6 +247,44 @@ app.controller('EntityDetailCtrl', [
           $scope.iin.edit(input);
         }, function () {
         });
+      },
+      changePrimaryMerchant: function (terminal) {
+        var modalInstance = $modal.open({
+          templateUrl: 'changePrimaryMerchant.html',
+          controller: 'changePrimaryMerchantCtrl',
+          resolve: {
+            current: function () {
+              return terminal;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (input) {
+            $scope.terminal.changePrimaryMerchant(input.terminal_id, input.merchant_id);
+        }, function() {
+        });
+      },
+      terminalMerchantAssign: function (terminal) {
+        var modalInstance = $modal.open({
+          templateUrl: 'assignMerchantToTerminal.html',
+          controller: 'assignMerchantToTerminalModalCtrl',
+          resolve: {
+            current: function () {
+              return terminal;
+            },
+            subMerchants: function () {
+              return $scope.entity.sub_merchants;
+            },
+            mode: function () {
+              return $scope.mode;
+            }
+          }
+        });
+
+        modalInstance.result.then(function (input) {
+            $scope.terminal.addSubMerchant(input.id, input.merchant_id);
+        }, function() {
+        });
       }
     };
     $scope.getKeys = function () {
@@ -251,6 +327,72 @@ app.controller('EntityDetailCtrl', [
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('changePrimaryMerchantCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  function ($scope, $modalInstance, $http, current) {
+
+    $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
+    };
+
+    $scope.terminal = {
+        terminal_id: current.id,
+        merchant_id: current.merchant_id
+    };
+  }
+]).controller('assignMerchantToTerminalModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'current',
+  'subMerchants',
+  'mode',
+  'alertsFactory',
+  function ($scope, $modalInstance, $http, current, subMerchants, mode, alertsFactory) {
+    // This is the current terminal current
+    $scope.subMerchants = subMerchants;
+    $scope.alerts = alertsFactory.getHandler();
+
+    $scope.deleteSubMerchant = function (merchantId) {
+      var request = $http.delete('/admin/' + mode + '/terminal/' + current.id + '/merchant/' + merchantId);
+
+      request.success(function (data) {
+        if (data.success) {
+          var index = $scope.subMerchants.indexOf(merchantId);
+          if (index > -1) {
+            $scope.subMerchants.splice(index, 1);
+          }
+
+          $scope.alerts.addAlert('success', 'Sub merchant unassigned from the terminal successfully');
+
+          // Page refresh
+          window.location.reload();
+        }
+        else {
+          $scope.alerts.addAlert(data.errors);
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', 'There was an error while removing the merchant from the terminal');
+      });
+    };
+
+    $scope.terminal = {
+        id: current.id,
+        merchant_id : ''
+    };
+    $scope.ok = function (terminal) {
+        $modalInstance.close(terminal);
+    };
+    $scope.cancel = function () {
+        $modalInstance.dismiss('cancel');
     };
   }
 ]);

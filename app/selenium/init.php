@@ -13,7 +13,7 @@ $googleService->shouldReceive('requestAccessToken')->withAnyArgs()->andReturn($t
 $googleService->shouldReceive('request')->withAnyArgs()->andReturn(<<< USERDATA
 {
 "id": "105723007478327237827",
-"email": "testoauth@testcases.com",
+"email": "testoauth@razorpay.com",
 "verified_email": true,
 "name": "Test Login",
 "given_name": "Test",

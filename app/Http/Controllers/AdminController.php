@@ -65,9 +65,9 @@ class AdminController extends Controller
 
         $code = Input::get('code');
 
-        if (! empty($code))
+        if (! empty($code) || env('OAUTH_MOCK'))
         {
-            $oauth = $this->triggerGoogleOAuth($code);
+            $oauth = $this->triggerGoogleOAuth($code, $org);
 
             if (! empty($oauth))
             {
@@ -101,25 +101,13 @@ class AdminController extends Controller
         return (string) $googleService->getAuthorizationUri();
     }
 
-    public function triggerGoogleOAuth($code)
+    public function triggerGoogleOAuth($code, $org)
     {
         $googleService = OAuthFacade::consumer('Google');
 
         // if code is provided get user data and sign in
-        if ($code !== null or env('OAUTH_MOCK') === true)
+        if ($code !== null or (env('OAUTH_MOCK') === true))
         {
-            // Get Current Org first
-            $org = $this->getOrg()->getData(true);
-
-            if ($org['success'])
-            {
-                $org = $org['data'];
-            }
-            else
-            {
-                return AppResponse::jsonResponse(['Organization not found'], null);
-            }
-
             $error = (new Admin\Service)->loginWithGoogle($code, $googleService, $org['id']);
 
             if (empty($error))
@@ -696,6 +684,7 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->sendTestNewsletter($input);
+
         return AppResponse::jsonResponse($error, $data);
     }
 
@@ -704,45 +693,88 @@ class AdminController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Admin\Service)->sendNewsletter($input);
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function triggerError()
     {
         list($error, $data) = (new Admin\Service)->triggerError();
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function deleteTerminal($mode, $terminalId)
     {
         list($error, $data) = (new Admin\Service)->deleteTerminal($mode, $terminalId);
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function editTerminal($mode, $terminalId)
     {
         $input = Input::all();
+
         list($error, $data) = (new Admin\Service)->editTerminal($mode, $terminalId, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        list($error, $data) = (new Admin\Service)->unassignSubMerchantToTerminal(
+            $mode,
+            $terminalId,
+            $merchantId);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+
+    public function assignSubMerchantToTerminal($mode, $terminalId, $merchantId)
+    {
+        list($error, $data) = (new Admin\Service)->assignSubMerchantToTerminal(
+            $mode,
+            $terminalId,
+            $merchantId);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function changePrimaryMerchant($mode, $terminalId)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->changeTerminalPrimaryMerchant(
+            $mode,
+            $terminalId,
+            $input);
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function toggleTerminal($mode, $terminalId)
     {
         $input = Input::all();
+
         list($error, $data) = (new Admin\Service)->toggleTerminal($mode, $terminalId, $input);
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function verifyAllPayments()
     {
         list($error, $data) = (new Admin\Service)->verifyAllPayments();
+
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function generateNetBankingRefunds()
     {
         $input = Input::all();
+
         list($error, $data) = (new Admin\Service)->generateNetBankingRefunds($input);
+
         return AppResponse::jsonResponse($error, $data);
     }
 

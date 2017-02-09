@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md entity-wrapper" ng-controller="EntityDetailCtrl" ng-init="generate(loadType)">
-  <div class="panel panel-default col-sm-6 col-sm-offset-3" >
+  <div class="panel panel-default col-sm-8 col-sm-offset-2" >
     <div class="panel-heading m-t m-b">
       Entity Id: <strong>{{entity.id}}</strong><br>
     </div>
@@ -18,7 +18,7 @@
           ng-init="value = entity[key];valueType = getType(key, value);state=getState(key);" ui-sref="{{state}}"
         >
           <span class="pull-right {{displayClass(key, value)}}" title="{{value}}">
-            {{displayValue(key, value)}}
+            {{displayValue(key, value, entity)}}
           </span>
           {{key|titlecase}}
         </div>
@@ -29,6 +29,20 @@
       </div>
     </div>
     <div class="panel-footer row" ng-show="entity.entity == 'terminal'">
+      <div class="btn-group text-left m-b" role="group"
+        aria-label="Terminal Actions"
+      >
+        <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
+          Edit Terminal
+        </button>
+        <button class="btn btn-info" ng-click="open.changePrimaryMerchant(entity)">
+          Change Primary Merchant
+        </button>
+        <button class="btn btn-info" ng-click="open.terminalMerchantAssign(entity)">
+          Assign Sub Merchants
+        </button>
+      </div>
+
       <div class="btn-group text-left" role="group"
         aria-label="Terminal Actions"
       >
@@ -36,9 +50,6 @@
           ng-confirm-click="Are you sure you want to delete this terminal?"
         >
           Delete Terminal
-        </button>
-        <button class="btn btn-info" ng-click="open.terminalEdit(entity)">
-          Edit Terminal
         </button>
         <button ng-show="entity.enabled" class="btn btn-warning" ng-click="terminal.disable(entity.id)"
           ng-confirm-click="Are you sure you want to disable this terminal?"
@@ -191,6 +202,66 @@
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
       <button class="btn btn-primary modal-ok" ng-confirm-click="Terminal editing is dangerous. Please ensure you have filled the correct details." ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="changePrimaryMerchant.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Change Primary Merchant for the Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="merchant_id" class="col-lg-4 control-label">Primary Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="merchant_id" ng-model="terminal.merchant_id" />
+        </div>
+      </div>
+    </form>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Are you sure?" ng-click="ok(terminal)">OK</button>
+  </div>
+</script>
+<script type="text/ng-template" id="assignMerchantToTerminal.html">
+  <div class="modal-header">
+    <h3 class="modal-title">Assign Sub Merchant To Terminal</h3>
+  </div>
+  <div class="modal-body terminal-modal">
+    <form class="form-horizontal">
+      <div class="form-group">
+        <label for="merchant_id" class="col-lg-4 control-label">Merchant Id:</label>
+        <div class="col-lg-8" >
+          <input type="text" class="form-control m-b" name="merchant_id" ng-model="terminal.merchant_id" />
+        </div>
+      </div>
+    </form>
+
+    <table class="table table-striped b-t b-light" ui-jq="footable">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Website</th>
+          <th data-sort-ignore="true">&nbsp;</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr ng-repeat="subMerchant in subMerchants">
+          <td>{{ subMerchant.id }}</td>
+          <td>{{ subMerchant.name }}</td>
+          <td><a href="{{ subMerchant.website }}" target="_blank">{{ subMerchant.website }}</a></td>
+          <td>
+            <button class="btn btn-danger btn-xs" ng-click="deleteSubMerchant(subMerchant.id)">
+              Delete
+            </a>
+          </td>
+      </tbody>
+    </table>
+  </div>
+  <div class="modal-footer">
+      <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+      <button class="btn btn-primary modal-ok" ng-confirm-click="Are you sure?" ng-click="ok(terminal)">OK</button>
   </div>
 </script>
 <script type="text/ng-template" id="editIin.html">

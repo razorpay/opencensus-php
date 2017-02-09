@@ -52,7 +52,7 @@ app.controller('PaymentDetailCtrl', [
       'transaction_id',
       'updated_at',
       'verified',
-      'wallet',
+      'wallet'
     ];
 
     /**
@@ -76,6 +76,9 @@ app.controller('PaymentDetailCtrl', [
         resolve: {
           amount: function () {
             return $scope.entity.amount - $scope.entity.amount_refunded;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
@@ -142,6 +145,9 @@ app.controller('PaymentDetailCtrl', [
         resolve: {
           amount: function () {
             return $scope.entity.amount;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
@@ -179,7 +185,12 @@ app.controller('PaymentDetailCtrl', [
         $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
         return;
       }
-      var data = { amount: captureAmount };
+
+      var data = {
+        amount: captureAmount,
+        currency: $scope.entity.currency
+      };
+
       var request = $http({
         method: 'post',
         url: '/admin/' + $scope.mode + '/' + $scope.entity.merchant_id + '/payments/' + $scope.entity.id + '/capture',
@@ -258,8 +269,12 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  function ($scope, $modalInstance, amount, currency) {
+
     $scope.amount = amount;
+    $scope.currency = currency;
+
     $scope.ok = function (amount) {
       $modalInstance.close(amount);
     };
@@ -272,14 +287,18 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  '$filter',
+  function ($scope, $modalInstance, amount, currency, $filter) {
 
-    $scope.amount = (amount/100).toFixed(2);
+    // This is displayed with 2 decimal places
+    $scope.amount = $filter('propercurrency')(amount/100, '');
     $scope.comment = '';
+    $scope.currency = currency;
 
     $scope.valid = function(amount, comment) {
       return amount > 0 && comment.length > 5;
-    }
+    };
 
     $scope.setAmount = function(isPartial) {
       if (isPartial) {
@@ -287,7 +306,7 @@ app.controller('PaymentDetailCtrl', [
       } else {
         this.refund_amount = $scope.amount;
       }
-    }
+    };
 
     $scope.ok = function (amount, comment) {
       // We get amount in INR

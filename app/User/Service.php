@@ -9,11 +9,13 @@ use DrewM\MailChimp\MailChimp;
 use Auth;
 use Hash;
 use Input;
+use Session;
 
 use App\Base;
 use App\Invitation;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Session as SessionTable;
 use App\User;
 use App\Lead;
 use App\AdminLead;
@@ -121,6 +123,8 @@ class Service extends Base\Service
             ];
 
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
+
+            (new Merchant\Service)->createMerchantOnApi($data['id']);
         }
         else if ($invitationToken)
         {
@@ -466,17 +470,8 @@ class Service extends Base\Service
             $user->password = Hash::make($user->password);
             $user->save();
 
-            if($user->hasMerchants())
-            {
-                $merchant = $user->merchants()
-                    ->where('email',$user->email)->first();
-
-                if($merchant)
-                {
-                    $merchant->password = $user->password;
-                    $merchant->save();
-                }
-            }
+            $currentSessionId = Session::getId();
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
         });
 
         return [$error, null];

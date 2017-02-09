@@ -602,7 +602,10 @@ angular.module('app.services', [])
       null: 'bg-warning',
 
       // batch
-      processing: 'bg-info'
+      processing: 'bg-info',
+
+      // refund
+      partial: 'bg-info' // payment.refund_status
     };
 
     return mapper[status];
@@ -795,10 +798,16 @@ angular.module('app.services', [])
       // we consider its value as well
       if (value && isTimestamp(key)) {
         return 'timestamp';
-      }  // All other entity links are considered here
-      else if (key.substr(-6) === 'amount') {
+      }
+      // Base Amounts are always in INR
+      // includes base_amount and base_amount_refunded
+      else if (key.substr(0,11) === 'base_amount') {
+        return 'amount_inr';
+      }
+      else if ((key.substr(-6) === 'amount') || (key.substr(0,7) === 'amount_')) {
         return 'amount';
       }
+      // All other entity links are considered here
       else if (isId(key)) {
         if (specialEntities.indexOf(key) > -1) {
           return getEntity(key);
@@ -814,25 +823,35 @@ angular.module('app.services', [])
 ])
 .factory('displayValue', [
   'getType',
-  function (getType) {
-    return function (key, value) {
+  '$filter',
+  function (getType, $filter) {
+    return function (key, value, entity) {
+      if (typeof entity === "undefined") {
+        entity = {};
+      }
       var type = getType(key, value);
       // Set timezone to IST
       moment().utcOffset(5.5);
       switch (type) {
-      case 'timestamp':
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
-      case 'amount':
-        return 'INR ' + (value / 100).toFixed(2);
-      default:
-        if (value === null) {
-          return 'null';
-        // We want to display an empty string prominently
-        } else if (value === '') {
-          return '"\u2000"';
-        } else {
-          return value;
-        }
+        case 'timestamp':
+          return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+        case 'amount_inr':
+          return $filter('rupee')(value / 100);
+        case 'amount':
+          var currency = 'INR';
+          if (entity.hasOwnProperty('currency')) {
+            currency = entity.currency;
+          }
+          return $filter('propercurrency')(value / 100, currency);
+        default:
+          if (value === null) {
+            return 'null';
+          // We want to display an empty string prominently
+          } else if (value === '') {
+            return '"\u2000"';
+          } else {
+            return value;
+          }
       }
     };
 }])

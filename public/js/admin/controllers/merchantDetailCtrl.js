@@ -952,6 +952,7 @@ app.controller('MerchantDetailCtrl', [
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
       request.success(function (data) {
         $scope.alerts.resetAlerts(true);
+
         if (data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
@@ -967,6 +968,13 @@ app.controller('MerchantDetailCtrl', [
 
           $scope.merchant.creditsLogMode = 'live';
           getCreditsLog($scope.merchant.creditsLogMode);
+
+          if (data.data.details.confirmed === false)
+          {
+              $scope.unconfirmed = true;
+              $scope.alerts.addAlert('danger', 'Merchant not confirmed');
+          }
+
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value) {
@@ -985,7 +993,6 @@ app.controller('MerchantDetailCtrl', [
     function getMerchantFeatures() {
       var request = $http.get('/admin/features/' + $scope.merchant.id);
       request.success(function (data) {
-        $scope.alerts.resetAlerts(true);
         if (data.success) {
           // Full list of features which can be assigned to merchant
           $scope.merchant.details.allowedFeatures = data.data.all_features;
