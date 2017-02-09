@@ -37,12 +37,16 @@
     </div>
     <div class="row wrapper">
       <div class="col-md-3 m-b-xs">
+        <span tooltip="Show only Marketpace accounts">
           <input type="checkbox" name="accounts" ng-model="sub_accounts.all" ng-change="sub_accounts.id='';filter()"/>
           Sub-accounts only
+        </span>
       </div>
       <div class="col-md-4 m-b-xs">
-        Sub-accounts for ID:
-        <input type="text" class="form-control input-sm w-sm inline m-r" name="accounts" ng-model="sub_accounts.id" ng-enter="filter()"/>
+        <span tooltip="List sub-accounts created by a Marketplace merchant">
+          Sub-accounts for ID:
+          <input type="text" class="form-control input-sm w-sm inline m-r" name="accounts" ng-model="sub_accounts.id" ng-enter="filter()"/>
+        </span>
       </div>
     </div>
     <div class="table-responsive">

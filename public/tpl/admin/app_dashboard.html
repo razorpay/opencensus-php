@@ -16,8 +16,10 @@
         Search: <input id="filter" type="text" class="form-control input-sm w-sm inline m-r"/>
       </div>
       <div class="col-md-4 m-b-xs">
-        <input type="checkbox" name="accounts" ng-model="sub_accounts.all" ng-change="filter()"/>
-        <label class="inline">Sub-accounts only</label>
+        <span tooltip="Only show Marketpace sub-accounts">
+          <input type="checkbox" name="accounts" ng-model="sub_accounts.all" ng-change="filter()"/>
+          <label class="inline">Sub-accounts only</label>
+        </span>
       </div>
     </div>
     <div class="table-responsive">

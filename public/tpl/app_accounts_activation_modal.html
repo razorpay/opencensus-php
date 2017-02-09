@@ -1,7 +1,7 @@
 <div ng-controller="AccountActivationCtrl">
   <div class="bg-light lter b-b wrapper-md">
     <h2 class="m-n font-thin h3">
-      Activation Form
+      Account Activation Form
       <spinner class="inline"></spinner>
     </h2>
   </div>
@@ -25,11 +25,6 @@
           <div class="form-group">
             <label for="business_type" class="col-sm-3 control-label">Organisation Type</label>
             <div class="col-sm-8">
-              <alert type="warning" ng-show="data.business_type==2">
-                We may not be able to support individuals as of now. Get in touch with
-                  <a href="mailto:support@razorpay.com">support@razorpay.com</a>
-                for more details
-              </alert>
               <select name="business_type" ng-model="data.business_type" class="form-control" required ng-disabled="locked">
                 <option value="1">Proprietership</option>
                 <option value="2">Individual</option>

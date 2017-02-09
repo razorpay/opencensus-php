@@ -5,7 +5,6 @@
   </h1>
 </h1>
 </div>
-
 <div class="wrapper-md" ng-controller="EntityListCtrl" ng-init="generate('account')">
   <div class="panel panel-default" ng-controller="AccountListCtrl" >
 
@@ -63,10 +62,16 @@
         </thead>
         <tbody>
           <tr ng-repeat="row in entity.items">
-            <td><a target="_blank" ng-click="addDetails(row.id)"><code>{{row.id}}</code></a></td>
+            <td>
+              <a target="_blank" ng-click="addDetails(row.id)"><code>acc_{{row.id}}</code></a>
+            </td>
             <td>{{row.email}}</td>
             <td data-hide="phone,tablet">{{row.name}}</td>
-            <td>{{row.activated}}</td>
+            <td class="text-center">
+              <span tooltip="{{row.activated == true ? 'Activated' : 'Not Activated'}}">
+                <i class="fa" ng-class="{'fa-check text-success': row.activated == true, 'fa-times text-danger': row.activated== false}"></i>
+              </span>
+            </td>
             <td>{{row.activated_at && (row.activated_at*1000 | date:'medium') || ''}}</a></td>
             <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
           </tr>
@@ -103,7 +108,6 @@
     </footer>
   </div>
 </div>
-
 
 <script type="text/ng-template" id="addAccountModal.html">
   <div class="modal-header">
