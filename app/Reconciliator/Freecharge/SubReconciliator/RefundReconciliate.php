@@ -43,7 +43,7 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getGatewaySettledAt($row)
     {
-        if ($row[self::COLUMN_SETTLED_AT] === null)
+        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
         {
             return null;
         }
@@ -75,9 +75,16 @@ class RefundReconciliate extends Base\RefundReconciliate
         return $gatewaySettledAt;
     }
 
+    protected function getRefundAmount(array $row)
+    {
+        $refundAmount = parent::getRefundAmount($row);
+
+        return intval(number_format($refundAmount, 2, '.', ''));
+    }
+
     protected function validateRefundAmountEqualsReconAmount(array $row)
     {
-        if ($this->refund->getAmount() !== intval($this->getRefundAmount($row)))
+        if ($this->refund->getAmount() !== $this->getRefundAmount($row))
         {
             $this->messenger->raiseReconAlert(
                 [

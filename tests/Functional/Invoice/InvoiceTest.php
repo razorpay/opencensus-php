@@ -815,6 +815,38 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInvoiceByOrderAndPayment()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        $payment = $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->privateAuth();
+
+        //
+        // Test data usage, query params with sign, and combination for which there
+        // is no results.
+        //
+
+        $this->startTest();
+
+        //
+        // Test data usage, query params without sign, and combination for which
+        // there is a result.
+        //
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $testData['request']['content']['order_id'] = '100000000order';
+        $testData['request']['content']['payment_id'] = $payment['id'];
+
+        $testData['response']['content']['count'] = 1;
+
+        $this->startTest($testData);
+    }
+
     public function testGetMultipleInvoices()
     {
         $this->createOrder();

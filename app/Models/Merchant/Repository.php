@@ -303,17 +303,23 @@ class Repository extends Base\Repository
                 break;
 
             case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT);
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             case (empty($input['pending']) === false):
                 $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt);
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             case (empty($input['dead']) === false):
                 $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt);
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             default:

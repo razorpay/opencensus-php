@@ -518,10 +518,6 @@ class Core extends Base\Core
         if ($payment->hasBeenCaptured())
         {
             $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
-
-            $paymentTxn = $payment->transaction;
-
-            $this->repo->transaction->updateSettledAtToNow($paymentTxn);
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;

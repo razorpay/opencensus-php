@@ -38,7 +38,7 @@ class Filter
             {
                 // If the terminal does not match for the given filter property,
                 // remove it from the applicable list of terminals.
-                if ($this->$filterFunction($terminal, $input) !== true)
+                if ($this->$filterFunction($terminal, $input, $applicableTerminals) !== true)
                 {
                     unset($applicableTerminals[$key]);
                 }

@@ -17,9 +17,10 @@ final class Route
 
     protected static $apiRoutes = array(
         'account'                                 => ['get',      'account',                                        'PublicController@getAccount'                                       ],
-        'callback_params'                         => ['post',     'callback_params',                                'PublicController@postCallbackUrlWithParams'                        ],
         'checkout'                                => ['get',      'checkout',                                       'MerchantController@getCheckout'                                    ],
         'checkout_public'                         => ['get',      'checkout/public',                                'MerchantController@getCheckoutPublic'                              ],
+        'checkout_onyx'                           => ['post',     'checkout/onyx',                                  'PublicController@postCallbackUrlWithParams'                        ],
+        'checkout_hosted'                         => ['post',     'checkout/hosted',                                'PublicController@postCheckoutHosted'                               ],
         'merchant_methods'                        => ['get',      'methods',                                        'MerchantController@getPaymentMethods'                              ],
         'merchant_checkout_preferences'           => ['get',      'preferences',                                    'MerchantController@getCheckoutPreferences'                         ],
         'payment_create'                          => ['post',     'payments',                                       'PaymentCreateController@postCreatePayment'                         ],
@@ -74,6 +75,7 @@ final class Route
         'payment_capture_reminder'                => ['get',      'payments/all/reminder',                          'PaymentController@sendReminderMailForAuthorizedPayments'           ],
         'payment_refund_authorized'               => ['post',     'payments/refund/authorized',                     'PaymentController@postRefundOldAuthorizedPayments'                 ],
         'payment_capture_verify'                  => ['post',     'payments/{id}/verify/capture',                   'PaymentController@postCaptureVerify'                               ],
+        'payment_capture_gateway_manual'          => ['post',     'payments/{id}/gateway/capture',                  'PaymentController@postManualGatewayCapture'                        ],
         'payment_authorize_time_out'              => ['post',     'payments/authorize/timeout/{ids}',               'PaymentController@postAuthorizeLockTimeOut'                        ],
         'refund_fetch_by_id'                      => ['get',      'refunds/{id}',                                   'RefundController@getRefund'                                        ],
         'refund_fetch_multiple'                   => ['get',      'refunds',                                        'RefundController@getRefunds'                                       ],
@@ -648,6 +650,7 @@ final class Route
         'payment_auto_capture_email',
         'payment_force_authorize',
         'payment_capture_reminder',
+        'payment_capture_gateway_manual',
         'payment_refund_authorized',
         'payment_verify_multiple',
         'payment_authorize_time_out',
@@ -873,7 +876,6 @@ final class Route
         'upi_read_async',
         'upi_get_key_list',
         'account',
-        'callback_params',
         'dummy_route',
         'invoice_view_live',
         'invoice_view_test',
@@ -891,6 +893,8 @@ final class Route
         'gateway_payment_callback_kotak',
         'gateway_payment_callback_kotak_cancel',
         'mailgun_webhook',
+        'checkout_onyx',
+        'checkout_hosted',
     );
 
     public static $internalApps = array(

@@ -597,6 +597,8 @@ class Entity extends Base\PublicEntity
         $reportTxn[Payment\Entity::NOTES] = null;
         $reportTxn[self::PAYMENT_ID] = null;
         $reportTxn['settlement_utr'] = null;
+        $reportTxn[Payment\Entity::ORDER_ID] = null;
+        $reportTxn['order_receipt'] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -606,14 +608,24 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
-            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
-
             if ($payment->hasBeenCaptured() === false)
             {
                 // Skip if the payment was not captured.
                 return null;
             }
+
+            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
+
+            if ($payment->getApiOrderId() !== null)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
+            }
+
+
         }
         else if ($this->isTypeRefund())
         {
