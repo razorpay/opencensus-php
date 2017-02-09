@@ -11,7 +11,6 @@ class Entity extends Razorpay\Api\Entity
         return array(
             'card',
             'collection',
-            'batch_settlement',
             'key',
             'invoice',
             'merchant',

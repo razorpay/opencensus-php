@@ -401,6 +401,7 @@ app.controller('EntitiesCtrl', [
       },
       payment: {
         app_token: ['App Token'],
+        amount: ['Amount'],
         bank: ['Bank Code'],
         card_id: ['Card Id'],
         customer_id: ['Customer Id'],
