@@ -486,10 +486,13 @@ class Gateway
         return false;
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            $traceCode,
             [
                 'request'    => $request,
                 'gateway'    => $this->gateway,
@@ -497,10 +500,13 @@ class Gateway
             ]);
     }
 
-    protected function traceGatewayPaymentResponse($response, $input)
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            $traceCode,
             [
                 'response'   => $response,
                 'gateway'    => $this->gateway,

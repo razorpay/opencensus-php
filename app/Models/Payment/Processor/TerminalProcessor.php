@@ -44,7 +44,8 @@ class TerminalProcessor extends Base\Core
 
         foreach ($pastPayments as $pastPayment)
         {
-            if ($pastPayment->hasNotBeenAuthorized())
+            if (($pastPayment->hasNotBeenAuthorized()) and
+                ($pastPayment->getTerminalId() !== null))
             {
                 $failedTerminalIds[] = $pastPayment->getTerminalId();
             }

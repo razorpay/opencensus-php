@@ -45,6 +45,7 @@ class ErrorCode
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
+    const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';

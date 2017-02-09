@@ -166,6 +166,8 @@ return array(
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
+        // Makes blade sharper
+        RZP\Providers\KnifeServiceProvider::class,
 
         /*
          * Third party providers
