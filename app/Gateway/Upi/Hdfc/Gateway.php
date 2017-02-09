@@ -480,9 +480,11 @@ class Gateway extends Base\Gateway
             $this->formatAmount($input['refund']['amount']),
             $input['refund']['currency'],
             // Transaction Type
-            self::P2M,
+            // Refunds are P2P!
+            self::P2P,
             // Type of Payment (Pay or Collect)
-            'C',
+            // Refunds are considered "Pay" transactions
+            'PAY',
         ];
 
         $content = $this->transformRequestArrayToContent($data);
