@@ -21,3 +21,4 @@ do
 		break
 	fi
 done
+echo "API Server is operationally up at:" $url

@@ -5,7 +5,7 @@ DOCKER_RMI = docker rmi
 DOCKER_RM = docker rm
 DOCKER_COMPOSE_FILE = docker-compose.dev.yml
 DOCKER_IMAGES = $(shell docker images -q -a)
-DOCKER_PS = $(docker ps|grep "api_api_1\|api_db_live_1\|api_db_test_1\|api_cache_1\|razorpay-es"|cut -d ' ' -f1)
+DOCKER_PS = $(docker ps|grep "api_api_[0-9]\|api_api_db_[0-9]\|api_cache_[0-9]\|razorpay-es"|cut -d ' ' -f1)
 DOCKER_STATUS_CHECKER = dockerconf/docker-status-check.sh
 COMPOSER = `which composer`
 
@@ -27,9 +27,11 @@ build:
 	curl -X PUT "http://localhost:9200/audit_logs_test" -H 'Content-Type: application/json' -d @dockerconf/es_audit_logs.json
 	@echo "\n===================="
 	@echo "Container build Setup Complete. You may now execute 'docker ps' to see if things are up"
+	docker ps
 
 clean:
-	$(DOCKER_COMPOSE) down --remove-orphans
+	-$(DOCKER_COMPOSE) down --remove-orphans
+	@echo $(DOCKER_PS)
 	-$(DOCKER_RM) $(DOCKER_PS)
 	-$(DOCKER_RMI) $(DOCKER_IMAGES)
 
