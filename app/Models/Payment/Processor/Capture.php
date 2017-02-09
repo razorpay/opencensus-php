@@ -196,6 +196,10 @@ trait Capture
         if ($manualGatewayCaptureResult === true)
         {
             $msg = 'Successfully created a capture on gateway';
+
+            $payment->setGatewayCaptured(true);
+
+            $this->repo->saveOrFail($payment);
         }
         else if ($manualGatewayCaptureResult === false)
         {
