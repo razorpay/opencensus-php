@@ -605,7 +605,12 @@ angular.module('app.services', [])
       processing: 'bg-info',
 
       // refund
-      partial: 'bg-info' // payment.refund_status
+      partial: 'bg-info', // payment.refund_status
+
+      // invoice
+      draft: 'bg-light',
+      issued: 'bg-info',
+      expired: 'bg-danger'
     };
 
     return mapper[status];
