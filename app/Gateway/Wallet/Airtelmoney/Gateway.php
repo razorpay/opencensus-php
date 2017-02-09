@@ -72,7 +72,13 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'response'   => $input['gateway'],
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -170,7 +176,7 @@ class Gateway extends Base\Gateway
         $content = $this->xmlToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content'    => $content,
                 'gateway'    => $this->gateway,

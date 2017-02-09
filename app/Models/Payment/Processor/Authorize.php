@@ -132,7 +132,7 @@ trait Authorize
                 // record a failed payment for given terminal and continue
                 $terminalData['exception'] = $e;
 
-                $retryAttempts += 1;
+                $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
 
@@ -387,10 +387,14 @@ trait Authorize
         $this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
+
+        $this->runInternationalChecks($payment);
     }
 
+    // @codingStandardsIgnoreStart
     protected function validateS2SIfApplicable(Payment\Entity $payment)
     {
+    // @codingStandardsIgnoreEnd
         $merchant = $payment->merchant;
 
         // We need to check if S2S is enabled only if the payment create
@@ -476,11 +480,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
-        // International card validation happens here because we want to save the failure.
-        // For payment creation, gateway is compulsory field which is only finalized in
-        // previous step.
-        $this->runInternationalChecks($payment);
-
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
@@ -836,10 +835,8 @@ trait Authorize
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
-        else
-        {
-            // @todo for netbanking/wallets
-        }
+
+        //else @todo for netbanking/wallets
     }
 
     protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
@@ -996,6 +993,7 @@ trait Authorize
 
         $token = null;
 
+        // @codingStandardsIgnoreStart
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
@@ -1008,6 +1006,7 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+        // @codingStandardsIgnoreEnd
 
         return $token;
     }
@@ -1499,11 +1498,9 @@ trait Authorize
     {
         try
         {
-            $this->type = 'otp_generate';
-
             $data['otp_resend'] = $otpResend;
 
-            $request = $this->callGatewayFunction('otpGenerate', $data);
+            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
             return $this->processOtpFlowResponse($request, $payment);
         }

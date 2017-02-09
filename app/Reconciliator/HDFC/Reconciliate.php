@@ -48,15 +48,17 @@ class Reconciliate extends Base\Reconciliate
     public function getReconPassword($fileDetails)
     {
         $terminalId = explode('-', $fileDetails['file_name'])[0];
+        $gateway = Entity::HDFC;
 
         if (in_array($terminalId, self::CYBERSOURCE_HDFC_TERMINAL_IDS, true))
         {
             $terminalId = 'hdfc_' . $terminalId;
+            $gateway = Entity::CYBERSOURCE;
         }
 
         $terminalRepo = App::getFacadeRoot()['repo']->terminal;
 
-        $gatewayTerminal = $terminalRepo->getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($terminalId, Entity::HDFC);
+        $gatewayTerminal = $terminalRepo->getByGatewayTerminalIdAndGatewayAndReconPasswordNotNull($terminalId, $gateway);
 
         // Example case: Zips of all recon files in another zip file.
         // This zip file name does not contain terminal name.
