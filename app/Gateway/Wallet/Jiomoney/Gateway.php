@@ -716,7 +716,7 @@ class Gateway extends Base\Gateway
         return $this->input['terminal']['gateway_access_code'];
     }
 
-    protected function getSecret()
+    public function getSecret()
     {
         if ($this->mode === Mode::TEST)
         {
