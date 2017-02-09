@@ -212,16 +212,9 @@ class Gateway extends Base\Gateway
             Base\Entity::STATUS          => $content[AuthFields::STATUS],
             Base\Entity::MERCHANT_CODE   => $content[AuthFields::CODE],
             Base\Entity::ERROR_MESSAGE   => $content[AuthFields::MSG],
+            Base\Entity::BANK_PAYMENT_ID => $content[AuthFields::TRANSACTION_ID] ?? null,
+            Base\Entity::DATE            => $content[AuthFields::TRANSACTION_DATE] ?? null
         ];
-
-        if (array_key_exists(AuthFields::TRANSACTION_ID, $content) === true)
-        {
-            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[AuthFields::TRANSACTION_ID];
-        }
-        if (array_key_exists(AuthFields::DATE, $content) === true)
-        {
-            $attributes[Base\Entity::DATE]            = $content[AuthFields::TRANSACTION_DATE];
-        }
 
         return $attributes;
     }
@@ -277,13 +270,9 @@ class Gateway extends Base\Gateway
             Base\Entity::STATUS          => $authContent[VerifyFields::STATUS],
             Base\Entity::MERCHANT_CODE   => $merchantCode,
             Base\Entity::ERROR_MESSAGE   => $message,
+            Base\Entity::BANK_PAYMENT_ID => $authContent[VerifyFields::TRANSACTION_ID] ?? null,
+            Base\Entity::DATE            => $authContent[VerifyFields::TRANSACTION_DATE] ?? null
         ];
-
-        if (isset($authContent[VerifyFields::TRANSACTION_ID]) === true)
-        {
-            $contentToSave[Base\Entity::BANK_PAYMENT_ID] = $authContent[VerifyFields::TRANSACTION_ID];
-            $contentToSave[Base\Entity::DATE]   = $authContent[VerifyFields::TRANSACTION_DATE];
-        }
 
         return $contentToSave;
     }

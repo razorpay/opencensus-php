@@ -246,8 +246,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         {
             if($action === 'hash')
             {
-                $hash = $content['HASH'];
-                $content['HASH'] = str_shuffle($hash);
+                $content['HASH'] = str_shuffle($content['HASH']);
             }
         });
     }
