@@ -334,6 +334,11 @@ class Entity extends Base\PublicEntity
         {
             $input['wallet'] = null;
         }
+
+        if ($input['method'] !== Method::UPI)
+        {
+            $input['vpa'] = null;
+        }
     }
 
     protected function modifyConvertEmptyStringsToNull(& $input)
