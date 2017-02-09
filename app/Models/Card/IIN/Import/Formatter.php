@@ -107,6 +107,14 @@ class Formatter
                     $data[IIN::COUNTRY] = self::$countryMap[$value];
                     $data[IIN::TYPE] = self::$cardTypeMap[$value];
                     break;
+
+                case 'issuer':
+                    if (IFSC::exists($row[$index]) === true)
+                    {
+                        $input[IIN::ISSUER] = $row[$index];
+                        $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
+                    }
+                    break;
             }
         }
 
