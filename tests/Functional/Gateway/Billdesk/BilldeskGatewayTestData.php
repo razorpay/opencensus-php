@@ -285,7 +285,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+            'internal_error_code'   => 'GATEWAY_ERROR_INVALID_RESPONSE',
         ],
     ],
 
