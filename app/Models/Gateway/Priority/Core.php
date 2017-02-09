@@ -11,8 +11,6 @@ class Core extends Base\Core
 {
     const ALLOWED_METHODS = [Method::CARD, Method::NETBANKING];
 
-    protected $factory;
-
     protected $validator;
 
     // Namespace used for storing the data in store provider
@@ -21,10 +19,6 @@ class Core extends Base\Core
     protected function init()
     {
         $this->validator = new Validator;
-
-        $mock = $this->app['config']->get('app.data_store.mock');
-
-        $this->factory = new PrioritySet\Factory($mock);
     }
 
     public function addPriorityForMethod(string $method, array $priorityData)
@@ -132,9 +126,10 @@ class Core extends Base\Core
 
     protected function getPrioritySet(string $method)
     {
+        $mock = $this->app['config']->get('app.data_store.mock');
         $gatewayPriorityStoreType = $this->app['config']->get('app.gateway_priority.store_type');
 
-        $prioritySet = $this->factory->getStore($gatewayPriorityStoreType);
+        $prioritySet = PrioritySet\Factory::getStore($gatewayPriorityStoreType, $mock);
 
         $prioritySet->setPrefix($this->storeNameSpace);
 
