@@ -188,17 +188,24 @@ class Validator extends Base\Validator
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
-        $attributes = array(
+        // Dont validate these attributes for Marketplace accounts
+        if ($merchant->isAccount() === true)
+        {
+            return;
+        }
+
+        $attributes = [
             Entity::WEBSITE,
             Entity::CATEGORY,
             Entity::BILLING_LABEL,
-            Entity::TRANSACTION_REPORT_EMAIL);
+            Entity::TRANSACTION_REPORT_EMAIL
+        ];
 
         foreach ($attributes as $attribute)
         {
             $value = $merchant->getAttribute($attribute);
 
-            if (empty($value))
+            if (empty($value) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Please set value for attribute: ' . $attribute);
