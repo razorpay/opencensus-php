@@ -114,6 +114,19 @@ class PdfGenerator extends Base\Core
             throw new Exception\LogicException('Pdf generation failed: Content is empty.');
         }
 
+        $file = new \SplFileObject($pdf->getPdfFilename());
+
+        $this->trace->debug(
+            TraceCode::TRACE_MISC_CODE,
+            [
+                $file->getExtension(),
+                $file->getSize(),
+                $file->getType(),
+                $file->isFile(),
+                $file->isReadable(),
+                mime_content_type($pdf->getPdfFilename())
+            ]);
+
         return $pdfContent;
     }
 
