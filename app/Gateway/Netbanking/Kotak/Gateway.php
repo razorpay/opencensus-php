@@ -96,7 +96,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
-        $this->assertPaymentId($gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
+        $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
