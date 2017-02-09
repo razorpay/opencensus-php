@@ -47,6 +47,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
 
+        $this->assertPaymentId($input['gateway']['vpc_MerchTxnRef'], $input['payment']);
+
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
             // Payment fails since vpc_MerchTxnRef not set, throw exception

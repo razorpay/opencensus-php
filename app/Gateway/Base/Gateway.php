@@ -260,6 +260,15 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($gatewayPaymentId, $payment)
+    {
+        if ($gatewayPaymentId !== $payment['id'])
+        {
+            throw new Exception\LogicException(
+                'Invalid payment id passed');
+        }
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)

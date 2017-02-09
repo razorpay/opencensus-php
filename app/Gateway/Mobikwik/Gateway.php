@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
+        $this->assertPaymentId($input['gateway']['orderid'], $input['payment']);
+
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['gateway']['orderid'], Action::AUTHORIZE);
 
