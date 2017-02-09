@@ -72,6 +72,8 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->assertPaymentId($content['TXN_REF_NO'], $input['payment']);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [

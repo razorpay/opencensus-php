@@ -265,7 +265,7 @@ class Gateway
         if ($gatewayPaymentId !== $payment['id'])
         {
             throw new Exception\LogicException(
-                'Invalid payment id passed');
+                'Data tampering found.');
         }
     }
 
