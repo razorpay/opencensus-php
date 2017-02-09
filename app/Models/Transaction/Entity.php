@@ -575,10 +575,11 @@ class Entity extends Base\PublicEntity
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
-        $reportTxn[self::PAYMENT_ID] = null;
+        $reportTxn[Refund\Entity::PAYMENT_ID] = null;
         $reportTxn['settlement_utr'] = null;
         $reportTxn[Payment\Entity::ORDER_ID] = null;
         $reportTxn['order_receipt'] = null;
+        $reportTxn[Payment\Entity::METHOD] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -594,6 +595,7 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
+            $reportTxn[Payment\Entity::METHOD] = $payment->getMethod();
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
             $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
@@ -617,8 +619,7 @@ class Entity extends Base\PublicEntity
             }
 
             $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
-
-            $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
+            $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
 
             if ($payment->getApiOrderId() !== null)
             {
@@ -639,7 +640,7 @@ class Entity extends Base\PublicEntity
         {
             $adjustment = $this->source;
 
-            $reportTxn['description'] = $adjustment->getDescription();
+            $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
         }
 
         return $reportTxn;
