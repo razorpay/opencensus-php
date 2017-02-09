@@ -601,7 +601,7 @@ class Entity extends Base\PublicEntity
             $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
             $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
 
-            if ($payment->getApiOrderId() !== null)
+            if ($payment->hasOrder() === true)
             {
                 $order = $payment->order;
 
@@ -620,10 +620,10 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
+            $reportTxn[Refund\Entity::NOTES] = $refund->getNotesJson();
             $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
 
-            if ($payment->getApiOrderId() !== null)
+            if ($payment->hasOrder() === true)
             {
                 $order = $payment->order;
 
