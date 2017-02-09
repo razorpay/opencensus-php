@@ -246,6 +246,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         {
             if($action === 'hash')
             {
+                // Shuffling the hash so that has verification fails
                 $content['HASH'] = str_shuffle($content['HASH']);
             }
         });
