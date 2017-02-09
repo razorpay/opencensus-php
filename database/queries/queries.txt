@@ -1619,3 +1619,8 @@ SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE payments
     MODIFY COLUMN terminal_id VARCHAR(14) NULL;
 SET FOREIGN_KEY_CHECKS=1;
+
+
+# Drop merchants.features
+
+ALTER TABLE merchants DROP COLUMN features;
