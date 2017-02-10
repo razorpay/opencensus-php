@@ -8,6 +8,7 @@ class ErrorCodes
 {
     CONST SUCCESS      = '000';
     CONST RANDOM_ERROR = '10000';
+    CONST TRANSACTION_NOT_PRESENT = '910';
 
     protected static $errorCodeDesc = [
         '000'       => 'Success',

@@ -100,6 +100,20 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    public function testAuthCancelledVerify()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->doAuthPayment($this->payment);
+
+        $this->mockAuthCancelVerifyResponse();
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['razorpay_payment_id']);
+        });
+    }
+
     public function testVerifyMismatch()
     {
         $data = $this->testData[__FUNCTION__];
@@ -213,6 +227,15 @@ class NetbankingAirtelGatewayTest extends TestCase
     }
 
     protected function mockVerifyFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            $content['code'] = '1';
+            $content['errorCode'] = '9002';
+        });
+    }
+
+    protected function mockAuthCancelVerifyResponse()
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {

@@ -596,10 +596,9 @@ class Gateway extends Base\Gateway
                 throw new Exception\RuntimeException(self::ACTION_ERROR);
         }
 
-        $successValue = ErrorCodes::SUCCESS;
-
         if ((isset($content[$statusField]) === false) or
-            ($content[$statusField] !== $successValue))
+            (($content[$statusField] !== ErrorCodes::SUCCESS) and
+            ($content[$statusField]  !== ErrorCodes::TRANSACTION_NOT_PRESENT)))
         {
             $this->handleRequestError($content, $statusField);
         }
