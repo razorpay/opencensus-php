@@ -491,15 +491,15 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            ResponseFields::AMOUNT               => $payment[Payment::AMOUNT],
-            RequestFields::MERCHANT_ID           => $this->getMerchantId(),
-            Entity::RECEIVED                     => true,
-            Entity::EMAIL                        => $payment[Payment::EMAIL],
-            Entity::CONTACT                      => $payment[Payment::CONTACT],
-            ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
-            ResponseFields::RESPONSE_CODE        => StatusCode::API_SUCCESS,
-            ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
-            ResponseFields::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
+            Entity::AMOUNT               => $payment[Payment::AMOUNT],
+            Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
+            Entity::RECEIVED             => true,
+            Entity::EMAIL                => $payment[Payment::EMAIL],
+            Entity::CONTACT              => $payment[Payment::CONTACT],
+            Entity::STATUS_CODE          => StatusCode::SUCCESS,
+            Entity::RESPONSE_CODE        => StatusCode::API_SUCCESS,
+            Entity::RESPONSE_DESCRIPTION => 'APPROVED',
+            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
         );
 
         return $contentToSave;
