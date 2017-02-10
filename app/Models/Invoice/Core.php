@@ -520,6 +520,11 @@ class Core extends Base\Core
         {
             $invoice->generateSmsStatus($input);
         }
+
+        if (isset($input[Entity::DRAFT]))
+        {
+            $invoice->generateStatus($input);
+        }
     }
 
     protected function validateIfInvoiceCanBeDeleted(Entity $invoice)

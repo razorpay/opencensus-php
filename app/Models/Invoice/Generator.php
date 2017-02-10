@@ -125,6 +125,11 @@ class Generator extends Base\Core
         $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
 
         $this->invoice->setAmount($totalAmount);
+
+        if ($this->invoice->getStatus() === Status::ISSUED)
+        {
+            $this->issueInvoice();
+        }
     }
 
     /**

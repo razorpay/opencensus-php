@@ -142,10 +142,10 @@ class Validator extends Base\Validator
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::DRAFT               => 'sometimes|boolean',
     ];
 
     protected static $editIssuedRules  = [
-        Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',

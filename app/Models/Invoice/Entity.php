@@ -733,6 +733,10 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::STATUS, Status::DRAFT);
         }
+        else
+        {
+            $this->setAttribute(self::STATUS, Status::ISSUED);
+        }
     }
 
     // public function generateDiscount($input)
