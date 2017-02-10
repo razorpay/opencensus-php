@@ -211,7 +211,7 @@ class JiomoneyGatewayTest extends TestCase
 
         $wallet = $this->getLastEntity('wallet', true);
 
-        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+        $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
     public function testVerifyLateAuthorizedPayment()
