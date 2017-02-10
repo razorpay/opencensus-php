@@ -50,6 +50,8 @@ class Gateway extends Base\Gateway
 
     const JIOMONEY_UUID_FORMAT = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
 
+    const NUM_SECONDS_IN_DAY = 86400;
+
     protected $gateway = 'wallet_jiomoney';
 
     protected $sortRequestContent = false;
@@ -389,24 +391,24 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
 
-        $statusQueryRequest = $this->getStatusQueryRequestArray($input);
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $statusQueryResponse = $this->sendGatewayRequest($statusQueryRequest);
+        $paymentCreatedAt = $input['payment'][Payment::CREATED_AT];
 
-        $content = $this->jsonToArray($statusQueryResponse->body);
-
-        $response = $statusQueryResponse;
-
-        if ($this->validStatusQueryResponse($content) === false)
+        if (($now - $paymentCreatedAt) <= self::NUM_SECONDS_IN_DAY)
         {
-            $checkPaymentStatusRequest = $this->getCheckPaymentStatusRequest($input);
-
-            $checkPaymentStatusResponse = $this->sendGatewayRequest($checkPaymentStatusRequest);
-
-            $response = $checkPaymentStatusResponse;
-
-            $content = $this->jsonToArray($response->body);
+            list($content, $response) = $this->verifyUsingStatusQuery($input);
         }
+        else
+        {
+            list($content, $response) = $this->verifyUsingCheckPaymentStatus($input);
+        }
+
+        $verify->verifyResponse = $response;
+
+        $verify->verifyResponseBody = $response->body;
+
+        $verify->verifyResponseContent = $content;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -423,6 +425,37 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $content;
 
         return $content;
+    }
+
+    protected function verifyUsingStatusQuery(array $input)
+    {
+        $statusQueryRequest = $this->getStatusQueryRequestArray($input);
+
+        $statusQueryResponse = $this->sendGatewayRequest($statusQueryRequest);
+
+        $content = $this->jsonToArray($statusQueryResponse->body);
+
+        $response = $statusQueryResponse;
+
+        if ($this->validStatusQueryResponse($content) === false)
+        {
+            return $this->verifyUsingCheckPaymentStatus($verify);
+        }
+
+        return [$content, $response];
+    }
+
+    protected function verifyUsingCheckPaymentStatus(array $input)
+    {
+        $checkPaymentStatusRequest = $this->getCheckPaymentStatusRequest($input);
+
+        $checkPaymentStatusResponse = $this->sendGatewayRequest($checkPaymentStatusRequest);
+
+        $response = $checkPaymentStatusResponse;
+
+        $content = $this->jsonToArray($response->body);
+
+        return [$content, $response];
     }
 
     protected function verifyPayment($verify)
