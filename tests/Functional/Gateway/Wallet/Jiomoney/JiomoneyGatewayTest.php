@@ -208,10 +208,6 @@ class JiomoneyGatewayTest extends TestCase
         {
             $this->verifyPayment($id);
         });
-
-        $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
     }
 
     public function testVerifyLateAuthorizedPayment()
