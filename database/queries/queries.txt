@@ -1631,3 +1631,10 @@ ALTER TABLE merchants
 
 ALTER TABLE payments
     ADD INDEX `payments_amount_index` (`amount`);
+
+# Modify max_payment_amount column to be unsigned
+ALTER TABLE merchants
+    MODIFY COLUMN max_payment_amount INTEGER UNSIGNED NULL;
+
+ALTER TABLE refunds
+    MODIFY COLUMN amount INTEGER UNSIGNED NOT NULL;
