@@ -27,8 +27,9 @@ export const fetchCustomersForAutocomplete = () => {
   }
 }
 
-export const saveCustomer = (customer) => {
+export const saveCustomer = (params) => {
   return (dispatch) => {
+    let customer = new Customer(params)
     return dispatch({
       type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
       payload: customer.save()
@@ -36,8 +37,9 @@ export const saveCustomer = (customer) => {
   }
 }
 
-export const deleteCustomer = (customer) => {
+export const deleteCustomer = (params) => {
   return (dispatch) => {
+    let customer = new Customer(params)
     return customer.delete().then(() => {
       dispatch({
         type: CUSTOMER_DELETED,
@@ -47,18 +49,18 @@ export const deleteCustomer = (customer) => {
   }
 }
 
-export const highlightCustomerRow = (customer) => {
+export const highlightCustomerRow = (params) => {
   return (dispatch) => {
     dispatch({
       type: HIGHLIGHT_CUSTOMER,
-      payload: customer
+      payload: params
     })
 
     setTimeout(() => {
       dispatch({
         type: REMOVE_HIGHLIGHT
       })
-    }, 5000)
+    }, 6000)
   }
 }
 

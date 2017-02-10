@@ -2,6 +2,7 @@ import { Component } from 'react'
 import Modal from 'react-modal'
 import { connect } from 'react-redux'
 import * as ModalActions from 'merchant/modules/modals'
+import './ModalDialog.styl'
 
 Object.assign(Modal.defaultStyles.overlay, {
   backgroundColor: 'rgba(58, 63, 81, 0.8)',
@@ -32,6 +33,7 @@ class ModalDialog extends Component {
           isOpen={!!props.component}
           onRequestClose={props.closeModal}
           closeTimeoutMS={300}
+          class={`Modal Modal--${props.size}`}
         >
           {props.component}
         </Modal>

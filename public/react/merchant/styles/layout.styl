@@ -217,7 +217,8 @@ tr:hover .row-action > .btn-group {
 }
 
 .alert-sm {
-  padding: 5px 10px;
+  padding: 2px 4px;
+  font-size: 12px;
 }
 
 .label-required {
@@ -297,3 +298,46 @@ tr:hover .row-action > .btn-group {
   margin-left: 5px;
 }
 
+.rzpChecbox {
+  margin-bottom: 5px;
+
+  [type='checkbox']:not(:checked), [type='checkbox']:checked {
+    position: absolute;
+    left: -9999px;
+
+    + label {
+      position: relative;
+      padding-left: 25px;
+      cursor: pointer;
+
+      &::before {
+        content: '';
+        width: 20px;
+        height: 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 4px;
+        background-color: #f5f5f5;
+        display: inline-block;
+        position: absolute;
+        left: 0;
+      }
+
+      &::after {
+        content: '✔';
+        color: #7266ba;
+        position: absolute;
+        bottom: 0;
+        left: 4px;
+        transition: opacity 0.2s ease-out;
+      }
+    }
+  }
+
+  [type='checkbox']:not(:checked) + label::after {
+    opacity: 0
+  }
+
+  [type='checkbox']:checked + label::after {
+    opacity: 1
+  }
+}

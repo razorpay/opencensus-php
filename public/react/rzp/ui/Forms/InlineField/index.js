@@ -18,19 +18,19 @@ class InlineField extends Component {
       formName,
       normalizeValue,
       placeholder,
-      leftAlign = false,
+      rightAlign = false,
       ...otherProps
     } = this.props
     let currentValue = this.selector(this.props.state, this.props.name)
     currentValue = normalizeValue(currentValue)
 
     return (
-      <div class='inlineField'>
+      <div class={`inlineField ${this.props.disabled ? 'inlineField--disabled' : ''} ${rightAlign ? 'inlineField--right' : 'inlineField--left'}`}>
         <Field
           {...otherProps}
         />
 
-        <span class={`inlineField__value-container ${leftAlign ? 'left' : 'right'}`}>
+        <span class={`inlineField__value-container ${rightAlign ? 'right' : 'left'}`}>
           <span class={`${currentValue ? 'inlineField__value' : 'inlineField__placeholder'}`}>
             { currentValue || placeholder }
             { !this.props.disabled ? <i class='fa fa-pencil'></i> : '' }
@@ -47,8 +47,8 @@ InlineField.defaultProps = {
 
 InlineField.propTypes = {
   normalizeValue: PropTypes.func,
-  formName: PropTypes.string,
-  name: PropTypes.string
+  formName: PropTypes.string.isRequired,
+  name: PropTypes.string.isRequired
 }
 
 export default InlineField

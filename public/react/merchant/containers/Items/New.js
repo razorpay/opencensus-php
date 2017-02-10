@@ -7,15 +7,13 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import { required } from 'rzp/utils/validators'
 import * as ItemActions from 'merchant/modules/items'
-import Item from 'merchant/models/Item'
 
 @connect(
   null,
   ItemActions
 )
 @reduxForm({
-  form: 'newItem',
-  initialValues: new Item()
+  form: 'newItem'
 })
 export default class AddItem extends Component {
   constructor() {

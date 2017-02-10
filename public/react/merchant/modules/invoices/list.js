@@ -17,8 +17,9 @@ export const fetchInvoices = (params) => {
   }
 }
 
-export const saveInvoice = (invoice) => {
+export const saveInvoice = (params) => {
   return (dispatch) => {
+    let invoice = new Invoice(params)
     return dispatch({
       type: invoice.isNew ? INVOICE_CREATE : INVOICE_EDIT,
       payload: invoice.save()
@@ -26,8 +27,9 @@ export const saveInvoice = (invoice) => {
   }
 }
 
-export const deleteInvoice = (invoice) => {
+export const deleteInvoice = (params) => {
   return (dispatch) => {
+    let invoice = new Invoice(params)
     return invoice.delete().then(() => {
       dispatch({
         type: INVOICE_DELETED,

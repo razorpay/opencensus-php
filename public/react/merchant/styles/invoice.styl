@@ -1,6 +1,13 @@
+$semiMuted = rgba(0, 0, 0, 0.54)
+$muted = rgba(0, 0, 0, 0.27)
+
 .invoice-creation-container {
   max-width: 1110px;
   margin: auto;
+
+  .breadcrumb__backNav--heading {
+    margin-right: 5px;
+  }
 
   .invoice-container {
     max-width: 665px;
@@ -20,7 +27,7 @@
     label {
       font-size: 12px;
       font-weight: bold;
-      color: rgba(0, 0, 0, 0.54);
+      color: $semiMuted;
     }
   }
 
@@ -52,7 +59,6 @@
   }
 
   .inv__cta {
-    max-width: 280px;
     margin-top: 48px;
 
     .btn {
@@ -75,12 +81,43 @@
     }
   }
 
+  .inv__cta, .inv__info {
+    max-width: 280px;
+    margin-bottom: 16px;
+  }
+
+  .inv__info {
+    background-color: #fafafa;
+    padding: 24px;
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    border-radius: 2px;
+
+    h4 {
+      margin: 0;
+      font-weight: bold;
+    }
+
+    > dl {
+      margin: 0;
+      dt {
+        text-transform: uppercase;
+        font-size: 12px;
+        color: rgba(0,0,0,0.4);
+        margin-top: 24px;
+      }
+    }
+  }
+
   .invoice-lineitem {
+    .lineItem--empty {
+      color: $muted;
+    }
+
     .table > thead > tr > th {
       padding: 8px 16px;
       border-bottom: 1px solid #999;
       font-weight: bold;
-      color: rgba(0, 0, 0, 0.54);
+      color: $semiMuted;
       font-size: 12px;
       font-weight: bold;
       background-color: #fff;

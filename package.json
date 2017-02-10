@@ -32,7 +32,6 @@
     "webpack": "^2.1.0-beta.27"
   },
   "dependencies": {
-    "@selvagsz/redux-form": "^6.5.0",
     "babel-runtime": "^6.18.0",
     "classnames": "^2.2.5",
     "dfaqapi": "^0.0.2",
@@ -51,6 +50,7 @@
     "react-time": "^4.2.0",
     "react-tooltip": "^3.2.1",
     "redux": "^3.6.0",
+    "redux-form": "^6.5.0",
     "redux-thunk": "^2.1.0"
   }
 }

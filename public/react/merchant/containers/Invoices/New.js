@@ -5,6 +5,7 @@ import AsyncButton from 'react-async-button'
 import Alert from 'rzp/ui/Forms/Alert'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
+import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import Spinner from 'rzp/ui/Spinner'
@@ -18,8 +19,14 @@ import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
-import Invoice from 'merchant/models/Invoice'
+import IssueConfirmModal from './IssueConfirmModal'
 import * as ModalActions from 'merchant/modules/modals'
+import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
+
+const notificationClassMap = {
+  sent: 'text-success',
+  pending: 'text-warning'
+}
 
 const selector = formValueSelector('newInvoice')
 @connect(
@@ -29,8 +36,17 @@ const selector = formValueSelector('newInvoice')
       customers,
       items: state.items.items,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
-      isIssued: selector(state, 'status') === 'issued',
-      invoice_line_items: selector(state, 'line_items') || []
+      invoice: selector(
+        state,
+        'status',
+        'line_items',
+        'short_url',
+        'payment_id',
+        'notes',
+        'customer_details',
+        'email_status',
+        'sms_status'
+      )
     }
   },
   {
@@ -44,7 +60,7 @@ const selector = formValueSelector('newInvoice')
 )
 @reduxForm({
   form: 'newInvoice',
-  initialValues: new Invoice({
+  initialValues: {
     date: Math.ceil(new Date().getTime()/1000),
     draft: 0,
     type: 'invoice',
@@ -54,7 +70,7 @@ const selector = formValueSelector('newInvoice')
         amountInINR: '0.00'
       }
     ]
-  })
+  }
 })
 export default class InvoicesNewContainer extends Component {
   static contextTypes = {
@@ -97,7 +113,8 @@ export default class InvoicesNewContainer extends Component {
   }
 
   calculateItemsSubTotal() {
-    return this.props.invoice_line_items.reduce((total, line_item) => {
+    let lineItems = this.props.invoice.line_items || []
+    return lineItems.reduce((total, line_item) => {
       return total + (Number(line_item.quantity) * Number(line_item.amountInINR))
     }, 0).toFixed(2)
   }
@@ -139,13 +156,25 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
+  saveAndIssue(props) {
+    this.props.openModal({
+      size: 'small',
+      component: <IssueConfirmModal
+        customer={this.props.customer}
+        onIssue={this.save}
+      />
+    })
+  }
+
   render() {
     const {
       handleSubmit,
       customer,
-      isIssued
+      invoice = {},
     } = this.props
 
+    let isIssued = invoice.status === 'issued'
+    let isNew = !!this.props.id
     let invoiceTotal = this.calculateItemsSubTotal()
     let customerDetails = ''
     if (customer) {
@@ -175,8 +204,14 @@ export default class InvoicesNewContainer extends Component {
                         </a>
                       </li>
                       <li>
-                        <h3 class='breadcrumb__backNav--heading'>New Invoice</h3>
-                        <span class='label label-draft'>Unsaved</span>
+                        <h3 class='breadcrumb__backNav--heading'>
+                          { this.props.id || 'New Invoice' }
+                        </h3>
+                        {
+                          isNew ?
+                            <InvoiceStatus status={invoice.status} /> :
+                            <span class='label label-muted'>Unsaved</span>
+                        }
                       </li>
                     </ol>
 
@@ -197,16 +232,18 @@ export default class InvoicesNewContainer extends Component {
                               class='form-control input-xs'
                               placeholder='Receipt number'
                               size='25'
+                              disabled={isIssued}
                             />
                           </div>
 
                           <InlineField
                             formName='newInvoice'
                             name='description'
-                            component='textarea'
+                            component={AutoResizeTextarea}
                             class='form-control input-xs'
                             placeholder='Summary or brief this invoice'
                             rows='2'
+                            disabled={isIssued}
                           />
                         </div>
                         <div class='col-md-6 text-right'>
@@ -258,7 +295,7 @@ export default class InvoicesNewContainer extends Component {
                               name='date'
                               component={DatePickerField}
                               class='form-control'
-                              leftAlign={true}
+                              rightAlign={true}
                               normalizeValue={(value) => {
                                 if (value) {
                                   return moment.unix(value).format('DD MMM YYYY')
@@ -285,7 +322,7 @@ export default class InvoicesNewContainer extends Component {
                           <InlineField
                             formName='newInvoice'
                             name='terms'
-                            component='textarea'
+                            component={AutoResizeTextarea}
                             class='form-control input-xs'
                             rows={3}
                             placeholder='Terms and Conditions'
@@ -302,7 +339,12 @@ export default class InvoicesNewContainer extends Component {
                         type='button'
                         class='btn btn-primary btn-block btn-lg'
                         disabled={this.state.isSaving}
-                        onClick={handleSubmit(this.save)}
+                        onClick={handleSubmit((props) => {
+                          return this.saveAndIssue({
+                            ...props,
+                            ...{ draft: 0 }
+                          })
+                        })}
                       >
                         <i class='fa fa-check'></i>
                         <span>Finalize and Issue</span>
@@ -315,7 +357,12 @@ export default class InvoicesNewContainer extends Component {
                           text='Save Changes'
                           pendingText='Saving...'
                           disabled={this.state.isSaving}
-                          onClick={handleSubmit(this.save)}
+                          onClick={handleSubmit((props) => {
+                            return this.save({
+                              ...props,
+                              ...{ draft: 1 }
+                            })
+                          })}
                         >
                           <i class='fa fa-floppy-o'></i>
                           <span>Save Changes</span>
@@ -331,6 +378,67 @@ export default class InvoicesNewContainer extends Component {
                       </div>
                     </div>
                   </div>
+
+                  {
+                    invoice.status && invoice.status !== 'draft' &&
+                    <div class='inv__info'>
+                      <h4>Invoice {invoice.status}</h4>
+
+                      <dl>
+                        <dt>Payment Link</dt>
+                        <dd>{invoice.short_url}</dd>
+
+                        {
+                          invoice.customer_details.customer_email &&
+                          <div>
+                            <dt>Email Sent to</dt>
+                            <dd>
+                              {invoice.customer_details.customer_email}
+                              <span
+                                style={{ marginLeft: '10px' }}
+                                class={`${notificationClassMap[invoice.email_status]}`}
+                              >
+                                {invoice.email_status ? `(${invoice.email_status})` : ''}
+                              </span>
+                            </dd>
+                          </div>
+                        }
+
+                        {
+                          invoice.customer_details.customer_contact &&
+                          <div>
+                            <dt>SMS Sent to</dt>
+                            <dd>
+                              {invoice.customer_details.customer_contact}
+                              <span
+                                style={{ marginLeft: '10px' }}
+                                class={`${notificationClassMap[invoice.sms_status]}`}
+                              >
+                                {invoice.sms_status ? `(${invoice.sms_status})` : ''}
+                              </span>
+                            </dd>
+                          </div>
+                        }
+                      </dl>
+                    </div>
+                  }
+                  {
+                    Object.keys(invoice.notes).length ?
+                    <div class='inv__info'>
+                      <h4>Internal Notes</h4>
+
+                      <dl>
+                        {
+                          Object.keys(invoice.notes).map((key) => (
+                            <div>
+                              <dt>{key}</dt>
+                              <dd>{invoice.notes[key]}</dd>
+                            </div>
+                          ))
+                        }
+                      </dl>
+                    </div> : ''
+                  }
                 </div>
               </div>
             </form>

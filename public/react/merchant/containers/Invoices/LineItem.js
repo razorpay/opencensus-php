@@ -64,9 +64,10 @@ export default class InvoiceLineItem extends Component {
       onRemove
     } = this.props
     let selectedOption = this.props.invoice_line_items[index]
+    let isEmptyRow = !((selectedOption.item_id && selectedOption.item_id !== 'NULL') || selectedOption.name)
 
     return (
-      <tr>
+      <tr class={`${isEmptyRow ? 'lineItem--empty' : ''}`}>
         <td>
           <span class='remove-row-action' onClick={() => onRemove(index)}>
             <i class='fa fa-times-circle text-danger'></i>
@@ -103,23 +104,27 @@ export default class InvoiceLineItem extends Component {
         </td>
 
         <td>
-          <Field
+          <InlineField
+            formName='newInvoice'
             name={`${fieldName}.amountInINR`}
             component='input'
             class='form-control text-right input-xs'
             type='number'
+            rightAlign={true}
             disabled={true}
           />
         </td>
 
         <td>
-          <Field
+          <InlineField
+            formName='newInvoice'
             name={`${fieldName}.quantity`}
             component='input'
             class='form-control text-right input-xs'
             type='number'
             min={1}
-            disabled={disabled}
+            rightAlign={true}
+            disabled={disabled || isEmptyRow}
           />
         </td>
 

@@ -27,8 +27,9 @@ export const fetchItemsForAutocomplete = () => {
   }
 }
 
-export const saveItem = (item) => {
+export const saveItem = (params) => {
   return (dispatch) => {
+    let item = new Item(params)
     return dispatch({
       type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
       payload: item.save()
@@ -36,8 +37,9 @@ export const saveItem = (item) => {
   }
 }
 
-export const deleteItem = (item) => {
+export const deleteItem = (params) => {
   return (dispatch) => {
+    let item = new Item(params)
     return item.delete().then(() => {
       dispatch({
         type: ITEM_DELETED,
@@ -47,18 +49,18 @@ export const deleteItem = (item) => {
   }
 }
 
-export const highlightItemRow = (item) => {
+export const highlightItemRow = (params) => {
   return (dispatch) => {
     dispatch({
       type: HIGHLIGHT_ITEM,
-      payload: item
+      payload: params
     })
 
     setTimeout(() => {
       dispatch({
         type: REMOVE_ITEM_HIGHLIGHT
       })
-    }, 5000)
+    }, 6000)
   }
 }
 

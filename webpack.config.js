@@ -10,7 +10,6 @@ const webpackConfig = {
     alias: {
       moment: 'moment/min/moment.min.js',
       react: path.resolve(__dirname, 'node_modules/react'),
-      'redux-form': path.resolve(__dirname, 'node_modules/@selvagsz/redux-form'),
     },
     modules: [
       path.resolve(__dirname, 'node_modules'),
