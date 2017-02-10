@@ -231,4 +231,15 @@ class Reconciliate
             FileProcessor::LINES_FROM_BOTTOM => 0
         ];
     }
+
+    /**
+     * Bank for which reconciliator is for
+     */
+    public function getBank()
+    {
+        if (empty(self::BANK) === false)
+        {
+            return self::BANK;
+        }
+    }
 }

@@ -2,11 +2,15 @@
 
 namespace RZP\Reconciliator\Freecharge;
 
+use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
+    const BANK = Orchestrator::FREECHARGE;
+
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -29,5 +33,14 @@ class Reconciliate extends Base\Reconciliate
             FileProcessor::LINES_FROM_TOP    => 0,
             FileProcessor::LINES_FROM_BOTTOM => 3
         ];
+    }
+
+    public function fetchSettlementFileLink(string $text)
+    {
+        /**
+         * 1. Fetch all hyperlinks 'a' tags
+         * 2. Get the one with text as 'VIEW REPORT'
+         * 3. Extract the href link
+         */
     }
 }

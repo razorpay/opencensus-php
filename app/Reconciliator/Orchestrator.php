@@ -42,6 +42,7 @@ class Orchestrator extends Base\Core
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
+     * The banks send their MIS files through this sender address
      */
     const GATEWAY_SENDER_MAPPING = [
         self::HDFC       => ['payoutreport@hdfcbank.com'],
@@ -51,8 +52,8 @@ class Orchestrator extends Base\Core
         self::MOBIKWIK   => [],
         self::PAYTM      => [],
         self::KOTAK      => ['BankAlerts@kotak.com'],
-        self::OLAMONEY   => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE => [],
+        self::OLAMONEY   => [],
+        self::FREECHARGE => ['noreply@freechargemail.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN      => ['prashanth.yv@razorpay.com'],
@@ -65,6 +66,15 @@ class Orchestrator extends Base\Core
         self::HDFC,
         self::KOTAK,
         self::OLAMONEY,
+        self::FREECHARGE,
+    ];
+
+    /**
+     * Banks or Wallets which do not give the MIS file in attachments but as a
+     * link
+     */
+    const LINK_BASED_BANKS = [
+        self::FREECHARGE,
     ];
 
     /*********************
@@ -258,6 +268,16 @@ class Orchestrator extends Base\Core
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
         $this->setGatewayFromEmail();
+
+        if (in_array($this->bank, self::LINK_BASED_BANKS, true))
+        {
+            // Fetches the documents from the link, stores them in tmp
+            // after extraction if neccessary, deletes the zip file, keeping
+            // the imp files
+            $this->fetchAndStoreLinkDocuments($this->emailDetails);
+
+            $this->validator->validateAttachments($input);
+        }
 
         $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
 
@@ -678,6 +698,8 @@ class Orchestrator extends Base\Core
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
 
+        $this->bank = $gateway;
+
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
 
@@ -838,5 +860,23 @@ class Orchestrator extends Base\Core
     protected function increaseAllowedSystemLimits()
     {
         RuntimeManager::setTimeLimit(3600);
+    }
+
+    protected function fetchAndStoreLinkDocuments(array $emailDetails, array & $input)
+    {
+
+        $links = $this->gatewayReconciliator
+                      ->fetchLinksToDownload($emailDetails['body']);
+
+        foreach ($links as $link)
+        {
+            $file = $this->gatewayReconciliator
+                         ->getFileFromLink($link);
+
+            $attachmentCount = $input['attachment-count'];
+
+            $input['attachment-' . $attachmentCount] = $file;
+            $input['attachment-count'] = (string)((int) $attachmentCount + 1);
+        }
     }
 }

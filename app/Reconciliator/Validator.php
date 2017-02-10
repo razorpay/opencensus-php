@@ -22,9 +22,10 @@ class Validator
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC     => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::KOTAK    => "/^PG Transaction File/",
-        Orchestrator::OLAMONEY => "/^Merchant Settlement File/",
+        Orchestrator::HDFC       => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::KOTAK      => "/^PG Transaction File/",
+        Orchestrator::OLAMONEY   => "/^Merchant Settlement File/",
+        Orchestrator::FREECHARGE => "/^Merchant Transaction Report/",
     ];
 
     const GATEWAY_BODY_REGEX = [
@@ -62,6 +63,11 @@ class Validator
     public function validateKotakEmail(array $emailDetails)
     {
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
+    }
+
+    public function validateFreechargeEmail(array $emailDetails) : boolean
+    {
+        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::FREECHARGE);
     }
 
     public function validateOlamoneyEmail(array $emailDetails)
