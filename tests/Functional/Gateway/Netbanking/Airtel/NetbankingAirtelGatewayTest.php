@@ -244,6 +244,7 @@ class NetbankingAirtelGatewayTest extends TestCase
         {
             $content['code'] = '1';
             $content['errorCode'] = '910';
+            $content['txns'] = [];
         });
     }
 

@@ -60,6 +60,9 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->assertPaymentId($input['payment']['id'],
+                               $content[AuthFields::TRANSACTION_REFERENCE_NO]);
+
         $this->traceGatewayPaymentResponse($content, $input);
 
         $this->verifySecureHash($content);
