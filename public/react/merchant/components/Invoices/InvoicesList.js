@@ -9,7 +9,11 @@ const InvoiceListItem = (props) => {
   return (
     <tr class={canHighlight ? 'luminate' : ''}>
       <td>
-        <a href={`#/app/invoices/${invoice.id}/details`}>{invoice.id}</a>
+        <a
+          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : `#/app/invoices/${invoice.id}/details`}`}
+        >
+          {invoice.id}
+        </a>
       </td>
       <td>
         <Time value={invoice.date} />
