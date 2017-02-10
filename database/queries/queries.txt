@@ -1620,7 +1620,19 @@ ALTER TABLE payments
     MODIFY COLUMN terminal_id VARCHAR(14) NULL;
 SET FOREIGN_KEY_CHECKS=1;
 
+# Signup flow changes
+ALTER TABLE merchants
+    MODIFY name VARCHAR(255) default null;
 
-# Drop merchants.features
+ALTER TABLE payments
+    ADD INDEX `payments_amount_index` (`amount`);
 
+# Modify max_payment_amount column to be unsigned
+ALTER TABLE merchants
+    MODIFY COLUMN max_payment_amount INTEGER UNSIGNED NULL;
+
+ALTER TABLE refunds
+    MODIFY COLUMN amount INTEGER UNSIGNED NOT NULL;
+
+# Drop merchants features
 ALTER TABLE merchants DROP COLUMN features;

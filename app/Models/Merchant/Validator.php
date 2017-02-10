@@ -21,11 +21,12 @@ class Validator extends Base\Validator
 
     protected static $createRules = array(
         Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
-        Entity::NAME                        => 'required|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
     );
 
     protected static $editRules = array(
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',

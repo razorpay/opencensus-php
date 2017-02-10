@@ -4,12 +4,15 @@ namespace RZP\Tests\Functional\Payment;
 
 use Redis;
 
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Models\DataStore\PrioritySet\Implementation\Redis as StoreImplementation;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
-use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class GatewayPriorityTest extends TestCase
 {
-    use RequestResponseFlowTrait;
+    use PaymentTrait;
 
     public function setUp()
     {
@@ -183,5 +186,25 @@ class GatewayPriorityTest extends TestCase
     public function testInvalidGatewayForMethod()
     {
         $this->startTest();
+    }
+
+    public function testAuthorizePaymentWithRedisException()
+    {
+        config(['app.data_store.mock' => false]);
+
+        $this->fixtures->create('terminal:all_shared_terminals');
+
+        $storeStub = $this->createMock(StoreImplementation::class);
+
+        $storeStub->method('fetchOrFail')
+                    ->will($this->throwException(new Exception\ServerErrorException(
+                                    'Error fetching from redis',
+                                    ErrorCode::SERVER_ERROR_REDIS_EXCEPTION)));
+
+        $this->defaultAuthPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['status'], 'authorized');
     }
 }
