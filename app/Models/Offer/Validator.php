@@ -3,6 +3,7 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -114,11 +115,13 @@ class Validator extends Base\Validator
 
     protected function validateOfferPeriod(array $input)
     {
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
         $startsAt = $input[Entity::STARTS_AT];
 
         $endsAt = $input[Entity::ENDS_AT];
 
-        if ($startsAt >= $endsAt)
+        if (($startsAt <= $now) or ($endsAt <= $now) or ($startsAt >= $endsAt))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);

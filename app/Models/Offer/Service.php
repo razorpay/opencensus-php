@@ -59,4 +59,16 @@ class Service extends Base\Service
 
         return $offer->toArrayPublic();
     }
+
+    public function bulkDeactivate()
+    {
+        $offers = (new Core)->bulkDeactivate();
+
+        if ($offers !== null)
+        {
+            return $offers->toArrayPublic();
+        }
+
+        return null;
+    }
 }

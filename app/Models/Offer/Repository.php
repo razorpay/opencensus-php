@@ -2,12 +2,13 @@
 
 namespace RZP\Models\Offer;
 
+use Carbon\Carbon;
 use DB;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use Carbon\Carbon;
+use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
@@ -46,6 +47,27 @@ class Repository extends Base\Repository
                 ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
 
         return $query->get();
+    }
+
+    public function fetchSharedOffers()
+    {
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
+                        ->where(Entity::ACTIVE, '=', true)
+                        ->where(Entity::STARTS_AT, '<=', $now)
+                        ->where(Entity::ENDS_AT, '>=', $now)
+                        ->get();
+    }
+
+    public function fetchActiveExpiredOffers()
+    {
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()
+                    ->where(Entity::ACTIVE, '=', true)
+                    ->where(Entity::ENDS_AT, '<=', $now)
+                    ->get();
     }
 
     protected function buildQuery(Entity $newOffer, string $merchantId)

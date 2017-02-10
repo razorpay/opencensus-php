@@ -93,6 +93,13 @@ class Core extends Base\Core
         return null;
     }
 
+    public function fetchSharedOffers()
+    {
+        $offers = $this->repo->offer->fetchSharedOffers();
+
+        return $offers;
+    }
+
     public function addIins(Entity $offer, array $newIins)
     {
         $offer->addIins($newIins);
@@ -115,5 +122,17 @@ class Core extends Base\Core
         $this->repo->saveOrFail($offer);
 
         return $offer;
+    }
+
+    public function bulkDeactivate()
+    {
+        $activeExpiredOffers = $this->repo->offer->fetchActiveExpiredOffers();
+
+        $activeExpiredOffers->each(function ($offer)
+        {
+            $this->deactivate($offer);
+        });
+
+        return $activeExpiredOffers;
     }
 }

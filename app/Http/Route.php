@@ -337,6 +337,7 @@ final class Route
         'offer_fetch_by_id'                       => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
         'offer_iins_add'                          => ['patch',    'offers/{id}/iins/add',                           'OfferController@addIins'                                           ],
         'offer_deactivate'                        => ['patch',    'offers/{id}/deactivate',                         'OfferController@deactivateOffer'                                   ],
+        'offer_bulk_deactivate'                   => ['patch',    'offers/deactivate',                              'OfferController@bulkDeactivateOffers'                              ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
@@ -717,6 +718,7 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
+        'offer_bulk_deactivate'
     );
 
     public static $proxy = array(
@@ -919,6 +921,7 @@ final class Route
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
+            'offer_bulk_deactivate'
         ),
 
         'kotak' => array(

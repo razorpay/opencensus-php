@@ -286,13 +286,25 @@ class Checkout
 
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
-        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
+        $offerCore = new Offer\Core;
 
-        $data['offer'] = null;
+        $data['offers'] = [
+            'shared' => null,
+            'direct' => null
+        ];
+
+        $sharedOffers = $offerCore->fetchSharedOffers();
+
+        if ($sharedOffers !== null)
+        {
+            $data['offers']['shared'] = $sharedOffers->toArrayPublic();
+        }
+
+        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
         if ($orderId !== null)
         {
-            $data['offer'] = (new Offer\Core)->fetchForOrder($orderId, $merchant);
+            $data['offers']['direct'] = $offerCore->fetchForOrder($orderId, $merchant);
         }
     }
 }

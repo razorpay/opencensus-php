@@ -261,6 +261,14 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOM_SHORT_DISPLAY_TEXT] = $customShortDisplayText;
     }
 
+    public function setPaymentNetworkAttribute(string $paymentNetwork)
+    {
+        if ($this->getPaymentMethod() === Payment\Method::WALLET)
+        {
+            $this->attributes[self::PAYMENT_NETWORK] = strtolower($paymentNetwork);
+        }
+    }
+
     public function addIins(array $newIins)
     {
         $this->getValidator()->validateIins($newIins);

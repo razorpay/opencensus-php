@@ -27,7 +27,7 @@ class CreateOrders extends Migration
 
             $table->char(Order::MERCHANT_ID, Order::ID_LENGTH);
 
-            $table->char(Order::OFFER_ID, 14)->nullable();
+            $table->char(Order::OFFER_ID, Order::ID_LENGTH)->nullable();
 
             $table->integer(Order::AMOUNT)
                   ->unsigned();

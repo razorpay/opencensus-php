@@ -68,7 +68,5 @@ class Core extends Base\Core
         ]);
 
         $order->offer()->associate($offer);
-
-        // return $order;
     }
 }
