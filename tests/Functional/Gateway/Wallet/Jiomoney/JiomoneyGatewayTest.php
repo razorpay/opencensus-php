@@ -82,7 +82,7 @@ class JiomoneyGatewayTest extends TestCase
         $this->assertTestResponse($refund);
     }
 
-    public function testPartialRefundPayment($value='')
+    public function testPartialRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
@@ -251,8 +251,6 @@ class JiomoneyGatewayTest extends TestCase
         });
 
         $wallet = $this->getLastEntity('wallet', true);
-
-        $this->assertNotNull($wallet['gateway_payment_id']);
     }
 
     public function testAuthorizedPaymentRefund()
