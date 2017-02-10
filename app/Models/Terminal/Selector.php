@@ -194,7 +194,7 @@ class Selector
         //
         // Also removes failed terminals from exclusion list. This will
         // ensure the terminal is not rotated below the original terminals
-        if ($this->payment->isMethod(Payment\Method::NETBANKING))
+        if ($this->payment->isNetbanking())
         {
             $options->setMultiple(false);
             $options->setFailedTerminals([]);
