@@ -260,6 +260,18 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
+    {
+        if ($actualPaymentId !== $expectedPaymentId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
