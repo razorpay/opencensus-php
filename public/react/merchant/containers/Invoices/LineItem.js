@@ -67,7 +67,7 @@ export default class InvoiceLineItem extends Component {
     let isEmptyRow = !((selectedOption.item_id && selectedOption.item_id !== 'NULL') || selectedOption.name)
 
     return (
-      <tr class={`${isEmptyRow ? 'lineItem--empty' : ''}`}>
+      <tr class={`${isEmptyRow ? 'lineItem--empty' : ''} ${disabled ? 'lineItem--disabled' : ''}`}>
         <td>
           <span class='remove-row-action' onClick={() => onRemove(index)}>
             <i class='fa fa-times-circle text-danger'></i>
@@ -99,6 +99,7 @@ export default class InvoiceLineItem extends Component {
               component='textarea'
               class='form-control input-xs'
               placeholder='Enter item description'
+              disabled={disabled}
             />
           </div>
         </td>

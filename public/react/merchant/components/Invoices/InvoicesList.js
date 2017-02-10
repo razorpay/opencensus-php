@@ -47,16 +47,6 @@ const InvoiceListItem = (props) => {
                 <span>edit</span>
               </button>
             </div>
-            <div class='tooltip-wrapper' data-tip={!invoice.isEditable ? 'Paid invoice cannot be deleted' : ''}>
-              <button
-                class='btn btn-xs btn-default'
-                disabled={!invoice.isEditable}
-                onClick={props.onDeleteClick}
-              >
-                <i class='fa fa-trash text-danger'></i>
-                <span>delete</span>
-              </button>
-            </div>
           </div>
         </div>
         <ReactTooltip effect='solid' />

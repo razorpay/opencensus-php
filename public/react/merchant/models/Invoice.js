@@ -17,14 +17,16 @@ const createFields = [
   'terms',
   'description',
   'receipt',
-  'notes'
+  'notes',
+  'comment',
 ]
 
 const editableFieldsInIssuedState = [
   'date',
   'terms',
   'notes',
-  'receipt'
+  'receipt',
+  'comment',
 ]
 
 export default class Invoice extends Entity {

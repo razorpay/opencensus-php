@@ -34,6 +34,7 @@ class ModalDialog extends Component {
           onRequestClose={props.closeModal}
           closeTimeoutMS={300}
           class={`Modal Modal--${props.size}`}
+          contentLabel='Modal'
         >
           {props.component}
         </Modal>

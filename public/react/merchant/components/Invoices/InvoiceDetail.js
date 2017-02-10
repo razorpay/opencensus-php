@@ -35,7 +35,6 @@ export default (props) => {
               </button> :
               <button
                 class='btn btn-primary btn-sm pull-right'
-                onClick={props.onSendInvoice}
               >
                 Send Invoice
               </button>

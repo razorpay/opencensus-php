@@ -18,7 +18,6 @@ export default class InvoicesListContainer extends ListContainer {
   constructor() {
     super(...arguments)
     this.editInvoice = ::this.editInvoice
-    this.deleteInvoice = ::this.deleteInvoice
   }
 
   fetchEntityList(params) {
@@ -45,29 +44,6 @@ export default class InvoicesListContainer extends ListContainer {
         id: invoice.id
       })
     }
-  }
-
-  deleteInvoice(invoice) {
-    this.context.confirm({
-      message: 'Are you sure to delete the invoice ?',
-      affirmativeLabel: 'Delete',
-      affirmativePendingLabel: 'Deleting...',
-      action: () => this.props.deleteInvoice(invoice).then(() => {
-        this.setState({
-          status: {
-            type: 'success',
-            message: 'Invoice deleted successfully'
-          }
-        })
-      }).catch((err) => {
-        this.setState({
-          status: {
-            type: 'error',
-            message: err.errors
-          }
-        })
-      })
-    })
   }
 
   render() {
@@ -122,7 +98,6 @@ export default class InvoicesListContainer extends ListContainer {
               isLoading={loading}
               highlightRow={(invoice) => invoice.id === this.props.highLightInvoiceId}
               onEdit={this.editInvoice}
-              onDelete={this.deleteInvoice}
             />
 
             <Pager

@@ -89,7 +89,6 @@ export default class InvoiceDetailContainer extends Component {
             statusMsg={statusMsg}
             onNotify={this.notifyCustomer}
             onIssue={this.issueInvoice}
-            onSendInvoice={this.onSendInvoice}
           />
         </div>
       </div>

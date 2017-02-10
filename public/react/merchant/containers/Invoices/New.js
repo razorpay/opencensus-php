@@ -2,21 +2,21 @@ import { Component, PropTypes } from 'react'
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
+import Time from 'rzp/ui/Time'
 import Alert from 'rzp/ui/Forms/Alert'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
-import PowerSelect from 'rzp/ui/Select/PowerSelect'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import Spinner from 'rzp/ui/Spinner'
 import InlineField from 'rzp/ui/Forms/InlineField'
-import { required } from 'rzp/utils/validators'
+import Clipboard from 'rzp/ui/Clipboard'
 import { findBy } from 'rzp/utils/rzp-utils'
 
 import LineItemTable from './LineItemTable'
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
 import { fetchItemsForAutocomplete } from 'merchant/modules/items'
-import { saveInvoice, highLightInvoice } from 'merchant/modules/invoices/list'
+import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
 import { fetchInvoice } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import IssueConfirmModal from './IssueConfirmModal'
@@ -26,6 +26,22 @@ import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
 const notificationClassMap = {
   sent: 'text-success',
   pending: 'text-warning'
+}
+
+function validate(values) {
+  let errors = {}
+  let lineItems = values.line_items.filter((item) => !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name))
+
+  if (!values.customer_id) {
+    errors.customer_id = 'Please select a customer'
+  }
+
+  if (!lineItems.length) {
+    errors.line_items = [{
+      item_id: 'Please select an item'
+    }]
+  }
+  return errors
 }
 
 const selector = formValueSelector('newInvoice')
@@ -38,6 +54,8 @@ const selector = formValueSelector('newInvoice')
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       invoice: selector(
         state,
+        'id',
+        'receipt',
         'status',
         'line_items',
         'short_url',
@@ -45,7 +63,9 @@ const selector = formValueSelector('newInvoice')
         'notes',
         'customer_details',
         'email_status',
-        'sms_status'
+        'sms_status',
+        'paid_at',
+        'payment_id'
       )
     }
   },
@@ -54,12 +74,15 @@ const selector = formValueSelector('newInvoice')
     fetchItemsForAutocomplete,
     saveInvoice,
     highLightInvoice,
+    deleteInvoice,
     fetchInvoice,
     ...ModalActions
   }
 )
 @reduxForm({
   form: 'newInvoice',
+  enableReInitialize: true,
+  validate,
   initialValues: {
     date: Math.ceil(new Date().getTime()/1000),
     draft: 0,
@@ -74,17 +97,21 @@ const selector = formValueSelector('newInvoice')
 })
 export default class InvoicesNewContainer extends Component {
   static contextTypes = {
-    ngRouter: PropTypes.object
+    ngRouter: PropTypes.object,
+    confirm: PropTypes.func
   }
 
   constructor() {
     super(...arguments)
     this.state = {
-      errors: null
+      status: {}
     }
     this.save = ::this.save
     this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
     this.quickCreateCustomer = ::this.quickCreateCustomer
+    this.resendInvoice = ::this.resendInvoice
+    this.deleteInvoice = ::this.deleteInvoice
+    this.downloadInvoicePDF = ::this.downloadInvoicePDF
   }
 
   componentWillMount() {
@@ -142,27 +169,93 @@ export default class InvoicesNewContainer extends Component {
       isSaving: true
     })
     return this.props.saveInvoice(props).then((invoice) => {
-      this.context.ngRouter.transitionTo('app.invoices.list').then(() => {
-        this.props.highLightInvoice(invoice.id)
+      this.props.initialize(invoice)
+      this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
+        notify: false
       })
       this.setState({
         isSaving: false
       })
+      return invoice
     }).catch(({ errors }) => {
       this.setState({
-        errors,
+        status: {
+          type: 'error',
+          message: errors
+        },
         isSaving: false
       })
     })
   }
 
   saveAndIssue(props) {
+    this.showIssueConfirmModal(props)
+  }
+
+  resendInvoice(props) {
+    this.showIssueConfirmModal()
+  }
+
+  showIssueConfirmModal(props) {
     this.props.openModal({
       size: 'small',
       component: <IssueConfirmModal
         customer={this.props.customer}
-        onIssue={this.save}
+        onIssue={(notifyProps) => {
+          return this.save({
+            ...props,
+            ...notifyProps
+          })
+        }}
       />
+    })
+  }
+
+  downloadInvoicePDF() {
+
+  }
+
+  navigateToList() {
+    return this.context.ngRouter.transitionTo('app.invoices.list')
+  }
+
+  deleteInvoice() {
+    if (!this.props.dirty) {
+      return this.navigateToList()
+    }
+
+    let invoice = this.props.invoice
+    this.context.confirm({
+      header: 'Delete Invoice?',
+      message: () => (
+        <div class='text-semi-muted'>
+          {
+            invoice.id ?
+              <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p> :
+              <p>The Invoice will be deleted and the customer will not be able to pay for it.</p>
+          }
+          <div>
+            If any customers or items were added, they will still be available for use in other invoices.
+          </div>
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Delete',
+      affirmativePendingLabel: 'Deleting...',
+      abortLabel: 'No, don\'t!',
+      action: () => {
+        return invoice.id ?
+          this.props.deleteInvoice(invoice).then(() => {
+            this.navigateToList()
+          }).catch((err) => {
+            this.setState({
+              status: {
+                type: 'error',
+                message: err.errors
+              }
+            })
+          }) :
+          this.navigateToList()
+      }
     })
   }
 
@@ -173,8 +266,13 @@ export default class InvoicesNewContainer extends Component {
       invoice = {},
     } = this.props
 
-    let isIssued = invoice.status === 'issued'
-    let isNew = !!this.props.id
+    let isNew = !invoice.id
+    let status = invoice.status
+    let isDraft = status === 'draft'
+    let isIssued = status === 'issued'
+    let isPaid = status === 'paid'
+    let isExpired = status === 'expired'
+
     let invoiceTotal = this.calculateItemsSubTotal()
     let customerDetails = ''
     if (customer) {
@@ -205,19 +303,19 @@ export default class InvoicesNewContainer extends Component {
                       </li>
                       <li>
                         <h3 class='breadcrumb__backNav--heading'>
-                          { this.props.id || 'New Invoice' }
+                          { invoice.receipt || invoice.id || 'New Invoice' }
                         </h3>
                         {
                           isNew ?
-                            <InvoiceStatus status={invoice.status} /> :
-                            <span class='label label-muted'>Unsaved</span>
+                            <span class='label label-muted'>Unsaved</span> :
+                            <InvoiceStatus status={status} />
                         }
                       </li>
                     </ol>
 
                     <Alert
-                      type='error'
-                      message={this.state.errors}
+                      type={this.state.status.type}
+                      message={this.state.status.message}
                     />
 
                     <div class='invoice'>
@@ -225,15 +323,25 @@ export default class InvoicesNewContainer extends Component {
                         <div class='col-md-6'>
                           <div class='inv__titlesection'>
                             <h3>Invoice</h3>
-                            <InlineField
-                              formName='newInvoice'
-                              name='receipt'
-                              component='input'
-                              class='form-control input-xs'
-                              placeholder='Receipt number'
-                              size='25'
-                              disabled={isIssued}
-                            />
+                            {
+                              ((isPaid || isExpired) && !invoice.receipt) ?
+                                <InlineField
+                                  formName='newInvoice'
+                                  name='id'
+                                  component='input'
+                                  class='form-control input-xs'
+                                  disabled={true}
+                                  size={30}
+                                /> :
+                                <InlineField
+                                  formName='newInvoice'
+                                  name='receipt'
+                                  component='input'
+                                  class='form-control input-xs'
+                                  placeholder='Receipt number'
+                                  disabled={isPaid}
+                                />
+                            }
                           </div>
 
                           <InlineField
@@ -271,7 +379,6 @@ export default class InvoicesNewContainer extends Component {
                             onOptionChange={(selectedCustomer) => {
                               this.props.change('customer_id', selectedCustomer.id || '')
                             }}
-                            validate={required()}
                             normalizeValue={(value) => {
                               let selected = findBy(this.props.customers || [], 'id', value)
                               if (selected) {
@@ -321,6 +428,19 @@ export default class InvoicesNewContainer extends Component {
                         <div class='col-md-12'>
                           <InlineField
                             formName='newInvoice'
+                            name='comment'
+                            component={AutoResizeTextarea}
+                            class='form-control input-xs'
+                            rows={2}
+                            placeholder='Customer Notes'
+                          />
+                        </div>
+                      </div>
+
+                      <div class='row'>
+                        <div class='col-md-12'>
+                          <InlineField
+                            formName='newInvoice'
                             name='terms'
                             component={AutoResizeTextarea}
                             class='form-control input-xs'
@@ -334,92 +454,156 @@ export default class InvoicesNewContainer extends Component {
                 </div>
                 <div class='col-md-4'>
                   <div class='inv__cta'>
-                    <div>
-                      <AsyncButton
-                        type='button'
-                        class='btn btn-primary btn-block btn-lg'
-                        disabled={this.state.isSaving}
-                        onClick={handleSubmit((props) => {
-                          return this.saveAndIssue({
-                            ...props,
-                            ...{ draft: 0 }
-                          })
-                        })}
-                      >
-                        <i class='fa fa-check'></i>
-                        <span>Finalize and Issue</span>
-                      </AsyncButton>
+                    <div class='btn-group-vertical'>
+                      {
+                        (isNew || isDraft) &&
+                          <AsyncButton
+                            type='button'
+                            class='btn btn-primary btn-block btn-lg'
+                            disabled={this.state.isSaving}
+                            onClick={handleSubmit((props) => {
+                              return this.saveAndIssue({
+                                ...props,
+                                ...{ draft: 0 }
+                              })
+                            })}
+                          >
+                            <i class='fa fa-check'></i>
+                            <span>Finalize and Issue</span>
+                          </AsyncButton>
+                      }
 
-                      <div class='btn-group-vertical'>
-                        <AsyncButton
-                          type='button'
-                          class='btn btn-default btn-block btn-lg'
-                          text='Save Changes'
-                          pendingText='Saving...'
-                          disabled={this.state.isSaving}
-                          onClick={handleSubmit((props) => {
-                            return this.save({
-                              ...props,
-                              ...{ draft: 1 }
-                            })
-                          })}
-                        >
-                          <i class='fa fa-floppy-o'></i>
-                          <span>Save Changes</span>
-                        </AsyncButton>
-                        <a
-                          href='#/app/invoices/list'
-                          class='btn btn-default btn-block btn-lg'
-                          disabled={this.state.isSaving}
-                        >
-                          <i class='fa fa-times'></i>
-                          <span>Delete Invoice</span>
-                        </a>
-                      </div>
+                      {
+                        isIssued &&
+                          <AsyncButton
+                            type='button'
+                            class='btn btn-primary btn-block btn-lg'
+                            disabled={this.state.isSaving}
+                            onClick={handleSubmit(this.resendInvoice)}
+                          >
+                            <i class='fa fa-paper-plane'></i>
+                            <span>Resend Invoice</span>
+                          </AsyncButton>
+                      }
+
+                      {
+                        !(isPaid || isExpired) &&
+                          <AsyncButton
+                            type='button'
+                            class='btn btn-default btn-block btn-lg'
+                            text='Save Changes'
+                            pendingText='Saving...'
+                            disabled={this.state.isSaving}
+                            onClick={handleSubmit((props) => {
+                              return this.save({
+                                ...props,
+                                ...{ draft: isIssued ? 0 : 1 }
+                              })
+                            })}
+                          >
+                            <i class='fa fa-floppy-o'></i>
+                            <span>Save Changes</span>
+                          </AsyncButton>
+                      }
+
+                      {
+                        !(isNew || isDraft) &&
+                          <button
+                            type='button'
+                            class='btn btn-default btn-block btn-lg'
+                            onClick={this.downloadInvoicePDF}
+                          >
+                            <i class='fa fa-download'></i>
+                            <span>Download PDF</span>
+                          </button>
+                      }
+
+                      {
+                        (isNew || isDraft) &&
+                          <button
+                            class='btn btn-default btn-block btn-lg'
+                            onClick={this.deleteInvoice}
+                            disabled={this.state.isSaving}
+                          >
+                            <i class='fa fa-times'></i>
+                            <span>Delete Invoice</span>
+                          </button>
+                      }
                     </div>
                   </div>
 
                   {
-                    invoice.status && invoice.status !== 'draft' &&
-                    <div class='inv__info'>
-                      <h4>Invoice {invoice.status}</h4>
-                      <dl>
-                        <dt>Payment Link</dt>
-                        <dd>{invoice.short_url}</dd>
+                    !(isNew || isDraft) &&
+                      <div class='inv__info'>
+                        <h4>Invoice {invoice.status}</h4>
+                        <dl>
+                          {
+                            isPaid ?
+                            <div>
+                              <dt>Payment Id</dt>
+                              <dd>
+                                <a href={`#/app/payments/${invoice.payment_id}`}>
+                                  {invoice.payment_id}
+                                </a>
+                              </dd>
 
-                        {
-                          invoice.customer_details.customer_email &&
-                          <div>
-                            <dt>Email Sent to</dt>
-                            <dd>
-                              {invoice.customer_details.customer_email}
-                              <span
-                                style={{ marginLeft: '10px' }}
-                                class={`${notificationClassMap[invoice.email_status]}`}
-                              >
-                                {invoice.email_status ? `(${invoice.email_status})` : ''}
-                              </span>
-                            </dd>
-                          </div>
-                        }
+                              <dt>Paid On</dt>
+                              <dd>
+                                <Time
+                                  value={invoice.paid_at}
+                                  format='DD MMM YYYY, hh:mm:ss a'
+                                />
+                              </dd>
+                            </div> :
+                            <div>
+                              <dt>Payment Link</dt>
+                              <dd>
+                                <Clipboard value={invoice.short_url} />
+                              </dd>
+                            </div>
+                          }
+                          {
+                            invoice.email_status &&
+                            <div>
+                              <dt>Email Sent to</dt>
+                              <dd>
+                                {invoice.customer_details.customer_email}
+                                <span
+                                  style={{ marginLeft: '10px' }}
+                                  class={`${notificationClassMap[invoice.email_status]}`}
+                                >
+                                  {invoice.email_status ? `(${invoice.email_status})` : ''}
+                                </span>
+                              </dd>
+                            </div>
+                          }
 
-                        {
-                          invoice.customer_details.customer_contact &&
-                          <div>
-                            <dt>SMS Sent to</dt>
-                            <dd>
-                              {invoice.customer_details.customer_contact}
-                              <span
-                                style={{ marginLeft: '10px' }}
-                                class={`${notificationClassMap[invoice.sms_status]}`}
-                              >
-                                {invoice.sms_status ? `(${invoice.sms_status})` : ''}
-                              </span>
-                            </dd>
-                          </div>
-                        }
-                      </dl>
-                    </div>
+                          {
+                            invoice.sms_status &&
+                            <div>
+                              <dt>SMS Sent to</dt>
+                              <dd>
+                                {invoice.customer_details.customer_contact}
+                                <span
+                                  style={{ marginLeft: '10px' }}
+                                  class={`${notificationClassMap[invoice.sms_status]}`}
+                                >
+                                  {invoice.sms_status ? `(${invoice.sms_status})` : ''}
+                                </span>
+                              </dd>
+                            </div>
+                          }
+                          {
+                            isPaid &&
+                            <div>
+                              <dt>Payment Link</dt>
+                              <dd>
+                                <Clipboard value={invoice.short_url} />
+                              </dd>
+                            </div>
+                          }
+                        </dl>
+                      </div>
                   }
                   {
                     Object.keys(invoice.notes || {}).length ?
