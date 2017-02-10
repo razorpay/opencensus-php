@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
+use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
@@ -29,7 +30,8 @@ class NetbankingSorter extends Terminal\Sorter
 
         $gatewaysForBank = Gateway::getGatewaysForNetbankingBankIndexed($bank);
 
-        $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
+        $gatewaysPriority = (new GatewayPriority\Core)
+                            ->getGatewaysForMethod($method);
 
         $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
 

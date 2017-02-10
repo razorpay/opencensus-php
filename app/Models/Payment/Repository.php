@@ -59,6 +59,7 @@ class Repository extends Base\Repository
         Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
+        Entity::AMOUNT             => 'sometimes|integer',
     ];
 
     protected $esWhitelistedParams = [
@@ -498,6 +499,13 @@ class Repository extends Base\Repository
         Payment\Validator::validateStatusArray($status);
 
         $query->whereIn(Entity::STATUS, $status);
+    }
+
+    protected function addQueryParamAmount($query, $params)
+    {
+        $amount = $this->getAttributeWithTableName(Entity::AMOUNT);
+
+        $query->where($amount, '=', $params[Entity::AMOUNT]);
     }
 
     protected function addQueryParamIin($query, $params)
