@@ -45,9 +45,6 @@ class Gateway extends Base\Gateway
      */
     const STATUS_QUERY_API_VERSION = '1.0';
 
-    // Status code returned by jiomoney on successful transaction
-    const SUCCESS_STATUS = 'SUCCESS';
-
     const JIOMONEY_UUID_FORMAT = '%04x%04x-%04x-%04x-%04x-%04x%04x%04x';
 
     const NUM_SECONDS_IN_DAY = 86400;
@@ -294,7 +291,7 @@ class Gateway extends Base\Gateway
                 RequestFields::TIMESTAMP  => $timestamp,
                 RequestFields::TXN_TYPE   => strtoupper(Action::REFUND),
                 RequestFields::AMOUNT     => $this->getFormattedAmount($input['amount']),
-                RequestFields::CURRENCY   => Currency::INR,
+                RequestFields::CURRENCY   => $input['payment'][Payment::CURRENCY],
             ],
             RequestFields::REFUND_INFO  => $refundInfo,
         ];
@@ -395,6 +392,8 @@ class Gateway extends Base\Gateway
 
         $paymentCreatedAt = $input['payment'][Payment::CREATED_AT];
 
+        // If time elapsed from payment creation time is less than 24 hours we
+        // call STATUSQUERYAPI to verify else we verify using CHECKPAYMENTSATUS API
         if (($now - $paymentCreatedAt) <= self::NUM_SECONDS_IN_DAY)
         {
             list($content, $response) = $this->verifyUsingStatusQuery($input);
@@ -403,12 +402,6 @@ class Gateway extends Base\Gateway
         {
             list($content, $response) = $this->verifyUsingCheckPaymentStatus($input);
         }
-
-        $verify->verifyResponse = $response;
-
-        $verify->verifyResponseBody = $response->body;
-
-        $verify->verifyResponseContent = $content;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -439,7 +432,7 @@ class Gateway extends Base\Gateway
 
         if ($this->validStatusQueryResponse($content) === false)
         {
-            return $this->verifyUsingCheckPaymentStatus($verify);
+            return $this->verifyUsingCheckPaymentStatus($input);
         }
 
         return [$content, $response];
