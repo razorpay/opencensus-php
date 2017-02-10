@@ -11,8 +11,9 @@ use SoapClient;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Models\Card;
 use RZP\Gateway\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -74,7 +75,10 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::capture($input);
+        // We are using action to allow force capture on
+        // already captured payment entity, when they are not
+        // captured on gateway
+        parent::action($input, Action::CAPTURE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
@@ -102,6 +106,37 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, 'Payment capture failed');
         }
+    }
+
+    public function manualGatewayCapture(array $input)
+    {
+        $canManualCapture = $this->canForceCapture($input);
+
+        if ($canManualCapture)
+        {
+            $this->capture($input);
+
+            // Successfully captured on the gateway
+            return true;
+        }
+
+        // Did not capture on the gateway side
+        return false;
+    }
+
+    protected function canForceCapture($input)
+    {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayPaymentEntity = $this->repo->findSuccessfulCapturedEntity($paymentId);
+
+        if (($gatewayPaymentEntity !== null) and
+            ($gatewayPaymentEntity->getAmount() === $input['amount']))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function callback(array $input)

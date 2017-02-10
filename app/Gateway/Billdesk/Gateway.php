@@ -839,7 +839,7 @@ class Gateway extends Base\Gateway
         if (count($fields) !== count($content))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
         }
 
         $content = array_combine($fields, $content);

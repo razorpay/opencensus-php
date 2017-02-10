@@ -82,10 +82,10 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['payment']);
+                        $merchantId, $from, $to, $count, $skip, ['payment']);
     }
 
     public function fetchRefundSummaryBetweenTimestamp($from, $to)

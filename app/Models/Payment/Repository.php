@@ -59,6 +59,7 @@ class Repository extends Base\Repository
         Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
+        Entity::AMOUNT             => 'sometimes|integer',
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -393,10 +394,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['card']);
+                        $merchantId, $from, $to, $count, $skip, ['card']);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
@@ -494,6 +495,13 @@ class Repository extends Base\Repository
         Payment\Validator::validateStatusArray($status);
 
         $query->whereIn(Entity::STATUS, $status);
+    }
+
+    protected function addQueryParamAmount($query, $params)
+    {
+        $amount = $this->getAttributeWithTableName(Entity::AMOUNT);
+
+        $query->where($amount, '=', $params[Entity::AMOUNT]);
     }
 
     protected function addQueryParamIin($query, $params)
@@ -641,7 +649,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -668,7 +676,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
