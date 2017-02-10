@@ -1619,3 +1619,10 @@ SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE payments
     MODIFY COLUMN terminal_id VARCHAR(14) NULL;
 SET FOREIGN_KEY_CHECKS=1;
+
+# Signup flow changes
+ALTER TABLE merchants
+    MODIFY name VARCHAR(255) default null;
+
+ALTER TABLE payments
+    ADD INDEX `payments_amount_index` (`amount`);

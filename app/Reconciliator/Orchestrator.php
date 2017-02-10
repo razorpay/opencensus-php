@@ -51,7 +51,7 @@ class Orchestrator extends Base\Core
         self::MOBIKWIK   => [],
         self::PAYTM      => [],
         self::KOTAK      => ['BankAlerts@kotak.com'],
-        self::OLAMONEY   => [],
+        self::OLAMONEY   => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -64,6 +64,7 @@ class Orchestrator extends Base\Core
     const GATEWAY_EMAIL_VALIDATION = [
         self::HDFC,
         self::KOTAK,
+        self::OLAMONEY,
     ];
 
     /*********************
