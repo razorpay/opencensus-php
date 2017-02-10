@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use View, Request;
+use RZP\Exception;
 use RZP\Base\JitValidator;
 
 class PublicController extends Controller
@@ -101,14 +102,14 @@ class PublicController extends Controller
     protected function validateHostedPostParams($postParams)
     {
         $postParamRules = [
-            'url'                   =>  'required|array',
-            'checkout'              =>  'required|array',
-            'url.cancel'            =>  'sometimes|url',
-            'url.callback'          =>  'required|url',
-            'checkout.key'          =>  'required',
-            'checkout.amount'       =>  'required|integer',
-            'checkout.image'        =>  'sometimes|url',
-            'retry'                 =>  'sometimes'
+            'url'                   => 'required|array',
+            'checkout'              => 'required|array',
+            'url.cancel'            => 'sometimes|url',
+            'url.callback'          => 'required|url',
+            'checkout.key'          => 'required',
+            'checkout.amount'       => 'required|integer',
+            'checkout.image'        => 'sometimes|url',
+            'retry'                 => 'sometimes'
         ];
 
         (new JitValidator)->rules($postParamRules)
