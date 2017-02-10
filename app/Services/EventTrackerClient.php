@@ -394,6 +394,12 @@ class EventTrackerClient extends Base\Core
     {
         $paymentId = $payment->getId();
 
+        // Return if no analytics entity for payment
+        if (count($payment->analytics()) === 0)
+        {
+            return;
+        }
+
         // caching paymentContext
         if (isset($this->paymentContext[$paymentId]) === false)
         {
