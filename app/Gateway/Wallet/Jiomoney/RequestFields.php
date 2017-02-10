@@ -26,4 +26,9 @@ class RequestFields
     const REQUEST_ID    = 'request_id';
     const STARTDATETIME = 'startdatetime';
     const ENDDATETIME   = 'enddatetime';
+
+    public static function getFormatted(string $prefix, string $field, string $delimiter = '.')
+    {
+        return $prefix . $delimiter . $field;
+    }
 }

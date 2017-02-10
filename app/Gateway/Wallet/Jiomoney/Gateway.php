@@ -12,7 +12,8 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Base\Verify;
-use RZP\Models\Payment;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Status;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Base\AuthorizeFailed;
@@ -75,12 +76,12 @@ class Gateway extends Base\Gateway
         $this->traceGatewayPaymentRequest($request, $input);
 
         $contentToSave = [
-            RequestFields::MERCHANT_ID => $this->getMerchantId(),
-            RequestFields::PAYMENT_ID  => $input['payment'][Payment\Entity::ID],
-            RequestFields::AMOUNT      => $input['payment'][Payment\Entity::AMOUNT],
-            Entity::EMAIL              => $input['payment'][Payment\Entity::EMAIL],
-            Entity::CONTACT            => $input['payment'][Payment\Entity::CONTACT],
-            Entity::RECEIVED           => false
+            Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
+            Entity::PAYMENT_ID          => $input['payment'][Payment::ID],
+            Entity::AMOUNT              => $input['payment'][Payment::AMOUNT],
+            Entity::EMAIL               => $input['payment'][Payment::EMAIL],
+            Entity::CONTACT             => $input['payment'][Payment::CONTACT],
+            Entity::RECEIVED            => false
         ];
 
         $this->createGatewayPaymentEntity($contentToSave, Action::AUTHORIZE);
@@ -95,7 +96,7 @@ class Gateway extends Base\Gateway
 
         $input['gateway'] = $this->parseResponseBody($input['gateway']);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $input['gateway']);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
         $this->verifySecureHash($input['gateway']);
 
@@ -155,24 +156,28 @@ class Gateway extends Base\Gateway
 
     protected function getPurchaseRequestContent(array $payment, string $callbackUrl)
     {
-        $timestamp = $this->getFormattedDateFromTimeStamp($payment[Payment\Entity::CREATED_AT]);
+        $timestamp = $this->getFormattedDateFromTimeStamp($payment[Payment::CREATED_AT]);
 
-        $amount = $this->getFormattedAmount($payment[Payment\Entity::AMOUNT]);
+        $amount = $this->getFormattedAmount($payment[Payment::AMOUNT]);
+
+        $transaction = RequestFields::TRANSACTION;
+
+        $subscriber = RequestFields::SUBSCRIBER;
 
         $content = [
-            RequestFields::MERCHANT_ID                                                              => $this->getMerchantId(),
-            RequestFields::CLIENT_ID                                                                => $this->getClientId(),
-            RequestFields::CHANNEL                                                                  => self::TXN_CHANNEL,
-            RequestFields::CALLBACK_URL                                                             => $callbackUrl,
-            RequestFields::TOKEN                                                                    => '',
-            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)   => $payment[Payment\Entity::ID],
-            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)    => $timestamp,
-            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)     => strtoupper(Action::PURCHASE),
-            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::AMOUNT)       => $amount,
-            self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::CURRENCY)     => Currency::INR,
-            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::CUSTOMER_NAME) => $payment[Payment\Entity::EMAIL],
-            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::EMAIL)         => $payment[Payment\Entity::EMAIL],
-            self::getFormattedRequestField(RequestFields::SUBSCRIBER, RequestFields::CONTACT)       => $payment[Payment\Entity::CONTACT]
+            RequestFields::MERCHANT_ID                                             => $this->getMerchantId(),
+            RequestFields::CLIENT_ID                                               => $this->getClientId(),
+            RequestFields::CHANNEL                                                 => self::TXN_CHANNEL,
+            RequestFields::CALLBACK_URL                                            => $callbackUrl,
+            RequestFields::TOKEN                                                   => '',
+            RequestFields::getFormatted($transaction, RequestFields::PAYMENT_ID)   => $payment[Payment::ID],
+            RequestFields::getFormatted($transaction, RequestFields::TIMESTAMP)    => $timestamp,
+            RequestFields::getFormatted($transaction, RequestFields::TXN_TYPE)     => strtoupper(Action::PURCHASE),
+            RequestFields::getFormatted($transaction, RequestFields::AMOUNT)       => $amount,
+            RequestFields::getFormatted($transaction, RequestFields::CURRENCY)     => $payment[Payment::CURRENCY],
+            RequestFields::getFormatted($subscriber, RequestFields::CUSTOMER_NAME) => $payment[Payment::EMAIL],
+            RequestFields::getFormatted($subscriber, RequestFields::EMAIL)         => $payment[Payment::EMAIL],
+            RequestFields::getFormatted($subscriber, RequestFields::CONTACT)       => $payment[Payment::CONTACT]
         ];
 
         $hashArray = $this->getPurchaseRequestArrayToHash($content);
@@ -186,14 +191,14 @@ class Gateway extends Base\Gateway
     {
         return [
             $content[RequestFields::CLIENT_ID],
-            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::AMOUNT)],
-            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)],
+            $content[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::AMOUNT)],
+            $content[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)],
             $content[RequestFields::CHANNEL],
             $content[RequestFields::MERCHANT_ID],
             $content[RequestFields::TOKEN],
             $content[RequestFields::CALLBACK_URL],
-            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)],
-            $content[self::getFormattedRequestField(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)]
+            $content[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::TIMESTAMP)],
+            $content[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::TXN_TYPE)]
         ];
     }
 
@@ -208,12 +213,12 @@ class Gateway extends Base\Gateway
         $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
 
         $contentToSave = [
-            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
-            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            ResponseFields::DATE                 => $date,
-            Entity::RECEIVED                     => true
+            Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Entity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            Entity::DATE                 => $date,
+            Entity::RECEIVED             => true
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -227,11 +232,11 @@ class Gateway extends Base\Gateway
         $content = $input['gateway'];
 
         $contentToSave = [
-            ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
-            ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
-            ResponseFields::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
-            ResponseFields::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            ResponseFields::DATE                 => $content[ResponseFields::DATE]
+            Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
+            Entity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
+            Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
+            Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
+            Entity::DATE                 => $content[ResponseFields::DATE]
         ];
 
         $wallet = $this->repo->findByPaymentIdAndAction(
@@ -430,8 +435,8 @@ class Gateway extends Base\Gateway
         $verify->apiSuccess = true;
 
         // apiSuccess if false if the payment entity is in failed or created state
-        if (($input['payment']['status'] === Payment\Status::FAILED) or
-                ($input['payment']['status'] === Payment\Status::CREATED))
+        if (($input['payment']['status'] === Status::FAILED) or
+            ($input['payment']['status'] === Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -481,11 +486,11 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            ResponseFields::AMOUNT               => $payment[Payment\Entity::AMOUNT],
+            ResponseFields::AMOUNT               => $payment[Payment::AMOUNT],
             RequestFields::MERCHANT_ID           => $this->getMerchantId(),
             Entity::RECEIVED                     => true,
-            Entity::EMAIL                        => $payment[Payment\Entity::EMAIL],
-            Entity::CONTACT                      => $payment[Payment\Entity::CONTACT],
+            Entity::EMAIL                        => $payment[Payment::EMAIL],
+            Entity::CONTACT                      => $payment[Payment::CONTACT],
             ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
             ResponseFields::RESPONSE_CODE        => self::SUCCESS_STATUS,
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
@@ -586,6 +591,9 @@ class Gateway extends Base\Gateway
 
     protected function getStatusQueryRequestArray(array $input)
     {
+        $this->action = Action::PAYMENT_STATUS;
+        $this->domainType = $this->mode . '_' . $this->action;
+
         $content = [
             StatusQueryRequestFields::REQUEST_HEADER => [
                 StatusQueryRequestFields::VERSION  => self::STATUS_QUERY_API_VERSION,
@@ -602,7 +610,7 @@ class Gateway extends Base\Gateway
             $this->getClientId(),
             $this->getMerchantId(),
             ApiName::STATUSQUERY,
-            $input['payment'][Payment\Entity::ID]
+            $input['payment'][Payment::ID]
         ];
 
         $hash = $this->getHashOfArray($hashArray);
@@ -622,6 +630,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
+
+        $this->action = Action::VERIFY;
 
         return $request;
     }
@@ -681,7 +691,7 @@ class Gateway extends Base\Gateway
     protected function getRequestHeaders($content)
     {
         return [
-            'Content-Type'   =>  'application/json',
+            'Content-Type' => 'application/json',
         ];
     }
 
