@@ -1595,3 +1595,41 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
+
+ALTER TABLE merchant_details
+    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
+
+# Pre deployment of branch invoice_new_field_comment
+
+ALTER TABLE invoices ADD COLUMN comment text AFTER notes;
+
+# --
+
+# Before deploying: invoices_fetch_by_cust_contact
+
+ALTER TABLE invoices ADD INDEX invoices_customer_contact_index (customer_contact);
+ALTER TABLE invoices ADD INDEX invoices_customer_email_index (customer_email);
+ALTER TABLE invoices ADD INDEX invoices_customer_name_index (customer_name);
+
+# Changes default value of gateway and terminal
+ALTER TABLE payments
+    MODIFY COLUMN gateway VARCHAR(255) NULL,
+
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE payments
+    MODIFY COLUMN terminal_id VARCHAR(14) NULL;
+SET FOREIGN_KEY_CHECKS=1;
+
+# Signup flow changes
+ALTER TABLE merchants
+    MODIFY name VARCHAR(255) default null;
+
+ALTER TABLE payments
+    ADD INDEX `payments_amount_index` (`amount`);
+
+# Modify max_payment_amount column to be unsigned
+ALTER TABLE merchants
+    MODIFY COLUMN max_payment_amount INTEGER UNSIGNED NULL;
+
+ALTER TABLE refunds
+    MODIFY COLUMN amount INTEGER UNSIGNED NOT NULL;

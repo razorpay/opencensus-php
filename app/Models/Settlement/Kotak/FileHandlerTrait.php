@@ -57,19 +57,9 @@ trait FileHandlerTrait
         }
     }
 
-    public function writeToCsvFile($data, $name, $fullName = null)
+    public function writeToCsvFile($data, $name, $fullName = null, $dir = 'files/settlement')
     {
-        $excelObject = $this->createExcelObject($data, $name);
-
-        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
-
-        $fullpath = $fileMetadata['full'];
-
-        if ($fullName != null)
-        {
-            rename($fullpath, $fullName);
-            $fullpath = $fullName;
-        }
+        $fullpath = $this->createCsvFile($data, $name, $fullName, $dir);
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -119,6 +109,50 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
+    public function createCsvFile($data, $name, $fullName, $dir, $append = false)
+    {
+        $dir = storage_path($dir);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir);
+        }
+
+        $fullpath = $dir . '/' . $name . '.csv';
+
+        // open the file in append mode
+        $handle = fopen($fullpath, 'a');
+
+        $first = true;
+
+        foreach ($data as $row)
+        {
+            if (($append === false) and ($first === true))
+            {
+                $headers = array_keys($row);
+
+                fputcsv($handle, $headers);
+
+                $first = false;
+            }
+
+            $row = $this->flatten($row);
+
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        if ($fullName !== null)
+        {
+            rename($fullpath, $fullName);
+
+            $fullpath = $fullName;
+        }
+
+        return $fullpath;
+    }
+
     public function getH2HFileFromAws($key)
     {
         $bucket = 'h2h_bucket';
@@ -128,6 +162,26 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $row)
+    {
+        foreach ($row as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = json_encode($value);
+            }
+        }
+
+        return $row;
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')

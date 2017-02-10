@@ -55,6 +55,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'],
+             $content[RequestFields::MERCHANT_REFERENCE]);
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -296,11 +299,16 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $verify->payment;
 
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
         $attributes = $this->getVerifyAttributes($content);
 
-        $gatewayPayment->fill($attributes);
+        if ($bankPaymentId === null)
+        {
+            $gatewayPayment->fill($attributes);
 
-        $this->repo->saveOrFail($gatewayPayment);
+            $this->repo->saveOrFail($gatewayPayment);
+        }
 
         return $gatewayPayment;
     }

@@ -260,6 +260,18 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
+    {
+        if ($actualPaymentId !== $expectedPaymentId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
@@ -486,10 +498,13 @@ class Gateway
         return false;
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            $traceCode,
             [
                 'request'    => $request,
                 'gateway'    => $this->gateway,
@@ -497,10 +512,13 @@ class Gateway
             ]);
     }
 
-    protected function traceGatewayPaymentResponse($response, $input)
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            $traceCode,
             [
                 'response'   => $response,
                 'gateway'    => $this->gateway,
