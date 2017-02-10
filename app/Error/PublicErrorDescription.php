@@ -30,7 +30,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_CANCELLED_AT_WALLET_PAYMENT_PAGE                  = 'Payment processing cancelled by customer at wallet payment page';
     const BAD_REQUEST_PAYMENT_ALREADY_PROCESSED                                 = 'The payment has already been processed';
     const BAD_REQUEST_PAYMENT_ALREADY_CAPTURED                                  = 'This payment has already been captured';
-    const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Invalid currency. Currently only INR and USD are supported.';
+    const BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED                            = 'Currency is not supported';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                               = 'The payment status should be captured for refund action to be taken';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                      = 'Capture request is not processed yet';
     const BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS                     = 'Request failed because another payment operation is in progress';
@@ -315,7 +315,8 @@ class PublicErrorDescription
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                       = 'Email provided is not a valid email';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                     = 'Authentication failed';
-
+    const BAD_REQUEST_USER_ACCOUNT_LOCKED                                       = 'Your account has been locked';
+    const BAD_REQUEST_USER_ACCOUNT_DISABLED                                     = 'Your account has been disabled';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                              = 'SuperAdmin Role is not editable';
     const BAD_REQUEST_MERCHANT_DETAIL_ALREADY_LOCKED                            = 'Activation form has been locked for editing by admin.';
@@ -329,4 +330,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                               = 'Error occured while saving fee breakup';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                        = 'Error while recording capture on API side';
+
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                    = 'Payment method invalid / not allowed';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 }

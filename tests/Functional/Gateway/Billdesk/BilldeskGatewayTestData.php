@@ -257,6 +257,22 @@ return [
         ],
     ],
 
+    'testPaymentAndNewPaymentOnDeleteTerminal' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
+        ],
+    ],
+
     'testPaymentVerifyError' => [
         'response'  => [
             'content'     => [
@@ -269,7 +285,7 @@ return [
         ],
         'exception' => [
             'class'                 => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code'   => 'GATEWAY_ERROR_UNKNOWN_ERROR',
+            'internal_error_code'   => 'GATEWAY_ERROR_INVALID_RESPONSE',
         ],
     ],
 

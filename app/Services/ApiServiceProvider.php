@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Adjustment;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -229,9 +233,19 @@ class ApiServiceProvider extends BaseServiceProvider
             'admin'           => Admin\Admin\Entity::class,
             'role'            => Admin\Role\Entity::class,
             'permission'      => Admin\Permission\Entity::class,
+
+            // line items
             'invoice'         => Invoice\Entity::class,
+
+            // file store
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
+
+            // transaction
+            'adjustment'      => Adjustment\Entity::class,
+            'payment'         => Payment\Entity::class,
+            'refund'          => Payment\Refund\Entity::class,
+            'settlement'      => Settlement\Entity::class,
         ]);
     }
 }
