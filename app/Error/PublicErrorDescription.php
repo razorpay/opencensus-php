@@ -330,4 +330,7 @@ class PublicErrorDescription
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                               = 'Error occured while saving fee breakup';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                        = 'Error while recording capture on API side';
+
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                    = 'Payment method invalid / not allowed';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 }

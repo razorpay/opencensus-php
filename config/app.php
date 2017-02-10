@@ -166,6 +166,8 @@ return array(
         RZP\Http\BasicAuth\ServiceProvider::class,
         RZP\Trace\TraceServiceProvider::class,
         RZP\Services\DashboardServiceProvider::class,
+        // Makes blade sharper
+        RZP\Providers\KnifeServiceProvider::class,
 
         /*
          * Third party providers
@@ -258,4 +260,12 @@ return array(
     'proxy_address' => env('PROXY_ADDRESS'),
 
     'throw_exception_in_testing' => env('THROW_EXCEPTION_IN_TESTING', true),
+
+    'data_store' => [
+        'mock' => env('DATA_STORE_MOCK', false)
+    ],
+
+    'gateway_priority' => [
+        'store_type' => env('GATEWAY_PRIORITY_STORE_TYPE')
+    ]
 );
