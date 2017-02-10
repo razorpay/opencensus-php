@@ -383,7 +383,6 @@ export default class InvoicesNewContainer extends Component {
                     invoice.status && invoice.status !== 'draft' &&
                     <div class='inv__info'>
                       <h4>Invoice {invoice.status}</h4>
-
                       <dl>
                         <dt>Payment Link</dt>
                         <dd>{invoice.short_url}</dd>
@@ -423,10 +422,9 @@ export default class InvoicesNewContainer extends Component {
                     </div>
                   }
                   {
-                    Object.keys(invoice.notes).length ?
+                    Object.keys(invoice.notes || {}).length ?
                     <div class='inv__info'>
                       <h4>Internal Notes</h4>
-
                       <dl>
                         {
                           Object.keys(invoice.notes).map((key) => (
