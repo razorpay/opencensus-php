@@ -31,5 +31,5 @@ return [
 
     'mutex' => [
         'mock' => env('MUTEX_MOCK', false)
-    ]
+    ],
 ];
