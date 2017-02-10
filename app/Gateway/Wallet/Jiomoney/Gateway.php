@@ -99,6 +99,8 @@ class Gateway extends Base\Gateway
 
         $this->verifySecureHash($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ResponseFields::PAYMENT_ID]);
+
         if ($input['gateway'][ResponseFields::STATUS_CODE] !== StatusCode::SUCCESS)
         {
             return $this->callbackAuthFailureFlow($input);
@@ -205,8 +207,6 @@ class Gateway extends Base\Gateway
 
         $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
 
-        assertTrue($input['payment']['id'] === $content[ResponseFields::GATEWAY_PAYMENT_ID]);
-
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             ResponseFields::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
@@ -225,8 +225,6 @@ class Gateway extends Base\Gateway
     protected function callbackAuthFailureFlow(array $input)
     {
         $content = $input['gateway'];
-
-        assertTrue($input['payment']['id'] === $content[ResponseFields::GATEWAY_PAYMENT_ID]);
 
         $contentToSave = [
             ResponseFields::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
