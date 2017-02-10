@@ -476,7 +476,7 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ($this->checkPaymentStatusResponseFailed($content) === false)
+        if ($this->checkPaymentStatusResponseFailed($content) !== true)
         {
             $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
         }
@@ -487,6 +487,8 @@ class Gateway extends Base\Gateway
         }
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->content = $this->getVerifyWalletCreateAttributes($verify);
     }
 
     protected function getVerifyWalletCreateAttributes($verify)
@@ -702,16 +704,16 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function getStringToHash($content, $glue = '|')
+    public function getStringToHash($content, $glue = '|')
     {
         return parent::getStringToHash($content, $glue);
     }
 
-    public function getHashOfString($hashString)
+    public function getHashOfString($string)
     {
         $secret = $this->getSecret();
 
-        return hash_hmac(HashAlgo::SHA256, $hashString, $secret);
+        return hash_hmac(HashAlgo::SHA256, $string, $secret);
     }
 
     protected function getMerchantId()
