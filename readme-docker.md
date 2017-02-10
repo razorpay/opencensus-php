@@ -48,6 +48,13 @@ $ ln -s /usr/local/bin/phpunit-5.6.phar phpunit
 * Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
 * Increase Docker memory to 6GB and number of cpus to 4
 
+##### Linux users
+* sudo apt-get install docker
+* pip install docker-compose
+* sudo usermod -aG docker $(whoami) # Adds yourself to docker group
+
+Now Log out and log back in once after last step.
+
 ##### Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
