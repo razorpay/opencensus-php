@@ -91,6 +91,9 @@ class Gateway extends Base\Gateway
         parent::callback($input);
 
         $this->validateCallbackChecksum($input);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+
         unset($input['gateway']['CheckSum']);
 
         // Unset date because format of date returned is different than what we sent
@@ -251,7 +254,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
-        $days = (time() - $input['payment']['created_at']) / (24*60*60);
+        $days = (time() - $input['payment']['created_at']) / (24 * 60 * 60);
 
         $status = VerifyResult::STATUS_MATCH;
 

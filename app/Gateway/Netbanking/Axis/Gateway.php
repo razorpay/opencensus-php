@@ -55,11 +55,8 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
-        if ($content[RequestFields::MERCHANT_REFERENCE] !== $input['payment']['id'])
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
-        }
+        $this->assertPaymentId($input['payment']['id'],
+             $content[RequestFields::MERCHANT_REFERENCE]);
 
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);

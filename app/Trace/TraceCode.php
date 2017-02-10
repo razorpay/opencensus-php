@@ -521,6 +521,7 @@ class TraceCode
     const FETCH_GATEWAY_PRIORITY_RESPONSE           = 'FETCH_GATEWAY_PRIORITY_RESPONSE';
     const UPDATE_GATEWAY_PRIORITY_REQUEST           = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
     const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
+    const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
