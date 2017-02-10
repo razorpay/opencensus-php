@@ -35,6 +35,17 @@ class Entity extends Base\PublicEntity
     const INSTANT  = 'instant';
     const DEFERRED = 'deferred';
 
+    //Attribute lengths
+    const NAME_LENGRH                      = 25;
+    const PAYMENT_METHOD_LENGTH            = 10;
+    const PAYMENT_METHOD_TYPE_LENTH        = 6;
+    const PAYMENT_NETWORK_LENGTH           = 20;
+    const ISSUER_LENGTH                    = 10;
+    const CUSTOM_SHORT_DISPLAY_TEXT_LENGTH = 50;
+    const CUSTOM_LONG_DISPLAY_TEXT_LENGTH  = 200;
+
+
+
     protected $entity      = 'offer';
 
     protected static $sign = 'offer';
@@ -261,6 +272,12 @@ class Entity extends Base\PublicEntity
         $array[self::CUSTOM_SHORT_DISPLAY_TEXT] = $customShortDisplayText;
     }
 
+    /**
+     * Since wallet validation is not case sensitiove, we convert to loewercase
+     * and set in entity
+     *
+     * @param string $paymentNetwork Input payment networl
+     */
     public function setPaymentNetworkAttribute(string $paymentNetwork)
     {
         if ($this->getPaymentMethod() === Payment\Method::WALLET)

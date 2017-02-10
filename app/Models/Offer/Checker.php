@@ -164,8 +164,8 @@ class Checker extends Base\Core
         $result = ($offerPaymentMethodType === $this->card->getType());
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_TYPE_CHECK, [
-            'result' => $result,
-            'offer_card_type' => $offerPaymentMethodType,
+            'result'            => $result,
+            'offer_card_type'   => $offerPaymentMethodType,
             'payment_card_type' => $this->card->getType()
         ]);
 
@@ -186,8 +186,8 @@ class Checker extends Base\Core
         $result = ($offerPaymentNetwork === $this->card->getNetworkCode());
 
         $this->traceCheckResult(TraceCode::OFFER_CARD_NETWORK_CHECK, [
-            'result' => $result,
-            'offer_card_network' => $offerPaymentNetwork,
+            'result'               => $result,
+            'offer_card_network'   => $offerPaymentNetwork,
             'payment_card_network' => $this->card->getNetworkCode()
         ]);
 
@@ -244,7 +244,7 @@ class Checker extends Base\Core
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $result = (($now >= $this->offer->getStartsAt()) or ($now < $this->offer->getEndsAt()));
+        $result = (($now >= $this->offer->getStartsAt()) or ($now <= $this->offer->getEndsAt()));
 
         $this->traceCheckResult(TraceCode::OFFER_PERIOD_CHECK, [
             'result' => $result
