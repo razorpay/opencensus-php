@@ -16,7 +16,7 @@ trait RepositoryFetch
         'count'         => 'integer|min:1',
         'skip'          => 'integer');
 
-    // protected $originalFetchParamRules;
+    protected $originalFetchParamRules;
 
     /**
      * *Temporary: Will be removed once notes index is migrated to new flow.

@@ -112,7 +112,7 @@ class Repository extends \Razorpay\Spine\Repository
         /**
          * Above one should be removed later, once we migrate notes to the new flow.
          */
-        $this->syncToEs($entity);
+        $this->syncToEs($entity, 'upsert', $dirty);
     }
 
     public function deleteOrFail($entity)
@@ -296,7 +296,10 @@ class Repository extends \Razorpay\Spine\Repository
         }
     }
 
-    protected function syncToEs($entity, $action = 'upsert')
+    protected function syncToEs(
+        Models\Base\PublicEntity $entity,
+        string $action = 'upsert',
+        array $dirty = [])
     {
         if ($this->doesEsRepoExists() === false)
         {
@@ -304,6 +307,21 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        {
+            return;
+        }
+
+        $this->setEsRepo();
+
+        $esFields = $this->esRepo->getFields();
+
+        if (count($esFields) === 0)
+        {
+            return;
+        }
+
+        if (($action === 'upsert') and
+            (empty(array_intersect(array_keys($dirty), $esFields)) === true))
         {
             return;
         }

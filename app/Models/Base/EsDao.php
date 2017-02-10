@@ -297,7 +297,7 @@ class EsDao
 
     public function storeAdminEvent($index, $type, $fields)
     {
-        $this->createIndexIfNotExists($index);
+        $this->createIndexIfNotExistsInHiemdallHost($index);
 
         $params = [
             'index' => $index,
@@ -308,7 +308,7 @@ class EsDao
         $updateReponse = $this->es->indexHeimdall($params);
     }
 
-    protected function createIndexIfNotExists($index)
+    protected function createIndexIfNotExistsInHiemdallHost($index)
     {
         $params['index'] = $index;
 
@@ -322,7 +322,10 @@ class EsDao
         }
     }
 
-    public function createIndexIfNotExistsSane($indexName, $settings, $mappings)
+    public function createIndexIfNotExistsInDefaultHost(
+        string $indexName,
+        array $settings,
+        array $mappings)
     {
         $indexExists = $this->es->indexExists(['index' => $indexName]);
 

@@ -67,6 +67,11 @@ class EsClient
 
     public function search(array $params)
     {
+        if ($this->esMock === true)
+        {
+            return ['hits' => ['hits' => []]];
+        }
+
         return $this->client->search($params);
     }
 
@@ -90,11 +95,10 @@ class EsClient
 
         /**
          * TODO:
-         * RESOLVE THIS BEFORE MERGE.
-         * Confirm what version of elasticsearch is there on prod.
-         * I have upgraded the library in this pr.
-         * With my combination, following query doesn't work.
-         * Ref: http://stackoverflow.com/questions/40519806/no-query-registered-for-filtered
+         * Get this merged: https://github.com/razorpay/api/pull/2193
+         * It has:
+         * - Fixes for deprecated query
+         * - Clean traces and logging
          */
 
         $searchResponse = $this->client->search($params);

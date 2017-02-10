@@ -11,6 +11,8 @@ use RZP\Trace\TraceCode;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
+    use EsQuery;
+
     protected $esDao;
     protected $indexName;
     protected $trace;
@@ -181,150 +183,48 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $mappings = EsMappping::mappings($this->fields, $this->fieldMappings);
 
-        $this->esDao->createIndexIfNotExistsSane($this->indexName, $settings, $mappings);
+        $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
     }
 
     public function search(string $entity, array $params, string $merchantId = null, array $groups = [])
     {
         $this->setIndexName($this->mode . '_' . $entity);
 
-        $query = [];
+        $params['merchant_id'] = $merchantId;
 
-        list($from, $size) = $this->getFromAndSizeValue($params);
+        $this->buildQuery($this->indexName, $this->indexName, [], $params);
 
-        $this->buildQuery($query, $params);
+        $esRequestParams = $this->getEsRequestParams();
 
-        $this->addAclFilters($query, $merchantId, $groups);
+        $searchResult = $this->esDao->search($esRequestParams);
 
-        $searchParams = [
-            'index' => $this->indexName,
-            'type'  => $this->indexName,
-            'body'  => [
-                '_source' => false,
-                'from'    => $from,
-                'size'    => $size,
-                'query'   => $query,
-            ],
-        ];
+        $collection = new EsPublicCollection;
 
-        $searchResult = $this->esDao->search($searchParams);
+        foreach ($searchResult['hits']['hits'] as $hit)
+        {
+            $collection->push(($hit['_source']) ?? ['id' => $hit['_id']]);
+        }
 
-        $ids = collect($searchResult['hits']['hits'])
-                    ->pluck('_id')
-                    ->all();
+        if ($this->searchHitsOnly === true)
+        {
+            return $collection;
+        }
+
+        $ids = $collection->pluck('id')->all();
 
         if (count($ids) === 0)
         {
-            return (new PublicCollection);
+            return new PublicCollection;
         }
 
         $entities = $this->newQuery()->findMany($ids, array('*'));
 
         if (count($ids) !== $entities->count())
         {
-            $this->trace->error(
-                TraceCode::ES_MYSQL_RESULTS_MISMATCH,
-                [
-                    'ids' => $ids,
-                ]
-            );
+            $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
         }
 
         return $entities;
-    }
-
-    protected function getFromAndSizeValue(array & $params)
-    {
-        $from = ($params['skip']) ?? 0;
-        $size = ($params['count']) ?? 10;
-
-        unset($params['skip']);
-        unset($params['count']);
-
-        return [$from, $size];
-    }
-
-    protected function buildQuery(array & $query, array $params)
-    {
-        $mustClauses = [];
-
-        foreach ($params as $field => $value)
-        {
-            $func = 'addMustClauseFor' . studly_case($field);
-
-            if (method_exists($this, $func))
-            {
-                $this->$func($mustClauses, $value);
-            }
-            else
-            {
-                $this->addMustClauseDefault($mustClauses, $field, $value);
-            }
-        }
-
-        $query = [
-            'bool' => [
-                'must'   => $mustClauses,
-            ],
-        ];
-    }
-
-    protected function addAclFilters(array & $query, $merchantId, array $groups)
-    {
-        $filterMustClauses = [];
-
-        if ($merchantId !== null)
-        {
-            $filterMustClauses[] = [
-                'term' => [
-                    'merchant_id' => [
-                        'value' => $merchantId,
-                    ],
-                ],
-            ];
-        }
-
-        $query['bool']['filter'] = [
-            'bool' => [
-                'must' => $filterMustClauses,
-            ],
-        ];
-    }
-
-    protected function addMustClauseDefault(array & $mustClauses, string $field, $value)
-    {
-        $mustClauses[] = [
-            'term' => [
-                $field => [
-                    'value' => $value,
-                    'boost' => 3,
-                ],
-            ],
-        ];
-    }
-
-    protected function addMustClauseForQ(array & $mustClauses, $value)
-    {
-        $mustClauses[] = [
-            'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => $this->queryFields,
-                'boost'  => 1,
-            ],
-        ];
-    }
-
-    protected function addMustClauseForNotes(array & $mustClauses, $value)
-    {
-        $mustClauses[] = [
-            'multi_match' => [
-                'query'  => $value,
-                'type'   => 'best_fields',
-                'fields' => 'notes.*',
-                'boost'  => 2,
-            ],
-        ];
     }
 
     /**
