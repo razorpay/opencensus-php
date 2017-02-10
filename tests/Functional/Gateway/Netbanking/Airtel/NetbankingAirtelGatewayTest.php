@@ -100,18 +100,21 @@ class NetbankingAirtelGatewayTest extends TestCase
         });
     }
 
+    // Testing verify on a failed payment who's ID is not present on gateway's database.
+    // we assert that this results in a status_match as
+    // both apiSuccess and gatewaySuccess are false
     public function testAuthCancelledVerify()
     {
-        $data = $this->testData[__FUNCTION__];
+        $this->testFailedAuthPayment();
 
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->getLastEntity('payment', true);
 
         $this->mockAuthCancelVerifyResponse();
 
-        $this->runRequestResponseFlow($data, function() use ($payment)
-        {
-            $this->verifyPayment($payment['razorpay_payment_id']);
-        });
+        $verify = $this->verifyPayment($payment['id']);
+
+        $this->assertEquals($verify['gateway']['apiSuccess'], false);
+        $this->assertEquals($verify['gateway']['gatewaySuccess'], false);
     }
 
     public function testVerifyMismatch()

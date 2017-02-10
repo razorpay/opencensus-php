@@ -60,21 +60,6 @@ return [
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_INVALID_PARAMETERS,
         ],
     ],
-    'testAuthCancelledVerify' => [
-        'response'  => [
-            'content'     => [
-                'error' => [
-                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-                ],
-            ],
-            'status_code' => 400,
-        ],
-        'exception' => [
-            'class'                 => 'RZP\Exception\PaymentVerificationException',
-            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
-        ],
-    ],
     'testVerifyMismatch' => [
         'response'  => [
             'content'     => [
