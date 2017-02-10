@@ -435,7 +435,6 @@ class Orchestrator extends Base\Core
         // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
         // formatted by the sender's email client.
         // 'X-Original-Sender' always contains just the email address.
-
         $emailDetails = [
             'from'      => $input['X-Original-Sender'],
             'subject'   => $input['subject'],

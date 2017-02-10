@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\Freecharge;
 
+use Symfony\Component\DomCrawler\Crawler;
+
 use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
@@ -35,12 +37,17 @@ class Reconciliate extends Base\Reconciliate
         ];
     }
 
-    public function fetchSettlementFileLink(string $text)
+    public function fetchLinksToDownload(string $text)
     {
         /**
          * 1. Fetch all hyperlinks 'a' tags
          * 2. Get the one with text as 'VIEW REPORT'
          * 3. Extract the href link
          */
+
+        $crawler = new Crawler($html);
+        foreach ($crawler as $domElement)
+        {
+        }
     }
 }
