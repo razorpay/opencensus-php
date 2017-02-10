@@ -474,42 +474,19 @@ class Gateway extends Base\Gateway
             $verify->apiSuccess = false;
         }
 
-        if ($this->checkPaymentStatusResponseFailed($content) === true)
+        $verify->gatewaySuccess = false;
+
+        if ($this->checkPaymentStatusResponseFailed($content) === false)
         {
-            $verify->gatewaySuccess = false;
+            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
         }
-        else
-        {
-            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === self::SUCCESS_STATUS) ? true : false;
-        }
+
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
         }
 
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
-
-        // save the gateway payment entity with verify response values if there is a status mismatch
-        if ($verify->match === false)
-        {
-            $verify->payment = $this->saveVerifyContent($verify);
-        }
-    }
-
-    protected function saveVerifyContent($verify)
-    {
-        $gatewayPayment = $verify->payment;
-
-        if ($verify->gatewaySuccess === true)
-        {
-            $walletAttributes = $this->getVerifyWalletCreateAttributes($verify);
-
-            $gatewayPayment->fill($walletAttributes);
-
-            $gatewayPayment->saveOrFail();
-        }
-
-        return $gatewayPayment;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
     }
 
     protected function getVerifyWalletCreateAttributes($verify)
@@ -525,7 +502,7 @@ class Gateway extends Base\Gateway
             Entity::EMAIL                        => $payment[Payment::EMAIL],
             Entity::CONTACT                      => $payment[Payment::CONTACT],
             ResponseFields::STATUS_CODE          => StatusCode::SUCCESS,
-            ResponseFields::RESPONSE_CODE        => self::SUCCESS_STATUS,
+            ResponseFields::RESPONSE_CODE        => StatusCode::API_SUCCESS,
             ResponseFields::RESPONSE_DESCRIPTION => 'APPROVED',
             ResponseFields::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
         );
@@ -563,7 +540,7 @@ class Gateway extends Base\Gateway
         if ($this->statusQueryValid === false)
         {
             return ($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]
-                    [ResponseFields::STATUS] !== self::SUCCESS_STATUS);
+                    [ResponseFields::STATUS] !== StatusCode::API_SUCCESS);
         }
 
         return false;
@@ -605,11 +582,11 @@ class Gateway extends Base\Gateway
             RequestFields::PAYMENT_ID    => $input['payment']['id']
         ];
 
-        $hashString = $this->getStringToHash(array_values($content), '~');
+        $hashString = $this->getStringToHash($content, '~');
 
         $content[RequestFields::CHECKSUM] = $this->getHashOfString($hashString);
 
-        $content = implode('~', array_values($content));
+        $content = implode('~', $content);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -646,9 +623,7 @@ class Gateway extends Base\Gateway
             $input['payment'][Payment::ID]
         ];
 
-        $hash = $this->getHashOfArray($hashArray);
-
-        $content[RequestFields::CHECKSUM] = $hash;
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($hashArray);
 
         $content = json_encode($content);
 
@@ -664,8 +639,6 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
 
-        $this->action = Action::VERIFY;
-
         return $request;
     }
 
@@ -673,6 +646,7 @@ class Gateway extends Base\Gateway
     {
         return false;
     }
+
     //----------------------------Verify helper methods end--------------------------------
 
     protected function parseGatewayResponse(\Requests_Response $response)
@@ -728,7 +702,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    public function getStringToHash($content, $glue = '|')
+    protected function getStringToHash($content, $glue = '|')
     {
         return parent::getStringToHash($content, $glue);
     }
@@ -747,7 +721,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_merchant_id'];
         }
 
-        return $this->input['terminal']['gateway_merchant_id'];
+        return $this->terminal['gateway_merchant_id'];
     }
 
     protected function getClientId()
@@ -757,7 +731,7 @@ class Gateway extends Base\Gateway
             return $this->config['test_client_id'];
         }
 
-        return $this->input['terminal']['gateway_access_code'];
+        return $this->terminal['gateway_access_code'];
     }
 
     public function getSecret()
@@ -767,7 +741,7 @@ class Gateway extends Base\Gateway
             return $this->getTestSecret();
         }
 
-        return $this->input['terminal']['gateway_terminal_password'];
+        return $this->terminal['gateway_terminal_password'];
     }
 
     protected function getFormattedDateFromTimeStamp(
