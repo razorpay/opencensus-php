@@ -619,7 +619,7 @@ class Gateway extends Base\Gateway
 
     public function getMerchantId()
     {
-        $mid = $this->terminal[Terminal\Entity::GATEWAY_TERMINAL_ID];
+        $mid = $this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID];
 
         if ($this->mode === Mode::TEST)
         {
