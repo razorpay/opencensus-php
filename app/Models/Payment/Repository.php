@@ -180,6 +180,19 @@ class Repository extends Base\Repository
     }
 
     /**
+     * Fetches old payments which can be timed-out with respective
+     * merchant relation.
+     */
+    public function fetchOldCreatedPaymentsForTimeout2($timestamp)
+    {
+        return $this->newQuery()
+                    ->status(Payment\Status::CREATED)
+                    ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
+                    ->with('merchant')
+                    ->get();
+    }
+
+    /**
      * This function is used to fetch the authorized payments where
      * Merchant auto refund delay is null.
      *

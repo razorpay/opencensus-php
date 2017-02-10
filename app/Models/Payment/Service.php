@@ -838,6 +838,49 @@ class Service extends Base\Service
         return ['count' => $count];
     }
 
+    public function timeoutOldPayments2()
+    {
+        $count = 0;
+        $error = 0;
+
+        $startTime = microtime(true);
+
+        // All Payments in created state will be marked as failed after 9 minutes
+        $timestamp = time() - 9 * 60;
+
+        $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout2($timestamp);
+
+        foreach ($payments as $payment)
+        {
+            try
+            {
+                $this->getNewProcessor($payment->merchant)
+                     ->setPayment($payment)
+                     ->timeoutPayment();
+
+                $count++;
+            }
+            catch (\Exception $e)
+            {
+                $this->trace->traceException($e);
+
+                $error++;
+            }
+        }
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TIMED_OUT,
+            [
+                'count'      => $count,
+                'error'      => $error,
+                'timestamp'  => time(),
+                'time_taken' => microtime(true) - $startTime
+            ]);
+
+        return ['count' => $count];
+    }
+
+
     public function autoCaptureOldAuthorizedPayments()
     {
         $timeLowerLimit = time() - (48 * 60 * 60);
