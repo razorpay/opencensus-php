@@ -264,7 +264,7 @@ class NetbankingKotakGatewayTest extends TestCase
                         { return $payment['terminal_id'] === 'TpvNbKotakTmnl'; });
 
         $nonTpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === '100NbKotakTmnl'; });
+                        { return $payment['terminal_id'] !== 'TpvNbKotakTmnl'; });
 
         $tpvPayments = array_values($tpvPayments);
 
