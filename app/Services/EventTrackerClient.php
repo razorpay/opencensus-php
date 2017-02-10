@@ -80,10 +80,10 @@ class EventTrackerClient extends Base\Core
     */
     public function buildRequestAndSend()
     {
-        if (count($this->events) === 0)
+        /*if (count($this->events) === 0)
         {
             return;
-        }
+        }*/
 
         $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
 
@@ -445,10 +445,10 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        if ($this->mock === true)
+        /*if ($this->mock === true)
         {
             return;
-        }
+        }*/
 
         try
         {
