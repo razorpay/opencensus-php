@@ -52,12 +52,14 @@ $errorTextColor = #F65656
   }
 
   .form-control[disabled],
-  .powerselect--disabled {
+  .powerselect--disabled,
+  &.inlineField--disabled .SingleDatePickerInput {
     &:hover {
       border-color: transparent;
     }
   }
 
+  .DateInput--disabled,
   .powerselect--disabled .powerselect__trigger-input {
     background-color: transparent;
   }

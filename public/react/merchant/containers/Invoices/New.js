@@ -272,6 +272,7 @@ export default class InvoicesNewContainer extends Component {
     let isIssued = status === 'issued'
     let isPaid = status === 'paid'
     let isExpired = status === 'expired'
+    let locked = isPaid || isExpired
 
     let invoiceTotal = this.calculateItemsSubTotal()
     let customerDetails = ''
@@ -324,7 +325,7 @@ export default class InvoicesNewContainer extends Component {
                           <div class='inv__titlesection'>
                             <h3>Invoice</h3>
                             {
-                              ((isPaid || isExpired) && !invoice.receipt) ?
+                              (locked && !invoice.receipt) ?
                                 <InlineField
                                   formName='newInvoice'
                                   name='id'
@@ -339,7 +340,7 @@ export default class InvoicesNewContainer extends Component {
                                   component='input'
                                   class='form-control input-xs'
                                   placeholder='Receipt number'
-                                  disabled={isPaid}
+                                  disabled={locked}
                                 />
                             }
                           </div>
@@ -351,7 +352,7 @@ export default class InvoicesNewContainer extends Component {
                             class='form-control input-xs'
                             placeholder='Summary or brief this invoice'
                             rows='2'
-                            disabled={isIssued}
+                            disabled={isIssued || locked}
                           />
                         </div>
                         <div class='col-md-6 text-right'>
@@ -375,7 +376,7 @@ export default class InvoicesNewContainer extends Component {
                             optionLabelPath='displayName'
                             placeholder='Select a customer'
                             onQuickAdd={this.quickCreateCustomer}
-                            disabled={isIssued}
+                            disabled={isIssued || locked}
                             onOptionChange={(selectedCustomer) => {
                               this.props.change('customer_id', selectedCustomer.id || '')
                             }}
@@ -409,6 +410,7 @@ export default class InvoicesNewContainer extends Component {
                                 }
                                 return value
                               }}
+                              disabled={isIssued || locked}
                             />
                         </div>
                       </div>
@@ -418,7 +420,7 @@ export default class InvoicesNewContainer extends Component {
                             name='line_items'
                             component={LineItemTable}
                             items={this.props.items}
-                            disabled={isIssued}
+                            disabled={isIssued || locked}
                             invoiceTotal={invoiceTotal}
                           />
                         </div>
@@ -433,6 +435,7 @@ export default class InvoicesNewContainer extends Component {
                             class='form-control input-xs'
                             rows={2}
                             placeholder='Customer Notes'
+                            disabled={locked}
                           />
                         </div>
                       </div>
@@ -446,6 +449,7 @@ export default class InvoicesNewContainer extends Component {
                             class='form-control input-xs'
                             rows={3}
                             placeholder='Terms and Conditions'
+                            disabled={locked}
                           />
                         </div>
                       </div>
