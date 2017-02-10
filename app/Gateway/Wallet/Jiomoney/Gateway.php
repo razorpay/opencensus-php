@@ -422,7 +422,6 @@ class Gateway extends Base\Gateway
 
     protected function verifyPayment($verify)
     {
-        $gatewayPayment = $verify->payment;
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
 
