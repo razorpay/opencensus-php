@@ -811,12 +811,11 @@ class Service extends Base\Service
 
         foreach ($payments as $payment)
         {
-            if ($payment->shouldTimeout($now))
+            if ($payment->shouldTimeout($now) === true)
             {
                 try
                 {
-
-                    $this->getNewProcessor($merchant)
+                    $this->getNewProcessor($payment->merchant)
                          ->setPayment($payment)
                          ->timeoutPayment();
 
