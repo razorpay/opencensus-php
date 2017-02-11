@@ -1499,6 +1499,17 @@ class Entity extends Base\PublicEntity
         return $relevantData;
     }
 
+    public function shouldTimeout($now)
+    {
+        $merchant = $this->merchant;
+
+        $timeoutPeriod = $merchant->getTimeoutWindow($this->getGateway(), $this->getMethod());
+
+        $diff = $now - $this->getCreatedAt();
+
+        return ($diff >= $timeoutPeriod);
+    }
+
 // --------------------- Query scopes section begin ----------------------------
 
     public function scopeStatus($query, $status)
