@@ -3,6 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use View, Request;
+use RZP\Exception;
 use RZP\Base\JitValidator;
 
 class PublicController extends Controller
@@ -83,7 +84,7 @@ class PublicController extends Controller
         $this->validateHostedPostParams($postParams);
 
         $data = [
-            'options'       => json_encode($postParams['options'], JSON_FORCE_OBJECT),
+            'options'       => json_encode($postParams['checkout'], JSON_FORCE_OBJECT),
             'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
             // This is used directly in JS side
             'urls'          => json_encode([
@@ -92,7 +93,7 @@ class PublicController extends Controller
             ], JSON_FORCE_OBJECT),
             // This is used in PHP
             'url_callback'  => $postParams['url']['callback'],
-            'retry'         => (bool) Request::get('retry', false) ,
+            'retry'         => true //(bool) Request::get('retry', false) ,
         ];
 
         return View::make('public.hosted', $data);
@@ -101,13 +102,14 @@ class PublicController extends Controller
     protected function validateHostedPostParams($postParams)
     {
         $postParamRules = [
-            'url'                   =>  'required|array',
-            'options'               =>  'required|array',
-            'url.cancel'            =>  'sometimes|url',
-            'url.callback'          =>  'required|url',
-            'options.key'           =>  'required',
-            'options.amount'        =>  'required|integer',
-            'retry'                 =>  'sometimes'
+            'url'                   => 'required|array',
+            'checkout'              => 'required|array',
+            'url.cancel'            => 'sometimes|url',
+            'url.callback'          => 'required|url',
+            'checkout.key'          => 'required',
+            'checkout.amount'       => 'required|integer',
+            'checkout.image'        => 'sometimes|url',
+            'retry'                 => 'sometimes'
         ];
 
         (new JitValidator)->rules($postParamRules)

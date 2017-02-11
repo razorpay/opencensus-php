@@ -98,8 +98,6 @@ class FeaturesTest extends TestCase
 
     public function testDummyFeatureRouteWithAccess()
     {
-
-        $this->fixtures->merchant->editFeatures('dummy');
         $this->fixtures->merchant->addFeatures(['dummy']);
 
         $this->ba->privateAuth();

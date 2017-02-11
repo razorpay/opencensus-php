@@ -4,8 +4,8 @@ namespace RZP\Models\DataStore\PrioritySet\Implementation;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-
 use RZP\Models\DataStore\PrioritySet;
+use RZP\Trace\TraceCode;
 
 /**
  * This class is used to store priority set data type in redis
@@ -61,9 +61,13 @@ class Redis extends PrioritySet\Base
         try
         {
             $this->data = $this->redis->zrevrange($storeKey, ...$fetchOptions);
+
+            $this->trace->info(TraceCode::REDIS_DATA_FETCHED, $this->data);
         }
         catch (\Exception $e)
         {
+            $this->trace->traceException($e);
+
             throw new Exception\ServerErrorException(
                     'Error fetching from redis',
                     ErrorCode::SERVER_ERROR_REDIS_EXCEPTION,
