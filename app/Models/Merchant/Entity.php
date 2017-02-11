@@ -9,7 +9,6 @@ use RZP\Error\ErrorCode;
 use RZP\Exception\LogicException;
 use RZP\Models\Base;
 use RZP\Models\Feature;
-use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Trace;
 
@@ -840,40 +839,6 @@ class Entity extends Base\PublicEntity
     public function getTPVCategories()
     {
         return Terminal\Category::getTPVCategories();
-    }
-
-    public function getTimeoutWindow($gateway, $method)
-    {
-        // default is 9 mins
-        $timeWindow = 540;
-
-        if ($this->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
-        {
-            // for new flow, default will is 30 mins
-            $timeWindow = 1800;
-
-            if (($method === Payment\Method::NETBANKING) and
-                ($gateway === Payment\Gateway::BILLDESK))
-            {
-                $timeWindow = 259200;
-            }
-            else if (($method === Payment\Method::NETBANKING))
-            {
-                // for direct netbanking 1 hour is good enough
-                $timeWindow = 3600;
-            }
-        }
-
-        $autoRefundDelay = $this->getAutoRefundDelay();
-
-        if ($autoRefundDelay === null)
-        {
-            // default is 5 days
-            $autoRefundDelay = 432000;
-        }
-
-        return min($timeWindow, $autoRefundDelay);
-
     }
 
     public function isShared()

@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -1501,9 +1502,7 @@ class Entity extends Base\PublicEntity
 
     public function shouldTimeout($now)
     {
-        $merchant = $this->merchant;
-
-        $timeoutPeriod = $merchant->getTimeoutWindow($this->getGateway(), $this->getMethod());
+        $timeoutPeriod = $this->getTimeoutWindow($this->getGateway(), $this->getMethod());
 
         $diff = $now - $this->getCreatedAt();
 
@@ -1542,5 +1541,38 @@ class Entity extends Base\PublicEntity
         }
 
         return $features;
+    }
+
+    protected function getTimeoutWindow($gateway, $method)
+    {
+        // default is 9 mins
+        $timeWindow = 540;
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
+        {
+            // for new flow, default is 30 mins
+            $timeWindow = 1800;
+
+            if (($method === Payment\Method::NETBANKING) and
+                ($gateway === Payment\Gateway::BILLDESK))
+            {
+                $timeWindow = 259200;
+            }
+            else if (($method === Payment\Method::NETBANKING))
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = 3600;
+            }
+        }
+
+        $autoRefundDelay = $this->merchant->getAutoRefundDelay();
+
+        if ($autoRefundDelay === null)
+        {
+            // default is 5 days
+            $autoRefundDelay = 432000;
+        }
+
+        return min($timeWindow, $autoRefundDelay);
     }
 }
