@@ -95,6 +95,8 @@ class Entity extends Base\PublicEntity
     protected $validOperations = [
         'create',
         'update',
+        'delete',
+        'expireInvoice',
         'sendNotification',
         'addLineItems',
         'addManyLineItems',

@@ -494,18 +494,7 @@ class InvoiceTest extends TestCase
     {
         $this->createOrder();
 
-        $this->fixtures->create('invoice');
-
-        //
-        // Just adding one failed payment. This should not stop from invoice to
-        // be deleted.
-        //
-        $this->fixtures->create('payment:failed',
-            [
-                'order_id'   => '100000000order',
-                'invoice_id' => '1000000invoice',
-                'card_id'    => null,
-            ]);
+        $this->createDraftInvoice();
 
         $this->startTest();
 
@@ -1058,7 +1047,7 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testExpirePaidInvoice()
+    public function testExpirePaymentInProgressInvoice()
     {
         $this->createOrder();
 
@@ -1073,6 +1062,22 @@ class InvoiceTest extends TestCase
                 'invoice_id' => '1000000invoice',
                 'card_id'    => null,
             ]);
+
+        $this->fixtures->create('payment:authorized',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testExpirePaidInvocie()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
 

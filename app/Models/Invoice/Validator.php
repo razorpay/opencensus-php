@@ -344,6 +344,7 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendNotification':
+            case 'expireInvoice':
                 $allowedStatuses = [
                     Status::ISSUED,
                 ];

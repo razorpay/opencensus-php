@@ -1251,7 +1251,6 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
-                'date'         => 1480506888,
                 'terms'        => 'Updated terms & conditions',
                 'notes'        => [
                     'new_key'  => 'new_value'
@@ -1275,7 +1274,7 @@ return [
                 'payment_id'           => null,
                 'status'               => 'issued',
                 'paid_at'              => null,
-                'date'                 => 1480506888,
+                'date'                 => null,
                 'terms'                => 'Updated terms & conditions',
                 'amount'               => 100000,
                 'description'          => null,
@@ -1292,7 +1291,6 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
-                'date'         => 1480506888,
                 'terms'        => 'Updated terms & conditions',
                 'notes'        => [
                     'new_key'  => 'new_value'
@@ -1429,14 +1427,14 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice delete failed as payment exists or is in progress for this invoice.',
+                    'description' => 'Operation not allowed for invoice in paid status.',
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_DELETE_FAILED,
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
@@ -2287,7 +2285,7 @@ return [
         ],
     ],
 
-    'testExpirePaidInvoice' => [
+    'testExpirePaymentInProgressInvoice' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/expire',
             'method' => 'post',
@@ -2305,6 +2303,27 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
+        ],
+    ],
+
+    'testExpirePaidInvocie' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/expire',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in paid status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
 
