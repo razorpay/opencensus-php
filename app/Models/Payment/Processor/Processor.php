@@ -911,7 +911,7 @@ class Processor
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
         // We do an auto capture only if payment is associated with an order.
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasOrder() === false)
         {
             return false;
         }
@@ -952,15 +952,15 @@ class Processor
 
         if ($payment->isLateAuthorized())
         {
-            return $this->shouldAutoCaptureLateAuthorized($payment);
+            return $this->shouldAutoCaptureLateAuthorized($payment, $order);
         }
 
         return true;
     }
 
-    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment, Order\Entity $order)
     {
-        $merchant        = $payment->merchant;
+        $merchant = $payment->merchant;
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
@@ -995,13 +995,6 @@ class Processor
             return false;
         }
 
-        // For now, we would be auto capturing only payments with an invoice.
-        // This will be removed later.
-        if ($payment->getInvoiceId() === null)
-        {
-            return false;
-        }
-
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
@@ -1010,7 +1003,22 @@ class Processor
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
         }
 
-        return false;
+        return $this->shouldAutoCaptureLateAuthorizedOrder($payment, $order);
+    }
+
+    /**
+     * Currently, there's no extra/special logic around auto capturing
+     * a late authorized order. Hence, we always just return back true.
+     * We may want to keep this behind a feature flag later.
+     *
+     * @param Payment\Entity $payment
+     * @param Order\Entity   $order
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedOrder(Payment\Entity $payment, Order\Entity $order)
+    {
+        return true;
     }
 
     protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
