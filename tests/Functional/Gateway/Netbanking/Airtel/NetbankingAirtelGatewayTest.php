@@ -13,7 +13,7 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Skipped till Airtel is re-enabled');
+        // $this->markTestSkipped('Skipped till Airtel is re-enabled');
 
         $this->testDataFilePath = __DIR__.'/NetbankingAirtelGatewayTestData.php';
 
@@ -107,13 +107,24 @@ class NetbankingAirtelGatewayTest extends TestCase
     // both apiSuccess and gatewaySuccess are false
     public function testAuthCancelledVerify()
     {
-        $this->testFailedAuthPayment();
+        $payment = $this->fixtures->create('payment:netbanking_created', [
+            'bank'        => 'AIRP',
+            'terminal_id' => '100NbAirtlTmnl',
+            'gateway'     => 'netbanking_airtel'
+        ]);
 
-        $payment = $this->getLastEntity('payment', true);
+        $gatewayPayment = $this->fixtures->create('netbanking',
+            [
+                'bank'            => 'AIRP',
+                'status'          => 'created',
+                'payment_id'      => $payment['id'],
+                'caps_payment_id' => $payment['id']
+            ]
+        );
 
         $this->mockAuthCancelVerifyResponse();
 
-        $verify = $this->verifyPayment($payment['id']);
+        $verify = $this->verifyPayment('pay_' . $gatewayPayment['payment_id']);
 
         $this->assertEquals($verify['gateway']['apiSuccess'], false);
         $this->assertEquals($verify['gateway']['gatewaySuccess'], false);
