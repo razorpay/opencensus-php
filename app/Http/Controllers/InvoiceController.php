@@ -173,9 +173,12 @@ class InvoiceController extends Controller
     {
         list($displayName, $path) = $this->service->getInvoicePdf($id);
 
-        $download = Request::input('download', false);
+        $download = Request::input('download', '0');
 
-        if ($download) return Response::download($path, $displayName);
+        if ($download === '1')
+        {
+            return Response::download($path, $displayName);
+        }
 
         return Response::file($path);
     }

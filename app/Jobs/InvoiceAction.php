@@ -20,6 +20,15 @@ class InvoiceAction extends Job implements ShouldQueue
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
 
+    //
+    // Following are the events handled
+    //
+
+    const ISSUED               = 'issued';
+    const UPDATED              = 'updated';
+    const EXPIRED              = 'expired';
+    const AUTHORIZED           = 'authorized';
+
     protected $mode;
     protected $event;
     protected $invoice;

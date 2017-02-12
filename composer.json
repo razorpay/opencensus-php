@@ -29,8 +29,7 @@
         "doctrine/dbal": "^2.5",
         "guzzlehttp/promises": "1.2.0",
         "mikehaertl/phpwkhtmltopdf": "^2.2",
-        "mustache/mustache": "^2.11",
-        "h4cc/wkhtmltopdf-amd64": "0.12.3"
+        "mustache/mustache": "^2.11"
     },
     "repositories": [
         {

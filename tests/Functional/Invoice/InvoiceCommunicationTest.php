@@ -4,7 +4,6 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
-use RZP\Jobs\InvoiceAction;
 
 class InvoiceCommunicationTest extends TestCase
 {
@@ -51,10 +50,6 @@ class InvoiceCommunicationTest extends TestCase
 
     public function testInvoiceSendNotificationsInBulk()
     {
-        //
-        // TODO:
-        // Add this post beta launch.
-        //
     }
 
     protected function assertStatusesWithLastEntity(array $expected)

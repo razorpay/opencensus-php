@@ -60,8 +60,7 @@ class Repository extends Base\Repository
     public function getInvoicesForExpiringNotificationToCustomer()
     {
         //
-        // TODO:
-        // Will be implemented later, post beta launch.
+        // To be implemented later, As incremental feature.
         //
 
         return new Base\PublicCollection;

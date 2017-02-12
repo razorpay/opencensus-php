@@ -21,7 +21,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const REDIS_DEFAULT_TTL         = 900;
+    const REDIS_DEFAULT_TTL         = 900; // In seconds (=15 min)
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
@@ -94,38 +94,12 @@ class PdfGenerator extends Base\Core
 
         $pdfContent = $pdf->toString();
 
-        //
-        // TODO:
-        // Remove these misc trace codes later.
-        //
-
-        $this->trace->debug(
-            TraceCode::TRACE_MISC_CODE,
-            [
-                'options'       => $options,
-                'error'         => $pdf->getError(),
-                'command'       => $pdf->getCommand(),
-                'filename'      => $pdf->getPdfFilename(),
-                'content_empty' => ($pdfContent === false),
-            ]);
-
         if ($pdfContent === false)
         {
             throw new Exception\LogicException('Pdf generation failed: Content is empty.');
         }
 
         $file = new \SplFileObject($pdf->getPdfFilename());
-
-        $this->trace->debug(
-            TraceCode::TRACE_MISC_CODE,
-            [
-                $file->getExtension(),
-                $file->getSize(),
-                $file->getType(),
-                $file->isFile(),
-                $file->isReadable(),
-                mime_content_type($pdf->getPdfFilename())
-            ]);
 
         return $pdfContent;
     }

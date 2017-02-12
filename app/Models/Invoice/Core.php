@@ -25,6 +25,9 @@ class Core extends Base\Core
 
     protected $lineItemCore;
     protected $pdfGenerator;
+    protected $slack;
+    protected $slackTechLogsChannel;
+    protected $mode;
 
     public function __construct()
     {
@@ -65,7 +68,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction($this->mode, 'issued', $invoice));
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice));
         }
 
         return $invoice;
@@ -109,7 +112,7 @@ class Core extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
 
-        $this->dispatch(new InvoiceAction($this->mode, 'updated', $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice));
 
         return $invoice;
     }
@@ -131,7 +134,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, 'issued', $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice));
 
         return $invoice;
     }
@@ -312,7 +315,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, 'expired', $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice));
 
         return $invoice;
     }
