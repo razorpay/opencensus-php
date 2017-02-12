@@ -255,7 +255,24 @@ class CaptureTest extends TestCase
         $this->assertTrue($payment['amount'] === $order['amount']);
     }
 
-    public function testAutoCaptureFailAsPastDefaultRefundTimePeriod()
+    public function testAutoCaptureOnLateAuthorizedPaymentWithAutoRefund()
+    {
+        $payment = $this->createFailedPayment('1', true);
+
+        $this->fixtures->merchant->edit('10000000000000', ['auto_refund_delay' => '2 days']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+
+        $this->assertEquals('captured', $payment['status']);
+        $this->assertEquals('paid', $order['status']);
+
+        $this->assertTrue($payment['amount'] === $order['amount']);
+    }
+
+    public function testInvoiceAutoCaptureFailAsPastDefaultRefundTimePeriod()
     {
         $payment = $this->createFailedPayment();
 
@@ -274,6 +291,24 @@ class CaptureTest extends TestCase
     }
 
     public function testAutoCaptureFailAsPastMerchantRefundTimePeriod()
+    {
+        $payment = $this->createFailedPayment('1', false);
+
+        $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
+        $this->fixtures->payment->edit($payment['id'], ['created_at' => $past]);
+
+        $this->fixtures->merchant->edit('10000000000000', ['auto_refund_delay' => '2 hours']);
+
+        $this->authorizeFailedPayment($payment['id']);
+
+        $payment = $this->getLastEntity('payment', true);
+        $order   = $this->getLastEntity('order', true);
+
+        $this->assertEquals('authorized', $payment['status']);
+        $this->assertEquals('attempted', $order['status']);
+    }
+
+    public function testInvoiceAutoCaptureFailAsPastMerchantRefundTimePeriod()
     {
         $payment = $this->createFailedPayment();
 
@@ -328,7 +363,7 @@ class CaptureTest extends TestCase
         $this->assertEquals('attempted', $order['status']);
     }
 
-    public function testPaymentNotCapturedWithOrder()
+    public function testInvoicePaymentNotCapturedWithOrder()
     {
         $payment = $this->createFailedPayment('0');
 
@@ -344,7 +379,7 @@ class CaptureTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
     }
 
-    public function testMultiplePaymentsWithAutoCapture()
+    public function testMultiplePaymentsWithAutoCaptureForInvoice()
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
 
@@ -367,13 +402,13 @@ class CaptureTest extends TestCase
 
         $payment1 = $this->getLastEntity('payment', true);
 
-        $this->assertInternalErrorCode($payment1, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+        $this->assertInternalErrorCode($payment1, 'SERVER_ERROR_INVALID_ARGUMENT');
 
         $this->doAuthPaymentAndCatchException($order);
 
         $payment2 = $this->getLastEntity('payment', true);
 
-        $this->assertInternalErrorCode($payment2, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+        $this->assertInternalErrorCode($payment2, 'SERVER_ERROR_INVALID_ARGUMENT');
 
         $this->authorizeFailedPayment($payment2['id']);
         $this->authorizeFailedPayment($payment1['id']);
@@ -889,9 +924,11 @@ class CaptureTest extends TestCase
     {
         $this->app['config']->set('gateway.mock_hdfc', true);
 
-        $order = $this->fixtures->create('order', [
-            'id'              => '100000000order',
-            'payment_capture' => $paymentCapture,
+        $order = $this->fixtures->create(
+            'order',
+            [
+                'id'              => '100000000order',
+                'payment_capture' => $paymentCapture,
             ]);
 
         if ($withInvoice)
@@ -911,7 +948,7 @@ class CaptureTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->assertInternalErrorCode($payment, 'GATEWAY_ERROR_REQUEST_TIMEOUT');
+        $this->assertInternalErrorCode($payment, 'SERVER_ERROR_INVALID_ARGUMENT');
 
         return $payment;
     }
@@ -922,7 +959,7 @@ class CaptureTest extends TestCase
         {
             if ($action === 'authorize')
             {
-                throw new Exception\GatewayTimeoutException('Timed out');
+                throw new Exception\GatewayErrorException('Some internal server error');
             }
 
             if ($action === 'inquiry')

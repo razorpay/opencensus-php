@@ -1003,21 +1003,34 @@ class Processor
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
         }
 
-        return $this->shouldAutoCaptureLateAuthorizedOrder($payment, $order);
+        return $this->shouldAutoCaptureLateAuthorizedOrder($autoRefundDelay);
     }
 
     /**
-     * Currently, there's no extra/special logic around auto capturing
-     * a late authorized order. Hence, we always just return back true.
-     * We may want to keep this behind a feature flag later.
+     * We auto capture a late authorized payment only if the
+     * merchant has not set any auto_refund_delay set explicitly.
      *
-     * @param Payment\Entity $payment
-     * @param Order\Entity   $order
+     * TODO: We may also want to keep this behind a merchant config,
+     * since all business models may not support this kind of
+     * functionality.
+     *
+     * @param int|null       $autoRefundDelay
      *
      * @return bool
      */
-    protected function shouldAutoCaptureLateAuthorizedOrder(Payment\Entity $payment, Order\Entity $order)
+    protected function shouldAutoCaptureLateAuthorizedOrder($autoRefundDelay)
     {
+        //
+        // If the merchant has not set any auto_refund_delay explicitly,
+        // we do not auto capture a late authorized payment.
+        // The merchant's business model may not support this kind
+        // of behaviour.
+        //
+        if ($autoRefundDelay === null)
+        {
+            return false;
+        }
+
         return true;
     }
 
