@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const ISSUER                    = 'issuer';
     const ACTIVE                    = 'active';
     const TYPE                      = 'type';
+    const FAIL_PAYMENT              = 'fail_payment';
     const PERCENT_RATE              = 'percent_rate';
     const MIN_AMOUNT                = 'min_amount';
     const MAX_CASHBACK              = 'max_cashback';
@@ -44,8 +45,6 @@ class Entity extends Base\PublicEntity
     const CUSTOM_SHORT_DISPLAY_TEXT_LENGTH = 50;
     const CUSTOM_LONG_DISPLAY_TEXT_LENGTH  = 200;
 
-
-
     protected $entity      = 'offer';
 
     protected static $sign = 'offer';
@@ -67,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::PROCESSING_TIME,
         self::ACTIVE,
         self::TYPE,
+        self::FAIL_PAYMENT,
         self::STARTS_AT,
         self::ENDS_AT,
         self::ADDITIONAL_DETAILS,
@@ -89,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
         self::ACTIVE,
+        self::FAIL_PAYMENT,
         self::TYPE,
         self::STARTS_AT,
         self::ENDS_AT,
@@ -117,13 +118,16 @@ class Entity extends Base\PublicEntity
         self::CUSTOM_SHORT_DISPLAY_TEXT,
         self::CUSTOM_LONG_DISPLAY_TEXT,
         self::ACTIVE,
+        self::FAIL_PAYMENT,
         self::TYPE,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $defaults = [
-        self::ACTIVE                    => 1
+        self::ACTIVE       => 1,
+        self::FAIL_PAYMENT => 1,
+        self::TYPE         => self::DEFERRED
     ];
 
     protected $publicSetters = [
@@ -135,6 +139,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::IINS            => 'array',
         self::ACTIVE          => 'boolean',
+        self::FAIL_PAYMENT    => 'boolean',
         self::PROCESSING_TIME => 'int',
         self::PERCENT_RATE    => 'int',
         self::MAX_CASHBACK    => 'int',
@@ -235,6 +240,11 @@ class Entity extends Base\PublicEntity
         $this->active = false;
     }
 
+    public function failPaymentIfOfferInapplicable()
+    {
+        return $this->getAttribute(self::FAIL_PAYMENT);
+    }
+
 // -----------------------Mutators begin----------------------------------------
     /**
      * Sets the custom_long_display_text value if present else generates a long
@@ -284,6 +294,10 @@ class Entity extends Base\PublicEntity
         {
             $this->attributes[self::PAYMENT_NETWORK] = strtolower($paymentNetwork);
         }
+        else
+        {
+            $this->attributes[self::PAYMENT_NETWORK] = $paymentNetwork;
+        }
     }
 
     public function addIins(array $newIins)
@@ -292,7 +306,12 @@ class Entity extends Base\PublicEntity
 
         $existingIins = $this->getAttribute(self::IINS);
 
-        $this->iins = array_unique(array_merge($existingIins, $newIins));
+        if ($this->iins !== null)
+        {
+            $this->iins = array_unique(array_merge($existingIins, $newIins));
+        }
+
+        $this->iins = $newIins;
     }
 
 // -----------------------Mutators end------------------------------------------

@@ -26,7 +26,8 @@ class CreateOffers extends Migration
 
             $table->char(Offer::MERCHANT_ID, Offer::ID_LENGTH);
 
-            $table->string(Offer::NAME, Offer::NAME_LENGRH)->nullable();
+            $table->string(Offer::NAME, Offer::NAME_LENGRH)
+                    ->nullable();
 
             $table->string(Offer::PAYMENT_METHOD, Offer::PAYMENT_METHOD_LENGTH);
 
@@ -42,6 +43,9 @@ class CreateOffers extends Migration
                     ->nullable();
 
             $table->tinyInteger(Offer::ACTIVE)
+                    ->default(1);
+
+            $table->tinyInteger(Offer::FAIL_PAYMENT)
                     ->default(1);
 
             $table->enum(Offer::TYPE, [Offer::INSTANT, Offer::DEFERRED])
@@ -62,17 +66,21 @@ class CreateOffers extends Migration
             $table->integer(Offer::PAYMENT_COUNT)
                     ->nullable();
 
-            $table->integer(Offer::PROCESSING_TIME)->nullable();
+            $table->integer(Offer::PROCESSING_TIME)
+                    ->nullable();
 
             $table->integer(Offer::STARTS_AT);
 
             $table->integer(Offer::ENDS_AT);
 
-            $table->text(Offer::ADDITIONAL_DETAILS)->nullable();
+            $table->text(Offer::ADDITIONAL_DETAILS)
+                    ->nullable();
 
-            $table->string(Offer::CUSTOM_LONG_DISPLAY_TEXT, Offer::CUSTOM_LONG_DISPLAY_TEXT_LENGTH)->nullable();
+            $table->string(Offer::CUSTOM_LONG_DISPLAY_TEXT, Offer::CUSTOM_LONG_DISPLAY_TEXT_LENGTH)
+                    ->nullable();
 
-            $table->string(Offer::CUSTOM_SHORT_DISPLAY_TEXT, Offer::CUSTOM_SHORT_DISPLAY_TEXT_LENGTH)->nullable();
+            $table->string(Offer::CUSTOM_SHORT_DISPLAY_TEXT, Offer::CUSTOM_SHORT_DISPLAY_TEXT_LENGTH)
+                    ->nullable();
 
             $table->integer(Offer::CREATED_AT);
 

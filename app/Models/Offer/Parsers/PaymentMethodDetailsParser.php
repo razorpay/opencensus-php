@@ -29,7 +29,7 @@ class PaymentMethodDetailsParser extends BaseParser
 
         if (empty($this->offer->getIins()) === false)
         {
-            $description = 'selected';
+            $description = 'select';
         }
 
         return $description;
@@ -39,8 +39,7 @@ class PaymentMethodDetailsParser extends BaseParser
     {
         $description = '';
 
-        if ((empty($this->offer->getIins()) === false) or
-                ($this->offer->getPaymentMethod() !== Payment\Method::CARD))
+        if (($this->offer->getPaymentMethod() !== Payment\Method::CARD))
         {
             return $description;
         }
@@ -98,11 +97,6 @@ class PaymentMethodDetailsParser extends BaseParser
         $paymentMethodType = $this->offer->getPaymentMethodType();
 
         $description = '';
-
-        if (empty($this->offer->getIins()) === false)
-        {
-            return $description;
-        }
 
         if ($paymentMethodType !== null)
         {

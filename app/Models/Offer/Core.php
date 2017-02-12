@@ -67,8 +67,13 @@ class Core extends Base\Core
                 'offer_id'   => $appliedOffer->getId()
             ]);
 
-            throw new Exception\BadRequestException(
+            if ($appliedOffer->failPaymentIfOfferInapplicable() === true)
+            {
+                throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
+            }
+
+            return;
         }
 
         $this->trace->info(TraceCode::OFFER_APPLIED_ON_PAYMENT, [

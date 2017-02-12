@@ -477,5 +477,125 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION
         ]
+    ],
+
+    'testAddIinsToCardOffer' => [
+        'request' => [
+            'content' => [
+                "411111"
+            ],
+            'url' => '',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'custom_short_display_text' => '10% cashback on select HDFC Bank Ltd Visa credit card.',
+                'custom_long_display_text'  => 'Get 10% cashback on select HDFC Bank Ltd Visa credit card. For first 2 payments Transactions above Rs 10. Valid till ' .  Carbon::today('Asia/Kolkata')->addMonth()->format('d-m-Y') . '. Cashback will get credited in 1 business day(s).',
+                'id'                        => null,
+                'active'                    => true,
+                'name'                      => 'Test Offer',
+                'payment_method'            => 'card',
+                'payment_method_type'       => 'credit',
+                'payment_network'           => 'VISA',
+                'issuer'                    => 'HDFC',
+                'iins'                      => ['411111'],
+                'percent_rate'              => 1000,
+                'processing_time'           => 86400,
+                'payment_count'             => 2,
+                'starts_at'                 => Carbon::today('Asia/Kolkata')->timestamp,
+                'ends_at'                   => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
+            ]
+        ]
+    ],
+
+    'testAddIinsInvalidFormat' => [
+        'request' => [
+            'content' => [
+                1 => "411111"
+            ],
+            'url' => '',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_FORMAT_FOR_IINS
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS
+        ]
+    ],
+
+    'testAddIinsToNonCardOffer' => [
+        'request' => [
+            'content' => [
+                "411111"
+            ],
+            'url' => '',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER
+        ]
+    ],
+
+    'testDeactivateOffer' => [
+        'request' => [
+            'url' => '',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'custom_short_display_text' => '10% cashback on HDFC Bank Ltd Visa credit card.',
+                'custom_long_display_text'  => 'Get 10% cashback on HDFC Bank Ltd Visa credit card. For first 2 payments Transactions above Rs 10. Valid till ' .  Carbon::today('Asia/Kolkata')->addMonth()->format('d-m-Y') . '. Cashback will get credited in 1 business day(s).',
+                'id'                        => null,
+                'active'                    => false,
+                'name'                      => 'Test Offer',
+                'payment_method'            => 'card',
+                'payment_method_type'       => 'credit',
+                'payment_network'           => 'VISA',
+                'issuer'                    => 'HDFC',
+                'percent_rate'              => 1000,
+                'processing_time'           => 86400,
+                'payment_count'             => 2,
+                'starts_at'                 => Carbon::today('Asia/Kolkata')->timestamp,
+                'ends_at'                   => Carbon::today('Asia/Kolkata')->addMonth()->timestamp,
+            ]
+        ]
+    ],
+
+    'testDeactivateAlreadyDeactivatedOffer' => [
+        'request' => [
+            'url' => '',
+            'method' => 'PATCH'
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_ALREADY_DEACTIVATED
+                ]
+            ],
+            'status_code' => 400
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_ALREADY_DEACTIVATED
+        ]
     ]
 ];

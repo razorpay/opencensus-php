@@ -35,6 +35,8 @@ class Validator extends Base\Validator
         Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
+        Entity::TYPE                      => 'sometimes|in:instant,deferred',
+        Entity::FAIL_PAYMENT              => 'sometimes|boolean',
         Entity::STARTS_AT                 => 'required|integer',
         Entity::ENDS_AT                   => 'required|integer',
         Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
@@ -44,6 +46,7 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
+        Entity::FAIL_PAYMENT              => 'sometimes|boolean',
         Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
         Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
         Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'

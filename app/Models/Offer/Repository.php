@@ -35,7 +35,7 @@ class Repository extends Base\Repository
         Entity::PERCENT_RATE,
         Entity::MIN_AMOUNT,
         Entity::MAX_CASHBACK,
-        Entity::FLAT_CASHBACK
+        Entity::FLAT_CASHBACK,
     ];
 
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)

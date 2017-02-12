@@ -389,6 +389,38 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
+    public function testPaymentWithFailedOfferCheckAllowedOnOrder()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $offer['fail_payment'] = false;
+
+        $offer->saveOrFail();
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->fixtures->merchant->enableMobikwik();
+
+        $payment = $this->getDefaultWalletPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->fixtures->terminal->createSharedMobikwikTerminal();
+
+        $rzpPayment = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+        $this->assertEquals($order->getPublicId(), $rzpPayment['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
     {
         $request = array(

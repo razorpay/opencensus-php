@@ -92,6 +92,39 @@ class OffersTest extends TestCase
         $this->startTest();
     }
 
+    public function testAddIinsToCardOffer()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId() . '/iins/add';
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testAddIinsInvalidFormat()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId() . '/iins/add';
+
+        $this->startTest();
+    }
+
+    public function testAddIinsToNonCardOffer()
+    {
+        $this->testCreateWalletOffer();
+
+        $offer = $this->getLastEntity('offer', true);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer['id'] . '/iins/add';
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateExistingOffer()
     {
         $offer = $this->fixtures->offer->createCardOffer();
@@ -186,5 +219,29 @@ class OffersTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArraySelectiveEquals($data, $content);
+    }
+
+    public function testDeactivateOffer()
+    {
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId() . '/deactivate';
+
+        $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testDeactivateAlreadyDeactivatedOffer()
+    {
+        $this->testDeactivateOffer();
+
+        $offer = $this->getLastEntity('offer', true);
+
+        $this->ba->privateAuth();
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer['id'] . '/deactivate';
+
+        $this->startTest();
     }
 }
