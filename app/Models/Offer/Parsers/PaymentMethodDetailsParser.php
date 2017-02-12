@@ -46,7 +46,7 @@ class PaymentMethodDetailsParser extends BaseParser
 
         $issuer = $this->offer->getIssuer();
 
-        if ($issuer === null)
+        if (($issuer === null) and (empty($this->offer->getIins()) === true))
         {
             $description = 'all';
 

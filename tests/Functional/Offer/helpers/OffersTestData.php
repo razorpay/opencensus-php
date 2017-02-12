@@ -59,8 +59,8 @@ return [
         ],
         'response' => [
             'content' => [
-                'custom_short_display_text' => '10% cashback on selected card.',
-                'custom_long_display_text'  => 'Get 10% cashback on selected card. Valid till ' .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . '. Cashback will get credited in 1 business day(s). Some more details',
+                'custom_short_display_text' => '10% cashback on select card.',
+                'custom_long_display_text'  => 'Get 10% cashback on select card. Valid till ' .  Carbon::now('Asia/Kolkata')->addMonth()->format('d-m-Y') . '. Cashback will get credited in 1 business day(s). Some more details',
                 'active'                    => true,
                 'name'                      => 'Test Offer',
                 'iins'                      => ['411111'],

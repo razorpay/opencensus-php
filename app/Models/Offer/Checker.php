@@ -244,7 +244,7 @@ class Checker extends Base\Core
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $result = (($now >= $this->offer->getStartsAt()) or ($now <= $this->offer->getEndsAt()));
+        $result = (($now >= $this->offer->getStartsAt()) and ($now <= $this->offer->getEndsAt()));
 
         $this->traceCheckResult(TraceCode::OFFER_PERIOD_CHECK, [
             'result' => $result
