@@ -952,13 +952,13 @@ class Processor
 
         if ($payment->isLateAuthorized())
         {
-            return $this->shouldAutoCaptureLateAuthorized($payment, $order);
+            return $this->shouldAutoCaptureLateAuthorized($payment);
         }
 
         return true;
     }
 
-    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment, Order\Entity $order)
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
         $autoRefundDelay = $merchant->getAutoRefundDelay();
@@ -1003,35 +1003,31 @@ class Processor
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
         }
 
-        return $this->shouldAutoCaptureLateAuthorizedOrder($autoRefundDelay);
+        return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
     }
 
     /**
-     * We auto capture a late authorized payment only if the
-     * merchant has not set any auto_refund_delay set explicitly.
+     * For auto capturing a late authorized payment,
+     * the `auto_refund_delay` attributes should always
+     * be set for the merchant.
+     * Apart from this, the merchant needs to have
+     * `auto_capture_late_auth` config set to true.
      *
-     * TODO: We may also want to keep this behind a merchant config,
-     * since all business models may not support this kind of
-     * functionality.
-     *
-     * @param int|null       $autoRefundDelay
+     * @param Merchant\Entity $merchant
      *
      * @return bool
      */
-    protected function shouldAutoCaptureLateAuthorizedOrder($autoRefundDelay)
+    protected function shouldAutoCaptureLateAuthorizedOrder(Merchant\Entity $merchant)
     {
-        //
-        // If the merchant has not set any auto_refund_delay explicitly,
-        // we do not auto capture a late authorized payment.
-        // The merchant's business model may not support this kind
-        // of behaviour.
-        //
+        $autoRefundDelay = $merchant->getAutoRefundDelay();
+        $autoCaptureLateAuth = $merchant->getAutoCaptureLateAuth();
+
         if ($autoRefundDelay === null)
         {
             return false;
         }
 
-        return true;
+        return $autoCaptureLateAuth;
     }
 
     protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
