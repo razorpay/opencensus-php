@@ -13,8 +13,6 @@ class NetbankingAirtelGatewayTest extends TestCase
 
     public function setUp()
     {
-        // $this->markTestSkipped('Skipped till Airtel is re-enabled');
-
         $this->testDataFilePath = __DIR__.'/NetbankingAirtelGatewayTestData.php';
 
         parent::setUp();
