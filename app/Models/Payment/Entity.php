@@ -82,9 +82,14 @@ class Entity extends Base\PublicEntity
     const LATE_AUTHORIZED       = 'late_authorized';
     const CONVERT_CURRENCY      = 'convert_currency';
 
-    const CURRENCY_LENGTH       = 3;
-
-    const MIN_PAYMENT_AMOUNT    = 100;
+    // constants and defaults
+    const CURRENCY_LENGTH                   = 3;
+    const MIN_PAYMENT_AMOUNT                = 100;
+    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 540;
+    const PAYMENT_TIMEOUT_BILLDESK          = 259200;
+    const PAYMENT_TIMEOUT_NETBANKING        = 3600;
+    const PAYMENT_TIMEOUT_DEFAULT           = 1800;
+    const PAYMENT_AUTO_REFUND_DELAY_DEFAULT = 432000;
 
     protected static $sign      = 'pay';
 
@@ -1500,9 +1505,9 @@ class Entity extends Base\PublicEntity
         return $relevantData;
     }
 
-    public function shouldTimeout($now)
+    public function shouldTimeout(int $now)
     {
-        $timeoutPeriod = $this->getTimeoutWindow($this->getGateway(), $this->getMethod());
+        $timeoutPeriod = $this->getTimeoutWindow();
 
         $diff = $now - $this->getCreatedAt();
 
@@ -1543,25 +1548,29 @@ class Entity extends Base\PublicEntity
         return $features;
     }
 
-    protected function getTimeoutWindow($gateway, $method)
+    protected function getTimeoutWindow()
     {
+        $gateway = $this->getGateway();
+
+        $method = $this->getMethod();
+
         // default is 9 mins
-        $timeWindow = 540;
+        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
         {
             // for new flow, default is 30 mins
-            $timeWindow = 1800;
+            $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT;
 
             if (($method === Payment\Method::NETBANKING) and
                 ($gateway === Payment\Gateway::BILLDESK))
             {
-                $timeWindow = 259200;
+                $timeWindow = self::PAYMENT_TIMEOUT_BILLDESK;
             }
             else if (($method === Payment\Method::NETBANKING))
             {
                 // for direct netbanking 1 hour is good enough
-                $timeWindow = 3600;
+                $timeWindow = self::PAYMENT_TIMEOUT_NETBANKING;
             }
         }
 
@@ -1570,7 +1579,7 @@ class Entity extends Base\PublicEntity
         if ($autoRefundDelay === null)
         {
             // default is 5 days
-            $autoRefundDelay = 432000;
+            $autoRefundDelay = self::PAYMENT_AUTO_REFUND_DELAY_DEFAULT;
         }
 
         return min($timeWindow, $autoRefundDelay);
