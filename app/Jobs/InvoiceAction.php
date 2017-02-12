@@ -88,6 +88,13 @@ class InvoiceAction extends Job implements ShouldQueue
     // Handlers for various events
     //
 
+    private function handleUpdated()
+    {
+        $pdfPath = $this->core->getInvoicePdf($this->invoice, true);
+
+        (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+    }
+
     private function handleIssued()
     {
         $pdfPath = $this->core->getInvoicePdf($this->invoice);
@@ -98,6 +105,11 @@ class InvoiceAction extends Job implements ShouldQueue
     private function handleExpired()
     {
         (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
+    }
+
+    private function handleAuthorized()
+    {
+        $pdfPath = $this->core->getInvoicePdf($this->invoice, true);
     }
 
     // ------------------------------------------------------------

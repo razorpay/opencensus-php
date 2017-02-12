@@ -109,6 +109,8 @@ class Core extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
 
+        $this->dispatch(new InvoiceAction($this->mode, 'updated', $invoice));
+
         return $invoice;
     }
 
@@ -447,13 +449,13 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoice);
     }
 
-    public function getInvoicePdf(Entity $invoice)
+    public function getInvoicePdf(Entity $invoice, bool $new = false)
     {
         if ($invoice->isTypeInvoice() === false) return null;
 
         $pdf = $invoice->pdf();
 
-        if ($pdf !== null)
+        if (($pdf !== null) and ($new === false))
         {
             return (new FileStore\Accessor())
                         ->id($pdf->getId())

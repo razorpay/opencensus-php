@@ -2,15 +2,20 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\InvoiceAction;
 
 class Notify
 {
+    use DispatchesJobs;
+
     const AUTHORIZED                 = 'authorized';
     const CARD_SAVED                 = 'card_saved';
     const CAPTURED                   = 'captured';
@@ -363,6 +368,11 @@ class Notify
      */
     public function trigger($event)
     {
+        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        {
+            $this->dispatch(new InvoiceAction($this->mode, 'authorized', $this->invoice));
+        }
+
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -441,7 +451,7 @@ class Notify
                 break;
             case self::INVOICE_PAYMENT_AUTHORIZED:
             case self::INVOICE_PAYMENT_CAPTURED:
-                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
+                $action = ucwords($this->invoice->getTypeLabel()) . ' Payment';
                 break;
             default:
                 $action = 'Payment';
@@ -631,6 +641,7 @@ class Notify
                 'paid_at'    => $this->invoice->getPaidAt(),
                 'issued_at'  => $this->invoice->getIssuedAt(),
                 'type_label' => ucfirst($this->invoice->getTypeLabel()),
+                'short_url'  => $this->invoice->getShortUrl(),
             ];
         }
 

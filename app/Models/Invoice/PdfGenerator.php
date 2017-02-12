@@ -21,12 +21,12 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const REDIS_DEFAULT_TTL         = 15;
+    const REDIS_DEFAULT_TTL         = 900;
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
 
-    const WKHTMLTOPDF_BIN           = 'vendor/h4cc/wkhtmltopdf-amd64/bin/wkhtmltopdf-amd64';
+    const WKHTMLTOPDF_BIN           = 'wkhtmltopdf';
 
     //
     // If cache hit is a miss, following invoicejs host path will be used
@@ -86,7 +86,7 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent(string $html)
     {
         $options = [
-            'binary'         => base_path(self::WKHTMLTOPDF_BIN),
+            // 'binary'         => base_path(self::WKHTMLTOPDF_BIN),
             'ignoreWarnings' => false,
         ];
 
@@ -169,12 +169,7 @@ class PdfGenerator extends Base\Core
 
         $result[self::CSS_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_CSS_PATH);
 
-        $this->redis->set(
-            self::INVOICE_PDF_TEMPLATES_KEY,
-            json_encode($result),
-            'EX',
-            self::REDIS_DEFAULT_TTL
-        );
+        $this->redis->setex(self::INVOICE_PDF_TEMPLATES_KEY, self::REDIS_DEFAULT_TTL, json_encode($result));
 
         return $result;
     }

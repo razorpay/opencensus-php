@@ -64,6 +64,7 @@ class ViewDataSerializer extends Base\Core
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
+        $invoiceData['is_paid']          = ($invoiceData['status'] === Status::PAID);
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
         foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)

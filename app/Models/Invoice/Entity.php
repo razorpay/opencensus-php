@@ -433,9 +433,15 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::INVOICE);
     }
 
+    /**
+     * Returns key to be used a pdf file path in s3/local store.
+     * Format: pdfs/{invoiceId}_{epoch}
+     *
+     * @return string
+     */
     public function getPdfKey()
     {
-        return self::PDF_PREFIX . $this->getId();
+        return self::PDF_PREFIX . $this->getId() . '_' . time();
     }
 
     public function getPdfDisplayName()
@@ -814,10 +820,16 @@ class Entity extends Base\PublicEntity
         return $this->morphMany('RZP\Models\FileStore\Entity', 'entity');
     }
 
+    /**
+     * Gets the most recent invoice pdf file
+     *
+     * @return FileStore\Entity
+     */
     public function pdf()
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)
+                    ->orderBy(FileStore\Entity::CREATED_AT, 'desc')
                     ->first();
     }
 
