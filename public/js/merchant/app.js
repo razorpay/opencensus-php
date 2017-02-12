@@ -184,6 +184,12 @@ var app = angular.module('app', [
     }).state('app.invoices.list', {
       url: '/list',
       templateProvider: reactTemplateProvider('<invoices-list />')
+    }).state('app.invoices.customers', {
+      url: '/customers',
+      templateProvider: reactTemplateProvider('<customers-list />')
+    }).state('app.invoices.items', {
+      url: '/items',
+      templateProvider: reactTemplateProvider('<items-list />')
     }).state('app.invoices.new', {
       url: '/new',
       templateProvider: reactTemplateProvider('<invoices-new />')
@@ -205,12 +211,6 @@ var app = angular.module('app', [
     }).state('app.subscriptionsnew', {
       url: '/subscriptions/new',
       templateProvider: reactTemplateProvider('<subscriptions-new />')
-    }).state('app.invoices.customers', {
-      url: '/customers',
-      templateProvider: reactTemplateProvider('<customers-list />')
-    }).state('app.invoices.items', {
-      url: '/items',
-      templateProvider: reactTemplateProvider('<items-list />')
     }).state('app.plans', {
       url: '/plans',
       templateProvider: reactTemplateProvider('<plans-list />')

@@ -133,9 +133,16 @@ export default class InvoicesNewContainer extends Component {
         this.props.initialize(invoice)
       }
 
+      this.setTitle(invoice)
       this.setState({
         isLoading: false
       })
+    })
+  }
+
+  setTitle(invoice) {
+    this.setState({
+      title: invoice ? (invoice.receipt || invoice.id) : 'New Invoice'
     })
   }
 
@@ -157,7 +164,9 @@ export default class InvoicesNewContainer extends Component {
 
   quickCreateCustomer() {
     this.props.openModal({
+      size: 'small',
       component: <CustomerCreation
+        saveLabel='Create and add this customer',
         onSave={this.selectCustomerAndCloseModal}
         closeModal={this.props.closeModal}
       />
@@ -173,6 +182,7 @@ export default class InvoicesNewContainer extends Component {
       this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
         notify: false
       })
+      this.setTitle(invoice)
       this.setState({
         isSaving: false
       })
@@ -274,7 +284,7 @@ export default class InvoicesNewContainer extends Component {
     let isExpired = status === 'expired'
     let locked = isPaid || isExpired
 
-    let invoiceTotal = this.calculateItemsSubTotal()
+    let invoiceTotal = this.calculateInvoiceTotal()
     let customerDetails = ''
     if (customer) {
       let parts = customer.displayName.split('(')
@@ -304,7 +314,7 @@ export default class InvoicesNewContainer extends Component {
                       </li>
                       <li>
                         <h3 class='breadcrumb__backNav--heading'>
-                          { invoice.receipt || invoice.id || 'New Invoice' }
+                          { this.state.title }
                         </h3>
                         {
                           isNew ?

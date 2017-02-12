@@ -31,6 +31,7 @@ export default class ItemsListContainer extends ListContainer {
 
   showItemModal(item = null) {
     this.props.openModal({
+      size: 'small',
       component: <ItemCreation
         item={item}
         onSave={this.highlightRowAndClose}

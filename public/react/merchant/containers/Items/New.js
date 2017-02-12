@@ -56,11 +56,11 @@ export default class AddItem extends Component {
           message={this.state.errors}
         />
 
-        <form class='form-horizontal' onSubmit={handleSubmit(this.save)}>
-          <div class='modal-body'>
+        <div class='modal-body'>
+          <form onSubmit={handleSubmit(this.save)}>
             <div class='form-group'>
-              <label class='col-md-3 control-label label-required'>Name</label>
-              <div class='col-md-9'>
+              <label class='label-required'>Name</label>
+              <div>
                 <Field
                   name='name'
                   component={InputField}
@@ -72,8 +72,8 @@ export default class AddItem extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label label-required'>Rate</label>
-              <div class='col-md-9'>
+              <label class='label-required'>Rate</label>
+              <div>
                 <div class='input-group'>
                   <span class='input-group-addon'>INR</span>
                   <Field
@@ -87,8 +87,8 @@ export default class AddItem extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Description</label>
-              <div class='col-md-9'>
+              <label>Description</label>
+              <div>
                 <Field
                   name='description'
                   component='textarea'
@@ -96,31 +96,24 @@ export default class AddItem extends Component {
                 />
               </div>
             </div>
-          </div>
 
-          <div class='modal-footer'>
-            <button
-              type='button'
-              class='btn btn-default btn-rounded'
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type='submit'
-              class='btn btn-primary btn-rounded'
-              text='Save'
-              pendingText='Saving...'
-              onClick={handleSubmit(this.save)}
-            />
-          </div>
-        </form>
+            <div class='Modal__actions'>
+              <AsyncButton
+                type='submit'
+                class='btn btn-primary btn-block'
+                text={this.props.saveLabel}
+                pendingText='Saving...'
+                onClick={handleSubmit(this.save)}
+              />
+            </div>
+          </form>
+        </div>
       </div>
     )
   }
 }
 
 AddItem.defaultProps = {
-  onSave: () => {}
+  onSave: () => {},
+  saveLabel: 'Save'
 }

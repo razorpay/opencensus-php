@@ -27,6 +27,7 @@ export default class CustomersListContainer extends ListContainer {
 
   showCustomerModal(customer = null) {
     this.props.openModal({
+      size: 'small',
       component: <CustomerCreation
         customer={customer}
         onSave={this.highlightRowAndClose}

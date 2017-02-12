@@ -50,16 +50,16 @@ export default class AddCustomer extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <Alert
-          type='error'
-          message={this.state.errors}
-        />
+        <div class='modal-body'>
+          <Alert
+            type='error'
+            message={this.state.errors}
+          />
 
-        <form class='form-horizontal' onSubmit={handleSubmit(this.save)}>
-          <div class='modal-body'>
+          <form onSubmit={handleSubmit(this.save)}>
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Name</label>
-              <div class='col-md-9'>
+              <label>Name</label>
+              <div>
                 <Field
                   name='name'
                   component={InputField}
@@ -70,8 +70,8 @@ export default class AddCustomer extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Email</label>
-              <div class='col-md-9'>
+              <label>Email</label>
+              <div>
                 <Field
                   name='email'
                   component={InputField}
@@ -83,8 +83,8 @@ export default class AddCustomer extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label label-required'>Contact No.</label>
-              <div class='col-md-9'>
+              <label class='label-required'>Contact No.</label>
+              <div>
                 <Field
                   name='contact'
                   component={InputField}
@@ -100,8 +100,8 @@ export default class AddCustomer extends Component {
 
 {/*
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Address</label>
-              <div class='col-md-9'>
+              <label>Address</label>
+              <div>
                 <Field
                   name='address'
                   component='textarea'
@@ -110,31 +110,24 @@ export default class AddCustomer extends Component {
               </div>
             </div>
 */}
-          </div>
 
-          <div class='modal-footer'>
-            <button
-              type='button'
-              class='btn btn-default btn-rounded'
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type='submit'
-              class='btn btn-primary btn-rounded'
-              text='Save'
-              pendingText='Saving...'
-              onClick={handleSubmit(this.save)}
-            />
-          </div>
-        </form>
+            <div class='Modal__actions'>
+              <AsyncButton
+                type='submit'
+                class='btn btn-primary btn-block'
+                text={this.props.saveLabel}
+                pendingText='Saving...'
+                onClick={handleSubmit(this.save)}
+              />
+            </div>
+          </form>
+        </div>
       </div>
     )
   }
 }
 
 AddCustomer.defaultProps = {
-  onSave: () => {}
+  onSave: () => {},
+  saveLabel: 'Save'
 }
