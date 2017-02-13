@@ -20,12 +20,24 @@ class Server extends Base\Mock\Server
 
         $decryptedData = $this->getDecryptedData($input);
 
+        $decryptedData = $this->setTestData($decryptedData);
+
         $response = $this->createResponse($decryptedData);
 
         $callbackUrl = $input[RequestFields::RETURN_URL] . '?' .
                         http_build_query($response);
 
         return $callbackUrl;
+    }
+
+    protected function setTestData($decryptedData)
+    {
+        if ($decryptedData['AMT'] === '300')
+        {
+            $decryptedData[RequestFields::MERCHANT_REFERENCE] = "123";
+        }
+
+        return $decryptedData;
     }
 
     public function verify($input)
