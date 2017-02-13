@@ -25,20 +25,12 @@ export default (props) => {
           <Alert type={statusMsg.type} message={statusMsg.message} />
 
           <div class='invoice-header'>
-            {
-              invoice.status === 'draft' ?
-              <button
-                class='btn btn-primary btn-sm pull-right'
-                onClick={props.onIssue}
-              >
-                Get Payment Link
-              </button> :
-              <button
-                class='btn btn-primary btn-sm pull-right'
-              >
-                Send Invoice
-              </button>
-            }
+            <button
+              class='btn btn-primary btn-sm pull-right'
+              onClick={props.onIssue}
+            >
+              Send Invoice
+            </button>
 
             <h3>{invoice.id}</h3>
           </div>

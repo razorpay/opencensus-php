@@ -2,14 +2,17 @@ import React, { PropTypes, Component } from 'react'
 import { connect } from 'react-redux'
 import * as InvoiceActions from 'merchant/modules/invoices/details'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
 import SendInvoiceOptions from './SendInvoiceOptions'
+import IssueConfirmModal from './IssueConfirmModal'
 
 @connect(
   (state) => state.invoice,
   {
     ...InvoiceActions,
-    ...ModalActions
+    ...ModalActions,
+    ...NotificationsActions
   }
 )
 export default class InvoiceDetailContainer extends Component {
@@ -23,9 +26,8 @@ export default class InvoiceDetailContainer extends Component {
     this.state = {
       statusMsg: {}
     }
-    this.notifyCustomer = ::this.notifyCustomer
+    this.showIssueConfirmModal = ::this.showIssueConfirmModal
     this.issueInvoice = ::this.issueInvoice
-    this.onSendInvoice = ::this.onSendInvoice
   }
 
   componentWillMount() {
@@ -50,30 +52,50 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
-  issueInvoice() {
-    this.context.confirm({
-      message: 'Generating payment link will mark the invoice as issued. Do you want to proceed ?',
-      affirmativeLabel: 'Generate',
-      affirmativePendingLabel: 'Generating...',
-      action: () => this.props.issueInvoice(this.props.invoice).catch((err) => {
-        this.setState({
-          status: {
-            type: 'error',
-            message: err.errors
-          }
-        })
+  issueInvoice(props, notifyProps) {
+    let promises = []
+
+    if (notifyProps.email_notify) {
+      promises.push(this.props.notifyCustomer(props, 'email'))
+    }
+    if (notifyProps.sms_notify) {
+      promises.push(this.props.notifyCustomer(props, 'sms'))
+    }
+
+    return Promise.all(promises).then(([emailStatus, smsStatus]) => {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Link sent successfully!'
+      })
+    }).catch((error) => {
+      this.setState({
+        status: {
+          type: 'error',
+          message: error.errors
+        }
       })
     })
   }
 
-  onSendInvoice() {
-    // this.props.openModal({
-    //   component: <SendInvoiceOptions
-    //     invoice={this.props.invoice}
-    //     onSave={this.showSuccessMsg}
-    //     onCancel={this.props.closeModal}
-    //   />
-    // })
+  showIssueConfirmModal() {
+    let customer = this.props.invoice.customer
+    if (!customer.contact && !customer.email) {
+      this.props.showNotification({
+        type: 'error',
+        message: 'Customer\'s contact/email was not provided'
+      })
+      return
+    }
+
+    this.props.openModal({
+      size: 'small',
+      component: <IssueConfirmModal
+        customer={this.props.invoice.customer}
+        onIssue={(notifyProps) => {
+          return this.issueInvoice(this.props.invoice, notifyProps)
+        }}
+      />
+    })
   }
 
   render() {
@@ -87,8 +109,7 @@ export default class InvoiceDetailContainer extends Component {
             invoice={invoice}
             isLoading={loading}
             statusMsg={statusMsg}
-            onNotify={this.notifyCustomer}
-            onIssue={this.issueInvoice}
+            onIssue={this.showIssueConfirmModal}
           />
         </div>
       </div>

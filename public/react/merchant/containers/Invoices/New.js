@@ -110,6 +110,8 @@ export default class InvoicesNewContainer extends Component {
 
     if (this.props.id) {
       promises.push(this.props.fetchInvoice(this.props.id))
+    } else {
+      this.props.initializeInvoice()
     }
 
     this.setState({
@@ -193,10 +195,10 @@ export default class InvoicesNewContainer extends Component {
   resendInvoice(props) {
     this.showIssueConfirmModal((notifyProps) => {
       let promises = []
+
       if (notifyProps.email_notify) {
         promises.push(this.props.notifyCustomer(props, 'email'))
       }
-
       if (notifyProps.sms_notify) {
         promises.push(this.props.notifyCustomer(props, 'sms'))
       }
@@ -231,7 +233,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   downloadInvoicePDF(invoice) {
-    return this.props.downloadInvoice(this.props.id)
+    return this.props.downloadInvoice(this.props.invoice)
   }
 
   navigateToList() {

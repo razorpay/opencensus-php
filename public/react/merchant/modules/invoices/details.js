@@ -7,6 +7,7 @@ const SMS_SEND = 'SMS_SEND'
 const EMAIL_SEND = 'EMAIL_SEND'
 const INVOICE_ISSUE = 'INVOICE_ISSUE'
 const INVOICE_DOWNLOAD = 'INVOICE_DOWNLOAD'
+const INVOICE_INIT = 'INVOICE_INIT'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
@@ -46,6 +47,15 @@ export const downloadInvoice = (params) => {
   }
 }
 
+export const initializeInvoice = () => {
+  return (dispatch) => {
+    return dispatch({
+      type: INVOICE_INIT,
+      payload: new Invoice(initialState.invoice)
+    })
+  }
+}
+
 let initialState = {
   loading: true,
   invoice: {
@@ -64,6 +74,7 @@ export default function (state = initialState, action) {
     case `${INVOICE_FETCH}::SUCCESS`:
     case `${INVOICE_CREATE}::SUCCESS`:
     case `${INVOICE_EDIT}::SUCCESS`:
+    case INVOICE_INIT:
       return merge(state, {
         loading: false,
         invoice: action.payload,
