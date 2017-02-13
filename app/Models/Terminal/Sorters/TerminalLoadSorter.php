@@ -12,7 +12,6 @@ use RZP\Trace\TraceCode;
 class TerminalLoadSorter extends Terminal\Sorter
 {
     protected $properties = [
-        'trial_gateway',
         'chance_gateway',
     ];
 
@@ -54,64 +53,9 @@ class TerminalLoadSorter extends Terminal\Sorter
         ],
     ];
 
-    protected static $prodTrialGateways = [
-        Gateway::NETBANKING_ICICI,
-    ];
-
-    protected static $testTrialGateways = [];
-
     public function getRules()
     {
         return self::$rules;
-    }
-
-    public function getTrialGateways($mode)
-    {
-        $trialGateways = self::$prodTrialGateways;
-
-        if ($mode === Mode::TEST)
-        {
-            $trialGateways = self::$testTrialGateways;
-        }
-
-        return $trialGateways;
-    }
-
-    public static function setTestTrialGateways($trialGateways)
-    {
-        self::$testTrialGateways = $trialGateways;
-    }
-
-    /**
-     * Gateways on trial mode get pushed
-     * right to the bottom
-     *
-     * @param $terminals
-     * @param array $input
-     * @return array
-     */
-    public function trialGatewaySorter($terminals, array $input, $options)
-    {
-        $mode = $input['mode'];
-
-        $trialGateways = $this->getTrialGateways($mode);
-
-        $sortedTerminals = [];
-
-        foreach ($terminals as $key => $terminal)
-        {
-            if (in_array($terminal->getGateway(), $trialGateways))
-            {
-                $sortedTerminals[] = $terminal;
-
-                // If on trial, remove key from terminals
-                unset($terminals[$key]);
-            }
-        }
-
-        $terminals = array_merge($terminals, $sortedTerminals);
-
-        return $terminals;
     }
 
     /**

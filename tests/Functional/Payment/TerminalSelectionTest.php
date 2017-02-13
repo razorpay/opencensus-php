@@ -289,45 +289,6 @@ class TerminalSelectionTest extends TestCase
         $this->fixtures->merchant->disableEmi();
     }
 
-    /*
-     * Creates 2 shared terminals - axis and hdfc
-     * Sets trial gateway as hdfc
-     * Asserts that hdfc being default doesn't get chosen in favor of axis
-     */
-    public function testTrialGatewaySelection()
-    {
-        // Creating 2 terminals for test purpose
-        $this->fixtures->create('terminal:shared_hdfc_terminal');
-        $this->fixtures->create('terminal:shared_axis_terminal');
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        // Payment will use default hdfc gateway
-        $this->assertEquals('hdfc', $payment['gateway']);
-
-        // Setting HDFC as a trial gateway to test trialGatewaySorter
-        $trialGateway = [
-            Gateway::HDFC
-        ];
-
-        TerminalLoadSorter::setTestTrialGateways($trialGateway);
-
-        $payment = $this->getDefaultPaymentArray();
-
-        $this->doAuthPayment($payment);
-
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->assertEquals('axis_migs', $payment['gateway']);
-
-        // Unsetting Gateway::HDFC as trial gateway
-        TerminalLoadSorter::setTestTrialGateways([]);
-    }
-
     public function testTerminalChoiceonChance()
     {
         $this->fixtures->create('terminal:all_shared_terminals');
