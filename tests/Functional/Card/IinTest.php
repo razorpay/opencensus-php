@@ -68,7 +68,8 @@ class IinTest extends TestCase
         $input = [
             'range' => ['min' => 652850, 'max' => 652855],
             'network' => 'RuPay',
-            'type' => 'DC',
+            'type' => 'credit',
+            'country' => 'IN'
         ];
 
         $testData = &$this->testData['testIinRangeUploadWithType'];

@@ -120,9 +120,12 @@ class Formatter
 
             switch (strtolower($key))
             {
+                case 'country':
+                    $data[IIN::COUNTRY] = $value;
+                    break;
+
                 case 'type':
-                    $data[IIN::COUNTRY] = self::$countryMap[$value];
-                    $data[IIN::TYPE] = self::$cardTypeMap[$value];
+                    $data[IIN::TYPE] = $value;
                     break;
 
                 case 'issuer':
