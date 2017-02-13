@@ -26,8 +26,6 @@ class PdfGenerator extends Base\Core
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
 
-    const WKHTMLTOPDF_BIN           = 'wkhtmltopdf';
-
     //
     // If cache hit is a miss, following invoicejs host path will be used
     // to fetch the templates.
@@ -53,6 +51,19 @@ class PdfGenerator extends Base\Core
 
     public function generate()
     {
+        //
+        // Temporary:
+        // - There are issues with pdf file - layout, fonts.
+        // - Dependencies to go life as part of infra code in a day or two.
+        //
+        // Once above issues are resolved, following line will be removed.
+        //
+        // Returning null means, pdf won't be generated and mails will be sent
+        // without pdf.
+        //
+
+        return null;
+
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $timeStarted = microtime(true);
@@ -85,7 +96,6 @@ class PdfGenerator extends Base\Core
     protected function getPdfContent(string $html)
     {
         $options = [
-            // 'binary'         => base_path(self::WKHTMLTOPDF_BIN),
             'ignoreWarnings' => false,
         ];
 
