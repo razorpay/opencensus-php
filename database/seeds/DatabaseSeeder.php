@@ -236,6 +236,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'contact_name'  => 'Test Account',
+                    'contact_email' => 'test@razorpay.com',
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::TEST_ACCOUNT,
