@@ -20,9 +20,9 @@ class AuditLogEntry extends Event
     /**
      * Create a new event instance.
      *
-     * @param      $admin
-     * @param      $action
-     * @param null $customProperties
+     * @param $admin
+     * @param $action
+     * @param $customProperties
      */
     public function __construct($admin, $action, $customProperties = null)
     {

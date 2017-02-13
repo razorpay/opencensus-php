@@ -68,8 +68,7 @@ class PdfGenerator extends Base\Core
             [
                 'id'         => $this->invoice->getId(),
                 'time_taken' => $timeTaken,
-            ]
-        );
+            ]);
 
         return (new FileStore\Creator())
                     ->name($this->invoice->getPdfKey())

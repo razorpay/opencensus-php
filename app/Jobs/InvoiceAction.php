@@ -24,10 +24,10 @@ class InvoiceAction extends Job implements ShouldQueue
     // Following are the events handled
     //
 
-    const ISSUED               = 'issued';
-    const UPDATED              = 'updated';
-    const EXPIRED              = 'expired';
-    const AUTHORIZED           = 'authorized';
+    const ISSUED     = 'issued';
+    const UPDATED    = 'updated';
+    const EXPIRED    = 'expired';
+    const AUTHORIZED = 'authorized';
 
     protected $mode;
     protected $event;
@@ -53,7 +53,9 @@ class InvoiceAction extends Job implements ShouldQueue
 
             $timeStarted = microtime(true);
 
-            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_RECEIVED, $this->getTracePayload());
+            $this->trace->debug(
+                TraceCode::INVOICE_ACTION_JOB_RECEIVED,
+                $this->getTracePayload());
 
             $this->{$this->handler}();
 
@@ -61,7 +63,9 @@ class InvoiceAction extends Job implements ShouldQueue
 
             $timeTaken = microtime(true) - $timeStarted;
 
-            $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_HANDLED, $this->getTracePayload(['time_taken' => $timeTaken]));
+            $this->trace->debug(
+                TraceCode::INVOICE_ACTION_JOB_HANDLED,
+                $this->getTracePayload(['time_taken' => $timeTaken]));
         }
         catch (\Throwable $e)
         {
@@ -93,9 +97,7 @@ class InvoiceAction extends Job implements ShouldQueue
         $this->core->setMode($this->mode);
     }
 
-    //
-    // Handlers for various events
-    //
+    // ------------------------- Handlers for various events -------------------------
 
     private function handleUpdated()
     {

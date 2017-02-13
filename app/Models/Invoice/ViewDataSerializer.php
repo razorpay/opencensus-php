@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
 
-
 class ViewDataSerializer extends Base\Core
 {
     protected $invoice;
@@ -26,10 +25,10 @@ class ViewDataSerializer extends Base\Core
      * Returns view data (few formatted for view purpose) of invoice,
      * to be used in hosted page, pdf generation, mails etc.
      *
-     * @param Entity $invoice
      * @param string $mode
      *
      * @return array
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function get(string $mode)
     {

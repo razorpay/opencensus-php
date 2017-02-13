@@ -427,7 +427,7 @@ class Creator extends Base\Core
 
     public function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.' .$this->file->getExtension();
+        return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
     }
 
     protected function getStorageDir()

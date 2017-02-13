@@ -118,6 +118,6 @@ class Type
             return true;
         }
 
-        throw new Exception\LogicException('Not a valid Type For Shared Merchant Account: '. $type);
+        throw new Exception\LogicException('Not a valid Type For Shared Merchant Account: ' . $type);
     }
 }

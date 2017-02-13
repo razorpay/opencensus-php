@@ -456,10 +456,12 @@ class Core extends Base\Core
 
         if (($pdf !== null) and ($new === false))
         {
-            return (new FileStore\Accessor())
+            $pdfFile = (new FileStore\Accessor)
                         ->id($pdf->getId())
                         ->merchantId($invoice->getMerchantId())
                         ->getFile();
+
+            return $pdfFile;
         }
 
         $this->setPdfGenerator($invoice);
