@@ -85,7 +85,7 @@ class Entity extends Base\PublicEntity
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
-    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 540;
+    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 720;
     const PAYMENT_TIMEOUT_BILLDESK          = 259200;
     const PAYMENT_TIMEOUT_NETBANKING        = 3600;
     const PAYMENT_TIMEOUT_DEFAULT           = 1800;

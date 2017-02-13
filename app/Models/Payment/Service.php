@@ -805,7 +805,7 @@ class Service extends Base\Service
 
         // All Payments in created state will be marked as failed after 9 minutes
         $now = time();
-        $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT;
+        $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
