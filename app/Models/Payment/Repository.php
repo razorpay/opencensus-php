@@ -17,6 +17,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
 use RZP\Models\Invoice;
+use RZP\Base\BuilderEx;
 
 class Repository extends Base\Repository
 {
@@ -253,20 +254,22 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param string $minimumTime filter to remove Payments which are created before $ts seconds
+     * @param array  $minMaxArray    Min/Max array
      * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus value for filter of VerifyStatus
-     * @param string $paymentStatus value for filter of paymentStatus
-     * @param bool   $random
+     * @param string $verifyStatus   value for filter of VerifyStatus
+     * @param string $paymentStatus  value for filter of paymentStatus
+     * @param bool   $random         Db should take param in random value or not
+     * @param int    $rowsToFetch    Rows to fetch
+     *
      * @return Collection of Payment
      */
     public function getPaymentsToVerify(
-                        $minMaxArray,
-                        $verifyBoundary,
+                        array $minMaxArray,
+                        array $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        $random = true,
-                        $rowsToFetch = 100)
+                        bool $random = true,
+                        int $rowsToFetch = 100)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -334,11 +337,12 @@ class Repository extends Base\Repository
     /**
      * Add Where Condition for Created Payments, And Verify Failed Payments
      *
-     * @param int       $minimumTime  filter to remove Payments which are created before $ts seconds
-     * @param BuilderEx $query        original query
+     * @param array     $minMaxArray Min Max array to filter payments created $ts sec before and $tx time after
+     * @param BuilderEx $query       original query
+     *
      * @return void
      */
-    protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, $query)
+    protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -360,12 +364,13 @@ class Repository extends Base\Repository
     /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
-     * @param int       $minimumTime      filter to remove Payments which are created before $ts seconds
+     * @param array     $minMaxArray      Min Max array to filter payments created $ts sec before and $tx time after
      * @param array     $verifyBoundaries array with Key as bucket and value as time for that bucket
      * @param BuilderEx $query            original query
+     *
      * @return void
      */
-    protected function addWhereConditionsUsingVerifyBoundary(array $minMaxArray, array $verifyBoundaries, $query)
+    protected function addWhereConditionsUsingVerifyBoundary(array $minMaxArray, array $verifyBoundaries, BuilderEx $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
