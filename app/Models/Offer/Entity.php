@@ -292,12 +292,10 @@ class Entity extends Base\PublicEntity
     {
         if ($this->getPaymentMethod() === Payment\Method::WALLET)
         {
-            $this->attributes[self::PAYMENT_NETWORK] = strtolower($paymentNetwork);
+            $paymentNetwork = strtolower($paymentNetwork);
         }
-        else
-        {
-            $this->attributes[self::PAYMENT_NETWORK] = $paymentNetwork;
-        }
+
+        $this->attributes[self::PAYMENT_NETWORK] = $paymentNetwork;
     }
 
     public function addIins(array $newIins)
