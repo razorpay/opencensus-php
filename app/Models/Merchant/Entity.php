@@ -534,6 +534,8 @@ class Entity extends Base\PublicEntity
         {
             $autoRefundDelay = self::AUTO_REFUND_DELAY_DEFAULT;
         }
+
+        return $autoRefundDelay;
     }
 
     /**
