@@ -186,7 +186,7 @@ class Repository extends Base\Repository
      *
      * @param $timestamp
      *
-     * @return RZP\Models\Base\PublicCollection
+     * @return Base\PublicCollection
      */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
@@ -207,7 +207,7 @@ class Repository extends Base\Repository
      * This function is used to fetch the authorized payments with
      * merchant auto delay delay
      *
-     * @return RZP\Models\Base\PublicCollection
+     * @return Base\PublicCollection
      */
     public function getAuthorizedPaymentsWithAutoRefundDelay()
     {
@@ -361,6 +361,7 @@ class Repository extends Base\Repository
             ];
         }
     }
+
     /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
@@ -370,7 +371,10 @@ class Repository extends Base\Repository
      *
      * @return void
      */
-    protected function addWhereConditionsUsingVerifyBoundary(array $minMaxArray, array $verifyBoundaries, BuilderEx $query)
+    protected function addWhereConditionsUsingVerifyBoundary(
+                                                    array $minMaxArray,
+                                                    array $verifyBoundaries,
+                                                    BuilderEx $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
