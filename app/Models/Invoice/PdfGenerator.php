@@ -98,8 +98,6 @@ class PdfGenerator extends Base\Core
             throw new Exception\LogicException('Pdf generation failed: Content is empty.');
         }
 
-        $file = new \SplFileObject($pdf->getPdfFilename());
-
         return $pdfContent;
     }
 
@@ -108,7 +106,7 @@ class PdfGenerator extends Base\Core
         $result = $this->getFilesFromRedisOrRemote();
 
         $template = $result[self::TEMPLATE_FILE];
-        $css      = $result[self::CSS_FILE];
+        $css = $result[self::CSS_FILE];
 
         $body = (new Mustache_Engine())->render($template, $viewPayload);
 
