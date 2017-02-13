@@ -108,6 +108,10 @@ trait RepositoryFetch
      */
     protected function isEsFetch(array $params)
     {
+        $originalParams     = $params;
+        $originalParamsKeys = array_keys($params);
+        $this->mysqlParams  = $params;
+
         if ($this->doesEsRepoExists() === false)
         {
             return false;
@@ -122,11 +126,6 @@ trait RepositoryFetch
 
         $params = array_diff_key($params, $this->originalFetchParamRules);
 
-        if (isset($this->defaultFetchParams) === true)
-        {
-            $params = array_diff_key($params, $this->defaultFetchParams);
-        }
-
         //
         // Split params into esParams and mysqlParams.
         // And currently, we prefer Es even if one param is found to be for es.
@@ -139,14 +138,25 @@ trait RepositoryFetch
             if (in_array($k, $esFields, true) === true)
             {
                 $this->esParams[$k] =  $v;
-            }
-            else
-            {
-                $this->mysqlParams[$k] = $v;
+
+                unset($this->mysqlParams[$k]);
             }
         }
 
-        return (count($this->esParams) > 0);
+        $isEsFetch = count($this->esParams) > 0;
+
+        if ($isEsFetch)
+        {
+            foreach ($this->originalFetchParamRules as $k => $v)
+            {
+                if (in_array($k, $originalParamsKeys, true) === true)
+                {
+                    $this->esParams[$k] = $originalParams[$k];
+                }
+            }
+        }
+
+        return  $isEsFetch;
     }
 
     protected function runEsFetch($params, $merchantId)
