@@ -420,6 +420,7 @@ class Verify extends Base\Core
             ($this->route === 'payment_verify_multiple'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
+
             $payment->setVerifyBucket($nextVerifyBucket);
         }
 
@@ -571,7 +572,7 @@ class Verify extends Base\Core
 
     protected function getPaymentNextVerifyBucket(Payment\Entity $payment, string  $filter)
     {
-        // For Payment in created state and payment having verified as error,
+        // For Payment having verified as error,
         // verify bucket should be 0
         if ($filter === Filter::VERIFY_ERROR)
         {
@@ -580,8 +581,9 @@ class Verify extends Base\Core
 
         $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
 
-        if (($filter === Filter::PAYMENTS_CREATED) and
-            ($diff < 12*60))
+        // Payments which are less than X minutes old should always be picked by cron
+        // Payments older than X minutes should follow the bucket logic
+        if (($filter === Filter::PAYMENTS_CREATED) and ($diff < self::CREATED_MAX_TIME))
         {
             return 0;
         }
@@ -610,7 +612,6 @@ class Verify extends Base\Core
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
             case Filter::PAYMENTS_CREATED:
-                // Return the proper boundary array
                 $boundaries = self::$failureStartBoundary;
                 break;
 
