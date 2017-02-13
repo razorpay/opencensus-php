@@ -1,5 +1,4 @@
 import AsyncButton from 'react-async-button'
-import { DropdownButton, MenuItem } from 'rzp/ui/Dropdown'
 import Amount from 'rzp/ui/Amount'
 import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'

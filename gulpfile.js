@@ -1,24 +1,23 @@
 'use strict'
 
-const gulp = require('gulp')
-const webpack = require('webpack')
-const through = require('through')
-const plumber = require('gulp-plumber')
-const run = require('run-sequence')
-const lazypipe = require('lazypipe')
+const gulp = require('gulp');
+const webpack = require('webpack');
+const through = require('through');
+const plumber = require('gulp-plumber');
+const run = require('run-sequence');
+const lazypipe = require('lazypipe');
+const dot = require('dot');
+const stylus = require('gulp-stylus');
+const cssnano = require('gulp-cssnano');
+const bootstrap = require('bootstrap-styl');
+const autoprefixer = require('gulp-autoprefixer');
+const concatMulti = require('gulp-concat-multi');
+const uglify = require('gulp-uglify');
+const rev = require('gulp-rev');
+const webpackConfig = require('./webpack.config.js');
 
-const dot = require('dot')
-
-const stylus = require('gulp-stylus')
-const cssnano = require('gulp-cssnano')
-const bootstrap = require('bootstrap-styl')
-const autoprefixer = require('gulp-autoprefixer')
-const concatMulti = require('gulp-concat-multi')
-const uglify = require('gulp-uglify')
-const rev = require('gulp-rev')
-const webpackConfig = require('./webpack.config.js')
-
-const revMap = {}
+const revMap = {};
+let isDevelopment = false;
 
 // functions and variables to be passed to blade.php.tmpl file
 const tmplData = {
@@ -28,7 +27,7 @@ const tmplData = {
     }
     return `/${path}`
   }
-}
+};
 
 // minimal string interpolation for processing tmpl
 function interpolate(template, pattern) {
@@ -51,14 +50,14 @@ const stylus2css = lazypipe()
   .pipe(stylus, {
     'include css': true,
     use: bootstrap()
-  })
+  });
 
 
 gulp.task('css', ()=> {
   gulp.src('public/css/style.styl')
     .pipe(stylus2css())
-    .pipe(gulp.dest('public/css/generated'))
-})
+    .pipe(gulp.dest('public/css/generated'));
+});
 
 gulp.task('css:prod', ()=> {
   return gulp.src('public/css/style.styl')
@@ -68,16 +67,16 @@ gulp.task('css:prod', ()=> {
     .pipe(rev())
     .pipe(gulp.dest('public/css/generated'))
     .pipe(rev.manifest())
-    .pipe(through(revReference))
-})
+    .pipe(through(revReference));
+});
 
 gulp.task('compileThemes', () => {
   dot.process({
     path: 'public/js/themes/',
     destination: 'public/js/themes/',
     global: 'themes'
-  })
-})
+  });
+});
 
 const concatJs = lazypipe()
   .pipe(concatMulti, {
@@ -122,10 +121,10 @@ const concatJs = lazypipe()
       'public/js/*.js',
       'node_modules/moment/min/moment.min.js'
     ]
-  })
+  });
 
 
-gulp.task('js', () => concatJs().pipe(gulp.dest('public')))
+gulp.task('js', () => concatJs().pipe(gulp.dest('public')));
 
 gulp.task('js:prod', () => {
   return concatJs()
@@ -136,8 +135,8 @@ gulp.task('js:prod', () => {
     .pipe(rev())
     .pipe(gulp.dest('public'))
     .pipe(rev.manifest())
-    .pipe(through(revReference))
-})
+    .pipe(through(revReference));
+});
 
 gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
@@ -146,12 +145,12 @@ gulp.task('tmpl', ()=> {
       file.contents = new Buffer(interpolate(String(file.contents)))
       this.emit('data', file)
     }))
-    .pipe(gulp.dest('resources/views'))
-})
+    .pipe(gulp.dest('resources/views'));
+});
 
 gulp.task('dev', ()=> {
   run('compileThemes', ['css', 'js'], 'tmpl')
-})
+});
 
 gulp.task('reactRevReplace', () => {
   return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
@@ -159,27 +158,27 @@ gulp.task('reactRevReplace', () => {
       file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g))
       this.emit('data', file)
     }))
-    .pipe(gulp.dest('public/js/generated'))
-})
+    .pipe(gulp.dest('public/js/generated'));
+});
 
 const runWebpack = (webpackConfig, cb) => {
   webpack(webpackConfig, (err, stats) => {
     console.log(stats.toString({
       colors: true
-    }))
-    if (stats.hasErrors()) {
-      // throw new Error('Webpack failed')
+    }));
+    if (stats.hasErrors() && !isDevelopment) {
+      throw new Error('Webpack failed');
     }
-    cb()
-  })
-}
+    cb();
+  });
+};
 
 gulp.task('webpack', (cb) => {
-  runWebpack(Object.create(webpackConfig), cb)
-})
+  runWebpack(Object.create(webpackConfig), cb);
+});
 
 gulp.task('webpack:prod', (cb) => {
-  let config = Object.create(webpackConfig)
+  let config = Object.create(webpackConfig);
   config.plugins = config.plugins.concat(
     new webpack.DefinePlugin({
       'process.env': {
@@ -195,40 +194,45 @@ gulp.task('webpack:prod', (cb) => {
         comments: false
       }
     })
-  )
+  );
 
-  runWebpack(config, cb)
+  runWebpack(config, cb);
+});
+
+gulp.task('dev:setENV', (cb) => {
+  isDevelopment = true;
+  cb();
 })
 
 gulp.task('default', (cb) => {
-  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb)
-})
+  run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb);
+});
 
 gulp.task('dev', (cb) => {
-  run(['css', 'js'], 'tmpl', cb)
-})
+  run(['css', 'js'], 'tmpl', cb);
+});
 
-gulp.task('dev:webpack', (cb) => {
-  run('webpack', 'dev', cb)
-})
+gulp.task('dev:webpack', ['dev:setENV'], (cb) => {
+  run('webpack', 'dev', cb);
+});
 
 gulp.task('watch:full', ['dev:webpack'], () => {
-  gulp.watch('public/css/*.styl', ['css'])
-  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js'])
+  gulp.watch('public/css/*.styl', ['css']);
+  gulp.watch('public/js/themes/*.jst', ['compileThemes', 'js']);
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',
     'public/js/merchant/**/*.js',
     'public/react/merchant/**/*',
     'public/react/rzp/**/*'
-  ], ['dev:webpack'])
-})
+  ], ['dev:webpack']);
+});
 
 gulp.task('watch', ['dev'], ()=> {
-  gulp.watch('public/css/*.styl', ['css'])
+  gulp.watch('public/css/*.styl', ['css']);
   gulp.watch([
     'public/js/*.js',
     'public/js/admin/**/*.js',
     'public/js/merchant/**/*.js'
-  ], ['js'])
-})
+  ], ['js']);
+});

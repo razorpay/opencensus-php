@@ -39,7 +39,12 @@ export default class Clipboard extends Component {
         />
         {
           this.supported &&
-          <span class='input-group-addon' onClick={this.copyToClipboard}>Copy Link</span>
+          <span
+            class='input-group-addon'
+            onClick={this.copyToClipboard}
+          >
+            Copy Link
+          </span>
         }
       </div>
     )

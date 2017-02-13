@@ -13,7 +13,7 @@ class Notification extends Component {
 
     setTimeout(() => {
       this.close()
-    }, 5000)
+    }, this.props.closeTimeout)
   }
 
   close() {
@@ -25,7 +25,7 @@ class Notification extends Component {
     this.isClosed = true
     setTimeout(() => {
       this.props.onClose()
-    }, 300)
+    }, this.props.transitionTimeout)
   }
 
   render() {
@@ -54,6 +54,8 @@ class Notification extends Component {
 Notification.defaultProps = {
   type: 'success',
   showClose: true,
+  closeTimeout: 5000,
+  transitionTimeout: 300,
   onClose: () => {}
 }
 

@@ -58,7 +58,7 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
               null,
               React.createElement(component, props),
               React.createElement(ModalDialog),
-              React.createElement(Notifications)
+              React.createElement(Notifications),
             )
           )
         )
