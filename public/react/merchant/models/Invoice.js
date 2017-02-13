@@ -49,6 +49,12 @@ export default class Invoice extends Entity {
     })
   }
 
+  download() {
+    return ajax({
+      url: `${this.getResourceUrl()}/pdf?download=1`
+    })
+  }
+
   markAsIssued() {
     return ajax({
       url: `${this.getResourceUrl()}/issue`,

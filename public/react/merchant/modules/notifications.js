@@ -34,7 +34,6 @@ export default (state = initialState, action) => {
       return set(state, 'notifications', unshift(state.notifications, action.payload))
 
     case NOTIFICATION_HIDE:
-      debugger
       let notifications = remove(state.notifications, (notification) => notification.id === action.payload.id)
       return set(state, 'notifications', notifications)
 

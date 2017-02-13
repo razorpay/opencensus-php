@@ -17,10 +17,11 @@ import LineItemTable from './LineItemTable'
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
 import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
-import { fetchInvoice } from 'merchant/modules/invoices/details'
+import { fetchInvoice, downloadInvoice, notifyCustomer } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import IssueConfirmModal from './IssueConfirmModal'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
 
 const notificationClassMap = {
@@ -76,7 +77,9 @@ const selector = formValueSelector('newInvoice')
     highLightInvoice,
     deleteInvoice,
     fetchInvoice,
-    ...ModalActions
+    notifyCustomer,
+    ...ModalActions,
+    ...NotificationsActions,
   }
 )
 @reduxForm({
@@ -178,6 +181,10 @@ export default class InvoicesNewContainer extends Component {
       isSaving: true
     })
     return this.props.saveInvoice(props).then((invoice) => {
+      this.props.showNotification({
+        type: 'success',
+        message: 'Invoice Saved'
+      })
       this.props.initialize(invoice)
       this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
         notify: false
@@ -199,30 +206,55 @@ export default class InvoicesNewContainer extends Component {
   }
 
   saveAndIssue(props) {
-    this.showIssueConfirmModal(props)
+    return this.showIssueConfirmModal((notifyProps) => {
+      return this.save({
+        ...props,
+        ...notifyProps
+      })
+    })
   }
 
   resendInvoice(props) {
-    this.showIssueConfirmModal()
+    this.showIssueConfirmModal((notifyProps) => {
+      let promises = []
+      if (notifyProps.email_notify) {
+        promises.push(this.props.notifyCustomer(props, 'email'))
+      }
+
+      if (notifyProps.sms_notify) {
+        promises.push(this.props.notifyCustomer(props, 'sms'))
+      }
+
+      return Promise.all(promises).then(([emailStatus, smsStatus]) => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Invoice has been sent successfully!'
+        })
+      }).catch((error) => {
+        this.setState({
+          status: {
+            type: 'error',
+            message: error.errors
+          }
+        })
+      })
+    })
   }
 
-  showIssueConfirmModal(props) {
+  showIssueConfirmModal(onIssueCallback) {
     this.props.openModal({
       size: 'small',
       component: <IssueConfirmModal
         customer={this.props.customer}
         onIssue={(notifyProps) => {
-          return this.save({
-            ...props,
-            ...notifyProps
-          })
+          return onIssueCallback(notifyProps)
         }}
       />
     })
   }
 
-  downloadInvoicePDF() {
-
+  downloadInvoicePDF(invoice) {
+    return this.props.downloadInvoice(this.props.id)
   }
 
   navigateToList() {

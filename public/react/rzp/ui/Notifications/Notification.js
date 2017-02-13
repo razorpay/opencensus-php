@@ -7,15 +7,22 @@ class Notification extends Component {
   }
 
   componentDidMount() {
-    debugger
     setTimeout(() => {
       $(this.notificationEle).addClass('Notification__show')
     }, 0)
+
+    setTimeout(() => {
+      this.close()
+    }, 5000)
   }
 
   close() {
-    debugger
+    if (this.isClosed) {
+      return
+    }
+
     $(this.notificationEle).removeClass('Notification__show')
+    this.isClosed = true
     setTimeout(() => {
       this.props.onClose()
     }, 300)

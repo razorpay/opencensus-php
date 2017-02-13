@@ -15,7 +15,6 @@ export default class Notifications extends Component {
   }
 
   closeNotification(notification) {
-    debugger
     this.props.hideNotification(notification)
   }
 
