@@ -785,7 +785,7 @@ class Terminal extends Base
     {
         $defaultValues = [
             'id'                    => '10BillDirTrmn2',
-            'merchant_id'           => '100000Razorpay',
+            'merchant_id'           => '1MercShareTerm',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
