@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
+    const JIOMONEY          = 'jiomoney';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -45,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -64,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -84,6 +87,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
+        self::JIOMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
@@ -100,6 +104,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::JIOMONEY
     );
 
     // Casts the attributes to native types
@@ -115,6 +120,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
+        self::JIOMONEY    => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
     ];
@@ -216,6 +222,11 @@ class Entity extends Base\PublicEntity
     public function isMobikwikEnabled()
     {
         return $this->getAttribute(self::MOBIKWIK);
+    }
+
+    public function isJiomoneyEnabled()
+    {
+        return $this->getAttribute(self::JIOMONEY);
     }
 
     public function isEmiEnabled()

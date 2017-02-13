@@ -308,6 +308,25 @@ class Terminal extends Base
         return parent::create($attributes);
     }
 
+    public function createSharedJiomoneyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_jiomoney',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'jiomoney_merchant',
+            'gateway_access_code'       => 'random_access_code',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
     public function createSharedCybersourceHdfcTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
