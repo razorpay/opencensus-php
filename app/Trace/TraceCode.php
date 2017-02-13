@@ -444,6 +444,7 @@ class TraceCode
     const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
+    const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
     //Trace code for Transaction Migration

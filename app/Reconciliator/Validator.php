@@ -65,7 +65,7 @@ class Validator
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
     }
 
-    public function validateFreechargeEmail(array $emailDetails) : boolean
+    public function validateFreechargeEmail(array $emailDetails)
     {
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::FREECHARGE);
     }

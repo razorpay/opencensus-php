@@ -274,12 +274,16 @@ class Orchestrator extends Base\Core
             // Fetches the documents from the link, stores them in tmp
             // after extraction if neccessary, deletes the zip file, keeping
             // the imp files
-            $this->fetchAndStoreLinkDocuments($this->emailDetails);
-
-            $this->validator->validateAttachments($input);
+           $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
         }
 
-        $allFilesDetails = $this->getFileDetailsFromInput($this->emailDetails, $input);
+        // Validates that attachments are present in the email.
+        $this->validator->validateAttachments($input);
+
+        $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
+
+        $allFilesDetails = $this->getFileDetailsFromInput(
+            $this->emailDetails, $input);
 
         return $allFilesDetails;
     }
@@ -443,11 +447,6 @@ class Orchestrator extends Base\Core
             'body'      => $input['stripped-text'],
         ];
 
-        // Validates that attachments are present in the email.
-        $this->validator->validateAttachments($input);
-
-        $emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
-
         return $emailDetails;
     }
 
@@ -542,7 +541,10 @@ class Orchestrator extends Base\Core
         return $valid;
     }
 
-    protected function getFileDetailsFromInput($inputDetails, $input)
+    protected function getFileDetailsFromInput(
+        $inputDetails,
+        $input,
+        $processor = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
 
@@ -564,7 +566,7 @@ class Orchestrator extends Base\Core
                 try
                 {
                     // Gets the actual zip file's details first.
-                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
+                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $processor);
 
                     // Gets all files details present in the zip file.
                     $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
@@ -612,7 +614,7 @@ class Orchestrator extends Base\Core
             {
                 // Except zip, all other file types will return with a single element
                 // and not an array. Hence using push here instead of merge.
-                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, FileProcessor::UPLOADED);
+                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $processor);
             }
         }
 
@@ -863,19 +865,27 @@ class Orchestrator extends Base\Core
 
     protected function fetchAndStoreLinkDocuments(array $emailDetails, array & $input)
     {
-
-        $links = $this->gatewayReconciliator
-                      ->fetchLinksToDownload($emailDetails['body']);
-
-        foreach ($links as $link)
+        if (empty($input['attachment-count']) === true)
         {
-            $file = $this->gatewayReconciliator
-                         ->getFileFromLink($link);
-
-            $attachmentCount = $input['attachment-count'];
-
-            $input['attachment-' . $attachmentCount] = $file;
-            $input['attachment-count'] = (string)((int) $attachmentCount + 1);
+            $input['attachment-count'] = 0;
         }
+
+        $link = $this->gatewayReconciliator
+                      ->getSettlementFileLink($emailDetails['body']);
+
+        $this->trace->info(
+            TraceCode::RECON_FILE_LINK,
+            [
+                'link' => $link,
+                'bank' =>  self::BANK,
+            ]);
+
+        $file = $this->gatewayReconciliator
+                        ->getSettlementFileFromLink($link);
+
+        $attachmentCount = (string)((int)$input['attachment-count'] + 1);
+
+        $input['attachment-' . $attachmentCount] = $file;
+        $input['attachment-count'] = $attachmentCount;
     }
 }

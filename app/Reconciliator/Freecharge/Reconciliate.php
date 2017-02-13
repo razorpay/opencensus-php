@@ -2,12 +2,16 @@
 
 namespace RZP\Reconciliator\Freecharge;
 
-use Symfony\Component\DomCrawler\Crawler;
+use Carbon\Carbon;
+use Requests;
+use Storage;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Trace\TraceCode;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -37,7 +41,7 @@ class Reconciliate extends Base\Reconciliate
         ];
     }
 
-    public function fetchLinksToDownload(string $text)
+    public function getSettlementFileLink(string $text)
     {
         /**
          * 1. Fetch all hyperlinks 'a' tags
@@ -45,9 +49,47 @@ class Reconciliate extends Base\Reconciliate
          * 3. Extract the href link
          */
 
-        $crawler = new Crawler($html);
-        foreach ($crawler as $domElement)
-        {
-        }
+
+        /*
+         * Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
+         * By splitting the string, get the link
+         */
+        $raw_text = trim(explode('VIEW REPORT', $text)[1]);
+        $raw_text = trim(explode('Best', $raw_text)[0]);
+
+        $link = stripcslashes(trim($raw_text, '<>'));
+        return $link;
+    }
+
+    public function getSettlementFileFromLink(string $link)
+    {
+        $request = [
+            'url'     => stripcslashes($link),
+            'method'  => 'GET',
+            'headers' => [],
+            'content' => [],
+            'options' => [
+                'timeout'          => 60,
+                'follow_redirects' => true,
+                'verify'           => true,
+            ],
+        ];
+
+        $response = Requests::request(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['method'],
+            $request['options']);
+
+        $now = Carbon::now('Asia/Kolkata')->toDateString();
+
+        $fileName = 'freecharge-settlement-' . $now . '.zip';
+
+        $filePath = storage_path('files/settlement') . '/' . $fileName;
+
+        file_put_contents($filePath, fopen($response->url, 'r'));
+
+        return new UploadedFile($filePath, $filePath, 'application/zip', filesize($filePath), null, true);
     }
 }
