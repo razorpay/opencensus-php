@@ -253,7 +253,7 @@ class VerifyTest extends TestCase
         $createdAt = Carbon::now('Asia/Kolkata')->timestamp;
 
         $payment = $this->fixtures->create(
-            'payment:netbanking_created', ['created_at' => $createdAt]);
+            'payment:netbanking_created', ['created_at' => $createdAt-1]);
 
         $verifiedResultArray = [
             'filter'  => 'payments_created',
@@ -600,7 +600,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        foreach (range(0, 2) as $index)
+        foreach (range(0, 3) as $index)
         {
             $time->addSeconds(150);
 
