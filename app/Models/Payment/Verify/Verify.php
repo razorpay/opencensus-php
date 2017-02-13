@@ -420,7 +420,6 @@ class Verify extends Base\Core
             ($this->route === 'payment_verify_multiple'))
         {
             $nextVerifyBucket = $this->getPaymentNextVerifyBucket($payment, $filter);
-
             $payment->setVerifyBucket($nextVerifyBucket);
         }
 
@@ -574,8 +573,15 @@ class Verify extends Base\Core
     {
         // For Payment in created state and payment having verified as error,
         // verify bucket should be 0
-        if (($filter === Filter::PAYMENTS_CREATED) or
-            ($filter === Filter::VERIFY_ERROR))
+        if ($filter === Filter::VERIFY_ERROR)
+        {
+            return 0;
+        }
+
+        $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
+
+        if (($filter === Filter::PAYMENTS_CREATED) and
+            ($diff < 12*60))
         {
             return 0;
         }
@@ -603,6 +609,7 @@ class Verify extends Base\Core
         {
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
+            case Filter::PAYMENTS_CREATED:
                 // Return the proper boundary array
                 $boundaries = self::$failureStartBoundary;
                 break;

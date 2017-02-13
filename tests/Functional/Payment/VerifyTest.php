@@ -598,7 +598,7 @@ class VerifyTest extends TestCase
 
         $this->assertContent($content, $resultData);
 
-        foreach (range(0, 5) as $index)
+        foreach (range(0, 2) as $index)
         {
             $time->addSeconds(150);
 
@@ -611,6 +611,36 @@ class VerifyTest extends TestCase
                 'filter'  => $filter,
             ];
 
+            $this->assertContent($content, $resultData);
+        }
+
+        $minutesArray = [15, 30, 60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
+
+        foreach ($minutesArray as $minutes)
+        {
+            Carbon::setTestNow();
+
+            $time = Carbon::now('Asia/Kolkata');
+
+            $time->addMinutes($minutes);
+
+            Carbon::setTestNow($time);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $resultData = [
+                'success' => $verifiedResultArray['all'],
+                'filter'  => $filter,
+            ];
+
+            $this->assertContent($content, $resultData);
+
+            $content = $this->makeRequestAndGetContent($request);
+
+            $resultData = [
+                'success' => $verifiedResultArray['none'],
+                'filter'  => $filter,
+            ];
             $this->assertContent($content, $resultData);
         }
 
@@ -639,7 +669,6 @@ class VerifyTest extends TestCase
 
         foreach ($minutesArray as $minutes)
         {
-            s($minutes);
             $time = Carbon::now('Asia/Kolkata');
 
             $time->addMinutes($minutes);
