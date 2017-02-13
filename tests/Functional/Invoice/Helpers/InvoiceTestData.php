@@ -178,6 +178,43 @@ return [
         ],
     ],
 
+    'testCreateLinkWithSource' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'      => 100,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+                'source'      => 'seller_app',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'line_items'   => [],
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 100,
+            ],
+        ],
+    ],
+
+    'testCreateLinkWithInvalidSource' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'      => 100,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+                'source'      => 'random_app',
+            ],
+        ],
+        'response' => [],
+    ],
+
     'testCreateInvoiceWithMultipleLineItems' => [
         'request' => [
             'url' => '/invoices',
@@ -1034,6 +1071,44 @@ return [
                 'short_url'            => null,
                 'view_less'            => true,
                 'type'                 => 'invoice',
+            ]
+        ]
+    ],
+
+    'testUpdateDraftInvoiceAndIssue' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'      => 'inv_receipt_0001',
+                'terms'        => 'Updated terms & conditions',
+                'draft'        => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'receipt'              => 'inv_receipt_0001',
+                'customer_id'          => 'cust_100000customer',
+                'customer_details'     => [
+                    'customer_name'    => 'test',
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_address' => null,
+                ],
+                'line_items'           => [
+                    [
+                        'id'          => 'li_100000lineitem',
+                        'quantity'    => 1,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                    ],
+                ],
+                'status'               => 'issued',
+                'terms'                => 'Updated terms & conditions',
             ]
         ]
     ],
@@ -1968,6 +2043,19 @@ return [
     'testSendNotificationWithSmsMode' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/notify/sms',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
+    'testSendNotificationWithEmailMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/email',
             'method' => 'post',
             'content' => [],
         ],
