@@ -672,10 +672,10 @@ class Service extends Base\Service
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
-        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
+        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
         $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
+        $ts = $date->subSeconds($seconds)->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
 

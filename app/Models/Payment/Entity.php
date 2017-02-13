@@ -85,11 +85,11 @@ class Entity extends Base\PublicEntity
     // constants and defaults
     const CURRENCY_LENGTH                   = 3;
     const MIN_PAYMENT_AMOUNT                = 100;
-    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 720;
-    const PAYMENT_TIMEOUT_BILLDESK          = 259200;
-    const PAYMENT_TIMEOUT_NETBANKING        = 3600;
-    const PAYMENT_TIMEOUT_DEFAULT           = 1800;
-    const PAYMENT_AUTO_REFUND_DELAY_DEFAULT = 432000;
+    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 720;      // 12 Mins
+    const PAYMENT_TIMEOUT_BILLDESK          = 259200;   // 3 Days
+    const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
 
     protected static $sign      = 'pay';
 
@@ -1550,10 +1550,6 @@ class Entity extends Base\PublicEntity
 
     protected function getTimeoutWindow()
     {
-        $gateway = $this->getGateway();
-
-        $method = $this->getMethod();
-
         // default is 9 mins
         $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
@@ -1562,25 +1558,23 @@ class Entity extends Base\PublicEntity
             // for new flow, default is 30 mins
             $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT;
 
-            if (($method === Payment\Method::NETBANKING) and
-                ($gateway === Payment\Gateway::BILLDESK))
+            if ($gateway === Payment\Gateway::BILLDESK)
             {
                 $timeWindow = self::PAYMENT_TIMEOUT_BILLDESK;
             }
-            else if (($method === Payment\Method::NETBANKING))
+            else if ($this->isNetbanking() === true)
             {
                 // for direct netbanking 1 hour is good enough
                 $timeWindow = self::PAYMENT_TIMEOUT_NETBANKING;
             }
+            else if ($this->isWallet() === true)
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
+            }
         }
 
         $autoRefundDelay = $this->merchant->getAutoRefundDelay();
-
-        if ($autoRefundDelay === null)
-        {
-            // default is 5 days
-            $autoRefundDelay = self::PAYMENT_AUTO_REFUND_DELAY_DEFAULT;
-        }
 
         return min($timeWindow, $autoRefundDelay);
     }
