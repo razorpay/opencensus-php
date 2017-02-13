@@ -37,6 +37,23 @@ class Formatter
         'FC'    => null,
     );
 
+    public static $networkMapping = array(
+        'JCB'                       => Network::JCB,
+        'MASTERCARD'                => Network::MC,
+        'MasterCard'                => Network::MC,
+        'RuPay'                     => Network::RUPAY,
+        'RUPAY'                     => Network::RUPAY,
+        'CHINA UNION PAY'           => Network::UNP,
+        'Maestro'                   => Network::MAES,
+        'MAESTRO'                   => Network::MAES,
+        'Visa'                      => Network::VISA,
+        'VISA'                      => Network::VISA,
+        'DISCOVER'                  => Network::DISC,
+        'AMERICAN EXPRESS'          => Network::AMEX,
+        'DINERS CLUB INTERNATIONAL' => Network::DICL,
+        'unknown'                   => Network::UNKNOWN,
+    );
+
     /**
      * formats the data to iin entity
      *
@@ -109,11 +126,15 @@ class Formatter
                     break;
 
                 case 'issuer':
-                    if (IFSC::exists($row[$index]) === true)
+                    if (IFSC::exists($value) === true)
                     {
-                        $input[IIN::ISSUER] = $row[$index];
-                        $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
+                        $data[IIN::ISSUER] = $value;
+                        $data[IIN::ISSUER_NAME] = Name::getName($value);
                     }
+                    break;
+
+                case 'network':
+                    $data[IIN::NETWORK] = $this->formatNetwork($value, self::$networkMapping);
                     break;
             }
         }
@@ -124,7 +145,7 @@ class Formatter
         {
             $data[IIN::IIN] = $i;
 
-            $iins[] = $data;
+            $iins[$i] = $data;
         }
 
         return $iins;

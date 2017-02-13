@@ -147,9 +147,6 @@ return [
         ],
         'response' => [
             'content' => [
-                'duplicates'  => [],
-                'db_conflicts' => [],
-                'network_errors' => [],
                 'success' => 6,
             ],
         ],

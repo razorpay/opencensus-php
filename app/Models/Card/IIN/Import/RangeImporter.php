@@ -2,8 +2,22 @@
 
 namespace RZP\Models\Card\IIN\Import;
 
-class RangeImporter extends Base
+use App;
+use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Card\IIN;
+
+class RangeImporter
 {
+    protected $app;
+
+    public function __construct()
+    {
+        $this->app = App::getFacadeRoot();
+
+        $this->trace = \Trace::getFacadeRoot();
+    }
+
     public function import($input)
     {
         if (isset($input['network']) === false)
@@ -14,22 +28,35 @@ class RangeImporter extends Base
 
         $formattedData = (new Formatter)->formatIinDataRange($input, $input['range']);
 
-        $dataCleaner = new DataCleaner();
-        $cleaned = $dataCleaner->parse($input['network'], $formattedData);
-        $duplicates = $dataCleaner->getDuplicateEntries();
-        $conflicts = $dataCleaner->getDBConflicts();
-        $networkCheckFails = $dataCleaner->getNetworkCheckFails();
-
-        $this->enterIntoDB($cleaned);
-        $this->updateIntoDB($conflicts);
-
-        $successCount = count($cleaned);
+        $successCount = $this->addOrUpdate($formattedData);
 
         return [
-            'duplicates'     => $duplicates,
-            'db_conflicts'   => $conflicts,
-            'network_errors' => $networkCheckFails,
-            'success'        => $successCount,
+            'success' => $successCount,
         ];
+    }
+
+    protected function addOrUpdate(Base\PublicCollection $data)
+    {
+        $iins = new Base\PublicCollection;
+
+        foreach ($data->all() as $iin => $detail)
+        {
+            $iinEntity = $this->app['repo']->iin->find($iin);
+
+            if ($iinEntity === null)
+            {
+                $iinEntity = (new IIN\Entity)->build($detail);
+            }
+            else
+            {
+                $iinEntity->edit($detail);
+            }
+
+            $iins->push($iinEntity);
+        }
+
+        $this->app['repo']->saveOrFailCollection($iins);
+
+        return $iins->count();
     }
 }
