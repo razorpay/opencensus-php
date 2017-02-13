@@ -438,46 +438,20 @@ class MerchantController extends Controller
                     ->with($data);
     }
 
-    protected function getCheckoutCommon(array $input)
-    {
-        $context = $this->config->get('app.context');
-
-        $url = $this->config->get('app.checkout');
-
-        $urlMap = $this->config->get('url.checkout');
-
-        $cdnUrlMap = $this->config->get('url.cdn');
-
-        $framejs = '/v1/checkout-frame.js';
-
-        $css = '/v1/css/checkout.css';
-
-        $font = '/lato';
-
-        $data = [];
-
-        if (in_array($context, array_keys($urlMap)))
-        {
-            $url = $urlMap[$context];
-        }
-        else if (isset($input['checkout']))
-        {
-            $url = $input['checkout'];
-        }
-
-        $data['checkout'] = $url;
-        $data['framejs'] = $url . $framejs;
-        $data['css'] = $url . $css;
-        $data['font'] = $cdnUrlMap['production'].$font;
-
-        return $data;
-    }
-
     public function getPublicEntityReport($entity)
     {
         $input = Request::all();
 
         return (new \RZP\Models\Base\Report)->getReport($input, $entity);
+    }
+
+    public function getPublicEntityReportUrl($entity)
+    {
+        $input = Request::all();
+
+        $data = (new \RZP\Models\Base\Report)->getReportUrl($input, $entity);
+
+        return ApiResponse::json($data);
     }
 
     public function getBrokerTransactionReport()

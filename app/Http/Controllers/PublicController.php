@@ -3,6 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use View, Request;
+use RZP\Exception;
+use RZP\Base\JitValidator;
 
 class PublicController extends Controller
 {
@@ -17,45 +19,101 @@ class PublicController extends Controller
         return View::make('public.account', $data);
     }
 
+    /**
+     * Works on checkout onyx protocol.
+     */
     public function postCallbackUrlWithParams()
     {
-        $allParams = Request::all();
+        $postParams = Request::instance()->request->all();
+        $getParams = Request::query('data');
 
-        $data = [
-            // merchant site url, to create "go back to merchant website" link
-            // this is required because otherwise there is no escape for
-            // customer until payment is successful.
-            // This is automatically picked from previous page.
-            'back' => $allParams['back'],
+        // decode base64 string
+        $data = json_decode(base64_decode($getParams), true);
 
-            // parameters to be converted into POST.
-            // Reason we're going through this maneuver
-            'params' => json_decode($allParams['params']),
+        // Relevant info for re-directing to merchant url.
 
-            // actual callback_url, picked from checkout page form action
-            'url' => $allParams['url']
-        ];
+        $data['version'] = $data['version'] ?? 1;
 
-        if (isset($allParams['razorpay_payment_id']))
+        if (isset($postParams['razorpay_payment_id']))
         {
-            $data['payment_id'] = $allParams['razorpay_payment_id'];
+            $data['request']['method'] = $data['request']['method'] ?? 'GET';
+            $data['request']['target'] = $data['request']['target'] ?? '_self';
+
+            //
+            // It's successful payment merge all post params
+            // with already existing POST params that have been
+            // defined by the merchant
+            //
+            if (isset($data['request']['content']))
+            {
+                $data['request']['content'] = array_merge(
+                    $data['request']['content'], $postParams);
+            }
+            else
+            {
+                $data['request']['content'] = $postParams;
+            }
+
+            $data['retry'] = false;
+        }
+        else if (isset($postParams['error']))
+        {
+            assert (isset($postParams['action']) === false);
+
+            // just pass in error.
+            $data['error'] = $postParams['error'];
+            $data['retry'] = true;
         }
         else
         {
-            // Fill basic error codes if it error parameter does not exist.
-            if ((isset($allParams['error']) === false) or
-                (isset($allParams['error']['description']) === false))
-            {
-                $allParams['error'] = ['description' => 'Something went wrong'];
-            }
-
-            // just pass in printable error.
-            $data['error'] = $allParams['error']['description'];
-
-            // Razorpay frontend initialization object as json string
-            $data['options'] = $allParams['options'];
+            throw new Exception\ServerErrorException('Should not have reached here');
         }
 
+        $checkout = $this->getCheckoutCommon();
+        $data['checkout'] = $checkout['checkout'] . '/v1/checkout.js';
+
         return View::make('public.callback_params', $data);
+    }
+
+    public function postCheckoutHosted()
+    {
+        $postParams = Request::instance()->request->all();
+
+        $checkout = $this->getCheckoutCommon();
+
+        $this->validateHostedPostParams($postParams);
+
+        $data = [
+            'options'       => json_encode($postParams['checkout'], JSON_FORCE_OBJECT),
+            'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
+            // This is used directly in JS side
+            'urls'          => json_encode([
+                'callback'  => $postParams['url']['callback'],
+                'cancel'    => $postParams['url']['cancel'] ?? null,
+            ], JSON_FORCE_OBJECT),
+            // This is used in PHP
+            'url_callback'  => $postParams['url']['callback'],
+            'retry'         => true //(bool) Request::get('retry', false) ,
+        ];
+
+        return View::make('public.hosted', $data);
+    }
+
+    protected function validateHostedPostParams($postParams)
+    {
+        $postParamRules = [
+            'url'                   => 'required|array',
+            'checkout'              => 'required|array',
+            'url.cancel'            => 'sometimes|url',
+            'url.callback'          => 'required|url',
+            'checkout.key'          => 'required',
+            'checkout.amount'       => 'required|integer',
+            'checkout.image'        => 'sometimes|url',
+            'retry'                 => 'sometimes'
+        ];
+
+        (new JitValidator)->rules($postParamRules)
+                          ->input($postParams)
+                          ->validate();
     }
 }

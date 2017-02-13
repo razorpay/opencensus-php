@@ -25,6 +25,7 @@ return array(
         'netbanking_hdfc',
         'netbanking_kotak',
         'netbanking_icici',
+        'netbanking_airtel',
         'netbanking_axis',
         'sharp',
         'wallet_olamoney',
@@ -35,6 +36,7 @@ return array(
         'wallet_payumoney',
         'wallet_airtelmoney',
         'wallet_freecharge',
+        'wallet_jiomoney'
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -50,6 +52,7 @@ return array(
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_icici'   => env('NETBANKING_ICICI_MOCK'),
+    'mock_netbanking_airtel'  => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
@@ -57,6 +60,7 @@ return array(
     'mock_wallet_payzapp'     => env('PAYZAPP_MOCK'),
     'mock_wallet_payumoney'   => env('PAYUMONEY_MOCK'),
     'mock_wallet_airtelmoney' => env('AIRTELMONEY_MOCK'),
+    'mock_wallet_jiomoney'    => env('JIOMONEY_MOCK'),
     'mock_upi_icici'          => env('UPI_ICICI_MOCK'),
     'mock_upi_idfc'           => env('UPI_IDFC_MOCK'),
     'mock_wallet_freecharge'  => env('FREECHARGE_MOCK'),
@@ -202,6 +206,12 @@ return array(
         'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
     ),
 
+    'wallet_jiomoney' => array(
+        'test_merchant_id'      => env('JIOMONEY_WALLET_TEST_MERCHANT_ID'),
+        'test_client_id'        => env('JIOMONEY_WALLET_TEST_CLIENT_ID'),
+        'test_hash_secret'      => env('JIOMONEY_WALLET_TEST_HASH_SECRET')
+    ),
+
     'netbanking_hdfc' => array(
         'live_hash_secret'  => env('NETBANKING_HDFC_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret'  => '123456',
@@ -227,6 +237,11 @@ return array(
         'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
         'test_merchant_id' => env('NETBANKING_AXIS_GATEWAY_TEST_MERCHANT_ID'),
     ),
+
+    'netbanking_airtel' => [
+        'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
+        'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+    ],
 
     'sharp' => array(
     ),

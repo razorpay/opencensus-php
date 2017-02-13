@@ -408,6 +408,8 @@ return [
                 'amount'               => null,
                 'currency'             => 'INR',
                 'description'          => null,
+                'notes'                => [],
+                'comment'              => null,
                 'short_url'            => null,
                 'payment_id'           => null,
                 'order_id'             => null,
@@ -432,6 +434,7 @@ return [
                 'customer'       => [
                     'name'       => 'Abc Def'
                 ],
+                'comment'        => 'Thank you for giving us a chance to serve you.',
                 'draft'          => '1'
             ],
         ],
@@ -464,6 +467,7 @@ return [
                 'amount'           => 1000,
                 'description'      => 'Abc def',
                 'notes'            => [],
+                'comment'        => 'Thank you for giving us a chance to serve you.',
                 'currency'         => 'INR',
                 'short_url'        => null,
                 'view_less'        => true,
@@ -1975,6 +1979,22 @@ return [
                         'view_less'        => true,
                     ],
                 ],
+            ],
+        ],
+    ],
+
+    'testGetInvoiceByOrderAndPayment' => [
+        'request' => [
+            'url' => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'order_id'   => 'order_100000000order',
+                'payment_id' => 'pay_1000000payment',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
             ],
         ],
     ],

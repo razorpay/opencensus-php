@@ -15,7 +15,7 @@ class ValidationTest extends TestCase
         $this->input = [
             'number' => '4012001036275556',
             'expiry_month' => '1',
-            'expiry_year' => '2017',
+            'expiry_year' => '2035',
             'cvv' => '123',
             'name' => 'Abhay',
         ];
@@ -50,12 +50,12 @@ class ValidationTest extends TestCase
 
     public function testTwoLetterExpiryYear()
     {
-        $this->input['expiry_year'] = '17';
+        $this->input['expiry_year'] = '35';
 
         $card = $this->card->build($this->input);
 
         $this->assertInternalType('int', $card['expiry_month']);
-        $this->assertEquals($card['expiry_year'], 2017);
+        $this->assertEquals($card['expiry_year'], 2035);
     }
 
     public function testDualDigitCardExpiryMonth()

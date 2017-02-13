@@ -55,6 +55,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'],
+             $content[RequestFields::MERCHANT_REFERENCE]);
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -296,10 +299,11 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $verify->payment;
 
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
         $attributes = $this->getVerifyAttributes($content);
 
-        // Late authorization case
-        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
+        if ($bankPaymentId === null)
         {
             $gatewayPayment->fill($attributes);
 

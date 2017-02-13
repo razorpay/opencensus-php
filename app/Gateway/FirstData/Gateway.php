@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayCallback($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
             Base\Action::AUTHORIZE);
@@ -234,6 +236,16 @@ class Gateway extends Base\Gateway
             $gatewayErrorDesc = ErrorCodes::getErrorDesc($approvalCode);
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
+
+            if ($approvalCode === 'N:100')
+            {
+                $data = [
+                    'approval_code' => $gatewayEntity->getApprovalCode(),
+                    'error_msg'     => $gatewayErrorDesc,
+                ];
+
+                throw new Exception\RuntimeException('Internal Error in FirstData Gateway', $data);
+            }
 
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
         }
@@ -961,11 +973,14 @@ class Gateway extends Base\Gateway
             ['gateway_soap_request' => $request]);
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->scrubCardInfo($request['content']);
 
-        parent::traceGatewayPaymentRequest($request, $input);
+        parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
 
     protected function traceGatewayCallback($gatewayCallback)
