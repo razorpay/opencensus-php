@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = $this->getEpochTime($content[ResponseFields::DATE], self::DATE_FORMAT);
+        $date = Carbon::createFromFormat(self::DATE_FORMAT, $content[ResponseFields::DATE])->timestamp;
 
         $contentToSave = [
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
@@ -745,19 +745,9 @@ class Gateway extends Base\Gateway
         return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')->format($format);
     }
 
-    protected function getEpochTime(string $date, string $format)
-    {
-        return Carbon::createFromFormat($format, $date)->timestamp;
-    }
-
     protected function getFormattedAmount($amount)
     {
         return number_format(($amount / 100), 2);
-    }
-
-    public static function getFormattedRequestField(string $prefix, string $field, string $delimiter = '.')
-    {
-        return ($prefix . $delimiter . $field);
     }
 
     protected function getMappedAttributes($attributes)
