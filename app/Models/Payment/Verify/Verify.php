@@ -35,16 +35,14 @@ class Verify extends Base\Core
      * We verify it and move it to bucket 2. And this cycle keeps repeating
      */
     protected static $failureStartBoundary = [
-        0 => 900,           // 15 Minutes
-        1 => 3600,          // 60 Minutes
-        2 => 86400,         // 1 Day
-        3 => 172800,        // 2 Day
-        4 => 259200,        // 3 Day
-        5 => 345600,        // 4 Day
-        6 => 432000,        // 5 Day
-        7 => 518400,        // 6 Day
-        8 => 604800,        // 7 Day
-        // TODO: Decide on the boundaries.
+        0 => 900,       // 15 Minutes
+        1 => 1800,      // 30 Minutes
+        2 => 3600,      // 60 Minutes
+        3 => 21600,     // 6 hours
+        4 => 86400,     // 1 Day
+        5 => 172800,    // 2 Day
+        6 => 259200,    // 3 Day
+        7 => 345600,    // 4 Day
     ];
 
     /**
