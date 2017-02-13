@@ -22,6 +22,7 @@ class Entity extends Base\PublicEntity
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
     const RETURN_UTR            = 'return_utr';
+    const RAW_FAILURE_REASON    = 'raw_failure_reason';
 
     protected static $sign = 'setl';
 
@@ -140,6 +141,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILURE_REASON);
     }
 
+    public function getRawFailureReason()
+    {
+        return $this->getAttribute(self::RAW_FAILURE_REASON);
+    }
+
     public function setAmount($amount)
     {
         if (($amount <= 0) or
@@ -188,6 +194,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setRawFailureReason($reason)
+    {
+        $this->setAttribute(self::RAW_FAILURE_REASON, $reason);
     }
 
     public function getTransactionId()
