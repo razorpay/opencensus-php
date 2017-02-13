@@ -171,7 +171,7 @@ class Verify extends Base\Core
 
         $minMaxArray = [
             'min' => $minimumTime,
-            'max' =>$maximumTime
+            'max' => $maximumTime
         ];
 
         $boundary = [];
