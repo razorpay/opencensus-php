@@ -60,6 +60,13 @@ class Verify extends Base\Core
     const CREATED_MIN_TIME = 120;  // 2 Minutes
 
     /**
+     * This is the maximum time for which the payment should be in
+     * created state, before we run a "created" verify on it.
+     * After that created payments, follow boundary rule
+     */
+    const CREATED_MAX_TIME = 720;  // 12 Minutes
+
+    /**
      * This is the minimum time for which the payment should be in
      * failed state, before we run verify on it.
      */
@@ -86,6 +93,18 @@ class Verify extends Base\Core
         Filter::PAYMENTS_CREATED    => self::CREATED_MIN_TIME,
         Filter::VERIFY_FAILED       => self::ERRORED_MIN_TIME,
         Filter::VERIFY_ERROR        => self::ERRORED_MIN_TIME,
+    ];
+
+    /**
+     * Maximum duration after which payments will be picked,
+     * according to their verify_bucket,
+     * Cuurently used for CREATED payments only
+     */
+    const MAXIMUM_TIME_MAP = [
+        Filter::PAYMENTS_FAILED     => null,
+        Filter::PAYMENTS_CREATED    => self::CREATED_MAX_TIME,
+        Filter::VERIFY_FAILED       => null,
+        Filter::VERIFY_ERROR        => null,
     ];
     /**
      * Max number of payments on which single instance of verify cron should operate
@@ -148,10 +167,16 @@ class Verify extends Base\Core
 
         $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
+        $maximumTime = self::MAXIMUM_TIME_MAP[$filter];
+
+        $minMaxArray = [
+            'min' => $minimumTime,
+            'max' =>$maximumTime
+        ];
+
         $boundary = [];
 
-        if (($filter === Filter::PAYMENTS_FAILED) or
-            ($filter === Filter::VERIFY_FAILED))
+        if ($filter !== Filter::VERIFY_ERROR)
         {
             // Return the proper boundary array
             $boundary = self::$failureStartBoundary;
@@ -183,7 +208,7 @@ class Verify extends Base\Core
         // and filtering extra payments in later stage
         //
         $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
-                                                                $minimumTime,
+                                                                $minMaxArray,
                                                                 $boundary,
                                                                 $verifyStatus,
                                                                 $paymentStatus,

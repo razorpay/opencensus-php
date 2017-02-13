@@ -630,69 +630,19 @@ class VerifyTest extends TestCase
 
         $filter = $verifiedResultArray['filter'];
 
-        $time = Carbon::now('Asia/Kolkata');
-
         $request = [
             'url'    => '/payments/verify/'. $filter,
             'method' => 'post'
         ];
 
-        $content = $this->makeRequestAndGetContent($request);
+        $minutesArray = [0, 15, 30, 60, 6*60, 60*24, 2*60*24, 3*60*24, 4*60*24];
 
-        $resultData = [
-            'success' => $verifiedResultArray['all'],
-            'filter'  => $filter,
-        ];
-
-        $this->assertContent($content, $resultData);
-
-        $time->addMinutes(15);
-
-        Carbon::setTestNow($time);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            'success' => $verifiedResultArray['all'],
-            'filter'  => $filter,
-        ];
-
-        $this->assertContent($content, $resultData);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            'success' => $verifiedResultArray['none'],
-            'filter'  => $filter,
-        ];
-
-        $this->assertContent($content, $resultData);
-
-        $time->addMinutes(45);
-
-        Carbon::setTestNow($time);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            'success' => $verifiedResultArray['all'],
-            'filter'  => $filter,
-        ];
-
-        $this->assertContent($content, $resultData);
-
-        $content = $this->makeRequestAndGetContent($request);
-
-        $resultData = [
-            'success' => $verifiedResultArray['none'],
-            'filter'  => $filter,
-        ];
-
-        $this->assertContent($content, $resultData);
-
-        foreach (range(1, 7) as $day)
+        foreach ($minutesArray as $minutes)
         {
-            $time->addDay(1);
+            s($minutes);
+            $time = Carbon::now('Asia/Kolkata');
+
+            $time->addMinutes($minutes);
 
             Carbon::setTestNow($time);
 
@@ -702,7 +652,6 @@ class VerifyTest extends TestCase
                 'success' => $verifiedResultArray['all'],
                 'filter'  => $filter,
             ];
-
             $this->assertContent($content, $resultData);
 
             $content = $this->makeRequestAndGetContent($request);
@@ -713,9 +662,11 @@ class VerifyTest extends TestCase
             ];
 
             $this->assertContent($content, $resultData);
+
+            Carbon::setTestNow();
         }
 
-        $time->addDay(1);
+        $time->addDay(5);
 
         Carbon::setTestNow($time);
 

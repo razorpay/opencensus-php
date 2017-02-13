@@ -261,7 +261,7 @@ class Repository extends Base\Repository
      * @return Collection of Payment
      */
     public function getPaymentsToVerify(
-                        $minimumTime,
+                        $minMaxArray,
                         $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
@@ -288,15 +288,14 @@ class Repository extends Base\Repository
             $query->inRandomOrder();
         }
 
-        // For created, we only look at the payment status.
-        if (($paymentStatus !== Payment\Status::CREATED) and
-            ($verifyStatus !== Verify\Status::ERROR))
+        // For verify Error, we only look at the payment status.
+        if ($verifyStatus !== Verify\Status::ERROR)
         {
-            $this->addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundary, $query);
+            $this->addWhereConditionsUsingVerifyBoundary($minMaxArray, $verifyBoundary, $query);
         }
         else
         {
-            $this->addWhereConditionsUsingMinimumTime($minimumTime, $query);
+            $this->addWhereConditionsUsingMinimumTime($minMaxArray, $query);
         }
 
         // Sample Query
@@ -339,13 +338,25 @@ class Repository extends Base\Repository
      * @param BuilderEx $query        original query
      * @return void
      */
-    protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
+    protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minimumTime);
+        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
     }
 
+    protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
+    {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($minMaxArray['max'] !== null)
+        {
+            $whereConditions[] = [
+                [Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']],
+                [Payment\Entity::CREATED_AT, '>=', $currentTime - $minMaxArray['max']]
+            ];
+        }
+    }
     /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
@@ -354,9 +365,13 @@ class Repository extends Base\Repository
      * @param BuilderEx $query            original query
      * @return void
      */
-    protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
+    protected function addWhereConditionsUsingVerifyBoundary(array $minMaxArray, array $verifyBoundaries, $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $whereConditions = [];
+
+        $this->addWhereClauseForMinAndMaxTime($minMaxArray, $whereConditions);
 
         // Each or condition will fetch payments which are
         // in next Verify Bucket and not processed by previous cron
