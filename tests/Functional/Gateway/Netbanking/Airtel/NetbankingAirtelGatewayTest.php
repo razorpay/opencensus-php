@@ -128,6 +128,33 @@ class NetbankingAirtelGatewayTest extends TestCase
         $this->assertEquals($verify['gateway']['gatewaySuccess'], false);
     }
 
+    // This tests the case when the callback is not received from the gateway
+    // Upon verifying, we get success response from the gateway and a verify mismatch
+    public function testNullBankPaymentIdVerify()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->fixtures->create('payment:netbanking_created', [
+            'bank'        => 'AIRP',
+            'terminal_id' => '100NbAirtlTmnl',
+            'gateway'     => 'netbanking_airtel'
+        ]);
+
+        $gatewayPayment = $this->fixtures->create('netbanking',
+            [
+                'bank'            => 'AIRP',
+                'status'          => 'created',
+                'payment_id'      => $payment['id'],
+                'caps_payment_id' => $payment['id']
+            ]
+        );
+
+        $this->runRequestResponseFlow($data, function() use ($gatewayPayment)
+        {
+            $this->verifyPayment('pay_' . $gatewayPayment['payment_id']);
+        });
+    }
+
     public function testVerifyMismatch()
     {
         $data = $this->testData[__FUNCTION__];
@@ -197,7 +224,7 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
-            $refund = $this->refundPayment($payment['id'], 100);
+            $this->refundPayment($payment['id'], 100);
         });
     }
 
@@ -207,7 +234,8 @@ class NetbankingAirtelGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
+        $this->runRequestResponseFlow($data, function()
+        {
             $this->doAuthPayment($this->payment);
         });
     }
