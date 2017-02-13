@@ -13,7 +13,6 @@ class ViewDataSerializer extends Base\Core
 {
     protected $invoice;
 
-
     public function __construct(Entity $invoice)
     {
         parent::__construct();
@@ -62,12 +61,12 @@ class ViewDataSerializer extends Base\Core
     {
         $invoiceData = $this->invoice->toArrayPublic();
 
-        $invoiceData['is_paid']          = ($invoiceData['status'] === Status::PAID);
+        $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
         foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)
         {
-            $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], "Asia/Kolkata")
+            $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], 'Asia/Kolkata')
                                                     ->format('j M Y');
         }
 
@@ -75,8 +74,8 @@ class ViewDataSerializer extends Base\Core
             $invoiceData['line_items'],
             function (& $lineItem, $i)
             {
-                $lineItem['amount_formatted'] = number_format($lineItem['amount']/100, 2);
-                $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity'])/100, 2);
+                $lineItem['amount_formatted'] = number_format($lineItem['amount'] / 100, 2);
+                $lineItem['total_amount_formatted'] = number_format(($lineItem['amount'] * $lineItem['quantity']) / 100, 2);
             });
 
         return $invoiceData;

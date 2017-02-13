@@ -335,12 +335,12 @@ class Entity extends Base\PublicEntity
 
     public function getFormattedAmount()
     {
-        return number_format($this->getAmount()/100, 2);
+        return number_format($this->getAmount() / 100, 2);
     }
 
     public function getFormattedAmountWithCurrency()
     {
-        return $this->getCurrency() . ' ' . number_format($this->getAmount()/100, 2);
+        return $this->getCurrency() . ' ' . number_format($this->getAmount() / 100, 2);
     }
 
     public function getCurrency()
@@ -418,6 +418,11 @@ class Entity extends Base\PublicEntity
     public function isIssued()
     {
         return ($this->getStatus() === Status::ISSUED);
+    }
+
+    public function isPaid()
+    {
+        return ($this->getStatus() === Status::PAID);
     }
 
     public function isExpired()
