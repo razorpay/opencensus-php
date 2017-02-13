@@ -131,10 +131,12 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SUSPENDED_AT,
+        self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
         'groups',
-        'admins'
+        'admins',
      );
 
     protected $defaults = array(
