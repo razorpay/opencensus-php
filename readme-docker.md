@@ -48,6 +48,13 @@ $ ln -s /usr/local/bin/phpunit-5.6.phar phpunit
 * Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
 * Increase Docker memory to 6GB and number of cpus to 4
 
+##### Linux users
+* sudo apt-get install docker
+* pip install docker-compose
+* sudo usermod -aG docker $(whoami) # Adds yourself to docker group
+
+Now Log out and log back in once after last step.
+
 ##### Install docker-compose
 [Install Docker Compose](https://docs.docker.com/compose/install/)
 
@@ -62,7 +69,7 @@ or,
 add it to your `.bashrc`/`.bash_profile`
 
 ##### Optional configurations
-Note: By default API will run on port 28080 and mysql on 23306. In case you wish to change these params or other ports like for elastic search, please modify `docker-compose.dev.yml`
+Note: By default API will run on port 28080 and mysql on 23306. In case you wish to change these params or other ports like for elasticsearch, please modify `docker-compose.dev.yml`
 
 #### Setup API/Building Container
 
@@ -86,7 +93,7 @@ $ make down
 #### Bringing the container back after it has been shut down
 
 ```
-$ make down
+$ make up
 ```
 
 #### Cleaning up all the container images

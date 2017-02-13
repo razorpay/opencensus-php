@@ -19,7 +19,7 @@ build:
 	@echo "Building docker containers"
 	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) up -d --build
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
-	@echo "Seeing elastic search indexes"
+	@echo "Seeing elasticsearch indexes"
 	@echo "===================="
 	curl -X PUT "http://localhost:9200/api_live" -H 'Content-Type: application/json' -d @dockerconf/es_api_notes.json
 	curl -X PUT "http://localhost:9200/api_test" -H 'Content-Type: application/json' -d @dockerconf/es_api_notes.json
@@ -40,7 +40,7 @@ up:
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 
 down:
-	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) stop
+	$(DOCKER_COMPOSE) -f $(DOCKER_COMPOSE_FILE) 
 
 all: build
 
