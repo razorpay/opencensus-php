@@ -1,12 +1,12 @@
 import { set, merge, unshift } from 'rzp/utils/immutable'
 import Invoice from 'merchant/models/Invoice'
 
-const INVOICES_FETCH = 'INVOICES_FETCH'
-const INVOICE_CREATE = 'INVOICE_CREATE'
-const INVOICE_EDIT = 'INVOICE_EDIT'
-const INVOICE_DELETED = 'INVOICE_DELETED'
-const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
-const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE'
+export const INVOICES_FETCH = 'INVOICES_FETCH'
+export const INVOICE_CREATE = 'INVOICE_CREATE'
+export const INVOICE_EDIT = 'INVOICE_EDIT'
+export const INVOICE_DELETED = 'INVOICE_DELETED'
+export const HIGHLIGHT_INVOICE = 'HIGHLIGHT_INVOICE'
+export const REMOVE_HIGHLIGHT_INVOICE = 'REMOVE_HIGHLIGHT_INVOICE'
 
 export const fetchInvoices = (params) => {
   return (dispatch) => {

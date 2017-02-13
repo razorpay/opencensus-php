@@ -1,5 +1,6 @@
 import { set, merge } from 'rzp/utils/immutable'
 import Invoice from 'merchant/models/Invoice'
+import { INVOICE_CREATE, INVOICE_EDIT } from './list'
 
 const INVOICE_FETCH = 'INVOICE_FETCH'
 const SMS_SEND = 'SMS_SEND'
@@ -61,6 +62,8 @@ export default function (state = initialState, action) {
 
     case `${INVOICE_ISSUE}::SUCCESS`:
     case `${INVOICE_FETCH}::SUCCESS`:
+    case `${INVOICE_CREATE}::SUCCESS`:
+    case `${INVOICE_EDIT}::SUCCESS`:
       return merge(state, {
         loading: false,
         invoice: action.payload,

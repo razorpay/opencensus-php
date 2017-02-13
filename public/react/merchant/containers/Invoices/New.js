@@ -17,9 +17,9 @@ import LineItemTable from './LineItemTable'
 import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
 import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
-import { fetchInvoice, downloadInvoice, notifyCustomer } from 'merchant/modules/invoices/details'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import IssueConfirmModal from './IssueConfirmModal'
+import * as InvoiceActions from 'merchant/modules/invoices/details'
 import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
 import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
@@ -53,21 +53,7 @@ const selector = formValueSelector('newInvoice')
       customers,
       items: state.items.items,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
-      invoice: selector(
-        state,
-        'id',
-        'receipt',
-        'status',
-        'line_items',
-        'short_url',
-        'payment_id',
-        'notes',
-        'customer_details',
-        'email_status',
-        'sms_status',
-        'paid_at',
-        'payment_id'
-      )
+      invoice: state.invoice.invoice,
     }
   },
   {
@@ -76,8 +62,7 @@ const selector = formValueSelector('newInvoice')
     saveInvoice,
     highLightInvoice,
     deleteInvoice,
-    fetchInvoice,
-    notifyCustomer,
+    ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
   }
@@ -123,29 +108,21 @@ export default class InvoicesNewContainer extends Component {
       this.props.fetchItemsForAutocomplete(),
     ]
 
-    this.setState({
-      isLoading: true
-    })
-
     if (this.props.id) {
       promises.push(this.props.fetchInvoice(this.props.id))
     }
+
+    this.setState({
+      isLoading: true
+    })
 
     Promise.all(promises).then(([customers, items, invoice]) => {
       if (invoice) {
         this.props.initialize(invoice)
       }
-
-      this.setTitle(invoice)
       this.setState({
         isLoading: false
       })
-    })
-  }
-
-  setTitle(invoice) {
-    this.setState({
-      title: invoice ? (invoice.receipt || invoice.id) : 'New Invoice'
     })
   }
 
@@ -189,7 +166,6 @@ export default class InvoicesNewContainer extends Component {
       this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
         notify: false
       })
-      this.setTitle(invoice)
       this.setState({
         isSaving: false
       })
@@ -211,7 +187,7 @@ export default class InvoicesNewContainer extends Component {
         ...props,
         ...notifyProps
       })
-    })
+    }, false)
   }
 
   resendInvoice(props) {
@@ -241,11 +217,12 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  showIssueConfirmModal(onIssueCallback) {
+  showIssueConfirmModal(onIssueCallback, disableIssueOnEmptySelection) {
     this.props.openModal({
       size: 'small',
       component: <IssueConfirmModal
         customer={this.props.customer}
+        disableIssueOnEmptySelection={disableIssueOnEmptySelection}
         onIssue={(notifyProps) => {
           return onIssueCallback(notifyProps)
         }}
@@ -305,7 +282,7 @@ export default class InvoicesNewContainer extends Component {
     const {
       handleSubmit,
       customer,
-      invoice = {},
+      invoice,
     } = this.props
 
     let isNew = !invoice.id
@@ -346,7 +323,7 @@ export default class InvoicesNewContainer extends Component {
                       </li>
                       <li>
                         <h3 class='breadcrumb__backNav--heading'>
-                          { this.state.title }
+                          { invoice.receipt || invoice.id || 'New Invoice' }
                         </h3>
                         {
                           isNew ?

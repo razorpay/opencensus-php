@@ -1,27 +1,24 @@
 import { Component } from 'react'
 import { connect } from 'react-redux'
-import { Field, reduxForm } from 'redux-form'
+import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Clipboard from 'rzp/ui/Clipboard'
 import * as ModalActions from 'merchant/modules/modals'
 
-function validate(values) {
-  let errors = {}
-  return errors
-}
-
+const selector = formValueSelector('issueInvoice')
 @connect(
-  (state) => state.session,
+  (state) => {
+    return {
+      session: state.session,
+      sms_notify:  selector(state, 'sms_notify'),
+      email_notify: selector(state, 'email_notify')
+    }
+  },
   ModalActions
 )
 @reduxForm({
-  form: 'issueInvoice',
-  validate,
-  initialValues: {
-    sms_notify: false,
-    email_notify: false
-  }
+  form: 'issueInvoice'
 })
 export default class IssueInvoiceConfirmModal extends Component {
   constructor() {
@@ -47,8 +44,15 @@ export default class IssueInvoiceConfirmModal extends Component {
   }
 
   render() {
-    const { handleSubmit, customer } = this.props
-    const isLiveMode = this.props.mode === 'live'
+    const {
+      handleSubmit,
+      customer,
+      sms_notify,
+      email_notify,
+      disableIssueOnEmptySelection,
+    } = this.props
+
+    const isLiveMode = this.props.session.mode === 'live'
     const paymentLink = this.state.paymentLink
 
     return (
@@ -120,6 +124,7 @@ export default class IssueInvoiceConfirmModal extends Component {
                       class='btn btn-primary btn-block btn-lg'
                       text='Issue Invoice'
                       pendingText='Issuing...'
+                      disabled={disableIssueOnEmptySelection && !(sms_notify || email_notify)}
                       onClick={handleSubmit(this.onIssueClick)}
                     />
                   </div>
@@ -130,4 +135,8 @@ export default class IssueInvoiceConfirmModal extends Component {
       </div>
     )
   }
+}
+
+IssueInvoiceConfirmModal.defaultProps = {
+  disableIssueOnEmptySelection: true
 }
