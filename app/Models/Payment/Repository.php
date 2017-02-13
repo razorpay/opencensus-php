@@ -176,7 +176,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
-                    ->with('merchant')
+                    ->with(['merchant', 'merchant.features'])
                     ->get();
     }
 
