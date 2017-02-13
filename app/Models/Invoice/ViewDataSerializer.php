@@ -7,6 +7,7 @@ use Carbon\Carbon;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Checkout;
+use RZP\Exception;
 
 class ViewDataSerializer extends Base\Core
 {

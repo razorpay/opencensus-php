@@ -112,19 +112,17 @@ class Generator extends Base\Core
     {
         $this->associateCustomerWithInvoice($input);
 
-        if (isset($input[Entity::LINE_ITEMS]) === false)
+        if (isset($input[Entity::LINE_ITEMS]) === true)
         {
-            return;
+            $this->lineItemCore->updateLineItemsAsPut(
+                $input[Entity::LINE_ITEMS],
+                $this->merchant,
+                $this->invoice);
+
+            $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+            $this->invoice->setAmount($totalAmount);
         }
-
-        $this->lineItemCore->updateLineItemsAsPut(
-            $input[Entity::LINE_ITEMS],
-            $this->merchant,
-            $this->invoice);
-
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->setAmount($totalAmount);
 
         if ($this->invoice->getStatus() === Status::ISSUED)
         {

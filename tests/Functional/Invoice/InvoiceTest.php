@@ -66,6 +66,45 @@ class InvoiceTest extends TestCase
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
     }
 
+    public function testCreateLinkWithSource()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateLinkWithInvalidSource()
+    {
+        //
+        // TODO: (Low priority)
+        // - Fix Source::checkType and Type::validateType methods.
+        //
+    }
+
+    public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice',
+            [
+                'customer_id'      => null,
+                'customer_name'    => null,
+                'customer_email'   => null,
+                'customer_contact' => null,
+                'type'             => 'link',
+            ]);
+
+        //
+        // While making payment, we pull customer data from payment and fill in
+        // invoice columns.
+        //
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($invoice['customer']['email'], 'a@b.com');
+        $this->assertEquals($invoice['customer']['contact'], '+919918899029');
+    }
+
     public function testCreateInvoiceWithMultipleLineItems()
     {
         $response = $this->startTest();
@@ -320,6 +359,24 @@ class InvoiceTest extends TestCase
         $this->startTest();
 
         $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceAndIssue()
+    {
+        $this->createDraftInvoice(['amount' => 100000]);
+
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        //
+        // On sending 'draft'='0', it should just issue the invoice
+        //
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['short_url']);
+        $this->assertNotEmpty($response['order_id']);
+        $this->assertNotEmpty($response['issued_at']);
     }
 
     public function testUpdateDraftInvoiceWithBasicFieldsAndLineItems()
@@ -818,6 +875,16 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testSendNotificationWithEmailMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
     public function testSendNotificationWithSmsModeForDraftInvoice()
     {
         $this->ba->publicAuth();
@@ -997,6 +1064,34 @@ class InvoiceTest extends TestCase
 
         // Clear the mock.
         Carbon::setTestNow();
+    }
+
+    //
+    // Following 2 tests, just test if we're getting OK status for the view endpoint.
+    //
+
+    public function testGetLinkView()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice', ['type' => 'link']);
+
+        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+
+        $this->assertResponseOk();
+    }
+
+    public function testGetInvoiceView()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+
+        $this->assertResponseOk();
     }
 
     public function testPayExpiredInvoice()

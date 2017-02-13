@@ -739,11 +739,11 @@ class Entity extends Base\PublicEntity
         if (isset($input[self::DRAFT]) and
             ($input[self::DRAFT] === '1'))
         {
-            $this->setAttribute(self::STATUS, Status::DRAFT);
+            $this->setStatus(Status::DRAFT);
         }
         else
         {
-            $this->setAttribute(self::STATUS, Status::ISSUED);
+            $this->setStatus(Status::ISSUED);
         }
     }
 
