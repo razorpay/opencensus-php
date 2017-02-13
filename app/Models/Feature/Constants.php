@@ -23,7 +23,7 @@ class Constants
     const BROKING_REPORT      = 'broking_report';
     const PAYMENT_EMAIL_FETCH = 'payment_email_fetch';
 
-    // TODOL Use this instead of alFeatures once in final code change pr
+    // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY               => true,
         self::WEBHOOKS            => true,

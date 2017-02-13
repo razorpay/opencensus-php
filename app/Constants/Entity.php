@@ -99,6 +99,7 @@ class Entity
     const NETBANKING_AXIS       = 'netbanking_axis';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
+    const WALLET_JIOMONEY       = 'wallet_jiomoney';
 
     public static $namespace = array(
         self::P2P                   => \RZP\Models\P2p::class,
@@ -155,6 +156,7 @@ class Entity
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
         self::ROLE                  => \RZP\Models\Admin\Role::class,
@@ -178,6 +180,7 @@ class Entity
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
     );
 
     protected static $syncedInLiveAndTest = array(
