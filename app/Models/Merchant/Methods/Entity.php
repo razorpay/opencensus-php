@@ -403,6 +403,9 @@ class Entity extends Base\PublicEntity
 
         $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
 
+        // Unsetting AIRP for now
+        unset($names['AIRP']);
+
         return $names;
     }
 
