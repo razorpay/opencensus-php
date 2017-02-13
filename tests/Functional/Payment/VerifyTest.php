@@ -250,7 +250,7 @@ class VerifyTest extends TestCase
 
     public function testNewlyCreatedPayment()
     {
-        $createdAt = time();
+        $createdAt = Carbon::now('Asia/Kolkata')->timestamp;
 
         $payment = $this->fixtures->create(
             'payment:netbanking_created', ['created_at' => $createdAt]);
@@ -634,7 +634,6 @@ class VerifyTest extends TestCase
                 'success' => $verifiedResultArray['all'],
                 'filter'  => $filter,
             ];
-
             $this->assertContent($content, $resultData);
 
             $content = $this->makeRequestAndGetContent($request);
