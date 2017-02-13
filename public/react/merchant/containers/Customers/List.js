@@ -8,10 +8,15 @@ import CustomerCreation from 'merchant/containers/Customers/New'
 import ListContainer from 'merchant/containers/ListContainer'
 import * as CustomerActions from 'merchant/modules/customers'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationActions from 'merchant/modules/notifications'
 
 @connect(
   (state) => state.customers,
-  { ...CustomerActions, ...ModalActions }
+  {
+    ...CustomerActions,
+    ...ModalActions,
+    ...NotificationActions
+  }
 )
 export default class CustomersListContainer extends ListContainer {
   constructor() {

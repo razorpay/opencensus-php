@@ -166,7 +166,7 @@ export default class InvoicesNewContainer extends Component {
     this.props.openModal({
       size: 'small',
       component: <CustomerCreation
-        saveLabel='Create and add this customer',
+        saveLabel='Create and add this customer'
         onSave={this.selectCustomerAndCloseModal}
         closeModal={this.props.closeModal}
       />
