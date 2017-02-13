@@ -45,12 +45,6 @@ class Processor
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
     /**
-     * Number of days after which authorized payments
-     * are auto-refunded
-     */
-    const AUTO_REFUND_TIME_PERIOD = 5;
-
-    /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 5;
@@ -960,19 +954,13 @@ class Processor
 
     protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
     {
-        $merchant        = $payment->merchant;
+        $merchant = $payment->merchant;
+
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
-
-        if ($autoRefundDelay === null)
-        {
-            $shouldRefundAt = Carbon::createFromTimestamp($createdAt)
-                                    ->addDays(Processor::AUTO_REFUND_TIME_PERIOD)
-                                    ->timestamp;
-        }
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
