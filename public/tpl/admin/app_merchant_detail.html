@@ -495,6 +495,7 @@
                     <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
+                    <th>Netbanking</th>
                     <th>Emi</th>
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
@@ -503,7 +504,11 @@
                   </thead>
                   <tbody>
                   <tr ng-repeat="terminal in merchant.terminals.items">
-                    <td>{{terminal.id}}</td>
+                    <td>
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
+                        <code>{{terminal.id}}</code>
+                      </a>
+                    </td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
                     <td>{{terminal.category}}</td>
