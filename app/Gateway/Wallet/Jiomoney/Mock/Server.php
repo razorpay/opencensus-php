@@ -124,12 +124,9 @@ class Server extends Base\Mock\Server
                         Carbon::now('Asia/Kolkata')->timestamp,
                         self::TXN_DATE_FORMAT);
 
-        $paymentId = $input[Jiomoney\Gateway::getFormattedRequestField(
-                                RequestFields::TRANSACTION,
-                                RequestFields::PAYMENT_ID)];
+        $paymentId = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::PAYMENT_ID)];
 
-        $amount = $input[Jiomoney\Gateway::getFormattedRequestField(RequestFields::TRANSACTION,
-                                RequestFields::AMOUNT)];
+        $amount = $input[RequestFields::getFormatted(RequestFields::TRANSACTION, RequestFields::AMOUNT)];
 
         return [
             ResponseFields::STATUS_CODE             => StatusCode::SUCCESS,
