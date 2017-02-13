@@ -288,6 +288,8 @@ class VerifyTest extends TestCase
 
     public function testVerifySingleCreatedPayments()
     {
+        Carbon::setTestNow();
+
         $createdAt = time() - 180;
 
         $payment = $this->fixtures->create(
