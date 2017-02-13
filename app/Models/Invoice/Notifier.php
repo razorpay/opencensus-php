@@ -122,7 +122,10 @@ class Notifier extends Base\Core
 
     public function emailInvoiceExpiredToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+        if (empty($this->invoice->getCustomerEmail()) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceExpiredMailPayload();
 
@@ -135,7 +138,10 @@ class Notifier extends Base\Core
     {
         $contact = $this->invoice->getCustomerContact();
 
-        if (empty($contact) === true) return false;
+        if (empty($contact) === true)
+        {
+            return false;
+        }
 
         $request = $this->getRavenSendInvoiceRequestInput($contact);
 
@@ -169,7 +175,10 @@ class Notifier extends Base\Core
 
     protected function emailInvoiceExpiringToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true) return false;
+        if (empty($this->invoice->getCustomerEmail()) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceExpiringMailPayload();
 

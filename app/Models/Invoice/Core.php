@@ -450,7 +450,10 @@ class Core extends Base\Core
 
     public function getInvoicePdf(Entity $invoice, bool $new = false)
     {
-        if ($invoice->isTypeInvoice() === false) return null;
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
 
         $pdf = $invoice->pdf();
 
@@ -547,7 +550,10 @@ class Core extends Base\Core
 
     protected function generatePdfWithRetry(string $id, int $attempt = 1)
     {
-        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS) return null;
+        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS)
+        {
+            return null;
+        }
 
         try
         {
