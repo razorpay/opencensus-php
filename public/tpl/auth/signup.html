@@ -1,0 +1,64 @@
+<div class="auth-overflow-container">
+  <div class="signup-translate-container" style="transform: translateX({{-(240)*signup.currentStep}}px)">
+    <div class="auth-step" >
+      <div class="signup-form-step" ng-if="isOrgCheckDone && organization && organization.allow_sign_up || invite">
+        <div class="auth-heading">
+          Signing Up...
+        </div>
+        <div class="auth-text">
+          Create a password to continue
+        </div>
+
+        <form class="auth-form" name="forms.signupForm" xng-submit="goToSignupStep(1)" ng-submit="createAccount(forms.signupForm.$valid)">
+          
+          <label class="form-label auth-subheading" for="email">Your Work Email</label>
+          <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
+          <label class="form-label auth-subheading" for="password">Create a Password</label>
+          <input override-tab type="password" placeholder="Min 7 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
+          <div class="google-captcha" 
+            no-captcha
+            g-recaptcha-response="data.signup.captcha"
+            theme="light"
+            control="noCaptchaControl"
+            site-key="6LdsmwETAAAAADmNGCLvbrjL09O_Fv7WOVTngbO4">
+          </div>
+          <div class="auth-subtext">
+            By signing up you agree to our <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> and <a class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>.
+          </div>
+          <button override-tab class="btn btn-primary form-control " type="submit">
+            Create Account
+          </button>
+          <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
+        </form>
+        
+        <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
+      </div>
+      <div class="" ng-if="isOrgCheckDone && !(organization && organization.allow_sign_up || invite)">
+        <span>You are not authorized to access this page</span>
+      </div>
+      <div class="signup-org-loading" ng-if="!isOrgCheckDone">
+        <div class="loading-animation active"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
+      </div>
+    </div>
+    <!-- <div class="auth-step">
+      <div class="signup-success-container">
+        <div class="auth-heading">
+          Account Created
+        </div>
+        <div class="signup-success-image" style="background-image: url('img/account-created.png')"></div>
+        <div class="auth-text">
+          Your Razorpay account is created. We’ll need a few more details to customise your experience
+        </div>
+        <button class="btn btn-primary form-control btn-step-2" ng-click="goToSignupStep(2)">
+          Next
+        </button>
+      </div>
+    </div> -->
+    <div class="auth-step auth-step-questions" ng-if="!right" ng-include="'tpl/auth/questions.html'">
+      
+    </div>
+    <div class="auth-step">
+      <div ng-include="'tpl/auth/verify.html'"></div>
+    </div>
+  </div>
+</div>

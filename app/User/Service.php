@@ -112,13 +112,17 @@ class Service extends Base\Service
         // These two branches are exclusive
         // You cannot accept an invite and create a merchant account
         // at the same time
-        if (isset($input['business_name']))
+        if ($invitationToken)
+        {
+            $this->attachUserToInvite($user, $invitation);
+
+            $data['login'] = true;
+        }
+        else 
         {
             // See HACKING.md in the root of the repo for a detailed note
-            assert(! $invitationToken);
-
             $data = [
-                'business_name' =>  $input['business_name'],
+                'business_name'  =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
 
@@ -126,11 +130,7 @@ class Service extends Base\Service
 
             (new Merchant\Service)->createMerchantOnApi($data['id']);
         }
-        else if ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-            $data['login'] = true;
-        }
+
 
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
@@ -434,7 +434,7 @@ class Service extends Base\Service
             else
             {
                 // Login the user
-                Auth::attempt($credentials, false, true);
+            Auth::attempt($credentials, false, true);
             }
         }
         else
