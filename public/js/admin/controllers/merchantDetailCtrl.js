@@ -1123,7 +1123,8 @@ app.controller('MerchantDetailCtrl', [
       'amex',
       'netbanking',
       'debit_card',
-      'credit_card'
+      'credit_card',
+      'jiomoney'
     ];
     $scope.methods = {};
 
