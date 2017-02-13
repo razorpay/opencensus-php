@@ -1550,6 +1550,8 @@ class Entity extends Base\PublicEntity
 
     protected function getTimeoutWindow()
     {
+        $gateway = $this->getGateway();
+
         // default is 9 mins
         $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
