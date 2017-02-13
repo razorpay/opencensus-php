@@ -153,6 +153,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('/{mode}/invoices/{id}', 'MerchantController@deleteInvoice')->name('invoice_delete');
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
         Route::post('/{mode}/invoices/{invoiceId}/issue', 'MerchantController@markInvoiceAsIssued')->name('invoice_issue');
+        Route::post('/{mode}/invoices/{invoiceId}/expire', 'MerchantController@markInvoiceAsExpired')->name('invoice_expire');
 
         Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customer_fetch_all');
         Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');

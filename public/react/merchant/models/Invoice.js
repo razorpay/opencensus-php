@@ -64,6 +64,15 @@ export default class Invoice extends Entity {
     })
   }
 
+  expire() {
+    return ajax({
+      url: `${this.getResourceUrl()}/expire`,
+      method: 'post'
+    }).then((response) => {
+      return new Invoice().deserialize(response.data)
+    })
+  }
+
   serializeProperty(prop) {
     if (prop === 'sms_notify' || prop === 'email_notify') {
       return this[prop] ? 1 : 0

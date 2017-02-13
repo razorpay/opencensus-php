@@ -72,4 +72,11 @@ class Invoice extends Entity
 
         return $this->request('POST', $relativeUrl, []);
     }
+
+    public function markAsExpired($id)
+    {
+        $relativeUrl = 'invoices/' . $id . '/expire';
+
+        return $this->request('POST', $relativeUrl, []);
+    }
 }

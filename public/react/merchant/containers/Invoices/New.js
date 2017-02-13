@@ -100,6 +100,7 @@ export default class InvoicesNewContainer extends Component {
     this.resendInvoice = ::this.resendInvoice
     this.deleteInvoice = ::this.deleteInvoice
     this.downloadInvoicePDF = ::this.downloadInvoicePDF
+    this.expireInvoice = ::this.expireInvoice
   }
 
   componentWillMount() {
@@ -276,6 +277,31 @@ export default class InvoicesNewContainer extends Component {
             })
           }) :
           this.navigateToList()
+      }
+    })
+  }
+
+  expireInvoice() {
+    let invoice = this.props.invoice
+    this.context.confirm({
+      header: 'Expire Invoice?',
+      message: () => (
+        <div class='text-semi-muted'>
+          <p>The Invoice will be expired and the customer will not be able to pay for it.</p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Expire',
+      affirmativePendingLabel: 'Expiring...',
+      abortLabel: 'No, don\'t!',
+      action: () => {
+        return this.props.expireInvoice(invoice).then((invoice) => {
+          this.props.initialize(invoice)
+        }).catch((err) => {
+          this.props.showNotification({
+            type: 'error',
+            message: err.errors
+          })
+        })
       }
     })
   }
@@ -546,12 +572,25 @@ export default class InvoicesNewContainer extends Component {
                       {
                         (isNew || isDraft) &&
                           <button
+                            type='button'
                             class='btn btn-default btn-block btn-lg'
                             onClick={this.deleteInvoice}
                             disabled={this.state.isSaving}
                           >
                             <i class='fa fa-times'></i>
                             <span>Delete Invoice</span>
+                          </button>
+                      }
+                      {
+                        isIssued &&
+                          <button
+                            type='button'
+                            class='btn btn-default btn-block btn-lg'
+                            onClick={this.expireInvoice}
+                            disabled={this.state.isSaving}
+                          >
+                            <i class='fa fa-eye-slash'></i>
+                            <span>Expire Invoice</span>
                           </button>
                       }
                     </div>

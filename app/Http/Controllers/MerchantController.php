@@ -260,14 +260,21 @@ class MerchantController extends Controller
 
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
-        list($error, $data)  = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
+        list($error, $data) = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
 
         return AppResponse::jsonResponse($error, $data);
     }
 
     public function markInvoiceAsIssued($mode, $id)
     {
-        list($error, $data)  = (new Merchant\Service)->markInvoiceAsIssued($mode, $id);
+        list($error, $data) = (new Merchant\Service)->markInvoiceAsIssued($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function markInvoiceAsExpired($mode, $id)
+    {
+        list($error, $data) = (new Merchant\Service)->markInvoiceAsExpired($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }

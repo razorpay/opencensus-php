@@ -8,6 +8,7 @@ const EMAIL_SEND = 'EMAIL_SEND'
 const INVOICE_ISSUE = 'INVOICE_ISSUE'
 const INVOICE_DOWNLOAD = 'INVOICE_DOWNLOAD'
 const INVOICE_INIT = 'INVOICE_INIT'
+const INVOICE_EXPIRE = 'INVOICE_EXPIRE'
 
 export const fetchInvoice = (id) => {
   return (dispatch) => {
@@ -28,8 +29,9 @@ export const notifyCustomer = (params, type) => {
   }
 }
 
-export const issueInvoice = (invoice) => {
+export const issueInvoice = (params) => {
   return (dispatch) => {
+    let invoice = new Invoice(params)
     return dispatch({
       type: INVOICE_ISSUE,
       payload: invoice.markAsIssued()
@@ -56,6 +58,16 @@ export const initializeInvoice = () => {
   }
 }
 
+export const expireInvoice = (params) => {
+  return (dispatch) => {
+    let invoice = new Invoice(params)
+    return dispatch({
+      type: INVOICE_EXPIRE,
+      payload: invoice.expire()
+    })
+  }
+}
+
 let initialState = {
   loading: true,
   invoice: {
@@ -71,6 +83,7 @@ export default function (state = initialState, action) {
       return set(state, 'loading', true)
 
     case `${INVOICE_ISSUE}::SUCCESS`:
+    case `${INVOICE_EXPIRE}::SUCCESS`:
     case `${INVOICE_FETCH}::SUCCESS`:
     case `${INVOICE_CREATE}::SUCCESS`:
     case `${INVOICE_EDIT}::SUCCESS`:

@@ -35,7 +35,13 @@ class Notification extends Component {
         ref={(notificationEle) => { this.notificationEle = notificationEle }}
         class={`Notification ${type === 'success' ? 'Notification--success' : 'Notification--error'}`}>
         {
-          typeof message === 'function' ? message() : message
+          typeof message === 'function' ?
+            message() : Array.isArray(message) ?
+              <ul class='list-unstyled'>
+                {
+                  message.map((msg) => <li key={+new Date()}>{msg}</li>)
+                }
+              </ul> : message
         }
         {
           showClose && <i class='fa fa-close' onClick={this.close}></i>
