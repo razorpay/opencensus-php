@@ -209,7 +209,11 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        return [$invoice->getPdfDisplayName(), $this->core->getInvoicePdf($invoice)];
+        $displayName = $invoice->getPdfDisplayName();
+
+        $path = $this->core->getInvoicePdf($invoice);
+
+        return [$displayName, $path];
     }
 
     public function clearTemplatesCache(int $ttl)

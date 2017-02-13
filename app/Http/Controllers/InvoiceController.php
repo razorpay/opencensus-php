@@ -173,6 +173,17 @@ class InvoiceController extends Controller
     {
         list($displayName, $path) = $this->service->getInvoicePdf($id);
 
+        if ($path === null)
+        {
+            $data = [
+                'error' => [
+                    'description' => 'No pdf file found'
+                ],
+            ];
+
+            return View::make('invoice.index')->with('data', $data);
+        }
+
         $download = Request::input('download', '0');
 
         if ($download === '1')
