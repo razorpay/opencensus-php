@@ -254,12 +254,6 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
-
-            $setlHandler = (new Settlement\Handler($setl));
-
-            $setlHandler->process($holdMerchantFunds);
-
             $this->repo->saveOrFail($setl);
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
