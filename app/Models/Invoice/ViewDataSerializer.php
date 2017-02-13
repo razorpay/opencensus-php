@@ -26,12 +26,10 @@ class ViewDataSerializer extends Base\Core
      * Returns view data (few formatted for view purpose) of invoice,
      * to be used in hosted page, pdf generation, mails etc.
      *
-     * @param string $mode
-     *
      * @return array
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function get(string $mode)
+    public function get()
     {
         if ($this->invoice->isDraft())
         {
@@ -45,7 +43,7 @@ class ViewDataSerializer extends Base\Core
         $keyId = $this->repo->key
                             ->getKeysForMerchant($this->merchant->getId())
                             ->first()
-                            ->getPublicKey($mode);
+                            ->getPublicKey($this->mode);
 
         $merchantData = $this->getFormattedMerchantDataForView();
 

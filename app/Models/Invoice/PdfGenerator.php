@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Invoice;
 
-use Illuminate\Support\Facades\Redis;
+use Cache;
 use Requests;
 use Config;
 use mikehaertl\wkhtmlto\Pdf;
@@ -21,7 +21,7 @@ class PdfGenerator extends Base\Core
 
     const INVOICE_PDF_TEMPLATES_KEY = 'invoices.pdf.templates';
 
-    const REDIS_DEFAULT_TTL         = 900; // In seconds (=15 min)
+    const CACHE_DEFAULT_TTL         = 900; // In seconds (=15 min)
 
     const TEMPLATE_FILE             = 'template_file';
     const CSS_FILE                  = 'css_file';
@@ -38,7 +38,7 @@ class PdfGenerator extends Base\Core
 
     protected $invoicejsBaseUrl;
     protected $invoice;
-    protected $redis;
+    protected $cache;
 
     public function __construct(Entity $invoice)
     {
@@ -48,12 +48,12 @@ class PdfGenerator extends Base\Core
 
         $this->invoicejsBaseUrl = Config::get('app.cdn_v1_url');
 
-        $this->redis = Redis::getFacadeRoot();
+        $this->cache = Cache::getFacadeRoot();
     }
 
-    public function generate(string $mode)
+    public function generate()
     {
-        $viewPayload = (new ViewDataSerializer($this->invoice))->get($mode);
+        $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $timeStarted = microtime(true);
 
@@ -71,7 +71,7 @@ class PdfGenerator extends Base\Core
             ]);
 
         return (new FileStore\Creator())
-                    ->name($this->invoice->getPdfKey())
+                    ->name($this->invoice->getPdfFilename())
                     ->content($pdfContent)
                     ->extension(FileStore\Format::PDF)
                     ->mime('application/pdf')
@@ -129,7 +129,7 @@ class PdfGenerator extends Base\Core
 
     protected function getFilesFromRedisOrRemote()
     {
-        $result = $this->redis->get(self::INVOICE_PDF_TEMPLATES_KEY);
+        $result = $this->cache->get(self::INVOICE_PDF_TEMPLATES_KEY);
 
         if ($result !== null)
         {
@@ -142,7 +142,7 @@ class PdfGenerator extends Base\Core
 
         $result[self::CSS_FILE] = $this->getFileFromRemote(self::INVOICE_PDF_CSS_PATH);
 
-        $this->redis->setex(self::INVOICE_PDF_TEMPLATES_KEY, self::REDIS_DEFAULT_TTL, json_encode($result));
+        $this->cache->put(self::INVOICE_PDF_TEMPLATES_KEY, json_encode($result), self::CACHE_DEFAULT_TTL);
 
         return $result;
     }

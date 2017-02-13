@@ -123,16 +123,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function getCurrentAddressOfType(string $type)
-    {
-        $app  = App::getFacadeRoot();
-        $repo = $app['repo'];
-
-        $address = $repo->address->fetchPrimaryAddressOfEntityOfType($this, $type);
-
-        return $address;
-    }
-
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- ACCESSORS -----------------------------------

@@ -2449,7 +2449,6 @@ return [
         'response' => [
             'content' => [
                 'total_invoices_count' => 1,
-                'invoice_ids'          => ['1000001invoice'],
                 'failed_invoice_ids'   => [],
             ],
         ],

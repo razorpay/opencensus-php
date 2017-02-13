@@ -27,7 +27,6 @@ class Core extends Base\Core
     protected $pdfGenerator;
     protected $slack;
     protected $slackTechLogsChannel;
-    protected $mode;
 
     public function __construct()
     {
@@ -40,11 +39,6 @@ class Core extends Base\Core
         $this->slack = $this->app['slack'];
 
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
-    }
-
-    public function setMode(string $mode)
-    {
-        $this->mode = $mode;
     }
 
     public function setPdfGenerator(Entity $invoice)
@@ -112,7 +106,10 @@ class Core extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
 
-        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice));
+        if ($invoice->isIssued())
+        {
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice));
+        }
 
         return $invoice;
     }
@@ -277,13 +274,11 @@ class Core extends Base\Core
 
         $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
+        $pdfPath = null;
+
         if ($medium === NotifyMedium::EMAIL)
         {
-            $pdfPath = $this->getInvoicePdf($invoice);
-        }
-        else
-        {
-            $pdfPath = null;
+            $pdfPath = $this->getInvoicePdfIfExistsOrCreate($invoice);
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
@@ -334,7 +329,6 @@ class Core extends Base\Core
 
         $summary = [
             'total_invoices_count' => $invoices->count(),
-            'invoice_ids'          => $invoices->getIds(),
             'failed_invoice_ids'   => [],
         ];
 
@@ -448,7 +442,24 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoice);
     }
 
-    public function getInvoicePdf(Entity $invoice, bool $new = false)
+    public function getInvoicePdfIfExistsOrCreate(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        $pdfPath = $this->getInvoicePdf($invoice);
+
+        if ($pdfPath !== null)
+        {
+            return $pdfPath;
+        }
+
+        return $this->createInvoicePdf($invoice);
+    }
+
+    public function getInvoicePdf(Entity $invoice)
     {
         if ($invoice->isTypeInvoice() === false)
         {
@@ -457,15 +468,28 @@ class Core extends Base\Core
 
         $pdf = $invoice->pdf();
 
-        if (($pdf !== null) and ($new === false))
+        if ($pdf === null)
         {
-            $pdfFile = (new FileStore\Accessor)
-                        ->id($pdf->getId())
-                        ->merchantId($invoice->getMerchantId())
-                        ->getFile();
-
-            return $pdfFile;
+            return null;
         }
+
+        return (new FileStore\Accessor)
+                    ->id($pdf->getId())
+                    ->merchantId($invoice->getMerchantId())
+                    ->getFile();
+    }
+
+    public function createInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        //
+        // Single PdfGenerator instance created as part of this class's member,
+        // used multiple times in following line with retry.
+        //
 
         $this->setPdfGenerator($invoice);
 
@@ -548,8 +572,10 @@ class Core extends Base\Core
         }
     }
 
-    protected function generatePdfWithRetry(string $id, int $attempt = 1)
+    protected function generatePdfWithRetry(string $id, int $attempt = 0)
     {
+        ++$attempt;
+
         if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS)
         {
             return null;
@@ -557,7 +583,7 @@ class Core extends Base\Core
 
         try
         {
-            return $this->pdfGenerator->generate($this->mode);
+            return $this->pdfGenerator->generate();
         }
         catch (\Throwable $e)
         {
@@ -571,7 +597,7 @@ class Core extends Base\Core
                 ]
             );
 
-            $this->generatePdfWithRetry($id, ++$attempt);
+            $this->generatePdfWithRetry($id, $attempt);
         }
     }
 }

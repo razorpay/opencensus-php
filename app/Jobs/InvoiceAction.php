@@ -20,6 +20,9 @@ class InvoiceAction extends Job implements ShouldQueue
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
 
+    const JOB_DELETED          = 'job_deleted';
+    const JOB_RELEASED         = 'job_released';
+
     //
     // Following are the events handled
     //
@@ -75,10 +78,17 @@ class InvoiceAction extends Job implements ShouldQueue
 
     private function init()
     {
-        \Database\DefaultConnection::set($this->mode);
-
         $app = App::getFacadeRoot();
+
         $this->trace = $app['trace'];
+
+        //
+        // Sets app mode as well as db connection
+        //
+
+        $this->app['rzp.mode'] = $this->mode;
+
+        \Database\DefaultConnection::set($this->mode);
 
         $this->handler = 'handle' . studly_case($this->event);
 
@@ -93,22 +103,20 @@ class InvoiceAction extends Job implements ShouldQueue
         }
 
         $this->core = new Invoice\Core;
-
-        $this->core->setMode($this->mode);
     }
 
     // ------------------------- Handlers for various events -------------------------
 
     private function handleUpdated()
     {
-        $pdfPath = $this->core->getInvoicePdf($this->invoice, true);
+        $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
         (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
     }
 
     private function handleIssued()
     {
-        $pdfPath = $this->core->getInvoicePdf($this->invoice);
+        $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
         (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
     }
@@ -120,19 +128,14 @@ class InvoiceAction extends Job implements ShouldQueue
 
     private function handleAuthorized()
     {
-        $pdfPath = $this->core->getInvoicePdf($this->invoice, true);
+        $this->core->createInvoicePdf($this->invoice);
     }
 
     // ------------------------------------------------------------
 
     private function handleException(\Throwable $e)
     {
-        $this->trace->traceException(
-            $e,
-            Trace::ERROR,
-            TraceCode::INVOICE_ACTION_JOB_ERROR,
-            $this->getTracePayload()
-        );
+        $jobAction = self::JOB_DELETED;
 
         if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
         {
@@ -141,7 +144,16 @@ class InvoiceAction extends Job implements ShouldQueue
         else
         {
             $this->release(self::RELEASE_WAIT_SECS);
+
+            $jobAction = self::JOB_RELEASED;
         }
+
+        $this->trace->traceException(
+            $e,
+            Trace::ERROR,
+            TraceCode::INVOICE_ACTION_JOB_ERROR,
+            $this->getTracePayload(['job_action' => $jobAction])
+        );
     }
 
     private function getTracePayload(array $with = [])

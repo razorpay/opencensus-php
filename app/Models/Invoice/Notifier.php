@@ -69,12 +69,12 @@ class Notifier extends Base\Core
             return;
         }
 
-        if ($this->invoice->getEmailStatus() === NotifyStatus::PENDING)
+        if ($this->invoice->getEmailStatus() !== null)
         {
             $this->emailInvoiceIssuedToCustomer();
         }
 
-        if ($this->invoice->getSmsStatus() === NotifyStatus::PENDING)
+        if ($this->invoice->getSmsStatus() !== null)
         {
             $this->smsInvoiceIssuedToCustomer();
         }
@@ -349,7 +349,10 @@ class Notifier extends Base\Core
 
             $sent = $this->emailInvoiceExpiringToCustomer();
 
-            if ($sent === true) ++$totalSent;
+            if ($sent === true)
+            {
+                ++$totalSent;
+            }
         }
 
         return $totalSent;

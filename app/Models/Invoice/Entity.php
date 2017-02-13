@@ -436,12 +436,12 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Returns key to be used a pdf file path in s3/local store.
+     * Returns string to be used a pdf file path in s3/local store.
      * Format: pdfs/{invoiceId}_{epoch}
      *
      * @return string
      */
-    public function getPdfKey()
+    public function getPdfFilename()
     {
         return self::PDF_PREFIX . $this->getId() . '_' . time();
     }
@@ -476,7 +476,13 @@ class Entity extends Base\PublicEntity
         $this->setCustomerContact($customer->getContact());
         $this->setCustomerEmail($customer->getEmail());
 
-        $billingAddress = $customer->getCurrentAddressOfType(Address\Type::BILLING_ADDRESS);
+        //
+        // Sets billing address
+        //
+
+        $repo = App::getFacadeRoot()['repo'];
+
+        $billingAddress = $repo->address->fetchPrimaryAddressOfEntityOfType($customer, Address\Type::BILLING_ADDRESS);
 
         if ($billingAddress !== null)
         {
@@ -734,10 +740,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SCHEDULED_AT, $scheduledAt);
     }
 
+    /**
+     * Generates status based on draft key's value sent in request param.
+     * If sent to 0, means created/stays in DRAFT status, otherwise if sent to 1,
+     * means will be moved to ISSUED state.
+     *
+     * @param array $input
+     *
+     * @return null
+     */
     public function generateStatus($input)
     {
-        if (isset($input[self::DRAFT]) and
-            ($input[self::DRAFT] === '1'))
+        if (isset($input[self::DRAFT]) and ($input[self::DRAFT] === '1'))
         {
             $this->setStatus(Status::DRAFT);
         }
@@ -831,7 +845,7 @@ class Entity extends Base\PublicEntity
     {
         return $this->files()
                     ->where(FileStore\Entity::TYPE, '=', FileStore\Type::INVOICE_PDF)
-                    ->orderBy(FileStore\Entity::CREATED_AT, 'desc')
+                    ->latest()
                     ->first();
     }
 

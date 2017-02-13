@@ -193,18 +193,4 @@ class InvoiceController extends Controller
 
         return Response::file($path);
     }
-
-    /**
-     * Clears (basically expires) templates (used for pdf generation) cached results.
-     *
-     * @param int $ttl - Integer value ttl after which the cached key should expire
-     *
-     * @return ApiResponse
-     */
-    public function clearTemplatesCache(int $ttl)
-    {
-        $success = $this->service->clearTemplatesCache($ttl);
-
-        return ApiResponse::json(['success' => boolval($success)]);
-    }
 }
