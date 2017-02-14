@@ -163,6 +163,14 @@ class TokenEx
                 // check curl error, increase retry count if timeout
                 if (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT)
                 {
+                    $this->trace->info(
+                        TraceCode::TOKENEX_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'type'    => $e->getType(),
+                            'data'    => $e->getData()
+                        ]);
+
                     $retryCount++;
                 }
 

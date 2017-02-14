@@ -418,6 +418,7 @@ class TraceCode
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
+    const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
