@@ -357,6 +357,17 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
+     * For the banks that have dailyfile generation,
+     * we map IFSC codes to Gateways
+     *
+     * @var array
+     */
+    public static $dailyFileNetbankingGateways = array(
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+
+    /**
      * List of gateways which support netbanking, either in test or live mode.
      *
      * @var array

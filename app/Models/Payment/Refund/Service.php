@@ -37,7 +37,7 @@ class Service extends Base\Service
         switch ($method)
         {
             case Payment\Method::NETBANKING:
-                $gateways = Payment\Gateway::$netbankingToGatewayMap;
+                $gateways = Payment\Gateway::$dailyFileNetbankingGateways;
 
                 $type = Payment\Entity::BANK;
 
@@ -51,7 +51,6 @@ class Service extends Base\Service
                 // Removing kotak from gateways list/
                 // Should not be run along with others.
                 unset($gateways[IFSC::KKBK]);
-                unset($gateways[IFSC::AIRP]);
                 break;
 
             case Payment\Method::WALLET:
