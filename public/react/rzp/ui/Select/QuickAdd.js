@@ -5,7 +5,7 @@ const QuickAdd = ({ select, label, appendSearchTerm, onClick }) => {
     <div
       class='quick-create'
       onClick={() => {
-        onClick(...arguments)
+        onClick(select)
         select.close()
       }}
     >

@@ -28,13 +28,15 @@ export default class InvoiceLineItem extends Component {
     this.selectItemAndCloseModal = ::this.selectItemAndCloseModal
   }
 
-  quickCreateItem() {
+  quickCreateItem({ searchTerm = '' }) {
     this.props.openModal({
       size: 'small',
       component: <ItemCreation
         saveLabel='Create and add this item'
         onSave={this.selectItemAndCloseModal}
-        closeModal={this.props.closeModal}
+        item={{
+          name: searchTerm
+        }}
       />
     })
   }

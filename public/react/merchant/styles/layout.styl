@@ -112,6 +112,10 @@ body.ReactModal__Body--open {
   top: 45px;
 }
 
+.DateInput__input {
+  cursor: pointer;
+}
+
 .DateInput {
   font-weight: inherit;
   font-size: 14px;
@@ -297,6 +301,29 @@ tr:hover .row-action > .btn-group {
 .breadcrumb__backNav--heading + .label-draft {
   margin-left: 5px;
 }
+
+a.breadcrumb__backNav--link {
+  color: #7266ba;
+}
+
+.breadcrumb > li + li {
+  padding-left: 16px;
+  margin-left: 16px;
+  position: relative;
+
+  &:before {
+    content: '';
+    display: block;
+    height: 24px;
+    border-left: 1px solid rgba(0, 0, 0, 0.54);
+    position: absolute;
+    left: 0;
+    bottom: -2px;
+    transform: rotate(24deg)
+  }
+}
+
+
 
 .rzpChecbox {
   margin-bottom: 5px;

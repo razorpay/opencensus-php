@@ -36,11 +36,18 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
         />
       }
       afterOptionsComponent={(props) =>
-        showQuickAdd && <QuickAddComponent {...props} onClick={onQuickAdd} />
+        showQuickAdd &&
+          <QuickAddComponent
+            {...props}
+            onClick={onQuickAdd}
+          />
       }
       onChange={(option = '') => {
         // input.onChange(option[input.name] || '')
         onOptionChange(option)
+      }}
+      onEnter={(props) => {
+        showQuickAdd && onQuickAdd(props)
       }}
     />
   )

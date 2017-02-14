@@ -7,10 +7,14 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import { required } from 'rzp/utils/validators'
 import * as ItemActions from 'merchant/modules/items'
+import * as ModalActions from 'merchant/modules/modals'
 
 @connect(
   null,
-  ItemActions
+  {
+    ...ItemActions,
+    ...ModalActions
+  }
 )
 @reduxForm({
   form: 'newItem'
@@ -42,12 +46,16 @@ export default class AddItem extends Component {
   }
 
   render() {
-    const { handleSubmit, invalid } = this.props
+    const {
+      handleSubmit,
+      invalid,
+      item,
+    } = this.props
 
     return (
       <div>
         <ModalHeader
-          title={this.props.item ? 'Edit Item' : 'New Item'}
+          title={ item && item.id ? 'Edit Item' : 'New Item' }
           onCloseClick={this.props.closeModal}
         />
 

@@ -7,6 +7,7 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { required, email, phone } from 'rzp/utils/validators'
 import * as CustomerActions from 'merchant/modules/customers'
+import * as ModalActions from 'merchant/modules/modals'
 
 function validate(values) {
   let errors = {}
@@ -20,7 +21,10 @@ function validate(values) {
 
 @connect(
   null,
-  CustomerActions
+  {
+    ...CustomerActions,
+    ...ModalActions
+  }
 )
 @reduxForm({
   form: 'newCustomer',
@@ -52,12 +56,16 @@ export default class AddCustomer extends Component {
   }
 
   render() {
-    const { handleSubmit, invalid } = this.props
+    const {
+      handleSubmit,
+      invalid,
+      customer,
+    } = this.props
 
     return (
       <div>
         <ModalHeader
-          title={this.props.customer ? 'Edit Customer' : 'New Customer'}
+          title={ customer && customer.id ? 'Edit Customer' : 'New Customer' }
           onCloseClick={this.props.closeModal}
         />
 

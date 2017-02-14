@@ -153,13 +153,15 @@ export default class InvoicesNewContainer extends Component {
     this.props.closeModal()
   }
 
-  quickCreateCustomer() {
+  quickCreateCustomer({ searchTerm = '' }) {
     this.props.openModal({
       size: 'small',
       component: <CustomerCreation
         saveLabel='Create and add this customer'
         onSave={this.selectCustomerAndCloseModal}
-        closeModal={this.props.closeModal}
+        customer={{
+          name: searchTerm
+        }}
       />
     })
   }
@@ -360,13 +362,6 @@ export default class InvoicesNewContainer extends Component {
     let locked = isPaid || isExpired
 
     let invoiceTotal = this.calculateInvoiceTotal()
-    let customerDetails = ''
-    if (customer) {
-      let parts = customer.displayName.split('(')
-      if (parts.length > 1) {
-        customerDetails = parts[1].replace(')', '')
-      }
-    }
 
     return (
       <div class='react-root'>
@@ -475,10 +470,13 @@ export default class InvoicesNewContainer extends Component {
                           />
 
                           {
-                            customerDetails ?
+                            customer &&
                               <div class='inv__customerdetails'>
-                                <div>{customerDetails}</div>
-                              </div> : ''
+                                { customer.name && <div>{customer.contact}</div> }
+                                {
+                                  customer.name || customer.contact ? <div>{customer.email}</div> : ''
+                                }
+                              </div>
                           }
                         </div>
                         <div class='col-md-6 text-right'>

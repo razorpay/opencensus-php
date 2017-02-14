@@ -3653,9 +3653,9 @@ react-portal@^3.0.0:
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/react-portal/-/react-portal-3.0.0.tgz#9304fce836e8a3216b22588f8dc91b447728f0ae"
 
-react-power-select@^0.0.6:
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/react-power-select/-/react-power-select-0.0.6.tgz#93ae51f248a5fb8df96f35fab0e07a431b48b3cf"
+react-power-select@^0.0.7:
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/react-power-select/-/react-power-select-0.0.7.tgz#348a8c0521bcd05c76fe06ffac0558cc2a34db46"
   dependencies:
     react-tether "^0.5.2"
 
