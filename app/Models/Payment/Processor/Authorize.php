@@ -1304,6 +1304,8 @@ trait Authorize
         // Trigger notification events for authorization
         $notifier = new Notify($this->payment);
 
+        $hasInvoice = $this->payment->hasInvoice();
+
         if ($wasFailed)
         {
             $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
@@ -1315,11 +1317,11 @@ trait Authorize
                 return;
             }
 
-            $trigger = Notify::FAILED_TO_AUTHORIZED;
+            $trigger = $hasInvoice ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::FAILED_TO_AUTHORIZED;
         }
         else
         {
-            $trigger = Notify::AUTHORIZED;
+            $trigger = $hasInvoice ? Notify::INVOICE_PAYMENT_AUTHORIZED : Notify::AUTHORIZED;
         }
 
         $notifier->trigger($trigger);

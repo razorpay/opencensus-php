@@ -46,7 +46,7 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
-    public function getInvoicesForNotification($medium)
+    public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -57,14 +57,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getExpiredInvoices()
+    public function getInvoicesForExpiringNotificationToCustomer()
+    {
+        //
+        // To be implemented later, As incremental feature.
+        //
+
+        return new Base\PublicCollection;
+    }
+
+    public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::DUE_BY, '<', $currentTime)
+                    ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    public function getNonFailedPaymentsCount(Entity $invoice)
+    {
+        return $invoice->payments()
+                       ->where(Payment\Entity::STATUS, '!=', Payment\Status::FAILED)
+                       ->count();
     }
 
     protected function addQueryParamPaymentId($query, $params)

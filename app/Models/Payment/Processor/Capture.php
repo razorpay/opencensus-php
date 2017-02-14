@@ -494,16 +494,42 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
-        $this->eventOrderPaid();
-        $this->notifyInvoicePaid();
+        $this->eventPaymentCaptured();
+
+        $this->notifyPaymentCaptured();
 
         //
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+    }
 
-        $notifier = new Notify($this->payment);
-        $notifier->trigger(Notify::CAPTURED);
+    /**
+     * Fires multiple events after payment is captured:
+     * - api.order.paid
+     * - api.invoice.paid
+     *
+     * @return null
+     */
+    protected function eventPaymentCaptured()
+    {
+        $this->eventOrderPaid();
+
+        $this->eventInvoicePaid();
+    }
+
+    /**
+     * Triggers notifications after payment is captured.
+     *
+     * @return null
+     */
+    protected function notifyPaymentCaptured()
+    {
+        $hasInvoice = $this->payment->hasInvoice();
+
+        $event = $hasInvoice ? Notify::INVOICE_PAYMENT_CAPTURED : Notify::CAPTURED;
+
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function eventOrderPaid()
@@ -516,40 +542,15 @@ trait Capture
         }
     }
 
-    protected function notifyInvoicePaid()
+    protected function eventInvoicePaid()
     {
         $payment = $this->payment;
-        $invoice = null;
 
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasInvoice() === false)
         {
             return;
         }
 
-        $order = $payment->order;
-        $invoice = $order->invoice;
-
-        if ($invoice === null)
-        {
-            return;
-        }
-
-        $this->eventInvoicePaid($payment);
-
-        $this->communicateInvoicePaid($invoice);
-    }
-
-    protected function communicateInvoicePaid(Invoice\Entity $invoice)
-    {
-        $notifier = new Notify($this->payment, $invoice);
-
-        $trigger = Notify::INVOICE_PAID;
-
-        $notifier->trigger($trigger);
-    }
-
-    protected function eventInvoicePaid($payment)
-    {
         $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 
