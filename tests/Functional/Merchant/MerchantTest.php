@@ -644,6 +644,25 @@ class MerchantTest extends TestCase
         $this->assertEquals(0, $count);
     }
 
+    public function testGetCheckoutPreferencesWithOffer()
+    {
+        $this->markTestSkipped('Skipping till new offers changes are merged');
+
+        $this->ba->publicAuth();
+
+        $offer = $this->fixtures->offer->createCardOffer();
+
+        $content = $this->startTest();
+
+        $countCardOffers = count($content['offers']['card']['items']);
+
+        $countWalletOffers = count($content['offers']['wallet']['items']);
+
+        $this->assertEquals(1, $countCardOffers);
+
+        $this->assertEquals(0, $countWalletOffers);
+    }
+
     public function testGetCheckoutRouteWithSavedLocal()
     {
         $this->ba->publicAuth();

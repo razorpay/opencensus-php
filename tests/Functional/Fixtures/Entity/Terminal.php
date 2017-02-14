@@ -594,6 +594,7 @@ class Terminal extends Base
             'id'                        => 'ShrdHdfcEmiTrm',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
@@ -631,6 +632,7 @@ class Terminal extends Base
             'id'                        => $termId,
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay hdfc',
             'gateway_terminal_id'       => 'account hdfc',
@@ -647,6 +649,7 @@ class Terminal extends Base
         $defaultValues = [
             'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay hdfc',
             'gateway_terminal_id'       => 'account hdfc',

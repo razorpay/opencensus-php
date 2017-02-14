@@ -50,8 +50,8 @@ return [
                     ]
                 ],
                 'status'       => 'issued',
-                'sms_status'   => 'sent',
-                'email_status' => 'sent',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
                 'view_less'    => true,
                 'amount'       => 100000,
                 'currency'     => 'INR',
@@ -70,7 +70,7 @@ return [
                     'email'     => 'test@razorpay.com',
                     'contact'   => '9999999999',
                     'name'      => 'test',
-                    'shipping_address' => [
+                    'billing_address' => [
                         'line1'   => 'Line One Etc',
                         'line2'   => 'Line Two Etc',
                         'city'    => 'Bangalore',
@@ -95,10 +95,26 @@ return [
         'response' => [
             'content' => [
                 'receipt'       => null,
+                'customer'      => [
+                    'name' => 'test',
+                    'email' => 'test@razorpay.com',
+                    'contact' => '9999999999',
+                    'billing_address' => [
+                        'type'    => "billing_address",
+                        'primary' => true,
+                        'line1'   => "Line One Etc",
+                        'line2'   => "Line Two Etc",
+                        'zipcode' => "560078",
+                        'city'    => "Bangalore",
+                        'state'   => "Karnataka",
+                        'country' => "in",
+                    ]
+                ],
                 'customer_details' => [
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '9999999999',
                     'customer_name'    => 'test',
+                    'customer_address' => null,
                 ],
                 'line_items' => [
                     [
@@ -109,8 +125,8 @@ return [
                     ]
                 ],
                 'status'       => 'issued',
-                'sms_status'   => 'sent',
-                'email_status' => 'sent',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
                 'date'         => null,
                 'type'         => 'ecod',
                 'view_less'    => true,
@@ -153,13 +169,50 @@ return [
                     ]
                 ],
                 'status' => 'issued',
-                'sms_status' => 'sent',
-                'email_status' => 'sent',
+                'sms_status' => 'pending',
+                'email_status' => 'pending',
                 'date' => 1480666664,
                 'view_less' => true,
                 'amount' => 100000
             ],
         ],
+    ],
+
+    'testCreateLinkWithSource' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'      => 100,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+                'source'      => 'seller_app',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'line_items'   => [],
+                'status'       => 'issued',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
+                'view_less'    => true,
+                'amount'       => 100,
+            ],
+        ],
+    ],
+
+    'testCreateLinkWithInvalidSource' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'amount'      => 100,
+                'description' => 'Sample Description',
+                'type'        => 'link',
+                'source'      => 'random_app',
+            ],
+        ],
+        'response' => [],
     ],
 
     'testCreateInvoiceWithMultipleLineItems' => [
@@ -209,8 +262,8 @@ return [
                 ],
                 'currency'     => 'INR',
                 'status'       => 'issued',
-                'sms_status'   => 'sent',
-                'email_status' => 'sent',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
                 'view_less'    => true,
                 'amount'       => 500000,
                 'description'  => 'Just an invoice summary',
@@ -297,8 +350,8 @@ return [
                 ],
                 'currency'     => 'INR',
                 'status'       => 'issued',
-                'sms_status'   => 'sent',
-                'email_status' => 'sent',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
                 'view_less'    => true,
                 'amount'       => 600000
             ],
@@ -376,7 +429,7 @@ return [
                 ],
                 'status' => 'issued',
                 'sms_status' => null,
-                'email_status' => 'sent',
+                'email_status' => 'pending',
                 'view_less' => true,
             ],
         ],
@@ -443,10 +496,10 @@ return [
                 'entity'           => 'invoice',
                 'receipt'          => null,
                 'customer_details' => [
-                'customer_name'    => 'Abc Def',
-                'customer_email'   => null,
-                'customer_contact' => null,
-                'customer_address' => null
+                    'customer_name'    => 'Abc Def',
+                    'customer_email'   => null,
+                    'customer_contact' => null,
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -487,7 +540,29 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Invoice with id inv_1000000invoice is not issued yet',
+                    'description' => 'Operation not allowed for invoice in draft status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testInvoiceViewWithExpiredInvoice' => [
+        'request' => [
+            'url'       => '/t/inv_1000000invoice',
+            'method'    => 'get',
+            'content'   => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in expired status.',
                 ],
             ],
             'status_code' => 400,
@@ -523,7 +598,7 @@ return [
                     'customer_name'    => 'Abc Def',
                     'customer_email'   => null,
                     'customer_contact' => null,
-                    'customer_address' => null
+                    'customer_address' => null,
                 ],
                 'line_items'           => [
                 [
@@ -537,8 +612,8 @@ return [
                 'payment_id'           => null,
                 'status'               => 'issued',
                 'paid_at'              => null,
-                'sms_status'           => null,
-                'email_status'         => null,
+                'sms_status'           => 'pending',
+                'email_status'         => 'pending',
                 'amount'               => 1000,
                 'description'          => null,
                 'notes'                => [],
@@ -653,8 +728,8 @@ return [
                 ],
                 'line_items'   => [],
                 'status'       => 'issued',
-                'sms_status'   => 'sent',
-                'email_status' => 'sent',
+                'sms_status'   => 'pending',
+                'email_status' => 'pending',
                 'view_less'    => true,
                 'amount'       => 1000,
                 'description'  => 'For special service',
@@ -876,6 +951,44 @@ return [
         ],
     ],
 
+    'testCreateInvoiceWithBadExpiredBy' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'receipt'       => "00000000000001",
+                'customer'      => [
+                    'email'     => 'test@razorpay.com',
+                    'contact'   => '9999999999',
+                    'name'      => 'test',
+                ],
+                'line_items'    => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'currency'      => 'INR',
+                'expire_by'     => 1484512480,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'expire_by should be at least 1 day after the time of issue.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     // ------------------------------------------------------------
     // Updation of invoice
     // ------------------------------------------------------------
@@ -958,6 +1071,44 @@ return [
                 'short_url'            => null,
                 'view_less'            => true,
                 'type'                 => 'invoice',
+            ]
+        ]
+    ],
+
+    'testUpdateDraftInvoiceAndIssue' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'      => 'inv_receipt_0001',
+                'terms'        => 'Updated terms & conditions',
+                'draft'        => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'receipt'              => 'inv_receipt_0001',
+                'customer_id'          => 'cust_100000customer',
+                'customer_details'     => [
+                    'customer_name'    => 'test',
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_address' => null,
+                ],
+                'line_items'           => [
+                    [
+                        'id'          => 'li_100000lineitem',
+                        'quantity'    => 1,
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'currency'    => 'INR',
+                    ],
+                ],
+                'status'               => 'issued',
+                'terms'                => 'Updated terms & conditions',
             ]
         ]
     ],
@@ -1076,7 +1227,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'amount cannot be updated if invoice has line_items',
+                    'description' => 'amount cannot be updated if payment link has line_items',
                 ],
             ],
             'status_code' => 400,
@@ -1175,7 +1326,6 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
-                'date'         => 1480506888,
                 'terms'        => 'Updated terms & conditions',
                 'notes'        => [
                     'new_key'  => 'new_value'
@@ -1199,7 +1349,7 @@ return [
                 'payment_id'           => null,
                 'status'               => 'issued',
                 'paid_at'              => null,
-                'date'                 => 1480506888,
+                'date'                 => null,
                 'terms'                => 'Updated terms & conditions',
                 'amount'               => 100000,
                 'description'          => null,
@@ -1216,7 +1366,6 @@ return [
             'method'    => 'patch',
             'content'   => [
                 'receipt'      => 'inv_receipt_0001',
-                'date'         => 1480506888,
                 'terms'        => 'Updated terms & conditions',
                 'notes'        => [
                     'new_key'  => 'new_value'
@@ -1332,7 +1481,7 @@ return [
         ],
     ],
 
-    'testDeleteDraftInvoice' => [
+    'testDeleteInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'delete',
@@ -1343,7 +1492,7 @@ return [
         ]
     ],
 
-    'testDeleteIssuedInvoice' => [
+    'testDeletePaidInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice',
             'method'    => 'delete',
@@ -1353,7 +1502,7 @@ return [
             'content' => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Operation not allowed for invoice in issued status.',
+                    'description' => 'Operation not allowed for invoice in paid status.',
                 ],
             ],
             'status_code' => 400,
@@ -1364,7 +1513,7 @@ return [
         ],
     ],
 
-    'testAddLineItemsToInvoice' => [
+    'testAddLineItemToInvoice' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -1386,7 +1535,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'customer_address' => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1440,7 +1589,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'customer_address' => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1472,6 +1621,42 @@ return [
                 'currency'         => 'INR',
             ]
         ]
+    ],
+
+    'testAddTooManyLineItemsToInvoice' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice/line_items',
+            'method'    => 'post',
+            'content'   => [
+                [
+                    'name'     => 'Very new item',
+                    'amount'   => 100,
+                ],
+                [
+                    'name'     => 'Very new item 2',
+                    'amount'   => 200,
+                    'quantity' => 2,
+                ],
+                [
+                    'name'     => 'Very new item 3',
+                    'amount'   => 300,
+                    'quantity' => 2,
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The line items may not have more than 20 items in total.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
     ],
 
     'testAddManyLineItemsToInvoiceWithBadData' => [
@@ -1512,7 +1697,7 @@ return [
         ],
     ],
 
-    'testAddLineItemsToInvoiceWithBadData' => [
+    'testAddLineItemToInvoiceWithBadData' => [
         'request' => [
             'url'       => '/invoices/inv_1000000invoice/line_items',
             'method'    => 'post',
@@ -1557,7 +1742,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'customer_address' => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1596,7 +1781,7 @@ return [
                     'customer_name'    => 'test',
                     'customer_email'   => 'test@razorpay.com',
                     'customer_contact' => '1234567890',
-                    'customer_address' => null
+                    'customer_address' => null,
                 ],
                 'order_id'         => null,
                 'line_items'       => [
@@ -1868,6 +2053,19 @@ return [
         ],
     ],
 
+    'testSendNotificationWithEmailMode' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/notify/email',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'success' => true
+            ]
+        ],
+    ],
+
     'testSendNotificationWithSmsModeForDraftInvoice' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/notify/invalid',
@@ -2123,6 +2321,152 @@ return [
         'exception' => [
             'class'               => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_STATUS_UNAVAILABLE,
+        ],
+    ],
+
+   'testPayExpiredInvoice' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invoice is not payable in expired status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+   ],
+
+   'testPayDeletedInvoice' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'invoice is not payable as it is deleted.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+   ],
+
+    'testExpireInvoice' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'line_items' => [
+                    [
+                        'name'        => 'Some item name',
+                        'description' => 'Some item description',
+                        'amount'      => 100000,
+                        'quantity'    => 1,
+                    ]
+                ],
+                'customer_id'  => 'cust_100000customer',
+                'short_url'    => 'http://bitly.dev/2eZ11Vn',
+                'notes'        => [],
+                'status'       => 'expired',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+            ],
+        ],
+    ],
+
+    'testExpirePaymentInProgressInvoice' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/expire',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Invoice expiry failed as payment exists or is in progress for this invoice.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
+        ],
+    ],
+
+    'testExpirePaidInvocie' => [
+        'request' => [
+            'url' => '/invoices/inv_1000000invoice/expire',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'Operation not allowed for invoice in paid status.',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
+    'testExpireInvoiceWithFailedPayment' => [
+        'request' => [
+            'url'     => '/invoices/inv_1000000invoice/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'customer_details' => [
+                    'customer_email'   => 'test@razorpay.com',
+                    'customer_contact' => '1234567890',
+                    'customer_name'    => 'test',
+                    'customer_address' => null,
+                ],
+                'customer_id'  => 'cust_100000customer',
+                'short_url'    => 'http://bitly.dev/2eZ11Vn',
+                'notes'        => [],
+                'status'       => 'expired',
+                'sms_status'   => 'sent',
+                'email_status' => 'sent',
+                'view_less'    => true,
+            ],
+        ],
+    ],
+
+    'testExpireInvoices' => [
+        'request' => [
+            'url'     => '/invoices/expire',
+            'method'  => 'post',
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'total_invoices_count' => 1,
+                'failed_invoice_ids'   => [],
+            ],
         ],
     ],
 ];

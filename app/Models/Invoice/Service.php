@@ -4,9 +4,6 @@ namespace RZP\Models\Invoice;
 
 use RZP\Constants\Mode;
 use RZP\Models\Base;
-use RZP\Models\Merchant\Checkout;
-use RZP\Exception;
-
 use RZP\Models\LineItem;
 
 class Service extends Base\Service
@@ -31,6 +28,7 @@ class Service extends Base\Service
     {
         $invoice = $this->repo->invoice
                               ->findByPublicIdAndMerchant($id, $this->merchant);
+
 
         return $invoice->toArrayPublic();
     }
@@ -152,6 +150,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function expireInvoice($id)
+    {
+        $invoice = $this->repo->invoice
+                              ->findByPublicIdAndMerchant($id, $this->merchant);
+
+        $invoice = $this->core->expireInvoice($invoice);
+
+        return $invoice->toArrayPublic();
+    }
+
     public function expireInvoices()
     {
         return $this->core->expireInvoices();
@@ -171,7 +179,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    public function getInvoiceViewDetails($invoiceId)
+    public function getInvoiceViewData($invoiceId)
     {
         $routeName = $this->app['api.route']->getCurrentRouteName();
 
@@ -187,50 +195,21 @@ class Service extends Base\Service
 
         \Database\DefaultConnection::set($mode);
 
-        Entity::verifyIdAndStripSign($invoiceId);
-        $invoice = $this->repo->invoice->findOrFailPublic($invoiceId);
+        $this->app['rzp.mode'] = $mode;
 
-        if ($invoice->isDraft())
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invoice with id ' . $invoice->getPublicId() . ' is not issued yet'
-            );
-        }
+        $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
-        $merchant = $invoice->merchant;
+        return (new ViewDataSerializer($invoice))->get();
+    }
 
-        $keys = $this->repo->key->getKeysForMerchant($merchant->getId());
-        $publicKey = $keys->first()->getPublicKey($mode);
+    public function getInvoicePdf(string $id)
+    {
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $merchantDetails = [
-            'color' => $merchant->getBrandColor(),
-            'image' => $merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'  => $merchant->getBillingLabelElseName(),
-            'id'    => $merchant->getId(),
-        ];
+        $displayName = $invoice->getPdfDisplayName();
 
-        if ($merchant->getOrgId() !== null)
-        {
-            $merchantDetails['organization'] = $merchant->org->toArrayPublic();
-        }
+        $path = $this->core->getInvoicePdfIfExistsOrCreate($invoice);
 
-        // This is required so that the mode and the db connection are set.
-        // Since this is via direct auth, this will not set on its own.
-        // $this->app['basicauth']->checkAndSetKeyId($publicKey);
-
-        $viewDetails = [
-            'customer_email'    => $invoice->getCustomerEmail(),
-            'customer_contact'  => $invoice->getCustomerContact(),
-            'invoice_id'        => Entity::getSignedId($invoiceId),
-            'status'            => $invoice->getStatus(),
-            'key_id'            => $publicKey,
-            'amount'            => $invoice->order->getAmount(),
-            'environment'       => $this->app->environment(),
-            'view_less'         => $invoice->getViewLess(),
-            'merchant_details'  => $merchantDetails,
-            'payment_id'        => $invoice->getPaymentId(),
-        ];
-
-        return $viewDetails;
+        return [$displayName, $path];
     }
 }
