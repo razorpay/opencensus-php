@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
 
@@ -14,6 +15,7 @@ class MerchantFilter extends Terminal\Filter
     protected $properties = [
         'incompatible',
         'category',
+        'pharma',
         'gateway',
         'wallet',
     ];
@@ -114,6 +116,21 @@ class MerchantFilter extends Terminal\Filter
                                                                         $category2);
 
         return ($category === $merchantTerminalCategory);
+    }
+
+    public function pharmaFilter($terminal, $input)
+    {
+        $category2 = $input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($category2 === Category::PHARMA) and
+            ($acquirer === Gateway::ACQUIRER_HDFC))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function gatewayFilter($terminal, $input)
