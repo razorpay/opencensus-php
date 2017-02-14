@@ -337,7 +337,8 @@ class Gateway extends Base\Gateway
             Entity::STATUS                 => Status::CAPTURED,
         ];
 
-        if ($input['merchant_id'] === '2aTeFCKTYWwfrF')
+        if ((isset($input['merchant_id'])) and
+            ($input['merchant_id'] === '2aTeFCKTYWwfrF'))
         {
             $attributes[Entity::CURRENCY] = $input['currency'];
         }

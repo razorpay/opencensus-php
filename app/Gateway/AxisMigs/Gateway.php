@@ -558,7 +558,8 @@ class Gateway extends Base\Gateway
             'vpc_Amount'        => $input['amount'],
         );
 
-        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        if ((isset($input['payment']['merchant_id'])) and
+            ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF'))
         {
             $content['vpc_Currency'] = $input['currency'];
         }
@@ -586,7 +587,8 @@ class Gateway extends Base\Gateway
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
 
-        if ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF')
+        if ((isset($input['payment']['merchant_id'])) and
+            ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF'))
         {
             $content['vpc_Currency'] = $input['currency'];
         }
