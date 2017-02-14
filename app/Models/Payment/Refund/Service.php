@@ -26,12 +26,7 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        if (isset($input[Entity::PAYMENT_ID]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                "Input field 'payment_id' is missing",
-                Entity::PAYMENT_ID);
-        }
+        (new Validator)->validateInput('direct', $input);
 
         $paymentId = $input[Entity::PAYMENT_ID];
 
