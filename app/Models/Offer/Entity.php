@@ -37,7 +37,7 @@ class Entity extends Base\PublicEntity
     const DEFERRED = 'deferred';
 
     //Attribute lengths
-    const NAME_LENGRH                      = 25;
+    const NAME_LENGTH                      = 25;
     const PAYMENT_METHOD_LENGTH            = 10;
     const PAYMENT_METHOD_TYPE_LENTH        = 6;
     const PAYMENT_NETWORK_LENGTH           = 20;

@@ -26,7 +26,7 @@ class CreateOffers extends Migration
 
             $table->char(Offer::MERCHANT_ID, Offer::ID_LENGTH);
 
-            $table->string(Offer::NAME, Offer::NAME_LENGRH)
+            $table->string(Offer::NAME, Offer::NAME_LENGTH)
                     ->nullable();
 
             $table->string(Offer::PAYMENT_METHOD, Offer::PAYMENT_METHOD_LENGTH);
@@ -48,7 +48,7 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::FAIL_PAYMENT)
                     ->default(1);
 
-            $table->enum(Offer::TYPE, [Offer::INSTANT, Offer::DEFERRED])
+            $table->string(Offer::TYPE, 15)
                     ->default(Offer::DEFERRED);
 
             $table->integer(Offer::PERCENT_RATE)
