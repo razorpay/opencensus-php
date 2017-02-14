@@ -125,10 +125,19 @@ class Notifier extends Base\Core
 
     public function emailInvoiceIssuedToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true)
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        if (empty($customerEmail) === true)
         {
             return false;
         }
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_ISSUED_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
 
         $data = $this->getInvoiceIssuedMailPayload();
 
@@ -154,10 +163,19 @@ class Notifier extends Base\Core
 
     public function emailInvoiceExpiredToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true)
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        if (empty($customerEmail) === true)
         {
             return false;
         }
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_EXPIRED_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
 
         $data = $this->getInvoiceExpiredMailPayload();
 
@@ -207,10 +225,19 @@ class Notifier extends Base\Core
 
     protected function emailInvoiceExpiringToCustomer()
     {
-        if (empty($this->invoice->getCustomerEmail()) === true)
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        if (empty($customerEmail) === true)
         {
             return false;
         }
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_EXPIRING_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
 
         $data = $this->getInvoiceExpiringMailPayload();
 
@@ -426,7 +453,7 @@ class Notifier extends Base\Core
             'getInvoiceExpiredMailPayload' => [
                 Type::LINK    => ' Razorpay | Payment requested from %s has expired',
                 Type::ECOD    => ' Razorpay | Payment requested from %s has expired',
-                Type::INVOICE => ' Razorpay | Invoice from %s from has expired',
+                Type::INVOICE => ' Razorpay | Invoice from %s has expired',
             ],
             'getInvoiceExpiringMailPayload' => [
                 Type::LINK    => ' Razorpay | Payment request from %s is expiring',
