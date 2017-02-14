@@ -77,7 +77,8 @@ app.controller('EntitiesCtrl', [
       'wallet_olamoney',
       'wallet_airtelmoney',
       'wallet_freecharge',
-      'wallet_openwallet'
+      'wallet_openwallet',
+      'marketplace'
     ];
     var walletList = [
       'all',
@@ -120,6 +121,7 @@ app.controller('EntitiesCtrl', [
       'netbanking',
       'wallet',
       'upi',
+      'transfer',
     ];
     // This is the list of available filters
     // len==1 means a text input, rest are drop-downs
@@ -313,6 +315,7 @@ app.controller('EntitiesCtrl', [
         airtelmoney: booleanList2,
         freecharge: booleanList2,
         pricing_plan_id: ['Pricing Plan Id'],
+        parent_id: ['Marketplace Parent Id'],
         receipt_email_enabled: booleanList,
         fee_bearer: [
             'all',
@@ -394,6 +397,7 @@ app.controller('EntitiesCtrl', [
         save: booleanList,
         status: statusList,
         token_id: ['Token Id'],
+        transfer_id: ['Transfer Id'],
         verified: [
           'all',
           'null',
@@ -418,6 +422,10 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         payment_id: ['Payment Id']
       },
+      reversal: {
+        merchant_id: ['Merchant Id'],
+        transfer_id: ['Transfer Id']
+      },
       settlement: {
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
@@ -439,20 +447,22 @@ app.controller('EntitiesCtrl', [
         merchant_id: ['Merchant Id'],
         reconciled: booleanList,
         settled: booleanList,
+        on_hold: booleanList,
         settlement_id: ['Settlement Id'],
         type: [
           'all',
           'payment',
           'refund',
           'settlement',
-          'adjustment'
+          'adjustment',
+          'transfer',
+          'reversal'
         ]
       },
       transfer: {
         source_id: ['Payment/Merchant Id'],
         to_id: ['Merchant/Customer Id'],
-        merchant_id: ['Merchant Id'],
-        transaction_id: ['Transaction Id'],
+        merchant_id: ['Merchant Id']
       },
       token: {
         bank: ['Bank Code'],
