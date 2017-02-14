@@ -4,9 +4,10 @@ app.controller('ConfirmCtrl', [
   '$http',
   '$state',
   '$stateParams',
+  '$timeout',
   'alertsFactory',
   'organization',
-  function ($scope, $http, $state, $stateParams, alertsFactory, organization) {
+  function ($scope, $http, $state, $stateParams, $timeout, alertsFactory, organization) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -37,6 +38,20 @@ app.controller('ConfirmCtrl', [
       $scope.alerts.resetAlerts();
       if (data.success) {
         $scope.success = true;
+
+        var dripPayload = {
+          email: data.data.email,
+          email_verified: true
+        }
+
+
+        $timeout(function () {
+          try {
+            // try-catch, since there could be tracker blocking scripts
+            _dcq.push(["identify", dripPayload]);
+          } catch (e) {}
+          $state.go('app.dashboard');
+        }, 3000)
       } else {
         angular.forEach(data.errors, function (error, key) {
           $scope.alerts.addAlert('danger', error);

@@ -117,9 +117,9 @@ class MerchantController extends Controller
 
     public function getConfirm($token)
     {
-        $error = (new Merchant\Service)->confirm($token);
+        list($error, $data) = (new Merchant\Service)->confirm($token);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getActivationDetails()
@@ -494,6 +494,26 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postSignup()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getSignup()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        list($error, $data) = (new Merchant\Service)->getPreSignupDetails($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+    
     public function getCustomers(Request $request, $mode)
     {
         $this->checkMode($mode);
@@ -512,7 +532,7 @@ class MerchantController extends Controller
         list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'customer');
 
         return AppResponse::jsonResponse($error, $data);
-    }
+    }    
 
     public function postCustomer(Request $request, $mode)
     {
