@@ -1,9 +1,8 @@
 <div id="invoices-page" ng-controller="InvoicesCtrl">
-  <div class="invoicesNav" ng-init="merchant = !!user.current" ng-show="canShowNav">
+  <div class="invoicesNav" ng-show="canShowNav">
     <h1 class="font-thin h3">
       {{title}} ({{mode + " Mode"| titlecase }})
     </h1>
-
     <ul class="nav nav-pills nav-justified" not-my-role="sellerapp" ng-show="merchant && user.tags.indexOf('Invoice') !== -1">
       <li>
         <a ui-sref="app.invoices.list"

@@ -4,7 +4,10 @@ app.controller('InvoicesCtrl', [
   '$scope',
   '$state',
   function ($rootScope, user, $scope, $state) {
-    $scope.user = user.getIdentity();
+    user.identity().then(function(user) {
+      $scope.user = user
+      $scope.merchant = !!user.current
+    });
 
     var titleHash = {
       'app.invoices.list': 'Invoices',
