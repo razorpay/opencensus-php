@@ -24,6 +24,22 @@ class Service extends Base\Service
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
+    public function create(array $input)
+    {
+        if (isset($input[Entity::PAYMENT_ID]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Input field \'payment_id\' is missing',
+                Entity::PAYMENT_ID);
+        }
+
+        $paymentId = $input[Entity::PAYMENT_ID];
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        return (new Payment\Service)->refund($paymentId, $input);
+    }
+
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);

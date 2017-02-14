@@ -598,6 +598,20 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function refund($params)
+    {
+        $this->ba->privateAuth();
+
+        $content = $params;
+
+        $request = array(
+            'method'    => 'POST',
+            'url'       => '/refunds',
+            'content'   => $content);
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function refundPayment($id, $amount = null)
     {
         $this->ba->privateAuth();
