@@ -340,16 +340,14 @@ class Processor
             $this->payment->setCancellationReason($input['_']['reason']);
         }
 
+        $e = new Exception\BadRequestException($errorCode);
+
         if ($payment->merchant->isFeatureEnabled(Feature::CREATED_FLOW))
         {
-            $payment->setInternalErrorCode($errorCode);
-
-            $this->repo->saveOrFail($payment);
+            $this->setPaymentError($e, TraceCode::PAYMENT_CANCELLED);
         }
         else
         {
-            $e = new Exception\BadRequestException($errorCode);
-
             $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
         }
 
@@ -539,13 +537,23 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError(Exception\BaseException $e)
+    protected function setPaymentError(Exception\BaseException $e, $traceCode)
     {
+        $payment = $this->payment;
+
         $error = $e->getError();
 
         $internalCode = $error->getInternalErrorCode();
 
-        $payment = $this->payment;
+        $this->trace->info(
+            $traceCode,
+            [
+                'payment_id'    => $payment->getId(),
+                'status'        => $payment->getStatus(),
+                'error'         => $error,
+                'internalCode'  => $internalCode,
+            ]
+        );
 
         $payment->setInternalErrorCode($internalCode);
 
