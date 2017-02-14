@@ -78,39 +78,45 @@ class Gateway extends Base\Gateway
 
     public function sendPaymentVerifyRequest($verify)
     {
-        $content = $this->getPaymentVerifyData($verify);
+        $content = $this->getVerifyRequestData($verify);
 
         $request = $this->getStandardRequestArray($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            [
+                'request' => $request
+            ]);
 
         $response = $this->sendGatewayRequest($request);
 
-        $verify->verifyResponseBody = $response->body;
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $response->body
+            ]);
+
+        $verify->verifyResponseContent = $this->getResponseArray($response->body);
     }
 
     public function verifyPayment($verify)
     {
-        $content = $verify->verifyResponseBody;
-
-        $xml = $this->getResponseArray($content);
+        $content = $verify->verifyResponseContent;
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            (array) $xml);
+            $content);
 
-        $this->getVerifyStatus($verify, $xml);
+        $this->getVerifyStatus($verify, $content);
     }
 
-    protected function getVerifyStatus($verify, $xml)
+    protected function getVerifyStatus($verify, $content)
     {
         $status = VerifyResult::STATUS_MATCH;
 
         $this->getApiSuccess($verify);
 
-        $this->getGatewaySuccess($verify, $xml);
+        $this->getGatewaySuccess($verify, $content);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -137,12 +143,12 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getGatewaySuccess($verify, $xml)
+    protected function getGatewaySuccess($verify, $content)
     {
         $verify->gatewaySuccess = false;
 
-        if (isset($xml[ResponseFields::STATE]) === true and
-            $xml[ResponseFields::STATE] === Constants::SUCCESS)
+        if (isset($content[ResponseFields::STATE]) === true and
+            $content[ResponseFields::STATE] === Constants::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -159,7 +165,7 @@ class Gateway extends Base\Gateway
         return $data;
     }
 
-    protected function getPaymentVerifyData($verify)
+    protected function getVerifyRequestData($verify)
     {
         $input = $verify->input;
         $payment = $verify->payment;
@@ -296,9 +302,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes($content)
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::STATUS],
-            'bank_payment_id'   => $content[ResponseFields::BANK_PAYMENT_ID]
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID]
         ];
     }
 

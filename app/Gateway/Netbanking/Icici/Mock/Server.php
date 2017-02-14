@@ -71,6 +71,8 @@ class Server extends Base\Mock\Server
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery, $masterKey));
 
+        $this->content($content, 'hash');
+
         return $content;
     }
 

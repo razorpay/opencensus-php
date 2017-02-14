@@ -368,6 +368,7 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS);

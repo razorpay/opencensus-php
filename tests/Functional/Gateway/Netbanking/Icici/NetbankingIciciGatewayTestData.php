@@ -93,6 +93,7 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
     'testAuthFailedVerifySuccess' => [
         'response'  => [
             'content'     => [
@@ -108,6 +109,23 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
+
+    'testAuthResponseDecryptionFailure' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR,
+        ],
+    ],
+
     'testFailedRefund' => [
         'response'  => [
             'content'     => [

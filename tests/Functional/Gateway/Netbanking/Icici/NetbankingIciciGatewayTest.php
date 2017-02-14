@@ -174,6 +174,18 @@ class NetbankingIciciGatewayTest extends TestCase
         });
     }
 
+    public function testAuthResponseDecryptionFailure()
+    {
+        $this->mockAuthDecryptionFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPayment($this->payment);
+        });
+    }
+
     // Authorization fails, but verify shows success
     // Results in a payment verification error
     public function testAuthFailedVerifySuccess()
@@ -204,6 +216,17 @@ class NetbankingIciciGatewayTest extends TestCase
         {
             // Payment verify failure
             $content['STATUS'] = 'FAILED';
+        });
+    }
+
+    protected function mockAuthDecryptionFailure()
+    {
+        $this->mockServerContentFunction(function(&$content, $action = null)
+        {
+            if ($action === 'hash')
+            {
+                $content['ES'] = str_shuffle($content['ES']);
+            }
         });
     }
 }
