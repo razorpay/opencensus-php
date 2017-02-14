@@ -357,7 +357,7 @@ class Gateway
         IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
-     * For the banks that have dailyfile generation,
+     * For the banks that require a refundfile generated everyday,
      * we map IFSC codes to Gateways
      *
      * @var array
