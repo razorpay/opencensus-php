@@ -2,22 +2,27 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
-use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Jobs\InvoiceAction;
 
 class Notify
 {
-    const AUTHORIZED = 'authorized';
-    const CARD_SAVED = 'card_saved';
-    const CAPTURED   = 'captured';
-    const REFUNDED   = 'refunded';
-    const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
-    const INVOICE_PAID = 'invoice_paid';
+    use DispatchesJobs;
+
+    const AUTHORIZED                 = 'authorized';
+    const CARD_SAVED                 = 'card_saved';
+    const CAPTURED                   = 'captured';
+    const REFUNDED                   = 'refunded';
+    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
+    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
+    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -94,11 +99,19 @@ class Notify
                 'view' => 'emails.payment.cardsaving',
             ]
         ],
-        self::INVOICE_PAID => [
+        self::INVOICE_PAYMENT_AUTHORIZED => [
+            'customer' => [
+                'from' => 'care',
+                'view' => [
+                    'html' => 'emails.invoice.customer.paid',
+                ],
+            ],
+        ],
+        self::INVOICE_PAYMENT_CAPTURED => [
             'merchant' => [
                 'view' => [
-                    'html' => 'emails.invoice.merchant',
-                    'text' => 'emails.invoice.merchant_text',
+                    'html' => 'emails.invoice.merchant.captured',
+                    'text' => 'emails.invoice.merchant.captured_text',
                 ]
             ]
         ],
@@ -109,20 +122,24 @@ class Notify
     protected $mode;
     protected $trace;
     protected $template;
-    protected $invoice;
+    protected $invoice = null;
 
     /**
      * Creates a new Notify instance
      *
      * @param Payment\Entity $payment The payment associated with the Notify
-     * @param Invoice\Entity $invoice The invoice associated with the Notify
      */
-    function __construct(Payment\Entity $payment, Invoice\Entity $invoice = null)
+    function __construct(Payment\Entity $payment)
     {
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
-        $this->invoice = $invoice;
+
+        if ($this->payment->hasInvoice())
+        {
+            $this->invoice = $this->payment->invoice;
+        }
+
         $this->refreshTemplate();
 
         $this->mode = $this->app['rzp.mode'];
@@ -351,6 +368,11 @@ class Notify
      */
     public function trigger($event)
     {
+        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        {
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::AUTHORIZED, $this->invoice->getId()));
+        }
+
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -427,8 +449,9 @@ class Notify
             case self::REFUNDED:
                 $action = 'Refund';
                 break;
-            case self::INVOICE_PAID:
-                $action = 'Invoice';
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
+                $action = ucwords($this->invoice->getTypeLabel()) . ' Payment';
                 break;
             default:
                 $action = 'Payment';
@@ -505,7 +528,8 @@ class Notify
                 $data = $this->template['payment'];
                 break;
 
-            case self::INVOICE_PAID:
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
                 $data = $this->template['invoice'];
                 break;
 
@@ -606,16 +630,18 @@ class Notify
             ];
         }
 
-        if ($this->invoice)
+        if ($this->invoice !== null)
         {
             $data['invoice'] = [
-                'id'    => $this->invoice->getId(),
-                'amount' => "INR ".number_format($this->invoice->getAmount()/100, 2),
-                'timestamp' => $this->invoice->getCreatedAt(),
+                'id'         => $this->invoice->getId(),
+                'amount'     => $this->invoice->getFormattedAmountWithCurrency(),
+                'timestamp'  => $this->invoice->getCreatedAt(),
                 'payment_id' => $this->invoice->getPaymentId(),
-                'public_id' => $this->invoice->getPublicId(),
-                'paid_at' => $this->invoice->getPaidAt(),
-                'issued_at' => $this->invoice->getIssuedAt(),
+                'public_id'  => $this->invoice->getPublicId(),
+                'paid_at'    => $this->invoice->getPaidAt(),
+                'issued_at'  => $this->invoice->getIssuedAt(),
+                'type_label' => ucfirst($this->invoice->getTypeLabel()),
+                'short_url'  => $this->invoice->getShortUrl(),
             ];
         }
 
