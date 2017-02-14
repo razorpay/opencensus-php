@@ -8,6 +8,7 @@ use Request;
 use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Payment;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
@@ -317,4 +318,37 @@ class GatewayController extends Controller
         ]);
     }
 
+    public function createGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->createPriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayPriority()
+    {
+        $data = (new GatewayPriority\Service)->fetchPriority();
+
+        return ApiResponse::json($data);
+    }
+
+    public function addOrUpdateGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->addOrUpdatePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function removeGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->removePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
 }

@@ -18,6 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedCybersourceHdfcTerminal();
         $this->createSharedCybersourceHdfcRecurringTerminals();
@@ -300,6 +301,25 @@ class Terminal extends Base
             'gateway_merchant_id2'      => 'airtelmoney_auth_code',
             'gateway_terminal_id'       => 'airtelmoney_terminal',
             'gateway_terminal_password' => 'razorpay_password',
+            'gateway_access_code'       => 'random_access_code',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedJiomoneyTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_jiomoney',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'jiomoney_merchant',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
         ];
@@ -663,6 +683,25 @@ class Terminal extends Base
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAirtelTerminal(array $attributes= [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_AIRTEL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_airtel',
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'gateway_secure_secret'     => 'test_salt',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

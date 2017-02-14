@@ -31,7 +31,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
-    const FEATURES                  = 'features';
+    const CATEGORY2                 = 'category2';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
@@ -45,10 +45,8 @@ class Entity extends Base\PublicEntity
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
 
-    /**
-     * Category for particular methods or gateways
-     */
-    const CATEGORY2                 = 'category2';
+    // constants
+    const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
 
     /**
      * Refers to methods relation and not a property;
@@ -132,10 +130,12 @@ class Entity extends Base\PublicEntity
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SUSPENDED_AT,
+        self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
         'groups',
-        'admins'
+        'admins',
      );
 
     protected $defaults = array(
@@ -236,7 +236,11 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->features(), true);
+        $assignedFeatures = $this->features
+                                 ->pluck(\RZP\Models\Feature\Entity::NAME)
+                                 ->toArray();
+
+        return (in_array($feature, $assignedFeatures, true) === true);
     }
 
     public function activate()
@@ -366,6 +370,11 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\Merchant\Webhook\Entity');
+    }
+
+    public function features()
+    {
+        return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
     }
 
     public function merchantDetail()
@@ -519,7 +528,14 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
+
+        if ($autoRefundDelay === null)
+        {
+            $autoRefundDelay = self::AUTO_REFUND_DELAY_DEFAULT;
+        }
+
+        return $autoRefundDelay;
     }
 
     /**
@@ -543,12 +559,6 @@ class Entity extends Base\PublicEntity
     public function convertOnApi()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
-    }
-
-    public function features()
-    {
-        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
-                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()

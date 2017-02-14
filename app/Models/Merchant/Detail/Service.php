@@ -168,23 +168,6 @@ class Service extends Base\Service
         return $merchantDetail;
     }
 
-    public function calculateActivationProgress($merchantId)
-    {
-        $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
-
-        $merchantDetails = $this->getMerchantDetails($merchant);
-
-        $response = $this->createResponse($merchantDetails);
-
-        $activationProgress = $response['verification']['activation_progress'];
-
-        $merchantDetails->setActivationProgress($activationProgress);
-
-        $this->repo->saveOrFail($merchantDetails);
-
-        return $activationProgress;
-    }
-
     protected function canSubmit($input, $response)
     {
         return (($response['can_submit'] === true) and

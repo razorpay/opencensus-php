@@ -2181,6 +2181,22 @@ return [
         ],
     ],
 
+    'testGetInvoiceByOrderAndPayment' => [
+        'request' => [
+            'url' => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'order_id'   => 'order_100000000order',
+                'payment_id' => 'pay_1000000payment',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 0,
+            ],
+        ],
+    ],
+
     'testGetInvoiceStatusAfterPayment' => [
         'request' => [
             'url' => '/invoices/inv_1000000invoice/status',

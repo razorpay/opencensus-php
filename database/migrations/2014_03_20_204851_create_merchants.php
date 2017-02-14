@@ -29,7 +29,8 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Merchant::NAME);
+            $table->string(Merchant::NAME)
+                  ->nullable();
 
             $table->string(Merchant::EMAIL, 255);
 
@@ -71,9 +72,6 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(Merchant::FEATURES)
-                  ->nullable();
-
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
@@ -92,6 +90,7 @@ class CreateMerchants extends Migration
                   ->default(1);
 
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
             $table->integer(Merchant::AUTO_REFUND_DELAY)
@@ -104,7 +103,6 @@ class CreateMerchants extends Migration
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
-
 
             $table->integer(Merchant::CREATED_AT);
 

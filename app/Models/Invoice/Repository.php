@@ -12,7 +12,7 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|size:18',
+        Entity::PAYMENT_ID => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
@@ -100,7 +100,9 @@ class Repository extends Base\Repository
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $orderId);
+        $orderIdAttribute = $this->manager->invoice->getAttributeWithTableName(Entity::ORDER_ID);
+
+        $query->where($orderIdAttribute, '=', $orderId);
     }
 
     protected function joinQueryPayment($query)

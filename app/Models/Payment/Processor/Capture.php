@@ -164,6 +164,95 @@ trait Capture
         return ['verify_capture' => $msg];
     }
 
+    public function manualGatewayCapture(Payment\Entity $payment)
+    {
+        $this->setPayment($payment);
+
+        // Currently doing it for only Cybersource. In case when other gateways start
+        // getting similar issues, we will start supporting for them too.
+        assert ($payment->getGateway() === Payment\Gateway::CYBERSOURCE);
+
+        assert ($payment->getStatus() === Payment\Status::CAPTURED);
+
+        // Just making sure that the payment has the transaction id.
+        assert ($payment->getTransactionId() !== null);
+
+        assert ($payment->hasBeenCaptured());
+
+        $data = $this->getGatewayDataForCapture($payment);
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $payment->card->toArray();
+        }
+
+        // The reason for NOT using verifyCapture Gateway function is because in ManualCapture, we want to add
+        // more checks and validations in the gateway function. VerifyCapture takes care of the checks specific
+        // to verifyCapture only. Since manualCapture is a very exceptional case and hopefully a one-time execution,
+        // we want to add more asserts around it.
+        $manualGatewayCaptureResult = $this->callGatewayForManualCapture($data);
+
+        // Here, $manualGatewayCaptureResult=true means that the payment is captured on the gateway side.
+        if ($manualGatewayCaptureResult === true)
+        {
+            $msg = 'Successfully created a capture on gateway';
+
+            $payment->setGatewayCaptured(true);
+
+            $this->repo->saveOrFail($payment);
+        }
+        else if ($manualGatewayCaptureResult === false)
+        {
+            $msg = 'DID NOT CREATE A CAPTURE ON GATEWAY. ISSUE!';
+        }
+        else
+        {
+            $msg = 'THIS IS UNEXPECTED!';
+        }
+
+        return [
+            'manual_gateway_capture' => $msg,
+            'payment_id'             => $payment->getId(),
+        ];
+    }
+
+    protected function callGatewayForManualCapture($data)
+    {
+        $manualGatewayCaptureResult = null;
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_INITIATED,
+            [
+                'payment_id'    => $data['payment']['id'],
+            ]);
+
+        try
+        {
+            $manualGatewayCaptureResult = $this->callGatewayFunction(Payment\Action::MANUAL_GATEWAY_CAPTURE, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::MANUAL_GATEWAY_CAPTURE_FAILURE
+            );
+
+            throw $ex;
+        }
+
+        return $manualGatewayCaptureResult;
+    }
+
+    protected function getGatewayDataForCapture(Payment\Entity $payment)
+    {
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'amount'    => $payment->getBaseAmount(),
+        ];
+
+        return $data;
+    }
+
     protected function callGatewayForVerifyCapture($data)
     {
         try
