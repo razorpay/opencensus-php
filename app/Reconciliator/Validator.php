@@ -33,11 +33,6 @@ class Validator
         Orchestrator::FREECHARGE => "/Please view your transaction report/",
     ];
 
-    //
-    // This check happens while setting the gateway reconciliator
-    // Hyperlink documents are not treated as attachements yet.
-    // This counts only the original attachments in the mail
-    //
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY   => 1,
         Orchestrator::FREECHARGE => 1,
