@@ -163,6 +163,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::NODAL_ACCOUNT,
+                    'contact_name'  => 'Razorpay Nodal Account',
+                    'contact_email' => 'nodal@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
@@ -184,6 +194,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::ATOM_ACCOUNT,
+                    'contact_name'  => 'Razorpay Atom Account',
+                    'contact_email' => 'atom@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
@@ -211,6 +231,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::API_FEE_ACCOUNT,
+                    'contact_name'  => 'Razorpay Fee Account',
+                    'contact_email' => 'fees@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::API_FEE_ACCOUNT,
@@ -233,6 +263,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'contact_name'  => 'Test Account',
+                    'contact_email' => 'test@razorpay.com',
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -264,6 +304,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::SHARED_ACCOUNT,
+                    'contact_name'  => 'Shared Account',
+                    'contact_email' => 'shared@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::SHARED_ACCOUNT,
@@ -286,6 +336,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::DEMO_ACCOUNT,
+                    'contact_name'  => 'Demo Account',
+                    'contact_email' => 'demo@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
