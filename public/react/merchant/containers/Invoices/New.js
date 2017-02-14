@@ -55,6 +55,7 @@ const selector = formValueSelector('newInvoice')
       items: state.items.items,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
       invoice: state.invoice.invoice,
+      invoice_line_items: selector(state, 'line_items')
     }
   },
   {
@@ -137,7 +138,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   calculateItemsSubTotal() {
-    let lineItems = this.props.invoice.line_items || []
+    let lineItems = this.props.invoice_line_items || []
     return lineItems.reduce((total, line_item) => {
       return total + (Number(line_item.quantity) * Number(line_item.amountInINR))
     }, 0).toFixed(2)
@@ -592,7 +593,7 @@ export default class InvoicesNewContainer extends Component {
                           </AsyncButton>
                       }
 
-                      {
+                      {/*
                         !(isNew || isDraft) &&
                           <button
                             type='button'
@@ -602,7 +603,7 @@ export default class InvoicesNewContainer extends Component {
                             <i class='fa fa-download'></i>
                             <span>Download PDF</span>
                           </button>
-                      }
+                      */}
 
                       {
                         (isNew || isDraft) &&
