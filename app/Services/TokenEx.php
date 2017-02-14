@@ -160,11 +160,14 @@ class TokenEx
             }
             catch(\Requests_Exception $e)
             {
+                // check curl error, increase retry count if timeout
                 if (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT)
                 {
                     $retryCount++;
                 }
-                else
+
+                // throw the error if retry count reaches max allowed value
+                if ($retryCount === self::MAX_RETRY_COUNT)
                 {
                     throw $e;
                 }
