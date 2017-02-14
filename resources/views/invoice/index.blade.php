@@ -65,10 +65,10 @@
         border-top: 1px dashed #e3e4e6;
         text-align: left;
         line-height: 24px;
+      }
 
-        span {
-          float: right;
-        }
+      #break span {
+        float: right;
       }
 
       #success {
