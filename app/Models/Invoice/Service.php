@@ -195,6 +195,8 @@ class Service extends Base\Service
 
         \Database\DefaultConnection::set($mode);
 
+        $this->app['rzp.mode'] = $mode;
+
         $invoice = $this->repo->invoice->findByPublicId($invoiceId);
 
         return (new ViewDataSerializer($invoice))->get($mode);
