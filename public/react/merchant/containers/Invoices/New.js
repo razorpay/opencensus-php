@@ -19,6 +19,7 @@ import { fetchItemsForAutocomplete } from 'merchant/modules/items'
 import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import IssueConfirmModal from './IssueConfirmModal'
+import AddInternalNoteModal from './AddInternalNoteModal'
 import * as InvoiceActions from 'merchant/modules/invoices/details'
 import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
@@ -101,6 +102,7 @@ export default class InvoicesNewContainer extends Component {
     this.deleteInvoice = ::this.deleteInvoice
     this.downloadInvoicePDF = ::this.downloadInvoicePDF
     this.expireInvoice = ::this.expireInvoice
+    this.addInternalNote = ::this.addInternalNote
   }
 
   componentWillMount() {
@@ -125,6 +127,11 @@ export default class InvoicesNewContainer extends Component {
       }
       this.setState({
         isLoading: false
+      })
+    }).catch(({ errors }) => {
+      this.props.showNotification({
+        type: 'error',
+        message: errors
       })
     })
   }
@@ -156,31 +163,37 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
-  save(props) {
+  _save(props) {
     this.setState({
       isSaving: true
     })
     return this.props.saveInvoice(props).then((invoice) => {
+      this.setState({
+        isSaving: false
+      })
+      this.props.initialize(invoice)
+      return invoice
+    }).catch(({ errors }) => {
+      this.props.showNotification({
+        type: 'error',
+        message: errors
+      })
+      this.setState({
+        isSaving: false
+      })
+    })
+  }
+
+  save(props) {
+    return this._save(props).then((invoice) => {
       this.props.showNotification({
         type: 'success',
         message: 'Invoice Saved'
       })
-      this.props.initialize(invoice)
       this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
         notify: false
       })
-      this.setState({
-        isSaving: false
-      })
       return invoice
-    }).catch(({ errors }) => {
-      this.setState({
-        status: {
-          type: 'error',
-          message: errors
-        },
-        isSaving: false
-      })
     })
   }
 
@@ -209,12 +222,10 @@ export default class InvoicesNewContainer extends Component {
           type: 'success',
           message: 'Invoice has been sent successfully!'
         })
-      }).catch((error) => {
-        this.setState({
-          status: {
-            type: 'error',
-            message: error.errors
-          }
+      }).catch(({ errors }) => {
+        this.props.showNotification({
+          type: 'error',
+          message: errors
         })
       })
     })
@@ -268,12 +279,14 @@ export default class InvoicesNewContainer extends Component {
         return invoice.id ?
           this.props.deleteInvoice(invoice).then(() => {
             this.navigateToList()
-          }).catch((err) => {
-            this.setState({
-              status: {
-                type: 'error',
-                message: err.errors
-              }
+            this.props.showNotification({
+              type: 'success',
+              message: 'Invoice deleted successfully'
+            })
+          }).catch(({ errors }) => {
+            this.props.showNotification({
+              type: 'error',
+              message: errors
             })
           }) :
           this.navigateToList()
@@ -296,13 +309,35 @@ export default class InvoicesNewContainer extends Component {
       action: () => {
         return this.props.expireInvoice(invoice).then((invoice) => {
           this.props.initialize(invoice)
-        }).catch((err) => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Invoice expired!'
+          })
+        }).catch(({ errors }) => {
           this.props.showNotification({
             type: 'error',
-            message: err.errors
+            message: errors
           })
         })
       }
+    })
+  }
+
+  addInternalNote(props) {
+    let invoice = this.props.invoice
+    this.props.openModal({
+      size: 'small',
+      component: <AddInternalNoteModal
+        onSave={(note) => {
+          return this._save({
+            ...invoice,
+            notes: {
+              ...invoice.notes,
+              ...note
+            }
+          })
+        }}
+      />
     })
   }
 
@@ -503,7 +538,7 @@ export default class InvoicesNewContainer extends Component {
                     </div>
                   </div>
                 </div>
-                <div class='col-md-4'>
+                <div class='col-md-4' style={{marginTop: '48px'}}>
                   <div class='inv__cta'>
                     <div class='btn-group-vertical'>
                       {
@@ -538,7 +573,7 @@ export default class InvoicesNewContainer extends Component {
                       }
 
                       {
-                        !(isPaid || isExpired) &&
+                        !locked &&
                           <AsyncButton
                             type='button'
                             class='btn btn-default btn-block btn-lg'
@@ -671,19 +706,43 @@ export default class InvoicesNewContainer extends Component {
                   }
                   {
                     Object.keys(invoice.notes || {}).length ?
-                    <div class='inv__info'>
-                      <h4>Internal Notes</h4>
-                      <dl>
+                      <div class='inv__info inv__addnote'>
+                        <h4>Internal Notes</h4>
+                        <dl>
+                          {
+                            Object.keys(invoice.notes).map((key) => (
+                              <div key={key}>
+                                <dt>{key}</dt>
+                                <dd>{invoice.notes[key]}</dd>
+                              </div>
+                            ))
+                          }
+                        </dl>
                         {
-                          Object.keys(invoice.notes).map((key) => (
-                            <div>
-                              <dt>{key}</dt>
-                              <dd>{invoice.notes[key]}</dd>
-                            </div>
-                          ))
+                          !locked &&
+                            <button
+                              type='button'
+                              class='btn btn-default btn-block btn-lg'
+                              onClick={this.addInternalNote}
+                              disabled={this.state.isSaving}
+                            >
+                              <i class='fa fa-comment'></i>
+                              <span>Add Internal Note</span>
+                            </button>
                         }
-                      </dl>
-                    </div> : ''
+                      </div> :
+                      !locked &&
+                        <div class='inv__cta'>
+                          <button
+                            type='button'
+                            class='btn btn-default btn-block btn-lg'
+                            onClick={this.addInternalNote}
+                            disabled={this.state.isSaving}
+                          >
+                            <i class='fa fa-comment'></i>
+                            <span>Add Internal Note</span>
+                          </button>
+                        </div>
                   }
                 </div>
               </div>
