@@ -44,6 +44,7 @@ class Validator extends Base\Validator
         'groups'                            => 'sometimes|array',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
         Entity::CONVERT_CURRENCY            => 'sometimes|boolean'
     );
 
@@ -63,6 +64,7 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean'
     );
 
     protected static $actionRules = array(
