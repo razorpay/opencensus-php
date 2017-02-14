@@ -29,11 +29,18 @@ class Validator
     ];
 
     const GATEWAY_BODY_REGEX = [
-        Orchestrator::OLAMONEY => "/^Please find settlement report for /",
+        Orchestrator::OLAMONEY   => "/^Please find settlement report for /",
+        Orchestrator::FREECHARGE => "/Please view your transaction report/",
     ];
 
+    //
+    // This check happens while setting the gateway reconciliator
+    // Hyperlink documents are not treated as attachements yet.
+    // This counts only the original attachments in the mail
+    //
     const GATEWAY_ATTACHMENT_COUNT = [
-        Orchestrator::OLAMONEY => 1,
+        Orchestrator::OLAMONEY   => 1,
+        Orchestrator::FREECHARGE => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -55,6 +62,24 @@ class Validator
         }
     }
 
+    public function getExtensionFromContentType(string $contentType, string $gateway)
+    {
+        // We get 'application/zip' for xlsx files, so handle it explicitly
+        if (($gateway === Orchestrator::FREECHARGE) and
+            ($contentType === 'application/zip'))
+        {
+            return 'zip';
+        }
+
+        foreach (self::ACCEPTED_EXTENSIONS_MAP as $extension => $typeArray)
+        {
+            if (in_array($contentType, $typeArray, true) === true)
+            {
+                return $extension;
+            }
+        }
+    }
+
     public function validateHdfcEmail(array $emailDetails)
     {
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
@@ -67,23 +92,24 @@ class Validator
 
     public function validateFreechargeEmail(array $emailDetails)
     {
-        return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::FREECHARGE);
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails['subject'], Orchestrator::FREECHARGE);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::FREECHARGE);
+
+        return ($validSubject and $validBody);
     }
 
     public function validateOlamoneyEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::OLAMONEY);
 
-        $validAttachmentCount = $this->validateAttachmentCount(
-                                                    $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-                                                    Orchestrator::OLAMONEY);
-
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::OLAMONEY);
 
-        return ($validSubject and $validAttachmentCount and $validBody);
+        return ($validSubject and $validBody);
     }
 
-    public function validateAttachments(array & $input)
+    public function validateAttachments(array & $input, string $gateway)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
@@ -107,6 +133,8 @@ class Validator
                 'No attachments found in the input.'
             );
         }
+
+        $this->validateAttachmentCount($foundAttachmentsCount, $gateway);
 
         // Sets 'attachment-count' if not present and returns.
         // If present, converts it to int.

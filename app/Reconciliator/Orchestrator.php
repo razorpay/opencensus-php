@@ -52,7 +52,7 @@ class Orchestrator extends Base\Core
         self::MOBIKWIK   => [],
         self::PAYTM      => [],
         self::KOTAK      => ['BankAlerts@kotak.com'],
-        self::OLAMONEY   => [],
+        self::OLAMONEY   => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE => ['noreply@freechargemail.in'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
@@ -103,10 +103,10 @@ class Orchestrator extends Base\Core
 
         $this->increaseAllowedSystemLimits();
 
-        $this->messenger = new Messenger;
-        $this->validator = new Validator;
+        $this->messenger     = new Messenger;
+        $this->validator     = new Validator;
         $this->fileProcessor = new FileProcessor;
-        $this->converter = new Converter;
+        $this->converter     = new Converter;
     }
 
     /**
@@ -236,16 +236,16 @@ class Orchestrator extends Base\Core
      */
     protected function manualEntry(array $input)
     {
-        // Validates the input received.
-        // All the attachment files names should start with 'attachment-'
-        // Also, adds attachment-count to input, if not present already.
-        $this->validator->validateAttachments($input);
-
         $inputDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
         $this->setGatewayForManual($inputDetails);
+
+        // Validates the input received.
+        // All the attachment files names should start with 'attachment-'
+        // Also, adds attachment-count to input, if not present already.
+        $this->validator->validateAttachments($input, $this->gateway);
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
@@ -264,32 +264,43 @@ class Orchestrator extends Base\Core
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
 
+        $this->trace->info(
+            TraceCode::RECON_FILE_LINK,
+            ['details' => $this->emailDetails]);
+
         $this->validator->filterEmails($this->emailDetails);
 
         // Figures out the gateway and sets the gateway reconciliator object for
         // the orchestrator, using the input details.
         $this->setGatewayFromEmail();
 
+        $fileLocationType = FileProcessor::UPLOADED;
+
         if (in_array($this->gateway, self::LINK_BASED_BANKS, true))
         {
+            //
             // Fetches the documents from the link, stores them in tmp
             // after extraction if necessary, deletes the zip file, keeping
             // the imp files
+            //
             $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
+
+            $fileLocationType = FileProcessor::STORAGE;
         }
 
         //
-        // Validates that attachments are present in the email.
+        // Validates attachments that are present in the email.
         // Note that this should be done AFTER processing link_based_banks
         // because we create an attachment after parsing the email and
-        // downloading the file. Until then, the attachment count would be 0.
+        // downloading the file. Until then, the attachment count would be 0 or
+        // more.
         //
-        $this->validator->validateAttachments($input);
+        $this->validator->validateAttachments($input, $this->gateway);
 
         $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
 
         $allFilesDetails = $this->getFileDetailsFromInput(
-            $this->emailDetails, $input);
+            $this->emailDetails, $input, $fileLocationType);
 
         return $allFilesDetails;
     }
@@ -339,8 +350,7 @@ class Orchestrator extends Base\Core
                         'message'      => 'Skipping file because not able to convert file content to array. -> ' .
                                             $ex->getMessage(),
                         'file_details' => $fileDetails,
-                        //'gateway'      => get_class($this->gatewayReconciliator),
-                        'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
+                        'gateway'      => $this->gateway,
                     ]);
 
                 $this->trace->traceException($ex);
@@ -381,8 +391,7 @@ class Orchestrator extends Base\Core
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
                     'message'      => 'Skipping file because it is present in the exclude list of the gateway.',
                     'file_details' => $fileDetails,
-                    //'gateway'      => get_class($this->gatewayReconciliator),
-                    'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
+                    'gateway'      => $this->gateway,
                 ]);
 
             return true;
@@ -398,8 +407,7 @@ class Orchestrator extends Base\Core
                     'trace_code'   => TraceCode::RECON_FILE_SKIP,
                     'message'      => 'Skipping file because validations failed.',
                     'file_details' => $fileDetails,
-                    //'gateway'      => get_class($this->gatewayReconciliator),
-                    'gateway'      => (new \ReflectionClass($this->gatewayReconciliator))->getNamespaceName()
+                    'gateway'      => $this->gateway,
                 ]);
 
             return true;
@@ -427,6 +435,11 @@ class Orchestrator extends Base\Core
      */
     protected function getManualInputDetails(array $input)
     {
+        if (empty($input['attachment-count']) === true)
+        {
+            $input['attachment-count'] = 0;
+        }
+
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],
@@ -445,6 +458,14 @@ class Orchestrator extends Base\Core
         // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
         // formatted by the sender's email client.
         // 'X-Original-Sender' always contains just the email address.
+
+        if (empty($input['X-Original-Sender' ]) === true)
+        {
+            // If the mail is not being forwarded to mailGun
+            // Treat sender as original sender.
+            $input['X-Original-Sender'] = $input['sender'];
+        }
+
         $emailDetails = [
             'from'      => $input['X-Original-Sender'],
             'subject'   => $input['subject'],
@@ -570,7 +591,7 @@ class Orchestrator extends Base\Core
 
             // This step is mainly to figure out whether the file is of zip type,
             // since we need to execute a different set of flow ONLY for zip files.
-            $fileType = $this->fileProcessor->getTypeOfFile($file);
+            $fileType = $this->fileProcessor->getTypeOfFile($file, $fileLocationType);
 
             // If it's a zip file, get all the details of all the files present in it.
             // Else, get the file details of the attachment.
@@ -579,7 +600,7 @@ class Orchestrator extends Base\Core
                 try
                 {
                     // Gets the actual zip file's details first.
-                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileType);
+                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileLocationType);
 
                     // Gets all files details present in the zip file.
                     $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
@@ -617,7 +638,7 @@ class Orchestrator extends Base\Core
                             'message'      => 'Skipping file because unzip file caused an exception -> ' .
                                                 $ex->getMessage(),
                             'file_details' => !empty($extractedFileDetails) ? $extractedFileDetails : null,
-                            'gateway'      => get_class($this->gatewayReconciliator),
+                            'gateway'      => $this->gateway,
                         ]);
 
                     continue;
@@ -627,7 +648,7 @@ class Orchestrator extends Base\Core
             {
                 // Except zip, all other file types will return with a single element
                 // and not an array. Hence using push here instead of merge.
-                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileType);
+                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileLocationType);
             }
         }
 
@@ -876,6 +897,7 @@ class Orchestrator extends Base\Core
             $input['attachment-count'] = 0;
         }
 
+        // retrieve the link from $input['stripped-text']
         $link = $this->gatewayReconciliator
                      ->getSettlementFileLink($emailDetails['body']);
 
@@ -886,8 +908,8 @@ class Orchestrator extends Base\Core
                 'gateway' => $this->gateway,
             ]);
 
-        $file = $this->gatewayReconciliator
-                     ->getSettlementFileFromLink($link);
+        $file = $this->fileProcessor
+                     ->getAndStoreFileFromLink($link, $this->gateway);
 
         $attachmentCount = (string) ((int) $input['attachment-count'] + 1);
 

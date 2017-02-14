@@ -2,12 +2,15 @@
 
 namespace RZP\Reconciliator;
 
+use Carbon\Carbon;
+use Requests;
+use SplFileInfo;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use ZipArchive;
+
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
-
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use ZipArchive;
 
 class FileProcessor
 {
@@ -85,7 +88,7 @@ class FileProcessor
      * @param UploadedFile $file
      * @return array
      */
-    protected function getUploadedFileDetails($file)
+    protected function getUploadedFileDetails(UploadedFile $file)
     {
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
@@ -106,7 +109,7 @@ class FileProcessor
      * @param $file
      * @return array
      */
-    protected function getStorageFileDetails($file)
+    protected function getStorageFileDetails(SplFileInfo $file)
     {
         $fileName = strtolower($file->getFilename());
         $extension = strtolower($file->getExtension());
@@ -173,10 +176,18 @@ class FileProcessor
      * @param UploadedFile $file
      * @return string Extension of the file
      */
-    public function getTypeOfFile($file)
+    public function getTypeOfFile($file, $fileLocationType)
     {
-        $mimeType = $file->getMimeType();
-        $extension = $file->getClientOriginalExtension();
+        if ($fileLocationType === self::UPLOADED)
+        {
+            $mimeType  = $file->getMimeType();
+            $extension = $file->getClientOriginalExtension();
+        }
+        else if ($fileLocationType === self::STORAGE)
+        {
+            $mimeType  = mime_content_type($file->getRealPath());
+            $extension = $file->getExtension();
+        }
 
         // Validates the mime type + extension.
         $this->validator->validateExtensionMimeType($extension, $mimeType);
@@ -271,5 +282,54 @@ class FileProcessor
     public function getFolderFromFilePath($filePath)
     {
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
+    }
+
+    /*
+     * Downloads and stores the file in the storage directory
+     *
+     * @param string $link
+     * @param string $gateway
+     *
+     * @return UploadedFile
+     */
+    public function getAndStoreFileFromLink(
+        string $link,
+        string $gateway = null)
+    {
+        $request = [
+            'url'     => stripcslashes($link),
+            'method'  => 'GET',
+            'headers' => [],
+            'content' => [],
+            'options' => [
+                'timeout'          => 60,
+                'follow_redirects' => true,
+                'verify'           => true,
+            ],
+        ];
+
+        $response = Requests::request(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['method'],
+            $request['options']);
+
+        $contentType = $response->headers->getValues('Content-Type')[0];
+        $extension = $this->validator
+                          ->getExtensionFromContentType(
+                              $contentType, $gateway);
+
+        $now = Carbon::now('Asia/Kolkata')->toDateString();
+
+        $fileName = strtolower($gateway) . '-settlement-' . $now;
+        $fileName .= '.' . $extension;
+
+        $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath .= '/' . $fileName;
+
+        file_put_contents($filePath, $response->body);
+
+        return new SplFileInfo($filePath);
     }
 }
