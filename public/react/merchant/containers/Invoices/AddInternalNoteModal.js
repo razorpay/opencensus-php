@@ -4,6 +4,7 @@ import { Field, reduxForm } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import InputField from 'rzp/ui/Forms/InputField'
+import { required } from 'rzp/utils/validators'
 import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
 
@@ -42,7 +43,7 @@ export default class AddInternalNote extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, invalid } = this.props
 
     return (
       <div>
@@ -65,6 +66,7 @@ export default class AddInternalNote extends Component {
                   component={InputField}
                   class='form-control'
                   autoFocus={true}
+                  validate={required()}
                 />
               </div>
             </div>
@@ -77,6 +79,7 @@ export default class AddInternalNote extends Component {
                   component={InputField}
                   tagName='textarea'
                   class='form-control'
+                  validate={required()}
                 />
               </div>
             </div>
@@ -86,6 +89,7 @@ export default class AddInternalNote extends Component {
                 type='submit'
                 class='btn btn-primary btn-block btn-lg'
                 text='Add Internal Note'
+                disabled={invalid}
                 onClick={handleSubmit(this.addInternalNote)}
               />
             </div>

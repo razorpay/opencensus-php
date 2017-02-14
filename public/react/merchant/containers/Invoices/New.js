@@ -719,7 +719,7 @@ export default class InvoicesNewContainer extends Component {
                           }
                         </dl>
                         {
-                          !locked &&
+                          !(isNew || locked) &&
                             <button
                               type='button'
                               class='btn btn-default btn-block btn-lg'
@@ -731,7 +731,7 @@ export default class InvoicesNewContainer extends Component {
                             </button>
                         }
                       </div> :
-                      !locked &&
+                      !(isNew || locked) &&
                         <div class='inv__cta'>
                           <button
                             type='button'

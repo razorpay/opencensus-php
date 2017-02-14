@@ -1,5 +1,5 @@
 <div id="invoices-page" ng-controller="InvoicesCtrl">
-  <div class="invoicesNav" ng-init="merchant = !!user.current">
+  <div class="invoicesNav" ng-init="merchant = !!user.current" ng-show="canShowNav">
     <h1 class="font-thin h3">
       {{title}} ({{mode + " Mode"| titlecase }})
     </h1>

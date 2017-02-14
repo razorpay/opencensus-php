@@ -19,10 +19,16 @@ app.controller('InvoicesCtrl', [
       $scope.title = titleHash[state]
     }
 
+    function canShowNav(state) {
+      $scope.canShowNav = ['app.invoices.list', 'app.invoices.customers', 'app.invoices.items'].indexOf(state) !== -1
+    }
+
     $rootScope.$on('$stateChangeSuccess', function(event, toState) {
       setTitle(toState.name)
+      canShowNav(toState.name)
     })
 
     setTitle($state.current.name)
+    canShowNav($state.current.name)
   }
 ]);
