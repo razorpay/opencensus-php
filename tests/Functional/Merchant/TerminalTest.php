@@ -94,6 +94,7 @@ class TerminalTest extends TestCase
 
     public function testCopyTerminal()
     {
+        $this->markTestSkipped();
         $terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];
@@ -120,6 +121,7 @@ class TerminalTest extends TestCase
 
     public function testCopySharedTerminal()
     {
+        $this->markTestSkipped();
         $terminal = $this->fixtures->create('terminal:shared_axis_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];

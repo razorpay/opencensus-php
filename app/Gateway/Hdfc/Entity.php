@@ -123,4 +123,9 @@ class Entity extends Base\Entity
     {
         return (int) $this->attributes['action'];
     }
+
+    public function getAmount()
+    {
+        return (float) $this->getAttribute('amount');
+    }
 }

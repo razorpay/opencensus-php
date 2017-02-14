@@ -254,12 +254,6 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
-
-            $setlHandler = (new Settlement\Handler($setl));
-
-            $setlHandler->process($holdMerchantFunds);
-
             $this->repo->saveOrFail($setl);
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
@@ -354,5 +348,18 @@ class Reconciler3
         }
 
         return $reconcileFile;
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        $count = count($values);
+
+        assert(($count === 54) or ($count === 55));
+
+        $headings = array_slice($headings, 0, $count);
+
+        $values = array_combine($headings, $values);
+
+        return $values;
     }
 }

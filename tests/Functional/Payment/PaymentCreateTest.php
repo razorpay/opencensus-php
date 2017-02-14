@@ -51,6 +51,19 @@ class PaymentCreateTest extends TestCase
         });
     }
 
+    public function testCreatePaymentWithoutContact()
+    {
+        $payment = $this->getDefaultPaymentArray();
+        unset($payment['contact']);
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testCreatePaymentCheckoutCallbackNo3dSecure()
     {
         $this->payment['card']['number'] = '555555555555558';
@@ -101,16 +114,17 @@ class PaymentCreateTest extends TestCase
     public function testIntlPaymentWhenNotAllowed()
     {
         $this->fixtures->merchant->disableInternational();
-        $this->runRequestResponseFlow(
-            $this->testData[__FUNCTION__],
-            function ()
-            {
-                $this->payment['card']['number'] = '4012010000000007';
-                $this->doAuthPayment($this->payment);
-            });
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
         $this->assertEquals($payment['status'], 'failed');
         $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED');

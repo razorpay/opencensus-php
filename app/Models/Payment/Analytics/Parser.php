@@ -140,11 +140,11 @@ class Parser extends Base\Core
      */
     protected function setHttpRequestData(Entity $pa)
     {
-        $pa->setBrowser($this->uAgent->browser());
+        $pa->setBrowser($this->getBrowser());
 
         if ($pa->getBrowser() !== null)
         {
-            $pa->setPlatform($this->uAgent->version($this->uAgent->browser()));
+            $pa->setPlatformVersion($this->uAgent->version($this->uAgent->browser()));
         }
 
         $pa->setOs($this->getOs());
@@ -163,23 +163,58 @@ class Parser extends Base\Core
         }
     }
 
+    protected function getBrowser()
+    {
+        $browserFromUa = $this->uAgent->browser();
+
+        if ($browserFromUa === false)
+        {
+            return;
+        }
+
+        $browserFromUa = strtolower($browserFromUa);
+
+        if (Metadata::isValidBrowser($browserFromUa) === true)
+        {
+            return $browserFromUa;
+        }
+
+        switch ($browserFromUa)
+        {
+            case 'mozilla':
+                return Metadata::FIREFOX;
+
+            default:
+                return $browserFromUa;
+        }
+    }
+
     protected function getOs()
     {
         $osFromUa = $this->uAgent->platform();
 
-        if (isset($osFromUa) === true)
+        if ($osFromUa === false)
         {
-            switch (strtolower($osFromUa))
-            {
-                case 'os x':
-                    return Metadata::MACOS;
+            return;
+        }
 
-                case 'androidos':
-                    return Metadata::ANDROID;
+        $osFromUa = strtolower($osFromUa);
 
-                default:
-                    return null;
-            }
+        if (Metadata::isValidOs($osFromUa))
+        {
+            return $osFromUa;
+        }
+
+        switch ($osFromUa)
+        {
+            case 'os x':
+                return Metadata::MACOS;
+
+            case 'androidos':
+                return Metadata::ANDROID;
+
+            default:
+                return $osFromUa;
         }
     }
 
@@ -232,6 +267,7 @@ class Parser extends Base\Core
                 if (empty($metadata[$metadataKey]) === false)
                 {
                     $functionName = 'set' . studly_case($key);
+
                     $log->$functionName($metadata[$key]);
                 }
             }
@@ -328,23 +364,30 @@ class Parser extends Base\Core
         {
             $metadataKey = self::$map[$key];
 
-            if (isset($metadata[$metadataKey]) === true)
+            if (isset($metadata[$metadataKey]) === false)
             {
-                $logValueForKey = $log[$key] ?? null;
-
-                if ($logValueForKey !== $metadata[$metadataKey])
-                {
-                    // collect anomalies
-                    $this->collectMismatch($logValueForKey,
-                        $metadata[$metadataKey],
-                        $key,
-                        $anomalies);
-
-                    $functionName = 'set' . studly_case($key);
-
-                    $log->$functionName($metadata[$metadataKey]);
-                }
+                continue;
             }
+
+            $logValueForKey = $log[$key] ?? null;
+
+            if ($logValueForKey === $metadata[$metadataKey])
+            {
+                continue;
+            }
+
+            // collect anomalies
+            if ($logValueForKey !== null)
+            {
+                $this->collectMismatch($logValueForKey,
+                    $metadata[$metadataKey],
+                    $key,
+                    $anomalies);
+            }
+
+            $functionName = 'set' . studly_case($key);
+
+            $log->$functionName($metadata[$metadataKey]);
         }
 
         // log anomalies

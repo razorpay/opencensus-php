@@ -8,6 +8,7 @@ use RZP\Exception;
 use RZP\Models\Payment\Status;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
 
 use Requests;
 use Symfony\Component\DomCrawler\Crawler;
@@ -259,6 +260,18 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
+    {
+        if ($actualPaymentId !== $expectedPaymentId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
@@ -343,7 +356,7 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options']  = array();
+            $request['options'] = array();
         }
 
         if (isset($request['headers']) === false)
@@ -377,12 +390,13 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
+
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\RZP\Gateway\Utility::checkTimeout($e))
+            if (Utility::checkActualTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
@@ -392,10 +406,44 @@ class Gateway
             }
         }
 
+        $this->validateResponse($response);
+
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
+    }
+
+    protected function validateResponse($response)
+    {
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayTimeoutException('Response status: 504');
+        }
+        else if ($response->status_code >= 500)
+        {
+            $e = new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+
+            $data = ['status_code' => $response->status_code, 'body' => $response->body];
+            $e->setData($data);
+
+            throw $e;
+        }
+        else if ($response->status_code >= 300)
+        {
+            //
+            // Trace non 200 status codes to figure out what else
+            // needs to be handled here later.
+            //
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_RESPONSE,
+                [
+                    'status_code' => $response->status_code,
+                    'gateway' => $this->gateway
+                ]);
+        }
     }
 
     protected function runPaymentVerifyFlow($verify)
@@ -450,10 +498,13 @@ class Gateway
         return false;
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            $traceCode,
             [
                 'request'    => $request,
                 'gateway'    => $this->gateway,
@@ -461,10 +512,13 @@ class Gateway
             ]);
     }
 
-    protected function traceGatewayPaymentResponse($response, $input)
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            $traceCode,
             [
                 'response'   => $response,
                 'gateway'    => $this->gateway,
@@ -659,6 +713,11 @@ class Gateway
         return $code;
     }
 
+    protected function getLiveMerchantId()
+    {
+        return $this->input['terminal']['gateway_merchant_id'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];
@@ -693,29 +752,6 @@ class Gateway
         ];
 
         return $request;
-    }
-
-    protected function jsonToArray($json)
-    {
-        $decodeJson = json_decode($json, true);
-
-        switch(json_last_error())
-        {
-            case JSON_ERROR_NONE:
-                return $decodeJson;
-            case JSON_ERROR_DEPTH:
-            case JSON_ERROR_STATE_MISMATCH:
-            case JSON_ERROR_CTRL_CHAR:
-            case JSON_ERROR_SYNTAX:
-            case JSON_ERROR_UTF8:
-                $this->trace->error(
-                    TraceCode::GATEWAY_PAYMENT_ERROR,
-                    ['json' => $json]);
-
-                throw new Exception\RuntimeException(
-                    'Failed to convert json to array',
-                    ['json' => $json]);
-        }
     }
 
     protected function getDynamicMerchantName($merchant)
@@ -799,6 +835,32 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
         }
     }
 }

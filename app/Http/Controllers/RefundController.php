@@ -18,6 +18,15 @@ class RefundController extends Controller
         $this->refund = new Payment\Refund\Service;
     }
 
+    public function postRefundCreate()
+    {
+        $input = Request::all();
+
+        $refund = $this->refund->create($input);
+
+        return ApiResponse::json($refund);
+    }
+
     public function getRefund($id)
     {
         $refunds = $this->refund->fetch($id);
@@ -72,6 +81,13 @@ class RefundController extends Controller
         return ApiResponse::json($summary);
     }
 
+    public function postGatewayRefundedTransactions()
+    {
+        $data = $this->refund->createMissingTransactionsForGatewayRefunded();
+
+        return ApiResponse::json($data);
+    }
+
     public function postManualGatewayRefund($refundIds)
     {
         $data = $this->refund->manualGatewayRefund($refundIds);
@@ -96,6 +112,23 @@ class RefundController extends Controller
     public function postGatewayRefundRecord($gateway)
     {
         $data = $this->refund->createGatewayRefundRecords($gateway);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * In case a refund is successful on the gateway side and is not able
+     * to record on the api side for some reason (like db lock timeout),
+     * we use this route to record it on the api side.
+     * This can actually get handled by billdesk recon itself.
+     * But, in case a refund is made before the money is settled to us,
+     * the refund is in cancelled state and not in refunded state. This
+     * means that we do not get it in the recon files.
+     *
+     */
+    public function postCreateBilldeskCancelledRefunds()
+    {
+        $data = $this->refund->createBilldeskCancelledRefunds();
 
         return ApiResponse::json($data);
     }

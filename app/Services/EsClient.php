@@ -34,7 +34,7 @@ class EsClient
     {
         $app = \App::getFacadeRoot();
 
-        $this->esHeimdallMock = $app['config']->get('database.es_heimdall_mock');
+        $this->esHeimdallMock = $app['config']->get('database.es_audit_mock');
 
         if ($this->esHeimdallMock !== true)
         {

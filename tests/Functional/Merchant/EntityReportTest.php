@@ -29,6 +29,40 @@ class EntityReportTest extends TestCase
         assert((count($paymentReport) + count($refundReport)) === count($combinedReport));
     }
 
+    /**
+     * Data for this test case needs to imported separately
+     */
+    public function testEntityReportTLE()
+    {
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => 2017,
+            'month' => 2,
+            'day' => 3
+        );
+
+        $data = $this->fetchReportAsFile('transaction', $input);
+
+        $this->assertNotNull($data['url']);
+    }
+
+    public function testEntityReportFile()
+    {
+        $this->testEntityReports();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+        $data = $this->fetchReportAsFile('transaction', $input);
+
+        $this->assertNotNull($data['url']);
+    }
+
     public function testInvoice()
     {
         // We need to setup a terminal for the netbanking payment
@@ -92,12 +126,12 @@ class EntityReportTest extends TestCase
             'Card Issuing Bank' => null,
             // 'Bank Ref No' => 'GJZMBHNV9O',
             'Gross Txn Amount' => 500,
-            'Txn Charges' => 12.5,
-            'Service Tax' => 1.76,
-            'SB Cess' => 0.06,
-            'Krishi Kalyan Cess' => 0.06,
-            'Total Chargeable' => 14.38,
-            'Net Amount' => 485.62,
+            'Txn Charges' => 0,
+            'Service Tax' => 0,
+            'SB Cess' => 0,
+            'Krishi Kalyan Cess' => 0,
+            'Total Chargeable' => 0,
+            'Net Amount' => 500,
             'Payment Status' => null,
             'Settlement Date' => null,
             'Refund Reference' => null,

@@ -60,7 +60,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com:90',
+                'url' => 'http://example.com:6000',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -71,7 +71,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only 80 or 443 port is currently allowed in webhook url.'
+                    'description' => 'The provided port is restricted and cannot be used in a webhook URL.'
                 ],
             ],
             'status_code' => 400,

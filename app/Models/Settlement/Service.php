@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement;
 use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Icici;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Exception;
@@ -27,11 +28,11 @@ class Service extends Base\Service
 
     public function generateSettlementFile($input)
     {
-        $to = Carbon::now('Asia/Kolkata')->timestamp;
+        (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
-        $from = Carbon::now('Asia/Kolkata')->subDay(1)->timestamp;
+        $batchSettlementId = $input['batch_settlement_id'];
 
-        $setls = $this->repo->settlement->getSettlementsBetweenTimestamp($from, $to);
+        $setls = $this->repo->settlement->getSettlementsByBatchSettlementId($batchSettlementId);
 
         $urls = (new Kotak\Service)->generateSettlementFile($setls);
 
@@ -40,9 +41,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
-
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
     }
@@ -78,11 +77,9 @@ class Service extends Base\Service
 
     public function getSettlementTransactions($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        $txns = $this->repo->transaction->fetchBySettlementId($id);
+        $txns = $this->repo->transaction->fetchBySettlement($setl);
 
         return $txns->toArrayPublic();
     }
@@ -120,6 +117,15 @@ class Service extends Base\Service
     public function getSettlementCombinedReport($input)
     {
         return (new Base\Report)->getReport($input, 'transaction');
+    }
+
+    public function postInitiateTransfer($input)
+    {
+        (new Settlement\Validator)->validateInput('nodal_transfer', $input);
+
+        $amount = $input['amount']/100;
+
+        return (new Icici\NodalAccount)->generateTransferFile($amount);
     }
 
     public function calculatePrevousSettlementFees()

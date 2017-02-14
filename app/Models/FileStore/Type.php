@@ -8,15 +8,21 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Type
 {
+    const KOTAK_NETBANKING_CLAIM            = 'kotak_netbanking_claim';
+
     const KOTAK_NETBANKING_REFUND           = 'kotak_netbanking_refund';
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
+
+    const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
 
     const ICICI_UPI_REFUND                  = 'icici_upi_refund';
+
+    const ICICI_NODAL_TRANSFER              = 'icici_nodal_transfer';
 
     const BATCH_INPUT                       = 'batch_input';
 
@@ -30,11 +36,14 @@ class Type
     const TYPE_MAP = [
 
         self::BLANK => [
+            self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
+            self::AXIS_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
             self::ICICI_UPI_REFUND,
+            self::ICICI_NODAL_TRANSFER,
         ],
 
         Constants\Entity::BATCH => [
@@ -57,11 +66,14 @@ class Type
      * Types allowed when no entity is associated
      */
     const SHARED_ACCOUNT_ALLOWED_TYPES = [
+        self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
+        self::AXIS_NETBANKING_REFUND,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
+        self::ICICI_NODAL_TRANSFER,
     ];
 
     /**

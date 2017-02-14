@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Upi\Icici;
 
+use Cache;
 use Closure;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
@@ -136,6 +137,22 @@ EOT;
         $this->runRequestResponseFlow($data, function() use ($payment)
         {
             $this->doAuthPaymentViaAjaxRoute($payment);
+        });
+    }
+
+    public function testUpiVPA()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'nemo@upi';
+
+        Cache::forever('excluded_psps', '["upi"]');
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
         });
     }
 
@@ -280,6 +297,31 @@ EOT;
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
         $response = $this->makeS2SCallbackAndGetContent($content);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    /**
+     * Make sure a 5006 is taken as a gateway failure
+     */
+    public function testVerifyMissingPayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        // TODO: Stop using notes for status
+        // Instead use something like `status_code_success_etc@icici`
+        // To encode all expected information in the VPA itself
+        //
+        // Will work on this in #1997
+        $payment['notes']['status'] = 'failed';
+        $payment['vpa'] = 'missingpayment@icici';
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
 
         $this->payment = $this->verifyPayment($payment['id']);
 
@@ -450,6 +492,7 @@ EOT;
             'razorpay_payment_id',
             'razorpay_order_id',
             'razorpay_signature'],
+
         array_keys($response));
     }
 }

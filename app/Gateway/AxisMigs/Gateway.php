@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
+use Str;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -46,6 +47,8 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
+
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
             // Payment fails since vpc_MerchTxnRef not set, throw exception
@@ -79,7 +82,7 @@ class Gateway extends Base\Gateway
     {
         parent::refund($input);
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentRefundRequestContent($input, $payment);
@@ -106,11 +109,80 @@ class Gateway extends Base\Gateway
         $this->verifyAmaTransactionResponse($content, $input);
     }
 
+    public function verifyRefund(array $input)
+    {
+        $isRefundRequired = $this->isRefundRequired($input);
+
+        if ($isRefundRequired)
+        {
+            $this->refund($input);
+
+            // Verified and refund performed
+            return false;
+        }
+
+        // Verified to not require any refund
+        return true;
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
+
+        foreach ($refundedEntities as $refundedEntity)
+        {
+            if ($refundedEntity->getRefundId() === $refundId)
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    protected function isRefundRequired(array $input)
+    {
+        $paymentId = $input['payment']['id'];
+        $refundAmount = $input['amount'];
+
+        //
+        // Gets all the refund entities with the given amount and payment id and which were successful.
+        // This is not an absolute check since for the same payment id, two partial refunds of the same
+        // amount could be successful.
+        //
+        $refundedEntities = $this->repo->getSuccessfullyRefundedEntities($paymentId, $refundAmount);
+
+        $verify = new Base\Verify($this->gateway, $input);
+
+        $verifyContent = $this->sendPaymentVerifyRequest($verify);
+
+        //
+        // If the payment transaction id is present, we assume that the payment
+        // has been captured on the gateway.
+        // We also check for the refund entities, if present. If refund entity is present
+        // we assume that the payment has been refunded on gateway and refund should
+        // not be called again.
+        //
+        if (($input['payment']['transaction_id'] === null) or
+            ($refundedEntities->count() > 0) or
+            ((isset($verifyContent['vpc_RefundedAmount']) === true) and
+             ($verifyContent['vpc_RefundedAmount'] !== '0')))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function reverse(array $input)
     {
         parent::reverse($input);
 
-        $payment = $this->repo->findByPaymentIdAndCommand(
+        $payment = $this->repo->findByPaymentIdAndCommandOrFail(
                                 $input['payment']['id'], Command::PAY);
 
         $content = $this->getPaymentReversalRequestContent($input, $payment);
@@ -140,7 +212,7 @@ class Gateway extends Base\Gateway
     {
         $repo = $this->repo;
 
-        $gatewayPayment = $repo->findByPaymentIdAndCommand($input['payment']['id'], Command::PAY);
+        $gatewayPayment = $repo->findByPaymentIdAndCommandOrFail($input['payment']['id'], Command::PAY);
 
         // If it's already authorized on axis side, there's nothing to do here. We just return back.
         if (($gatewayPayment->getTransactionId() !== null) and
@@ -195,7 +267,7 @@ class Gateway extends Base\Gateway
     {
         assert ($input['payment']['status'] === 'authorized');
 
-        $gatewayPayment = $this->repo->findByPaymentIdAndCommand(
+        $gatewayPayment = $this->repo->findByPaymentIdAndCommandOrFail(
             $input['payment']['id'], Command::PAY);
 
         $capturedAmount = (int) $gatewayPayment['vpc_CapturedAmount'];
@@ -623,7 +695,10 @@ class Gateway extends Base\Gateway
 
         foreach ($content as $k => $v)
         {
-            $input[] = $k . '=' . $v;
+            if (Str::startsWith($k, 'vpc_') === true)
+            {
+                $input[] = $k . '=' . $v;
+            }
         }
 
         return parent::getStringToHash($input, '&');

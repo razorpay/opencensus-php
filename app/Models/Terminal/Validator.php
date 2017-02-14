@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Card;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Currency\Currency;
 
 class Validator extends Base\Validator
 {
@@ -33,17 +34,23 @@ class Validator extends Base\Validator
         Entity::TPV                         => 'sometimes_if:netbanking,1|boolean',
         Entity::GATEWAY_ACQUIRER            => 'sometimes|string|max:30',
         Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3',
     ];
 
     protected static $editTerminalGateways = [
         Payment\Gateway::HDFC,
+        Payment\Gateway::CYBERSOURCE,
         Payment\Gateway::AXIS_MIGS,
         Payment\Gateway::UPI_ICICI,
         Payment\Gateway::BILLDESK,
     ];
 
     protected static $createValidators = [
-        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY
+        Entity::GATEWAY, Entity::EMI, Entity::NETWORK_CATEGORY, Entity::CURRENCY,
+    ];
+
+    protected static $reassignRules = [
+        Entity::MERCHANT_ID                 => 'required|alpha_num|size:14',
     ];
 
     protected static $hdfcTerminalRules = [
@@ -77,13 +84,14 @@ class Validator extends Base\Validator
     protected static $firstDataTerminalRules = [
         Entity::GATEWAY                     => 'required|in:first_data',
         Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:5',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|min:5',
-        Entity::GATEWAY_MERCHANT_ID2        => 'required|string|min:5',
-        Entity::GATEWAY_ACCESS_CODE         => 'required|string|min:5',
-        Entity::GATEWAY_TERMINAL_PASSWORD   => 'required|string|min:5',
-        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'required|min:20',
+        Entity::GATEWAY_SECURE_SECRET       => 'sometimes|string|min:5',
+        Entity::GATEWAY_MERCHANT_ID2        => 'sometimes|string|min:5',
+        Entity::GATEWAY_ACCESS_CODE         => 'sometimes|string|min:5',
+        Entity::GATEWAY_TERMINAL_PASSWORD   => 'sometimes|string|min:5',
+        Entity::GATEWAY_CLIENT_CERTIFICATE  => 'sometimes|min:20',
         Entity::EMI                         => 'sometimes|boolean',
         Entity::EMI_DURATION                => 'required_only_if:emi,1|integer|in:3,6,9,12',
+        Entity::CURRENCY                    => 'sometimes|alpha|size:3'
     ];
 
     protected static $amexTerminalRules = [
@@ -114,6 +122,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
         Entity::GATEWAY_ACQUIRER            => 'required|string',
         Entity::RECURRING                   => 'sometimes|in:0,1,2',
+        Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
     ];
 
     protected static $axisMigsEditTerminalRules = [
@@ -132,6 +141,12 @@ class Validator extends Base\Validator
         Entity::GATEWAY_RECON_PASSWORD      => 'sometimes|alpha_num',
         Entity::GATEWAY                     => 'sometimes|in:hdfc',
         Entity::CARD                        => 'sometimes|boolean|in:1',
+    ];
+
+    protected static $cybersourceEditTerminalRules = [
+        Entity::GATEWAY_RECON_PASSWORD => 'sometimes|alpha_num',
+        Entity::GATEWAY                => 'sometimes|in:cybersource',
+        Entity::CARD                   => 'sometimes|boolean|in:1',
     ];
 
     protected static $upiIciciEditTerminalRules = [
@@ -175,6 +190,24 @@ class Validator extends Base\Validator
         Entity::GATEWAY                     => 'required|in:wallet_freecharge',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $walletJiomoneyTerminalRules = [
+        Entity::GATEWAY                   => 'required|in:wallet_jiomoney',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
+    ];
+
+    protected static $netbankingAirtelTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_airtel',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $netbankingAxisTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_axis',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string'
     ];
 
     protected function validateGateway($input)
@@ -225,6 +258,16 @@ class Validator extends Base\Validator
         }
     }
 
+    protected function validateCurrency($input)
+    {
+        if ((isset($input['currency']) === true) and
+            in_array($input['currency'], Currency::SUPPORTED_CURRENCIES, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED);
+        }
+    }
+
     public function validateExistingTerminalsCount($existingTerminals)
     {
         $newTerminal = $this->entity;
@@ -258,8 +301,9 @@ class Validator extends Base\Validator
      * to decide validity.
      *
      * @param array $input
-     * @return void
-     * */
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateNetworkCategory($input)
     {
         if (empty($input[Entity::NETWORK_CATEGORY]) === true)
@@ -272,8 +316,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Category provided invalid for gateway',
                 Entity::NETWORK_CATEGORY,
-                [$input]);
-            }
+                [$input[Entity::NETWORK_CATEGORY]]);
+        }
     }
 
     protected function matchGatewayForNewTerminal($new, $existing)
@@ -297,7 +341,7 @@ class Validator extends Base\Validator
         if (in_array($terminal->getGateway(), self::$editTerminalGateways))
         {
             $gateway = $terminal->getGateway();
-            $this->validateInput($gateway.'_edit_terminal', $input);
+            $this->validateInput($gateway . '_edit_terminal', $input);
         }
         else
         {

@@ -20,8 +20,8 @@ You can safely close this tab
 </div>
 <script>
 
-// Do not remove the below 'callback data' comments because they help
-// during tests for extracting callback data from js
+{{-- Do not remove the below 'callback data' comments because they help
+ during tests for extracting callback data from js --}}
 
 // Callback data //
 var data = {!!utf8_json_encode($data)!!};

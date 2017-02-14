@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Detail;
 
 use Carbon\Carbon;
+use Throwable;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -19,6 +20,36 @@ class Service extends Base\Service
         $merchantDetails = $this->getMerchantDetails($this->merchant);
 
         return $this->createResponse($merchantDetails);
+    }
+
+    public function fetchActivationFiles(string $id)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchantDetails = $this->getMerchantDetails($merchant);
+
+        $signedUrls = [];
+
+        foreach (Entity::UPLOADED_FIELDS as $key)
+        {
+            if (isset($merchantDetails[$key]))
+            {
+                $signedUrls[$key] = $this->getSignedUrl($merchantDetails[$key], $id);
+            }
+        }
+
+        return $signedUrls;
+    }
+
+    protected function getSignedUrl(string $fileStoreId, string $merchantId)
+    {
+        $accessor = new FileStore\Accessor;
+
+        $signedUrls = $accessor->id($fileStoreId)
+                               ->merchantId($merchantId)
+                               ->getSignedUrl();
+
+        return $signedUrls[$fileStoreId];
     }
 
     public function saveMerchantDetails(array $input)
@@ -38,7 +69,13 @@ class Service extends Base\Service
             $this->markSubmitted($merchantDetails);
         }
 
-        return $this->createResponse($merchantDetails);
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
     }
 
     public function uploadActivationFile(array $input)
@@ -62,14 +99,18 @@ class Service extends Base\Service
                 $fileName,
                 $key);
 
-            $params[$key] = $file['id'];
+            $params[$key] = FileStore\Entity::verifyIdAndSilentlyStripSign($file['id']);
         }
 
         $merchantDetails->fill($params);
 
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
         $this->repo->saveOrFail($merchantDetails);
 
-        return $this->createResponse($merchantDetails);
+        return $response;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -109,11 +150,20 @@ class Service extends Base\Service
 
         $merchantDetail->merchant()->associate($merchant);
 
-        $this->repo->saveOrFail($merchantDetail);
+        try
+        {
+            $this->repo->saveOrFail($merchantDetail);
 
-        $this->trace->info(
+            $this->trace->info(
                 TraceCode::CREATE_MERCHANT_DETAIL,
                 [ 'merchant_id'   => $merchant->getId()]);
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->info(
+                TraceCode::CREATE_MERCHANT_DETAIL_FAILED,
+                [ 'merchant_id'   => $merchant->getId()]);
+        }
 
         return $merchantDetail;
     }
@@ -171,10 +221,14 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
+        $totalFields = count(ValidationFields::DASHBOARD_FIELDS);
+
         foreach (ValidationFields::DASHBOARD_FIELDS as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
-                (is_null($merchantDetailsArr[$key]) === true))
+               (is_null($merchantDetailsArr[$key]) === true) or
+                ((is_bool($merchantDetailsArr[$key]) !== true) and
+                    (empty($merchantDetailsArr[$key]) === true)))
             {
                 $requiredFields[] = $key;
             }
@@ -182,17 +236,23 @@ class Service extends Base\Service
 
         if (count($requiredFields) > 0)
         {
+            $remainingFields = count($requiredFields);
+
             $response['verification'] = [
-                'status'            => 'disabled',
-                'disabled_reason'   => 'required_fields',
-                'required_fields'   =>  $requiredFields
+                'status'              => 'disabled',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => $requiredFields,
+                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
             $response['can_submit'] = false;
         }
         else
         {
-            $response['verification'] = ['status' => 'pending'];
+            $response['verification'] = [
+                'status'              => 'pending',
+                'activation_progress' => 100,
+            ];
 
             $response['can_submit'] = true;
         }

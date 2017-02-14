@@ -29,7 +29,6 @@ class BankCodes
         IFSC::IBKL => 'IDB',                    // Idbi Bank Ltd
         IFSC::INDB => 'IDS',                    // Indusind Bank Ltd
         IFSC::IDIB => 'INB',                    // Indian Bank
-        IFSC::VYSA => 'ING',                    // ING VYSA Bank - Merged into KKBK
         IFSC::IOBA => 'IOB',                    // Indian Overseas Bank
         IFSC::JAKA => 'JKB',                    // Jammu And Kashmir Bank Ltd
         IFSC::KARB => 'KBL',                    // Karnataka Bank Ltd
@@ -38,7 +37,6 @@ class BankCodes
         IFSC::ORBC => 'OBC',                    // Oriental Bank Of Commerce
         IFSC::PMCB => 'PMC',                    // Punjab And Maharashtra Co-Op Bank Ltd
         IFSC::PSIB => 'PSB',                    // Punjab And Sind Bank
-        IFSC::ABNA => 'RBS',                    // Royal Bank Of Scotland
         IFSC::RATN => 'RTN',                    // Ratnakar Bank Ltd. (RBL Bank)
         IFSC::SIBL => 'SIB',                    // South Indian Bank
         IFSC::SVCB => 'SVC',                    // Shamrao Vithal Co-Op Bank Ltd

@@ -45,6 +45,18 @@ return [
         ],
     ],
 
+    'testMerchantSettlementScheduleSync' => [
+        'method'  => 'POST',
+        'url'     => '/merchants/10000000000000/schedules',
+        'content' => [
+            'name'       => 'Basic T5',
+            'type'       => 'settlement',
+            'period'     => 'daily',
+            'interval'   => 1,
+            'delay'      => 5,
+        ],
+    ],
+
     'testScheduleBody' => [
         'name'       => 'Every Wednesday',
         'type'       => 'settlement',

@@ -21,11 +21,12 @@ class Validator extends Base\Validator
 
     protected static $createRules = array(
         Entity::ID                          => 'required|alpha_num|size:14|unique:merchants',
-        Entity::NAME                        => 'required|alpha_space_num|max:200',
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::EMAIL                       => 'required|email',
     );
 
     protected static $editRules = array(
+        Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::HOLD_FUNDS                  => 'sometimes|in:0,1',
         Entity::WEBSITE                     => 'sometimes|url|max:255',
         Entity::CATEGORY                    => 'sometimes|numeric|digits:4',
@@ -35,14 +36,15 @@ class Validator extends Base\Validator
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::RECEIPT_EMAIL_ENABLED       => 'sometimes|boolean',
         Entity::SETTLEMENT_SCHEDULE         => 'sometimes|integer|min:1|max:30',
-        Entity::FEATURES                    => 'sometimes|max:255',
         Entity::NAME                        => 'sometimes|alpha_space_num|max:200',
         Entity::RISK_RATING                 => 'sometimes|min:0|max:5',
         Entity::FEE_BEARER                  => 'sometimes|in:customer,platform',
+        Entity::FEE_MODEL                   => 'sometimes|in:prepaid,postpaid',
         Entity::MAX_PAYMENT_AMOUNT          => 'sometimes|integer',
         'groups'                            => 'sometimes|array',
         // max: 5 days (don't change max value without consult), min:60 minutes
         Entity::AUTO_REFUND_DELAY           => 'sometimes|string|custom',
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean',
         Entity::CONVERT_CURRENCY            => 'sometimes|boolean'
     );
 
@@ -62,6 +64,11 @@ class Validator extends Base\Validator
         Entity::BRAND_COLOR                 => 'sometimes|regex:(^[0-9a-fA-F]{6}$)',
         Entity::TRANSACTION_REPORT_EMAIL    => 'sometimes|array',
         Entity::LOGO_URL                    => 'sometimes|max:2000',
+        Entity::AUTO_CAPTURE_LATE_AUTH      => 'sometimes|boolean'
+    );
+
+    protected static $actionRules = array(
+        Entity::ACTION                      => 'required|custom'
     );
 
     protected static $featureRules = [
@@ -75,7 +82,6 @@ class Validator extends Base\Validator
 
     protected static $editValidators = [
         'csv_email',
-        'features',
     ];
 
     protected static $featureValidators = [
@@ -159,11 +165,6 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateFeatures($input)
-    {
-        Features::validateFeatures($input);
-    }
-
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
         $attributes = array(
@@ -219,7 +220,7 @@ class Validator extends Base\Validator
         switch ($duration)
         {
             case 'mins':
-                $min = 60;
+                $min = 30;
                 $max = 7200;
                 break;
 
@@ -242,6 +243,70 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Auto refund delay should be between ' . $min . ' and ' . $max . ' ' . $duration);
+        }
+    }
+
+    protected function validateAction($attribute, $action)
+    {
+        if (Action::exists($action) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED);
+        }
+
+        $validator = 'validate' .ucfirst($action);
+
+        $this->$validator();
+    }
+
+    protected function validateArchive()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isArchived() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_ARCHIVED);
+        }
+
+        $merchantDetails = $merchant->merchantDetail;
+
+        if ($merchantDetails === null)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_DETAIL_DOES_NOT_EXISTS);
+        }
+    }
+
+    protected function validateUnarchive()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isArchived() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_ARCHIVED);
+        }
+    }
+
+    protected function validateSuspend()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
+        }
+    }
+
+    protected function validateUnsuspend()
+    {
+        $merchant = $this->entity;
+
+        if ($merchant->isSuspended() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
         }
     }
 }

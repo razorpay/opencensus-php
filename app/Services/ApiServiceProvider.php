@@ -7,8 +7,12 @@ use Illuminate\Database\Eloquent\Relations\Relation;
 use RZP\Models\Admin as Admin;
 use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
+use RZP\Models\Adjustment;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -100,7 +104,7 @@ class ApiServiceProvider extends BaseServiceProvider
 
         $this->registerMaxMind();
 
-        $this->registerBitly();
+        $this->registerElfin();
 
         $this->registerExchange();
 
@@ -130,6 +134,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'maxmind',
             'raven',
             'repo',
+            'elfin',
             'segment',
             'upi.client',
             'webhook.inferno',
@@ -174,18 +179,18 @@ class ApiServiceProvider extends BaseServiceProvider
         });
     }
 
-    protected function registerBitly()
+    protected function registerElfin()
     {
-        $this->app->singleton('bitly', function($app)
+        $this->app->singleton('elfin', function($app)
         {
-            $bitlyMock = $app['config']->get('applications.bitly.mock');
+            $mock = $app['config']->get('applications.elfin.mock');
 
-            if ($bitlyMock === true)
+            if ($mock)
             {
-                return new Mock\Bitly($app);
+                return new Elfin\Mock\Service($app['config'], $app['trace']);
             }
 
-            return new Bitly($app);
+            return new Elfin\Service($app['config'], $app['trace']);
         });
     }
 
@@ -228,9 +233,19 @@ class ApiServiceProvider extends BaseServiceProvider
             'admin'           => Admin\Admin\Entity::class,
             'role'            => Admin\Role\Entity::class,
             'permission'      => Admin\Permission\Entity::class,
+
+            // line items
             'invoice'         => Invoice\Entity::class,
+
+            // file store
             'merchant'        => Merchant\Entity::class,
             'merchant_detail' => Merchant\Detail\Entity::class,
+
+            // transaction
+            'adjustment'      => Adjustment\Entity::class,
+            'payment'         => Payment\Entity::class,
+            'refund'          => Payment\Refund\Entity::class,
+            'settlement'      => Settlement\Entity::class,
         ]);
     }
 }

@@ -53,7 +53,7 @@ class Entity
     const TERMINAL_ACTION       = 'terminal_action';
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';
-    const DAILY_SETTLEMENT      = 'daily_settlement';
+    const BATCH_SETTLEMENT      = 'batch_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const ORG                   = 'org';
@@ -93,10 +93,13 @@ class Entity
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const NETBANKING_AXIS       = 'netbanking_axis';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
+    const WALLET_JIOMONEY       = 'wallet_jiomoney';
 
     public static $namespace = array(
         self::P2P                   => \RZP\Models\P2p::class,
@@ -143,14 +146,17 @@ class Entity
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
-        self::DAILY_SETTLEMENT      => \RZP\Models\Settlement\Daily::class,
+        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
+        self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
         self::SETTLEMENT_DETAILS    => \RZP\Models\Settlement\Details::class,
         self::TERMINAL_ANALYTICS    => \RZP\Models\Payment\TerminalAnalytics::class,
         self::WALLET_FREECHARGE     => \RZP\Gateway\Wallet\Freecharge::class,
+        self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
         self::ROLE                  => \RZP\Models\Admin\Role::class,
@@ -165,6 +171,8 @@ class Entity
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
@@ -172,6 +180,7 @@ class Entity
         self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
         self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
     );
 
     protected static $syncedInLiveAndTest = array(

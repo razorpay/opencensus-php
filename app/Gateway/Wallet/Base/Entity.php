@@ -76,9 +76,19 @@ class Entity extends Base\Entity
         self::REFERENCE2,
     );
 
+    public function getStatusCode()
+    {
+        return $this->getAttribute(self::STATUS_CODE);
+    }
+
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountAttribute()

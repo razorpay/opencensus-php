@@ -9,16 +9,27 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         'amount'        => 'sometimes|integer|min:100',
         'notes'         => 'sometimes|notes'
-    );
+    ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
         'refundAmount'
-    );
+    ];
+
+    protected static $directRules = [
+        'payment_id'    => 'required',
+        'amount'        => 'sometimes|integer|min:100',
+        'notes'         => 'sometimes|notes'
+    ];
+
+    protected static $verifyRefundGateways = [
+            Payment\Gateway::HDFC,
+            Payment\Gateway::AXIS_MIGS
+    ];
 
     protected $payment;
 
@@ -87,6 +98,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
+        }
+    }
+
+    public static function validateVerifyRefundAllowed(string $gateway)
+    {
+        if (in_array($gateway, self::$verifyRefundGateways, true) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
     }
 }

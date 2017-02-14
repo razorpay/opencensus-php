@@ -9,8 +9,8 @@ use RZP\Models\Merchant\Entity as Merchant;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOrders extends Migration {
-
+class CreateOrders extends Migration
+{
     /**
      * Run the migrations.
      *
@@ -22,10 +22,10 @@ class CreateOrders extends Migration {
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Order::ID, 14)
+            $table->char(Order::ID, Order::ID_LENGTH)
                   ->primary();
 
-            $table->char(Order::MERCHANT_ID, 14);
+            $table->char(Order::MERCHANT_ID, Order::ID_LENGTH);
 
             $table->integer(Order::AMOUNT)
                   ->unsigned();
@@ -56,7 +56,7 @@ class CreateOrders extends Migration {
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 
-            $table->char(Order::CUSTOMER_ID, 14)
+            $table->char(Order::CUSTOMER_ID, Order::ID_LENGTH)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -122,5 +122,4 @@ class CreateOrders extends Migration {
 
         Schema::drop(Table::ORDER);
     }
-
 }

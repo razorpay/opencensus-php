@@ -106,8 +106,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             // Increment the total count for the summary
             $this->setSummaryCount(self::TOTAL_SUMMARY, $paymentId);
 
-            // Validates that the payment status is not failed.
-            $validate = $this->validatePaymentStatus($row);
+            $validate = $this->validatePaymentDetails($row);
 
             if ($validate === true)
             {
@@ -155,6 +154,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
     }
 
+    protected function validatePaymentDetails(array $row)
+    {
+        $validPaymentStatus = $this->validatePaymentStatus($row);
+
+        $validPaymentAmount = $this->validatePaymentAmountEqualsReconAmount($row);
+
+        $validPaymentDetails = ($validPaymentStatus and $validPaymentAmount);
+
+        return $validPaymentDetails;
+    }
+
+    /**
+     * Validates that the payment status is not failed.
+     */
     protected function validatePaymentStatus($row)
     {
         $paymentStatus = $this->payment->getStatus();
@@ -280,20 +293,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         // Set the payment transaction for the row.
         $this->paymentTransaction = $this->payment->transaction;
 
-        if ($this->paymentTransaction === null)
+        if ($this->paymentTransaction !== null)
         {
-            $this->messenger->raiseReconAlert(
-                [
-                    'trace_code' => TraceCode::RECON_FAILED_VERIFY,
-                    'message'    => 'Transaction is null after verifying and authorizing the payment.',
-                    'payment_id' => $this->payment->getId(),
-                    'gateway'    => get_called_class()
-                ]);
-
-            return false;
+            return true;
         }
 
-        return true;
+        $createTransactionSuccess = $this->attemptToCreateMissingPaymentTransaction();
+
+        if ($createTransactionSuccess === true)
+        {
+            $this->paymentTransaction = $this->payment->reload()->transaction;
+
+            return true;
+        }
+
+        $this->messenger->raiseReconAlert(
+            [
+                'trace_code'    => TraceCode::RECON_FAILURE,
+                'failure_code'  => 'PAYMENT_TRANSACTION_ABSENT',
+                'message'       => 'Unable to create payment transaction after verifying',
+                'payment_id'    => $this->payment->getId(),
+                'gateway'       => get_called_class()
+            ]);
+
+        return false;
     }
 
     protected function persistReconciliationData($rowDetails)
@@ -786,11 +809,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
             catch (\Exception $ex)
             {
+                $message = 'Payment transaction create failed with -> '. $ex->getMessage();
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'                        => TraceCode::RECON_FAILURE,
                         'failure_code'                      => 'PAYMENT_TRANSACTION_CREATE_FAIL',
-                        'message'                           => 'Payment transaction create failed with -> '. $ex->getMessage(),
+                        'message'                           => $message,
                         'is_hdfc_dicl'                      => $isHDFCDICL,
                         'is_not_captured_but_authorized'    => $isNotCapturedButAuthorized,
                         'payment_id'                        => $this->payment->getId(),
@@ -857,10 +882,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayFee !== $reconGatewayFee)
             {
+                $message = 'Gateway fee in the recon file does not match with the one stored in API.';
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'        => TraceCode::RECON_FAILURE,
-                        'message'           => 'Gateway fee in the recon file does not match with the one stored in API.',
+                        'message'           => $message,
                         'recon_gateway_fee' => $reconGatewayFee,
                         'api_gateway_fee'   => $currentGatewayFee,
                         'gateway'           => get_called_class(),
@@ -892,10 +919,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             if ($currentGatewayServiceTax !== $reconGatewayServiceTax)
             {
+                $message = 'Gateway service tax in the recon file does not match with the one stored in API.';
+
                 $this->messenger->raiseReconAlert(
                     [
                         'trace_code'                 => TraceCode::RECON_FAILURE,
-                        'message'                    => 'Gateway service tax in the recon file does not match with the one stored in API.',
+                        'message'                    => $message,
                         'recon_gateway_service_tax'  => $reconGatewayServiceTax,
                         'api_gateway_service_tax'    => $currentGatewayServiceTax,
                         'gateway'                    => get_called_class(),
@@ -913,5 +942,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             }
             return true;
         }
+    }
+
+    /**
+     * Checks if amount in recon file matches the actual amount in payment entity
+     * Implementation to be provided by child clasess
+     *
+     * @param  array $row Row data
+     *
+     * @return bool
+     */
+    protected function validatePaymentAmountEqualsReconAmount(array $row)
+    {
+        return true;
     }
 }

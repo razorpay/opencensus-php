@@ -5,6 +5,7 @@ namespace RZP\Models\Settlement\Kotak;
 use AWS;
 use Excel;
 use Config;
+use RZP\Trace\Trace;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
@@ -56,19 +57,9 @@ trait FileHandlerTrait
         }
     }
 
-    public function writeToCsvFile($data, $name, $fullName = null)
+    public function writeToCsvFile($data, $name, $fullName = null, $dir = 'files/settlement')
     {
-        $excelObject = $this->createExcelObject($data, $name);
-
-        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
-
-        $fullpath = $fileMetadata['full'];
-
-        if ($fullName != null)
-        {
-            rename($fullpath, $fullName);
-            $fullpath = $fullName;
-        }
+        $fullpath = $this->createCsvFile($data, $name, $fullName, $dir);
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -78,15 +69,7 @@ trait FileHandlerTrait
 
     public function writeToExcelFile($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
-
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -96,16 +79,9 @@ trait FileHandlerTrait
     }
 
 
-    public function writeToExcelFileH2H($data, $name)
+    public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -118,6 +94,65 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function createExcelFile($data, $name, $dir)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+
+        $fullpath = $fileMetadata['full'];
+
+        return $fullpath;
+    }
+
+    public function createCsvFile($data, $name, $fullName, $dir, $append = false)
+    {
+        $dir = storage_path($dir);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir);
+        }
+
+        $fullpath = $dir . '/' . $name . '.csv';
+
+        // open the file in append mode
+        $handle = fopen($fullpath, 'a');
+
+        $first = true;
+
+        foreach ($data as $row)
+        {
+            if (($append === false) and ($first === true))
+            {
+                $headers = array_keys($row);
+
+                fputcsv($handle, $headers);
+
+                $first = false;
+            }
+
+            $row = $this->flatten($row);
+
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        if ($fullName !== null)
+        {
+            rename($fullpath, $fullName);
+
+            $fullpath = $fullName;
+        }
+
+        return $fullpath;
+    }
+
     public function getH2HFileFromAws($key)
     {
         $bucket = 'h2h_bucket';
@@ -127,6 +162,26 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $row)
+    {
+        foreach ($row as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = json_encode($value);
+            }
+        }
+
+        return $row;
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
@@ -364,7 +419,20 @@ trait FileHandlerTrait
         fwrite($file, $txt);
         fclose($file);
 
-        chmod($fullpath, 0777);  // keep it 0777. This step is important.
+        try
+        {
+            chmod($fullpath, 0777);  // keep it 0777. This step is important
+        }
+        catch (\Exception $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                [
+                    'path' => $fullpath
+                ]);
+        }
 
         return $fullpath;
     }
@@ -554,8 +622,7 @@ trait FileHandlerTrait
     {
         $rows = $this->getFileLines($file);
 
-        $data = array();
-        $headings = $this->getHeadings();
+        $data = [];
 
         foreach ($rows as $ix => $row)
         {
@@ -565,20 +632,35 @@ trait FileHandlerTrait
                 continue;
             }
 
-            $values = explode('~', $row);
-
-            if (count($headings) !== count($values))
-            {
-                throw new Exception\RuntimeException(
-                    'Count of array elements for combine not equal. Heading count: ' .
-                    count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
-            }
-
-            $values = array_combine($headings, $values);
-            $data[] = $values;
+            $data[] = $this->parseTextRow($row, $ix);
         }
 
         return $data;
+    }
+
+    protected function parseTextRow($row, $ix)
+    {
+        $headings = $this->getHeadings();
+
+        $values = explode('~', $row);
+
+        if (count($headings) !== count($values))
+        {
+            $values = $this->parseTextRowWithHeadingMismatch($headings, $values, $ix);
+        }
+        else
+        {
+            $values = array_combine($headings, $values);
+        }
+
+        return $values;
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        throw new Exception\RuntimeException(
+            'Count of array elements for combine not equal. Heading count: ' .
+            count($headings). ' Value count: ' . count($values) . ' Row: ' . $ix);
     }
 
     protected function parseExcelFile($filePath)

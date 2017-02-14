@@ -96,6 +96,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
+        $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
+
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];
@@ -204,6 +206,17 @@ class Gateway extends Base\Gateway
         $content = explode('|', $data);
 
         $fields = $this->getFieldsForAction($this->action);
+
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+        }
 
         $content = array_combine($fields, $content);
 
@@ -336,6 +349,18 @@ class Gateway extends Base\Gateway
     {
         assert ($this->mode === Mode::LIVE);
 
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_sec'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_sec'];
+            }
+        }
+
         return $this->config['live_hash_secret'];
     }
 
@@ -351,35 +376,5 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
-    }
-
-    public function generateClaims($input)
-    {
-        $paymentIds = array_map(function($row)
-        {
-            return $row['payment']['id'];
-        }, $input['data']);
-
-        $gatewayPayments = $this->repo->fetchByPaymentIdsAndAction(
-                                $paymentIds, Action::AUTHORIZE);
-
-        $gatewayPayments = $gatewayPayments->getDictionaryByAttribute(Entity::PAYMENT_ID);
-
-        $input['data'] = array_map(function($row) use ($gatewayPayments)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($gatewayPayments[$paymentId]))
-            {
-                $row['gateway'] = $gatewayPayments[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $input['data']);
-
-        $ns = $this->getGatewayNamespace();
-        $class = $ns . '\\' . 'ClaimsFile';
-
-        return (new $class)->generate($input);
     }
 }

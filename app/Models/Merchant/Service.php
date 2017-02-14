@@ -125,6 +125,8 @@ class Service extends Base\Service
             $input['groups'] = $groupIds;
         }
 
+        $this->setSettlementScheduleIdIfNeeded($merchant, $input);
+
         $merchant = (new Merchant\Core)->edit($merchant, $input);
 
         return $merchant->toArrayPublic();
@@ -339,11 +341,36 @@ class Service extends Base\Service
 
         $merchant->schedule()->associate($schedule);
 
+        $this->setSettlementScheduleIfNeeded($merchant, $schedule);
+
         $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
 
         $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function setSettlementScheduleIfNeeded($merchant, $schedule)
+    {
+        if (($schedule->getPeriod() === Schedule\Period::DAILY) and
+            ($schedule->getInterval() === 1))
+        {
+            $delay = $schedule->getDelay();
+
+            $merchant->setSettlementSchedule($delay);
+        }
+    }
+
+    protected function setSettlementScheduleIdIfNeeded($merchant, $input)
+    {
+        if (isset($input[Entity::SETTLEMENT_SCHEDULE]) === true)
+        {
+            $requiredDelay = $input[Entity::SETTLEMENT_SCHEDULE];
+
+            $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
+
+            $merchant->schedule()->associate($schedule);
+        }
     }
 
     protected function traceAndNotifyScheduleAssignment($schedule, $merchant)
@@ -392,16 +419,7 @@ class Service extends Base\Service
 
             try
             {
-                $schedule = $this->repo->schedule->fetchDailySettlementSchedulesByDelay($requiredDelay);
-
-                if (is_null($schedule) === true)
-                {
-                    $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
-
-                    $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
-
-                    $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-                }
+                $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
 
                 $merchant->schedule()->associate($schedule);
 
@@ -429,6 +447,22 @@ class Service extends Base\Service
         $this->trace->info(TraceCode::SCHEDULE_MIGRATION_COMPLETE, $migrationSummary);
 
         return $migrationSummary;
+    }
+
+    protected function getOrCreateDailySettlementSchedule($requiredDelay)
+    {
+        $schedule = $this->repo->schedule->getDailySettlementScheduleByDelay($requiredDelay);
+
+        if (is_null($schedule) === true)
+        {
+            $requiredScheduleData = $this->getRequiredScheduleData($requiredDelay);
+
+            $schedule = (new Schedule\Core)->createSchedule($requiredScheduleData);
+
+            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
+        }
+
+        return $schedule;
     }
 
     protected function getRequiredScheduleData($requiredDelay)
@@ -479,6 +513,12 @@ class Service extends Base\Service
                 ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_LIVE);
         }
 
+        if ($merchant->isSuspended() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_ALREADY_SUSPENDED);
+        }
+
         $merchant->liveEnable();
 
         $this->repo->saveOrFail($merchant);
@@ -503,6 +543,21 @@ class Service extends Base\Service
         }
 
         $merchant->liveDisable();
+
+        $this->repo->saveOrFail($merchant);
+
+        return $merchant->toArrayPublic();
+    }
+
+    public function action($id, array $input)
+    {
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
+
+        $merchant->getValidator()->validateInput('action', $input);
+
+        $function = $input['action'];
+
+        $merchant->$function();
 
         $this->repo->saveOrFail($merchant);
 
@@ -604,6 +659,12 @@ class Service extends Base\Service
     {
         $formattedMethods = (new Methods\Core)->getFormattedMethods($this->merchant);
 
+        // licious has dependency on this field in their android app
+        if ($this->merchant->getId() === '5yZ76HWrvL9g2l')
+        {
+            $formattedMethods['http_status_code'] = 200;
+        }
+
         return $formattedMethods;
     }
 
@@ -645,7 +706,7 @@ class Service extends Base\Service
 
     public function getWebhook($id)
     {
-        $webhook = $this->repo->webhook->findByIdAndMerchantId($id, $this->merchant->getId());
+        $webhook = $this->repo->webhook->findByIdAndMerchant($id, $this->merchant);
 
         return $webhook->toArray();
     }
@@ -905,7 +966,7 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndName($merchant->getId(),
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail($merchant->getId(),
                             $featureName);
             if ($feature !== null)
             {

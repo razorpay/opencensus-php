@@ -62,7 +62,10 @@ class Entity extends Base\PublicEntity
     const PROMOTER_ADDRESS_URL              =      'promoter_address_url';
     const TRANSACTION_REPORT_EMAIL          =      'transaction_report_email';
     const COMMENT                           =      'comment';
+    const ROLE                              =      'role';
+    const DEPARTMENT                        =      'department';
     const STEPS_FINISHED                    =      'steps_finished';
+    const ACTIVATION_PROGRESS               =      'activation_progress';
     const LOCKED                            =      'locked';
     const SUBMITTED                         =      'submitted';
     const SUBMITTED_AT                      =      'submitted_at';
@@ -77,6 +80,7 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::CONTACT_NAME,
+        self::CONTACT_EMAIL,
         self::CONTACT_MOBILE,
         self::CONTACT_LANDLINE,
         self::BUSINESS_TYPE,
@@ -129,6 +133,8 @@ class Entity extends Base\PublicEntity
         self::PROMOTER_PAN_URL,
         self::PROMOTER_ADDRESS_URL,
         self::TRANSACTION_REPORT_EMAIL,
+        self::ROLE,
+        self::DEPARTMENT,
         self::COMMENT,
         self::STEPS_FINISHED,
         self::LOCKED,
@@ -173,6 +179,7 @@ class Entity extends Base\PublicEntity
         self::WEBSITE_PRICING,
         self::WEBSITE_LOGIN,
         self::STEPS_FINISHED,
+        self::ACTIVATION_PROGRESS,
         self::LOCKED,
         self::SUBMITTED,
         self::SUBMITTED_AT,
@@ -188,16 +195,36 @@ class Entity extends Base\PublicEntity
         self::BANK_BENEFICIARY_CITY,
         self::BANK_BENEFICIARY_STATE,
         self::BANK_BENEFICIARY_PIN,
+        self::BUSINESS_PROOF_URL,
+        self::BUSINESS_PAN_URL,
+        self::ADDRESS_PROOF_URL,
+        self::PROMOTER_ADDRESS_URL,
+        self::ROLE,
+        self::DEPARTMENT,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
     protected $defaults = [
-        self::SUBMITTED_AT   => null,
+        self::SUBMITTED_AT        => null,
+        self::ACTIVATION_PROGRESS => 0,
     ];
 
     protected $casts = [
-        self::LOCKED      => 'bool',
+        self::LOCKED                 => 'bool',
+        self::SUBMITTED              => 'bool',
+        self::BUSINESS_INTERNATIONAL => 'bool',
+        self::ACTIVATION_PROGRESS    => 'int',
+    ];
+
+    const UPLOADED_FIELDS = [
+        self::PROMOTER_PAN_URL,
+        self::BUSINESS_PAN_URL,
+        self::ADDRESS_PROOF_URL,
+        self::PROMOTER_PROOF_URL,
+        self::BUSINESS_PROOF_URL,
+        self::PROMOTER_ADDRESS_URL,
+        self::BUSINESS_OPERATION_PROOF_URL,
     ];
 
     public function merchant()
@@ -210,8 +237,23 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::LOCKED) === true);
     }
 
+    public function isSubmitted()
+    {
+        return ($this->getAttribute(self::SUBMITTED) === true);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);
+    }
+
+    public function setActivationProgress($activationProgress)
+    {
+        $this->setAttribute(self::ACTIVATION_PROGRESS, $activationProgress);
+    }
+
+    public function getActivationProgress()
+    {
+        $this->getAttribute(self::ACTIVATION_PROGRESS);
     }
 }

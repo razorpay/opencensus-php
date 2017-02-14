@@ -52,6 +52,15 @@ class Core extends Base\Core
         }
     }
 
+    public function edit($token, $input)
+    {
+        $token->edit($input);
+
+        $this->repo->saveOrFail($token);
+
+        return $token;
+    }
+
     /**
      * Get the token entity for local/global customer. $id can be token or
      * token id for now.
@@ -66,11 +75,9 @@ class Core extends Base\Core
 
         if ($token === null)
         {
-            Token\Entity::verifyIdAndStripSign($id);
+            $token = $this->repo->token->findByPublicIdAndMerchant($id, $customer->merchant);
 
-            $token = $this->repo->token->findByIdAndMerchantId($id, $customer->merchant->getId());
-
-            assertTrue($token->customer->getId() === $customer->getId());
+            assertTrue($token->getCustomerId() === $customer->getId());
         }
 
         return $token;
@@ -78,7 +85,7 @@ class Core extends Base\Core
 
     public function fetchTokensByCustomer($customer)
     {
-        $tokens = $this->repo->token->getByCustomerId($customer->getId());
+        $tokens = $this->repo->token->getByCustomer($customer);
 
         return $tokens;
     }
@@ -97,7 +104,7 @@ class Core extends Base\Core
     {
         foreach ($existingTokens as $token)
         {
-            if ($token->card->getId() === $newToken->card->getId())
+            if ($token->getCardId() === $newToken->getCardId())
             {
                 return $token;
             }

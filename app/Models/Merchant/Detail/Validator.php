@@ -37,7 +37,7 @@ class Validator extends Base\Validator
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255|required_with:company_pan',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
-        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:1|max:10000000',
+        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
@@ -67,6 +67,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::ROLE                            => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes',
@@ -97,7 +99,7 @@ class Validator extends Base\Validator
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
         Entity::COMPANY_PAN_NAME                => 'sometimes|max:255|required_with:company_pan',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
-        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:1|max:10000000',
+        Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
         Entity::PROMOTER_PAN_NAME               => 'sometimes|max:255',
         Entity::BANK_NAME                       => 'sometimes|alpha_num|between:5,20',
@@ -127,6 +129,8 @@ class Validator extends Base\Validator
         Entity::PROMOTER_PAN_URL                => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::PROMOTER_ADDRESS_URL            => 'sometimes|file|mimes:pdf,jpeg,jpg,png,zip',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
+        Entity::ROLE                            => 'sometimes|max:255',
+        Entity::DEPARTMENT                      => 'sometimes|max:255',
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::COMMENT                         => 'sometimes|max:255',
         Entity::SUBMIT                          => 'sometimes|boolean',
@@ -136,6 +140,17 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::COMMENT                         => 'sometimes|max:255',
+    ];
+
+    protected static $migrateRules = [
+        Entity::MERCHANT_ID                     => 'required',
+        Entity::BUSINESS_PROOF_URL              => 'sometimes|url',
+        Entity::BUSINESS_OPERATION_PROOF_URL    => 'sometimes|url',
+        Entity::BUSINESS_PAN_URL                => 'sometimes|url',
+        Entity::ADDRESS_PROOF_URL               => 'sometimes|url',
+        Entity::PROMOTER_PROOF_URL              => 'sometimes|url',
+        Entity::PROMOTER_PAN_URL                => 'sometimes|url',
+        Entity::PROMOTER_ADDRESS_URL            => 'sometimes|url',
     ];
 
     public function validateTransactionReportEmail($attribute, $value)

@@ -44,17 +44,18 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'                => '100000razorpay',
-                    'auth_type'         => 'google_auth',
-                    'business_name'     => 'Razorpay',
-                    'display_name'      => 'Razorpay Software Private Ltd',
-                    'email'             => 'admin@razorpay.com',
-                    'email_domains'     => 'razorpay.com',
-                    'allow_sign_up'     => true,
-                    'login_logo_url'    => null,
-                    'main_logo_url'     => null,
-                    'created_at'        => $currentTime,
-                    'updated_at'        => $currentTime,
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
                 ]
             );
 
@@ -76,6 +77,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I3fMI9AGKROX',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -85,6 +87,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I47LP6lyPYJR',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'beta-dashboard.razorpay.com',
                     'created_at'        => $currentTime,
@@ -94,6 +97,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6GMmOpMJp40',
                     'org_id'            => '100000razorpay',
                     'hostname'          => 'dashboard.razorpay.dev',
                     'created_at'        => $currentTime,
@@ -103,6 +107,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
+                    'id'                => '70I6bfuaPQ72xa',
                     'org_id'            => '6dLbNSpv5XbCOG',
                     'hostname'          => 'dashboard-hdfc.razorpay.dev',
                     'created_at'        => $currentTime,
@@ -158,6 +163,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::NODAL_ACCOUNT,
+                    'contact_name'  => 'Razorpay Nodal Account',
+                    'contact_email' => 'nodal@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
@@ -179,6 +194,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::ATOM_ACCOUNT,
+                    'contact_name'  => 'Razorpay Atom Account',
+                    'contact_email' => 'atom@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
@@ -206,6 +231,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::API_FEE_ACCOUNT,
+                    'contact_name'  => 'Razorpay Fee Account',
+                    'contact_email' => 'fees@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::API_FEE_ACCOUNT,
@@ -228,6 +263,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'contact_name'  => 'Test Account',
+                    'contact_email' => 'test@razorpay.com',
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -259,6 +304,16 @@ class DatabaseSeeder extends Seeder
                     )
                 );
 
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::SHARED_ACCOUNT,
+                    'contact_name'  => 'Shared Account',
+                    'contact_email' => 'shared@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                    )
+                );
+
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::SHARED_ACCOUNT,
@@ -281,6 +336,16 @@ class DatabaseSeeder extends Seeder
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
                     'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::DEMO_ACCOUNT,
+                    'contact_name'  => 'Demo Account',
+                    'contact_email' => 'demo@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
@@ -316,6 +381,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'upi'           => '1',
                     'created_at'    =>  $currentTime,
@@ -334,6 +400,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
@@ -755,8 +822,6 @@ class DatabaseSeeder extends Seeder
                 'gateway'                   => Gateway::FIRST_DATA,
                 'card'                      => '1',
                 'gateway_merchant_id'       => 'demo_merchant_first_data',
-                'gateway_terminal_id'       => 'shared_terminal_first_data',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_first_data_terminal_pass'),
                 'created_at'                => time(),
                 'updated_at'                => time(),
                 )
@@ -838,10 +903,13 @@ class DatabaseSeeder extends Seeder
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
+        $this->createJiomoneyTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1048,6 +1116,42 @@ class DatabaseSeeder extends Seeder
         );
     }
 
+    protected function createNetbankingAirtelTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_AIRTEL_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_AIRTEL,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
+                'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingAxisTerminal()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => 'netbanking_axis',
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
+                'recurring'             => 0,
+                'created_at'            =>  time(),
+                'updated_at'            =>  time(),
+            )
+        );
+    }
+
     protected function createAmexTerminals()
     {
         DB::table(Table::TERMINAL)->insert(
@@ -1236,6 +1340,38 @@ class DatabaseSeeder extends Seeder
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )
+        );
+    }
+
+    protected function createJiomoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '6tUImiItg84AzK',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'gateway_terminal_id'       => 'test_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => 'demo_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
         );
     }
 

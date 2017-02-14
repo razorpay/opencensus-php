@@ -187,12 +187,21 @@ class CreateMerchantDetailsTable extends Migration
             $table->string(MerchantDetail::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
+            $table->string(MerchantDetail::ROLE)
+                  ->nullable();
+
+            $table->string(MerchantDetail::DEPARTMENT)
+                  ->nullable();
+
             $table->string(MerchantDetail::COMMENT)
                   ->nullable();
 
             $table->string(MerchantDetail::STEPS_FINISHED)
                   ->nullable()
                   ->default('[]');
+
+            $table->integer(MerchantDetail::ACTIVATION_PROGRESS)
+                  ->default(0);
 
             $table->boolean(MerchantDetail::LOCKED)
                   ->default(0);

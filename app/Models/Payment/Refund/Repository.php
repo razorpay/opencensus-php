@@ -4,6 +4,7 @@ namespace RZP\Models\Payment\Refund;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
+use RZP\Models\Terminal;
 use RZP\Models\Payment\Refund;
 use RZP\Exception;
 use RZP\Constants\Table;
@@ -43,11 +44,18 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($payment, $merchant)
+    public function findForPaymentAndMerchant($payment, $merchant)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->merchantId($merchant->getId())
+                    ->get();
+    }
+
+    public function findForPayment($payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->get();
     }
 
@@ -78,13 +86,13 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['payment']);
+                        $merchantId, $from, $to, $count, $skip, ['payment']);
     }
 
-    public function fetchRefundSummaryBetweenTimestamp($from , $to)
+    public function fetchRefundSummaryBetweenTimestamp($from, $to)
     {
         return $this->newQuery()
                     ->whereBetween(Entity::CREATED_AT, [$from, $to])
@@ -114,6 +122,26 @@ class Repository extends Base\Repository
                     ->whereNull(Table::REFUND . '.' . Refund\Entity::TRANSACTION_ID)
                     ->whereNotNull(Table::PAYMENT . '.' . Payment\Entity::TRANSACTION_ID)
                     ->with('payment', 'merchant')
+                    ->get();
+    }
+
+    public function fetchGatewayRefundedRefundsWithoutTxns()
+    {
+        $refundAttrs = $this->getAttributeWithTableName('*');
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundGatewayRefundedAttr = $this->getAttributeWithTableName(Entity::GATEWAY_REFUNDED);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentTransactionIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::TRANSACTION_ID);
+
+        return $this->newQuery()
+                    ->join(Table::PAYMENT, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                    ->select($refundAttrs)
+                    ->whereNull($refundTransactionIdAttr)
+                    ->whereNotNull($paymentTransactionIdAttr)
+                    ->where($refundGatewayRefundedAttr, '=', 1)
+                    ->with(['payment', 'merchant'])
                     ->get();
     }
 
@@ -147,6 +175,50 @@ class Repository extends Base\Repository
         return $refunds;
     }
 
+    public function fetchRefundsForTpvBetweenTimestamps($type, $gatewayCode, $from, $to, $gateway, $tpvEnabled = false)
+    {
+        // SELECT `refunds`.*
+        // FROM `refunds`
+        // INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        // INNER JOIN `terminals` ON `payments`.`terminal_id` = `terminals`.`id`
+        // WHERE `refunds`.`created_at` >= $from
+        //   AND `refunds`.`created_at` < $to
+        //   AND `payments`.`bank` = $gatewayCode
+        //   AND `payments`.`gateway` = $gateway
+        //   AND `terminals`.`tpv` = $tpvEnabled
+
+        $attrs = $this->getAttributeWithTableName('*');
+
+        $pRepo = $this->manager->payment;
+        $pTableName = $pRepo->getTableName();
+
+        $tRepo = $this->manager->terminal;
+        $tTableName = $tRepo->getTableName();
+
+        $rPaymentId = $this->getAttributeWithTableName(Refund\Entity::PAYMENT_ID);
+        $rCreatedAt = $this->getAttributeWithTableName(Refund\Entity::CREATED_AT);
+
+        $pId = $pRepo->getAttributeWithTableName(Payment\Entity::ID);
+        $pType = $pRepo->getAttributeWithTableName($type);
+        $pGateway = $pRepo->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $pTerminalId = $pRepo->getAttributeWithTableName(Payment\Entity::TERMINAL_ID);
+
+        $tId = $tRepo->getAttributeWithTableName(Terminal\Entity::ID);
+        $tTpv = $tRepo->getAttributeWithTableName(Terminal\Entity::TPV);
+
+        return $this->newQuery()
+                    ->select($attrs)
+                    ->join($pTableName, $rPaymentId, '=', $pId)
+                    ->join($tTableName, $pTerminalId, '=', $tId)
+                    ->where($rCreatedAt, '>=', $from)
+                    ->where($rCreatedAt, '<=', $to)
+                    ->where($pType, '=', $gatewayCode)
+                    ->where($pGateway, '=', $gateway)
+                    ->where($tTpv, '=', $tpvEnabled)
+                    ->with('payment')
+                    ->get();
+    }
+
     /**
      * Join with the corresponding gateway and check that this particular payment
      * has no gateway entity for the refund.
@@ -172,7 +244,7 @@ class Repository extends Base\Repository
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
-        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+        $gatewayTable = Table::getTableNameForEntity($gateway);
 
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
@@ -215,5 +287,14 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
+    }
+
+    protected function addQueryParamPaymentId($query, $params)
+    {
+        $paymentId = $params[Refund\Entity::PAYMENT_ID];
+
+        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
     }
 }

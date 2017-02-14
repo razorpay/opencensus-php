@@ -10,11 +10,6 @@ use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    /**
-     * @param array $input
-     * @param Merchant\Entity $merchant
-     * @return Entity
-     */
     public function create(array $input, Merchant\Entity $merchant)
     {
         $this->trace->info(
@@ -31,33 +26,32 @@ class Core extends Base\Core
         return $item;
     }
 
-    // public function update(Entity $item, array $input)
-    // {
-    //     $this->checkIfLineItemAssociated($item);
+    public function update(Entity $item, array $input)
+    {
+        $this->trace->info(
+            TraceCode::ITEM_UPDATE_REQUEST,
+            [
+                'item_id' => $item->getId(),
+                'input'   => $input,
+            ]);
 
-    //     $item->edit($input);
+        $item->edit($input);
 
-    //     $this->repo->saveOrFail($item);
+        $this->repo->saveOrFail($item);
 
-    //     return $item;
-    // }
+        return $item;
+    }
 
-    // public function delete(Entity $item)
-    // {
-    //     $this->checkIfLineItemAssociated($item);
+    public function delete(Entity $item)
+    {
+        $item->getValidator()->validateDeleteOperation($item);
 
-    //     $this->repo->item->deleteOrFail($item);
+        $this->trace->info(
+            TraceCode::ITEM_DELETE_REQUEST,
+            [
+                'item_id' => $item->getId(),
+            ]);
 
-    //     return true;
-    // }
-
-    // // -------------------- Protected methods --------------------
-
-    // protected function checkIfLineItemAssociated(Entity $item)
-    // {
-    //     if ($item->lineItems()->count() > 0)
-    //     {
-    //         throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ITEM_EDIT_NOT_ALLOWED);
-    //     }
-    // }
+        return $this->repo->item->deleteOrFail($item);
+    }
 }

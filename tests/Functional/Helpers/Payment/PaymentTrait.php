@@ -598,6 +598,18 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function refund($params)
+    {
+        $this->ba->privateAuth();
+
+        $request = array(
+            'method'    => 'POST',
+            'url'       => '/refunds',
+            'content'   => $params);
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function refundPayment($id, $amount = null)
     {
         $this->ba->privateAuth();
@@ -847,7 +859,7 @@ trait PaymentTrait
         return $payment;
     }
 
-    protected function generateRefundsExcelForHdfcNB()
+    protected function generateRefundsExcelForNB($bank)
     {
         $this->ba->appAuth();
 
@@ -855,7 +867,7 @@ trait PaymentTrait
             'url' => '/refunds/netbanking/excel',
             'method' => 'post',
             'content' => [
-                'bank'   => 'HDFC'
+                'bank'   => $bank
             ],
         );
 
@@ -1243,5 +1255,20 @@ trait PaymentTrait
                     });
 
         $this->app->instance('card.tokenex', $tokenex);
+    }
+
+    public function startGatewayRefundRecordCron($gateway)
+    {
+        $request = [
+            'url'     => '/refunds/' . $gateway . '/create_record',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
     }
 }
