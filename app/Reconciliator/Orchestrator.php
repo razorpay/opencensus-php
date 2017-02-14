@@ -95,6 +95,7 @@ class Orchestrator extends Base\Core
     protected $gatewayReconciliator;
     protected $app;
     protected $messenger;
+    protected $gateway;
 
     public function __construct()
     {
@@ -102,7 +103,7 @@ class Orchestrator extends Base\Core
 
         $this->increaseAllowedSystemLimits();
 
-        $this->messenger = new Messenger();
+        $this->messenger = new Messenger;
         $this->validator = new Validator;
         $this->fileProcessor = new FileProcessor;
         $this->converter = new Converter;
@@ -117,7 +118,7 @@ class Orchestrator extends Base\Core
      * @param array $input The input received from the route
      *
      * @return array Summary of reconciliation
-     * @throws \Exception
+     * @throws \Throwable
      */
     public function initiateReconciliationProcess(array $input)
     {
@@ -272,12 +273,17 @@ class Orchestrator extends Base\Core
         if (in_array($this->gateway, self::LINK_BASED_BANKS, true))
         {
             // Fetches the documents from the link, stores them in tmp
-            // after extraction if neccessary, deletes the zip file, keeping
+            // after extraction if necessary, deletes the zip file, keeping
             // the imp files
-           $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
+            $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
         }
 
+        //
         // Validates that attachments are present in the email.
+        // Note that this should be done AFTER processing link_based_banks
+        // because we create an attachment after parsing the email and
+        // downloading the file. Until then, the attachment count would be 0.
+        //
         $this->validator->validateAttachments($input);
 
         $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
@@ -541,10 +547,17 @@ class Orchestrator extends Base\Core
         return $valid;
     }
 
+    /**
+     * @param        $inputDetails
+     * @param        $input
+     * @param string $fileLocationType
+     *
+     * @return array
+     */
     protected function getFileDetailsFromInput(
         $inputDetails,
         $input,
-        $fileType = FileProcessor::UPLOADED)
+        $fileLocationType = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
 
@@ -556,7 +569,7 @@ class Orchestrator extends Base\Core
             $file = $input['attachment-' . $attachmentNumber];
 
             // This step is mainly to figure out whether the file is of zip type,
-            // since we need to execute a different set of flow ON Y for zip files.
+            // since we need to execute a different set of flow ONLY for zip files.
             $fileType = $this->fileProcessor->getTypeOfFile($file);
 
             // If it's a zip file, get all the details of all the files present in it.
@@ -854,15 +867,6 @@ class Orchestrator extends Base\Core
         return null;
     }
 
-    /**
-     * The reconciliation can run for a long time.
-     * Hence, changing the system's execution time limit to 1 hour.
-     */
-    protected function increaseAllowedSystemLimits()
-    {
-        RuntimeManager::setTimeLimit(3600);
-    }
-
     protected function fetchAndStoreLinkDocuments(
         array $emailDetails,
         array & $input)
@@ -878,16 +882,25 @@ class Orchestrator extends Base\Core
         $this->trace->info(
             TraceCode::RECON_FILE_LINK,
             [
-                'link' => $link,
-                'bank' =>  self::BANK,
+                'link'    => $link,
+                'gateway' => $this->gateway,
             ]);
 
         $file = $this->gatewayReconciliator
                      ->getSettlementFileFromLink($link);
 
-        $attachmentCount = (string)((int)$input['attachment-count'] + 1);
+        $attachmentCount = (string) ((int) $input['attachment-count'] + 1);
 
         $input['attachment-' . $attachmentCount] = $file;
         $input['attachment-count'] = $attachmentCount;
+    }
+
+    /**
+     * The reconciliation can run for a long time.
+     * Hence, changing the system's execution time limit to 1 hour.
+     */
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setTimeLimit(3600);
     }
 }

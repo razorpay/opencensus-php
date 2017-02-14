@@ -15,8 +15,6 @@ use RZP\Trace\TraceCode;
 
 class Reconciliate extends Base\Reconciliate
 {
-    const BANK = Orchestrator::FREECHARGE;
-
     /**
      * Figures out what kind of reconciliation is it
      * depending on the file name. It should be either
@@ -43,14 +41,14 @@ class Reconciliate extends Base\Reconciliate
 
     public function getSettlementFileLink(string $text)
     {
-        /*
-         * Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
-         * By splitting the 'stripped-text', get the link
-         */
-        $raw_text = trim(explode('VIEW REPORT', $text)[1]);
-        $raw_text = trim(explode('Best', $raw_text)[0]);
+        //
+        // Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
+        // By splitting the 'stripped-text', get the link
+        //
+        $rawText = trim(explode('VIEW REPORT', $text)[1]);
+        $rawText = trim(explode('Best', $rawText)[0]);
 
-        return stripcslashes(trim($raw_text, '<>'));
+        return stripcslashes(trim($rawText, '<>'));
     }
 
     public function getSettlementFileFromLink(string $link)
@@ -83,7 +81,6 @@ class Reconciliate extends Base\Reconciliate
         file_put_contents($filePath, fopen($response->url, 'r'));
 
         return new UploadedFile(
-            $filePath, $filePath, 'application/zip',
-            filesize($filePath), null, true);
+            $filePath, $fileName, 'application/zip', filesize($filePath));
     }
 }
