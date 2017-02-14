@@ -405,7 +405,7 @@ class Terminal extends Base
         $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
         $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,

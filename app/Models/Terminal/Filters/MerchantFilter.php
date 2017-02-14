@@ -118,6 +118,10 @@ class MerchantFilter extends Terminal\Filter
         return ($category === $merchantTerminalCategory);
     }
 
+    /**
+     * Disallow pharma merchants from being sent on
+     * terminals with acquirer as HDFC
+     * */
     public function pharmaFilter($terminal, $input)
     {
         $category2 = $input['merchant']->getCategory2();
