@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\AxisMigs;
 
+use Str;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -45,6 +46,8 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK, [$input['gateway']]);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['vpc_MerchTxnRef']);
 
         if (isset($input['gateway']['vpc_MerchTxnRef']) === false)
         {
@@ -704,7 +707,10 @@ class Gateway extends Base\Gateway
 
         foreach ($content as $k => $v)
         {
-            $input[] = $k . '=' . $v;
+            if (Str::startsWith($k, 'vpc_') === true)
+            {
+                $input[] = $k . '=' . $v;
+            }
         }
 
         return parent::getStringToHash($input, '&');

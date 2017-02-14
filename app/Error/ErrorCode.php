@@ -45,6 +45,7 @@ class ErrorCode
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
+    const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';
@@ -257,6 +258,7 @@ class ErrorCode
     const BAD_REQUEST_GATEWAY_REFUND_ABSENT                                         = 'BAD_REQUEST_GATEWAY_REFUND_ABSENT';
     const BAD_REQUEST_INVALID_GATEWAY                                               = 'BAD_REQUEST_INVALID_GATEWAY';
     const BAD_REQUEST_PAYMENT_NOT_AUTHORIZED                                        = 'BAD_REQUEST_PAYMENT_NOT_AUTHORIZED';
+    const BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER                             = 'BAD_REQUEST_BANK_REQUIRED_WITH_ACCOUNT_NUMBER';
 
     const BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD                                        = 'BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD';
     const BAD_REQUEST_CARD_AVS_FAILED                                               = 'BAD_REQUEST_CARD_AVS_FAILED';
@@ -277,6 +279,8 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED                                     = 'BAD_REQUEST_PAYMENT_ORDER_ID_REQUIRED';
     const BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT                            = 'BAD_REQUEST_ORDER_METHOD_REQUIRED_FOR_MERCHANT';
     const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT                    = 'BAD_REQUEST_ORDER_ACCOUNT_NUMBER_REQUIRED_FOR_MERCHANT';
+    const BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH                         = 'BAD_REQUEST_ORDER_ACCOUNT_NUMBER_INCORRECT_LENGTH';
+    const BAD_REQUEST_ORDER_BANK_INVALID                                            = 'BAD_REQUEST_ORDER_BANK_INVALID';
 
     const BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER                          = 'BAD_REQUEST_PAYMENT_NETBANKING_CANCELLED_BY_USER';
 
@@ -354,6 +358,7 @@ class ErrorCode
 
     const BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED                              = 'BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED';
     const BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED                    = 'BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED';
+    const BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL                     = 'BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL';
 
     const BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED                            = 'BAD_REQUEST_GATEWAY_TERMINAL_MAX_LIMIT_REACHED';
     const BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS                                    = 'BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS';
@@ -390,6 +395,7 @@ class ErrorCode
     const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
     const SERVER_ERROR_MULTIPLE_REFUNDS_FOUND                                       = 'SERVER_ERROR_MULTIPLE_REFUNDS_FOUND';
     const SERVER_ERROR_GATEWAY_NOT_REFUNDED                                         = 'SERVER_ERROR_GATEWAY_NOT_REFUNDED';
+    const SERVER_ERROR_REDIS_EXCEPTION                                              = 'SERVER_ERROR_REDIS_EXCEPTION';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -425,6 +431,8 @@ class ErrorCode
 
     const BAD_REQUEST_INVALID_ADMIN_EMAIL                                           = 'BAD_REQUEST_INVALID_ADMIN_EMAIL';
     const BAD_REQUEST_AUTHENTICATION_FAILED                                         = 'BAD_REQUEST_AUTHENTICATION_FAILED';
+    const BAD_REQUEST_USER_ACCOUNT_LOCKED                                           = 'BAD_REQUEST_USER_ACCOUNT_LOCKED';
+    const BAD_REQUEST_USER_ACCOUNT_DISABLED                                         = 'BAD_REQUEST_USER_ACCOUNT_DISABLED';
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
@@ -440,4 +448,8 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    // Gateway Priority API error codes
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
 }

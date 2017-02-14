@@ -55,6 +55,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getDataFromResponse($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'],
+             $content[RequestFields::MERCHANT_REFERENCE]);
+
         $gatewayEntity = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
@@ -190,7 +193,10 @@ class Gateway extends Base\Gateway
             RequestFields::RESPONSE          => Constants::RESPONSE
         ];
 
-        // TODO: Add TPV to the request array
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data[RequestFields::BANK_ACCOUNT_NUMBER] = $input['order']['account_number'];
+        }
 
         $data = array_merge($defaultData, $data);
 
@@ -293,10 +299,11 @@ class Gateway extends Base\Gateway
     {
         $gatewayPayment = $verify->payment;
 
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
         $attributes = $this->getVerifyAttributes($content);
 
-        // Late authorization case
-        if ($gatewayPayment[Base\Entity::RECEIVED] === false)
+        if ($bankPaymentId === null)
         {
             $gatewayPayment->fill($attributes);
 
@@ -345,5 +352,12 @@ class Gateway extends Base\Gateway
         {
             return $this->getLiveMerchantId();
         }
+    }
+
+    protected function getLiveSecret()
+    {
+        assert ($this->mode === Mode::LIVE);
+
+        return $this->config['live_hash_secret'];
     }
 }

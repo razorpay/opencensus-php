@@ -129,7 +129,7 @@ trait Authorize
                 // record a failed payment for given terminal and continue
                 $terminalData['exception'] = $e;
 
-                $retryAttempts += 1;
+                $retryAttempts++;
 
                 $retry = $this->logAndCheckForAuthRetry($e, $payment);
 
@@ -337,6 +337,11 @@ trait Authorize
                 'Can force authorize only on axis migs gateway');
         }
 
+        if ($payment->hasCard())
+        {
+            $card = $this->repo->card->fetchForPayment($payment);
+        }
+
         $this->segment->trackPayment($payment, TraceCode::FORCE_AUTH_FAILED_PAYMENT);
 
         $this->repo->transaction(function() use ($payment, $input)
@@ -379,10 +384,14 @@ trait Authorize
         $this->validateS2SIfApplicable($payment);
 
         $this->verifyPaymentMethodEnabled($payment);
+
+        $this->runInternationalChecks($payment);
     }
 
+    // @codingStandardsIgnoreStart
     protected function validateS2SIfApplicable(Payment\Entity $payment)
     {
+    // @codingStandardsIgnoreEnd
         $merchant = $payment->merchant;
 
         // We need to check if S2S is enabled only if the payment create
@@ -463,11 +472,6 @@ trait Authorize
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
-        // International card validation happens here because we want to save the failure.
-        // For payment creation, gateway is compulsory field which is only finalized in
-        // previous step.
-        $this->runInternationalChecks($payment);
-
         // Fees validation can only happen after international validation has gone through
         // otherwise can cause issues with international pricing rule being not available when
         // international is not enabled.
@@ -487,7 +491,7 @@ trait Authorize
 
         $gatewayInput['otpSubmitUrl'] = $this->getOtpSubmitUrl();
 
-        if ($payment->order)
+        if ($payment->hasOrder())
         {
             $gatewayInput['order'] = $payment->order->toArray();
         }
@@ -576,7 +580,7 @@ trait Authorize
 
             if ($payment->isMethodCardOrEmi())
             {
-                $data['card'] = $payment->card->toArray();
+                $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
             }
 
             $flag = $this->callGatewayFunction('authorizeFailed', $data);
@@ -823,10 +827,8 @@ trait Authorize
 
             $gatewayInput['card'] = $this->associateAndGetCardArrayForSavedToken($token, $input);
         }
-        else
-        {
-            // @todo for netbanking/wallets
-        }
+
+        //else @todo for netbanking/wallets
     }
 
     protected function preProcessPaymentFromSavedCardGlobal(Customer\Entity $customer,
@@ -983,6 +985,7 @@ trait Authorize
 
         $token = null;
 
+        // @codingStandardsIgnoreStart
         try
         {
             $token = (new Token\Core)->create($customer, $saveMethodInput);
@@ -995,6 +998,7 @@ trait Authorize
         {
             $this->trace->traceException($e);
         }
+        // @codingStandardsIgnoreEnd
 
         return $token;
     }
@@ -1165,7 +1169,7 @@ trait Authorize
     {
         $payment = $this->payment;
 
-        $token = $payment->getGlobalOrLocalTokenEntity();
+        $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
 
         $this->trace->info(
             TraceCode::PAYMENT_UPDATE_TOKEN,
@@ -1223,10 +1227,10 @@ trait Authorize
 
     protected function updateAuthorizedOrderStatus($payment)
     {
-        $order = $payment->order;
-
-        if (isset($order))
+        if ($payment->hasOrder())
         {
+            $order = $payment->order;
+
             $order->setAuthorized(true);
 
             $this->trace->info(
@@ -1486,11 +1490,9 @@ trait Authorize
     {
         try
         {
-            $this->type = 'otp_generate';
-
             $data['otp_resend'] = $otpResend;
 
-            $request = $this->callGatewayFunction('otpGenerate', $data);
+            $request = $this->callGatewayFunction(Action::OTP_GENERATE, $data);
 
             return $this->processOtpFlowResponse($request, $payment);
         }
@@ -1569,7 +1571,7 @@ trait Authorize
      */
     protected function associateAndGetCardArrayForSavedToken($token, array & $input)
     {
-        $card = $token->card;
+        $card = $this->repo->card->fetchForToken($token);
 
         $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
 
@@ -1597,6 +1599,7 @@ trait Authorize
      */
     protected function createCardEntityFromSavedToken($token, array & $input)
     {
+        $card = $this->repo->card->fetchForToken($token);
         $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -1846,12 +1849,11 @@ trait Authorize
         $gateway = $payment->getGateway();
 
         $networkCode = null;
-        $paymentCard = $payment->card;
 
         // If payment method is wallet or net banking.
-        if ($paymentCard !== null)
+        if ($payment->hasCard())
         {
-            $networkCode = $paymentCard->getNetworkCode();
+            $networkCode = $payment->card->getNetworkCode();
         }
 
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);

@@ -31,6 +31,11 @@ class Service extends Base\Service
             $plans[$issuer]['plans'][$duration] = $plan->getRate()/100;
         }
 
+        //
+        // ICIC emi is not working, removing plans for custom ui cases
+        //
+        unset($plans[IFSC::ICIC]);
+
         return $plans;
     }
 

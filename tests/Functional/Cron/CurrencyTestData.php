@@ -16,7 +16,8 @@ return [
         'response' => [
             'status_code' => 200,
             'content' => [
-                'success' => true
+                'INR' => 10,
+                'USD' => 1
             ],
         ],
     ],

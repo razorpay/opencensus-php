@@ -18,7 +18,7 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $action = $action ? $action : $this->action;
+        $action = $action ?: $this->action;
 
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -35,11 +35,15 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes)
+    protected function createGatewayRefundEntity($attributes, $action = null)
     {
+        $action = $action ? $action : $this->action;
+
         $refund = $this->getNewGatewayPaymentEntity();
 
         $refund->fill($attributes);
+
+        $refund->setAction($action);
 
         $refund->saveOrFail();
 

@@ -45,12 +45,6 @@ class Processor
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
     /**
-     * Number of days after which authorized payments
-     * are auto-refunded
-     */
-    const AUTO_REFUND_TIME_PERIOD = 5;
-
-    /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 5;
@@ -111,13 +105,12 @@ class Processor
         $this->app  = App::getFacadeRoot();
         $this->trace = $this->app['trace'];
         $this->mode = $this->app['rzp.mode'];
+        $this->repo = $this->app['repo'];
 
         $this->merchant = $merchant;
-        $this->methods = $merchant->methods;
+        $this->methods = $this->getMethodsForMerchant($merchant);
 
         $this->checkMerchantPermissions();
-
-        $this->repo = $this->app['repo'];
 
         $this->paymentRepo = $this->repo->payment;
 
@@ -376,6 +369,8 @@ class Processor
     {
         $payment = $this->retrieve($id);
 
+        $order = $this->getOrderForPayment($payment);
+
         $gateway = $payment->getGateway();
 
         // If the gateway is not async we just give a generic
@@ -570,7 +565,7 @@ class Processor
      */
     protected function callGatewayFunction($action, array $gatewayData)
     {
-        $terminal = $this->payment->terminal;
+        $terminal = $this->repo->terminal->fetchForPayment($this->payment);
 
         if ($terminal === null)
         {
@@ -677,16 +672,14 @@ class Processor
         if (abs($feeDifference) > 5)
         {
             throw new Exception\BadRequestValidationFailureException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
+                'Payment failed because fees or service tax was tampered');
         }
     }
 
 
     protected function fetchOrderFromInput($input)
     {
-        $orderId = (new Order\Entity)->verifyIdAndStripSign($input['order_id']);
-
-        $order = $this->orderRepo->find($orderId);
+        $order = $this->orderRepo->findbyPublicId($input['order_id']);
 
         if ($order === null)
         {
@@ -701,6 +694,8 @@ class Processor
             throw new Exception\BadRequestValidationFailureException(
                 'Order id not found');
         }
+
+        $order->merchant()->associate($this->merchant);
 
         return $order;
     }
@@ -766,12 +761,12 @@ class Processor
             return;
         }
 
-        if ($this->order->invoice === null)
+        $invoice = $this->repo->invoice->fetchForOrder($this->order);
+
+        if ($invoice === null)
         {
             return;
         }
-
-        $invoice = $this->order->invoice;
 
         $payment->invoice()->associate($invoice);
     }
@@ -813,6 +808,16 @@ class Processor
                                                 $id, $this->merchant);
 
         return $this->payment;
+    }
+
+    protected function getOrderForPayment($payment)
+    {
+        if ($payment->hasOrder())
+        {
+            $order = $this->repo->order->fetchForPayment($payment);
+
+            return $order;
+        }
     }
 
     /**
@@ -949,19 +954,13 @@ class Processor
 
     protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
     {
-        $merchant        = $payment->merchant;
+        $merchant = $payment->merchant;
+
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
-
-        if ($autoRefundDelay === null)
-        {
-            $shouldRefundAt = Carbon::createFromTimestamp($createdAt)
-                                    ->addDays(Processor::AUTO_REFUND_TIME_PERIOD)
-                                    ->timestamp;
-        }
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -1124,5 +1123,15 @@ class Processor
                 ]);
         }
 
+    }
+
+    protected function getMethodsForMerchant($merchant)
+    {
+        if ($merchant->hasRelation('methods') === false)
+        {
+            $methods = $this->repo->methods->getMethodsForMerchant($merchant);
+        }
+
+        return $merchant->methods;
     }
 }

@@ -165,7 +165,7 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
-    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
+    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
 
@@ -174,7 +174,9 @@ class Repository extends \Razorpay\Spine\Repository
             $query->with(...$relations);
         }
 
-        return $query->get();
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
     }
 
     public function fetchAssociatedRelations($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
@@ -182,10 +184,18 @@ class Repository extends \Razorpay\Spine\Repository
         $relationships = array();
         $objects = array();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $relationships[$entity->$typeCol][] = $entity->$idCol;
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
 
         foreach ($relationships as $type => $ids)
         {
@@ -197,12 +207,20 @@ class Repository extends \Razorpay\Spine\Repository
             }
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $typeEntity = $objects[$entity->$idCol];
 
             $entity->setRelation($relation, $typeEntity);
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
 
         return $entities;
     }

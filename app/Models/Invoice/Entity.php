@@ -43,6 +43,8 @@ class Entity extends Base\PublicEntity
     const DESCRIPTION           = 'description';
     const TERMS                 = 'terms';
     const NOTES                 = 'notes';
+    // A text field to keep merchant's comment to customer
+    const COMMENT               = 'comment';
     const SHORT_URL             = 'short_url';
     const VIEW_LESS             = 'view_less';
 
@@ -117,6 +119,7 @@ class Entity extends Base\PublicEntity
         self::RECEIPT           => null,
         self::DESCRIPTION       => null,
         self::NOTES             => [],
+        self::COMMENT           => null,
         self::SHORT_URL         => null,
         self::VIEW_LESS         => 1,
         self::TYPE              => Type::INVOICE,
@@ -153,6 +156,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
+        self::COMMENT,
         self::RECEIPT,
         self::VIEW_LESS,
         self::CURRENCY,
@@ -191,6 +195,7 @@ class Entity extends Base\PublicEntity
         self::DESCRIPTION,
         self::TERMS,
         self::NOTES,
+        self::COMMENT,
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,
@@ -225,6 +230,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::DESCRIPTION,
         self::NOTES,
+        self::COMMENT,
         self::CURRENCY,
         self::SHORT_URL,
         self::VIEW_LESS,

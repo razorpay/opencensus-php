@@ -44,6 +44,13 @@ class FileProcessor
         self::CSV   => ['txt', 'csv', 'text']
     ];
 
+    /******************************
+     * csv file handling constants
+     ******************************/
+
+    const LINES_FROM_TOP    = 'lines_from_top';
+    const LINES_FROM_BOTTOM = 'lines_from_bottom';
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************

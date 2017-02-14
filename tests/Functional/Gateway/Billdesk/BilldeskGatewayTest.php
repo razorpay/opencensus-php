@@ -25,6 +25,45 @@ class BilldeskGatewayTest extends TestCase
         $this->setMockGatewayTrue();
     }
 
+    public function testPaymentAndNewPaymentOnDeleteTerminal()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $t = $this->deleteTerminal2($terminal['id']);
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $data = $this->testData['testPaymentAndNewPaymentOnDeleteTerminal'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentAndVerifyOnDeleteTerminal()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $t = $this->deleteTerminal2($terminal['id']);
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+    }
+
     public function testPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -146,7 +185,8 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(60, $count);
+
+        $this->assertEquals(59, $count);
     }
 
     public function testServerToServerCallback()

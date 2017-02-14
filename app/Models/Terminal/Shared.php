@@ -17,7 +17,9 @@ class Shared
     const MOBIKWIK_RAZORPAY_TERMINAL        = '1000MobiKwikTl';
     const NETBANKING_HDFC_TERMINAL          = '100NbHdfcTrmnl';
     const NETBANKING_KOTAK_TERMINAL         = '100NbKotakTmnl';
+    const NETBANKING_AIRTEL_TERMINAL        = '100NbAirtlTmnl';
     const NETBANKING_AXIS_TERMINAL          = '100NbAxisTrmnl';
+    const NETBANKING_AXIS_TPV_TERMINAL      = '100NbAxisTpvTl';
     const OLAMONEY_RAZORPAY_TERMINAL        = '1000OlamoneyTl';
     const PAYTM_RAZORPAY_TERMINAL           = '1000PaytmTrmnl';
     const PAYZAPP_RAZORPAY_TERMINAL         = '100PayzappTmnl';
@@ -29,6 +31,7 @@ class Shared
     const FIRST_DATA_RAZORPAY_TERMINAL      = '1000FrstDataTl';
     const UPI_ICICI_RAZORPAY_TERMINAL       = '100UPIICICITml';
     const AIRTELMONEY_RAZORPAY_TERMINAL     = '100ArtlMnyTmnl';
+    const JIOMONEY_RAZORPAY_TERMINAL        = '1000JioMnyTmnl';
 
     protected static $shared = array(
         self::ATOM_RAZORPAY_TERMINAL,
@@ -42,6 +45,7 @@ class Shared
         self::PAYTM_RAZORPAY_TERMINAL,
         self::NETBANKING_HDFC_TERMINAL,
         self::NETBANKING_KOTAK_TERMINAL,
+        self::NETBANKING_AIRTEL_TERMINAL,
         self::NETBANKING_AXIS_TERMINAL,
         self::PAYZAPP_RAZORPAY_TERMINAL,
         self::PAYUMONEY_RAZORPAY_TERMINAL,
@@ -52,6 +56,7 @@ class Shared
         self::FIRST_DATA_RAZORPAY_TERMINAL,
         self::UPI_ICICI_RAZORPAY_TERMINAL,
         self::AIRTELMONEY_RAZORPAY_TERMINAL,
+        self::JIOMONEY_RAZORPAY_TERMINAL
     );
 
     // NOTE: No two shared terminal should be present for same gateway
@@ -68,6 +73,7 @@ class Shared
         self::MOBIKWIK_RAZORPAY_TERMINAL    => Gateway::MOBIKWIK,
         self::NETBANKING_HDFC_TERMINAL      => Gateway::NETBANKING_HDFC,
         self::NETBANKING_KOTAK_TERMINAL     => Gateway::NETBANKING_KOTAK,
+        self::NETBANKING_AIRTEL_TERMINAL    => Gateway::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS_TERMINAL      => Gateway::NETBANKING_AXIS,
         self::OLAMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_OLAMONEY,
         self::PAYTM_RAZORPAY_TERMINAL       => Gateway::PAYTM,
@@ -75,6 +81,7 @@ class Shared
         self::PAYUMONEY_RAZORPAY_TERMINAL   => Gateway::WALLET_PAYUMONEY,
         self::AIRTELMONEY_RAZORPAY_TERMINAL => Gateway::WALLET_AIRTELMONEY,
         self::FREECHARGE_RAZORPAY_TERMINAL  => Gateway::WALLET_FREECHARGE,
+        self::JIOMONEY_RAZORPAY_TERMINAL    => Gateway::WALLET_JIOMONEY,
         self::SHARP_RAZORPAY_TERMINAL       => Gateway::SHARP,
         self::FIRST_DATA_RAZORPAY_TERMINAL  => Gateway::FIRST_DATA,
         self::UPI_ICICI_RAZORPAY_TERMINAL   => Gateway::UPI_ICICI,
