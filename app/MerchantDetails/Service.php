@@ -609,7 +609,7 @@ class Service extends Base\Service
 
         foreach (self::UPLOAD_KEYS as $key => $value)
         {
-            if (isset($merchantDetailArr[$key]))
+            if (empty($merchantDetailArr[$key]) === false)
             {
                 $fileResponse[] = $value;
             }
