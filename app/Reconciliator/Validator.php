@@ -39,7 +39,7 @@ class Validator
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
     // Max allowed file size - 20M (20*1024*1024).
-    const MAX_FILE_SIZE = 20971520;
+    const MAX_FILE_SIZE = 26214400;
 
     public function filterEmails(array $emailDetails)
     {
