@@ -920,7 +920,7 @@ class Processor
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
         // We do an auto capture only if payment is associated with an order.
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasOrder() === false)
         {
             return false;
         }
@@ -998,13 +998,6 @@ class Processor
             return false;
         }
 
-        // For now, we would be auto capturing only payments with an invoice.
-        // This will be removed later.
-        if ($payment->getInvoiceId() === null)
-        {
-            return false;
-        }
-
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
@@ -1013,7 +1006,19 @@ class Processor
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
 
-        return false;
+        return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
+    }
+
+    /**
+     * The merchant needs to have `auto_capture_late_auth` config set to true.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedOrder(Merchant\Entity $merchant)
+    {
+        return $merchant->getAutoCaptureLateAuth();
     }
 
     /**
