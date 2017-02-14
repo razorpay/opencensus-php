@@ -1437,6 +1437,11 @@ ALTER TABLE bank_accounts
     ADD COLUMN mpin VARCHAR(255) AFTER mobile_banking_enabled,
     MODIFY COLUMN beneficiary_mobile CHAR(32) NOT NULL;
 
+# Query to add jiomoney method
+ALTER TABLE merchant_banks
+    ADD COLUMN jiomoney TINYINT(1) DEFAULT 0 AFTER freecharge,
+    ADD INDEX merchant_banks_jiomoney_index (jiomoney);
+
 ALTER TABLE payments
     MODIFY contact VARCHAR(20);
 
@@ -1595,3 +1600,50 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
+
+ALTER TABLE merchant_details
+    ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
+
+# Pre deployment of branch invoice_new_field_comment
+
+ALTER TABLE invoices ADD COLUMN comment text AFTER notes;
+
+# --
+
+# Before deploying: invoices_fetch_by_cust_contact
+
+ALTER TABLE invoices ADD INDEX invoices_customer_contact_index (customer_contact);
+ALTER TABLE invoices ADD INDEX invoices_customer_email_index (customer_email);
+ALTER TABLE invoices ADD INDEX invoices_customer_name_index (customer_name);
+
+# Changes default value of gateway and terminal
+ALTER TABLE payments
+    MODIFY COLUMN gateway VARCHAR(255) NULL,
+
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE payments
+    MODIFY COLUMN terminal_id VARCHAR(14) NULL;
+SET FOREIGN_KEY_CHECKS=1;
+
+# Signup flow changes
+ALTER TABLE merchants
+    MODIFY name VARCHAR(255) default null;
+
+ALTER TABLE payments
+    ADD INDEX `payments_amount_index` (`amount`);
+
+# Modify max_payment_amount column to be unsigned
+ALTER TABLE merchants
+    MODIFY COLUMN max_payment_amount INTEGER UNSIGNED NULL;
+
+ALTER TABLE refunds
+    MODIFY COLUMN amount INTEGER UNSIGNED NOT NULL;
+
+# Drop merchants features
+ALTER TABLE merchants DROP COLUMN features;
+
+ALTER TABLE merchants
+    ADD INDEX `merchants_auto_refund_delay_index` (`auto_refund_delay`);
+
+ALTER TABLE merchants
+    ADD COLUMN auto_capture_late_auth TINYINT(1) NOT NULL DEFAULT 0 AFTER brand_color;

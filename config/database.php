@@ -130,15 +130,17 @@ return array(
         'cluster' => false,
 
         'default' => array(
-            'host'     => env('REDIS_HOST'),
-            'port'     => env('REDIS_PORT'),
-            'database' => env('REDIS_DB'),
+            'host'                  => env('REDIS_HOST'),
+            'port'                  => env('REDIS_PORT'),
+            'database'              => env('REDIS_DB'),
+            'timeout'               => 30,
         ),
 
         'secure' => array(
-            'host'     => env('SECURE_REDIS_HOST'),
-            'port'     => env('SECURE_REDIS_PORT'),
-            'database' => env('SECURE_REDIS_DB'),
+            'host'                  => env('SECURE_REDIS_HOST'),
+            'port'                  => env('SECURE_REDIS_PORT'),
+            'database'              => env('SECURE_REDIS_DB'),
+            'timeout'               => 30,
         )
     ),
 

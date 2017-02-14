@@ -109,17 +109,44 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    public function createCsvFile($data, $name, $fullName, $dir)
+    public function createCsvFile($data, $name, $fullName, $dir, $append = false)
     {
-        $excelObject = $this->createExcelObject($data, $name);
+        $dir = storage_path($dir);
 
-        $fileMetadata = $excelObject->store('csv', storage_path($dir), true);
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir);
+        }
 
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $dir . '/' . $name . '.csv';
 
-        if ($fullName != null)
+        // open the file in append mode
+        $handle = fopen($fullpath, 'a');
+
+        $first = true;
+
+        foreach ($data as $row)
+        {
+            if (($append === false) and ($first === true))
+            {
+                $headers = array_keys($row);
+
+                fputcsv($handle, $headers);
+
+                $first = false;
+            }
+
+            $row = $this->flatten($row);
+
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        if ($fullName !== null)
         {
             rename($fullpath, $fullName);
+
             $fullpath = $fullName;
         }
 
@@ -135,6 +162,26 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $row)
+    {
+        foreach ($row as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = json_encode($value);
+            }
+        }
+
+        return $row;
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')

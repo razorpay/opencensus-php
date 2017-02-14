@@ -109,6 +109,7 @@
             <property name="lineLimit" value="80"/>
             <property name="absoluteLineLimit" value="120"/>
         </properties>
+        <exclude-pattern>app/Trace/TraceCode.php</exclude-pattern>
         <exclude-pattern>app/Error/*Code.php</exclude-pattern>
         <exclude-pattern>app/Error/*Description.php</exclude-pattern>
         <exclude-pattern>app/Http/Route.php</exclude-pattern>

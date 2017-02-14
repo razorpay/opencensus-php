@@ -85,6 +85,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="HDFC">HDFC Bank</option>
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
+                <option value="AIRP">Airtel Payments Bank</option>
                 <option value="CITI">CITI Bank</option>
                 <option value="UTIB">Axis Bank</option>
                 <option value="YESB">Yes Bank</option>
@@ -109,6 +110,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="olamoney">Olamoney</option>
                 <option value="airtelmoney">Airtelmoney</option>
                 <option value="freecharge">Freecharge</option>
+                <option value="jiomoney">JioMoney</option>
             </select>
         </td>
     </tr>
@@ -144,7 +146,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="100"></td>
+            <td><input type="text" name="amount" size="25" value="1000"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>
@@ -200,7 +202,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 <div style="max-width: 400px; margin: 0 auto">
 <form name ="capture" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="capture_id" placeholder = "Enter payment id to capture"/>
-<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="500" />
+<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="1000" />
 <select name="currency">
     <option value="INR">Indian Rupee</option>
     <option value="USD">US Dollar</option>
@@ -210,7 +212,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="500"/>
+<input type="text" id="amount" name="amount" value="1000"/>
 <input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
