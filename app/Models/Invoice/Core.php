@@ -62,7 +62,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice));
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()));
         }
 
         return $invoice;
@@ -108,7 +108,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice));
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice->getId()));
         }
 
         return $invoice;
@@ -131,7 +131,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()));
 
         return $invoice;
     }
@@ -310,7 +310,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice));
+        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()));
 
         return $invoice;
     }

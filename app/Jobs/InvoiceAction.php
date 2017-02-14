@@ -3,7 +3,6 @@
 namespace RZP\Jobs;
 
 use App;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -15,7 +14,7 @@ use RZP\Trace\TraceCode;
 
 class InvoiceAction extends Job implements ShouldQueue
 {
-    use InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue;
 
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
@@ -34,18 +33,18 @@ class InvoiceAction extends Job implements ShouldQueue
 
     protected $mode;
     protected $event;
+    protected $id;
+
     protected $invoice;
     protected $trace;
     protected $core;
     protected $handler;
 
-    public function __construct(string $mode, string $event, Invoice\Entity $invoice)
+    public function __construct(string $mode, string $event, string $id)
     {
-        $this->mode    = $mode;
-
-        $this->event   = $event;
-
-        $this->invoice = $invoice;
+        $this->mode  = $mode;
+        $this->event = $event;
+        $this->id    = $id;
     }
 
     public function handle()
@@ -60,7 +59,7 @@ class InvoiceAction extends Job implements ShouldQueue
                 TraceCode::INVOICE_ACTION_JOB_RECEIVED,
                 $this->getTracePayload());
 
-            $this->{$this->handler}();
+            $handlerResult = $this->{$this->handler}();
 
             $this->delete();
 
@@ -68,7 +67,11 @@ class InvoiceAction extends Job implements ShouldQueue
 
             $this->trace->debug(
                 TraceCode::INVOICE_ACTION_JOB_HANDLED,
-                $this->getTracePayload(['time_taken' => $timeTaken]));
+                $this->getTracePayload(
+                    [
+                        'time_taken'     => $timeTaken,
+                        'handler_result' => $handlerResult,
+                    ]));
         }
         catch (\Throwable $e)
         {
@@ -76,19 +79,39 @@ class InvoiceAction extends Job implements ShouldQueue
         }
     }
 
+    /**
+     *
+     * - Initializes instance variables: core, trace etc.
+     * - Sets application mode, database connection based on the mode.
+     * - Validates event
+     *
+     * @return null;
+     */
     private function init()
     {
         $app = App::getFacadeRoot();
 
+        $repo = $app['repo'];
+
         $this->trace = $app['trace'];
 
         //
-        // Sets app mode as well as db connection
+        // Set application mode as well as database connection with given mode.
         //
 
-        $this->app['rzp.mode'] = $this->mode;
+        $app['rzp.mode'] = $this->mode;
 
         \Database\DefaultConnection::set($this->mode);
+
+        //
+        // Get invoice object
+        //
+
+        $this->invoice = $repo->invoice->findOrFail($this->id);
+
+        //
+        // Sets handler after validates it too.
+        //
 
         $this->handler = 'handle' . studly_case($this->event);
 
@@ -111,37 +134,37 @@ class InvoiceAction extends Job implements ShouldQueue
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
-        (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+        return (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
     }
 
     private function handleIssued()
     {
         $pdfPath = $this->core->createInvoicePdf($this->invoice);
 
-        (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
+        return (new Invoice\Notifier($this->invoice, $pdfPath))->notifyInvoiceIssuedToCustomer();
     }
 
     private function handleExpired()
     {
-        (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
+        return (new Invoice\Notifier($this->invoice))->notifyInvoiceExpiredToCustomer();
     }
 
     private function handleAuthorized()
     {
-        $this->core->createInvoicePdf($this->invoice);
+        return $this->core->createInvoicePdf($this->invoice);
     }
 
     // ------------------------------------------------------------
 
     private function handleException(\Throwable $e)
     {
+        //
+        // By default job gets deleted
+        //
+
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
-        {
-            $this->delete();
-        }
-        else
+        if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
         {
             $this->release(self::RELEASE_WAIT_SECS);
 
@@ -159,11 +182,15 @@ class InvoiceAction extends Job implements ShouldQueue
     private function getTracePayload(array $with = [])
     {
         $payload = [
-            'invoice_id'     => $this->invoice->getId(),
-            'invoice_status' => $this->invoice->getStatus(),
             'handler'        => $this->handler,
             'job_attempts'   => $this->attempts(),
+            'invoice_id'     => $this->id,
         ];
+
+        if (isset($this->invoice) === true)
+        {
+            $payload['invoice_status'] = $this->invoice->getStatus();
+        }
 
         return $payload + $with;
     }
