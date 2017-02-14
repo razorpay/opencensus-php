@@ -330,19 +330,9 @@ class Processor
 
     protected function cancelPayment($payment, $input)
     {
-        $errorCode = null;
-
         $payment->getValidator()->cancelValidate($payment);
 
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android_sdk'))
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
-        }
-        else
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
-        }
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
 
         if ((isset($input['_']['reason']) === true) and
             (is_string($input['_']['reason']) === true))
@@ -352,7 +342,14 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        if ($payment->merchant->isFeatureEnabled(Feature::CREATED_FLOW))
+        {
+            $this->setPaymentError($e, TraceCode::PAYMENT_CANCELLED);
+        }
+        else
+        {
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        }
 
         return $errorCode;
     }
@@ -540,13 +537,23 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError(Exception\BaseException $e)
+    protected function setPaymentError(Exception\BaseException $e, $traceCode)
     {
+        $payment = $this->payment;
+
         $error = $e->getError();
 
         $internalCode = $error->getInternalErrorCode();
 
-        $payment = $this->payment;
+        $this->trace->info(
+            $traceCode,
+            [
+                'payment_id'    => $payment->getId(),
+                'status'        => $payment->getStatus(),
+                'error'         => $error,
+                'internalCode'  => $internalCode,
+            ]
+        );
 
         $payment->setInternalErrorCode($internalCode);
 
