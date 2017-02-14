@@ -541,6 +541,13 @@ class Service extends Base\Service
         unset($input['activation_progress']);
         unset($input['agree_terms']);
         unset($input['files']);
+        unset($input['business_proof_url']);
+        unset($input['business_operation_proof_url']);
+        unset($input['business_pan_url']);
+        unset($input['address_proof_url']);
+        unset($input['promoter_proof_url']);
+        unset($input['promoter_pan_url']);
+        unset($input['promoter_address_url']);
 
         if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
         {
