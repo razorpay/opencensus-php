@@ -642,6 +642,7 @@ class Notify
                 'issued_at'  => $this->invoice->getIssuedAt(),
                 'type_label' => ucfirst($this->invoice->getTypeLabel()),
                 'short_url'  => $this->invoice->getShortUrl(),
+                'type'       => $this->invoice->getType(),
             ];
         }
 
