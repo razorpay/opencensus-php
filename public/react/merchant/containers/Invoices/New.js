@@ -268,7 +268,7 @@ export default class InvoicesNewContainer extends Component {
               <p>The Invoice will be deleted and the customer will not be able to pay for it.</p>
           }
           <div>
-            If any customers or items were added, they will still be available for use in other invoices.
+            If you have added any item or customer, you can still use them in other invoices.
           </div>
         </div>
       ),
@@ -432,7 +432,7 @@ export default class InvoicesNewContainer extends Component {
                             name='description'
                             component={AutoResizeTextarea}
                             class='form-control input-xs'
-                            placeholder='Summary or brief this invoice'
+                            placeholder='Summary or brief'
                             rows='2'
                             disabled={isIssued || locked}
                           />
@@ -577,7 +577,7 @@ export default class InvoicesNewContainer extends Component {
                           <AsyncButton
                             type='button'
                             class='btn btn-default btn-block btn-lg'
-                            text='Save Changes'
+                            text='Save Invoice'
                             pendingText='Saving...'
                             disabled={this.state.isSaving}
                             onClick={handleSubmit((props) => {
