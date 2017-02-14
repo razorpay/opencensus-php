@@ -127,17 +127,17 @@ class Notifier extends Base\Core
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
-        if (empty($customerEmail) === true)
-        {
-            return false;
-        }
-
         $this->trace->info(
             TraceCode::INVOICE_EMAIL_ISSUED_REQUEST,
             [
                 'invoice_id'     => $this->invoice->getId(),
                 'customer_email' => $customerEmail,
             ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceIssuedMailPayload();
 
@@ -165,17 +165,17 @@ class Notifier extends Base\Core
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
-        if (empty($customerEmail) === true)
-        {
-            return false;
-        }
-
         $this->trace->info(
             TraceCode::INVOICE_EMAIL_EXPIRED_REQUEST,
             [
                 'invoice_id'     => $this->invoice->getId(),
                 'customer_email' => $customerEmail,
             ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceExpiredMailPayload();
 
@@ -227,17 +227,17 @@ class Notifier extends Base\Core
     {
         $customerEmail = $this->invoice->getCustomerEmail();
 
-        if (empty($customerEmail) === true)
-        {
-            return false;
-        }
-
         $this->trace->info(
             TraceCode::INVOICE_EMAIL_EXPIRING_REQUEST,
             [
                 'invoice_id'     => $this->invoice->getId(),
                 'customer_email' => $customerEmail,
             ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
 
         $data = $this->getInvoiceExpiringMailPayload();
 
