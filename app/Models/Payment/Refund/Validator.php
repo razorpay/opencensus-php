@@ -20,6 +20,12 @@ class Validator extends Base\Validator
         'refundAmount'
     ];
 
+    protected static $directRules = [
+        'payment_id'    => 'required',
+        'amount'        => 'sometimes|integer|min:100',
+        'notes'         => 'sometimes|notes'
+    ];
+
     protected static $verifyRefundGateways = [
             Payment\Gateway::HDFC,
             Payment\Gateway::AXIS_MIGS
