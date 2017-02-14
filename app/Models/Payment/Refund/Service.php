@@ -24,6 +24,17 @@ class Service extends Base\Service
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
+    public function create(array $input)
+    {
+        (new Validator)->validateInput('direct', $input);
+
+        $paymentId = $input[Entity::PAYMENT_ID];
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        return (new Payment\Service)->refund($paymentId, $input);
+    }
+
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
@@ -37,7 +48,7 @@ class Service extends Base\Service
         switch ($method)
         {
             case Payment\Method::NETBANKING:
-                $gateways = Payment\Gateway::$netbankingToGatewayMap;
+                $gateways = Payment\Gateway::$refundFileNetbankingGateways;
 
                 $type = Payment\Entity::BANK;
 
