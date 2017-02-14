@@ -133,14 +133,14 @@ return array(
             'host'                  => env('REDIS_HOST'),
             'port'                  => env('REDIS_PORT'),
             'database'              => env('REDIS_DB'),
-            'read_write_timeout'    => 30,
+            'timeout'               => 30,
         ),
 
         'secure' => array(
             'host'                  => env('SECURE_REDIS_HOST'),
             'port'                  => env('SECURE_REDIS_PORT'),
             'database'              => env('SECURE_REDIS_DB'),
-            'read_write_timeout'    => 30,
+            'timeout'               => 30,
         )
     ),
 
