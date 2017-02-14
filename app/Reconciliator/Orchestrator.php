@@ -269,7 +269,7 @@ class Orchestrator extends Base\Core
         // the orchestrator, using the input details.
         $this->setGatewayFromEmail();
 
-        if (in_array($this->bank, self::LINK_BASED_BANKS, true))
+        if (in_array($this->gateway, self::LINK_BASED_BANKS, true))
         {
             // Fetches the documents from the link, stores them in tmp
             // after extraction if neccessary, deletes the zip file, keeping
@@ -544,7 +544,7 @@ class Orchestrator extends Base\Core
     protected function getFileDetailsFromInput(
         $inputDetails,
         $input,
-        $processor = FileProcessor::UPLOADED)
+        $fileType = FileProcessor::UPLOADED)
     {
         $allFilesDetails = [];
 
@@ -556,7 +556,7 @@ class Orchestrator extends Base\Core
             $file = $input['attachment-' . $attachmentNumber];
 
             // This step is mainly to figure out whether the file is of zip type,
-            // since we need to execute a different set of flow ONLY for zip files.
+            // since we need to execute a different set of flow ON Y for zip files.
             $fileType = $this->fileProcessor->getTypeOfFile($file);
 
             // If it's a zip file, get all the details of all the files present in it.
@@ -566,7 +566,7 @@ class Orchestrator extends Base\Core
                 try
                 {
                     // Gets the actual zip file's details first.
-                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $processor);
+                    $zipFileDetails = $this->fileProcessor->getFileDetails($file, $fileType);
 
                     // Gets all files details present in the zip file.
                     $extractedFileDetails = $this->getFileDetailsFromZipFile($zipFileDetails);
@@ -614,7 +614,7 @@ class Orchestrator extends Base\Core
             {
                 // Except zip, all other file types will return with a single element
                 // and not an array. Hence using push here instead of merge.
-                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $processor);
+                $allFilesDetails[] = $this->fileProcessor->getFileDetails($file, $fileType);
             }
         }
 
@@ -699,7 +699,7 @@ class Orchestrator extends Base\Core
     {
         $gatewayReconciliatorClassName = 'RZP\\Reconciliator' . '\\' . $gateway . '\\' . 'Reconciliate';
 
-        $this->bank = $gateway;
+        $this->gateway = $gateway;
 
         $this->gatewayReconciliator = new $gatewayReconciliatorClassName;
     }
@@ -863,7 +863,9 @@ class Orchestrator extends Base\Core
         RuntimeManager::setTimeLimit(3600);
     }
 
-    protected function fetchAndStoreLinkDocuments(array $emailDetails, array & $input)
+    protected function fetchAndStoreLinkDocuments(
+        array $emailDetails,
+        array & $input)
     {
         if (empty($input['attachment-count']) === true)
         {
@@ -871,7 +873,7 @@ class Orchestrator extends Base\Core
         }
 
         $link = $this->gatewayReconciliator
-                      ->getSettlementFileLink($emailDetails['body']);
+                     ->getSettlementFileLink($emailDetails['body']);
 
         $this->trace->info(
             TraceCode::RECON_FILE_LINK,
@@ -881,7 +883,7 @@ class Orchestrator extends Base\Core
             ]);
 
         $file = $this->gatewayReconciliator
-                        ->getSettlementFileFromLink($link);
+                     ->getSettlementFileFromLink($link);
 
         $attachmentCount = (string)((int)$input['attachment-count'] + 1);
 

@@ -43,22 +43,14 @@ class Reconciliate extends Base\Reconciliate
 
     public function getSettlementFileLink(string $text)
     {
-        /**
-         * 1. Fetch all hyperlinks 'a' tags
-         * 2. Get the one with text as 'VIEW REPORT'
-         * 3. Extract the href link
-         */
-
-
         /*
          * Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
-         * By splitting the string, get the link
+         * By splitting the 'stripped-text', get the link
          */
         $raw_text = trim(explode('VIEW REPORT', $text)[1]);
         $raw_text = trim(explode('Best', $raw_text)[0]);
 
-        $link = stripcslashes(trim($raw_text, '<>'));
-        return $link;
+        return stripcslashes(trim($raw_text, '<>'));
     }
 
     public function getSettlementFileFromLink(string $link)
@@ -90,6 +82,8 @@ class Reconciliate extends Base\Reconciliate
 
         file_put_contents($filePath, fopen($response->url, 'r'));
 
-        return new UploadedFile($filePath, $filePath, 'application/zip', filesize($filePath), null, true);
+        return new UploadedFile(
+            $filePath, $filePath, 'application/zip',
+            filesize($filePath), null, true);
     }
 }
