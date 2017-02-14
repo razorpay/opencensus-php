@@ -187,7 +187,7 @@ class Reconciler3
 
         $status = $row['Status Of transaction'];
 
-        $rawFailureReason = $row['Reject Reason'];
+        $serverFailureReason = str_limit($row['Reject Reason'], 255);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 
@@ -212,14 +212,14 @@ class Reconciler3
             {
                 $status = Settlement\Status::CREATED;
 
-                $rawFailureReason = null;
+                $serverFailureReason = null;
             }
-            else if ((empty($rawFailureReason) === true) or
-                (in_array($rawFailureReason, self::SUCCESS_STATUS) === true))
+            else if ((empty($serverFailureReason) === true) or
+                (in_array($serverFailureReason, self::SUCCESS_STATUS) === true))
             {
                 $status = Settlement\Status::PROCESSED;
 
-                $rawFailureReason = null;
+                $serverFailureReason = null;
             }
             else
             {
@@ -256,7 +256,7 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $setl->setRawFailureReason($rawFailureReason);
+            $setl->setServerFailureReason($serverFailureReason);
 
             $this->repo->saveOrFail($setl);
 

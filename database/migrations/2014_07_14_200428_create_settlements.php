@@ -58,7 +58,7 @@ class CreateSettlements extends Migration {
                   ->nullable()
                   ->unique();
 
-            $table->string(Settlement::RAW_FAILURE_REASON)
+            $table->string(Settlement::SERVER_FAILURE_REASON)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table

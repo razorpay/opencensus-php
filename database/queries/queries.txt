@@ -1642,6 +1642,6 @@ ALTER TABLE refunds
 # Drop merchants features
 ALTER TABLE merchants DROP COLUMN features;
 
-# Adding raw failure reason in settlements
+# Adding server failure reason in settlements
 ALTER TABLE `settlements`
-    ADD COLUMN `raw_failure_reason` VARCHAR(255) DEFAULT NULL AFTER `return_utr`;
+    ADD COLUMN `server_failure_reason` VARCHAR(255) DEFAULT NULL AFTER `return_utr`;
