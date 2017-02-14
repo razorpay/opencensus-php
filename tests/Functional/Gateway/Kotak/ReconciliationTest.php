@@ -209,6 +209,7 @@ class ReconciliationTest extends TestCase
     protected function fetchAndMatchBatchSettlement()
     {
         $content = $this->getEntities('batch_settlement', [], true);
+
         $data = array(
             'entity' => 'collection',
             'count' => 1,
@@ -240,6 +241,7 @@ class ReconciliationTest extends TestCase
     protected function fetchAndMatchSettlements($failed = false)
     {
         $content = $this->getEntities('settlement', array(), true);
+
         $data = array(
             'entity' => 'collection',
             'count' => 1,
@@ -254,6 +256,7 @@ class ReconciliationTest extends TestCase
                 ],
             ]
         );
+
         if ($failed == true)
         {
             $data['items'][0]['failure_reason'] = 'Reconciliation';
@@ -273,6 +276,7 @@ class ReconciliationTest extends TestCase
 
         $this->assertArraySelectiveEquals($data, $content);
     }
+
     protected function checkAdjustmentCreated()
     {
         $setl = $this->getLastEntity('settlement', true);
