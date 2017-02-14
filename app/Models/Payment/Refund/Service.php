@@ -29,7 +29,7 @@ class Service extends Base\Service
         if (isset($input[Entity::PAYMENT_ID]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Input field \'payment_id\' is missing',
+                "Input field 'payment_id' is missing",
                 Entity::PAYMENT_ID);
         }
 

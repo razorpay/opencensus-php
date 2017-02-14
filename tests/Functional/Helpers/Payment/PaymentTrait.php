@@ -602,12 +602,10 @@ trait PaymentTrait
     {
         $this->ba->privateAuth();
 
-        $content = $params;
-
         $request = array(
             'method'    => 'POST',
             'url'       => '/refunds',
-            'content'   => $content);
+            'content'   => $params);
 
         return $this->makeRequestAndGetContent($request);
     }

@@ -66,7 +66,7 @@ class RefundTest extends TestCase
         $refund = $this->refund(
             [
                 'payment_id' => $payment->getPublicId(),
-                'notes' => ['a' => 'b'],
+                'notes'      => ['a' => 'b'],
             ]);
 
         $this->assertEquals('refund', $refund['entity']);
