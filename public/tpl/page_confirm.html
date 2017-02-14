@@ -9,12 +9,27 @@
         <spinner></spinner>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
       </div>
-      <div ng-if="success" class="m-t">
+      <div ng-if="success" class="m-t text-center">
         <div class="alert alert-success">
-          <p>Confirmation successful. <a ui-sref="access.signin" id="signin" class="btn btn-sm btn-success">Sign in</a></p>
+          <p>Confirmation successful.</p>
         </div>
+        <p class="text-center">Redirecting you to Dashboard. If not redirected automatically, click here.</p>
+        <a ui-sref="app.dashboard" id="signin" class="btn btn-sm btn-success">Go to Dashboard</a>
       </div>
     </div>
   </div>
   <div class="text-center" ng-include="'tpl/blocks/page_footer.html'"></div>
 </div>
+<script >  
+var _dcq = _dcq || [];
+var _dcs = _dcs || {}; 
+_dcs.account = '9421167';
+
+(function() {
+  var dc = document.createElement('script');
+  dc.type = 'text/javascript'; dc.async = true; 
+  dc.src = '//tag.getdrip.com/9421167.js';
+  var s = document.getElementsByTagName('script')[0];
+  s.parentNode.insertBefore(dc, s);
+})();
+</script>

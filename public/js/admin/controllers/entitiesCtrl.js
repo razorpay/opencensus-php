@@ -66,6 +66,7 @@ app.controller('EntitiesCtrl', [
       'hdfc',
       'kotak',
       'mobikwik',
+      'marketplace',
       'netbanking_hdfc',
       'netbanking_kotak',
       'netbanking_axis',
@@ -78,7 +79,7 @@ app.controller('EntitiesCtrl', [
       'wallet_airtelmoney',
       'wallet_freecharge',
       'wallet_openwallet',
-      'marketplace'
+      'wallet_jiomoney'
     ];
     var walletList = [
       'all',
@@ -262,7 +263,7 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      daily_settlement: {},
+      batch_settlement: {},
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
@@ -271,6 +272,10 @@ app.controller('EntitiesCtrl', [
         entity_id: ['Entity Id'],
         entity_type: ['Entity Type'],
         name: ['Name']
+      },
+      file_store: {
+        entity_id: ['Entity Id'],
+        type: ['Type']
       },
       hdfc: {
         auth: ['Auth Code'],
@@ -292,7 +297,31 @@ app.controller('EntitiesCtrl', [
           'credit',
           'debit',
           'unknown'
+        ]
+      },
+      invoice:
+      {
+        payment_id: ['Payment Id'],
+        receipt: ['Receipt'],
+        user_id: ['User Id'],
+        status: [
+          'all',
+          'draft',
+          'issued',
+          'paid',
+          'expired'
         ],
+        type: [
+          'all',
+          'ecod',
+          'link',
+          'invoice'
+        ],
+        merchant_id: ['Merchant Id'],
+        order_id: ['Order Id'],
+        customer_name: ['Customer Name'],
+        customer_email: ['Customer Email'],
+        customer_contact: ['Customer Contact']
       },
       key: {
         merchant_id: ['Merchant Id']
@@ -331,7 +360,6 @@ app.controller('EntitiesCtrl', [
             'all',
             1, 2, 3, 4, 5
         ],
-        hold_funds: booleanList
       },
       merchant_detail: {
 
@@ -358,15 +386,16 @@ app.controller('EntitiesCtrl', [
         received: booleanList
       },
       order: {
+        account_number: ['Account Number'],
+        authorized: booleanList,
         merchant_id: ['Merchant Id'],
+        receipt: ['Receipt'],
         status: [
           'all',
           'created',
           'attempted',
           'paid',
-        ],
-        authorized: booleanList,
-        receipt: ['Receipt']
+        ]
       },
       payment_analytics: {
         checkout_id: ['Checkout Id'],
@@ -375,6 +404,7 @@ app.controller('EntitiesCtrl', [
       },
       payment: {
         app_token: ['App Token'],
+        amount: ['Amount'],
         bank: ['Bank Code'],
         card_id: ['Card Id'],
         customer_id: ['Customer Id'],
@@ -384,10 +414,12 @@ app.controller('EntitiesCtrl', [
         global_token_id: ['Global Token Id'],
         iin: ['Card IIN'],
         international: booleanList,
+        invoice_id: ['Invoice Id'],
         last4: ['Card Last 4'],
         merchant_id: ['Merchant Id'],
         method: methodList,
         notes: ['Notes'],
+        order_id: ['Order Id'],
         refund_status: [
           'all',
           'null',
@@ -437,7 +469,7 @@ app.controller('EntitiesCtrl', [
         settlement_id: ['Settlement Id']
       },
       terminal: {
-        emnabled: booleanList,
+        enabled: booleanList,
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
         shared: booleanList

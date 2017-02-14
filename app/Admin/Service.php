@@ -1940,6 +1940,24 @@ class Service extends Base\Service
         }
     }
 
+    public function editName($merchantId, $input)
+    {
+        $response = $error = null;
+
+        $this->setApiCredentials();
+
+        try
+        {
+            $response = $this->api->merchant->fetch($merchantId)->edit($input);
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        return [$response, $error];
+    }
+    
     public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
         $error = $response = null;

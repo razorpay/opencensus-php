@@ -292,14 +292,14 @@ class Service extends Base\Service
 
         if (is_null($user))
         {
-            return [static::INVALID_CONFIRMATION_TOKEN];
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
         }
 
         $merchant = $user->getOwnerMerchant();
 
         if (is_null($merchant))
         {
-            return [static::NO_OWNED_MERCHANT];
+            return [[static::NO_OWNED_MERCHANT], []];
         }
 
         return $this->confirmMerchantById($merchant->id);
@@ -313,7 +313,7 @@ class Service extends Base\Service
         // This also calls the mailing list subscription for the user email
         $merchant->confirm();
 
-        return array();
+        return [null, ['email' => $merchant->email]];
     }
 
     public function createMerchantOnApi($merchantId)
@@ -325,7 +325,6 @@ class Service extends Base\Service
         // Once the merchant is created we also have to tag him
         // with the admin if he was invited by one.
         $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
         if ($lead)
         {
             $merchantApiData['admin_id'] = $lead->admin_id;
@@ -377,7 +376,7 @@ class Service extends Base\Service
             {
                 $user = Auth::user()->get();
 
-                if ($user->confirm_token === null)
+                if ($user->getConfirmToken() === null)
                 {
                     return [['User already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
@@ -969,5 +968,39 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function savePreSignupDetails($merchantId, $input)
+    {
+        $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
+
+        $error = $merchantDetail->edit($input, 'preSignup');
+
+        if (empty($error))
+        {
+            $merchantDetail->saveOrFail();
+
+            if (isset($input['business_name']))
+            {
+                $merchant = Merchant\Entity::findOrFail($merchantId);
+
+                $merchant->edit(['name' => $input['business_name']], 'changeName');
+
+                $merchant->saveOrFail();
+
+                (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
+            }
+        }
+
+        (new MerchantDetails\Service)->saveDetailsOnAPI($input, $merchantId);
+
+        return [ $error, $merchantDetail->getPreSignupFields()];
+    }
+
+    public function getPreSignupDetails($merchantId)
+    {
+        $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
+
+        return $merchantDetail->getPreSignupFields();
     }
 }

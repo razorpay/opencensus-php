@@ -46,7 +46,7 @@ class Service extends Base\Service
 
         // We need to change this to currentLoggedInMerchant later
         $merchant = $this->loggedInUser->getOwnerMerchant();
-        
+
         if ($merchant === false)
         {
             $errors[] = static::NO_MERCHANTS_OWNED_BY_USER;
@@ -58,8 +58,7 @@ class Service extends Base\Service
 
         // This is a double check because going ahead once we have roles
         // Users can invite others as well, meaning user->email check would
-        // become important.
-        if ($merchant->email === $input['email'] or $this->loggedInUser->email === $input['email'])
+        if ($this->loggedInUser->email === $input['email'])
         {
             $errors[] = static::SELF_INVITE_NOT_ALLOWED;
         }

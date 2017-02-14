@@ -399,6 +399,10 @@
             Payzapp
           </div>
           <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.jiomoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.jiomoney == true, 'fa-times text-danger':merchant.details.methods.jiomoney == false}"></i></span>
+            Jiomoney
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
@@ -501,6 +505,7 @@
                     <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
+                    <th>Netbanking</th>
                     <th>Emi</th>
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
@@ -509,7 +514,11 @@
                   </thead>
                   <tbody>
                   <tr ng-repeat="terminal in merchant.terminals.items">
-                    <td>{{terminal.id}}</td>
+                    <td>
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
+                        <code>{{terminal.id}}</code>
+                      </a>
+                    </td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
                     <td>{{terminal.category}}</td>
@@ -696,6 +705,7 @@
              <option value="upi_icici">UPI/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
+             <option value="wallet_jiomoney">Jiomoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -704,6 +714,7 @@
              <option value="netbanking_hdfc">Netbanking HDFC</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
              <option value="netbanking_axis">Netbanking AXIS</option>
+             <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>

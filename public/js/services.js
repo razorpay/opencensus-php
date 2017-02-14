@@ -10,7 +10,12 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
-    var _identity, _authenticated = false;
+    var _identity, 
+        _isPreSignupDone = false, 
+        _isVerified = false,
+        _authenticated = false;
+
+
     return {
       isIdentityResolved: function () {
         return angular.isDefined(_identity);
@@ -22,11 +27,15 @@ angular.module('app.services', [])
         _identity = identity;
         _authenticated = identity !== null;
       },
-
       getIdentity: function() {
         return _identity;
       },
-
+      isPreSignupDone: function() {
+        return _isPreSignupDone;
+      },
+      isVerified: function() {
+        return _isVerified;
+      },
       identity: function (force) {
         var deferred = $q.defer();
         if (force === true)
@@ -41,6 +50,16 @@ angular.module('app.services', [])
           if (data.data.steps_finished) {
             _identity.activation_progress = data.data.activation_progress;
           }
+
+          // if any of the fields is missing, isPreSignupDone will be false
+          _isPreSignupDone = !!Object.keys(_identity.pre_signup)
+            // get all values
+            .map(function (key) {return _identity.pre_signup[key]})
+            // reduce all values using '&&'
+            .reduce(function (x, y){return x && y});
+
+          _isVerified = _identity.user.confirmed;
+
           _authenticated = data.success === true;
           if (_authenticated)
             $idle.watch();
@@ -69,12 +88,12 @@ angular.module('app.services', [])
       authorize: function () {
         return user.identity().then(function () {
           if ($rootScope.toState.data.role === 'auth') {
-            if (user.isAuthenticated() === false) {
+            if (!user.isAuthenticated() && !user.isVerified()) {
               $state.go('access.signin');
             }
           }
           else if ($rootScope.toState.data.role === 'guest') {
-            if (user.isAuthenticated() === true) {
+            if (user.isAuthenticated() && user.isVerified()) {
               if ($rootScope.role === 'sellerapp') {
                 $state.go('app.invoices');
               } else {
@@ -605,7 +624,12 @@ angular.module('app.services', [])
       processing: 'bg-info',
 
       // refund
-      partial: 'bg-info' // payment.refund_status
+      partial: 'bg-info', // payment.refund_status
+
+      // invoice
+      draft: 'bg-light',
+      issued: 'bg-info',
+      expired: 'bg-danger'
     };
 
     return mapper[status];
@@ -767,12 +791,14 @@ angular.module('app.services', [])
           'card',
           'credits',
           'customer',
-          'daily_settlement',
+          'batch_settlement',
           'ebs',
+          'file_store',
           'first_data',
           'emi_plan',
           'hdfc',
           'iin',
+          'invoice',
           'merchant',
           'methods',
           'mobikwik',
