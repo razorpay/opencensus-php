@@ -7,7 +7,7 @@ use Lib\PhoneBook;
 
 use RZP\Models\Base;
 use RZP\Models\Wallet;
-Use RZP\Models\Merchant;
+use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Exception;

@@ -130,14 +130,28 @@ trait Reversal
 
             if ($transferCount > 1)
             {
-                // `reversals` must be provided when there are multiple
-                // transfers created on the payment, on partial refund
-                (new Payment\Refund\Validator)->validateReversalsRequired($input);
+                //
+                // For partial refunds:
+                // 1. `reversals` must be provided when there are multiple
+                //     transfers created on the payment.
+                // 2. This isn't required though, when all these transfers are fully
+                //    reversed, during a previous partial refund on the payment
+                //
+
+                $allTransfersReversed = $this->checkIfAllTransfersReversed($transfers);
+
+                if ($allTransfersReversed === false)
+                {
+                    (new Payment\Refund\Validator)->validateReversalsRequired($input);
+                }
             }
             else if ($transferCount === 1)
             {
+                //
                 // When only a single transfer exists, we auto-reverse
                 // the entire transfer amount
+                //
+
                 $reverseAll = true;
             }
         }
@@ -150,9 +164,30 @@ trait Reversal
     }
 
     /**
-     * When reversals are to be processed but not provided
-     * in input, we  implicitly add reversals for the transfers
-     * corresponding to the paymment being refunded
+     * Returns true if all transfers passed to the function are fully reversed
+     *
+     * @param  Base\PublicCollection        $transfers
+     * @return bool
+     */
+    protected function checkIfAllTransfersReversed(Base\PublicCollection $transfers) : bool
+    {
+        foreach ($transfers as $transfer)
+        {
+            $amountPendingToReverse = $transfer->getAmountUnreversed();
+
+            if ($amountPendingToReverse !== 0)
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * When reversals are to be processed but not provided in input, we
+     * implicitly add reversals for the transfers corresponding to the paymment
+     * being refunded
      *
      * @param  PublicCollection     $transfers
      * @param  array                $input

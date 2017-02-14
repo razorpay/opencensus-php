@@ -19,7 +19,7 @@ class Service extends Base\Service
         return $this->repo->transaction(function () use ($input)
         {
             $customerTxn = $this->core
-                                ->createFromCustomerRefund($input, $this->merchant);
+                                ->createForCustomerRefund($input, $this->merchant);
 
             return $customerTxn->getId();
         });

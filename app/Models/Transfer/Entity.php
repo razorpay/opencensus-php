@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::ON_HOLD,
-        self::ON_HOLD_UNTIL,
+        // self::ON_HOLD_UNTIL,
         self::CREATED_AT,
     ];
 

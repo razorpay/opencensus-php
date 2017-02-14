@@ -246,7 +246,10 @@ trait Refund
                     'The reversals parameter is required for this refund request');
         }
 
-        $this->processReversals($input['reversals']);
+        $this->repo->transaction(function () use ($input)
+        {
+            $this->processReversals($input['reversals']);
+        });
     }
 
     public function refundPaymentViaBatchEntry(Payment\Entity $payment, Batch\Entity $batch, $amount)
@@ -565,7 +568,7 @@ trait Refund
             TraceCode::PAYMENT_REFUND_REQUEST,
             [
                 'payment_id' => $payment->getId(),
-                'input' => $input
+                'input'      => $input
             ]);
 
         $this->setPayment($payment);
@@ -576,7 +579,12 @@ trait Refund
 
         $refund->setBaseAmount();
 
-        if ($this->payment->isCaptured())
+        //
+        // For payments that have been transferred, we validate merchant
+        // balance after reversals have been processed for those transfers
+        //
+        if (($this->payment->isCaptured() === true) and
+            ($this->payment->isTransferred() === false))
         {
             $this->validateMerchantBalance($refund);
         }
@@ -603,6 +611,16 @@ trait Refund
 
         $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $input)
         {
+            // Determine if transfer reversals should be processed along with the refund
+            $processReversals = $this->shouldProcessReversals($this->payment, $input);
+
+            if ($processReversals === true)
+            {
+                $this->refundPaymentWithTransfers($input);
+
+                $this->validateMerchantBalance($this->refund);
+            }
+
             if ($payment->isTransfer() === true)
             {
                 ; // Marketplace: do nothing, refunds on transfer payments are internal
@@ -638,11 +656,8 @@ trait Refund
                 $this->refund = $refundCopy;
             }
 
-            // Determine if transfer reversals should be processed along with the refund
-            $processReversals = $this->shouldProcessReversals($this->payment, $input);
-
             // Record refund since it's refunded on gateway
-            $this->updatePaymentRefunded($processReversals, $input);
+            $this->updatePaymentRefunded();
 
             $this->sendRefundNotification($payment);
         });
@@ -657,7 +672,7 @@ trait Refund
         return Payment\Gateway::supportsReverse($gateway);
     }
 
-    protected function updatePaymentRefunded($processReversals = false, array $input = [])
+    protected function updatePaymentRefunded()
     {
         // Indicates buggy case where refund entity is already present
         if ($this->verifyRefundStatus === false)
@@ -673,13 +688,8 @@ trait Refund
             $this->payment->refundAmount($amount, $baseAmount);
         }
 
-        $this->repo->transaction(function() use ($processReversals, $input)
+        $this->repo->transaction(function()
         {
-            if ($processReversals === true)
-            {
-                $this->refundPaymentWithTransfers($input);
-            }
-
             $this->repo->saveOrFail($this->payment);
 
             $this->repo->saveOrFail($this->refund);

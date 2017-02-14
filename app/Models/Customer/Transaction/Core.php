@@ -48,7 +48,7 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createFromCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant) : Entity
+    public function createForCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant) : Entity
     {
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
 
@@ -75,7 +75,7 @@ class Core extends Base\Core
      * @param  int    $amount
      * @return Entity
      */
-    public function createFromCustomerRefund(array $input, Merchant\Entity $merchant) : Entity
+    public function createForCustomerRefund(array $input, Merchant\Entity $merchant) : Entity
     {
         $amount = $input['amount'];
 

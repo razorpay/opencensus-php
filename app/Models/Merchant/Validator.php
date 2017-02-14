@@ -154,7 +154,7 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID,
-                'transfer_id'
+                'transfers.account'
             );
         }
 
