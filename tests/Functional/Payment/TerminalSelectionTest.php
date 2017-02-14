@@ -708,6 +708,7 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
         $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
         $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
 
@@ -716,5 +717,18 @@ class TerminalSelectionTest extends TestCase
 
         $payment1 = $this->getLastEntity('payment', true);
         $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+
+        $terminalAttrs = [
+            'id' => 'DrctHDFCTermnl',
+            'merchant_id' => '10000000000000',
+            'shared' => 0,
+        ];
+        $this->fixtures->create('terminal:shared_hdfc_terminal', $terminalAttrs);
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
 }

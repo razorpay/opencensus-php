@@ -128,7 +128,8 @@ class MerchantFilter extends Terminal\Filter
 
         $acquirer = $terminal->getGatewayAcquirer();
 
-        if (($category2 === Category::PHARMA) and
+        if (($terminal->isShared() === true) and
+            ($category2 === Category::PHARMA) and
             ($acquirer === Gateway::ACQUIRER_HDFC))
         {
             return false;
