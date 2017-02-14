@@ -354,8 +354,7 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.

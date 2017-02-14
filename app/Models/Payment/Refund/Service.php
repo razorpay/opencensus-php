@@ -51,6 +51,7 @@ class Service extends Base\Service
                 // Removing kotak from gateways list/
                 // Should not be run along with others.
                 unset($gateways[IFSC::KKBK]);
+                unset($gateways[IFSC::AIRP]);
                 break;
 
             case Payment\Method::WALLET:
