@@ -37,7 +37,7 @@ class Service extends Base\Service
         switch ($method)
         {
             case Payment\Method::NETBANKING:
-                $gateways = Payment\Gateway::$dailyFileNetbankingGateways;
+                $gateways = Payment\Gateway::$refundFileNetbankingGateways;
 
                 $type = Payment\Entity::BANK;
 
