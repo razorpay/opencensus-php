@@ -42,7 +42,7 @@ export default class AddItem extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, invalid } = this.props
 
     return (
       <div>
@@ -51,12 +51,12 @@ export default class AddItem extends Component {
           onCloseClick={this.props.closeModal}
         />
 
-        <Alert
-          type='error'
-          message={this.state.errors}
-        />
-
         <div class='modal-body'>
+          <Alert
+            type='error'
+            message={this.state.errors}
+          />
+
           <form onSubmit={handleSubmit(this.save)}>
             <div class='form-group'>
               <label class='label-required'>Name</label>
@@ -103,6 +103,7 @@ export default class AddItem extends Component {
                 class='btn btn-primary btn-block'
                 text={this.props.saveLabel}
                 pendingText='Saving...'
+                disabled={invalid}
                 onClick={handleSubmit(this.save)}
               />
             </div>

@@ -1,3 +1,5 @@
+import './InputField.styl'
+
 export default (props) => {
   let {
     input,
@@ -8,14 +10,14 @@ export default (props) => {
   } = props
 
   return (
-    <div>
+    <div class={`InputField clearfix ${touched && error ? 'InputField--error' : ''}`}>
       {
         tagName === 'textarea' ?
         <textarea {...input} {...otherProps} /> :
         <input {...input} {...otherProps} />
       }
 
-      {touched && error && <div class='text-danger'><small>{error}</small></div>}
+      {touched && error && <div class='InputField__ErrorText text-danger'>{error}</div>}
     </div>
   )
 }

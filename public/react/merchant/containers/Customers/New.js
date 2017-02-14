@@ -8,12 +8,23 @@ import Alert from 'rzp/ui/Forms/Alert'
 import { required, email, phone } from 'rzp/utils/validators'
 import * as CustomerActions from 'merchant/modules/customers'
 
+function validate(values) {
+  let errors = {}
+
+  if (!values.email && !values.contact) {
+    errors._error = 'Please provide either email or contact'
+  }
+
+  return errors
+}
+
 @connect(
   null,
   CustomerActions
 )
 @reduxForm({
-  form: 'newCustomer'
+  form: 'newCustomer',
+  validate
 })
 export default class AddCustomer extends Component {
   constructor() {
@@ -41,7 +52,7 @@ export default class AddCustomer extends Component {
   }
 
   render() {
-    const { handleSubmit, pristine } = this.props
+    const { handleSubmit, invalid } = this.props
 
     return (
       <div>
@@ -69,6 +80,10 @@ export default class AddCustomer extends Component {
               </div>
             </div>
 
+            <div class='help-block'>
+              One of these - <b>email</b> or <b>phone</b> is required.
+            </div>
+
             <div class='form-group'>
               <label>Email</label>
               <div>
@@ -83,7 +98,7 @@ export default class AddCustomer extends Component {
             </div>
 
             <div class='form-group'>
-              <label class='label-required'>Contact No.</label>
+              <label>Contact No.</label>
               <div>
                 <Field
                   name='contact'
@@ -91,7 +106,6 @@ export default class AddCustomer extends Component {
                   class='form-control'
                   type='tel'
                   validate={[
-                    required('Please provide the contact number'),
                     phone('Invalid Contact')
                   ]}
                 />
@@ -117,6 +131,7 @@ export default class AddCustomer extends Component {
                 class='btn btn-primary btn-block'
                 text={this.props.saveLabel}
                 pendingText='Saving...'
+                disabled={invalid}
                 onClick={handleSubmit(this.save)}
               />
             </div>
