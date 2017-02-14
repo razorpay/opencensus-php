@@ -174,14 +174,16 @@ export default class InvoicesNewContainer extends Component {
       })
       this.props.initialize(invoice)
       return invoice
-    }).catch(({ errors }) => {
+    }).catch((error) => {
       this.props.showNotification({
         type: 'error',
-        message: errors
+        message: error.errors
       })
       this.setState({
         isSaving: false
       })
+
+      throw error
     })
   }
 

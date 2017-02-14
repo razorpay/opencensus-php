@@ -22,8 +22,14 @@ export default (params = {}) => {
         }, response))
       }
     }, (err) => {
+      let message = ''
+      if (err.status === 401) {
+        message = 'Unauthorized'
+      }
+
       reject(Object.assign({
-        code: err.status
+        code: err.status,
+        errors: [message]
       }, err.responseJSON))
     })
   })
