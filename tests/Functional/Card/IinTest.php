@@ -66,7 +66,8 @@ class IinTest extends TestCase
     public function testIinRangeUploadWithType()
     {
         $input = [
-            'range' => ['min' => 652850, 'max' => 652855],
+            'min' => 652850,
+            'max' => 652855,
             'network' => 'RuPay',
             'type' => 'credit',
             'country' => 'IN'

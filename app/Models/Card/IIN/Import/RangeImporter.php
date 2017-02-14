@@ -26,7 +26,7 @@ class RangeImporter
                 'Please pass network name as input for given file');
         }
 
-        $formattedData = (new Formatter)->formatIinDataRange($input, $input['range']);
+        $formattedData = (new Formatter)->formatIinDataRange($input);
 
         $successCount = $this->addOrUpdate($formattedData);
 

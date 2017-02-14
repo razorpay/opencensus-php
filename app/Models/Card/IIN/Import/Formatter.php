@@ -37,23 +37,6 @@ class Formatter
         'FC'    => null,
     );
 
-    public static $networkMapping = array(
-        'JCB'                       => Network::JCB,
-        'MASTERCARD'                => Network::MC,
-        'MasterCard'                => Network::MC,
-        'RuPay'                     => Network::RUPAY,
-        'RUPAY'                     => Network::RUPAY,
-        'CHINA UNION PAY'           => Network::UNP,
-        'Maestro'                   => Network::MAES,
-        'MAESTRO'                   => Network::MAES,
-        'Visa'                      => Network::VISA,
-        'VISA'                      => Network::VISA,
-        'DISCOVER'                  => Network::DISC,
-        'AMERICAN EXPRESS'          => Network::AMEX,
-        'DINERS CLUB INTERNATIONAL' => Network::DICL,
-        'unknown'                   => Network::UNKNOWN,
-    );
-
     /**
      * formats the data to iin entity
      *
@@ -108,47 +91,22 @@ class Formatter
         return $iins;
     }
 
-    public function formatIinDataRange($input, $range)
+    public function formatIinDataRange($input)
     {
         $data = [];
 
-        unset($input['range']);
-
-        foreach ($input as $key => $value)
-        {
-            $value = trim($value);
-
-            switch (strtolower($key))
-            {
-                case 'country':
-                    $data[IIN::COUNTRY] = $value;
-                    break;
-
-                case 'type':
-                    $data[IIN::TYPE] = $value;
-                    break;
-
-                case 'issuer':
-                    if (IFSC::exists($value) === true)
-                    {
-                        $data[IIN::ISSUER] = $value;
-                        $data[IIN::ISSUER_NAME] = Name::getName($value);
-                    }
-                    break;
-
-                case 'network':
-                    $data[IIN::NETWORK] = $this->formatNetwork($value, self::$networkMapping);
-                    break;
-            }
-        }
-
         $iins = new BaseModel\PublicCollection;
 
-        for ($i = $range['min']; $i <= $range['max']; $i++)
-        {
-            $data[IIN::IIN] = $i;
+        $min = $input['min'];
+        $max = $input['max'];
 
-            $iins[$i] = $data;
+        unset($input['min'], $input['max']);
+
+        for ($i = $min; $i <= $max; $i++)
+        {
+            $input[IIN::IIN] = $i;
+
+            $iins[$i] = $input;
         }
 
         return $iins;
