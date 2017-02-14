@@ -97,6 +97,9 @@ class CreateMerchants extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->tinyInteger(Merchant::AUTO_CAPTURE_LATE_AUTH)
+                  ->default(0);
+
             $table->tinyInteger(Merchant::CONVERT_CURRENCY)
                   ->nullable();
 
@@ -117,6 +120,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+            $table->index(Merchant::AUTO_REFUND_DELAY);
         });
     }
 

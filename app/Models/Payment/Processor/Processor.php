@@ -143,9 +143,20 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        //
         // Creates a payment entity in DB with the input values given.
         // Also takes care of fee-bearer customer flow.
-        $payment = $this->createPaymentEntity($input);
+        //
+        // This is in a transaction because we perform
+        // lockForUpdate on invoice in this flow.
+        //
+
+        $this->repo->transaction(function() use ($input)
+        {
+            $this->createPaymentEntity($input);
+        });
+
+        $payment = $this->payment;
 
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
@@ -330,19 +341,9 @@ class Processor
 
     protected function cancelPayment($payment, $input)
     {
-        $errorCode = null;
-
         $payment->getValidator()->cancelValidate($payment);
 
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android_sdk'))
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
-        }
-        else
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
-        }
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
 
         if ((isset($input['_']['reason']) === true) and
             (is_string($input['_']['reason']) === true))
@@ -352,7 +353,14 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        if ($payment->merchant->isFeatureEnabled(Feature::CREATED_FLOW))
+        {
+            $this->setPaymentError($e, TraceCode::PAYMENT_CANCELLED);
+        }
+        else
+        {
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        }
 
         return $errorCode;
     }
@@ -540,13 +548,23 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError(Exception\BaseException $e)
+    protected function setPaymentError(Exception\BaseException $e, $traceCode)
     {
+        $payment = $this->payment;
+
         $error = $e->getError();
 
         $internalCode = $error->getInternalErrorCode();
 
-        $payment = $this->payment;
+        $this->trace->info(
+            $traceCode,
+            [
+                'payment_id'    => $payment->getId(),
+                'status'        => $payment->getStatus(),
+                'error'         => $error,
+                'internalCode'  => $internalCode,
+            ]
+        );
 
         $payment->setInternalErrorCode($internalCode);
 
@@ -761,12 +779,16 @@ class Processor
             return;
         }
 
-        $invoice = $this->repo->invoice->fetchForOrder($this->order);
+        $invoice = $this->order->invoice()->withTrashed()->first();
 
         if ($invoice === null)
         {
             return;
         }
+
+        $this->repo->invoice->lockForUpdateAndReload($invoice, true);
+
+        $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
     }
@@ -905,7 +927,7 @@ class Processor
     protected function shouldAutoCapture(Payment\Entity $payment)
     {
         // We do an auto capture only if payment is associated with an order.
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasOrder() === false)
         {
             return false;
         }
@@ -983,38 +1005,51 @@ class Processor
             return false;
         }
 
-        // For now, we would be auto capturing only payments with an invoice.
-        // This will be removed later.
-        if ($payment->getInvoiceId() === null)
-        {
-            return false;
-        }
-
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
         if ($payment->hasInvoice())
         {
-            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
 
-        return false;
+        return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
     }
 
-    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
+    /**
+     * The merchant needs to have `auto_capture_late_auth` config set to true.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedOrder(Merchant\Entity $merchant)
     {
-        //
-        // Invoice related checks
-        // - Check if now is not past invoice due date
-        // - Check if invoice status is ISSUED
-        //
+        return $merchant->getAutoCaptureLateAuth();
+    }
 
+    /**
+     * Invoice related checks
+     *   - Check if invoice status is ISSUED
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
+    {
         $invoice = $payment->invoice;
 
-        $this->repo->reload($invoice);
+        $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-        if (($invoice->isIssued() === false) or
-            ($currentTime >= $invoice->getDueBy()))
+        //
+        // There could be a case where the current time is greater
+        // than the expire_by of the invoice. But, if we haven't
+        // yet marked the invoice as expired, we still go ahead
+        // and capture the payment.
+        //
+
+        if ($invoice->isIssued() === false)
         {
             $this->trace->debug(
                 TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
@@ -1023,8 +1058,6 @@ class Processor
                     'status'            => $payment->getStatus(),
                     'invoice_id'        => $invoice->getId(),
                     'invoice_status'    => $invoice->getStatus(),
-                    'invoice_due_by'    => $invoice->getDueBy(),
-                    'current_time'      => $currentTime,
                 ]);
 
             return false;

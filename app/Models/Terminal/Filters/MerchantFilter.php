@@ -6,18 +6,130 @@ use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Merchant;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class MerchantFilter extends Terminal\Filter
 {
+    const CORPORATE_IFSC = [
+        IFSC::ICIC
+    ];
+
+    const MUTUAL_FUNDS_IFSC = [
+        IFSC::SBBJ,
+        IFSC::SBHY,
+        IFSC::SBIN,
+        IFSC::SBMY,
+        IFSC::SBTR,
+        IFSC::STBP,
+        IFSC::STCB,
+        Netbanking::PUNB_C,
+        Netbanking::PUNB_R,
+        IFSC::CNRB,
+    ];
+
     protected $properties = [
+        'billdesk_category',
+        'billdesk_merchant',
         'incompatible',
         'category',
+        'pharma',
         'gateway',
         'wallet',
     ];
 
+    /**
+     * Performs category based filtering for billdesk terminals.
+     * Rules are based on merchant category and the corresponding
+     * banks not enabled on those categories.
+     * */
+    public function billdeskCategoryFilter($terminal, $input)
+    {
+        $bankIfsc = array_merge(self::CORPORATE_IFSC, self::MUTUAL_FUNDS_IFSC);
+
+        $bank = $input['payment']->getBank();
+
+        $gateway = $terminal->getGateway();
+
+        $category2 = $input['merchant']->getCategory2();
+
+        $networkCategory = $terminal->getNetworkCategory();
+
+        if (($input['payment']->isNetbanking()) and
+            (in_array($bank, $bankIfsc, true) === true) and
+            ($gateway === Gateway::BILLDESK))
+        {
+            // Two rules to be checked
+            switch ($category2)
+            {
+                // If securities or commodities then the shared terminal
+                // should not be used, i.e on the shared terminal return
+                // false.
+                case Category::SECURITIES :
+                case Category::COMMODITIES:
+                    return ($terminal->isShared() === false);
+                    break;
+
+                // If corporate or mutual_funds then the corresponding
+                // terminal should not be used, as ICIC is not being allowed
+                // on that terminal
+                case Category::CORPORATE:
+                    if (in_array($bank, self::CORPORATE_IFSC, true) === false)
+                    {
+                        return true;
+                    }
+
+                    return ($networkCategory !== $category2);
+                    break;
+
+                case Category::MUTUAL_FUNDS:
+                    if (in_array($bank, self::MUTUAL_FUNDS_IFSC, true) === false)
+                    {
+                        return true;
+                    }
+
+                    return ($networkCategory !== $category2);
+                    break;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Performs merchant based filtering for billdesk terminals.
+     * Rules are based on merchant id and the corresponding
+     * banks not enabled on those direct terminals.
+     * */
+    public function billdeskMerchantFilter($terminal, $input)
+    {
+        $gateway = $terminal->getGateway();
+
+        $bank = $input['payment']->getBank();
+
+        $merchantId = $input['merchant']->getId();
+
+        $merchantIdsToDisallowDirectTerminal = [
+            '4sW8jQ22JR4Bfi',
+        ];
+
+        if (($bank === IFSC::ICIC) and
+            ($gateway === Gateway::BILLDESK) and
+            ($input['payment']->isNetbanking() === true))
+        {
+            if (in_array($merchantId, $merchantIdsToDisallowDirectTerminal, true) === true)
+            {
+                // Disable direct terminal i.e
+                // Allow only shared terminal
+                return ($terminal->isShared() === true);
+            }
+        }
+
+        return true;
+    }
 
     /**
      * For merchants with a risk rating above 4 and card use only axis_migs
@@ -54,7 +166,7 @@ class MerchantFilter extends Terminal\Filter
         $merchantTerminalCategory = $input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
-            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
+            (Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
         {
             $category = $terminal->getNetworkCategory();
 
@@ -68,7 +180,7 @@ class MerchantFilter extends Terminal\Filter
 
             $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+            $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
             // If category is a defaultCategory don't allow,
             if ($category === $defaultCategory)
@@ -96,7 +208,7 @@ class MerchantFilter extends Terminal\Filter
 
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
         // If category is a defaultCategory allow,
         // no need to compute merchant category
@@ -108,12 +220,46 @@ class MerchantFilter extends Terminal\Filter
         $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
-        $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
+        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
                                                                         $category2);
 
         return ($category === $merchantTerminalCategory);
+    }
+
+    /**
+     * Disallow pharma merchants from being sent on
+     * terminals with acquirer as HDFC, if the card
+     * network is Visa or Master
+     *
+     * @param Terminal\Entity $terminal
+     * @param Array $input Combined input
+     * @return boolean Whether a terminal is to be chosen or
+     * */
+    public function pharmaFilter($terminal, $input)
+    {
+        $category2 = $input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($terminal->isShared() === true) and
+            ($category2 === Category::PHARMA) and
+            ($acquirer === Gateway::ACQUIRER_HDFC) and
+            ($input['payment']->isMethodCardOrEmi()))
+        {
+            $network = $input['payment']->card->getNetworkCode();
+
+            // This check is because only Visa and Mastercards are
+            // supported by gateways from other acquirers that also
+            // have a shared terminal.
+            if (in_array($network, [Network::VISA, Network::MC], true) === true)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function gatewayFilter($terminal, $input)
