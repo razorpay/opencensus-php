@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
+    const CATEGORY2                 = 'category2';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
@@ -40,14 +41,13 @@ class Entity extends Base\PublicEntity
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
     const AUTO_REFUND_DELAY         = 'auto_refund_delay';
+    const AUTO_CAPTURE_LATE_AUTH    = 'auto_capture_late_auth';
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
 
-    /**
-     * Category for particular methods or gateways
-     */
-    const CATEGORY2                 = 'category2';
+    // constants
+    const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
 
     /**
      * Refers to methods relation and not a property;
@@ -89,8 +89,9 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
-        self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
+        self::AUTO_CAPTURE_LATE_AUTH,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::TRANSACTION_REPORT_EMAIL,
     );
 
@@ -99,7 +100,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
-        self::LOGO_URL
+        self::LOGO_URL,
+        self::AUTO_CAPTURE_LATE_AUTH,
     );
 
     protected $public = array(
@@ -127,6 +129,7 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
         self::AUTO_REFUND_DELAY,
+        self::AUTO_CAPTURE_LATE_AUTH,
         self::BRAND_COLOR,
         self::RISK_RATING,
         self::CREATED_AT,
@@ -155,6 +158,7 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
@@ -168,14 +172,15 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = array(
-        self::ACTIVATED             => 'bool',
-        self::LIVE                  => 'bool',
-        self::INTERNATIONAL         => 'bool',
-        self::RECEIPT_EMAIL_ENABLED => 'bool',
-        self::HOLD_FUNDS            => 'bool',
-        self::CATEGORY              => 'int',
-        self::SETTLEMENT_SCHEDULE   => 'int',
-        self::CONVERT_CURRENCY      => 'bool'
+        self::ACTIVATED                 => 'bool',
+        self::LIVE                      => 'bool',
+        self::INTERNATIONAL             => 'bool',
+        self::RECEIPT_EMAIL_ENABLED     => 'bool',
+        self::HOLD_FUNDS                => 'bool',
+        self::CATEGORY                  => 'int',
+        self::SETTLEMENT_SCHEDULE       => 'int',
+        self::CONVERT_CURRENCY          => 'bool',
+        self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
     );
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
@@ -529,7 +534,19 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
+
+        if ($autoRefundDelay === null)
+        {
+            $autoRefundDelay = self::AUTO_REFUND_DELAY_DEFAULT;
+        }
+
+        return $autoRefundDelay;
+    }
+
+    public function getAutoCaptureLateAuth()
+    {
+        return $this->getAttribute(self::AUTO_CAPTURE_LATE_AUTH);
     }
 
     /**

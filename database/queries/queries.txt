@@ -1641,3 +1641,9 @@ ALTER TABLE refunds
 
 # Drop merchants features
 ALTER TABLE merchants DROP COLUMN features;
+
+ALTER TABLE merchants
+    ADD INDEX `merchants_auto_refund_delay_index` (`auto_refund_delay`);
+
+ALTER TABLE merchants
+    ADD COLUMN auto_capture_late_auth TINYINT(1) NOT NULL DEFAULT 0 AFTER brand_color;
