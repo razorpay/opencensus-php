@@ -64,7 +64,7 @@ class Notifier extends Base\Core
 
     public function notifyInvoiceIssuedToCustomer()
     {
-        if ($this->invoice->isIssued() === false)
+        if ($this->canNotifyInvoiceIssuedToCustomer() === false)
         {
             return false;
         }
@@ -95,6 +95,33 @@ class Notifier extends Base\Core
     }
 
     //  -------------------------------------------------------------------
+
+    public function canNotifyInvoiceIssuedToCustomer()
+    {
+        if ($this->invoice->isIssued() === false)
+        {
+            return false;
+        }
+
+        $scheduledAt = $this->invoice->getScheduledAt();
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        // If it's not scheduled for within 5 minutes, do not send
+        // the notification. Ideally, scheduled_at would be the same
+        // as the current time if scheduled_in is set to 0.
+        // Since there was some confusion,
+        // this condition basically means, that if the invoice
+        // needs to be sent within the NEXT 5 minutes, send it now itself.
+        // No need to wait for 5 minutes before sending it.
+
+        if ($scheduledAt > ($currentTime + self::SCHEDULE_TIME_LEEWAY))
+        {
+            return false;
+        }
+
+        return true;
+    }
 
     public function emailInvoiceIssuedToCustomer()
     {
