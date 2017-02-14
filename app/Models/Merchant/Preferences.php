@@ -28,6 +28,11 @@ class Preferences
             Gateway::HDFC,
         ],
 
+        // Medlife
+        '6knz9sdyiFESCn' => [
+            Gateway::HDFC,
+        ],
+
         // Zomato
         '6H7N6hlcv29OMG' => [
             Gateway::AXIS_MIGS,
