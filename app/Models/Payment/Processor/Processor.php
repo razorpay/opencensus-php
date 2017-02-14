@@ -330,19 +330,9 @@ class Processor
 
     protected function cancelPayment($payment, $input)
     {
-        $errorCode = null;
-
         $payment->getValidator()->cancelValidate($payment);
 
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android_sdk'))
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
-        }
-        else
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
-        }
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
 
         if ((isset($input['_']['reason']) === true) and
             (is_string($input['_']['reason']) === true))
@@ -350,9 +340,18 @@ class Processor
             $this->payment->setCancellationReason($input['_']['reason']);
         }
 
-        $e = new Exception\BadRequestException($errorCode);
+        if ($payment->merchant->isFeatureEnabled(Feature::CREATED_FLOW))
+        {
+            $payment->setInternalErrorCode($errorCode);
 
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+            $this->repo->saveOrFail($payment);
+        }
+        else
+        {
+            $e = new Exception\BadRequestException($errorCode);
+
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        }
 
         return $errorCode;
     }
