@@ -80,12 +80,12 @@ class InvoiceAction extends Job implements ShouldQueue
     }
 
     /**
-     *
      * - Initializes instance variables: core, trace etc.
      * - Sets application mode, database connection based on the mode.
      * - Validates event
      *
-     * @return null;
+     * @return null
+     * @throws LogicException
      */
     private function init()
     {
@@ -107,6 +107,12 @@ class InvoiceAction extends Job implements ShouldQueue
         // Get invoice object
         //
 
+        //
+        // This will not return back deleted invoice.
+        // But, a deleted invoice will never reach this flow
+        // since only a draft invoice can be deleted.
+        // We don't perform any queue actions on a draft invoice.
+        //
         $this->invoice = $repo->invoice->findOrFail($this->id);
 
         //
@@ -187,6 +193,9 @@ class InvoiceAction extends Job implements ShouldQueue
             'invoice_id'     => $this->id,
         ];
 
+        //
+        // It may not be set when an invalid invoice id is passed.
+        //
         if (isset($this->invoice) === true)
         {
             $payload['invoice_status'] = $this->invoice->getStatus();
