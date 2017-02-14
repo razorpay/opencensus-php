@@ -272,7 +272,6 @@ class Repository extends Base\Repository
                           ->merchant_detail
                           ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
 
-
         $query = $this->newQuery()
                       ->with('features')
                       ->select(Entity::ID,

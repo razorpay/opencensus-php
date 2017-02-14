@@ -53,6 +53,9 @@ class CreateMerchantBanks extends Migration {
             $table->tinyInteger(Methods::AIRTELMONEY)
                   ->default(0);
 
+            $table->tinyInteger(Methods::JIOMONEY)
+                  ->default(0);
+
             $table->tinyInteger(Methods::EMI)
                   ->default(0);
 

@@ -20,6 +20,7 @@ class Entity extends Base\PublicEntity
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
+    const JIOMONEY          = 'jiomoney';
     const OPENWALLET        = 'openwallet';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
@@ -47,6 +48,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::OPENWALLET,
         self::EMI,
         self::UPI,
@@ -67,6 +69,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::OPENWALLET,
         self::EMI,
         self::UPI,
@@ -88,6 +91,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
+        self::JIOMONEY      => false,
         self::OPENWALLET    => false,
         self::BANKS         => [],
         self::EMI           => false,
@@ -105,6 +109,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::JIOMONEY,
         self::OPENWALLET,
     );
 
@@ -121,6 +126,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
+        self::JIOMONEY    => 'bool',
         self::OPENWALLET  => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
@@ -228,6 +234,11 @@ class Entity extends Base\PublicEntity
     public function isOpenwalletEnabled()
     {
         return $this->getAttribute(self::OPENWALLET);
+    }
+
+    public function isJiomoneyEnabled()
+    {
+        return $this->getAttribute(self::JIOMONEY);
     }
 
     public function isEmiEnabled()
@@ -429,6 +440,9 @@ class Entity extends Base\PublicEntity
         $banks = $this->getBanks();
 
         $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
+
+        // Unsetting AIRP for now
+        unset($names['AIRP']);
 
         return $names;
     }

@@ -328,6 +328,12 @@ final class FactoryData
             'received' => true,
         ]);
 
+        $factory(\RZP\Gateway\Netbanking\Base\Entity::class, [
+            'id'     => '0',
+            'action' => 'authorize',
+            'amount' => 1000,
+        ]);
+
         $factory(\RZP\Models\Customer\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => '10000000000000',

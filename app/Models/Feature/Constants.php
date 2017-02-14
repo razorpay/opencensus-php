@@ -22,10 +22,11 @@ class Constants
     const REVERSE             = 'reverse';
     const BROKING_REPORT      = 'broking_report';
     const PAYMENT_EMAIL_FETCH = 'payment_email_fetch';
+    const CREATED_FLOW        = 'created_flow';
     const OPENWALLET          = 'openwallet';
     const MARKETPLACE         = 'marketplace';
 
-    // TODOL Use this instead of alFeatures once in final code change pr
+    // TODO: Use this instead of alFeatures once in final code change pr
     public static $featureValueMap = [
         self::DUMMY               => true,
         self::WEBHOOKS            => true,
@@ -42,6 +43,7 @@ class Constants
         self::REVERSE             => true,
         self::BROKING_REPORT      => true,
         self::PAYMENT_EMAIL_FETCH => true,
+        self::CREATED_FLOW        => true,
         self::OPENWALLET          => true,
         self::MARKETPLACE         => true,
     ];
