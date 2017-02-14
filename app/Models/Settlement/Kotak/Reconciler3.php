@@ -187,7 +187,7 @@ class Reconciler3
 
         $status = $row['Status Of transaction'];
 
-        $serverFailureReason = str_limit($row['Reject Reason'], 255);
+        $serverFailureReason = str_limit($row['Reject Reason'], 252);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 

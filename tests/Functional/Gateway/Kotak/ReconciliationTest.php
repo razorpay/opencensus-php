@@ -257,7 +257,11 @@ class ReconciliationTest extends TestCase
         if ($failed == true)
         {
             $data['items'][0]['failure_reason'] = 'Reconciliation';
-            $data['items'][0]['server_failure_reason'] = 'Dummy Reason';
+            $data['items'][0]['server_failure_reason'] =
+                'This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit. This is a string which' .
+                ' test characters count limit. This is a string which test characters count limit.' .
+                ' This is a string which test characters count...';
             $data['items'][0]['status'] = 'failed';
         }
         else
