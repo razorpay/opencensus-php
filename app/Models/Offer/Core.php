@@ -92,7 +92,7 @@ class Core extends Base\Core
 
         if ($offer !== null)
         {
-            return $offer->toArrayPublic();
+            return $offer;
         }
 
         return null;

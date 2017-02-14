@@ -288,23 +288,25 @@ class Checkout
     {
         $offerCore = new Offer\Core;
 
-        $data['offers'] = [
-            'shared' => null,
-            'direct' => null
-        ];
+        $offers = new Base\PublicCollection;
 
-        $sharedOffers = $offerCore->fetchSharedOffers();
-
-        if ($sharedOffers !== null)
-        {
-            $data['offers']['shared'] = $sharedOffers->toArrayPublic();
-        }
+        // Temporaily commenting fetching shared offers
+        // $sharedOffers = $offerCore->fetchSharedOffers();
 
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
+        $directOffer = null;
+
         if ($orderId !== null)
         {
-            $data['offers']['direct'] = $offerCore->fetchForOrder($orderId, $merchant);
+            $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
         }
+
+        if ($directOffer !== null)
+        {
+            $data['offers'] = $directOffer->toArrayPublic();
+        }
+
+        return;
     }
 }
