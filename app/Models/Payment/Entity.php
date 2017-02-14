@@ -11,6 +11,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Invoice;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
@@ -86,9 +87,15 @@ class Entity extends Base\PublicEntity
     const SUBSCRIPTION_ID       = 'subscription_id';
 
     const DEFAULT_CURRENCY      = 'INR';
-    const CURRENCY_LENGTH       = 3;
 
-    const MIN_PAYMENT_AMOUNT    = 100;
+    // constants and defaults
+    const CURRENCY_LENGTH                   = 3;
+    const MIN_PAYMENT_AMOUNT                = 100;
+    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 720;      // 12 Mins
+    const PAYMENT_TIMEOUT_BILLDESK          = 259200;   // 3 Days
+    const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
 
     protected static $sign      = 'pay';
 
@@ -341,6 +348,11 @@ class Entity extends Base\PublicEntity
         if ($input['method'] !== Method::WALLET)
         {
             $input['wallet'] = null;
+        }
+
+        if ($input['method'] !== Method::UPI)
+        {
+            $input['vpa'] = null;
         }
     }
 
@@ -1531,6 +1543,15 @@ class Entity extends Base\PublicEntity
         return $relevantData;
     }
 
+    public function shouldTimeout(int $now)
+    {
+        $timeoutPeriod = $this->getTimeoutWindow();
+
+        $diff = $now - $this->getCreatedAt();
+
+        return ($diff >= $timeoutPeriod);
+    }
+
 // --------------------- Query scopes section begin ----------------------------
 
     public function scopeStatus($query, $status)
@@ -1563,5 +1584,38 @@ class Entity extends Base\PublicEntity
         }
 
         return $features;
+    }
+
+    protected function getTimeoutWindow()
+    {
+        $gateway = $this->getGateway();
+
+        // default is 9 mins
+        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
+        {
+            // for new flow, default is 30 mins
+            $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT;
+
+            if ($gateway === Payment\Gateway::BILLDESK)
+            {
+                $timeWindow = self::PAYMENT_TIMEOUT_BILLDESK;
+            }
+            else if ($this->isNetbanking() === true)
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = self::PAYMENT_TIMEOUT_NETBANKING;
+            }
+            else if ($this->isWallet() === true)
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
+            }
+        }
+
+        $autoRefundDelay = $this->merchant->getAutoRefundDelay();
+
+        return min($timeWindow, $autoRefundDelay);
     }
 }

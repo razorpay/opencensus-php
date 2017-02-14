@@ -45,12 +45,6 @@ class Processor
     const CALLBACK_PROCESS_AGAIN_DURATION = 20;
 
     /**
-     * Number of days after which authorized payments
-     * are auto-refunded
-     */
-    const AUTO_REFUND_TIME_PERIOD = 5;
-
-    /**
      * If payment fails on gateway then we may retry it with a different terminal/gateway.
      */
     const MAX_RETRY_ATTEMPTS = 5;
@@ -333,19 +327,9 @@ class Processor
 
     protected function cancelPayment($payment, $input)
     {
-        $errorCode = null;
-
         $payment->getValidator()->cancelValidate($payment);
 
-        if ((isset($input['platform'])) and
-            ($input['platform'] === 'android_sdk'))
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_PRESSING_BACK_ON_ANDROID;
-        }
-        else
-        {
-            $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
-        }
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_CANCELLED_BY_USER;
 
         if ((isset($input['_']['reason']) === true) and
             (is_string($input['_']['reason']) === true))
@@ -355,7 +339,14 @@ class Processor
 
         $e = new Exception\BadRequestException($errorCode);
 
-        $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        if ($payment->merchant->isFeatureEnabled(Feature::CREATED_FLOW))
+        {
+            $this->setPaymentError($e, TraceCode::PAYMENT_CANCELLED);
+        }
+        else
+        {
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_CANCELLED);
+        }
 
         return $errorCode;
     }
@@ -544,13 +535,23 @@ class Processor
         $this->app['events']->fire('api.payment.failed', array($this->payment));
     }
 
-    protected function setPaymentError(Exception\BaseException $e)
+    protected function setPaymentError(Exception\BaseException $e, $traceCode)
     {
+        $payment = $this->payment;
+
         $error = $e->getError();
 
         $internalCode = $error->getInternalErrorCode();
 
-        $payment = $this->payment;
+        $this->trace->info(
+            $traceCode,
+            [
+                'payment_id'    => $payment->getId(),
+                'status'        => $payment->getStatus(),
+                'error'         => $error,
+                'internalCode'  => $internalCode,
+            ]
+        );
 
         $payment->setInternalErrorCode($internalCode);
 
@@ -1107,19 +1108,13 @@ class Processor
 
     protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
     {
-        $merchant        = $payment->merchant;
+        $merchant = $payment->merchant;
+
         $autoRefundDelay = $merchant->getAutoRefundDelay();
 
         $createdAt = $payment->getCreatedAt();
 
         $shouldRefundAt = $createdAt + $autoRefundDelay;
-
-        if ($autoRefundDelay === null)
-        {
-            $shouldRefundAt = Carbon::createFromTimestamp($createdAt)
-                                    ->addDays(Processor::AUTO_REFUND_TIME_PERIOD)
-                                    ->timestamp;
-        }
 
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -1142,13 +1137,6 @@ class Processor
             return false;
         }
 
-        // For now, we would be auto capturing only payments with an invoice.
-        // This will be removed later.
-        if ($payment->getInvoiceId() === null)
-        {
-            return false;
-        }
-
         // Auto capturing a late authorized invoice has a little different logic.
         // Later, we would add logic for auto capturing a payment which is not
         // associated with an invoice also.
@@ -1157,7 +1145,19 @@ class Processor
             return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
         }
 
-        return false;
+        return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
+    }
+
+    /**
+     * The merchant needs to have `auto_capture_late_auth` config set to true.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedOrder(Merchant\Entity $merchant)
+    {
+        return $merchant->getAutoCaptureLateAuth();
     }
 
     protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)

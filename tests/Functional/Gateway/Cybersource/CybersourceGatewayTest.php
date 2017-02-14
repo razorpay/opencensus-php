@@ -8,10 +8,12 @@ use RZP\Error\PublicErrorCode;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Fixtures\Entity\TransactionTrait;
 
 class CybersourceGatewayTest extends TestCase
 {
     use PaymentTrait;
+    use TransactionTrait;
 
     public function setUp()
     {
@@ -448,6 +450,51 @@ class CybersourceGatewayTest extends TestCase
         $this->assertNotNull($cybersource['authorizationCode']);
         $this->assertEquals($paymentId, $cybersource['payment_id']);
         $this->assertArraySelectiveEquals($cybersourceData, $cybersource);
+    }
+
+    public function testManualGatewayCapture()
+    {
+        $paymentData = $this->defaultAuthPayment();
+
+        $payment = $this->fixtures->payment->edit($paymentData['id'], [
+            'status' => 'captured',
+            'captured_at' => time()
+        ]);
+
+        list($txn, $feeSplit) = $this->createTransactionForPaymentAuthorized($payment);
+        $txn->saveOrFail();
+        $payment->saveOrFail();
+
+        $data = [
+            'request' => [
+                'url' => '/payments/'.$payment['public_id'] . '/gateway/capture',
+                'method' => 'POST',
+            ],
+
+            'response' => [
+                'content' => [
+                    'payment_id' => $payment['id'],
+                    'manual_gateway_capture' => 'Successfully created a capture on gateway'
+                ]
+            ]
+        ];
+
+        $this->ba->appAuth();
+
+        $this->runRequestResponseFlow($data);
+
+        $cybersource = $this->getLastEntity('cybersource', true);
+
+        $this->assertEquals('capture', $cybersource['action']);
+        $this->assertEquals('captured', $cybersource['status']);
+    }
+
+    // @todo: refactor
+    protected function transaction(callable $callable)
+    {
+        $db = \DB::getFacadeRoot();
+
+        return $db->transaction($callable);
     }
 
     // -------- helpers ----------

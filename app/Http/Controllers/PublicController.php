@@ -3,6 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use View, Request;
+use RZP\Exception;
+use RZP\Base\JitValidator;
 
 class PublicController extends Controller
 {
@@ -71,5 +73,47 @@ class PublicController extends Controller
         $data['checkout'] = $checkout['checkout'] . '/v1/checkout.js';
 
         return View::make('public.callback_params', $data);
+    }
+
+    public function postCheckoutHosted()
+    {
+        $postParams = Request::instance()->request->all();
+
+        $checkout = $this->getCheckoutCommon();
+
+        $this->validateHostedPostParams($postParams);
+
+        $data = [
+            'options'       => json_encode($postParams['checkout'], JSON_FORCE_OBJECT),
+            'checkout'      => $checkout['checkout'] . '/v1/checkout.js',
+            // This is used directly in JS side
+            'urls'          => json_encode([
+                'callback'  => $postParams['url']['callback'],
+                'cancel'    => $postParams['url']['cancel'] ?? null,
+            ], JSON_FORCE_OBJECT),
+            // This is used in PHP
+            'url_callback'  => $postParams['url']['callback'],
+            'retry'         => true //(bool) Request::get('retry', false) ,
+        ];
+
+        return View::make('public.hosted', $data);
+    }
+
+    protected function validateHostedPostParams($postParams)
+    {
+        $postParamRules = [
+            'url'                   => 'required|array',
+            'checkout'              => 'required|array',
+            'url.cancel'            => 'sometimes|url',
+            'url.callback'          => 'required|url',
+            'checkout.key'          => 'required',
+            'checkout.amount'       => 'required|integer',
+            'checkout.image'        => 'sometimes|url',
+            'retry'                 => 'sometimes'
+        ];
+
+        (new JitValidator)->rules($postParamRules)
+                          ->input($postParams)
+                          ->validate();
     }
 }

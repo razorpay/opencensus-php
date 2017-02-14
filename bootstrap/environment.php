@@ -42,8 +42,8 @@ $cascadingEnvFile = '.env.' . $env;
 // * Cascaded environment based env file
 // * Default env file
 //
-// Note that of the above 3, first two are committed in git
-// while last one comes into the folder when baking amis via brahma
+// Note that of the above 3, last two are committed in git
+// while first one comes into the folder when baking amis via brahma
 //
 
 if (! function_exists('read_env_file'))
