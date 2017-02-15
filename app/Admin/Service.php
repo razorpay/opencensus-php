@@ -787,7 +787,7 @@ class Service extends Base\Service
             $merchantDetails->fill($merchantDetailsData);
             $merchantDetails->save();
 
-            (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetailsData, $id);
+            (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
@@ -1927,7 +1927,7 @@ class Service extends Base\Service
 
         return [$response, $error];
     }
-    
+
     public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
         $error = $response = null;
