@@ -2,7 +2,6 @@
 
 namespace RZP\Reconciliator;
 
-use Carbon\Carbon;
 use Requests;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -291,11 +290,10 @@ class FileProcessor
      * Downloads and stores the file in the storage directory
      *
      * @param string $link
-     * @param string $gateway
      *
      * @return SplFileInfo
      */
-    public function getAndStoreFileFromLink(string $link, string $gateway = null)
+    public function getAndStoreFileFromLink(string $link)
     {
         $request = [
             'url'     => stripcslashes($link),
@@ -320,10 +318,7 @@ class FileProcessor
 
         $extension = $this->validator->getExtensionFromContentType($contentType);
 
-        $now = Carbon::now('Asia/Kolkata')->toDateString();
-
-        $fileName = strtolower($gateway) . '-settlement-' . $now;
-        $fileName .= '.' . $extension;
+        $fileName = (string) time() . '.' . $extension;
 
         $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
         $filePath .= '/' . $fileName;

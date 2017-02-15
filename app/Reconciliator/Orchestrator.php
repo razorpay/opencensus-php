@@ -450,15 +450,8 @@ class Orchestrator extends Base\Core
         // formatted by the sender's email client.
         // 'X-Original-Sender' always contains just the email address.
 
-        if (empty($input['X-Original-Sender' ]) === true)
-        {
-            // If the mail is not being forwarded to mailGun
-            // Treat sender as original sender.
-            $input['X-Original-Sender'] = $input['sender'];
-        }
-
         $emailDetails = [
-            'from'      => $input['X-Original-Sender'],
+            'from'      => $input['X-Original-Sender'] ?? $input['sender'],
             'subject'   => $input['subject'],
             'to'        => $input['recipient'],
             'timestamp' => $input['timestamp'],
@@ -889,8 +882,7 @@ class Orchestrator extends Base\Core
         }
 
         // retrieve the link from $input['stripped-text']
-        $link = $this->gatewayReconciliator
-                     ->getSettlementFileLink($emailDetails['body']);
+        $link = $this->gatewayReconciliator->getSettlementFileLink($emailDetails['body']);
 
         $this->trace->info(
             TraceCode::RECON_FILE_LINK,
@@ -899,8 +891,7 @@ class Orchestrator extends Base\Core
                 'gateway' => $this->gateway,
             ]);
 
-        $file = $this->fileProcessor
-                     ->getAndStoreFileFromLink($link, $this->gateway);
+        $file = $this->fileProcessor->getAndStoreFileFromLink($link);
 
         $attachmentCount = (string) ((int) $input['attachment-count'] + 1);
 
