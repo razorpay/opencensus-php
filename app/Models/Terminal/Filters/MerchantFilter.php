@@ -36,6 +36,7 @@ class MerchantFilter extends Terminal\Filter
         'billdesk_merchant',
         'incompatible',
         'category',
+        'pharma',
         'gateway',
         'wallet',
     ];
@@ -165,7 +166,7 @@ class MerchantFilter extends Terminal\Filter
         $merchantTerminalCategory = $input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
-            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
+            (Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
         {
             $category = $terminal->getNetworkCategory();
 
@@ -179,7 +180,7 @@ class MerchantFilter extends Terminal\Filter
 
             $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+            $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
             // If category is a defaultCategory don't allow,
             if ($category === $defaultCategory)
@@ -207,7 +208,7 @@ class MerchantFilter extends Terminal\Filter
 
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
         // If category is a defaultCategory allow,
         // no need to compute merchant category
@@ -219,12 +220,46 @@ class MerchantFilter extends Terminal\Filter
         $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
-        $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
+        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
                                                                         $category2);
 
         return ($category === $merchantTerminalCategory);
+    }
+
+    /**
+     * Disallow pharma merchants from being sent on
+     * terminals with acquirer as HDFC, if the card
+     * network is Visa or Master
+     *
+     * @param Terminal\Entity $terminal
+     * @param Array $input Combined input
+     * @return boolean Whether a terminal is to be chosen or
+     * */
+    public function pharmaFilter($terminal, $input)
+    {
+        $category2 = $input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($terminal->isShared() === true) and
+            ($category2 === Category::PHARMA) and
+            ($acquirer === Gateway::ACQUIRER_HDFC) and
+            ($input['payment']->isMethodCardOrEmi()))
+        {
+            $network = $input['payment']->card->getNetworkCode();
+
+            // This check is because only Visa and Mastercards are
+            // supported by gateways from other acquirers that also
+            // have a shared terminal.
+            if (in_array($network, [Network::VISA, Network::MC], true) === true)
+            {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     public function gatewayFilter($terminal, $input)
