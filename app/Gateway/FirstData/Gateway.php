@@ -269,6 +269,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::AMOUNT             => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
+            Entity::CURRENCY           => $authRequest[ConnectRequestFields::CURRENCY],
             Entity::GATEWAY_PAYMENT_ID => $authRequest[ConnectRequestFields::ORDER_ID],
         ];
 
@@ -347,6 +348,12 @@ class Gateway extends Base\Gateway
             Entity::AMOUNT                 => $input['amount'],
             Entity::STATUS                 => Status::CAPTURED,
         ];
+
+        if ((isset($input['merchant_id'])) and
+            ($input['merchant_id'] === '2aTeFCKTYWwfrF'))
+        {
+            $attributes[Entity::CURRENCY] = $input['currency'];
+        }
 
         $this->setApproval($attributes[Entity::APPROVAL_CODE]);
 

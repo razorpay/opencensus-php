@@ -558,8 +558,14 @@ class Gateway extends Base\Gateway
             'vpc_Command'       => Command::CAPTURE,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-            'vpc_Amount'        => $input['amount']
+            'vpc_Amount'        => $input['amount'],
         );
+
+        if ((isset($input['payment']['merchant_id'])) and
+            ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF'))
+        {
+            $content['vpc_Currency'] = $input['currency'];
+        }
 
         return $content;
     }
@@ -583,6 +589,12 @@ class Gateway extends Base\Gateway
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
         );
+
+        if ((isset($input['payment']['merchant_id'])) and
+            ($input['payment']['merchant_id'] === '2aTeFCKTYWwfrF'))
+        {
+            $content['vpc_Currency'] = $input['currency'];
+        }
 
         return $content;
     }

@@ -34,6 +34,9 @@ class CreateFirstDataGateway extends Migration
 
             $table->integer(FirstData::AMOUNT);
 
+            $table->string(FirstData::CURRENCY, 3)
+                  ->nullable();
+
             $table->string(FirstData::STATUS, 20)
                   ->nullable();
 
