@@ -382,14 +382,14 @@ class CaptureTest extends TestCase
         $this->assertEquals('issued', $invoice['status']);
     }
 
-    public function testAutoCaptureFailAsInvoicePastDueBy()
+    public function testAutoCaptureFailAsInvoiceExpired()
     {
         $payment = $this->createFailedPayment();
 
         $invoice = $this->getLastEntity('invoice', true);
 
         $past = Carbon::today('Asia/Kolkata')->subDays(1)->timestamp;
-        $invoice = $this->fixtures->invoice->edit($invoice['id'], ['due_by' => $past]);
+        $invoice = $this->fixtures->invoice->edit($invoice['id'], ['status' => 'expired']);
 
         $this->authorizeFailedPayment($payment['id']);
 
@@ -399,7 +399,6 @@ class CaptureTest extends TestCase
 
         $this->assertEquals('authorized', $payment['status']);
         $this->assertEquals('attempted', $order['status']);
-        $this->assertEquals('issued', $invoice['status']);
     }
 
     public function testInvoicePaymentNotAutoCapturedWithOrder()

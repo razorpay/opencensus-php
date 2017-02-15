@@ -1547,6 +1547,23 @@ ALTER TABLE settlements
     ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id)
     REFERENCES daily_settlements(id) ON DELETE RESTRICT;
 
+-- PRE deployment of invoices-expired-by branch
+
+ALTER TABLE invoices ADD COLUMN expire_by int(11) DEFAULT NULL;
+ALTER TABLE invoices ADD INDEX invoices_expire_by_index (expire_by);
+
+ALTER TABLE invoices ADD COLUMN customer_billing_addr_id char(14) DEFAULT NULL AFTER customer_id;
+ALTER TABLE invoices ADD INDEX invoices_customer_billing_addr_id_foreign (customer_billing_addr_id);
+ALTER TABLE invoices ADD CONSTRAINT invoices_customer_billing_addr_id_foreign FOREIGN KEY (customer_billing_addr_id) REFERENCES addresses (id);
+
+-- POST deployment of invoices-expired-by branch
+
+ALTER TABLE invoices DROP FOREIGN KEY invoices_customer_address_foreign;
+ALTER TABLE invoices DROP INDEX invoices_customer_address_foreign;
+ALTER TABLE invoices DROP COLUMN customer_address;
+
+--
+
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
 
@@ -1647,3 +1664,7 @@ ALTER TABLE merchants
 
 ALTER TABLE merchants
     ADD COLUMN auto_capture_late_auth TINYINT(1) NOT NULL DEFAULT 0 AFTER brand_color;
+
+# Adding remarks in settlements
+ALTER TABLE `settlements`
+    ADD COLUMN `remarks` VARCHAR(255) DEFAULT NULL AFTER `failure_reason`;
