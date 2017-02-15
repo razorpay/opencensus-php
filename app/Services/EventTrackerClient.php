@@ -26,6 +26,8 @@ class EventTrackerClient extends Base\Core
 
     protected $defaults = [];
 
+    protected $paymentId = null;
+
     protected $paymentContext = [];
 
     const CONTEXT_KEYS = [
@@ -80,11 +82,6 @@ class EventTrackerClient extends Base\Core
     */
     public function buildRequestAndSend()
     {
-        /*if (count($this->events) === 0)
-        {
-            return;
-        }*/
-
         $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
 
         $headers = [
@@ -111,9 +108,7 @@ class EventTrackerClient extends Base\Core
 
         try
         {
-            $this->defaults['events'] = $this->events;
-
-            $options = ['json' => $this->defaults];
+            $options = ['json' => $this->dataForLumberjack()];
 
             if (($this->mock) or
                 ($this->mode === Mode::TEST))
@@ -130,8 +125,6 @@ class EventTrackerClient extends Base\Core
         }
 
         $this->events = [];
-
-        $this->defaults = [];
     }
 
     protected function generateSignature()
@@ -145,6 +138,21 @@ class EventTrackerClient extends Base\Core
         return $signature;
     }
 
+    protected function dataForLumberjack()
+    {
+        $defaults = $this->getEventContext();
+
+        if ((empty($defaults) === true) or
+            (count($this->events) === 0))
+        {
+            return;
+        }
+
+        $defaults['events'] = $this->events;
+
+        return $defaults;
+    }
+
     /**
     *
     * Gets metadata and key
@@ -152,32 +160,29 @@ class EventTrackerClient extends Base\Core
     *
     * @param $payment Payment\Entity
     */
-    protected function getEventContext(Payment\Entity $payment)
+    protected function getEventContext()
     {
         if (empty($this->events) === true)
         {
             return;
         }
 
+        $payment = (new Payment\Core)->retrievePaymentById($this->paymentId);
+
         try
         {
-            if (empty($this->defaults) === true)
-            {
-                $defaults = array(
-                    'key'           => $this->ljConfig['key'],
-                    'context'       => $this->fetchAndFilterMetadata($payment),
-                    'mode'          => $this->mode,
-                );
+            $defaults = array(
+                'key'           => $this->ljConfig['key'],
+                'context'       => $this->fetchAndFilterMetadata($payment),
+                'mode'          => $this->mode,
+            );
 
-                $this->defaults = $defaults;
-            }
-
-            return $this->defaults;
+            return $defaults;
         }
 
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
         }
     }
 
@@ -388,7 +393,6 @@ class EventTrackerClient extends Base\Core
     *
     * @param $payment Payment\Entity
     * @return $analytics array (metadata)
-    *
     */
     protected function fetchPaymentAnalytics(Payment\Entity $payment)
     {
@@ -403,14 +407,14 @@ class EventTrackerClient extends Base\Core
         // caching paymentContext
         if (isset($this->paymentContext[$paymentId]) === false)
         {
+            $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
+
             $analytics['payment_id'] = $payment->getPublicId();
 
             if (empty($payment->getOrderId()) === false)
             {
                 $analytics['order_id'] = $payment->getOrderId();
             }
-
-            $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
 
             foreach (self::CONTEXT_KEYS as $key)
             {
@@ -445,16 +449,19 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        /*if ($this->mock === true)
+        if ($this->mock === true)
         {
             return;
-        }*/
+        }
 
         try
         {
-            $this->appendEvent($payment, $eventName, $customProperties);
+            if (is_null($this->paymentId) === true)
+            {
+                $this->paymentId = $payment->getId();
+            }
 
-            $this->getEventContext($payment);
+            $this->appendEvent($payment, $eventName, $customProperties);
         }
         catch (Exception $e)
         {
