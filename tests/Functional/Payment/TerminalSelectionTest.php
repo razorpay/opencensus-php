@@ -6,6 +6,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Options;
 
 class TerminalSelectionTest extends TestCase
@@ -699,5 +700,35 @@ class TerminalSelectionTest extends TestCase
         // But because of the newly added icici billdesk filter,
         // the ecommerce one should get picked.
         $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
+    }
+
+    public function testPharmaMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->editCategory2(Category::PHARMA);
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+
+        $terminalAttrs = [
+            'id' => 'DrctHDFCTermnl',
+            'merchant_id' => '10000000000000',
+            'shared' => 0,
+        ];
+        $this->fixtures->create('terminal:shared_hdfc_terminal', $terminalAttrs);
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
 }
