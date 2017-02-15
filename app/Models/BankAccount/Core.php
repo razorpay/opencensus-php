@@ -93,7 +93,7 @@ class Core extends Base\Core
     {
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
-            'beneficiary_name'      => 'Test' . $merchant->getId(),
+            'beneficiary_name'      => 'Test ' . $merchant->getId(),
             'beneficiary_email'     => $merchant->getEmail(),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => 'Bengaluru Palace',
