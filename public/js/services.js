@@ -52,7 +52,7 @@ angular.module('app.services', [])
           }
 
           // if any of the fields is missing, isPreSignupDone will be false
-          _isPreSignupDone = !!Object.keys(_identity.pre_signup)
+          _isPreSignupDone = _identity.pre_signup && !!Object.keys(_identity.pre_signup)
             // get all values
             .map(function (key) {return _identity.pre_signup[key]})
             // reduce all values using '&&'

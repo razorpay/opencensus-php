@@ -88,7 +88,7 @@ class Service extends Base\Service
         if ($user)
         {
             $this->merchant = $user->currentMerchant;
-            $this->merchantDetails = $user->currentMerchant->MerchantDetails;
+
             $this->user = $user;
         }
     }
@@ -160,7 +160,7 @@ class Service extends Base\Service
             }
             else
             {
-                $merchantDetails = $this->merchantDetails;
+                $merchantDetails = $this->merchant->merchantDetails;
 
                 $merchantDetails->markSubmitted();
 
@@ -178,7 +178,7 @@ class Service extends Base\Service
         $step = intval($step);
 
         // Check if already finished
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -245,7 +245,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -290,7 +290,7 @@ class Service extends Base\Service
 
     public function saveUploadedFile($input)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->locked)
         {
@@ -317,7 +317,7 @@ class Service extends Base\Service
 
     protected function uploadFileToS3($data)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
         $id = $merchantDetails->getMerchantId();
 
         $error = array();
@@ -570,7 +570,7 @@ class Service extends Base\Service
 
     public function saveMerchantDetails(array $input)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         $merchantDetails->fill($input);
 
