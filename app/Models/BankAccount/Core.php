@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Constants\MailTags;
 use Mail;
 use RZP\Trace\TraceCode;
 
@@ -162,10 +163,15 @@ class Core extends Base\Core
 
     protected function sendEmail($template, $subject, $data)
     {
-        Mail::queue($template, $data, function($message) use ($data, $subject){
+        Mail::queue($template, $data, function($message) use ($data, $subject)
+        {
+            $message->to($data['email'], $data['name']);
 
-            $message->to($data['email'], $data['name'])
-                ->subject($subject);
+            $message->subject($subject);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
         });
     }
 }
