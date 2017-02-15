@@ -236,16 +236,16 @@ class Orchestrator extends Base\Core
      */
     protected function manualEntry(array $input)
     {
+        // Validates the input received.
+        // All the attachment files names should start with 'attachment-'
+        // Also, adds attachment-count to input, if not present already.
+        $this->validator->validateAttachments($input);
+
         $inputDetails = $this->getManualInputDetails($input);
 
         // Figures out the gateway and
         // sets the gateway reconciliator object for the orchestrator
         $this->setGatewayForManual($inputDetails);
-
-        // Validates the input received.
-        // All the attachment files names should start with 'attachment-'
-        // Also, adds attachment-count to input, if not present already.
-        $this->validator->validateAttachments($input, $this->gateway);
 
         $allFilesDetails = $this->getFileDetailsFromInput($inputDetails, $input);
 
@@ -263,10 +263,6 @@ class Orchestrator extends Base\Core
     {
         // Gets the email details and validates the email details.
         $this->emailDetails = $this->getEmailDetails($input);
-
-        $this->trace->info(
-            TraceCode::RECON_FILE_LINK,
-            ['details' => $this->emailDetails]);
 
         $this->validator->filterEmails($this->emailDetails);
 
@@ -295,7 +291,7 @@ class Orchestrator extends Base\Core
         // downloading the file. Until then, the attachment count would be 0 or
         // more.
         //
-        $this->validator->validateAttachments($input, $this->gateway);
+        $this->validator->validateAttachments($input);
 
         $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
 
@@ -435,11 +431,6 @@ class Orchestrator extends Base\Core
      */
     protected function getManualInputDetails(array $input)
     {
-        if (empty($input['attachment-count']) === true)
-        {
-            $input['attachment-count'] = 0;
-        }
-
         $inputDetails = [
             self::ATTACHMENT_COUNT => $input['attachment-count'],
             self::GATEWAY          => $input['gateway'],

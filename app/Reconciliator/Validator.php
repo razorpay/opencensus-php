@@ -35,7 +35,6 @@ class Validator
 
     const GATEWAY_ATTACHMENT_COUNT = [
         Orchestrator::OLAMONEY   => 1,
-        Orchestrator::FREECHARGE => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -101,10 +100,14 @@ class Validator
 
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::OLAMONEY);
 
-        return ($validSubject and $validBody);
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::OLAMONEY);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
-    public function validateAttachments(array & $input, string $gateway)
+    public function validateAttachments(array & $input)
     {
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
@@ -128,8 +131,6 @@ class Validator
                 'No attachments found in the input.'
             );
         }
-
-        $this->validateAttachmentCount($foundAttachmentsCount, $gateway);
 
         // Sets 'attachment-count' if not present and returns.
         // If present, converts it to int.
