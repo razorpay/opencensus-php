@@ -537,97 +537,100 @@ export default class InvoicesNewContainer extends Component {
                   </div>
                 </div>
                 <div class='col-md-4' style={{marginTop: '48px'}}>
-                  <div class='inv__cta'>
-                    <div class='btn-group-vertical'>
-                      {
-                        (isNew || isDraft) &&
-                          <AsyncButton
-                            type='button'
-                            class='btn btn-primary btn-block btn-lg'
-                            disabled={this.state.isSaving}
-                            onClick={handleSubmit((props) => {
-                              return this.saveAndIssue({
-                                ...props,
-                                ...{ draft: 0 }
-                              })
-                            })}
-                          >
-                            <i class='fa fa-check'></i>
-                            <span>Finalize and Issue</span>
-                          </AsyncButton>
-                      }
+                  {
+                    !locked &&
+                      <div class='inv__cta'>
+                        <div class='btn-group-vertical'>
+                          {
+                            (isNew || isDraft) &&
+                              <AsyncButton
+                                type='button'
+                                class='btn btn-primary btn-block btn-lg'
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit((props) => {
+                                  return this.saveAndIssue({
+                                    ...props,
+                                    ...{ draft: 0 }
+                                  })
+                                })}
+                              >
+                                <i class='fa fa-check'></i>
+                                <span>Finalize and Issue</span>
+                              </AsyncButton>
+                          }
 
-                      {
-                        isIssued &&
-                          <AsyncButton
-                            type='button'
-                            class='btn btn-primary btn-block btn-lg'
-                            disabled={this.state.isSaving}
-                            onClick={handleSubmit(this.resendInvoice)}
-                          >
-                            <i class='fa fa-paper-plane'></i>
-                            <span>Resend Invoice</span>
-                          </AsyncButton>
-                      }
+                          {
+                            isIssued &&
+                              <AsyncButton
+                                type='button'
+                                class='btn btn-primary btn-block btn-lg'
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit(this.resendInvoice)}
+                              >
+                                <i class='fa fa-paper-plane'></i>
+                                <span>Resend Invoice</span>
+                              </AsyncButton>
+                          }
 
-                      {
-                        !locked &&
-                          <AsyncButton
-                            type='button'
-                            class='btn btn-default btn-block btn-lg'
-                            text='Save Invoice'
-                            pendingText='Saving...'
-                            disabled={this.state.isSaving}
-                            onClick={handleSubmit((props) => {
-                              return this.save({
-                                ...props,
-                                ...{ draft: isIssued ? 0 : 1 }
-                              })
-                            })}
-                          >
-                            <i class='fa fa-floppy-o'></i>
-                            <span>Save Changes</span>
-                          </AsyncButton>
-                      }
+                          {
+                            !locked &&
+                              <AsyncButton
+                                type='button'
+                                class='btn btn-default btn-block btn-lg'
+                                text='Save Invoice'
+                                pendingText='Saving...'
+                                disabled={this.state.isSaving}
+                                onClick={handleSubmit((props) => {
+                                  return this.save({
+                                    ...props,
+                                    ...{ draft: isIssued ? 0 : 1 }
+                                  })
+                                })}
+                              >
+                                <i class='fa fa-floppy-o'></i>
+                                <span>Save Changes</span>
+                              </AsyncButton>
+                          }
 
-                      {/*
-                        !(isNew || isDraft) &&
-                          <button
-                            type='button'
-                            class='btn btn-default btn-block btn-lg'
-                            onClick={this.downloadInvoicePDF}
-                          >
-                            <i class='fa fa-download'></i>
-                            <span>Download PDF</span>
-                          </button>
-                      */}
+                          {/*
+                            !(isNew || isDraft) &&
+                              <button
+                                type='button'
+                                class='btn btn-default btn-block btn-lg'
+                                onClick={this.downloadInvoicePDF}
+                              >
+                                <i class='fa fa-download'></i>
+                                <span>Download PDF</span>
+                              </button>
+                          */}
 
-                      {
-                        (isNew || isDraft) &&
-                          <button
-                            type='button'
-                            class='btn btn-default btn-block btn-lg'
-                            onClick={this.deleteInvoice}
-                            disabled={this.state.isSaving}
-                          >
-                            <i class='fa fa-times'></i>
-                            <span>Delete Invoice</span>
-                          </button>
-                      }
-                      {
-                        isIssued &&
-                          <button
-                            type='button'
-                            class='btn btn-default btn-block btn-lg'
-                            onClick={this.expireInvoice}
-                            disabled={this.state.isSaving}
-                          >
-                            <i class='fa fa-eye-slash'></i>
-                            <span>Expire Invoice</span>
-                          </button>
-                      }
-                    </div>
-                  </div>
+                          {
+                            (isNew || isDraft) &&
+                              <button
+                                type='button'
+                                class='btn btn-default btn-block btn-lg'
+                                onClick={this.deleteInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class='fa fa-times'></i>
+                                <span>Delete Invoice</span>
+                              </button>
+                          }
+                          {
+                            isIssued &&
+                              <button
+                                type='button'
+                                class='btn btn-default btn-block btn-lg'
+                                onClick={this.expireInvoice}
+                                disabled={this.state.isSaving}
+                              >
+                                <i class='fa fa-eye-slash'></i>
+                                <span>Expire Invoice</span>
+                              </button>
+                          }
+                        </div>
+                      </div>
+                  }
 
                   <InvoiceInfo invoice={invoice} />
                   <InvoiceNotes
