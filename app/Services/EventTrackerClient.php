@@ -24,9 +24,7 @@ class EventTrackerClient extends Base\Core
 
     protected $events = [];
 
-    protected $defaults = [];
-
-    protected $paymentId = null;
+    protected $payment = null;
 
     protected $paymentContext = [];
 
@@ -108,7 +106,7 @@ class EventTrackerClient extends Base\Core
 
         try
         {
-            $options = ['json' => $this->dataForLumberjack()];
+            $options = ['json' => $this->getLumberjackData()];
 
             if (($this->mock) or
                 ($this->mode === Mode::TEST))
@@ -125,6 +123,8 @@ class EventTrackerClient extends Base\Core
         }
 
         $this->events = [];
+
+        $this->payment = null;
     }
 
     protected function generateSignature()
@@ -138,17 +138,29 @@ class EventTrackerClient extends Base\Core
         return $signature;
     }
 
-    protected function dataForLumberjack()
+    protected function getLumberjackData()
     {
-        $defaults = $this->getEventContext();
-
-        if ((empty($defaults) === true) or
-            (count($this->events) === 0))
+        if (empty($this->events) === true)
         {
+            $this->trace->error(
+                TraceCode::LUMBERJACK_EMPTY_EVENTS,
+                ['payment' => $this->payment->getId()]
+            );
             return;
         }
 
-        $defaults['events'] = $this->events;
+        $defaults = [
+            'key'       => $this->ljConfig['key'],
+            'mode'      => $this->mode,
+            'events'    => $this->events
+        ];
+
+        $context = $this->getEventContext();
+
+        if (isset($context) === true)
+        {
+            $defaults['context'] = $context;
+        }
 
         return $defaults;
     }
@@ -162,27 +174,13 @@ class EventTrackerClient extends Base\Core
     */
     protected function getEventContext()
     {
-        if (empty($this->events) === true)
-        {
-            return;
-        }
-
-        $payment = (new Payment\Core)->retrievePaymentById($this->paymentId);
-
         try
         {
-            $defaults = array(
-                'key'           => $this->ljConfig['key'],
-                'context'       => $this->fetchAndFilterMetadata($payment),
-                'mode'          => $this->mode,
-            );
-
-            return $defaults;
+            return $this->fetchAndFilterMetadata($this->payment);
         }
-
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
+            $this->trace->error($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
         }
     }
 
@@ -456,9 +454,9 @@ class EventTrackerClient extends Base\Core
 
         try
         {
-            if (is_null($this->paymentId) === true)
+            if (is_null($this->payment) === true)
             {
-                $this->paymentId = $payment->getId();
+                $this->payment = $payment;
             }
 
             $this->appendEvent($payment, $eventName, $customProperties);
