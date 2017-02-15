@@ -144,6 +144,13 @@ return [
         'request' => [
             'url' => '/iins/range/upload',
             'method' => 'post',
+            'content' => [
+                'min' => 652850,
+                'max' => 652855,
+                'network' => 'RuPay',
+                'type' => 'credit',
+                'country' => 'IN'
+            ]
         ],
         'response' => [
             'content' => [

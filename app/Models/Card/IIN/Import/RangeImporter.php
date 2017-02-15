@@ -7,25 +7,10 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card\IIN;
 
-class RangeImporter
+class RangeImporter extends Base\Core
 {
-    protected $app;
-
-    public function __construct()
-    {
-        $this->app = App::getFacadeRoot();
-
-        $this->trace = \Trace::getFacadeRoot();
-    }
-
     public function import($input)
     {
-        if (isset($input['network']) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Please pass network name as input for given file');
-        }
-
         $formattedData = (new Formatter)->formatIinDataRange($input);
 
         $successCount = $this->addOrUpdate($formattedData);
@@ -41,7 +26,7 @@ class RangeImporter
 
         foreach ($data->all() as $iin => $detail)
         {
-            $iinEntity = $this->app['repo']->iin->find($iin);
+            $iinEntity = $this->repo->iin->find($iin);
 
             if ($iinEntity === null)
             {
@@ -49,13 +34,15 @@ class RangeImporter
             }
             else
             {
+                unset($detail['iin']);
+
                 $iinEntity->edit($detail);
             }
 
             $iins->push($iinEntity);
         }
 
-        $this->app['repo']->saveOrFailCollection($iins);
+        $this->repo->saveOrFailCollection($iins);
 
         return $iins->count();
     }

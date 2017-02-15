@@ -65,18 +65,6 @@ class IinTest extends TestCase
 
     public function testIinRangeUploadWithType()
     {
-        $input = [
-            'min' => 652850,
-            'max' => 652855,
-            'network' => 'RuPay',
-            'type' => 'credit',
-            'country' => 'IN'
-        ];
-
-        $testData = &$this->testData['testIinRangeUploadWithType'];
-
-        $testData['request']['content'] = $input;
-
         $this->startTest();
 
         $iin = $this->getEntityById('iin', 652851, true);
