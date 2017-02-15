@@ -7,6 +7,8 @@ use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Base\EsRepository;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
 
 trait RepositoryFetch
 {
@@ -82,7 +84,22 @@ trait RepositoryFetch
 
         if ($isEs === true)
         {
-            return $this->runEsFetch($this->esParams, $merchantId);
+            try
+            {
+                return $this->runEsFetch($this->esParams, $merchantId);
+            }
+            catch (\Throwable $e)
+            {
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::ES_FETCH_FAILED,
+                    [
+                        'entity'      => $this->getEntityClass(),
+                        'merchant_id' => $merchantId,
+                        'params'      => $params,
+                    ]);
+            }
         }
 
         //
