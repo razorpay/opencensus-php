@@ -21,8 +21,8 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
-    const RETURN_UTR            = 'return_utr';
     const SERVER_FAILURE_REASON = 'server_failure_reason';
+    const RETURN_UTR            = 'return_utr';
 
     protected static $sign = 'setl';
 
@@ -34,8 +34,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::TRANSACTION_ID,
-        self::SERVER_FAILURE_REASON,
+        self::TRANSACTION_ID
       );
 
     protected $visible = array(
