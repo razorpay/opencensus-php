@@ -14,7 +14,6 @@ class Invoice extends Entity
 
     public function edit($id, $params = [])
     {
-        $this->appendUserId($params);
         $entityUrl = $this->getEntityUrl().$id;
         return $this->request('PATCH', $entityUrl, $params);
     }

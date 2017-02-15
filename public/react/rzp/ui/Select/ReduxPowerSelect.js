@@ -35,10 +35,10 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
           optionLabelPath={optionLabelPath}
         />
       }
-      afterOptionsComponent={(props) =>
+      afterOptionsComponent={(select) =>
         showQuickAdd &&
           <QuickAddComponent
-            {...props}
+            {...select}
             onClick={onQuickAdd}
           />
       }
@@ -46,8 +46,8 @@ const ReduxPowerSelectHOC = (PowerSelectComponent) => (props) => {
         // input.onChange(option[input.name] || '')
         onOptionChange(option)
       }}
-      onEnter={(props) => {
-        showQuickAdd && onQuickAdd(props)
+      onEnter={(select) => {
+         showQuickAdd && select.isOpen && select.searchTerm && onQuickAdd(select)
       }}
     />
   )

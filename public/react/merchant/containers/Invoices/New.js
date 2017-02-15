@@ -180,7 +180,6 @@ export default class InvoicesNewContainer extends Component {
       this.setState({
         isSaving: false
       })
-
       throw error
     })
   }
@@ -246,7 +245,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   downloadInvoicePDF(invoice) {
-    return this.props.downloadInvoice(this.props.invoice)
+    // TODO: handle download
   }
 
   navigateToList() {
