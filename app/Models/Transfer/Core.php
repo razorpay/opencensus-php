@@ -16,6 +16,8 @@ use RZP\Models\Feature;
 
 class Core extends Base\Core
 {
+    protected $mutex;
+
     public function __construct()
     {
         parent::__construct();
@@ -123,10 +125,13 @@ class Core extends Base\Core
     /**
      * Creates and saves a new transfer entity
      *
-     * @param  Base\Entity        $source      Source entity for transfer
-     * @param  Base\Entity        $to          Receiving entity for transfer
-     * @param  int                $amount
-     * @return Transfer\Entity
+     * @param Base\Entity     $source Source entity for transfer
+     * @param Base\Entity     $to     Receiving entity for transfer
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @internal param int $amount
      */
     protected function createTransfer(
         Base\Entity $source,

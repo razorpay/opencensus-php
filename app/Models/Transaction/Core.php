@@ -7,7 +7,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Currency;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
@@ -19,7 +18,7 @@ use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
-use RZP\Error\ErrorCode;
+use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {

@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Models\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
@@ -74,10 +75,12 @@ trait Reversal
      */
     protected function shouldProcessReversals(Payment\Entity $payment, array & $input) : bool
     {
-        // Dont process if either:
-        //  Payment has not been transferred (amount_transferred = 0), or
-        //  Payment method = 'transfer', or
-        //  Payment is fully refunded
+        //
+        // Don't process if either:
+        //  - Payment has not been transferred (amount_transferred = 0), or
+        //  - Payment method = 'transfer', or
+        //  - Payment is fully refunded
+        //
         if (($payment->isTransferred() === false) or
             ($payment->isTransfer() === true) or
             ($payment->getRefundStatus() === Payment\Refund\Status::FULL))
@@ -103,9 +106,9 @@ trait Reversal
      * `reversals` array in input may be optional or mandatory. This
      * function validates the logic around this.
      *
-     * @param  Payment\Entity           $payment
-     * @param  array                    $input
-     * @param  PublicCollection         $transfers
+     * @param  Payment\Entity    $payment
+     * @param  array             $input
+     * @param  PublicCollection  $transfers
      * @return bool
      */
     protected function checkReversalsOnRefundType(Payment\Entity $payment, array $input, & $transfers) : bool
@@ -124,7 +127,7 @@ trait Reversal
         }
         else if ($refundType === Payment\Refund\Status::PARTIAL)
         {
-            $transferCount = count($transfers);
+            $transferCount = $transfers->count();
 
             assert ($transferCount !== 0);
 

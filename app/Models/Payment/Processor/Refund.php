@@ -236,7 +236,9 @@ trait Refund
     /**
      * Refund a payment that has Marketplace transfers
      *
-     * @param  array    $input
+     * @param  array $input
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
     public function refundPaymentWithTransfers(array $input)
     {

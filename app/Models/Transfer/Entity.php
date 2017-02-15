@@ -119,7 +119,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getCurrency()
@@ -159,7 +159,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmountUnreversed()
     {
-        return $this->getAmount() - $this->getAmountReversed();
+        return ($this->getAmount() - $this->getAmountReversed());
     }
 
     public function getOnHold()
