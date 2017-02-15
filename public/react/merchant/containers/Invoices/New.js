@@ -12,18 +12,20 @@ import InlineField from 'rzp/ui/Forms/InlineField'
 import { findBy } from 'rzp/utils/rzp-utils'
 
 import LineItemTable from './LineItemTable'
-import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
-import { fetchItemsForAutocomplete } from 'merchant/modules/items'
-import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
 import CustomerCreation from 'merchant/containers/Customers/New'
 import IssueConfirmModal from './IssueConfirmModal'
 import AddInternalNoteModal from './AddInternalNoteModal'
-import * as InvoiceActions from 'merchant/modules/invoices/details'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
 import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav'
 import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo'
 import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes'
+import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo'
+import { fetchConfig } from 'merchant/modules/config'
+import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
+import { fetchItemsForAutocomplete } from 'merchant/modules/items'
+import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
+import * as InvoiceActions from 'merchant/modules/invoices/details'
+import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 
 function validate(values) {
   let errors = {}
@@ -46,6 +48,7 @@ const selector = formValueSelector('newInvoice')
   (state) => {
     let customers = state.customers.customers
     return {
+      session: state.session,
       customers,
       items: state.items.items,
       customer: findBy(customers, 'id', selector(state, 'customer_id')),
@@ -59,6 +62,7 @@ const selector = formValueSelector('newInvoice')
     saveInvoice,
     highLightInvoice,
     deleteInvoice,
+    fetchConfig,
     ...InvoiceActions,
     ...ModalActions,
     ...NotificationsActions,
@@ -103,6 +107,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   componentWillMount() {
+    this.getMerchantInfo()
     let promises = [
       this.props.fetchCustomersForAutocomplete(),
       this.props.fetchItemsForAutocomplete(),
@@ -129,6 +134,17 @@ export default class InvoicesNewContainer extends Component {
       this.props.showNotification({
         type: 'error',
         message: errors
+      })
+    })
+  }
+
+  getMerchantInfo() {
+    return this.props.fetchConfig().then((config) => {
+      let user = this.props.session.user
+      let merchant = user.merchants[user.current]
+      this.setState({
+        merchantLogoUrl: config.logo_url,
+        merchantName: merchant.name,
       })
     })
   }
@@ -396,6 +412,11 @@ export default class InvoicesNewContainer extends Component {
                     />
 
                     <div class='invoice'>
+                      <InvoiceLogo
+                        logo={this.state.merchantLogoUrl}
+                        name={this.state.merchantName}
+                      />
+
                       <div class='row'>
                         <div class='col-md-6'>
                           <div class='inv__titlesection'>
@@ -427,7 +448,7 @@ export default class InvoicesNewContainer extends Component {
                             component={AutoResizeTextarea}
                             class='form-control input-xs'
                             placeholder='Summary or brief'
-                            rows='2'
+                            rows='1'
                             disabled={isIssued || locked}
                           />
                         </div>
@@ -587,7 +608,7 @@ export default class InvoicesNewContainer extends Component {
                                 })}
                               >
                                 <i class='fa fa-floppy-o'></i>
-                                <span>Save Changes</span>
+                                <span>Save Invoice</span>
                               </AsyncButton>
                           }
 

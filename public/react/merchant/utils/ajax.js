@@ -8,7 +8,8 @@ export default (url, params = {}) => {
     params.url = url
   }
 
-  let currentMode = store.getState().session.mode
+  let appendMode = params.appendMode !== undefined ? params.appendMode : true
+  let currentMode = appendMode ? store.getState().session.mode : ''
   params.url = normalizeUrl(`/${currentMode}/${params.url}`)
   return ajax(params)
 }
