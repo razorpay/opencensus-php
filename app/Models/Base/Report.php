@@ -239,9 +239,14 @@ class Report extends Core
             }
         }
 
-        $serviceTax = intval($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]['sum']);
+        $serviceTax = 0;
         $swachBharatCess = 0;
         $krishiKalyanCess = 0;
+
+        if (empty($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]) === false)
+        {
+            $serviceTax = intval($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]['sum']);
+        }
 
         if (empty($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]) === false)
         {
