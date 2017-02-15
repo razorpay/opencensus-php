@@ -29,33 +29,36 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC       = 'HDFC';
-    const AXIS       = 'Axis';
-    const KOTAK      = 'Kotak';
-    const BILLDESK   = 'BillDesk';
-    const PAYZAPP    = 'PayZapp';
-    const MOBIKWIK   = 'Mobikwik';
-    const PAYTM      = 'Paytm';
-    const OLAMONEY   = 'Olamoney';
-    const FREECHARGE = 'Freecharge';
-    const ADMIN      = 'admin';
+    const HDFC            = 'HDFC';
+    const AXIS            = 'Axis';
+    const KOTAK           = 'Kotak';
+    const BILLDESK        = 'BillDesk';
+    const PAYZAPP         = 'PayZapp';
+    const MOBIKWIK        = 'Mobikwik';
+    const PAYTM           = 'Paytm';
+    const OLAMONEY        = 'Olamoney';
+    const FREECHARGE      = 'Freecharge';
+    const NETBANKING_AXIS = 'Netbanking_Axis';
+    const ADMIN           = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC       => ['payoutreport@hdfcbank.com'],
-        self::AXIS       => [],
-        self::BILLDESK   => [],
-        self::PAYZAPP    => [],
-        self::MOBIKWIK   => [],
-        self::PAYTM      => [],
-        self::KOTAK      => ['BankAlerts@kotak.com'],
-        self::OLAMONEY   => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE => [],
+        self::HDFC            => ['payoutreport@hdfcbank.com'],
+        self::AXIS            => [],
+        self::BILLDESK        => [],
+        self::PAYZAPP         => [],
+        self::MOBIKWIK        => [],
+        self::PAYTM           => [],
+        self::KOTAK           => ['BankAlerts@kotak.com'],
+        self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE      => [],
+        // need to add axis nb emails
+        self::NETBANKING_AXIS => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN      => ['prashanth.yv@razorpay.com'],
+        self::ADMIN           => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
