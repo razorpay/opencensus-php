@@ -106,13 +106,15 @@ class EventTrackerClient extends Base\Core
         {
             $options = ['json' => $this->getEventTrackerData()];
 
-            if (($this->mock) or
+            /*if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
-            }
+            }*/
 
             $response = $client->request('POST', $url, $options);
+
+            $this->trace->info(TraceCode::TRACE_MISC_CODE, $response);
         }
 
         catch (Exception $e)
@@ -452,10 +454,10 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        if ($this->mock === true)
+        /*if ($this->mock === true)
         {
             return;
-        }
+        }*/
 
         try
         {
