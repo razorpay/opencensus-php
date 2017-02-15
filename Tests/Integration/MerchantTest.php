@@ -117,7 +117,7 @@ class MerchantTest extends TestCase
      */
     public function testUserConfirmation()
     {
-        $confirm_token = self::$user->confirm_token;
+        $confirm_token = self::$user->getConfirmToken();
         $this->url('#/access/confirm/'.$confirm_token);
         $this->waitUntilDisplayedByClassName('alert-success');
         $this->waitUntilContainsByCss('body', 'Confirmation successful');

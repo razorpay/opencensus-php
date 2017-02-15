@@ -88,7 +88,7 @@ class Service extends Base\Service
         if ($user)
         {
             $this->merchant = $user->currentMerchant;
-            $this->merchantDetails = $user->currentMerchant->MerchantDetails;
+
             $this->user = $user;
         }
     }
@@ -160,7 +160,7 @@ class Service extends Base\Service
             }
             else
             {
-                $merchantDetails = $this->merchantDetails;
+                $merchantDetails = $this->merchant->merchantDetails;
 
                 $merchantDetails->markSubmitted();
 
@@ -178,7 +178,7 @@ class Service extends Base\Service
         $step = intval($step);
 
         // Check if already finished
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -245,7 +245,7 @@ class Service extends Base\Service
     {
         $error = array();
 
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->isLocked())
         {
@@ -290,7 +290,7 @@ class Service extends Base\Service
 
     public function saveUploadedFile($input)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         if ($merchantDetails->locked)
         {
@@ -317,7 +317,7 @@ class Service extends Base\Service
 
     protected function uploadFileToS3($data)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
         $id = $merchantDetails->getMerchantId();
 
         $error = array();
@@ -541,6 +541,13 @@ class Service extends Base\Service
         unset($input['activation_progress']);
         unset($input['agree_terms']);
         unset($input['files']);
+        unset($input['business_proof_url']);
+        unset($input['business_operation_proof_url']);
+        unset($input['business_pan_url']);
+        unset($input['address_proof_url']);
+        unset($input['promoter_proof_url']);
+        unset($input['promoter_pan_url']);
+        unset($input['promoter_address_url']);
 
         if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
         {
@@ -563,7 +570,7 @@ class Service extends Base\Service
 
     public function saveMerchantDetails(array $input)
     {
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->merchant->merchantDetails;
 
         $merchantDetails->fill($input);
 
@@ -609,7 +616,7 @@ class Service extends Base\Service
 
         foreach (self::UPLOAD_KEYS as $key => $value)
         {
-            if (isset($merchantDetailArr[$key]))
+            if (empty($merchantDetailArr[$key]) === false)
             {
                 $fileResponse[] = $value;
             }

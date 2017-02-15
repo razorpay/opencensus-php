@@ -859,14 +859,13 @@ app.controller('MerchantDetailCtrl', [
       }, $.noop);
     };
     $scope.openAutofillForms = function () {
-      var merchant = $scope.merchant;
       $modal.open({
         templateUrl: 'openAutofillForms.html',
         controller: 'openAutofillForms',
         windowClass: 'modal-print',
         resolve: {
           current: function () {
-            return merchant.details;
+            return $scope.merchant.details;
           }
         }
       });
@@ -1124,7 +1123,8 @@ app.controller('MerchantDetailCtrl', [
       'amex',
       'netbanking',
       'debit_card',
-      'credit_card'
+      'credit_card',
+      'jiomoney'
     ];
     $scope.methods = {};
 
@@ -1418,13 +1418,13 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   function ($scope, $modalInstance, current) {
-    var merchant_details = current && current.merchant_details || {};
+    var merchant_details = current.merchant_details;
     var html = '';
     var bankDocument = '';
     $scope.ok = function () {
       if (bankDocument === 'hdfc-excel') {
-        var id = merchant_details.merchant_id;
-        window.location = '/admin/merchant/' + id + '/hdfc_excel';
+        var id = merchant_details.id;
+        window.location = '/admin/merchant/' + current.id + '/hdfc_excel';
       }
       if (html) {
         var w = window.open();

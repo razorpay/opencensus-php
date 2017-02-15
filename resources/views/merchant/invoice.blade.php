@@ -548,18 +548,12 @@ td
   <td colspan=6 style='mso-ignore:colspan'></td>
  </tr>
  <tr height=21 style='mso-height-source:userset;height:16.0pt'>
-  <td height=21 style='height:16.0pt'></td>
-  <td colspan=1 rowspan=3 class=xl84 width=370 style='width:278pt'>
-  Corporate Address<br>
-  1st Floor,SJR Cyber 22, Laskar Hosur Road<br>
-  Adugodi, Bengaluru - 560030<br>
-
-  <td colspan=1 rowspan=3 class=xl84 width=370 style='width:278pt'>
-  Registered Address<br>
-  35, Vishnupuri Jagatpura Road
-  <br>
-  Jaipur - 302017<br>
-  <td colspan=6 style='mso-ignore:colspan'></td>
+    <td height=21 style='height:16.0pt'></td>
+    <td colspan=2 rowspan=3 class=xl84 width=370 style='width:278pt'>
+        Corporate & Registered Address<br>
+        1st Floor, SJR Cyber 22, Laskar Hosur Road<br>
+        Adugodi, Bengaluru - 560030<br>
+    <td colspan=6 style='mso-ignore:colspan'></td>
  </tr>
  <tr height=21 style='height:16.0pt'>
   <td height=21 style='height:16.0pt'></td>

@@ -7,7 +7,7 @@ use App\Base;
 class Validator extends Base\Validator
 {
     protected static $createRules = array(
-        'name'                  => 'required|alpha_space_num|max:200',
+        'name'                  => 'sometimes|alpha_space_num|max:200',
         'email'                 => 'required|email|unique:merchants',
     );
 

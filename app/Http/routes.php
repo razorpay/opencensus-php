@@ -42,7 +42,8 @@ Route::group(['middleware' => ['web']], function () {
             Route::post('/user/resend', 'MerchantController@postResendConfirmation');
             Route::post('/user/password/reset', 'PasswordController@postRemind');
             Route::post('/user/password/reset/{token}', 'PasswordController@postReset');
-
+            Route::post('/user/pre_signup', 'MerchantController@postSignup');
+            Route::get('/user/pre_signup', 'MerchantController@getSignup');
             Route::post('/user/track_lead', 'UserController@trackLead');
         });
     });

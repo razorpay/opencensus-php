@@ -120,6 +120,7 @@
              <option value="netbanking_hdfc">Netbanking HDFC</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
              <option value="netbanking_axis">Netbanking AXIS</option>
+             <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
@@ -252,7 +253,7 @@
           <td>{{ subMerchant.name }}</td>
           <td><a href="{{ subMerchant.website }}" target="_blank">{{ subMerchant.website }}</a></td>
           <td>
-            <button class="btn btn-danger btn-xs" ng-click="deleteSubMerchant(merchantId)">
+            <button class="btn btn-danger btn-xs" ng-click="deleteSubMerchant(subMerchant.id)">
               Delete
             </a>
           </td>
