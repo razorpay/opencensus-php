@@ -823,16 +823,6 @@ trait Refund
 
         assert ($payment->getTransactionId() !== null);
 
-        $gateway = $payment->getGateway();
-        $supportedGateways = Payment\Gateway::UNKNOWN_REFUNDS_VALIDATION_GATEWAYS;
-
-        if (in_array($gateway, $supportedGateways, true) === false)
-        {
-            $message = 'Cannot validate unknown refunds for the given gateway';
-
-            throw Exception\LogicException($message);
-        }
-
         $data = [
             'payment'   => $payment->toArrayGateway(),
             'refund'    => $refund->toArrayGateway(),

@@ -323,5 +323,5 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
         ],
-    ]
+    ],
 ];

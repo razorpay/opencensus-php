@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
@@ -560,6 +562,20 @@ class Service extends Base\Service
 
     public function validateUnknownGatewayRefunds(string $gateway)
     {
+        $supportedGateways = Payment\Gateway::UNKNOWN_REFUNDS_VALIDATION_GATEWAYS;
+
+        if (in_array($gateway, $supportedGateways, true) === false)
+        {
+            $message = 'Cannot validate unknown refunds for the gateway';
+
+            $data = [
+                'gateway' => $gateway,
+            ];
+
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+        }
+
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;

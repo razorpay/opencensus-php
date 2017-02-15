@@ -283,16 +283,16 @@ class Repository extends Base\Repository
 
     public function fetchWalletFreechargeRefundsForValidation($gateway, $ts)
     {
-        /*
-            SELECT `refunds`.*
-            FROM `refunds`
-            INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
-            INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
-            WHERE `payments`.`gateway` = 'wallet_freecharge'
-                AND `refunds`.`transaction_id` IS NOT NULL
-                AND `refunds`.`created_at` > 1485413187
-                AND `wallet`.`status_code` = 'INITIATED';
-        */
+        //
+        //    SELECT `refunds`.*
+        //    FROM `refunds`
+        //    INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        //    INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
+        //    WHERE `payments`.`gateway` = 'wallet_freecharge'
+        //        AND `refunds`.`transaction_id` IS NOT NULL
+        //        AND `refunds`.`created_at` > 1485413187
+        //        AND `wallet`.`status_code` = 'INITIATED';
+        //
 
        $gatewayTable = Table::getTableNameForEntity($gateway);
        $refundTable = Table::REFUND;
@@ -319,6 +319,7 @@ class Repository extends Base\Repository
                         ->whereNotNull($refundTransactionIdAttr)
                         ->where($refundCreatedAtAttr, '>', $ts)
                         ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
+                        ->limit(300)
                         ->get();
 
         return $response;
