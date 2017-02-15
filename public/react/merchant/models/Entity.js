@@ -1,7 +1,19 @@
 import Base from './Base'
 import ajax from 'merchant/utils/ajax'
 
+/*
+  Abstrace class for most CRUD entities. The base Entity has methods like
+  - Class.fetchAll(params)
+  - Class.fetch(params)
+  - instance.save()
+  - instance.delete()
+*/
+
 export default class Entity extends Base {
+
+  /*
+    `fetchAll` returns a collection of the instances of the resource. This is a static method & should be invoked as [Class].fetchAll(params).
+  */
   static fetchAll(params = {}) {
     const Klass = this
     let { id, ...data } = params
