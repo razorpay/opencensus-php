@@ -26,8 +26,6 @@ class EventTrackerClient extends Base\Core
 
     protected $payment = null;
 
-    protected $paymentContext = [];
-
     const CONTEXT_KEYS = [
         Analytics::IP,
         Analytics::CHECKOUT_ID,
@@ -106,13 +104,13 @@ class EventTrackerClient extends Base\Core
 
         try
         {
-            $options = ['json' => $this->getLumberjackData()];
+            $options = ['json' => $this->getEventTrackerData()];
 
-            if (($this->mock) or
+            /*if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
-            }
+            }*/
 
             $response = $client->request('POST', $url, $options);
         }
@@ -138,7 +136,7 @@ class EventTrackerClient extends Base\Core
         return $signature;
     }
 
-    protected function getLumberjackData()
+    protected function getEventTrackerData()
     {
         if (empty($this->events) === true)
         {
@@ -362,26 +360,18 @@ class EventTrackerClient extends Base\Core
             return $this->fetchPaymentAnalytics($payment);
         }
 
-        $paymentId = $payment->getPublicId();
+        $analytics['payment_id'] = $payment->getPublicId();
 
-        // cache context for paymentId
-        if (isset($this->paymentContext[$paymentId]) === false)
+        // filter metadata for required keys
+        foreach (self::CONTEXT_KEYS as $key)
         {
-            $analytics['payment_id'] = $paymentId;
-
-            // filter metadata for required keys
-            foreach (self::CONTEXT_KEYS as $key)
+            if (isset($metadata[$key]) === true)
             {
-                if (isset($metadata[$key]) === true)
-                {
-                    $analytics[$key] = $metadata[$key];
-                }
+                $analytics[$key] = $metadata[$key];
             }
-
-            $this->paymentContext[$paymentId] = $analytics;
         }
 
-        return $this->paymentContext[$paymentId];
+        return $analytics;
     }
 
     /**
@@ -402,55 +392,49 @@ class EventTrackerClient extends Base\Core
             return;
         }
 
-        // caching paymentContext
-        if (isset($this->paymentContext[$paymentId]) === false)
+        $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
+
+        $analytics['payment_id'] = $payment->getPublicId();
+
+        if (empty($payment->getOrderId()) === false)
         {
-            $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
-
-            $analytics['payment_id'] = $payment->getPublicId();
-
-            if (empty($payment->getOrderId()) === false)
-            {
-                $analytics['order_id'] = $payment->getOrderId();
-            }
-
-            foreach (self::CONTEXT_KEYS as $key)
-            {
-               try
-               {
-                   // generates getter function
-                   $getterName = 'get'.studly_case($key);
-
-                   $getterValue = $pa->$getterName();
-
-                   if (empty($getterValue) === false)
-                   {
-                       $analytics[$key] = $getterValue;
-                   }
-               }
-               catch (Exception $e)
-               {
-                    $msg = [
-                        'getterName' => $getterName,
-                        'key' => $key
-                    ];
-
-                   $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
-               }
-            }
-
-            $this->paymentContext[$paymentId] = $analytics;
+            $analytics['order_id'] = $payment->getOrderId();
         }
 
-        return $this->paymentContext[$paymentId];
+        foreach (self::CONTEXT_KEYS as $key)
+        {
+           try
+            {
+                // generates getter function
+                $getterName = 'get'.studly_case($key);
+
+                $getterValue = $pa->$getterName();
+
+                if (empty($getterValue) === false)
+                {
+                   $analytics[$key] = $getterValue;
+                }
+            }
+           catch (Exception $e)
+           {
+                $msg = [
+                    'getterName' => $getterName,
+                    'key' => $key
+                ];
+
+               $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
+           }
+        }
+
+        return $analytics;
     }
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        if ($this->mock === true)
+        /*if ($this->mock === true)
         {
             return;
-        }
+        }*/
 
         try
         {
