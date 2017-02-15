@@ -11,6 +11,10 @@ $errorTextColor = #F65656
   textarea.input-xs {
     overflow: hidden;
     resize: none;
+
+    + .inlineField__value-container .inlineField__value {
+      white-space: inherit;
+    }
   }
 
   // Don't show spin buttons on InlineFields
@@ -49,19 +53,18 @@ $errorTextColor = #F65656
   }
 
   .form-control:focus,
+  .powerselect--open,
+  .powerselect--focused,
   .datepicker--focused {
     + .inlineField__value-container {
       .inlineField__value {
         display: none;
       }
+
       .inlineField__placeholder {
         color: #C4C4C4;
       }
     }
-  }
-
-  .powerselect--open + .inlineField__value-container {
-    display: none;
   }
 
   .form-control,
@@ -185,6 +188,7 @@ $errorTextColor = #F65656
   text-overflow: ellipsis;
   padding-right: 18px;
   position: relative;
+  white-space: nowrap;
 
   .fa-pencil {
     position: absolute;
