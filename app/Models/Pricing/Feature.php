@@ -10,6 +10,12 @@ class Feature
     const PAYOUT            = 'payout';
     const RECURRING         = 'recurring';
 
+    const FEATURE_LIST = [
+        self::PAYMENT,
+        self::PAYOUT,
+        self::RECURRING,
+    ];
+
     public static function validateFeature($feature)
     {
         if (defined(__CLASS__.'::'.strtoupper($feature)) === false)
@@ -17,12 +23,5 @@ class Feature
             throw new Exception\InvalidArgumentException(
                 'Not a valid Pricing feature: ' . $feature);
         }
-    }
-
-    public static function getFeatures()
-    {
-        $reflectionClass = new \ReflectionClass(__CLASS__);
-
-        return $reflectionClass->getConstants();
     }
 }

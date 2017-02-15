@@ -225,13 +225,13 @@ class Report extends Core
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupForInvoice($merchantId, $from, $to);
 
         $fees = $feesBreakup->getStringAttributesByKey('name');
 
         $totalRzpFee = 0;
 
-        foreach (Feature::getFeatures() as $feature)
+        foreach (Feature::FEATURE_LIST as $feature)
         {
             if (isset($fees[$feature]) === true)
             {
