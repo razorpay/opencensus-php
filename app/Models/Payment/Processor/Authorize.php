@@ -1575,7 +1575,7 @@ trait Authorize
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -1602,7 +1602,8 @@ trait Authorize
     protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input): array
     {
         $card = $this->repo->card->fetchForToken($token);
-        $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
+
+        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
