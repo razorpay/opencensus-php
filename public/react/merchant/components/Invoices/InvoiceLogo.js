@@ -23,7 +23,7 @@ export default ({ name, logo }) => {
           </a>
           <div class='rzp-header-branding-label'>
             <div>Invoicing and payments</div>
-            <div>powered by <a href='https://razorpay.com/'>Razorpay</a></div>
+            <div>powered by <a href='https://razorpay.com/' target='_blank'>Razorpay</a></div>
           </div>
         </div>
       </div>

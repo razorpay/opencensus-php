@@ -55,13 +55,13 @@ export default class Clipboard extends Component {
             data-tip='Copied'
             data-delay-show='150'
             data-event='click'
+            data-place='top'
           >
             Copy Link
           </span>
         }
         <ReactTooltip
           effect='solid'
-          place='top'
           isCapture={true}
         />
       </div>

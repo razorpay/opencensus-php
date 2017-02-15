@@ -37,7 +37,11 @@ const InvoiceListItem = (props) => {
       <td>
         <div class='row-action'>
           <div class='btn-group'>
-            <div class='tooltip-wrapper' data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}>
+            <div
+              class='tooltip-wrapper'
+              data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}
+              data-place='left'
+            >
               <button
                 class='btn btn-xs btn-default'
                 disabled={!invoice.isEditable}
