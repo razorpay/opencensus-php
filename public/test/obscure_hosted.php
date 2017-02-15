@@ -65,9 +65,9 @@
 <body>
   <form method="post" id="paymentform" action="/v1/checkout/hosted">
     <label>Key</label>
-    <input name="options[key]" value="<?= $key_id ?>">
+    <input name="checkout[key]" value="<?= $key_id ?>">
     <label>Amount</label>
-    <input name="options[amount]" value="300">
+    <input name="checkout[amount]" value="300">
     <label>Callback URL</label>
     <input name="url[callback]" value="/">
     <label>Cancel URL</label>

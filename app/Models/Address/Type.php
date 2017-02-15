@@ -9,6 +9,7 @@ class Type
     const CUSTOMER          = 'customer';
 
     const SHIPPING_ADDRESS  = 'shipping_address';
+    const BILLING_ADDRESS   = 'billing_address';
 
     protected static $validEntityTypes = [
         self::CUSTOMER
@@ -16,7 +17,8 @@ class Type
 
     protected static $validTypes = [
         self::CUSTOMER => [
-            self::SHIPPING_ADDRESS
+            self::SHIPPING_ADDRESS,
+            self::BILLING_ADDRESS,
         ]
     ];
 
@@ -50,5 +52,12 @@ class Type
         $entity = 'RZP\\Models\\' . ucfirst($entityType) . '\\Entity';
 
         return $entity;
+    }
+
+    public static function getValidTypes(string $entityType)
+    {
+        self::validateEntityType($entityType);
+
+        return self::$validTypes[$entityType];
     }
 }

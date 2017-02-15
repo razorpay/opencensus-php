@@ -41,7 +41,7 @@ class Repository extends Base\Repository
         if ($this->sharedMerchant === null)
         {
             $this->sharedMerchant = $this->newQuery()
-                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->where(Entity::ID, '=', Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 
@@ -251,6 +251,8 @@ class Repository extends Base\Repository
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
         $submittedAt = $this->manager->merchant_detail
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+        $updatedAt = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
         $stepsFinished = $this->manager->merchant_detail
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
         $activationProgress = $this->manager->merchant_detail
@@ -267,7 +269,8 @@ class Repository extends Base\Repository
                                Entity::SUSPENDED_AT,
                                $stepsFinished,
                                $activationProgress,
-                               $submittedAt)
+                               $submittedAt,
+                               $updatedAt)
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 

@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
 
 class Accessor extends Base\Core
@@ -17,6 +18,8 @@ class Accessor extends Base\Core
      * Id for which entity has to be fetched
      */
     protected $id = null;
+    
+    protected $merchantId;
 
     /**
      * Set the Id in Query Param
@@ -101,7 +104,7 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $file = $this->getEntity();
+        $file = $this->get();
 
         if ($file instanceof Base\PublicCollection)
         {
@@ -188,9 +191,7 @@ class Accessor extends Base\Core
     {
         if ($this->merchantId === null)
         {
-            $merchant = $this->repo->merchant->getSharedAccount();
-
-            $this->merchantId($merchant->getId());
+            $this->merchantId(Account::SHARED_ACCOUNT);
         }
     }
 }

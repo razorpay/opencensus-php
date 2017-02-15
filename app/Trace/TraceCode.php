@@ -14,6 +14,7 @@ class TraceCode
     const PAYMENT_CREATED                           = 'PAYMENT_CREATED';
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
+    const PAYMENT_AUTH_PENDING                      = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                   = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
@@ -144,7 +145,9 @@ class TraceCode
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
 
-    const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
+    const EXPIRE_INVOICE                            = 'EXPIRE_INVOICE';
+    const INVOICE_EXPIRE_VIA_CRON_FAILED            = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
+    const INVOICES_EXPIRE_CRON_SUMMARY              = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                           = 'INVOICE_CREATED';
@@ -156,12 +159,19 @@ class TraceCode
     const INVOICE_REMOVE_LINE_ITEM_REQUEST          = 'INVOICE_REMOVE_LINE_ITEM_REQUEST';
     const INVOICE_EXISTING_CUSTOMER                 = 'INVOICE_EXISTING_CUSTOMER';
     const INVOICE_LINKS                             = 'INVOICE_LINKS';
-    const INVOICE_EMAIL_REQUEST                     = 'INVOICE_EMAIL_REQUEST';
     const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
+    const INVOICE_EMAIL_ISSUED_REQUEST              = 'INVOICE_EMAIL_ISSUED_REQUEST';
+    const INVOICE_EMAIL_EXPIRED_REQUEST             = 'INVOICE_EMAIL_EXPIRED_REQUEST';
+    const INVOICE_EMAIL_EXPIRING_REQUEST            = 'INVOICE_EMAIL_EXPIRING_REQUEST';
     const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+    const INVOICE_ACTION_JOB_RECEIVED               = 'INVOICE_ACTION_JOB_RECEIVED';
+    const INVOICE_ACTION_JOB_HANDLED                = 'INVOICE_ACTION_JOB_HANDLED';
+    const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
+    const INVOICE_PDF_GEN_FAILED                    = 'INVOICE_PDF_GEN_FAILED';
+    const INVOICE_PDF_GEN_TIME_TAKEN                = 'INVOICE_PDF_GEN_TIME_TAKEN';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
@@ -515,6 +525,13 @@ class TraceCode
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
+
+    // Trace codes for Gateway Priorities
+    const ADD_GATEWAY_PRIORITY_REQUEST              = 'ADD_GATEWAY_PRIORITY_REQUEST';
+    const FETCH_GATEWAY_PRIORITY_RESPONSE           = 'FETCH_GATEWAY_PRIORITY_RESPONSE';
+    const UPDATE_GATEWAY_PRIORITY_REQUEST           = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
+    const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
+    const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',

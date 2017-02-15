@@ -72,6 +72,8 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
+        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::TXN_REF_NO]);
+
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             [
@@ -120,8 +122,8 @@ class Gateway extends Base\Gateway
             else if (isset($content[ResponseFields::MESSAGE]) === true)
             {
                 $refundData['response_description'] = substr($content[ResponseFields::MESSAGE], 0, 255);
-
             }
+
             $refundData['status_code'] = $content[ResponseFields::STATUS];
 
             $this->createGatewayRefundEntity($refundData);

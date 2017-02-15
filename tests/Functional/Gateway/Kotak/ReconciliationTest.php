@@ -42,6 +42,9 @@ class ReconciliationTest extends TestCase
 
         // Validate batch settlement entity
         $this->fetchAndMatchBatchSettlement();
+
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements();
     }
 
     public function testReconciliationFailure()
@@ -73,7 +76,8 @@ class ReconciliationTest extends TestCase
         // Validate batch settlement entity
         $this->fetchAndMatchBatchSettlement();
 
-        $this->checkAdjustmentCreated();
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements(true);
 
         // Resetting time
         Carbon::setTestNow();
@@ -232,8 +236,45 @@ class ReconciliationTest extends TestCase
         $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
         $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
         $this->assertGreaterThanOrEqual($item['returned_at'], $time);
+    }
 
+    protected function fetchAndMatchSettlements($failed = false)
+    {
         $content = $this->getEntities('settlement', array(), true);
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'channel' => 'kotak',
+                    'amount' => 4385000,
+                    'fees' => 115000,
+                    'service_tax' => 15000,
+                    'channel'     => 'kotak',
+                ],
+            ]
+        );
+
+        if ($failed == true)
+        {
+            $data['items'][0]['failure_reason'] = 'Reconciliation';
+            $data['items'][0]['remarks'] =
+                'This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit. This is a string which' .
+                ' test characters count limit. This is a string which test characters count limit.' .
+                ' This is a string which test characters count li';
+            $data['items'][0]['status'] = 'failed';
+        }
+        else
+        {
+            $data['items'][0]['failure_reason'] = null;
+            $data['items'][0]['remarks'] = '';
+            $data['items'][0]['status'] = 'created';
+        }
+
+        $this->assertArraySelectiveEquals($data, $content);
     }
 
     protected function checkAdjustmentCreated()

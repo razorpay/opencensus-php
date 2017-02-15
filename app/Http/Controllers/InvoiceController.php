@@ -3,9 +3,11 @@
 namespace RZP\Http\Controllers;
 
 use Request;
+use Response;
 use View;
 use ApiResponse;
 use RZP\Models\Invoice;
+use RZP\Exception\BaseException;
 
 class InvoiceController extends Controller
 {
@@ -118,6 +120,13 @@ class InvoiceController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function expireInvoice($id)
+    {
+        $invoice = $this->service->expireInvoice($id);
+
+        return ApiResponse::json($invoice);
+    }
+
     public function expireInvoices()
     {
         $summary = $this->service->expireInvoices();
@@ -142,7 +151,14 @@ class InvoiceController extends Controller
     {
         $error = Request::get('error');
 
-        $data = $this->service->getInvoiceViewDetails($invoiceId);
+        try
+        {
+            $data = $this->service->getInvoiceViewData($invoiceId);
+        }
+        catch (BaseException $e)
+        {
+            $data = $e->getError()->toPublicArray();
+        }
 
         if (empty($error) === false)
         {
@@ -151,5 +167,30 @@ class InvoiceController extends Controller
 
         return View::make('invoice.index')
                    ->with('data', $data);
+    }
+
+    public function getInvoicePdf($id)
+    {
+        list($displayName, $path) = $this->service->getInvoicePdf($id);
+
+        if ($path === null)
+        {
+            $data = [
+                'error' => [
+                    'description' => 'No pdf file found'
+                ],
+            ];
+
+            return View::make('invoice.index')->with('data', $data);
+        }
+
+        $download = Request::input('download', '0');
+
+        if ($download === '1')
+        {
+            return Response::download($path, $displayName);
+        }
+
+        return Response::file($path);
     }
 }

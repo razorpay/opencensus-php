@@ -18,6 +18,15 @@ class RefundController extends Controller
         $this->refund = new Payment\Refund\Service;
     }
 
+    public function postRefundCreate()
+    {
+        $input = Request::all();
+
+        $refund = $this->refund->create($input);
+
+        return ApiResponse::json($refund);
+    }
+
     public function getRefund($id)
     {
         $refunds = $this->refund->fetch($id);

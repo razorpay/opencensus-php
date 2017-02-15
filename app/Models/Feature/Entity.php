@@ -57,7 +57,7 @@ class Entity extends Base\PublicEntity
     }
 
     /**
-     * Creates a polymorphic relation woth entities
+     * Creates a polymorphic relation with entities
      * implementing a morphMany association on the
      * 'entity' key
      */

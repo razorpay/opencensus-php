@@ -23,6 +23,7 @@ class Channel
             Payment\Gateway::WALLET_PAYUMONEY,
             Payment\Gateway::WALLET_OLAMONEY,
             Payment\Gateway::WALLET_FREECHARGE,
+            Payment\Gateway::WALLET_JIOMONEY
         ),
 
         self::ATOM => array(

@@ -36,6 +36,11 @@ class Handler extends BaseHandler
         return $bucketType;
     }
 
+    public function saveAs($bucket, $key, $filePath)
+    {
+        ;
+    }
+
     protected function getStorageDir()
     {
         $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
