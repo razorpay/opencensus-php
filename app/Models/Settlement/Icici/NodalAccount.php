@@ -153,7 +153,7 @@ class NodalAccount extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::ICICI_SETTLEMENT_FILES);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_SETTLEMENT_FILES);
         });
     }
 }

@@ -171,7 +171,7 @@ class Core extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::ACCOUNT_CHANGED);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
         });
     }
 }

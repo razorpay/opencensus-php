@@ -183,7 +183,7 @@ class Trace extends Logger
                     $message->replyTo('developers@razorpay.com');
 
                     $headers = $message->getHeaders();
-                    $headers->addTextHeader('x-mailgun-tag', MailTags::CRITICAL_ERROR);
+                    $headers->addTextHeader(MailTags::HEADER, MailTags::CRITICAL_ERROR);
                 }
             );
         }

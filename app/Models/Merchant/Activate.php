@@ -109,7 +109,7 @@ class Activate extends Base\Core
                 $message->subject($data['subject']);
 
                 $headers = $message->getHeaders();
-                $headers->addTextHeader('x-mailgun-tag', MailTags::ACCOUNT_ACTIVATED);
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
             }
         );
     }

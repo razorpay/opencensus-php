@@ -203,9 +203,9 @@ class DailyReport extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', $merchant->getPublicId());
+            $headers->addTextHeader(MailTags::HEADER, $merchant->getPublicId());
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::DAILY_REPORT);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
         });
     }
 

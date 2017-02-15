@@ -311,7 +311,7 @@ class Reconciler2
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::KOTAK_SETTLEMENT_FILES);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
         });
     }
 

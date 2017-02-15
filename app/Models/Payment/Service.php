@@ -1031,10 +1031,10 @@ class Service extends Base\Service
 
                 $headers = $message->getHeaders();
 
-                $headers->addTextHeader('x-mailgun-tag', MailTags::AUTH_REMINDER);
+                $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
 
                 foreach ($data['payments'] as $payment) {
-                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                    $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
                 }
             });
     }

@@ -159,7 +159,7 @@ class Service extends Base\Service
                 $message->replyTo($replyTo);
 
                 $headers = $message->getHeaders();
-                $headers->addTextHeader('x-mailgun-tag', MailTags::FORGOT_PASSWORD);
+                $headers->addTextHeader(MailTags::HEADER, MailTags::FORGOT_PASSWORD);
             }
         );
     }
@@ -336,7 +336,7 @@ class Service extends Base\Service
                 $message->replyTo($replyTo);
 
                 $headers = $message->getHeaders();
-                $headers->addTextHeader('x-mailgun-tag', MailTags::ADMIN_CREATE);
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
             }
         );
     }

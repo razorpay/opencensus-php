@@ -212,9 +212,9 @@ class Notify
 
                 $headers = $message->getHeaders();
 
-                $headers->addTextHeader('x-mailgun-tag', $paymentId);
+                $headers->addTextHeader(MailTags::HEADER, $paymentId);
 
-                $headers->addTextHeader('x-mailgun-tag', $label);
+                $headers->addTextHeader(MailTags::HEADER, $label);
 
                 // to might be an array
                 if (is_array($to))

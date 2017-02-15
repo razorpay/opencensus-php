@@ -407,7 +407,7 @@ class Processor extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::BATCH_REFUNDS_FILE);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
         });
     }
 }

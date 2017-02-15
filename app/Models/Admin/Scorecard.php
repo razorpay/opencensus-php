@@ -54,7 +54,7 @@ class Scorecard extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::SCORECARD);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::SCORECARD);
         });
 
         return ['success' => true];

@@ -79,7 +79,7 @@ class RefundFile extends Base\RefundFile
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::ICICI_UPI_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_UPI_REFUNDS_MAIL);
         });
     }
 

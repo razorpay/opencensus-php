@@ -153,9 +153,9 @@ class Inferno
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::WEBHOOK);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WEBHOOK);
 
-            $headers->addTextHeader('x-mailgun-tag', $webhookId);
+            $headers->addTextHeader(MailTags::HEADER, $webhookId);
         });
     }
 

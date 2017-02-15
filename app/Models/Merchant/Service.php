@@ -808,7 +808,7 @@ class Service extends Base\Service
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::WELCOME);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
         });
     }
 

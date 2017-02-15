@@ -143,7 +143,7 @@ class EmiFile extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::EMI_FILE);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
         });
     }
 
@@ -169,7 +169,7 @@ class EmiFile extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::EMI_FILE);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
         });
     }
 }

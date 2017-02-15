@@ -323,7 +323,7 @@ class Reconciler3
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::KOTAK_BENEFICIARY_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 

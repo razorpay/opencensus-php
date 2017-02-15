@@ -63,7 +63,7 @@ class RefundFile extends Base\RefundFile
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::AIRTEL_MONEY_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::AIRTEL_MONEY_REFUNDS_MAIL);
         });
     }
 

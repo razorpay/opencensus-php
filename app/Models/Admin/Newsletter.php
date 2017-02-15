@@ -329,7 +329,7 @@ class Newsletter
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::HOLIDAY_NOTIFICATION);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::HOLIDAY_NOTIFICATION);
         });
 
         return [

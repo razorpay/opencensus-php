@@ -268,9 +268,9 @@ class Notifier extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', $data['invoice']['id']);
+            $headers->addTextHeader(MailTags::HEADER, $data['invoice']['id']);
 
-            $headers->addTextHeader('x-mailgun-tag', $data['label']);
+            $headers->addTextHeader(MailTags::HEADER, $data['label']);
 
             if ($callback !== null) call_user_func($callback, $message);
         });
