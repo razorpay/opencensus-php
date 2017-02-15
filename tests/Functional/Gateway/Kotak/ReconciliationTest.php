@@ -271,7 +271,6 @@ class ReconciliationTest extends TestCase
         {
             $data['items'][0]['failure_reason'] = null;
             $data['items'][0]['remarks'] = '';
-            $data['items'][0]['status'] = 'created';
         }
 
         $this->assertArraySelectiveEquals($data, $content);
