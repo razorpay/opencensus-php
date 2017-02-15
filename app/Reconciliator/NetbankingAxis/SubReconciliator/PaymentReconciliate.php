@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Reconciliator\Netbanking_Axis;
+namespace RZP\Reconciliator\NetbankingAxis;
 
 use RZP\Reconciliator\Base;
 
@@ -10,10 +10,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        $prn = $row[self::COLUMN_PAYMENT_REF_NO];
-
-        $paymentId = $this->repo->findByPaymentId($prn)->getPaymentId();
-
-        return $paymentId;
+        return $row[self::COLUMN_PAYMENT_REF_NO];
     }
 }

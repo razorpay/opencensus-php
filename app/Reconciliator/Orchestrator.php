@@ -38,7 +38,7 @@ class Orchestrator extends Base\Core
     const PAYTM           = 'Paytm';
     const OLAMONEY        = 'Olamoney';
     const FREECHARGE      = 'Freecharge';
-    const NETBANKING_AXIS = 'Netbanking_Axis';
+    const NETBANKING_AXIS = 'NetbankingAxis';
     const ADMIN           = 'admin';
 
     /**
@@ -54,7 +54,7 @@ class Orchestrator extends Base\Core
         self::KOTAK           => ['BankAlerts@kotak.com'],
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE      => [],
-        // need to add axis nb emails
+        // TODO: Need to add axis nb emails
         self::NETBANKING_AXIS => [],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.

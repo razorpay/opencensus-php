@@ -1,17 +1,17 @@
 <?php
 
-namespace RZP\Reconciliator\Netbanking_Axis;
+namespace RZP\Reconciliator\NetbankingAxis;
 
 use RZP\Reconciliator\Base;
 
 class Reconciliate extends Base\Reconciliate
 {
-    // For now Axis sends only Payeespecific
+    // For now Axis sends only payee specific
     // refund and combined are left on here for structure
     const SUCCESS = [
         'Payeespecific' => self::PAYMENT,
-        'refund'        => self::REFUND,
-        'combined'      => self::COMBINED
+        // 'refund'        => self::REFUND,
+        // 'combined'      => self::COMBINED
     ];
 
     const PAYMENT_COLUMN_HEADERS = [
@@ -25,7 +25,7 @@ class Reconciliate extends Base\Reconciliate
         'Status'
     ];
 
-    /*
+    /**
      * Determines the type of reconciliation
      * based on the name of the file.
      * It can either be refund, payment or combined.

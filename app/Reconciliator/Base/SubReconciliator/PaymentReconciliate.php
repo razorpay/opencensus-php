@@ -22,7 +22,8 @@ use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
 class PaymentReconciliate extends Foundation\SubReconciliate
 {
     const GATEWAY_FEES_ABSENT_GATEWAYS = [
-        Orchestrator::KOTAK
+        Orchestrator::KOTAK,
+        Orchestrator::NETBANKING_AXIS
     ];
 
     /*******************
