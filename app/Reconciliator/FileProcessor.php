@@ -7,6 +7,7 @@ use Requests;
 use SplFileInfo;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use ZipArchive;
+use Storage;
 
 use RZP\Trace\TraceCode;
 use RZP\Exception;
@@ -174,18 +175,20 @@ class FileProcessor
      * Also validates the (mime type + extension) combination.
      *
      * @param UploadedFile $file
+     * @param              $fileLocationType
+     *
      * @return string Extension of the file
      */
     public function getTypeOfFile($file, $fileLocationType)
     {
         if ($fileLocationType === self::UPLOADED)
         {
-            $mimeType  = $file->getMimeType();
+            $mimeType = $file->getMimeType();
             $extension = $file->getClientOriginalExtension();
         }
-        else if ($fileLocationType === self::STORAGE)
+        else
         {
-            $mimeType  = mime_content_type($file->getRealPath());
+            $mimeType = mime_content_type($file->getRealPath());
             $extension = $file->getExtension();
         }
 
@@ -284,17 +287,15 @@ class FileProcessor
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
     }
 
-    /*
+    /**
      * Downloads and stores the file in the storage directory
      *
      * @param string $link
      * @param string $gateway
      *
-     * @return UploadedFile
+     * @return SplFileInfo
      */
-    public function getAndStoreFileFromLink(
-        string $link,
-        string $gateway = null)
+    public function getAndStoreFileFromLink(string $link, string $gateway = null)
     {
         $request = [
             'url'     => stripcslashes($link),
@@ -316,6 +317,7 @@ class FileProcessor
             $request['options']);
 
         $contentType = $response->headers->getValues('Content-Type')[0];
+
         $extension = $this->validator
                           ->getExtensionFromContentType(
                               $contentType, $gateway);
@@ -328,7 +330,7 @@ class FileProcessor
         $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
         $filePath .= '/' . $fileName;
 
-        file_put_contents($filePath, $response->body);
+        Storage::disk('settlements')->put($fileName, $response->body);
 
         return new SplFileInfo($filePath);
     }

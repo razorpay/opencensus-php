@@ -25,12 +25,12 @@ class Validator
         Orchestrator::HDFC       => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
         Orchestrator::KOTAK      => "/^PG Transaction File/",
         Orchestrator::OLAMONEY   => "/^Merchant Settlement File/",
-        Orchestrator::FREECHARGE => "/^Merchant Transaction Report/",
+        Orchestrator::FREECHARGE => "/^Merchant (Transaction|Settlement) Report/",
     ];
 
     const GATEWAY_BODY_REGEX = [
         Orchestrator::OLAMONEY   => "/^Please find settlement report for /",
-        Orchestrator::FREECHARGE => "/Please view your transaction report/",
+        Orchestrator::FREECHARGE => "/Please view your (transaction|settlement) report/",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
