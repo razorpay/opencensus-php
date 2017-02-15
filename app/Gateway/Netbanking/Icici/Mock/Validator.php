@@ -15,8 +15,8 @@ class Validator extends Base\Validator
 
     protected static $authRules = [
         RequestFields::MODE                      => 'required|alpha|in:P',
-        RequestFields::PAYEE_ID                  => 'required|string|size:12',
-        RequestFields::SPID                      => 'required|string|size:12',
+        RequestFields::PAYEE_ID                  => 'required|string',
+        RequestFields::SPID                      => 'required|string',
         RequestFields::ENCRYPTED_STRING          => 'required',
     ];
 
@@ -26,8 +26,8 @@ class Validator extends Base\Validator
 
     protected static $verifyRules = [
         RequestFields::MODE                      => 'required|alpha|size:1|in:V',
-        RequestFields::PAYEE_ID                  => 'required|string|size:12',
-        RequestFields::SPID                      => 'required|string|size:12',
+        RequestFields::PAYEE_ID                  => 'required|string',
+        RequestFields::SPID                      => 'required|string',
         RequestFields::AMOUNT                    => 'required|numeric',
         RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num|size:14',
         RequestFields::ITEM_CODE                 => 'required|alpha_num|size:14',
