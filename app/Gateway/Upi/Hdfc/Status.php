@@ -11,4 +11,6 @@ class Status
     const FAILURE = 'FAILURE';
 
     const TIMEOUT = 'TIMEOUT';
+
+    const REFUND_SUCCESS = 'S';
 }

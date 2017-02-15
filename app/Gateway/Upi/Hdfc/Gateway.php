@@ -65,7 +65,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body);
 
-        $this->updateGatewayPaymentResponse($payment, $response);
+        $this->updateGatewayEntityResponse($payment, $response);
 
         $status = $response[ResponseFields::STATUS];
 
@@ -183,7 +183,7 @@ class Gateway extends Base\Gateway
         }
 
         // Authorization was successful
-        $this->updateGatewayPaymentResponse($gatewayPayment, $content);
+        $this->updateGatewayEntityResponse($gatewayPayment, $content);
     }
 
     /**
@@ -402,16 +402,16 @@ class Gateway extends Base\Gateway
         return json_encode($json);
     }
 
-    protected function updateGatewayPaymentResponse($payment, array $response)
+    protected function updateGatewayEntityResponse(Entity $upiEntity, array $response)
     {
         $attr = $this->getMappedAttributes($response);
 
         // To mark that we have received a response for this request
         $attr[Entity::RECEIVED] = 1;
 
-        $payment->fill($attr);
+        $upiEntity->fill($attr);
 
-        $payment->saveOrFail();
+        $upiEntity->saveOrFail();
     }
 
     public function refund(array $input)
@@ -428,7 +428,17 @@ class Gateway extends Base\Gateway
 
         $response = $this->parseGatewayResponse($response->body, Action::REFUND);
 
-        sd($response);
+        $this->updateGatewayEntityResponse($refund, $response);
+
+        $status = $response[ResponseFields::STATUS];
+
+        if ($response[ResponseFields::STATUS] !== Status::REFUND_SUCCESS)
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED,
+                $status,
+                $response[ResponseFields::STATUS_DESCRIPTION]);
+        }
     }
 
     public function verify(array $input)
