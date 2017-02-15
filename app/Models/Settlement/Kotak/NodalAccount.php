@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Constants\MailTags;
 use RZP\Models\Transaction;
 
 class NodalAccount
@@ -105,6 +106,8 @@ class NodalAccount
             $amount = $settlement->getAmount() / 100;
             $totalAmount += $amount;
 
+            $type = 'NEFT';
+
             $ifsc = $ba->getIfscCode();
 
             $ifscFirstFour = substr($ifsc, 0, 4);
@@ -112,6 +115,7 @@ class NodalAccount
             if (($ifscFirstFour === 'KKBK') or
                 ($ifscFirstFour === 'VYSA'))
             {
+                $type = 'IFT';
                 $iftAmount += $amount;
                 $iftCount++;
             }
@@ -124,6 +128,7 @@ class NodalAccount
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
+                'Payment_Type'          => $type,
                 'Payment_Ref_No.'       => $settlement->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
@@ -222,6 +227,10 @@ class NodalAccount
 
             $message->attach($file . '.xlsx');
             $message->attach($file . '.txt');
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
         });
     }
 }

@@ -9,6 +9,8 @@ class Validator
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
         'txt'   => ['text/plain'],
+        // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
+        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
@@ -18,19 +20,29 @@ class Validator
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC     => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::KOTAK    => "/^PG Transaction File/",
+        Orchestrator::HDFC       => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::KOTAK      => "/^PG Transaction File/",
+        Orchestrator::OLAMONEY   => "/^Merchant Settlement File/",
+        Orchestrator::FREECHARGE => "/^Merchant (Transaction|Settlement) Report/",
+    ];
+
+    const GATEWAY_BODY_REGEX = [
+        Orchestrator::OLAMONEY   => "/^Please find settlement report for /",
+        Orchestrator::FREECHARGE => "/Please view your (transaction|settlement) report/",
+    ];
+
+    const GATEWAY_ATTACHMENT_COUNT = [
+        Orchestrator::OLAMONEY   => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
     const SUPPORTED_ZIP_EXTENSIONS = ['zip'];
 
-    // Max allowed file size - 20M (20*1024*1024).
-    const MAX_FILE_SIZE = 20971520;
+    // Max allowed file size - 25M (25*1024*1024).
+    const MAX_FILE_SIZE = 26214400;
 
     public function filterEmails(array $emailDetails)
     {
@@ -45,6 +57,13 @@ class Validator
         }
     }
 
+    public function getExtensionFromContentType(string $contentType)
+    {
+        $extension = Orchestrator::getKeyFromSubArrayMatch($contentType, self::ACCEPTED_EXTENSIONS_MAP);
+
+        return $extension;
+    }
+
     public function validateHdfcEmail(array $emailDetails)
     {
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
@@ -55,16 +74,27 @@ class Validator
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
     }
 
-    protected function validateEmailSubject(string $subject, string $bank)
+    public function validateFreechargeEmail(array $emailDetails)
     {
-        $regex = self::GATEWAY_SUBJECT_REGEX[$bank];
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails['subject'], Orchestrator::FREECHARGE);
 
-        if (preg_match($regex, $subject) === 1)
-        {
-            return true;
-        }
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::FREECHARGE);
 
-        return false;
+        return ($validSubject and $validBody);
+    }
+
+    public function validateOlamoneyEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::OLAMONEY);
+
+        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::OLAMONEY);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::OLAMONEY);
+
+        return ($validSubject and $validAttachmentCount and $validBody);
     }
 
     public function validateAttachments(array & $input)
@@ -149,7 +179,7 @@ class Validator
         return true;
     }
 
-    public function validateFileSize(int $fileSize)
+    protected function validateFileSize(int $fileSize)
     {
         if ($fileSize > self::MAX_FILE_SIZE)
         {
@@ -157,5 +187,34 @@ class Validator
         }
 
         return true;
+    }
+
+    protected function validateEmailSubject(string $subject, string $gateway)
+    {
+        $regex = self::GATEWAY_SUBJECT_REGEX[$gateway];
+
+        if (preg_match($regex, $subject) === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function validateEmailBody(string $body, string $gateway)
+    {
+        $regex = self::GATEWAY_BODY_REGEX[$gateway];
+
+        if (preg_match($regex, $body) === 1)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function validateAttachmentCount(int $attachmentCount, string $gateway)
+    {
+        return (self::GATEWAY_ATTACHMENT_COUNT[$gateway] === $attachmentCount);
     }
 }

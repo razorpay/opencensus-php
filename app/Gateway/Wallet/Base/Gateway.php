@@ -18,7 +18,7 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $action = $action ? $action : $this->action;
+        $action = $action ?: $this->action;
 
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 

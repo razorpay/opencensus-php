@@ -3,7 +3,9 @@
 namespace RZP\Models\Transaction;
 
 use RZP\Models\Base;
+use RZP\Models\Adjustment;
 use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
@@ -155,20 +157,7 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $type = $this->getAttribute(self::TYPE);
-
-        Transaction\Type::validateType($type);
-
-        $class = 'RZP\\Models\\';
-
-        if ($type === Transaction\Type::REFUND)
-        {
-            $class .= 'Payment\\';
-        }
-
-        $class .= ucfirst($type).'\\'.'Entity';
-
-        return $this->belongsTo($class, self::ENTITY_ID);
+        return $this->morphTo('source', 'type', 'entity_id');
     }
 
     /**
@@ -178,7 +167,9 @@ class Entity extends Base\PublicEntity
     public function sourceAssociate($entity)
     {
         $this->source()->associate($entity);
+
         $this->validateEntityIdUnique();
+
         $entity->transaction()->associate($this);
     }
 
@@ -428,6 +419,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
     }
 
+    public function setSettledAt($settledAt)
+    {
+        $this->setAttribute(self::SETTLED_AT, $settledAt);
+    }
+
     public function setEscrowBalance($balance)
     {
         assert ($balance >= 0);
@@ -581,8 +577,11 @@ class Entity extends Base\PublicEntity
 
         $reportTxn[Payment\Entity::DESCRIPTION] = null;
         $reportTxn[Payment\Entity::NOTES] = null;
-        $reportTxn[self::PAYMENT_ID] = null;
+        $reportTxn[Refund\Entity::PAYMENT_ID] = null;
         $reportTxn['settlement_utr'] = null;
+        $reportTxn[Payment\Entity::ORDER_ID] = null;
+        $reportTxn['order_receipt'] = null;
+        $reportTxn[Payment\Entity::METHOD] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -592,13 +591,22 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
-            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
-
             if ($payment->hasBeenCaptured() === false)
             {
                 // Skip if the payment was not captured.
                 return null;
+            }
+
+            $reportTxn[Payment\Entity::METHOD] = $payment->getMethod();
+            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
+
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
             }
         }
         else if ($this->isTypeRefund())
@@ -612,9 +620,16 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn[Payment\Refund\Entity::NOTES] = $refund->getNotesJson();
+            $reportTxn[Refund\Entity::NOTES] = $refund->getNotesJson();
+            $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
 
-            $reportTxn[self::PAYMENT_ID] = $payment->getPublicId();
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
+            }
         }
         else if ($this->isTypeSettlement())
         {
@@ -627,7 +642,7 @@ class Entity extends Base\PublicEntity
         {
             $adjustment = $this->source;
 
-            $reportTxn['description'] = $adjustment->getDescription();
+            $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
         }
 
         return $reportTxn;

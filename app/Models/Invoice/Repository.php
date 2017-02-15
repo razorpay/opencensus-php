@@ -12,14 +12,17 @@ class Repository extends Base\Repository
     protected $entity = 'invoice';
 
     protected $entityFetchParamRules = [
-        Entity::PAYMENT_ID => 'sometimes|string|size:18',
+        Entity::PAYMENT_ID => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT    => 'sometimes|string|min:1|max:40',
     ];
 
     protected $proxyFetchParamRules = [
-        Entity::USER_ID => 'sometimes|alpha_num',
-        Entity::STATUS  => 'sometimes|string',
-        Entity::TYPE    => 'sometimes|string|max:16',
+        Entity::USER_ID          => 'sometimes|alpha_num',
+        Entity::STATUS           => 'sometimes|string',
+        Entity::TYPE             => 'sometimes|string|max:16',
+        Entity::CUSTOMER_NAME    => 'sometimes|string|max:255',
+        Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
+        Entity::CUSTOMER_EMAIL   => 'sometimes|email',
     ];
 
     protected $appFetchParamRules = [
@@ -43,7 +46,7 @@ class Repository extends Base\Repository
         return $invoice;
     }
 
-    public function getInvoicesForNotification($medium)
+    public function getInvoicesForIssuedNotificationToCustomer($medium)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -54,14 +57,30 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getExpiredInvoices()
+    public function getInvoicesForExpiringNotificationToCustomer()
+    {
+        //
+        // To be implemented later, As incremental feature.
+        //
+
+        return new Base\PublicCollection;
+    }
+
+    public function getIssuedAndPastExpiredByInvoices()
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         return $this->newQuery()
                     ->where(Entity::STATUS, '=', Status::ISSUED)
-                    ->where(Entity::DUE_BY, '<', $currentTime)
+                    ->where(Entity::EXPIRE_BY, '<', $currentTime)
                     ->get();
+    }
+
+    public function getNonFailedPaymentsCount(Entity $invoice)
+    {
+        return $invoice->payments()
+                       ->where(Payment\Entity::STATUS, '!=', Payment\Status::FAILED)
+                       ->count();
     }
 
     protected function addQueryParamPaymentId($query, $params)
@@ -81,7 +100,9 @@ class Repository extends Base\Repository
     {
         $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
 
-        $query->where(Entity::ORDER_ID, '=', $orderId);
+        $orderIdAttribute = $this->manager->invoice->getAttributeWithTableName(Entity::ORDER_ID);
+
+        $query->where($orderIdAttribute, '=', $orderId);
     }
 
     protected function joinQueryPayment($query)

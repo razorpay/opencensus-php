@@ -23,6 +23,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 
 class Service extends Base\Service
@@ -156,6 +157,9 @@ class Service extends Base\Service
                 $message->from($from, $fromHeader);
                 $message->subject($subject);
                 $message->replyTo($replyTo);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::FORGOT_PASSWORD);
             }
         );
     }
@@ -330,6 +334,9 @@ class Service extends Base\Service
                 $message->from($from, $fromHeader);
                 $message->subject($subject);
                 $message->replyTo($replyTo);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
             }
         );
     }
@@ -561,6 +568,22 @@ class Service extends Base\Service
         }
 
         return $responseHash;
+    }
+
+    public function getMerchants($orgId, $adminId, $input)
+    {
+        $responseHash = $this->getMerchantIds($orgId, $adminId);
+
+        (new Validator)->validateInput('filter', $input);
+
+        $merchants = $this->repo->merchant->fetchMerchantsByFilter(array_keys($responseHash), $input);
+
+        foreach ($merchants as $merchant)
+        {
+            $merchant['referrer'] = $responseHash[$merchant->getId()];
+        }
+
+        return $merchants->toArray();
     }
 
     public function lockUnusedAccounts()

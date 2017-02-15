@@ -39,7 +39,7 @@ class MailgunWebhookTest extends TestCase
     {
         $testData = $this->testData[__FUNCTION__];
 
-        $this->assertNotContains($testData['request']['content']['X-Mailgun-Tag'], MailTags::$notifyTags);
+        $this->assertNotContains($testData['request']['content'][MailTags::HEADER], MailTags::$notifyTags);
 
         $testDataReplace = $this->getRequestVariableData(Config::get('applications.mailgun.key'));
 

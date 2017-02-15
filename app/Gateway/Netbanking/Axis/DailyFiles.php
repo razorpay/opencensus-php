@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Netbanking\Axis;
 
 use Carbon\Carbon;
+use RZP\Constants\MailTags;
 use RZP\Gateway\Netbanking\Base;
 
 class DailyFiles extends Base\DailyFiles
@@ -81,7 +82,7 @@ class DailyFiles extends Base\DailyFiles
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
         });
     }
 }

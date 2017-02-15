@@ -25,6 +25,7 @@ class Category
     const MUTUAL_FUNDS    = 'mutual_funds';
     const TRAVEL_AGENCY   = 'travel_agency';
     const RETAIL_SERVICES = 'retail_services';
+    const PHARMA          = 'pharma';
 
 
     /**
@@ -40,18 +41,19 @@ class Category
      * prevent incompatible methods from choosing the default
      */
     const CATEGORIES_ALL = [
-        Category::SECURITIES,
-        Category::COMMODITIES,
-        Category::GROCERY,
-        Category::ECOMMERCE,
-        Category::GOVT_EDUCATION,
-        Category::PVT_EDUCATION,
-        Category::UTILITIES,
-        Category::CORPORATE,
-        Category::INSURANCE,
-        Category::HOUSING,
-        Category::MUTUAL_FUNDS,
-        Category::TRAVEL_AGENCY,
+        self::SECURITIES,
+        self::COMMODITIES,
+        self::GROCERY,
+        self::ECOMMERCE,
+        self::GOVT_EDUCATION,
+        self::PVT_EDUCATION,
+        self::UTILITIES,
+        self::CORPORATE,
+        self::INSURANCE,
+        self::HOUSING,
+        self::MUTUAL_FUNDS,
+        self::TRAVEL_AGENCY,
+        self::PHARMA,
     ];
 
 
@@ -63,8 +65,8 @@ class Category
      * out.
      */
     const TPV = [
-        Category::SECURITIES,
-        Category::COMMODITIES,
+        self::SECURITIES,
+        self::COMMODITIES,
     ];
 
     /**
@@ -74,26 +76,27 @@ class Category
      */
     const CATEGORIES = [
         Method::NETBANKING => [
-            Category::DEFAULT => Category::ECOMMERCE,
+            self::DEFAULT => self::ECOMMERCE,
         ],
         Method::CARD => [
-            Category::DEFAULT => Category::ECOMMERCE,
+            self::DEFAULT => self::ECOMMERCE,
+            self::PHARMA  => self::ECOMMERCE,
             Network::AMEX     => [
-                Category::DEFAULT        => Category::RETAIL_SERVICES,
-                Category::GROCERY        => 'sup_hypermrkt_deptstore',
-                Category::ECOMMERCE      => Category::RETAIL_SERVICES,
-                Category::GOVT_EDUCATION => Category::EDUCATION,
-                Category::PVT_EDUCATION  => Category::EDUCATION,
-                Category::CORPORATE      => Category::INVALID,
-                Category::INSURANCE      => Category::INSURANCE,
-                Category::HOUSING        => Category::HOUSING,
+                self::DEFAULT        => self::RETAIL_SERVICES,
+                self::GROCERY        => 'sup_hypermrkt_deptstore',
+                self::ECOMMERCE      => self::RETAIL_SERVICES,
+                self::GOVT_EDUCATION => self::EDUCATION,
+                self::PVT_EDUCATION  => self::EDUCATION,
+                self::CORPORATE      => self::INVALID,
+                self::INSURANCE      => self::INSURANCE,
+                self::HOUSING        => self::HOUSING,
             ],
         ]
     ];
 
     public static function isMerchantCategoryValid($category)
     {
-        return in_array($category, Category::CATEGORIES_ALL, true);
+        return in_array($category, self::CATEGORIES_ALL, true);
     }
 
     public static function isNetworkCategoryValid($input)
@@ -175,7 +178,7 @@ class Category
     {
         $networkCategory = null;
 
-        if ($category2 !== Category::DEFAULT)
+        if ($category2 !== self::DEFAULT)
         {
             $networkCategory = $category2;
         }

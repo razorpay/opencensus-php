@@ -9,8 +9,10 @@ use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use RZP\Models\Pricing\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+
 
 class Report extends Core
 {
@@ -28,7 +30,11 @@ class Report extends Core
         'year'  =>  'required|digits:4',
         'month' =>  'required|digits_between:1,2',
         'day'   =>  'sometimes|digits_between:1,2',
+        'count' =>  'sometimes|integer|min:1',
+        'skip'  =>  'sometimes|integer|min:0',
     ];
+
+    const BATCH_LIMIT = 20000;
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -80,19 +86,67 @@ class Report extends Core
 
     public function getReport($input, $entity)
     {
-        $this->checkAllowedEntity($entity);
-
-        $this->increaseAllowedSystemLimits();
-
-        $begin = time();
-
-        $merchantId = $this->merchant->getId();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        date_default_timezone_set('Asia/Kolkata');
+        $this->preReportProcessing($input, $entity);
 
         list($from, $to) = $this->getTimestamps($input);
+
+        //list($count, $skip) = $this->getFetchLimits($input);
+
+        // currently limiting the api response can break the merchant integration
+        // so overwriting the limits for now
+        list($count, $skip) = [200000, 0];
+
+        list($data, $count) = $this->getReportData($entity, $from, $to, $count, $skip);
+
+        return $data;
+    }
+
+    public function getReportUrl($input, $entity)
+    {
+        $this->preReportProcessing($input, $entity);
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        list($count, $skip) = $this->getFetchLimits($input);
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+
+        $append = false;
+
+        while ($count === self::BATCH_LIMIT)
+        {
+            list($data, $count) = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
+
+            $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
+
+            $skip += $count;
+
+            $append = true;
+        }
+
+        $csvMimeType = 'text/csv';
+
+        $key = 'report/' . $fileName . '.csv';
+
+        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+
+        $signedUrl = $this->getPreSignedUrlFromAws($key);
+
+        if (file_exists($fullpath))
+        {
+            unlink($fullpath);
+        }
+
+        return ['url' => $signedUrl];
+    }
+
+    public function getReportData($entity, $from, $to, $count, $skip)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $begin = time();
 
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -100,11 +154,16 @@ class Report extends Core
                 'entity'        => $entity,
                 'from'          => $from,
                 'to'            => $to,
+                'count'         => $count,
+                'skip'          => $skip,
                 'merchantId'    => $merchantId,
                 'time_started'  => $begin
             ]);
 
-        $entities = $this->fetchEntitiesForReport($merchantId, $from, $to, $entity);
+        $entities = $this->fetchEntitiesForReport(
+                                $merchantId, $entity, $from, $to, $count, $skip);
+
+        $fetchCount = $entities->count();
 
         $timeTaken = time() - $begin;
 
@@ -132,28 +191,18 @@ class Report extends Core
                 'time_taken'    => $timeTaken
             ]);
 
-        return $data;
+        return [$data, $fetchCount];
     }
 
-    public function getReportUrl($input, $entity)
+    protected function preReportProcessing($input, $entity)
     {
-        $data = $this->getReport($input, $entity);
+        $this->checkAllowedEntity($entity);
 
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
+        $this->increaseAllowedSystemLimits();
 
-        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
-        $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report');
-
-        $csvMimeType = 'text/csv';
-
-        $key = 'report/' . $fileName . '.csv';
-
-        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
-
-        $signedUrl = $this->getPreSignedUrlFromAws($key);
-
-        return ['url' => $signedUrl];
+        date_default_timezone_set('Asia/Kolkata');
     }
 
     protected function fetchFormattedDataForReport($entities)
@@ -161,11 +210,11 @@ class Report extends Core
         return $entities->toArrayReport();
     }
 
-    protected function fetchEntitiesForReport($merchantId, $from, $to, $entity)
+    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
     {
         $repo = $this->repo->$entity;
 
-        return $repo->fetchEntitiesForReport($merchantId, $from, $to);
+        return $repo->fetchEntitiesForReport($merchantId, $from, $to, $count, $skip);
     }
 
     public function getInvoiceV2($input)
@@ -176,33 +225,44 @@ class Report extends Core
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupInvoice($merchantId, $from, $to);
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupForInvoice($merchantId, $from, $to);
 
         $fees = $feesBreakup->getStringAttributesByKey('name');
 
-        $totalFee = $fees['payment']['sum'] + $fees['service_tax']['sum'];
-        $totalTax = $fees['service_tax']['sum'];
+        $totalRzpFee = 0;
 
-        if (empty($fees['swachh_bharat_cess']) === false)
+        foreach (Feature::FEATURE_LIST as $feature)
         {
-            $totalFee += $fees['swachh_bharat_cess']['sum'];
-            $totalTax += $fees['swachh_bharat_cess']['sum'];
+            if (isset($fees[$feature]) === true)
+            {
+                $totalRzpFee += intval($fees[$feature]['sum']);
+            }
         }
 
-        if (empty($fees['krishi_kalyan_cess']) === false)
+        $serviceTax = intval($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]['sum']);
+        $swachBharatCess = 0;
+        $krishiKalyanCess = 0;
+
+        if (empty($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]) === false)
         {
-            $totalFee += $fees['krishi_kalyan_cess']['sum'];
-            $totalTax += $fees['krishi_kalyan_cess']['sum'];
+            $swachBharatCess = intval($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]['sum']);
         }
+
+        if (empty($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]) === false)
+        {
+            $krishiKalyanCess = intval($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]['sum']);
+        }
+
+        $totalTax = $serviceTax + $swachBharatCess + $krishiKalyanCess;
 
         return [
-            self::TOTAL_FEE    => $totalFee,
-            self::RAZORPAY_FEE => $fees['payment']['sum'],
+            self::TOTAL_FEE    => $totalRzpFee + $totalTax,
+            self::RAZORPAY_FEE => $totalRzpFee,
             self::TAX          => $totalTax,
             self::TAXES        => [
-                self::SERVICE_TAX        => $fees['service_tax']['sum'],
-                self::SWACH_BHARAT_CESS  => $fees['swachh_bharat_cess']['sum'],
-                self::KRISHI_KALYAN_CESS => $fees['krishi_kalyan_cess']['sum'],
+                self::SERVICE_TAX        => $serviceTax,
+                self::SWACH_BHARAT_CESS  => $swachBharatCess,
+                self::KRISHI_KALYAN_CESS => $krishiKalyanCess
             ],
         ];
     }
@@ -378,6 +438,24 @@ class Report extends Core
         }
 
         return [$from, $to];
+    }
+
+    protected function getFetchLimits($input)
+    {
+        $count = self::BATCH_LIMIT;
+        $skip = 0;
+
+        if (isset($input['count']))
+        {
+            $count = min($count, (int) $input['count']);
+        }
+
+        if (isset($input['skip']))
+        {
+            $skip = (int) $input['skip'];
+        }
+
+        return [$count, $skip];
     }
 
     protected function checkAllowedEntity($entity)

@@ -36,6 +36,9 @@ class CreateInvoices extends Migration
             $table->char(Entity::CUSTOMER_ID, Entity::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Entity::CUSTOMER_BILLING_ADDR_ID, Entity::ID_LENGTH)
+                  ->nullable();
+
             $table->char(Entity::MERCHANT_ID, Entity::ID_LENGTH);
 
             $table->integer(Entity::DATE)
@@ -54,6 +57,9 @@ class CreateInvoices extends Migration
             $table->integer(Entity::EXPIRED_AT)
                   ->nullable();
 
+            $table->integer(Entity::EXPIRE_BY)
+                  ->nullable();
+
             $table->string(Entity::STATUS, 32);
 
             $table->string(Entity::EMAIL_STATUS, 32)
@@ -66,9 +72,6 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->string(Entity::CURRENCY, 3);
-
-            $table->char(Entity::CUSTOMER_ADDRESS, Entity::ID_LENGTH)
-                  ->nullable();
 
             $table->string(Entity::CUSTOMER_NAME)
                   ->nullable();
@@ -86,6 +89,9 @@ class CreateInvoices extends Migration
                   ->nullable();
 
             $table->text(Entity::NOTES);
+
+            $table->text(Entity::COMMENT)
+                  ->nullable();
 
             $table->string(Entity::SHORT_URL, 255)
                   ->nullable();
@@ -115,6 +121,10 @@ class CreateInvoices extends Migration
             $table->index(Entity::EMAIL_STATUS);
             $table->index(Entity::SMS_STATUS);
             $table->index(Entity::USER_ID);
+            $table->index(Entity::EXPIRE_BY);
+            $table->index(Entity::CUSTOMER_NAME);
+            $table->index(Entity::CUSTOMER_CONTACT);
+            $table->index(Entity::CUSTOMER_EMAIL);
             $table->index(Entity::TYPE);
             $table->index(Entity::SOURCE);
 
@@ -135,7 +145,7 @@ class CreateInvoices extends Migration
                   ->on(Table::MERCHANT)
                   ->on_delete('restrict');
 
-            $table->foreign(Entity::CUSTOMER_ADDRESS)
+            $table->foreign(Entity::CUSTOMER_BILLING_ADDR_ID)
                   ->references(Address\Entity::ID)
                   ->on(Table::ADDRESS)
                   ->on_delete('restrict');
@@ -178,7 +188,7 @@ class CreateInvoices extends Migration
 
             $table->dropForeign
             (
-                Table::INVOICE . '_' . Entity::CUSTOMER_ADDRESS . '_foreign'
+                Table::INVOICE . '_' . Entity::CUSTOMER_BILLING_ADDR_ID . '_foreign'
             );
         });
 

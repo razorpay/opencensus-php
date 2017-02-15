@@ -164,6 +164,95 @@ trait Capture
         return ['verify_capture' => $msg];
     }
 
+    public function manualGatewayCapture(Payment\Entity $payment)
+    {
+        $this->setPayment($payment);
+
+        // Currently doing it for only Cybersource. In case when other gateways start
+        // getting similar issues, we will start supporting for them too.
+        assert ($payment->getGateway() === Payment\Gateway::CYBERSOURCE);
+
+        assert ($payment->getStatus() === Payment\Status::CAPTURED);
+
+        // Just making sure that the payment has the transaction id.
+        assert ($payment->getTransactionId() !== null);
+
+        assert ($payment->hasBeenCaptured());
+
+        $data = $this->getGatewayDataForCapture($payment);
+
+        if ($payment->isMethodCardOrEmi())
+        {
+            $data['card'] = $payment->card->toArray();
+        }
+
+        // The reason for NOT using verifyCapture Gateway function is because in ManualCapture, we want to add
+        // more checks and validations in the gateway function. VerifyCapture takes care of the checks specific
+        // to verifyCapture only. Since manualCapture is a very exceptional case and hopefully a one-time execution,
+        // we want to add more asserts around it.
+        $manualGatewayCaptureResult = $this->callGatewayForManualCapture($data);
+
+        // Here, $manualGatewayCaptureResult=true means that the payment is captured on the gateway side.
+        if ($manualGatewayCaptureResult === true)
+        {
+            $msg = 'Successfully created a capture on gateway';
+
+            $payment->setGatewayCaptured(true);
+
+            $this->repo->saveOrFail($payment);
+        }
+        else if ($manualGatewayCaptureResult === false)
+        {
+            $msg = 'DID NOT CREATE A CAPTURE ON GATEWAY. ISSUE!';
+        }
+        else
+        {
+            $msg = 'THIS IS UNEXPECTED!';
+        }
+
+        return [
+            'manual_gateway_capture' => $msg,
+            'payment_id'             => $payment->getId(),
+        ];
+    }
+
+    protected function callGatewayForManualCapture($data)
+    {
+        $manualGatewayCaptureResult = null;
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_INITIATED,
+            [
+                'payment_id'    => $data['payment']['id'],
+            ]);
+
+        try
+        {
+            $manualGatewayCaptureResult = $this->callGatewayFunction(Payment\Action::MANUAL_GATEWAY_CAPTURE, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::MANUAL_GATEWAY_CAPTURE_FAILURE
+            );
+
+            throw $ex;
+        }
+
+        return $manualGatewayCaptureResult;
+    }
+
+    protected function getGatewayDataForCapture(Payment\Entity $payment)
+    {
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'amount'    => $payment->getBaseAmount(),
+        ];
+
+        return $data;
+    }
+
     protected function callGatewayForVerifyCapture($data)
     {
         try
@@ -186,12 +275,14 @@ trait Capture
      * Captures the payment.
      *
      * @param  Payment\Entity $payment
-     * @param  integer        $amount
+     * @param                 $captureAmount
      * @param                 $currency
      *
      * @return Payment\Entity
+     * @throws Exception\BadRequestException
+     * @internal param int $amount
      */
-    protected function capturePayment($payment, $amount, $currency)
+    protected function capturePayment(Payment\Entity $payment, int $captureAmount, $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -199,24 +290,36 @@ trait Capture
         //
         if ($this->merchant->isFeeBearerCustomer())
         {
-            $amount = $amount + $payment->getFee();
+            $captureAmount = $captureAmount + $payment->getFee();
 
             $this->trace->info(
                 TraceCode::PAYMENT_CAPTURE_REQUEST,
                 [
-                    'payment_id' => $payment->getId(),
-                    'amount'     => $amount,
-                    'message'    => 'Adds fee to the amount because fee bearer is customer',
+                    'payment_id'        => $payment->getId(),
+                    'capture_amount'    => $captureAmount,
+                    'message'           => 'Adds fee to the amount because fee bearer is customer',
                 ]);
         }
 
-        $payment->getValidator()->captureAmountValidate($payment, $amount);
+        if ($captureAmount !== $payment->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
+                Payment\Entity::AMOUNT,
+                [
+                    'capture_amount' => $captureAmount,
+                    'payment_amount' => $payment->getAmount(),
+                    'payment_id'     => $payment->getId(),
+                ]);
+        }
 
-        $payment->getValidator()->captureValidate($payment, $amount, $currency);
+        //$payment->getValidator()->captureAmountValidate($payment, $amount);
+
+        $payment->getValidator()->captureValidate($payment, $captureAmount, $currency);
 
         $data = array(
             'payment'   => $payment->toArrayGateway(),
-            'amount'    => $amount,
+            'amount'    => $captureAmount,
             'currency'  => $payment->getCurrency()
         );
 
@@ -321,8 +424,7 @@ trait Capture
         // fix these later (by around 19th-20th Dec). We need to first check whether capture succeeded or not
         // and only then capture on Cybersource gateway if required. Otherwise, it'll capture multiple times.
         //
-        if (($paymentGateway !== Payment\Gateway::HDFC) and
-            ($paymentGateway !== Payment\Gateway::CYBERSOURCE))
+        if ($paymentGateway !== Payment\Gateway::HDFC)
         {
             throw $ex;
         }
@@ -334,13 +436,6 @@ trait Capture
         $this->trace->info(
             TraceCode::PAYMENT_CAPTURE_ADD_TO_QUEUE,
             ['payment_id' => $this->payment->getId()]);
-
-        // We will be removing this piece of code once the capture queue is written
-        // for Cybersource to handle. Being tracked in the issue #1842
-        if ($paymentGateway === Payment\Gateway::CYBERSOURCE)
-        {
-            return;
-        }
 
         //
         // Adding a delay here because some gateways return back an error if a capture request
@@ -399,16 +494,42 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
-        $this->eventOrderPaid();
-        $this->notifyInvoicePaid();
+        $this->eventPaymentCaptured();
+
+        $this->notifyPaymentCaptured();
 
         //
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+    }
 
-        $notifier = new Notify($this->payment);
-        $notifier->trigger(Notify::CAPTURED);
+    /**
+     * Fires multiple events after payment is captured:
+     * - api.order.paid
+     * - api.invoice.paid
+     *
+     * @return null
+     */
+    protected function eventPaymentCaptured()
+    {
+        $this->eventOrderPaid();
+
+        $this->eventInvoicePaid();
+    }
+
+    /**
+     * Triggers notifications after payment is captured.
+     *
+     * @return null
+     */
+    protected function notifyPaymentCaptured()
+    {
+        $hasInvoice = $this->payment->hasInvoice();
+
+        $event = $hasInvoice ? Notify::INVOICE_PAYMENT_CAPTURED : Notify::CAPTURED;
+
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function eventOrderPaid()
@@ -421,40 +542,15 @@ trait Capture
         }
     }
 
-    protected function notifyInvoicePaid()
+    protected function eventInvoicePaid()
     {
         $payment = $this->payment;
-        $invoice = null;
 
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasInvoice() === false)
         {
             return;
         }
 
-        $order = $payment->order;
-        $invoice = $order->invoice;
-
-        if ($invoice === null)
-        {
-            return;
-        }
-
-        $this->eventInvoicePaid($payment);
-
-        $this->communicateInvoicePaid($invoice);
-    }
-
-    protected function communicateInvoicePaid(Invoice\Entity $invoice)
-    {
-        $notifier = new Notify($this->payment, $invoice);
-
-        $trigger = Notify::INVOICE_PAID;
-
-        $notifier->trigger($trigger);
-    }
-
-    protected function eventInvoicePaid($payment)
-    {
         $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 
