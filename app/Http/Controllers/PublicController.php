@@ -28,6 +28,7 @@ class PublicController extends Controller
         $getParams = Request::query('data');
 
         // decode base64 string
+        $getParams = str_replace(' ', '+', $getParams);
         $data = json_decode(base64_decode($getParams), true);
 
         // Relevant info for re-directing to merchant url.
