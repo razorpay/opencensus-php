@@ -98,7 +98,7 @@ class EventTrackerClient extends Base\Core
     * @param $headers array
     * @param $url string
     */
-    protected function sendLumberjackRequest($headers, $url)
+    protected function sendLumberjackRequest(array $headers, string $url)
     {
         $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
@@ -106,11 +106,11 @@ class EventTrackerClient extends Base\Core
         {
             $options = ['json' => $this->getEventTrackerData()];
 
-            /*if (($this->mock) or
+            if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
-            }*/
+            }
 
             $response = $client->request('POST', $url, $options);
         }
@@ -120,11 +120,18 @@ class EventTrackerClient extends Base\Core
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
         }
 
-        $this->events = [];
+        finally
+        {
+            $this->events = [];
 
-        $this->payment = null;
+            $this->payment = null;
+        }
     }
 
+    /**
+     * Generates hmac signature for authenticating request
+     * @return string
+     */
     protected function generateSignature()
     {
         $key = $this->ljConfig['key'];
@@ -136,6 +143,11 @@ class EventTrackerClient extends Base\Core
         return $signature;
     }
 
+    /**
+     * Formats and builds the lumberjack event data
+     * before posting to the lumberjack service.
+     * @return array|void
+     */
     protected function getEventTrackerData()
     {
         if (empty($this->events) === true)
@@ -144,6 +156,7 @@ class EventTrackerClient extends Base\Core
                 TraceCode::LUMBERJACK_EMPTY_EVENTS,
                 ['payment' => $this->payment->getId()]
             );
+
             return;
         }
 
@@ -167,14 +180,12 @@ class EventTrackerClient extends Base\Core
     *
     * Gets metadata and key
     * sets in the default array for event
-    *
-    * @param $payment Payment\Entity
     */
     protected function getEventContext()
     {
         try
         {
-            return $this->fetchAndFilterMetadata($this->payment);
+            return $this->fetchAndFilterMetadata();
         }
         catch (Exception $e)
         {
@@ -191,7 +202,7 @@ class EventTrackerClient extends Base\Core
     * @param $eventName string
     * @param $customProperties array
     */
-    protected function appendEvent(Payment\Entity $payment, $eventName, array $customProperties = [])
+    protected function appendEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
     {
         // payment-related properties
         $properties = $this->getPaymentProperties($payment);
@@ -231,7 +242,14 @@ class EventTrackerClient extends Base\Core
         array_push($this->events, $event);
     }
 
-    protected function removeCommonProperties($customProperties)
+    /**
+     * For the custom properties sent as part of the event
+     * remove the ones that are common across the entire
+     * request lifecycle
+     * @param array $customProperties
+     * @return array
+     */
+    protected function removeCommonProperties(array $customProperties)
     {
         unset($customProperties['payment_id']);
 
@@ -240,6 +258,10 @@ class EventTrackerClient extends Base\Core
         return $customProperties;
     }
 
+    /**
+     * Remove all sorts of sensitive information
+     * @param array $properties
+     */
     protected function removeSensitiveInformation(array & $properties)
     {
         foreach (self::SENSITIVE_KEYS as $name => $key)
@@ -338,7 +360,7 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_TERMINAL_DATA);
         }
     }
 
@@ -347,20 +369,19 @@ class EventTrackerClient extends Base\Core
     * Gets Payment Metadata
     * from payment entity
     *
-    * @param $payment Payment\Entity
     * @return $analytics array (context)
     *
     */
-    protected function fetchAndFilterMetadata(Payment\Entity $payment)
+    protected function fetchAndFilterMetadata()
     {
-        $metadata = $payment->getMetadata();
+        $metadata = $this->payment->getMetadata();
 
         if (empty($metadata) === true)
         {
-            return $this->fetchPaymentAnalytics($payment);
+            return $this->fetchPaymentAnalytics();
         }
 
-        $analytics['payment_id'] = $payment->getPublicId();
+        $analytics['payment_id'] = $this->payment->getPublicId();
 
         // filter metadata for required keys
         foreach (self::CONTEXT_KEYS as $key)
@@ -374,31 +395,31 @@ class EventTrackerClient extends Base\Core
         return $analytics;
     }
 
+
     /**
-    *
-    * Gets data from Payment\Analytics Entity
-    * corresponding to the paymentId
-    *
-    * @param $payment Payment\Entity
-    * @return $analytics array (metadata)
-    */
-    protected function fetchPaymentAnalytics(Payment\Entity $payment)
+     * Gets data from Payment\Analytics Entity
+     * corresponding to the paymentId
+     * @return array
+     */
+    protected function fetchPaymentAnalytics()
     {
-        $paymentId = $payment->getId();
+        $paymentId = $this->payment->getId();
 
         // Return if no analytics entity for payment
-        if (count($payment->analytics()) === 0)
+        if (count($this->payment->analytics()) === 0)
         {
             return;
         }
 
         $pa = $this->repo->payment_analytics->findForLatestPayment($paymentId);
 
-        $analytics['payment_id'] = $payment->getPublicId();
+        $analytics = [];
 
-        if (empty($payment->getOrderId()) === false)
+        $analytics['payment_id'] = $this->payment->getPublicId();
+
+        if (empty($this->payment->getOrderId()) === false)
         {
-            $analytics['order_id'] = $payment->getOrderId();
+            $analytics['order_id'] = $this->payment->getOrderId();
         }
 
         foreach (self::CONTEXT_KEYS as $key)
@@ -431,10 +452,10 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
-        /*if ($this->mock === true)
+        if ($this->mock === true)
         {
             return;
-        }*/
+        }
 
         try
         {
