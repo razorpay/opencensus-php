@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class RefundFileFields
 {
-    const SERAL_NO           = 'Sr No';
+    const SERIAL_NO           = 'Sr No';
     const PAYEE_ID           = 'Payee_id';
     const SPID               = 'SPID';
     const BANK_REFERENCE_ID  = 'Bank Reference No.';

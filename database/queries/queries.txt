@@ -1391,12 +1391,6 @@ UPDATE payments
     SET error_code = 'BAD_REQUEST_ERROR'
     WHERE internal_error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT'
         AND error_code = 'BAD_REQUEST_PAYMENT_TIMED_OUT';
-----
-
-ALTER TABLE netbanking
-    ADD COLUMN account_number VARCHAR(255) AFTER status;
-
------
 
 ALTER TABLE merchants
     ADD COLUMN org_id CHAR(14)
@@ -1553,18 +1547,6 @@ ALTER TABLE settlements
     ADD CONSTRAINT settlements_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id)
     REFERENCES daily_settlements(id) ON DELETE RESTRICT;
 
-# Fixes a failed airtel money payment marked as authorized via verify
-DELETE FROM fees_breakup WHERE transaction_id = '6gz9V7qKmbU9C7';
-UPDATE payments SET transaction_id=null WHERE id='6gysDIemK9qx3W';
-DELETE FROM transactions WHERE id ='6gz9V7qKmbU9C7';
-UPDATE payments
-    SET status='failed',
-    error_code='BAD_REQUEST_ERROR',
-    internal_error_code='BAD_REQUEST_PAYMENT_FAILED',
-    error_description='Payment failed',
-    authorized_at=NULL
-WHERE id='6gysDIemK9qx3W';
-
 ALTER TABLE billdesk
     ADD INDEX billdesk_refstatus_index (RefStatus);
 
@@ -1659,7 +1641,6 @@ ALTER TABLE refunds
 
 # Drop merchants features
 ALTER TABLE merchants DROP COLUMN features;
-=======
 
 ALTER TABLE merchants
     ADD INDEX `merchants_auto_refund_delay_index` (`auto_refund_delay`);

@@ -14,9 +14,9 @@ class Validator extends Base\Validator
     const MODE_ECB = 1;
 
     protected static $authRules = [
-        RequestFields::MODE                      => 'required|alpha|in:P,V',
-        RequestFields::PAYEE_ID                  => 'required|string',
-        RequestFields::SPID                      => 'required|string',
+        RequestFields::MODE                      => 'required|alpha|in:P',
+        RequestFields::PAYEE_ID                  => 'required|string|size:12',
+        RequestFields::SPID                      => 'required|string|size:12',
         RequestFields::ENCRYPTED_STRING          => 'required',
     ];
 
@@ -25,18 +25,18 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::MODE                      => 'required|alpha|size:1',
-        RequestFields::PAYEE_ID                  => 'required|string',
-        RequestFields::SPID                      => 'required|string',
+        RequestFields::MODE                      => 'required|alpha|size:1|in:V',
+        RequestFields::PAYEE_ID                  => 'required|string|size:12',
+        RequestFields::SPID                      => 'required|string|size:12',
         RequestFields::AMOUNT                    => 'required|numeric',
-        RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num',
-        RequestFields::ITEM_CODE                 => 'required|alpha_num',
+        RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num|size:14',
+        RequestFields::ITEM_CODE                 => 'required|alpha_num|size:14',
         RequestFields::CURRENCY_CODE             => 'required|in:INR',
         RequestFields::ACCOUNT_NO                => 'sometimes|string',
-        RequestFields::PAYMENT_DATE              => 'required',
+        RequestFields::PAYMENT_DATE              => 'required|date_format:Y-m-d',
     ];
 
-    protected function validateES($input)
+    protected function validateES(array $input)
     {
         $masterKey = $this->getGatewayMasterKey();
 
@@ -60,7 +60,7 @@ class Validator extends Base\Validator
         $this->assertField($decryptedData, RequestFields::RETURN_URL);
     }
 
-    protected function assertField($data, $field)
+    protected function assertField(array $data, $field)
     {
         if (!isset($data[$field]))
         {

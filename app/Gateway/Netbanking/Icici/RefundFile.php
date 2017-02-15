@@ -14,7 +14,7 @@ class RefundFile extends Base\RefundFile
 
     // The columns of the file
     protected static $headers = [
-        RefundFileFields::SERAL_NO,
+        RefundFileFields::SERIAL_NO,
         RefundFileFields::PAYEE_ID,
         RefundFileFields::SPID,
         RefundFileFields::BANK_REFERENCE_ID,
@@ -59,7 +59,7 @@ class RefundFile extends Base\RefundFile
                 $row['payment']['created_at'], 'Asia/Kolkata')->format('jS F Y');
 
             $data[] = [
-                RefundFileFields::SERAL_NO           => $index + 1,
+                RefundFileFields::SERIAL_NO          => $index + 1,
                 RefundFileFields::PAYEE_ID           => $row['terminal']['gateway_merchant_id'],
                 RefundFileFields::SPID               => $row['terminal']['gateway_merchant_id2'],
                 RefundFileFields::BANK_REFERENCE_ID  => $row['gateway']['bank_payment_id'],

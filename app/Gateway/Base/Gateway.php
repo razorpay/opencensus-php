@@ -720,14 +720,7 @@ class Gateway
 
     protected function getTestMerchantId2()
     {
-        $code = null;
-
-        if (isset($this->config['test_merchant_id2']))
-        {
-            $code = $this->config['test_merchant_id2'];
-        }
-
-        return $code;
+        return $this->config['test_merchant_id2'] ?? null;
     }
 
     protected function getLiveMerchantId2()

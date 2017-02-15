@@ -8,7 +8,6 @@ use App;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base as ModelBase;
 
 class Sorter extends Base\Core
 {

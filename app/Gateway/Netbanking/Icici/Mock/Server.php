@@ -43,14 +43,14 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($response);
     }
 
-    protected function createPostData($input)
+    protected function createPostData(array $input)
     {
         $response = [
             RequestFields::PAYMENT_REFERENCE_NUBER  => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
             RequestFields::ITEM_CODE                => strtoupper($input[RequestFields::ITEM_CODE]),
             RequestFields::AMOUNT                   => $input[RequestFields::AMOUNT],
             RequestFields::CURRENCY_CODE            => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::STATUS                  => Constants::YES,
+            ResponseFields::STATUS                  => Confirmation::YES,
         ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
@@ -61,7 +61,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function formatResponseData($postData)
+    protected function formatResponseData(array $postData)
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
@@ -76,7 +76,7 @@ class Server extends Base\Mock\Server
         return $content;
     }
 
-    protected function decryptData($input)
+    protected function decryptData(array $input)
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
@@ -92,7 +92,7 @@ class Server extends Base\Mock\Server
         return $decryptedData;
     }
 
-    protected function createXmlResponse($responseArray)
+    protected function createXmlResponse(array $responseArray)
     {
         $this->content($responseArray);
 
@@ -107,7 +107,7 @@ class Server extends Base\Mock\Server
         return $response;
     }
 
-    protected function createResponseArray($input)
+    protected function createResponseArray(array $input)
     {
         return [
             ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
