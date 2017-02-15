@@ -26,7 +26,8 @@
         "sunra/php-simple-html-dom-parser": "v1.5.0",
         "vipsoft/unzip": "^1.1",
         "oriceon/oauth-5-laravel": "dev-master#3f6c663b48c9878cc1d8c56e16ad6c2c3d019dc8",
-        "ua-parser/uap-php":"3.4.6"
+        "ua-parser/uap-php":"3.4.6",
+        "predis/predis": "^1.1"
     },
     "require-dev": {
         "symfony/dom-crawler": "~3.0",

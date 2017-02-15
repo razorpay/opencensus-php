@@ -3,6 +3,8 @@
 namespace App\Session;
 
 use App\Base;
+use Redis;
+use Session;
 
 class Entity extends Base\Entity
 {
@@ -36,28 +38,177 @@ class Entity extends Base\Entity
 
     public function getAllSessionsForAdmin($id)
     {
-        return $this->where(self::ADMIN_ID, $id)->get(self::$public);
+        $sessions = [];
+
+        $setKey = $this->getAdminSessionKey($id);
+
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            $key = $this->getSessionKey($sessionId);
+
+            $hash = Redis::hgetall($key);
+
+            // This is a very edge-case scenario bug fix
+            //
+            // If for some reason the main session hash doesn't exist
+            // or the key is lost for some reason (bug in code, memory issue, etc.)
+            // we should check for the relations and nuke them as well.
+            //
+            // Ofcourse since we don't have the userId we can't do anything
+            // about the user relation.
+            if (empty($hash))
+            {
+                $this->deleteAdminSessionRelation($id, $sessionId);
+
+                continue;
+            }
+
+            $hash['id'] = $sessionId;
+
+            $sessions[] = $hash;
+        }
+
+        return $sessions;
     }
 
     public function deleteAllOtherSessionsForAdmin($id, $currentSessionId)
     {
-        $this->where(self::ADMIN_ID, $id)
-             ->where(self::ID, '!=', $currentSessionId)->delete();
+        $setKey = $this->getAdminSessionKey($id);
+
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ($sessionId === $currentSessionId)
+            {
+                continue;
+            }
+
+            $key = $this->getSessionKey($sessionId);
+
+            $hash = Redis::hgetall($key);
+
+            Redis::del($key);
+
+            $this->deleteAdminSessionRelation($id, $sessionId);
+
+            // Delete from admins:adminId:sessions set as well
+            if (isset($hash['user_id']))
+            {
+                $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
+            }
+        }
     }
 
     public function deleteAllOtherSessionsForUser($userId, $currentSessionId)
     {
-        $this->where(self::USER_ID, $userId)
-             ->where(self::ID, '!=', $currentSessionId)->delete();
+        $setKey = $this->getUserSessionKey($userId);
+
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            if ($sessionId === $currentSessionId)
+            {
+                continue;
+            }
+
+            $key = $this->getSessionKey($sessionId);
+
+            $hash = Redis::hgetall($key);
+
+            Redis::del($key);
+
+            // Delete from admins:adminId:sessions set as well
+            if (isset($hash['admin_id']))
+            {
+                $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
+            }
+
+            $this->deleteUserSessionRelation($setKey, $sessionId);
+        }
     }
 
     public function deleteOneSessionForAdmin($sessionId)
     {
-        $this->where(self::ID, $sessionId)->delete();
+        $key = $this->getSessionKey($sessionId);
+
+        $hash = Redis::hgetall($key);
+
+        Redis::del($key);
+
+        if (isset($hash['admin_id']))
+        {
+            $this->deleteAdminSessionRelation($hash['admin_id'], $sessionId);
+        }
+
+        if (isset($hash['user_id']))
+        {
+            $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
+        }
     }
 
     public function deleteAllSessionsForAdmin($adminId)
     {
-        $this->where(self::ADMIN_ID, $adminId)->delete();
+        $setKey = $this->getAdminSessionKey($adminId);
+
+        // Get all the members of set
+        $sessionIds = Redis::smembers($setKey);
+
+        foreach ($sessionIds as $sessionId)
+        {
+            // Delete individual session entities
+            $key = $this->getSessionKey($sessionId);
+
+            $hash = Redis::hgetall($key);
+
+            Redis::del($key);
+
+            if (isset($hash['user_id']))
+            {
+                $this->deleteUserSessionRelation($hash['user_id'], $sessionId);
+            }
+        }
+
+        Redis::del($setKey);
+
+        // $this->where(self::ADMIN_ID, $adminId)->delete();
+    }
+
+    /*
+        Delete a session ID from admins:adminId:sessions
+    */
+    private function deleteAdminSessionRelation($adminId, $sessionId)
+    {
+        $key = $this->getAdminSessionKey($adminId);
+
+        return Redis::srem($key, $sessionId);
+    }
+
+    /*
+        Delete a session ID from users:userId:sessions
+    */
+    private function deleteUserSessionRelation($userId, $sessionId)
+    {
+        $key = $this->getUserSessionKey($userId);
+
+        return Redis::srem($key, $sessionId);
+    }
+
+    private function getSessionKey($sessionId)
+    {
+        return "sessions:$sessionId";
+    }
+
+    private function getAdminSessionKey($adminId)
+    {
+        return "admins:$adminId:sessions";
+    }
+
+    private function getUserSessionKey($userId)
+    {
+        return "users:$userId:sessions";
     }
 }

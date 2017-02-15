@@ -11,6 +11,7 @@
 * Make sure `SECURE_SESSION=false` in `.env.dev`
 * Run `php composer.phar install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
+* Make sure you have redis installed (used for session management and caching).
 * Make sure you are running the latest node (only 6 and above are supported)
 * Install Yarn if it's not pre-installed (https://yarnpkg.com/en/docs/install)
 * `yarn install`
