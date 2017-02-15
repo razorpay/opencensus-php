@@ -9,6 +9,8 @@ class Validator
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
         'txt'   => ['text/plain'],
+        // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
+        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
@@ -18,7 +20,6 @@ class Validator
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
@@ -56,22 +57,11 @@ class Validator
         }
     }
 
-    public function getExtensionFromContentType(string $contentType, string $gateway)
+    public function getExtensionFromContentType(string $contentType)
     {
-        // We get 'application/zip' for xlsx files, so handle it explicitly
-        if (($gateway === Orchestrator::FREECHARGE) and
-            ($contentType === 'application/zip'))
-        {
-            return 'zip';
-        }
+        $extension = Orchestrator::getKeyFromSubArrayMatch($contentType, self::ACCEPTED_EXTENSIONS_MAP);
 
-        foreach (self::ACCEPTED_EXTENSIONS_MAP as $extension => $typeArray)
-        {
-            if (in_array($contentType, $typeArray, true) === true)
-            {
-                return $extension;
-            }
-        }
+        return $extension;
     }
 
     public function validateHdfcEmail(array $emailDetails)

@@ -318,9 +318,7 @@ class FileProcessor
 
         $contentType = $response->headers->getValues('Content-Type')[0];
 
-        $extension = $this->validator
-                          ->getExtensionFromContentType(
-                              $contentType, $gateway);
+        $extension = $this->validator->getExtensionFromContentType($contentType);
 
         $now = Carbon::now('Asia/Kolkata')->toDateString();
 
