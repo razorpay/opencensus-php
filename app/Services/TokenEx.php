@@ -19,7 +19,7 @@ class TokenEx
     const VALID             = 'Valid';
     const VALUE             = 'Value';
 
-    const MAX_RETRY_COUNT = 2;
+    const MAX_RETRY_COUNT = 1;
 
     protected $tokenScheme;
 
@@ -146,7 +146,7 @@ class TokenEx
 
         $retryCount = 0;
 
-        while ($retryCount < self::MAX_RETRY_COUNT)
+        while (true)
         {
             try
             {
@@ -161,7 +161,9 @@ class TokenEx
             catch(\Requests_Exception $e)
             {
                 // check curl error, increase retry count if timeout
-                if (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT)
+                // throw the error if retry count reaches max allowed value
+                if (($retryCount < self::MAX_RETRY_COUNT) and
+                    (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
                 {
                     $this->trace->info(
                         TraceCode::TOKENEX_RETRY,
@@ -173,9 +175,7 @@ class TokenEx
 
                     $retryCount++;
                 }
-
-                // throw the error if retry count reaches max allowed value
-                if ($retryCount === self::MAX_RETRY_COUNT)
+                else
                 {
                     throw $e;
                 }
