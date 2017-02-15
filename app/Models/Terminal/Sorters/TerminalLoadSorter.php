@@ -12,7 +12,7 @@ use RZP\Trace\TraceCode;
 class TerminalLoadSorter extends Terminal\Sorter
 {
     protected $properties = [
-        'chance_gateway',
+        'gateway',
     ];
 
     protected static $rules = [
@@ -67,7 +67,7 @@ class TerminalLoadSorter extends Terminal\Sorter
      * @param array $input
      * @return array
      */
-    public function chanceGatewaySorter($terminals, array $input, $options)
+    public function gatewaySorter($terminals, array $input, $options)
     {
         $sortedTerminals = $terminals;
 

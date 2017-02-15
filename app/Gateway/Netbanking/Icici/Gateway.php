@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Netbanking\Icici;
 
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
@@ -50,6 +51,9 @@ class Gateway extends Base\Gateway
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
 
         $content = $this->getDataFromResponse($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'],
+                               $content[RequestFields::PAYMENT_REFERENCE_NUBER]);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
@@ -176,7 +180,8 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        $paymentDate = date('Y-m-d', $payment['original']['created_at']);
+        $paymentDate = Carbon::createFromTimestamp($payment['original']['created_at'])
+                                                   ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
