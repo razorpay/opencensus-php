@@ -8,14 +8,13 @@ use Illuminate\Contracts\Auth\Guard;
 
 class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessionHandler
 {
-
     protected $sessionNamespace = 'sessions';
 
     public function read($sessionId)
     {
         $connection = $this->cache->connection();
 
-        $key = $this->cache->getStore()->getPrefix().$sessionId;
+        $key = $this->sessionNamespace.':'.$sessionId;
 
         $data = $connection->hgetall($key);
 
@@ -25,8 +24,6 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
             return $payload;
         }
-
-        // return $this->cache->get($sessionId, '');
     }
 
     public function write($sessionId, $data)
@@ -39,7 +36,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
             $data = $this->getDefaultPayload($data, app());
 
-            $sessionKey = $this->cache->getStore()->getPrefix().$sessionId;
+            $sessionKey = $this->sessionNamespace.':'.$sessionId;
 
             // Write to the main cache (hash)
 
@@ -47,7 +44,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
 
             $tx->expire($sessionKey, $lifetime);
 
-            // Write to admins:ID:sessions
+            // Write to admins:adminID:sessions = [ Sid1, Sid2, Sid3 ]
             if (isset($data['admin_id']))
             {
                 $adminKey = "admins:{$data['admin_id']}:{$this->sessionNamespace}";
@@ -57,7 +54,7 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
                 $tx->expire($adminKey, $lifetime);
             }
 
-            // Write to users:ID:sessions
+            // Write to users:userID:sessions = [ Sid1, Sid2, Sid3 ]
             if (isset($data['user_id']))
             {
                 $userKey = "users:{$data['user_id']}:{$this->sessionNamespace}";
@@ -69,26 +66,30 @@ class CustomCacheBasedSessionHandler extends \Illuminate\Session\CacheBasedSessi
         });
 
         return $responses;
-
-        // return $this->cache->put($sessionId, $data, $this->minutes);
     }
 
     protected function getDefaultPayload($data, $container = null)
     {
-        $payload = ['payload' => $data, 'last_activity' => time()];
+        $payload = [
+            'payload' => $data,
+            'last_activity' => time()
+        ];
 
-        if (empty($container)) {
+        if (empty($container))
+        {
             return $payload;
         }
 
-        if ($container->bound(Guard::class)) {
+        if ($container->bound(Guard::class))
+        {
             if (! empty($container->make(Guard::class)->id()))
             {
                 $payload['user_id'] = $container->make(Guard::class)->id();
             }
         }
 
-        if ($container->bound('request')) {
+        if ($container->bound('request'))
+        {
             $payload['ip_address'] = $container->make('request')->ip();
 
             $payload['user_agent'] = substr(
