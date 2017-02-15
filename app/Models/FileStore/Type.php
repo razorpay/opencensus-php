@@ -30,6 +30,8 @@ class Type
 
     const BLANK                             = 'blank';
 
+    const INVOICE_PDF                       = 'invoice_pdf';
+
     /**
      * Map of types allowed for each entity.
      */
@@ -59,6 +61,10 @@ class Type
             MerchantDetail::PROMOTER_PROOF_URL,
             MerchantDetail::PROMOTER_PAN_URL,
             MerchantDetail::PROMOTER_ADDRESS_URL,
+        ],
+
+        Constants\Entity::INVOICE => [
+            self::INVOICE_PDF,
         ],
     ];
 
@@ -112,6 +118,6 @@ class Type
             return true;
         }
 
-        throw new Exception\LogicException('Not a valid Type For Shared Merchant Account: '. $type);
+        throw new Exception\LogicException('Not a valid Type For Shared Merchant Account: ' . $type);
     }
 }

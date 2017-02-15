@@ -14,6 +14,7 @@ class Validator extends Base\Validator
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
+        Entity::BILLING_ADDRESS     => 'sometimes',
     );
 
     protected static $editRules = array(

@@ -143,9 +143,20 @@ class Processor
                 Payment\Entity::METHOD);
         }
 
+        //
         // Creates a payment entity in DB with the input values given.
         // Also takes care of fee-bearer customer flow.
-        $payment = $this->createPaymentEntity($input);
+        //
+        // This is in a transaction because we perform
+        // lockForUpdate on invoice in this flow.
+        //
+
+        $this->repo->transaction(function() use ($input)
+        {
+            $this->createPaymentEntity($input);
+        });
+
+        $payment = $this->payment;
 
         // This flow is being used for only hosted (Shopify).
         $this->checkSignature($input, $payment);
@@ -768,12 +779,16 @@ class Processor
             return;
         }
 
-        $invoice = $this->repo->invoice->fetchForOrder($this->order);
+        $invoice = $this->order->invoice()->withTrashed()->first();
 
         if ($invoice === null)
         {
             return;
         }
+
+        $this->repo->invoice->lockForUpdateAndReload($invoice, true);
+
+        $invoice->getValidator()->validateInvoicePayable();
 
         $payment->invoice()->associate($invoice);
     }
@@ -995,7 +1010,7 @@ class Processor
         // associated with an invoice also.
         if ($payment->hasInvoice())
         {
-            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment, $currentTime);
+            return $this->shouldAutoCaptureLateAuthorizedInvoice($payment);
         }
 
         return $this->shouldAutoCaptureLateAuthorizedOrder($merchant);
@@ -1013,20 +1028,28 @@ class Processor
         return $merchant->getAutoCaptureLateAuth();
     }
 
-    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment, $currentTime)
+    /**
+     * Invoice related checks
+     *   - Check if invoice status is ISSUED
+     *
+     * @param Payment\Entity $payment
+     *
+     * @return bool
+     */
+    protected function shouldAutoCaptureLateAuthorizedInvoice(Payment\Entity $payment)
     {
-        //
-        // Invoice related checks
-        // - Check if now is not past invoice due date
-        // - Check if invoice status is ISSUED
-        //
-
         $invoice = $payment->invoice;
 
-        $this->repo->reload($invoice);
+        $this->repo->invoice->lockForUpdateAndReload($invoice);
 
-        if (($invoice->isIssued() === false) or
-            ($currentTime >= $invoice->getDueBy()))
+        //
+        // There could be a case where the current time is greater
+        // than the expire_by of the invoice. But, if we haven't
+        // yet marked the invoice as expired, we still go ahead
+        // and capture the payment.
+        //
+
+        if ($invoice->isIssued() === false)
         {
             $this->trace->debug(
                 TraceCode::INVOICE_PAYMENT_AUTO_CAPTURE_NOT_ALLOWED,
@@ -1035,8 +1058,6 @@ class Processor
                     'status'            => $payment->getStatus(),
                     'invoice_id'        => $invoice->getId(),
                     'invoice_status'    => $invoice->getStatus(),
-                    'invoice_due_by'    => $invoice->getDueBy(),
-                    'current_time'      => $currentTime,
                 ]);
 
             return false;
