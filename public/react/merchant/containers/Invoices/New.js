@@ -2,7 +2,6 @@ import { Component, PropTypes } from 'react'
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
-import Time from 'rzp/ui/Time'
 import Alert from 'rzp/ui/Forms/Alert'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
@@ -10,7 +9,6 @@ import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import Spinner from 'rzp/ui/Spinner'
 import InlineField from 'rzp/ui/Forms/InlineField'
-import Clipboard from 'rzp/ui/Clipboard'
 import { findBy } from 'rzp/utils/rzp-utils'
 
 import LineItemTable from './LineItemTable'
@@ -23,12 +21,9 @@ import AddInternalNoteModal from './AddInternalNoteModal'
 import * as InvoiceActions from 'merchant/modules/invoices/details'
 import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
-import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
-
-const notificationClassMap = {
-  sent: 'text-success',
-  pending: 'text-warning'
-}
+import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav'
+import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo'
+import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes'
 
 function validate(values) {
   let errors = {}
@@ -375,25 +370,7 @@ export default class InvoicesNewContainer extends Component {
               <div class='row'>
                 <div class='col-md-8'>
                   <div class='invoice-container pull-right'>
-                    <ol class='breadcrumb breadcrumb__backNav'>
-                      <li>
-                        <a href='#/app/invoices/list' class='breadcrumb__backNav--link'>
-                          <i class='fa fa-arrow-left'></i>
-                          <span>All Invoices</span>
-                        </a>
-                      </li>
-                      <li>
-                        <h3 class='breadcrumb__backNav--heading'>
-                          { invoice.receipt || invoice.id || 'New Invoice' }
-                        </h3>
-                        {
-                          isNew ?
-                            <span class='label label-muted'>Unsaved</span> :
-                            <InvoiceStatus status={status} />
-                        }
-                      </li>
-                    </ol>
-
+                    <InvoiceBreadcrumbNav invoice={invoice} />
                     <Alert
                       type={this.state.status.type}
                       message={this.state.status.message}
@@ -632,119 +609,12 @@ export default class InvoicesNewContainer extends Component {
                     </div>
                   </div>
 
-                  {
-                    !(isNew || isDraft) &&
-                      <div class='inv__info'>
-                        <h4>Invoice {invoice.status}</h4>
-                        <dl>
-                          {
-                            isPaid ?
-                            <div>
-                              <dt>Payment Id</dt>
-                              <dd>
-                                <a href={`#/app/payments/${invoice.payment_id}`}>
-                                  {invoice.payment_id}
-                                </a>
-                              </dd>
-
-                              <dt>Paid On</dt>
-                              <dd>
-                                <Time
-                                  value={invoice.paid_at}
-                                  format='DD MMM YYYY, hh:mm:ss a'
-                                />
-                              </dd>
-                            </div> :
-                            <div>
-                              <dt>Payment Link</dt>
-                              <dd>
-                                <Clipboard value={invoice.short_url} />
-                              </dd>
-                            </div>
-                          }
-                          {
-                            invoice.email_status &&
-                            <div>
-                              <dt>Email Sent to</dt>
-                              <dd>
-                                {invoice.customer_details.customer_email}
-                                <span
-                                  style={{ marginLeft: '10px' }}
-                                  class={`${notificationClassMap[invoice.email_status]}`}
-                                >
-                                  {invoice.email_status ? `(${invoice.email_status})` : ''}
-                                </span>
-                              </dd>
-                            </div>
-                          }
-
-                          {
-                            invoice.sms_status &&
-                            <div>
-                              <dt>SMS Sent to</dt>
-                              <dd>
-                                {invoice.customer_details.customer_contact}
-                                <span
-                                  style={{ marginLeft: '10px' }}
-                                  class={`${notificationClassMap[invoice.sms_status]}`}
-                                >
-                                  {invoice.sms_status ? `(${invoice.sms_status})` : ''}
-                                </span>
-                              </dd>
-                            </div>
-                          }
-                          {
-                            isPaid &&
-                            <div>
-                              <dt>Payment Link</dt>
-                              <dd>
-                                <Clipboard value={invoice.short_url} />
-                              </dd>
-                            </div>
-                          }
-                        </dl>
-                      </div>
-                  }
-                  {
-                    Object.keys(invoice.notes || {}).length ?
-                      <div class='inv__info inv__addnote'>
-                        <h4>Internal Notes</h4>
-                        <dl>
-                          {
-                            Object.keys(invoice.notes).map((key) => (
-                              <div key={key}>
-                                <dt>{key}</dt>
-                                <dd>{invoice.notes[key]}</dd>
-                              </div>
-                            ))
-                          }
-                        </dl>
-                        {
-                          !(isNew || locked) &&
-                            <button
-                              type='button'
-                              class='btn btn-default btn-block btn-lg'
-                              onClick={this.addInternalNote}
-                              disabled={this.state.isSaving}
-                            >
-                              <i class='fa fa-comment'></i>
-                              <span>Add Internal Note</span>
-                            </button>
-                        }
-                      </div> :
-                      !(isNew || locked) &&
-                        <div class='inv__cta'>
-                          <button
-                            type='button'
-                            class='btn btn-default btn-block btn-lg'
-                            onClick={this.addInternalNote}
-                            disabled={this.state.isSaving}
-                          >
-                            <i class='fa fa-comment'></i>
-                            <span>Add Internal Note</span>
-                          </button>
-                        </div>
-                  }
+                  <InvoiceInfo invoice={invoice} />
+                  <InvoiceNotes
+                    invoice={invoice}
+                    isSaving={this.state.isSaving}
+                    onAddClick={this.addInternalNote}
+                  />
                 </div>
               </div>
             </form>

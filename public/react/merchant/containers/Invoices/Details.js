@@ -4,7 +4,6 @@ import * as InvoiceActions from 'merchant/modules/invoices/details'
 import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
 import InvoiceDetail from 'merchant/components/Invoices/InvoiceDetail'
-import SendInvoiceOptions from './SendInvoiceOptions'
 import IssueConfirmModal from './IssueConfirmModal'
 
 @connect(
