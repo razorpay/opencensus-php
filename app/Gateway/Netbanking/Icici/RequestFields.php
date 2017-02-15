@@ -4,16 +4,16 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class RequestFields
 {
-    const MODE                      = 'MD';
-    const PAYEE_ID                  = 'PID';
-    const SPID                      = 'SPID';
-    const PAYMENT_REFERENCE_NUBER   = 'PRN';
-    const ITEM_CODE                 = 'ITC';
-    const AMOUNT                    = 'AMT';
-    const CURRENCY_CODE             = 'CRN';
-    const RETURN_URL                = 'RU';
-    const CONFIRMATION              = 'CG';
-    const ACCOUNT_NO                = 'ACCNO';
-    const ENCRYPTED_STRING          = 'ES';
-    const PAYMENT_DATE              = 'Pmt_Date';
+    const MODE                    = 'MD';
+    const PAYEE_ID                = 'PID';
+    const SPID                    = 'SPID';
+    const PAYMENT_REFERENCE_NUBER = 'PRN';
+    const ITEM_CODE               = 'ITC';
+    const AMOUNT                  = 'AMT';
+    const CURRENCY_CODE           = 'CRN';
+    const RETURN_URL              = 'RU';
+    const CONFIRMATION            = 'CG';
+    const ACCOUNT_NO              = 'ACCNO';
+    const ENCRYPTED_STRING        = 'ES';
+    const PAYMENT_DATE            = 'Pmt_Date';
 }

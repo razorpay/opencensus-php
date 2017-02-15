@@ -34,15 +34,15 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('netbanking', true);
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentNetbankingEntity'], $payment);
+            $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
-        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
         // Assert that BID is an integer
-        $this->assertTrue(filter_var($payment['bank_payment_id'],
+        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
     }
 
@@ -119,8 +119,7 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->refundPayment($payment['id']);
 
         // Hitting the refunds route on API - goes to RefundFile.php
-        $bank = 'ICIC';
-        $data = $this->generateRefundsExcelForNB($bank);
+        $data = $this->generateRefundsExcelForNB('ICIC');
 
         // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
         $this->assertEquals($data['netbanking_icici']['count'], 3);

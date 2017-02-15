@@ -46,10 +46,10 @@ class Server extends Base\Mock\Server
     protected function createPostData(array $input)
     {
         $response = [
-            RequestFields::PAYMENT_REFERENCE_NUBER  => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
-            RequestFields::ITEM_CODE                => strtoupper($input[RequestFields::ITEM_CODE]),
-            RequestFields::AMOUNT                   => $input[RequestFields::AMOUNT],
-            RequestFields::CURRENCY_CODE            => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::PAYMENT_REFERENCE_NUBER => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
+            ResponseFields::ITEM_CODE               => strtoupper($input[RequestFields::ITEM_CODE]),
+            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY_CODE           => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::STATUS                  => Confirmation::YES,
         ];
 
@@ -69,7 +69,7 @@ class Server extends Base\Mock\Server
 
         $aes = new AESCrypto($masterKey);
 
-        $content['ES'] = base64_encode($aes->encryptString($httpQuery, $masterKey));
+        $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
         $this->content($content, 'hash');
 
@@ -82,7 +82,7 @@ class Server extends Base\Mock\Server
 
         $aes = new AESCrypto($masterKey);
 
-        $decryptedString = $aes->decryptString(base64_decode($input['ES']), $masterKey);
+        $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);
