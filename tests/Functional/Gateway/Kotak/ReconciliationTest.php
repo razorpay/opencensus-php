@@ -260,17 +260,17 @@ class ReconciliationTest extends TestCase
         if ($failed == true)
         {
             $data['items'][0]['failure_reason'] = 'Reconciliation';
-            $data['items'][0]['server_failure_reason'] =
+            $data['items'][0]['remarks'] =
                 'This is a string which test characters count limit.' .
                 ' This is a string which test characters count limit. This is a string which' .
                 ' test characters count limit. This is a string which test characters count limit.' .
-                ' This is a string which test characters count...';
+                ' This is a string which test characters count li';
             $data['items'][0]['status'] = 'failed';
         }
         else
         {
             $data['items'][0]['failure_reason'] = null;
-            $data['items'][0]['server_failure_reason'] = null;
+            $data['items'][0]['remarks'] = '';
             $data['items'][0]['status'] = 'created';
         }
 

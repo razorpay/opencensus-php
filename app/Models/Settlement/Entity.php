@@ -21,7 +21,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
-    const SERVER_FAILURE_REASON = 'server_failure_reason';
+    const REMARKS               = 'remarks';
     const RETURN_UTR            = 'return_utr';
 
     protected static $sign = 'setl';
@@ -50,7 +50,7 @@ class Entity extends Base\PublicEntity
         self::FAILURE_REASON,
         self::CHANNEL,
         self::UTR,
-        self::SERVER_FAILURE_REASON,
+        self::REMARKS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -143,9 +143,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::FAILURE_REASON);
     }
 
-    public function getServerFailureReason()
+    public function getRemarks()
     {
-        return $this->getAttribute(self::SERVER_FAILURE_REASON);
+        return $this->getAttribute(self::REMARKS);
     }
 
     public function setAmount($amount)
@@ -198,9 +198,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
-    public function setServerFailureReason($reason)
+    public function setRemarks($remarks)
     {
-        $this->setAttribute(self::SERVER_FAILURE_REASON, $reason);
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function getTransactionId()

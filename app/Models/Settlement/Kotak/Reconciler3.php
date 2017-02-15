@@ -187,7 +187,7 @@ class Reconciler3
 
         $status = $row['Status Of transaction'];
 
-        $serverFailureReason = str_limit($row['Reject Reason'], 252);
+        $remarks = substr($row['Reject Reason'], 0, 255);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 
@@ -211,15 +211,11 @@ class Reconciler3
             if ($now < $tenPm)
             {
                 $status = Settlement\Status::CREATED;
-
-                $serverFailureReason = null;
             }
-            else if ((empty($serverFailureReason) === true) or
-                (in_array($serverFailureReason, self::SUCCESS_STATUS) === true))
+            else if ((empty($remarks) === true) or
+                (in_array($remarks, self::SUCCESS_STATUS) === true))
             {
                 $status = Settlement\Status::PROCESSED;
-
-                $serverFailureReason = null;
             }
             else
             {
@@ -256,7 +252,7 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $setl->setServerFailureReason($serverFailureReason);
+            $setl->setRemarks($remarks);
 
             $this->repo->saveOrFail($setl);
 
