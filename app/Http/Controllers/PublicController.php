@@ -67,7 +67,7 @@ class PublicController extends Controller
         }
         else
         {
-            throw new Exception\ServerErrorException('Should not have reached here');
+            throw new Exception\LogicException('Should not have reached here');
         }
 
         $checkout = $this->getCheckoutCommon();
