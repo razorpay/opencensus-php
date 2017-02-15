@@ -34,8 +34,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::TRANSACTION_ID
-      );
+        self::TRANSACTION_ID);
 
     protected $visible = array(
         self::ID,
@@ -48,9 +47,9 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
+        self::REMARKS,
         self::CHANNEL,
         self::UTR,
-        self::REMARKS,
         self::CREATED_AT,
         self::UPDATED_AT);
 
