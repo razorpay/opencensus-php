@@ -287,8 +287,8 @@ export default class InvoicesNewContainer extends Component {
         <div class='text-semi-muted'>
           {
             invoice.id ?
-              <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p> :
-              <p>The Invoice will be deleted and the customer will not be able to pay for it.</p>
+              <p>The Invoice will be deleted and the customer will not be able to pay for it.</p> :
+              <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p>
           }
           <div>
             If you have added any item or customer, you can still use them in other invoices.
@@ -365,7 +365,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   handleBackNavClick() {
-    if (!this.props.dirty) {
+    if (this.props.anyTouched && !this.props.dirty) {
       return this.navigateToList()
     }
 
