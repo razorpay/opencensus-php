@@ -342,7 +342,7 @@ class Gateway extends Base\Gateway
 
     protected function getCommonResponseFields($response, $input)
     {
-        $currencyCode = Currency::ISO_NUMERIC_CODES[$currency];
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
 
         $attributes = [
             Entity::RECEIVED      => true,
