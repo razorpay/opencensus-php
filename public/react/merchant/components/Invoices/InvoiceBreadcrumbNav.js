@@ -1,11 +1,11 @@
 import InvoiceStatus from 'merchant/components/Invoices/InvoiceStatus'
 
-export default ({ invoice }) => {
+export default ({ invoice, onBackNavClick }) => {
   let isNew = !invoice.id
   return (
     <ol class='breadcrumb breadcrumb__backNav'>
       <li>
-        <a href='#/app/invoices/list' class='breadcrumb__backNav--link'>
+        <a class='breadcrumb__backNav--link' onClick={onBackNavClick}>
           <i class='fa fa-arrow-left'></i>
           <span>All Invoices</span>
         </a>

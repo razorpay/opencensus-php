@@ -37,6 +37,7 @@ export default class ConfirmModalProvider extends Component {
 
     options.message = options.message || 'Are you sure to continue ?'
     options.affirmativeLabel = options.affirmativeLabel || 'OK'
+    options.abortLabel = options.abortLabel || 'Cancel'
 
     this.setState({
       show: true,

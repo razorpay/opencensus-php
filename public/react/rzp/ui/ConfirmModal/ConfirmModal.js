@@ -29,7 +29,7 @@ const ConfirmModal = (props, context) => {
         </div>
 
         <div class='modal-body'>
-          { typeof message === 'function' ? message() : <h4>{message}</h4> }
+          { typeof message === 'function' ? message() : <p>{message}</p> }
 
           <div class='Modal__actions'>
             <button

@@ -99,6 +99,7 @@ export default class InvoicesNewContainer extends Component {
     this.downloadInvoicePDF = ::this.downloadInvoicePDF
     this.expireInvoice = ::this.expireInvoice
     this.addInternalNote = ::this.addInternalNote
+    this.handleBackNavClick = ::this.handleBackNavClick
   }
 
   componentWillMount() {
@@ -341,6 +342,21 @@ export default class InvoicesNewContainer extends Component {
     })
   }
 
+  handleBackNavClick() {
+    if (!this.props.dirty) {
+      return this.navigateToList()
+    }
+
+    this.context.confirm({
+      header: 'Unsaved changes',
+      message: 'You have some unsaved changes. Do you want to leave this page ?',
+      affirmativeLabel: 'Yes, leave',
+      abortLabel: 'No, stay'
+    }).then(() => {
+      this.navigateToList()
+    })
+  }
+
   render() {
     const {
       handleSubmit,
@@ -370,7 +386,11 @@ export default class InvoicesNewContainer extends Component {
               <div class='row'>
                 <div class='col-md-8'>
                   <div class='invoice-container pull-right'>
-                    <InvoiceBreadcrumbNav invoice={invoice} />
+                    <InvoiceBreadcrumbNav
+                      invoice={invoice}
+                      onBackNavClick={this.handleBackNavClick}
+                    />
+
                     <Alert
                       type={this.state.status.type}
                       message={this.state.status.message}
