@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
 use RZP\Gateway\Wallet\Freecharge;
 use RZP\Models\Base;
 use RZP\Models\Payment;
@@ -281,7 +282,7 @@ class Repository extends Base\Repository
         return $response;
     }
 
-    public function fetchWalletFreechargeRefundsForValidation($gateway, $ts)
+    public function fetchWalletFreechargeRefundsForValidation()
     {
         //
         //    SELECT `refunds`.*
@@ -290,37 +291,39 @@ class Repository extends Base\Repository
         //    INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
         //    WHERE `payments`.`gateway` = 'wallet_freecharge'
         //        AND `refunds`.`transaction_id` IS NOT NULL
-        //        AND `refunds`.`created_at` > 1485413187
         //        AND `wallet`.`status_code` = 'INITIATED';
         //
 
-       $gatewayTable = Table::getTableNameForEntity($gateway);
-       $refundTable = Table::REFUND;
-       $paymentTable = Table::PAYMENT;
+        $gateway = Payment\Gateway::WALLET_FREECHARGE;
+        $gatewayTable = Table::getTableNameForEntity($gateway);
+        $paymentTable = Table::PAYMENT;
 
-       $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
-       $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
-       $refundCreatedAtAttr = $this->getAttributeWithTableName(Entity::CREATED_AT);
-       $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
 
-       $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
-       $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
 
-       $gatewayStatusCodeAttr = 'status_code';
-       $gatewayRefundIdAttr = 'refund_id';
+        $gatewayStatusCodeAttr = $this->manager
+                                      ->wallet
+                                      ->getAttributeWithTableName(WalletEntity::STATUS_CODE);
 
-       $refundAttributes = $this->getAttributeWithTableName('*');
+        $gatewayRefundIdAttr = $this->manager
+                                    ->wallet
+                                    ->getAttributeWithTableName(WalletEntity::REFUND_ID);
 
-       $response = $this->newQuery()
-                        ->select($refundAttributes)
-                        ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
-                        ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
-                        ->where($paymentGatewayAttr, '=', $gateway)
-                        ->whereNotNull($refundTransactionIdAttr)
-                        ->where($refundCreatedAtAttr, '>', $ts)
-                        ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
-                        ->limit(300)
-                        ->get();
+        $refundAttributes = $this->getAttributeWithTableName('*');
+
+        $response = $this->newQuery()
+                         ->select($refundAttributes)
+                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                         ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
+                         ->where($paymentGatewayAttr, '=', $gateway)
+                         ->whereNotNull($refundTransactionIdAttr)
+                         ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
+                         ->limit(300)
+                         ->get();
 
         return $response;
     }

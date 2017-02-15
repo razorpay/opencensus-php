@@ -577,37 +577,25 @@ class Service extends Base\Service
 
         if (in_array($gateway, $supportedGateways, true) === false)
         {
-            $message = 'Cannot validate unknown refunds for the gateway';
-
             $data = [
                 'gateway' => $gateway,
             ];
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                $data);
         }
-
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        $createdAfter = $now - self::GATEWAY_REFUND_RECORDS_TIME_LIMIT;
 
         $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';
 
-        $refunds = $this->repo->refund->$repoFunc($gateway, $createdAfter);
+        $refunds = $this->repo->refund->$repoFunc();
 
-        $totalRefunds = 0;
-        $failed = 0;
-        $unknown = 0;
+        $failed = $unknown = $success = 0;
         $failedRefundData = [];
-        $success = 0;
 
         foreach ($refunds as $refund)
         {
-            $totalRefunds++;
-
-            $merchant = $this->repo->merchant->fetchMerchantFromEntity($refund);
-
-            $refundData = $this->getNewProcessor($merchant)
+            $refundData = $this->getNewProcessor($refund->merchant)
                                ->validateUnknownGatewayRefund($refund);
 
             if ($refundData['success'] === true)
@@ -626,7 +614,7 @@ class Service extends Base\Service
 
         $summary = [
             'gateway'               => $gateway,
-            'total_refunds'         => $totalRefunds,
+            'total_refunds'         => count($refunds),
             'total_failed_refunds'  => $failed,
             'total_success_refunds' => $success,
             'total_unknown_refunds' => $unknown,
