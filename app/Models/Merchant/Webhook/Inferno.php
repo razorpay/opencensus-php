@@ -107,6 +107,8 @@ class Inferno
 
         $subjectName = $webhook->merchant->getBillingLabelElseName();
 
+        $webhookId = $webhook->getPublicId();
+
         $subject = 'Razorpay | ';
 
         $mailData['url'] = $webhook->getUrl();
@@ -137,7 +139,7 @@ class Inferno
         $mailData['subject'] = $subject;
         $mailData['mode'] = $this->mode;
 
-        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData)
+        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData, $webhookId)
         {
             $emails = $mailData['to_emails'];
 
@@ -152,6 +154,8 @@ class Inferno
             $headers = $message->getHeaders();
 
             $headers->addTextHeader('x-mailgun-tag', MailTags::WEBHOOK);
+
+            $headers->addTextHeader('x-mailgun-tag', $webhookId);
         });
     }
 

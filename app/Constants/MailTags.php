@@ -4,9 +4,12 @@ namespace RZP\Constants;
 
 class MailTags
 {
+    const HEADER                      = 'X-Mailgun-Tag';
+
     /**
-     * Defines tags associated with emails
+     * Defines tags associated with emails, stored in the X-Mailgun-Tag header
      */
+
     const KOTAK_BENEFICIARY_MAIL       = 'kotak_beneficiary_mail';
     const KOTAK_SETTLEMENT_FILES       = 'kotak_settlement_files';
 
