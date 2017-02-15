@@ -1668,6 +1668,10 @@ ALTER TABLE merchants
 ALTER TABLE merchants
     ADD COLUMN auto_capture_late_auth TINYINT(1) NOT NULL DEFAULT 0 AFTER brand_color;
 
+# Adding remarks in settlements
+ALTER TABLE settlements
+    ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER failure_reason;
+
 # multicurrency support
 ALTER TABLE transactions
     ADD COLUMN gateway_amount INTEGER NULL AFTER BALANCE;
