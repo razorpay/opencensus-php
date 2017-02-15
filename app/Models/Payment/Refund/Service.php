@@ -577,13 +577,11 @@ class Service extends Base\Service
 
         if (in_array($gateway, $supportedGateways, true) === false)
         {
-            $data = [
-                'gateway' => $gateway,
-            ];
-
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
-                $data);
+                [
+                    'gateway' => $gateway,
+                ]);
         }
 
         $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';

@@ -347,6 +347,13 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
+        //
+        // This is required when we are marking the refund as successful from initiated.
+        // But, if the refund had initially failed, the verify refund would return
+        // back failed, in which case, we would RE-INITIATE the refund. When we re-initiate,
+        // we don't create a new refund entity, but update the existing refund
+        // entity (which has status = initiated).
+        //
         $wallet = $this->repo->findByRefundId($input['refund']['id']);
 
         if ($wallet !== null)
