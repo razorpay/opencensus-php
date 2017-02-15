@@ -99,6 +99,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::BANK_PAYMENT_ID);
     }
 
+    public function setBankPaymentId($bankPaymentId)
+    {
+        $this->setAttribute(self::BANK_PAYMENT_ID, $bankPaymentId);
+    }
+
     public function getIntPaymentId()
     {
         return $this->getAttribute(self::INT_PAYMENT_ID);

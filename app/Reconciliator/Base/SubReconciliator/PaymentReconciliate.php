@@ -53,6 +53,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->iinRepo         = $this->repo->iin;
         $this->transactionRepo = $this->repo->transaction;
         $this->cardRepo        = $this->repo->card;
+        $this->netbankingRepo  = $this->repo->netbanking;
     }
 
     /**
@@ -331,6 +332,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
+        $this->persistBankPaymentId($rowDetails);
+
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
         return $recordSuccess;
@@ -344,6 +347,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         );
 
         $paymentId = $this->getPaymentId($row);
+
+        $bankPaymentId = $this->getBankPaymentId($row) ?? null;
 
         // If payment id is not present, return. No point of evaluating the row.
         if (empty($paymentId) === true)
@@ -366,6 +371,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_SERVICE_TAX   => $serviceTax,
             BaseReconciliate::GATEWAY_FEE           => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
+            BaseReconciliate::BANK_PAYMENT_ID       => $bankPaymentId,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -501,6 +507,28 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         }
 
         $this->repo->saveOrFail($this->paymentIin);
+    }
+
+    /**
+     * Saving the Bank Payment Id from reconciliator file
+     * Replacing existing value or adding it to the DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistBankPaymentId($rowDetails)
+    {
+        if (isset($rowDetails[BaseReconciliate::BANK_PAYMENT_ID]) === false)
+        {
+            return;
+        }
+
+        $this->gatewayPayment = $this->netbankingRepo->findOrFail($this->payment->getId());
+
+        $bankPaymentId = $rowDetails[BaseReconciliate::BANK_PAYMENT_ID];
+
+        $this->gatewayPayment->setBankPaymentId($bankPaymentId);
+
+        $this->gatewayPayment->saveOrFail();
     }
 
     protected function persistIssuer($reconIssuer)
