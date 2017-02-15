@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
@@ -30,6 +33,14 @@ class Repository extends Base\Repository
         Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
 
+    /**
+     * TODO: Discuss with sunny and shk on this method.
+     *       Why was it added? Not used(now) anywhere.
+     *
+     * @param object $order
+     *
+     * @return Entity
+     */
     public function fetchForOrder($order)
     {
         $invoice = $this->newQuery()
@@ -44,6 +55,54 @@ class Repository extends Base\Repository
         }
 
         return $invoice;
+    }
+
+    /**
+     * - Fetches invoice entity for given public id and merchant.
+     * - Follows by a check if the invoice's user id is same as the passed user
+     *   id, failing which it throws a 403.
+     *
+     * @param string          $id
+     * @param Merchant\Entity $merchant
+     * @param string|null     $userId
+     *
+     * @return Entity
+     */
+    public function findByPublicIdAndMerchantAndUserId(
+        string $id,
+        Merchant\Entity $merchant,
+        string $userId = null)
+    {
+        $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
+
+        if (($userId !== null) and ($invoice->getUserId() !== $userId))
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
+        }
+
+        return $invoice;
+    }
+
+    /**
+     * Fetches invoice after applying additional filter of user_id if it's set.
+     *
+     * @param array       $input
+     * @param string      $merchantId
+     * @param string|null $userId
+     *
+     * @return Base\PublicCollection
+     */
+    public function fetchFilteredByUserId(
+        array $input,
+        string $merchantId,
+        string $userId = null)
+    {
+        if ($userId !== null)
+        {
+            $input[Entity::USER_ID] = $userId;
+        }
+
+        return $this->fetch($input, $merchantId);
     }
 
     public function getInvoicesForIssuedNotificationToCustomer($medium)

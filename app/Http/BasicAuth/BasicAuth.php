@@ -73,6 +73,17 @@ class BasicAuth
     private $merchant = null;
 
     /**
+     * User id
+     *
+     * - For now used to access control operations on invoice.
+     *   Gets sent in headers from the trusted dashboard client.
+     * - Invoice has user id column and it's service usage the same.
+     *
+     * @var string
+     */
+    private $userId = null;
+
+    /**
      * Admin who is authenticating himself
      * through adminAuth
      */
@@ -186,6 +197,7 @@ class BasicAuth
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
         $this->merchant = null;
+        $this->userId = null;
         $this->device = null;
     }
 
@@ -194,6 +206,11 @@ class BasicAuth
         $key = $this->request->getUser();
 
         $secret = $this->request->getPassword();
+
+        //
+        // TODO: Need to confirm if this is to be X-USER-ID?
+        //
+        $this->userId = $this->request->header('X-USER-ID', null);
 
         if (($key === null) and
             ($secret === null))
@@ -810,6 +827,11 @@ class BasicAuth
     public function getMerchant()
     {
         return $this->merchant;
+    }
+
+    public function getUserId()
+    {
+        return $this->userId;
     }
 
     public function getDevice()
