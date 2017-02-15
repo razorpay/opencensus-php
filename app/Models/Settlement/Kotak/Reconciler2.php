@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -307,6 +308,10 @@ class Reconciler2
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
         });
     }
 

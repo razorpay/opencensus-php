@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 use RZP\Jobs\InvoiceAction;
 
 class Notify
@@ -48,6 +49,15 @@ class Notify
         self::AUTHORIZED,
         self::REFUNDED,
         self::FAILED_TO_AUTHORIZED
+    ];
+
+    const MAIL_TAG_MAP = [
+        self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
+        self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
+        self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
+        self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
+        self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
+        self::CARD_SAVED                 => MailTags::CARD_SAVING,
     ];
 
     // TODO: Shift to constants once we update PHP
@@ -179,7 +189,7 @@ class Notify
      *
      * @return null
      */
-    protected function sendMail($view, $subject, $to, $from = 'reports')
+    protected function sendMail($view, $subject, $label, $to, $from = 'reports')
     {
         $from       = $this->getCompleteEmail($from);
         $replyTo    = $this->getCompleteEmail('support');
@@ -190,7 +200,7 @@ class Notify
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId, $label)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -202,7 +212,9 @@ class Notify
 
                 $headers = $message->getHeaders();
 
-                $headers->addTextHeader('x-mailgun-tag', $paymentId);
+                $headers->addTextHeader(MailTags::HEADER, $paymentId);
+
+                $headers->addTextHeader(MailTags::HEADER, $label);
 
                 // to might be an array
                 if (is_array($to))
@@ -257,16 +269,18 @@ class Notify
 
             $from = (isset($struct['from'])) ? $struct['from'] : null;
 
+            $label = $this->getLabel($event);
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
                 if ($from !== null)
                 {
-                    $this->sendMail($view, $subject, $to, $from);
+                    $this->sendMail($view, $subject, $label, $to, $from);
                 }
                 else
                 {
-                    $this->sendMail($view, $subject, $to);
+                    $this->sendMail($view, $subject, $label, $to);
                 }
 
             }
@@ -400,6 +414,11 @@ class Notify
 
             $this->trace->traceException($e);
         }
+    }
+
+    protected function getLabel($event)
+    {
+        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
     }
 
     protected function getSubject($event, $merchant = true)

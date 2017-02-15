@@ -8,6 +8,7 @@ use Requests;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Inferno
 {
@@ -106,6 +107,8 @@ class Inferno
 
         $subjectName = $webhook->merchant->getBillingLabelElseName();
 
+        $webhookId = $webhook->getPublicId();
+
         $subject = 'Razorpay | ';
 
         $mailData['url'] = $webhook->getUrl();
@@ -136,7 +139,7 @@ class Inferno
         $mailData['subject'] = $subject;
         $mailData['mode'] = $this->mode;
 
-        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData)
+        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData, $webhookId)
         {
             $emails = $mailData['to_emails'];
 
@@ -147,6 +150,12 @@ class Inferno
             $message->subject($mailData['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WEBHOOK);
+
+            $headers->addTextHeader(MailTags::HEADER, $webhookId);
         });
     }
 
