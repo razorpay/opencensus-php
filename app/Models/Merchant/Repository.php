@@ -41,7 +41,7 @@ class Repository extends Base\Repository
         if ($this->sharedMerchant === null)
         {
             $this->sharedMerchant = $this->newQuery()
-                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->where(Entity::ID, '=', Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 
@@ -251,6 +251,8 @@ class Repository extends Base\Repository
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
         $submittedAt = $this->manager->merchant_detail
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+        $updatedAt = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
         $stepsFinished = $this->manager->merchant_detail
                                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
         $activationProgress = $this->manager->merchant_detail
@@ -267,7 +269,8 @@ class Repository extends Base\Repository
                                Entity::SUSPENDED_AT,
                                $stepsFinished,
                                $activationProgress,
-                               $submittedAt)
+                               $submittedAt,
+                               $updatedAt)
                       ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
                       ->whereIn(Entity::ID, $merchantIds);
 
@@ -282,17 +285,23 @@ class Repository extends Base\Repository
                 break;
 
             case (empty($input['activated']) === false):
-                $query = $query->whereNotNull(Entity::ACTIVATED_AT);
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             case (empty($input['pending']) === false):
                 $query = $query->whereNull(Entity::ACTIVATED_AT)
-                               ->whereNotNull($submittedAt);
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             case (empty($input['dead']) === false):
                 $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
-                               ->whereNull($submittedAt);
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
                 break;
 
             default:

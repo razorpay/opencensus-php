@@ -45,6 +45,7 @@ class ErrorCode
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
+    const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
     const GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED                                     = 'GATEWAY_ERROR_PAYMENT_ALREADY_SETTLED';
     const GATEWAY_ERROR_PAYMENT_VOID_FAILED                                         = 'GATEWAY_ERROR_PAYMENT_VOID_FAILED';
     const GATEWAY_ERROR_PAYMENT_REFUND_FAILED                                       = 'GATEWAY_ERROR_PAYMENT_REFUND_FAILED';
@@ -389,11 +390,13 @@ class ErrorCode
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
+    const SERVER_ERROR_MISSING_HANDLER                                              = 'SERVER_ERROR_MISSING_HANDLER';
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
     const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
     const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
     const SERVER_ERROR_MULTIPLE_REFUNDS_FOUND                                       = 'SERVER_ERROR_MULTIPLE_REFUNDS_FOUND';
     const SERVER_ERROR_GATEWAY_NOT_REFUNDED                                         = 'SERVER_ERROR_GATEWAY_NOT_REFUNDED';
+    const SERVER_ERROR_REDIS_EXCEPTION                                              = 'SERVER_ERROR_REDIS_EXCEPTION';
 
     const BAD_REQUEST_CUSTOMER_ALREADY_EXISTS                                       = 'BAD_REQUEST_CUSTOMER_ALREADY_EXISTS';
     const BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS                                  = 'BAD_REQUEST_CUSTOMER_CARD_ALREADY_EXISTS';
@@ -421,6 +424,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
+    const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
 
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
@@ -446,4 +450,8 @@ class ErrorCode
     const BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED                                   = 'BAD_REQUEST_FEE_BREAKUP_CREATION_FAILED';
 
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
+
+    // Gateway Priority API error codes
+    const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
+    const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
 }

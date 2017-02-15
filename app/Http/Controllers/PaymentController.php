@@ -261,6 +261,13 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postManualGatewayCapture($id)
+    {
+        $data = $this->payment->manualGatewayCapture($id);
+
+        return ApiResponse::json($data);
+    }
+
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
         $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();

@@ -11,7 +11,7 @@
                                             <table class="twelve columns bluebg" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; background: #39ACE5; margin: 0 auto; width: 580px;"><tr style="padding: 0; text-align: left; vertical-align: top;"><td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
                                                         <h1 style="color: #f2f2f2; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 32px; margin-top: 40px;">
                                                             <center style="min-width: 580px; width: 100%;">
-                                                                Invoice Paid Successfully
+                                                                {{$invoice['type_label']}} Paid Successfully
                                                             </center>
                                                         </h1>
                                                     </td>

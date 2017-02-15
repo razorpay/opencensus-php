@@ -418,6 +418,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function manualGatewayCapture($paymentId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]);
+
+        return $data;
+    }
+
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
@@ -655,10 +673,10 @@ class Service extends Base\Service
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
-        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
+        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
         $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
+        $ts = $date->subSeconds($seconds)->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
 
@@ -704,14 +722,6 @@ class Service extends Base\Service
 
                 $refunded++;
             }
-            catch (Exception\GatewayErrorException $e)
-            {
-                $failed++;
-
-                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
-
-                // Now Just continue
-            }
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
@@ -720,6 +730,14 @@ class Service extends Base\Service
 
                 // Just continue
                 $timedOut++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
+                // Now Just continue
             }
             catch (\Exception $e)
             {
@@ -787,25 +805,29 @@ class Service extends Base\Service
         $startTime = microtime(true);
 
         // All Payments in created state will be marked as failed after 9 minutes
-        $timestamp = time() - 9 * 60;
+        $now = time();
+        $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
-            try
+            if ($payment->shouldTimeout($now) === true)
             {
-                $this->getNewProcessor($payment->merchant)
-                     ->setPayment($payment)
-                     ->timeoutPayment();
+                try
+                {
+                    $this->getNewProcessor($payment->merchant)
+                         ->setPayment($payment)
+                         ->timeoutPayment();
 
-                $count++;
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e);
+                    $count++;
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
 
-                $error++;
+                    $error++;
+                }
             }
         }
 

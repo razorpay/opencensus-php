@@ -22,7 +22,6 @@ class MailTags
     const PAYMENT_SUCCESSFUL           = 'payment_successful';
     const REFUND_SUCCESSFUL            = 'refund_successful';
     const FAILED_TO_AUTHORIZED         = 'failed_to_authorized';
-    const INVOICE_PAID                 = 'invoice_paid';
     const CARD_SAVING                  = 'card_saving';
 
     const INVOICE                      = 'invoice';

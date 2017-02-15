@@ -332,6 +332,7 @@ class Creator extends Base\Core
         {
             case Format::TXT:
             case Format::ENC:
+            case Format::PDF:
                 $this->writeTextFile();
                 break;
 
@@ -343,7 +344,7 @@ class Creator extends Base\Core
 
                 break;
 
-            case 'default':
+            default:
                 throw new Exception\LogicException('Not A Valid Extension');
         }
     }
@@ -424,9 +425,9 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFilePath()
+    public function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.' .$this->file->getExtension();
+        return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
     }
 
     protected function getStorageDir()

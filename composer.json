@@ -27,7 +27,9 @@
         "robrichards/xmlseclibs": "^2.0.1",
         "bjeavons/zxcvbn-php": "^0.2.0",
         "doctrine/dbal": "^2.5",
-        "guzzlehttp/promises": "1.2.0"
+        "guzzlehttp/promises": "1.2.0",
+        "mikehaertl/phpwkhtmltopdf": "^2.2",
+        "mustache/mustache": "^2.11"
     },
     "repositories": [
         {
