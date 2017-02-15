@@ -190,6 +190,7 @@
               paymentResponseHandler: function(response) {
                 if (response.razorpay_payment_id) {
                   data.invoice.status = 'paid';
+                  data.invoice.is_paid = true;
                   this.rerender(data)
                 }
               }
