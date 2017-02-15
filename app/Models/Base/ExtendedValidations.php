@@ -14,7 +14,11 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     {
         $match = preg_match('/\b[a-z]{0,5}_[a-zA-Z0-9]{14}\b/', $id);
 
-        if ($match === 0)
+        //
+        // This should be compared against 1 and not 0 because
+        // preg_match returns either 0 or false in case of failure.
+        //
+        if ($match !== 1)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $attribute . ' is not valid.');
@@ -26,10 +30,12 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
     /**
      * Create basic contact validate
      *
-     * @param  string   $attribute     Attrbute name
-     * @param  string   $contact       Contact number
-     * @param  array    $parameters    Parameter list
-     * @return boolean
+     * @param  string $attribute  Attrbute name
+     * @param  string $contact    Contact number
+     * @param  array  $parameters Parameter list
+     *
+     * @return bool
+     * @throws Exception\BadRequestException
      */
     protected function validateContactSyntax($attribute, $contact, $parameters)
     {

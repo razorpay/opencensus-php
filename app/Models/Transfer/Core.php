@@ -295,11 +295,14 @@ class Core extends Base\Core
     /**
      * Transfer to a Marketplace account
      *
-     * @param  string               $customerId
-     * @param  Base\Entity          $source
-     * @param  array                $input
-     * @param  Merchant\Entity      $merchant
-     * @return Transfer\Entity
+     * @param string           $accountId
+     * @param  Base\Entity     $source
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant)
     {

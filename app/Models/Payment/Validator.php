@@ -60,8 +60,8 @@ class Validator extends Base\Validator
 
     protected static $transferRules = [
         'transfers'                  => 'required|array',
-        'transfers.*.customer'       => 'sometimes|string|max:19',
-        'transfers.*.account'        => 'sometimes|string|max:19',
+        'transfers.*.customer'       => 'sometimes|public_id',
+        'transfers.*.account'        => 'sometimes|public_id',
         'transfers.*.amount'         => 'required|integer|min:100',
         'transfers.*.currency'       => 'required|string|size:3',
         'transfers.*.on_hold'        => 'sometimes|boolean',
