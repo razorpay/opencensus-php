@@ -27,28 +27,11 @@ export default class InvoiceDetailContainer extends Component {
     }
     this.showIssueConfirmModal = ::this.showIssueConfirmModal
     this.issueInvoice = ::this.issueInvoice
+    this.expireInvoice = ::this.expireInvoice
   }
 
   componentWillMount() {
     this.props.fetchInvoice(this.props.id)
-  }
-
-  notifyCustomer(type) {
-    return this.props.notifyCustomer(this.props.invoice, type).then((response) => {
-      this.setState({
-        statusMsg: {
-          type: 'success',
-          message: `${type === 'sms' ? 'SMS' : 'Email' } sent successfully`
-        }
-      })
-    }).catch((error) => {
-      this.setState({
-        statusMsg: {
-          type: 'error',
-          message: error.errors
-        }
-      })
-    })
   }
 
   issueInvoice(props, notifyProps) {
@@ -97,6 +80,34 @@ export default class InvoiceDetailContainer extends Component {
     })
   }
 
+  expireInvoice() {
+    let invoice = this.props.invoice
+    this.context.confirm({
+      header: 'Expire Invoice?',
+      message: () => (
+        <div class='text-semi-muted'>
+          <p>The Link will be expired and the customer will not be able to pay for it.</p>
+        </div>
+      ),
+      affirmativeLabel: 'Yes, Expire',
+      affirmativePendingLabel: 'Expiring...',
+      abortLabel: 'No, don\'t!',
+      action: () => {
+        return this.props.expireInvoice(invoice).then((invoice) => {
+          this.props.showNotification({
+            type: 'success',
+            message: 'Link expired!'
+          })
+        }).catch(({ errors }) => {
+          this.props.showNotification({
+            type: 'error',
+            message: errors
+          })
+        })
+      }
+    })
+  }
+
   render() {
     let { loading, invoice } = this.props
     let statusMsg = this.state.statusMsg
@@ -109,6 +120,7 @@ export default class InvoiceDetailContainer extends Component {
             isLoading={loading}
             statusMsg={statusMsg}
             onIssue={this.showIssueConfirmModal}
+            onExpire={this.expireInvoice}
           />
         </div>
       </div>

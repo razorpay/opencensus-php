@@ -13,6 +13,13 @@ const notificationClassMap = {
 
 export default (props) => {
   let { invoice, isLoading, statusMsg } = props
+
+  let status = invoice.status
+  let isDraft = status === 'draft'
+  let isIssued = status === 'issued'
+  let isPaid = status === 'paid'
+  let isExpired = status === 'expired'
+
   return (
     <div>
       {
@@ -24,12 +31,27 @@ export default (props) => {
           <Alert type={statusMsg.type} message={statusMsg.message} />
 
           <div class='invoice-header'>
-            <button
-              class='btn btn-primary btn-sm pull-right'
-              onClick={props.onIssue}
-            >
-              Send Invoice
-            </button>
+            <div class='btn-toolbar pull-right'>
+              {
+                (isDraft || isIssued) &&
+                  <button
+                    class='btn btn-primary btn-sm'
+                    onClick={props.onIssue}
+                  >
+                    Send Link
+                  </button>
+              }
+
+              {
+                isIssued &&
+                  <button
+                    class='btn btn-default btn-sm'
+                    onClick={props.onExpire}
+                  >
+                    Expire Link
+                  </button>
+              }
+            </div>
 
             <h3>{invoice.id}</h3>
           </div>
@@ -63,7 +85,7 @@ export default (props) => {
 
                 <dt>Status:</dt>
                 <dd>
-                  <InvoiceStatus status={invoice.status} />
+                  <InvoiceStatus status={status} />
                 </dd>
 
                 <dt>Payment Id:</dt>
