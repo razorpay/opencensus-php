@@ -25,7 +25,7 @@ export default class AutoResizeTextarea extends Component {
   measureHeight(event = {}) {
     let $target = event.target || this.textarea
     setTimeout(() => {
-      let scrollHeight = Number($target.scrollHeight)
+      let scrollHeight = Number($target.scrollHeight) || (Number($target.rows) * this.lineHeight)
       this.setState({
         height: `${scrollHeight + this.borderTopWidth + this.borderBottomWidth}px`
       })

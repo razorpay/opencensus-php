@@ -136,6 +136,8 @@ export default class InvoicesNewContainer extends Component {
         message: errors
       })
     })
+
+    this.handleWindowClose()
   }
 
   getMerchantInfo() {
@@ -365,7 +367,7 @@ export default class InvoicesNewContainer extends Component {
   }
 
   handleBackNavClick() {
-    if (this.props.anyTouched && !this.props.dirty) {
+    if (!(this.props.anyTouched && this.props.dirty)) {
       return this.navigateToList()
     }
 
@@ -377,6 +379,16 @@ export default class InvoicesNewContainer extends Component {
     }).then(() => {
       this.navigateToList()
     })
+  }
+
+  handleWindowClose() {
+    window.onbeforeunload = function() {
+      return (this.props.anyTouched && this.props.dirty) ? true : null
+    }.bind(this)
+  }
+
+  componentWillUnmount() {
+    window.onbeforeunload = null
   }
 
   render() {

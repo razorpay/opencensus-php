@@ -3,6 +3,7 @@ import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import InlineField from 'rzp/ui/Forms/InlineField'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
+import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import ItemCreation from 'merchant/containers/Items/New'
 import * as ModalActions from 'merchant/modules/modals'
 import { findBy } from 'rzp/utils/rzp-utils'
@@ -100,7 +101,8 @@ export default class InvoiceLineItem extends Component {
             <InlineField
               formName='newInvoice'
               name={`${fieldName}.description`}
-              component='textarea'
+              component={AutoResizeTextarea}
+              rows={2}
               class='form-control input-xs'
               placeholder='Enter item description'
               disabled={disabled}

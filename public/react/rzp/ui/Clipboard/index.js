@@ -33,7 +33,7 @@ export default class Clipboard extends Component {
     document.execCommand('copy')
     setTimeout(() => {
       ReactTooltip.hide(findDOMNode(this.copyCta))
-    }, 3000)
+    }, 2000)
   }
 
   render() {
