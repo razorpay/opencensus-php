@@ -522,7 +522,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $this->gatewayPayment = $this->netbankingRepo->findOrFail($this->payment->getId());
+        $this->gatewayPayment = $this->netbankingRepo->findByPaymentId($this->payment->getId());
 
         $bankPaymentId = $rowDetails[BaseReconciliate::BANK_PAYMENT_ID];
 
