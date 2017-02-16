@@ -63,6 +63,7 @@ class Repository extends Base\Repository
         $attributes = array(
             'received'                  => '0',
             'payment_id'                => $request['trackid'],
+            // TODO: Might have to change here
             'gateway_transaction_id'    => $response['paymentid'],
             'action'                    => $request['action'],
             'amount'                    => $request['amt'],
@@ -74,7 +75,7 @@ class Repository extends Base\Repository
         return $this->createOrFail($attributes);
     }
 
-    public function persistAfterEnrollError($id, array $error, $requestData)
+    public function persistAfterEnrollError($paymentId, array $error, $requestData)
     {
         $enrollResult = null;
 
@@ -85,7 +86,7 @@ class Repository extends Base\Repository
 
         $attributes = array(
             'received'              => '1',
-            'payment_id'            => $id,
+            'payment_id'            => $paymentId,
             'action'                => $requestData['action'],
             'amount'                => $requestData['amt'],
             'currency'              => $requestData['currencycode'],

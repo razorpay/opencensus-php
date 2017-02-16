@@ -199,7 +199,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $stripFieldsList = array(
-        'password', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
+        'password', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
@@ -371,6 +371,10 @@ class Gateway extends Base\Gateway
 
     /**
      * HDFC gateway does not provide void
+     *
+     * @param array $input
+     *
+     * @throws Exception\LogicException
      */
     public function void(array $input)
     {
@@ -689,8 +693,12 @@ class Gateway extends Base\Gateway
     /**
      * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced
+     *
+     * @param string $level
+     * @param string $message
+     * @param array  $context
      */
-    protected function trace($level, $message, array $context)
+    protected function trace(string $level, string $message, array $context)
     {
         if (isset($context['data']))
         {

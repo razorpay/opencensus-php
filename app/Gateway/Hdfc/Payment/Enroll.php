@@ -35,8 +35,6 @@ trait Enroll
      */
     protected function enrollCard(array $input)
     {
-        $this->setId($input['payment']['id']);
-
         //
         // Fields to be sent to HDFC gateway for card-enrollment
         //
@@ -71,11 +69,11 @@ trait Enroll
             $this->enrollResponse);
 
         //
-        // If there is an error then just return
+        // If there is an error then just throw an exception
         //
         if ($this->error)
         {
-            $this->persistAfterEnroll();
+            $this->persistAfterEnrollError();
 
             $this->throwException($this->enrollResponse['error'], true);
         }
@@ -90,9 +88,7 @@ trait Enroll
         //
         if ($this->isEnrollSuccess() === false)
         {
-            $this->error = true;
-
-            $this->persistAfterEnroll();
+            $this->persistAfterEnrollError();
 
             $this->throwException($this->enrollResponse['error']);
         }
@@ -264,48 +260,45 @@ trait Enroll
     {
         $trackId = $this->enrollResponse['data']['trackid'];
 
-        if ($trackId !== $this->id)
+        $paymentId = $this->input['payment']['id'];
+
+        if ($trackId !== $paymentId)
         {
             throw new Exception\LogicException(
-                'Gateway Exception: Track id do not match: ' . $trackId . ' ' . $this->id);
+                'Gateway Exception: Track id do not match: ' . $trackId . ' ' . $paymentId);
         }
     }
 
     /**
      * Stores relevant enroll response
-     * fields in db depending on whether
-     * enroll succeeded or there was an
-     * error.
+     * fields in db on enroll success
      *
      * @return void
      */
     protected function persistAfterEnroll()
     {
-        if ($this->error)
-        {
-            $this->trace(
-                Trace::ERROR,
-                TraceCode::GATEWAY_ENROLL_ERROR,
-                $this->enrollResponse);
+        $this->trace(
+            Trace::INFO,
+            TraceCode::GATEWAY_ENROLL_RESPONSE,
+            $this->enrollResponse);
 
-            $this->model = $this->repo->persistAfterEnrollError(
-                            $this->id,
-                            $this->enrollResponse['error'],
-                            $this->enrollRequest['data']);
+        $this->model = $this->repo->persistAfterEnroll(
+                $this->enrollRequest['data'],
+                $this->enrollResponse['data']);
 
-            $this->id = $this->model->id;
-        }
-        else
-        {
-            $this->trace(
-                Trace::INFO,
-                TraceCode::GATEWAY_ENROLL_RESPONSE,
-                $this->enrollResponse);
+    }
 
-            $this->model = $this->repo->persistAfterEnroll(
-                    $this->enrollRequest['data'],
-                    $this->enrollResponse['data']);
-        }
+    protected function persistAfterEnrollError()
+    {
+        $this->trace(
+            Trace::ERROR,
+            TraceCode::GATEWAY_ENROLL_ERROR,
+            $this->enrollResponse);
+
+        $this->model = $this->repo->persistAfterEnrollError(
+            $this->input['payment']['id'],
+            $this->enrollResponse['error'],
+            $this->enrollRequest['data']);
     }
 
     /**
@@ -473,23 +466,14 @@ trait Enroll
     }
 
     /**
-     * Sets enroll status. In case of error it's false
-     * The other allowed values are 'ENROLLED'
+     * Sets enroll status.
+     * Allowed values are 'ENROLLED'
      * and NOT_ENROLLED
      *
      * @return  string
      */
     protected function getEnrollStatus()
     {
-        if ($this->error)
-        {
-            $enrollStatus = false;
-        }
-        else
-        {
-            $enrollStatus = $this->enrollResponse['data']['enroll_result'];
-        }
-
-        return $enrollStatus;
+        return $this->enrollResponse['data']['enroll_result'];
     }
 }
