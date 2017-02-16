@@ -261,7 +261,7 @@ class MerchantSeeder extends Seeder
         $this->setupMerchant('10000000000000', 'Test Merchant Account', 'test@razorpay.com');
         $this->setupMerchant('100DemoAccount', 'Demo Merchant Account', 'demo@razorpay.com');
         $this->setupMerchant('100DeadAccount', 'Dead Merchant Account', 'dead@razorpay.com', [
-            'archived_at' => time()
+            'suspended_at' => time()
         ]);
     }
 }
