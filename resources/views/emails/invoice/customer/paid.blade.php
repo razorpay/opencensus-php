@@ -1,118 +1,236 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;"><head style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;"><meta http-equiv="Content-Type" content="text/html; charset=utf-8" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;"><meta name="viewport" content="width=device-width" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;"></head><body class="body" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; margin: 0; min-width: 100%; padding: 0; width: 100% !important; color: #222222; font-weight: normal; line-height: 19px; text-align: left; font-size: 14px; background: #EBECEE;">
-    <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px; background: #EBECEE;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-          @include('emails.partials.header', ['message'=>$message])
-          <!-- Payment Successfull Header -->
-          <table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" align="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    @php
+        $themeBgColor = $merchant['brand_color'];
+        $themeFontColor = $merchant['brand_text_color'];
+        $themed = 'background-color: ' . $themeBgColor . '; color: ' . $themeFontColor . ';';
+        $fontFamily = 'Verdana, Arial, sans-serif';
 
-                  <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper center last" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; position: relative; padding-right: 0px;">
-                        <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                        <table class="twelve columns bluebg" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; background: #39ACE5; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                              <h1 style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 32px; margin-top: 40px;">
-                              <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                                Invoice Payment Successful
-                              </center>
-                              </h1>
-                            </td>
-                            <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                          </tr></table></center>
-                      </td>
-                    </tr></table></center>
-              </td>
-            </tr></table>
-          @include('emails.partials.header_image', ['image'=>'payment_green'], ['message'=>$message])
-          <!-- Merchant Name -->
-          <table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" align="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                  <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper last bluebg" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #39ACE5; position: relative; padding-right: 0px;">
-                        <table class="six columns bluebg" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; background: #39ACE5; margin: 0 auto; width: 280px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                              <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 280px; width: 100%;">
-                                <h3 class="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; font-weight: bold; line-height: 1.3; margin: 0; padding: 0; text-align: center; word-break: normal; font-size: 22px; margin-top: 10px;">
-                                <a href="{{$merchant['website']}}" title="{{$merchant['billing_label']}} Website" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #f2f2f2; text-decoration: none; font-size: 22px; text-align: center;">{{$merchant['billing_label']}}</a>
-                                </h3>
-                              </center>
-                            </td>
-                            <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                          </tr></table></td>
-                    </tr></table></center>
-              </td>
-            </tr></table><!-- Customer Information --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative;">
-                <table class="eight columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 380px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="lighttext left-text-pad" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: left; vertical-align: top; color: #B2B2B2; font-weight: normal; line-height: 19px; margin: 0; font-size: 12px; text-decoration: none; padding-left: 10px;">
-                      <a class="email" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: inherit; text-decoration: none;">{{$customer['email']}}</a>
+        $h2Style = '
+            margin:0;
+            font-size:20px;
+            line-height:24px;'
+        ;
+
+        $labelStyle = '
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.54);
+            font-weight: bold;
+        ';
+
+        $contentCell = '
+            width: 94%;
+            padding: 24px 4%;
+            background-color: #fff;
+            border-left: 1px solid rgba(0,0,0,0.05);
+            border-right: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 0;
+            font-family: Verdana, Arial, sans-serif;
+        ';
+    @endphp
+  </head>
+  <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"
+    style="
+        line-height: 20px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+        color: rgba(0,0,0,0.87);
+        font-family: {{ $fontFamily }};
+    ">
+    <center style="font-family: {{ $fontFamily }};">
+        <table style="
+            max-width: 600px;
+            table-layout: fixed;
+            background-color: #fafafa;
+            color: rgba(0,0,0,0.87);
+        " border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+            <tbody>
+                <tr>
+                    <td style="{{ $themed }};"></td>
+                    <td style="{{ $contentCell }}; {{ $themed }};">
+                        <div style="text-align: center; padding: 24px 4%;">
+                            <img
+                                src="https://www.treebo.com/blog/wp-content/uploads/2016/12/New-logo-color-01.png"
+                                style="width: 48px; height: 48px;margin-bottom: 8px;"
+                             />
+                             <h2 style="{{ $h2Style }}; color: {{ $themeFontColor }}">
+                                Invoice from {{$merchant['name']}}
+                            </h2>
+                            <div style="color: {{ $themeFontColor }}">
+                                @if ($invoice['receipt'])
+                                    Invoice Receipt: {{$invoice['receipt']}}
+                                @else
+                                    Invoice Id: {{$invoice['id']}}
+                                @endif
+                            </div>
+
+                             <div style="margin-top: 12px; color: {{ $themeFontColor }}">
+                                <div style="color: {{ $themeFontColor }}">
+                                    PAYMENT SUCCESSFUL
+                                </div>
+                                <div style="color: {{ $themeFontColor }}">
+                                    The invoice for the same is attached in this mail.
+                                </div>
+                             </div>
+                        </div>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-              <td class="wrapper white last" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
-                <table class="four columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 180px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="right-text-pad lighttext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #B2B2B2; font-weight: normal; line-height: 19px; margin: 0; font-size: 12px; text-decoration: none; padding-right: 10px;">
-                      {{$customer['phone']}}
+                    <td style="{{ $themed }};"></td>
+                </tr>
+
+                @if ($invoice['description'])
+                <tr>
+                    <td style="{{ $themed }};"></td>
+                    <td style="{{ $contentCell }}; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <div>
+                            <label style="{{ $labelStyle }}">INVOICE SUMMARY</label>
+                            <div>{{$invoice['description']}}</div>
+                        </div>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-            </tr></table><!-- Invoice Id --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" align="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                  <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper last white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
-                        <table class="six columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 280px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center darktext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px;">
-                              <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 300px; width: 100%;">
-                                Invoice Id: {{$invoice['public_id']}} / <a href="{{$invoice['short_url']}}" title="Click to view the invoice" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #2ba6cb; text-decoration: none;">See Invoice</a>
-                              </center>
-                              <hr class="small" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; background-color: #d9d9d9; border: none; color: #E5E5E5; height: 2px; width: 40%;"></td>
-                            <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                          </tr></table></td>
-                    </tr></table></center>
-              </td>
-            </tr></table><!-- Payment Id --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" align="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                  <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper last white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
-                        <table class="six columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 280px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center darktext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px;">
-                              <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 280px; width: 100%;">
-                                Payment Id: {{$payment['public_id']}}
-                              </center>
-                              <hr class="small" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; background-color: #d9d9d9; border: none; color: #E5E5E5; height: 2px; width: 40%;"></td>
-                            <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                          </tr></table></td>
-                    </tr></table></center>
-              </td>
-            </tr></table><!-- Payment Details --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative;">
-                <table class="four columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 180px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="darktext left-text-pad" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: left; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-left: 10px;">
-                      Amount
+                    <td style="{{ $themed }};"></td>
+                </tr>
+                @endif
+
+                <tr>
+                    @if ($invoice['description'])
+                        <td></td>
+                    @else
+                        <td style="{{ $themed }};"></td>
+                    @endif
+                    <td style="{{ $contentCell }};">
+                        <div>
+                            <label style="{{ $labelStyle }}">BILLING TO</label>
+                            <div>
+                                @if ($invoice['customer_details']['customer_name'])
+                                    {{$invoice['customer_details']['customer_name']}}
+                                    @if ($invoice['customer_details']['customer_contact'])
+                                        , {{$invoice['customer_details']['customer_contact']}}
+                                    @endif
+                                @endif
+
+                                <div>
+                                    {{$invoice['customer_details']['customer_email']}}
+                                </div>
+                            </div>
+                        </div>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-              <td class="wrapper white offset-by-five last" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-left: 250px; padding-right: 0px;">
-                <table class="three columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 130px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="right-text-pad darktext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-right: 10px;">
-                    {{$payment['amount']}}
+                    @if ($invoice['description'])
+                        <td></td>
+                    @else
+                        <td style="{{ $themed }};"></td>
+                    @endif
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td style="{{ $contentCell }}; padding-bottom: 24px;">
+                        <div>
+                            <label style="{{ $labelStyle }}">PAYMENT ID</label>
+                            <div>{{$invoice['payment_id']}}</div>
+                        </div>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-            </tr></table><!-- Payment Method --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative;">
-                <table class="four columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 180px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="darktext left-text-pad" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: left; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-left: 10px;">
-                      Payment Method
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td style="
+                        {{ $contentCell }};
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                        border-top: 1px dashed rgba(0,0,0,0.10);
+                        padding-bottom: 24px;
+                    ">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td style="font-family: {{ $fontFamily }};">
+                                        <label style="{{ $labelStyle }}">AMOUNT</label>
+                                        <div style="font-weight: bold; font-size: 18px;">
+                                            {{$invoice['currency']}} {{$invoice['formatted_amount']}}
+                                        </div>
+                                    </td>
+                                    <td style="font-family: {{ $fontFamily }}; text-align: right;">
+                                      <a href="{{$invoice['short_url']}}" target="_blank" style="
+                                        text-decoration: none;
+                                        padding: 7px 20px;
+                                        display: inline-block;
+                                        background-color: {{ $themeBgColor }};
+                                        border: 1px solid {{ $themeBgColor }};
+                                        border-radius: 5px;
+                                        color: {{ $themeFontColor }};
+                                        white-space: nowrap;
+                                        cursor: pointer;
+                                      ">
+                                        DOWNLOAD PDF
+                                      </a>
+                                    </td>
+                                </tr>
+                             </tbody>
+                        </table>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-              <td class="wrapper white last" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
-                <table class="eight columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 380px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="right-text-pad darktext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #484B4C; font-weight: normal; line-height: 25px; margin: 0; font-size: 14px; padding-right: 10px;">
-                      {{$payment['method'][0]}}<br style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;"><span class="subtext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #7C8082; font-size: 16px; line-height: 10px;">
-                      {{$payment['method'][1]}}
-                      </span>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="
+                        padding: 24px 4%;
+                        text-align: center;
+                        font-family: {{ $fontFamily }};
+                    ">
+                        <div style="
+                            font-size: 12px;
+                            font-weight: bold;
+                            color: rgba(0,0,0,0.54);
+                        ">
+                            {{$merchant['name']}}
+                        </div>
+                        <div style="font-size: 10px; color: rgba(0,0,0,0.54);">
+                            1st Floor, Hosur Road, Adugodi, Bangalore
+                        </div>
                     </td>
-                    <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                  </tr></table></td>
-            </tr></table><!-- Contact Us --><table class="row" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center" align="center" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: center; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                <center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                  <table class="container" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="wrapper last white" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; background: #ffffff; background-color: #ffffff; position: relative; padding-right: 0px;">
-                        <table class="twelve columns" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;"><tr style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; padding: 0; text-align: left; vertical-align: top;"><td class="center lighttext" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: right; vertical-align: top; color: #B2B2B2; font-weight: normal; line-height: 19px; margin: 0; font-size: 12px; text-decoration: none;">
-                              <hr class="wide" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; background-color: #d9d9d9; border: none; color: #E5E5E5; height: 2px; width: 490px;"><center style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; min-width: 580px; width: 100%;">
-                                If this is correct, you don't need to take any further action.<br style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important;">
-                                Please <a title="Click to send us a mail" href="mailto:contact@razorpay.com" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; color: #2ba6cb; text-decoration: none;">contact us</a> in case of any discrepancy.
-                              </center>
-                            </td>
-                            <td class="expander" style="font-family: 'Century Gothic', 'Lucida Sans', 'Tahoma', 'Arial' !important; -moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: right; vertical-align: top; color: #222222; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;"></td>
-                          </tr></table></td>
-                    </tr></table></center>
-              </td>
-            </tr></table>
-          @include('emails.partials.footer', ['message'=>$message])
-        </td>
-      </tr></table></body></html>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td style="
+                        {{ $contentCell }};
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                        border-top: 1px solid rgba(0,0,0,0.10);
+                    ">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td style="
+                                        font-family: {{ $fontFamily }};
+                                        vertical-align: top
+                                    ">
+                                        <a href="https://razorpay.com/" target="_blank">
+                                            <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
+                                        </a>
+                                    </td>
+                                    <td style="
+                                        text-align: right;
+                                        padding-left: 10%;
+                                        padding-bottom: 24px;
+                                        font-size: 10px;
+                                        color: rgba(0,0,0,0.54);
+                                        font-family: {{ $fontFamily }};
+                                    ">
+                                        <div>
+                                            Sign up at <a href="https://razorpay.com/" target="_blank">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                                        </div>
+                                    </td>
+                                </tr>
+                             </tbody>
+                        </table>
+                    </td>
+                    <td></td>
+                </tr>
+            </tbody>
+          </table>
+      </center>
+  </body>
+</html>

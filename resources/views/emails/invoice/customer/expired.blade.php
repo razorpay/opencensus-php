@@ -1,118 +1,223 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <meta name="viewport" content="width=device-width">
-</head>
-<body style="-ms-text-size-adjust: 100%; -webkit-text-size-adjust: 100%; margin: 0; min-width: 100%; padding: 0; width: 100% !important; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; text-align: left; font-size: 14px;">
-<link rel="stylesheet" type="text/css" href="ink.css">
-<link rel="stylesheet" type="text/css" href="welcome.css">
-<table class="row" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%;">
-    <tr style="padding: 0; text-align: left; vertical-align: top;">
-        <td class="wrapper" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; position: relative;">
-            <table class="four columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 180px;">
-                <tr style="padding: 0; text-align: left; vertical-align: top;">
-                    <td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-                        <img class="center" src="https://s3.amazonaws.com/checkout-live/logo.png" style="-ms-interpolation-mode: bicubic; clear: both; display: block; float: none; max-width: 100%; outline: none; text-decoration: none; width: auto; margin: 0 auto;"></td>
-                    <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;">
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    @php
+        $themeBgColor = $merchant['brand_color'];
+        $themeFontColor = $merchant['brand_text_color'];
+        $themed = 'background-color: ' . $themeBgColor . '; color: ' . $themeFontColor . ';';
+        $fontFamily = 'Verdana, Arial, sans-serif';
+
+        $h2Style = '
+            margin:0;
+            font-size:20px;
+            line-height:24px;'
+        ;
+
+        $labelStyle = '
+            font-size: 12px;
+            color: rgba(0, 0, 0, 0.54);
+            font-weight: bold;
+        ';
+
+        $contentCell = '
+            width: 94%;
+            padding: 24px 4%;
+            background-color: #fff;
+            border-left: 1px solid rgba(0,0,0,0.05);
+            border-right: 1px solid rgba(0,0,0,0.05);
+            padding-bottom: 0;
+            font-family: Verdana, Arial, sans-serif;
+        ';
+    @endphp
+  </head>
+  <body leftmargin="0" marginwidth="0" topmargin="0" marginheight="0" offset="0"
+    style="
+        line-height: 20px;
+        width: 100%;
+        margin: 0;
+        padding: 0;
+        font-size: 14px;
+        color: rgba(0,0,0,0.87);
+        font-family: {{ $fontFamily }};
+    ">
+    <center style="font-family: {{ $fontFamily }};">
+        <table style="
+            max-width: 600px;
+            table-layout: fixed;
+            background-color: #fafafa;
+            color: rgba(0,0,0,0.87);
+        " border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+            <tbody>
+                <tr>
+                    <td style="{{ $themed }};"></td>
+                    <td style="{{ $contentCell }}; {{ $themed }};">
+                        <div style="text-align: center; padding: 24px 4%;">
+                            <img
+                                src="https://www.treebo.com/blog/wp-content/uploads/2016/12/New-logo-color-01.png"
+                                style="width: 48px; height: 48px;margin-bottom: 8px;"
+                             />
+                             <h2 style="{{ $h2Style }}; color: {{ $themeFontColor }}">
+                                Invoice from {{$merchant['name']}}
+                            </h2>
+                            <div style="color: {{ $themeFontColor }}">
+                                @if ($invoice['receipt'])
+                                    Invoice Receipt: {{$invoice['receipt']}}
+                                @else
+                                    Invoice Id: {{$invoice['id']}}
+                                @endif
+                            </div>
+
+                             <div style="margin-top: 12px; color: {{ $themeFontColor }}">
+                                <div style="color: {{ $themeFontColor }}">
+                                    INVOICE EXPIRED
+                                </div>
+                                <div style="color: {{ $themeFontColor }}">
+                                    The invoice for the same is attached in this mail.
+                                </div>
+                             </div>
+                        </div>
                     </td>
+                    <td style="{{ $themed }};"></td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<table class="container" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: inherit; vertical-align: top; margin: 0 auto; width: 580px;">
-    <tr style="padding: 0; text-align: left; vertical-align: top;">
-        <td style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px;">
-            <table class="row" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%; display: block;">
-                <tr style="padding: 0; text-align: left; vertical-align: top;">
-                    <td class="wrapper offset-by-one" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; position: relative; padding-left: 50px;">
-                        <table class="ten columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 480px;">
-                            <tr style="padding: 0; text-align: left; vertical-align: top;">
-                                <td class="center welcome" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; margin: 10px 0px 10px 0px; font-size: 16px; background: white;">
-                                    <p style="margin: 10px 0px 10px 0px; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; padding: 0; text-align: justify; font-size: 16px; margin-bottom: 20px; background: white;">Hi,</p>
-                                    <p style="margin: 10px 0px 10px 0px; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; padding: 0; text-align: justify; font-size: 16px; margin-bottom: 20px; background: white;">
-                                        {{$invoice['type_label']}} (<a href="{{$invoice['short_url']}}" style="color: #24bbea; text-decoration: none !important;">{{$invoice['short_url']}}</a>.) from {{$merchant['name']}} has expired. Please reach out to the merchant for more information.
-                                    </p>
-                                    <p style="margin: 10px 0px 10px 0px; color: #2d2d2d; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 24px; padding: 0; text-align: justify; font-size: 16px; margin-bottom: 20px; background: white;">
-                                        Cheers,
-                                        <br>
-                                        Team Razorpay
-                                    </p>
-                                </td>
-                                <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #222222; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 19px; margin: 0; font-size: 14px; visibility: hidden; width: 0px;">
-                                </td>
-                            </tr>
+
+                @if ($invoice['description'])
+                <tr>
+                    <td style="{{ $themed }};"></td>
+                    <td style="{{ $contentCell }}; border-top: 1px solid rgba(0,0,0,0.05);">
+                        <div>
+                            <label style="{{ $labelStyle }}">INVOICE SUMMARY</label>
+                            <div>{{$invoice['description']}}</div>
+                        </div>
+                    </td>
+                    <td style="{{ $themed }};"></td>
+                </tr>
+                @endif
+
+                <tr>
+                    @if ($invoice['description'])
+                        <td></td>
+                    @else
+                        <td style="{{ $themed }};"></td>
+                    @endif
+                    <td style="{{ $contentCell }};">
+                        <div>
+                            <label style="{{ $labelStyle }}">BILLING TO</label>
+                            <div>
+                                @if ($invoice['customer_details']['customer_name'])
+                                    {{$invoice['customer_details']['customer_name']}}
+                                    @if ($invoice['customer_details']['customer_contact'])
+                                        , {{$invoice['customer_details']['customer_contact']}}
+                                    @endif
+                                @endif
+
+                                <div>
+                                    {{$invoice['customer_details']['customer_email']}}
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                    @if ($invoice['description'])
+                        <td></td>
+                    @else
+                        <td style="{{ $themed }};"></td>
+                    @endif
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td style="{{ $contentCell }}; padding-bottom: 24px;">
+                        <div>
+                            <label style="{{ $labelStyle }}">INVOICE EXPIRED ON</label>
+                            <div>{{$invoice['date']}}</div>
+                        </div>
+                    </td>
+                    <td></td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td style="
+                        {{ $contentCell }};
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                        border-top: 1px dashed rgba(0,0,0,0.10);
+                        padding-bottom: 24px;
+                    ">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td style="font-family: {{ $fontFamily }};">
+                                        <label style="{{ $labelStyle }}">AMOUNT</label>
+                                        <div style="font-weight: bold; font-size: 18px;">
+                                            {{$invoice['currency']}} {{$invoice['formatted_amount']}}
+                                        </div>
+                                    </td>
+                                    <td style="font-family: {{ $fontFamily }}; text-align: right;">
+                                    </td>
+                                </tr>
+                             </tbody>
                         </table>
                     </td>
+                    <td></td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<table class="row footer" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%;">
-    <tr style="padding: 0; text-align: left; vertical-align: top;">
-        <td class="wrapper last" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; position: relative; padding-right: 0px;">
-            <table class="twelve columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 580px;">
-                <tr style="padding: 0; text-align: left; vertical-align: top;">
-                    <td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px;">
-                        <center style="min-width: 580px; width: 100%;">
-                            <hr style="background-color: #d9d9d9; border: none; color: #E5E5E5; height: 2px;">
-                            <a href="https://razorpay.com/terms/" style="color: #aaa !important; text-decoration: none; display: inline-block;">Terms &amp; Conditions</a>
-                            |
-                            <a href="https://razorpay.com/privacy/" style="color: #aaa !important; text-decoration: none; display: inline-block;">Privacy Policy</a>
-                            |
-                            <a href="https://razorpay.com/refund/" style="color: #aaa !important; text-decoration: none; display: inline-block;">Refund Policy</a>
-                        </center>
+                <tr>
+                    <td></td>
+                    <td style="
+                        padding: 24px 4%;
+                        text-align: center;
+                        font-family: {{ $fontFamily }};
+                    ">
+                        <div style="
+                            font-size: 12px;
+                            font-weight: bold;
+                            color: rgba(0,0,0,0.54);
+                        ">
+                            {{$merchant['name']}}
+                        </div>
+                        <div style="font-size: 10px; color: rgba(0,0,0,0.54);">
+                            1st Floor, Hosur Road, Adugodi, Bangalore
+                        </div>
                     </td>
-                    <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; visibility: hidden; width: 0px;">
-                    </td>
+                    <td></td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<table class="row footer" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%;">
-    <tr style="padding: 0; text-align: left; vertical-align: top;">
-        <td class="wrapper last" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; position: relative; padding-right: 0px;">
-            <table class="three columns offset-by-six" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 130px;">
-                <tr style="padding: 0; text-align: left; vertical-align: top;">
-                    <td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px;">
-                        <center style="min-width: 130px; width: 100%;">
-                            <a href="https://facebook.com/razorpay" class="logo" style="color: #aaa !important; text-decoration: none; display: inline-block; float: left !important; height: 22px; padding: 0px 5px 0px 5px; width: 22px;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/facebook.png" alt="Facebook Icon" title="Razorpay on Facebook" style="-ms-interpolation-mode: bicubic; clear: both; display: block; float: none; max-width: 100%; outline: none; text-decoration: none; width: auto; border: none;"></a>
-                            <a href="https://twitter.com/razorpay" class="logo" style="color: #aaa !important; text-decoration: none; display: inline-block; float: left !important; height: 22px; padding: 0px 5px 0px 5px; width: 22px;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/twitter.png" alt="Twitter Icon" title="Razorpay on Twitter" style="-ms-interpolation-mode: bicubic; clear: both; display: block; float: none; max-width: 100%; outline: none; text-decoration: none; width: auto; border: none;"></a>
-                            <a href="https://github.com/razorpay" class="logo" style="color: #aaa !important; text-decoration: none; display: inline-block; float: left !important; height: 22px; padding: 0px 5px 0px 5px; width: 22px;">
-                                <img height="22" width="22" src="https://s3.amazonaws.com/checkout-live/github.png" alt="GitHub Icon" title="Razorpay on GitHub" style="-ms-interpolation-mode: bicubic; clear: both; display: block; float: none; max-width: 100%; outline: none; text-decoration: none; width: auto; border: none;"></a>
-                        </center>
+                <tr>
+                    <td></td>
+                    <td style="
+                        {{ $contentCell }};
+                        border-bottom: 1px solid rgba(0,0,0,0.05);
+                        border-top: 1px solid rgba(0,0,0,0.10);
+                    ">
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td style="
+                                        font-family: {{ $fontFamily }};
+                                        vertical-align: top
+                                    ">
+                                        <a href="https://razorpay.com/" target="_blank">
+                                            <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
+                                        </a>
+                                    </td>
+                                    <td style="
+                                        text-align: right;
+                                        padding-left: 10%;
+                                        padding-bottom: 24px;
+                                        font-size: 10px;
+                                        color: rgba(0,0,0,0.54);
+                                        font-family: {{ $fontFamily }};
+                                    ">
+                                        <div>
+                                            Sign up at <a href="https://razorpay.com/" target="_blank">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                                        </div>
+                                    </td>
+                                </tr>
+                             </tbody>
+                        </table>
                     </td>
-                    <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; visibility: hidden; width: 0px;">
-                    </td>
+                    <td></td>
                 </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-<table class="row footer" style="border-collapse: collapse; border-spacing: 0; padding: 0px; text-align: left; vertical-align: top; position: relative; width: 100%;">
-    <tr style="padding: 0; text-align: left; vertical-align: top;">
-        <td class="wrapper last" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 10px 20px 0px 0px; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; position: relative; padding-right: 0px;">
-            <table class="seven columns" style="border-collapse: collapse; border-spacing: 0; padding: 0; text-align: left; vertical-align: top; margin: 0 auto; width: 330px;">
-                <tr style="padding: 0; text-align: left; vertical-align: top;">
-                    <td class="center" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0px 0px 10px; text-align: center; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px;">
-                        <center style="min-width: 330px; width: 100%;">
-                            This message was sent to <a href="mailto:{{{$invoice['customer']['email']}}}" style="color: #aaa !important; text-decoration: none; display: inline-block;">
-                                {{{$invoice['customer']['email']}}}</a>. Reach out to us by replying
-                            to this email or at <a href="mailto:support@razorpay.com" style="color: #aaa !important; text-decoration: none; display: inline-block;">
-                                support@razorpay.com</a>
-                        </center>
-                    </td>
-                    <td class="expander" style="-moz-hyphens: auto; -webkit-hyphens: auto; border-collapse: collapse !important; hyphens: auto; word-break: break-word; padding: 0 !important; text-align: left; vertical-align: top; color: #aaa; font-family: -apple-system,'.SFNSDisplay','Oxygen','Ubuntu','Roboto','Segoe UI','Helvetica Neue','Lucida Grande',sans-serif; font-weight: normal; line-height: 18px; margin: 0; font-size: 12px; visibility: hidden; width: 0px;">
-                    </td>
-                </tr>
-            </table>
-        </td>
-    </tr>
-</table>
-</body>
+            </tbody>
+          </table>
+      </center>
+  </body>
 </html>
