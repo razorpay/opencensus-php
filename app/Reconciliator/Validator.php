@@ -80,7 +80,7 @@ class Validator
             $emailDetails['subject'], Orchestrator::FREECHARGE);
 
         $validBody = $this->validateEmailBody(
-            $emailDetails[Orchestrator::BODY_HTML],
+            $emailDetails[Orchestrator::BODY_HTML_TEXT],
             Orchestrator::FREECHARGE);
 
         return ($validSubject and $validBody);
