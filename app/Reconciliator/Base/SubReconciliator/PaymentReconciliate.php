@@ -38,6 +38,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $payment;
     protected $paymentIin;
     protected $paymentTransaction;
+    protected $gatewayPayment;
 
     protected $app;
     protected $repo;
@@ -348,13 +349,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $paymentId = $this->getPaymentId($row);
 
-        $bankPaymentId = $this->getBankPaymentId($row) ?? null;
-
         // If payment id is not present, return. No point of evaluating the row.
         if (empty($paymentId) === true)
         {
             return null;
         }
+
+        $bankPaymentId = $this->getBankPaymentId($row) ?? null;
 
         $this->setPaymentAndTransaction($row, $paymentId);
 
@@ -367,11 +368,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID            => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX   => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE           => $fee,
-            BaseReconciliate::GATEWAY_SETTLED_AT    => $gatewaySettledAt,
-            BaseReconciliate::BANK_PAYMENT_ID       => $bankPaymentId,
+            BaseReconciliate::PAYMENT_ID          => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE         => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT  => $gatewaySettledAt,
+            BaseReconciliate::REFERENCE_NUMBER    => $bankPaymentId,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -529,7 +530,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistBankPaymentId($rowDetails)
     {
-        if (isset($rowDetails[BaseReconciliate::BANK_PAYMENT_ID]) === false)
+        if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
         {
             return;
         }
@@ -538,7 +539,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
                                      ->findByPaymentId($this->payment->getId())
                                      ->first();
 
-        $bankPaymentId = $rowDetails[BaseReconciliate::BANK_PAYMENT_ID];
+        $bankPaymentId = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
         $this->gatewayPayment->setBankPaymentId($bankPaymentId);
 
