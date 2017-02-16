@@ -244,8 +244,10 @@ trait Refund
     {
         if (isset($input['reversals']) === false)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                    'The reversals parameter is required for this refund request');
+            $input['reversals'] = [];
+
+            // throw new Exception\BadRequestValidationFailureException(
+            //         'The reversals parameter is required for this refund request');
         }
 
         $this->repo->transaction(function () use ($input)

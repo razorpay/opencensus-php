@@ -33,7 +33,7 @@ class Validator extends Base\Validator
         'notes.merchant_order_id' =>  'required_with:signature',
         'callback_url'            =>  'sometimes|url',
         'order_id'                =>  'sometimes',
-        'customer_id'             =>  'required_if:wallet,openwallet|string|size:19',
+        'customer_id'             =>  'required_if:wallet,openwallet|public_id',
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
@@ -53,8 +53,9 @@ class Validator extends Base\Validator
     protected static $refundRules = [
         'amount'                  => 'sometimes|integer',
         'notes'                   => 'sometimes|notes',
+        'reverse_all'             => 'sometimes|boolean',
         'reversals'               => 'sometimes|array',
-        'reversals.*.transfer'    => 'required|string|size:14',
+        'reversals.*.transfer'    => 'required|public_id',
         'reversals.*.amount'      => 'required|integer|min:100'
     ];
 

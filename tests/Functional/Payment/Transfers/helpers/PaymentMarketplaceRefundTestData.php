@@ -48,6 +48,22 @@ return [
         ],
     ],
 
+    'testReverseAllPartialRefundMultipleTransfers' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => 'The reverse_all parameter is not supported for this refund',
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testPartialRefundMultipleTransfersReversalsNotDefined' => [
         'response'  => [
             'content'     => [

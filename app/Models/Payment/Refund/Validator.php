@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Refund;
 
 use RZP\Base;
+use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -12,6 +13,7 @@ class Validator extends Base\Validator
     protected static $createRules = [
         'amount'                => 'sometimes|integer|min:100',
         'notes'                 => 'sometimes|notes',
+        'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
         'reversals.*.transfer'  => 'required|string|size:18',
         'reversals.*.amount'    => 'required|integer|min:100',
@@ -131,6 +133,18 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Sum of reversals provided is greater than the refund amount value',
                 'amount');
+        }
+    }
+
+    public function validateReverseAll(string $refundType, PublicCollection $transfers)
+    {
+        $transferCount = $transfers->count();
+
+        if (($transferCount > 1) and
+            ($refundType === Payment\Refund\Status::PARTIAL))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'The reverse_all parameter is not supported for this refund');
         }
     }
 }

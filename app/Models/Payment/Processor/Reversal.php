@@ -90,11 +90,30 @@ trait Reversal
 
         $transfers = null;
 
-        $reverseAll = $this->checkReversalsOnRefundType($payment, $input, $transfers);
+        //
+        // @todo: Commenting this block of code for now, in favor of the reverse_all
+        // flag, will be added back in later - after discussions
+        //
+        // $reverseAll = $this->checkReversalsOnRefundType($payment, $input, $transfers);
+        //
+        // if ((isset($input['reversals']) === false) and
+        //     ($reverseAll === true))
+        // {
+        //     $this->implicitAddReversalsForFullRefund($transfers, $input);
+        // }
 
-        if ((isset($input['reversals']) === false) and
-            ($reverseAll === true))
+        $reverseAll = boolval($input['reverse_all'] ?? '0');
+
+        if ($reverseAll === true)
         {
+            $transfers = $this->repo
+                              ->transfer
+                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+
+            $refundType = $this->getPaymentRefundType($payment, $input);
+
+            (new Payment\Refund\Validator)->validateReverseAll($refundType, $transfers);
+
             $this->implicitAddReversalsForFullRefund($transfers, $input);
         }
 

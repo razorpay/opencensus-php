@@ -613,7 +613,7 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function refundPayment($id, $amount = null, $reversals = [])
+    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
 
@@ -627,6 +627,11 @@ trait PaymentTrait
         if (empty($reversals) === false)
         {
             $content['reversals'] = $reversals;
+        }
+
+        if ($reverseAll === true)
+        {
+            $content['reverse_all'] = true;
         }
 
         $request = [

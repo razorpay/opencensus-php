@@ -22,7 +22,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The customer must be 19 characters.'
+                    'description' => 'transfers.0.customer is not valid.'
                 ],
             ],
             'status_code' => 400,
