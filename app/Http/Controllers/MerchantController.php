@@ -465,13 +465,6 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\Report)->getInvoice($input);
-    }
-
-    public function getInvoiceReportV2()
-    {
-        $input = Request::all();
-
         return (new \RZP\Models\Base\Report)->getInvoiceV2($input);
     }
 

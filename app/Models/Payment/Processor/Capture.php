@@ -275,14 +275,14 @@ trait Capture
      * Captures the payment.
      *
      * @param  Payment\Entity $payment
-     * @param                 $captureAmount
-     * @param                 $currency
+     * @param  integer        $captureAmount
+     * @param  string         $currency
      *
      * @return Payment\Entity
      * @throws Exception\BadRequestException
      * @internal param int $amount
      */
-    protected function capturePayment(Payment\Entity $payment, int $captureAmount, $currency)
+    protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount

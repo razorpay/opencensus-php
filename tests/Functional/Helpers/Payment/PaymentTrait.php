@@ -1271,4 +1271,19 @@ trait PaymentTrait
 
         return json_decode($response->getContent(), true);
     }
+
+    public function startGatewayRefundValidateCron(string $gateway)
+    {
+        $request = [
+            'url'     => '/refunds/' . $gateway . '/validate',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
 }

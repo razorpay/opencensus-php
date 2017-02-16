@@ -312,9 +312,22 @@ class Settler
                 $i++;
             }
 
-            //settle only if settlement amount is more than INR 1
-            if ($setlAmount <= 100)
+            //
+            // settle only if settlement amount is more than INR 1 and greater than
+            // merchants account balance
+            //
+            $balance = $merchant->balance->getBalance();
+
+            if (($setlAmount <= 100) or
+                ($setlAmount >= $balance))
             {
+                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
+                    [
+                        'merchant'   => $merchant->getId(),
+                        'setlAmount' => $setlAmount,
+                        'balance'    => $balance
+                    ]);
+
                 continue;
             }
 

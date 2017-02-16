@@ -597,7 +597,6 @@ class Gateway extends Base\Gateway
     protected function getStatusQueryRequestArray(array $input)
     {
         $this->action = Action::PAYMENT_STATUS;
-        $this->domainType = $this->mode . '_' . $this->action;
 
         $content = [
             StatusQueryRequestFields::REQUEST_HEADER => [
@@ -622,17 +621,15 @@ class Gateway extends Base\Gateway
 
         $content = json_encode($content);
 
-        $this->action = Action::PAYMENT_STATUS;
-
         $request = $this->getStandardRequestArray($content);
-
-        $this->action = Action::VERIFY;
 
         $request['headers'] = $this->getRequestHeaders($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
+
+        $this->action = Action::VERIFY;
 
         return $request;
     }

@@ -4,6 +4,7 @@ namespace RZP\Models\Card;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
@@ -45,7 +46,7 @@ class Core extends Base\Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData(array $input, $merchant)
+    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant): array
     {
         Card\Entity::modifyNumber($input);
 
@@ -196,7 +197,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function findExistingCards($newCard, $merchant)
+    protected function findExistingCards(Card\Entity $newCard, Merchant\Entity $merchant)
     {
         $params = array(
             Card\Entity::MERCHANT_ID     => $merchant->getId(),

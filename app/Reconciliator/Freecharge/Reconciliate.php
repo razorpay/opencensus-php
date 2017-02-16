@@ -2,8 +2,16 @@
 
 namespace RZP\Reconciliator\Freecharge;
 
+use Carbon\Carbon;
+use Requests;
+use Storage;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+
+use RZP\Models\Payment\Gateway;
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\Orchestrator;
 use RZP\Reconciliator\FileProcessor;
+use RZP\Trace\TraceCode;
 
 class Reconciliate extends Base\Reconciliate
 {
@@ -29,5 +37,17 @@ class Reconciliate extends Base\Reconciliate
             FileProcessor::LINES_FROM_TOP    => 0,
             FileProcessor::LINES_FROM_BOTTOM => 3
         ];
+    }
+
+    public function getSettlementFileLink(string $text)
+    {
+        //
+        // Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
+        // By splitting the 'stripped-text', get the link
+        //
+        $rawText = trim(explode('VIEW REPORT', $text)[1]);
+        $rawText = trim(explode('Best', $rawText)[0]);
+
+        return stripcslashes(trim($rawText, '<>'));
     }
 }
