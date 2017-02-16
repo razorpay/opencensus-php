@@ -31,12 +31,11 @@ trait Enroll
      * @param  array $input
      * Should contain 'payment' and 'card' arrays
      *
+     * @return string
      */
     protected function enrollCard(array $input)
     {
         $this->setId($input['payment']['id']);
-
-        $this->callbackUrl = $input['callbackUrl'];
 
         //
         // Fields to be sent to HDFC gateway for card-enrollment
@@ -50,11 +49,13 @@ trait Enroll
 
         $network = $input['card']['network_code'];
 
+        //
         // Only required in case of Rupay
         // TODO: This currently does not honour our PROXY_ENABLED
         // setting, which is set to false in production.
         //
         // We will shift it back once we have whitelisted FSS
+        //
         if ($network === Card\Network::RUPAY)
         {
             $this->enrollRequest['options']['proxy'] = $this->proxy;
@@ -89,6 +90,8 @@ trait Enroll
         //
         if ($this->isEnrollSuccess() === false)
         {
+            $this->error = true;
+
             $this->persistAfterEnroll();
 
             $this->throwException($this->enrollResponse['error']);
@@ -121,58 +124,31 @@ trait Enroll
 
         $this->enrollRequest['url'] = Hdfc\Urls::ENROLL_URL;
 
-        $data = &$this->enrollRequest['data'];
-
-        $data['trackid'] = $payment['id'];
-
-        // Convert amount from integer to decimal
-        $data['amt'] = $payment['amount']/100;
-
-        // Collect udf fields
-        $data['udf1'] = 'test';
-
-        $data['udf2'] = $payment['email'];
-
-        $data['udf3'] = $payment['contact'];
-
-        $data['udf4'] = 'test';
-
-        $data['udf5'] = 'test';
-
-        $this->udfCheckAndMeetHdfcRequirements($data);
-
-        $this->udfRemoveHackCharacters($data);
-
-        // Collect fields related to the card
-        $this->mapKeys($card, $this->cardKeyMappings, $data);
+        $data = & $this->enrollRequest['data'];
 
         // set the iso numeric currency code
         $currency = $payment['currency'];
 
-        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
+        $data = [
+            'trackid'       => $payment['id'],
+            'amt'           => $payment['amount'] / 100,
+            'currencycode'  => Currency::ISO_NUMERIC_CODES[$currency],
+            'action'        => $this->getActionForEnrollRequest($card),
+        ];
 
-        $network = $input['card']['network_code'];
+        $this->addUdfFieldsToEnrollRequest($payment, $data);
 
-        $data['action'] = Action::AUTHORIZE;
-
-        if (in_array($network, $this->purchase))
-        {
-            $data['action'] = Action::PURCHASE;
-        }
+        $this->addCardDetailsToEnrollRequest($card, $data);
 
         $url = $input['callbackUrl'];
 
         if ($this->env === 'dev')
         {
-            $parts = parse_url($url);
-            // $parts['host'] = 'https://dev.razorpay.com';
-            // $url = $parts['host'] . $parts['path'];
-            $parts['host'] = 'rzp.ngrok.com';
-            $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+            $url = $this->getCallbackUrlForDev($url);
         }
 
         // Only required in case of Rupay. Weird! But ... !
-        if ($network === Card\Network::RUPAY)
+        if ($card['network_code'] === Card\Network::RUPAY)
         {
             $data['merchantResponseUrl'] = $url;
             $data['merchantErrorUrl'] = $url;
@@ -180,6 +156,53 @@ trait Enroll
 
         // This is crucial, please do not remove it
         unset($this->enrollRequest['content']);
+    }
+
+    protected function getCallbackUrlForDev($url)
+    {
+        $parts = parse_url($url);
+
+        // $parts['host'] = 'https://dev.razorpay.com';
+        // $url = $parts['host'] . $parts['path'];
+
+        $parts['host'] = 'rzp.ngrok.com';
+        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
+
+        return $url;
+    }
+
+    protected function getActionForEnrollRequest($card)
+    {
+        $action = Action::AUTHORIZE;
+
+        if (in_array($card['network_code'], $this->purchaseNetworks))
+        {
+            $action = Action::PURCHASE;
+        }
+
+        return $action;
+    }
+
+    protected function addCardDetailsToEnrollRequest($card, & $data)
+    {
+        foreach ($this->cardKeyMappings as $rzpKey => $hdfcKey)
+        {
+            $data[$hdfcKey] = $card[$rzpKey];
+        }
+    }
+
+    protected function addUdfFieldsToEnrollRequest($payment, & $data)
+    {
+        $udfData = [
+            'udf1'      => 'test',
+            'udf2'      => $payment['email'],
+            'udf3'      => $payment['contact'],
+            'udf4'      => 'test',
+        ];
+
+        $this->udfCheckAndMeetHdfcRequirements($udfData);
+
+        $data = array_merge($data, $udfData);
     }
 
     /**
@@ -194,66 +217,64 @@ trait Enroll
      * 4. (Space)
      * 5. .(dot)
      *
-     * @param  array      $data [description]
+     * @param  array $udfData
      */
-    protected function udfCheckAndMeetHdfcRequirements(array & $data)
+    protected function udfCheckAndMeetHdfcRequirements(array & $udfData)
     {
         //
         // First remove the 'so-called bs' hack characters
         //
-        $this->udfRemoveHackCharacters($data);
+        $this->udfRemoveHackCharacters($udfData);
 
         //
         // Now, check the lengths and strip it up if above 250.
         //
-        $this->udfStripExtraLength($data);
+        $this->udfStripExtraLength($udfData);
     }
 
-    protected function udfRemoveHackCharacters(array & $data)
+    protected function udfRemoveHackCharacters(array & $udfData)
     {
         $hdfcHackChars = array(
             '<','>','(',')','{','}','[',']','?','&','*','~',
             '`','!','#','$','%','^','=','+','|','\\','/',':',
             '\'','"',',',';');
 
-        foreach (range(1,5,1) as $i)
+        foreach ($udfData as $udfKey => $udfValue)
         {
-            $data['udf'.$i] = str_replace($hdfcHackChars, ' ', $data['udf'.$i]);
+            $data[$udfKey] = str_replace($hdfcHackChars, ' ', $udfValue);
         }
     }
 
-    protected function udfStripExtraLength(array & $data)
+    protected function udfStripExtraLength(array & $udfData)
     {
-        foreach (range(1,5,1) as $i)
+        foreach ($udfData as $udfKey => $udfValue)
         {
-            $udf = & $data['udf'.$i];
-
-            $len = strlen($udf);
+            $len = strlen($udfValue);
 
             if ($len > 250)
             {
                 $start = $len - 250;
 
-                $udf = substr($udf, $start);
+                $udfData[$udfKey] = substr($udfValue, $start);
             }
         }
     }
 
     protected function validateEnrollResponse()
     {
-        $trackid = $this->enrollResponse['data']['trackid'];
+        $trackId = $this->enrollResponse['data']['trackid'];
 
-        if ($trackid !== $this->id)
+        if ($trackId !== $this->id)
         {
             throw new Exception\LogicException(
-                'Gateway Exception: Track id do not match: ' . $trackid . ' ' . $this->id);
+                'Gateway Exception: Track id do not match: ' . $trackId . ' ' . $this->id);
         }
     }
 
     /**
      * Stores relevant enroll response
      * fields in db depending on whether
-     * enroll succeded or there was an
+     * enroll succeeded or there was an
      * error.
      *
      * @return void
@@ -300,7 +321,7 @@ trait Enroll
 
         if (isset($this->enrollResponse['data']['eci']))
         {
-            $eci = &$this->enrollResponse['data']['eci'];
+            $eci = & $this->enrollResponse['data']['eci'];
         }
 
         //
@@ -322,7 +343,9 @@ trait Enroll
         // ECI checks only need to be done for NOT_ENROLLED cases
         //
         if ($notEnrolled === false)
+        {
             return;
+        }
 
         $visaOrDiners = (($network === Card\Network::VISA) or
                          ($network === Card\Network::DICL));
@@ -333,7 +356,9 @@ trait Enroll
             // For visa and diners, eci should be 6.
             //
             if ($eci === '6')
+            {
                 return;
+            }
 
             throw new Exception\LogicException('eci value should be 6. Eci: ' . $eci);
         }
@@ -347,7 +372,9 @@ trait Enroll
             // For mastercard and maestro, eci should be 1.
             //
             if ($eci === '1')
+            {
                 return;
+            }
 
             throw new Exception\LogicException('eci value should be 1. Eci: ' . $eci);
         }
@@ -371,7 +398,7 @@ trait Enroll
             return false;
         }
 
-        $result = &$this->enrollResponse['data']['result'];
+        $result = & $this->enrollResponse['data']['result'];
 
         //
         // Check enroll result code.
@@ -399,11 +426,9 @@ trait Enroll
      */
     protected function setErrorOnEnrollFailure()
     {
-        assert($this->error === false);
+        assert ($this->error === false);
 
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
-
-        $this->error = true;
 
         switch ($enrollResult)
         {
@@ -466,13 +491,5 @@ trait Enroll
         }
 
         return $enrollStatus;
-    }
-
-    protected function mapKeys($array, $map, &$data)
-    {
-        foreach ($map as $keyOld => $keyNew)
-        {
-            $data[$keyNew] = $array[$keyOld];
-        }
     }
 }

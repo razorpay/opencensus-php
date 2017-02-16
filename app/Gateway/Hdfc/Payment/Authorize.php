@@ -18,8 +18,10 @@ trait Authorize
      * 3.   In case of card not enrolled, this funciton next calls
      *      for submission of request for auth.
      *
-     * @param $enrollStatus
+     * @param       $enrollStatus
+     *
      * @return mixed
+     * @throws Exception\InvalidArgumentException
      * @throws Exception\LogicException
      */
     protected function decideAuthStepAfterEnroll($enrollStatus)
@@ -31,7 +33,9 @@ trait Authorize
 
             case Payment\Result::NOT_ENROLLED:
                 $this->validateMerchantInternationalEnabled();
-                return $this->postAuthNotEnrolledRequestToBank();
+                $this->postAuthNotEnrolledRequestToBank();
+
+                return null;
 
             case Payment\Result::INITIALIZED:
                 return $this->getFieldsForFormSubmitForRupay();
@@ -54,7 +58,7 @@ trait Authorize
      */
     protected function getFieldsForFormSubmitToBankACS()
     {
-        $content['TermUrl'] = $this->callbackUrl;
+        $content['TermUrl'] = $this->input['callbackUrl'];
         $content['MD'] = $this->enrollResponse['data']['paymentid'];
         $content['PaReq'] = $this->enrollResponse['data']['PAReq'];
 

@@ -34,7 +34,7 @@ class Utility extends \RZP\Gateway\Utility
         return true;
     }
 
-    public static function parseResponseXml(array &$response)
+    public static function parseResponseXml(array & $response)
     {
         if (self::getAndParseError($response))
         {

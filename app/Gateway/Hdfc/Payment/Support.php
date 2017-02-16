@@ -44,7 +44,7 @@ trait Support
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if (in_array($input['card']['network_code'], $this->purchaseNetworks))
             {
                 return;
             }
@@ -88,7 +88,7 @@ trait Support
             $status = Status::AUTHORIZED;
 
             // For purchase transactions, status will be captured.
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if (in_array($input['card']['network_code'], $this->purchaseNetworks))
             {
                 $status = Status::CAPTURED;
             }

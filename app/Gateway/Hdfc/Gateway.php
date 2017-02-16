@@ -240,7 +240,9 @@ class Gateway extends Base\Gateway
      */
     protected $authorize = true;
 
-    protected $purchase = array(
+    protected $callbackUrl;
+
+    protected $purchaseNetworks = array(
         Card\Network::MAES,
         Card\Network::RUPAY,
         Card\Network::DICL,
@@ -338,7 +340,7 @@ class Gateway extends Base\Gateway
         if ($this->id !== $paymentId)
         {
             throw new Exception\LogicException(
-                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
+                'api payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
         $this->postAuthEnrolledRequest($input);
@@ -493,7 +495,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function runRequestResponseFlow(array &$request, array &$response)
+    protected function runRequestResponseFlow(array & $request, array & $response)
     {
         $this->setTerminalInRequest($request);
 
@@ -502,8 +504,6 @@ class Gateway extends Base\Gateway
 
         $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         $request['url'] = $domain . $request['url'];
-
-        $this->requestVar = $request;
 
         try
         {
@@ -518,32 +518,29 @@ class Gateway extends Base\Gateway
                 throw $e;
             }
 
-            $this->error = true;
-
             $response['content'] = '';
 
             $curlErrorMessage = strtolower($e->getData()['message']);
 
             Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
 
+            $this->error = true;
+
             return;
         }
 
         $response['xml'] = $response['response']->body;
 
-        $this->checkResponseStatusCode($response);
+        $this->error = $this->checkResponseStatusCodeAndContentType($response);
 
-        if ($this->error === false)
+        if ($this->error === true)
         {
-            $this->checkResponseContentType($response);
+            return;
         }
 
-        if ($this->error === false)
-        {
-            Utility::parseResponseXml($response);
+        Utility::parseResponseXml($response);
 
-            $this->checkResponseErrorCode($response);
-        }
+        $this->error = $this->checkResponseErrorCode($response);
     }
 
     protected function checkForServiceUnavailability($response)
@@ -551,6 +548,18 @@ class Gateway extends Base\Gateway
         $body = $response['response']->body;
 
         return (strpos($body, 'Service Unavailable') !== false);
+    }
+
+    protected function checkResponseStatusCodeAndContentType(& $response)
+    {
+        $error = $this->checkResponseStatusCode($response);
+
+        if ($error === false)
+        {
+            $error = $this->checkResponseContentType($response);
+        }
+
+        return $error;
     }
 
     protected function checkResponseStatusCode(& $response)
@@ -569,7 +578,11 @@ class Gateway extends Base\Gateway
             }
 
             $this->error = true;
+
+            return true;
         }
+
+        return false;
     }
 
     protected function checkResponseContentType(& $response)
@@ -585,7 +598,11 @@ class Gateway extends Base\Gateway
                 $contentType);
 
             $this->error = true;
+
+            return true;
         }
+
+        return false;
     }
 
     protected function setTerminalInRequest(array & $request)
@@ -610,32 +627,32 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * This step is very crucial for deciding future steps in
+     * payment flow.
+     * For any operation, whether enroll, auth or support,
+     * the success or failure at different stages is decided on the basis of
+     * $this->error variable.
+     * Be careful before making any change around here.
+     *
+     * @param $response
+     *
+     * @return bool
+     */
     protected function checkResponseErrorCode($response)
     {
-        //
-        // This step is very crucial for deciding future steps in
-        // payment flow.
-        //
-        // For any operation, whether enroll, auth or support,
-        // the success or failure at different stages is decided on the basis of
-        // $this->error variable.
-        // Be careful before making any change around here.
-        //
-        if (isset($response['error']['code']))
-        {
-            $this->error = true;
-        }
+        return isset($response['error']['code']);
     }
 
     public function postRequest($request)
     {
         $request['options'] = $this->getRequestOptions();
 
-        $this->response = $this->sendGatewayRequest($request);
+        $response = $this->sendGatewayRequest($request);
 
-        $this->processResponse($this->response);
+        $this->processResponse($response);
 
-        return $this->response;
+        return $response;
     }
 
     protected function getRequestOptions()
@@ -763,11 +780,11 @@ class Gateway extends Base\Gateway
         throw $exception;
     }
 
-// -------------------------Exceptions Ends ------------------------------------
+    // -------------------------Exceptions Ends ------------------------------------
 
-    protected function processResponse($response)
+    protected function processResponse(& $response)
     {
-        $body = $this->response->body;
+        $body = $response->body;
 
         $ix = strpos($body, '<pan>');
 
@@ -776,9 +793,8 @@ class Gateway extends Base\Gateway
             $eix = strrpos($body, '</pan>') + 6;
             $body = substr($body, 0, $ix) . substr($body, $eix);
 
-            $this->response->body = $body;
-            $this->response->raw = null;
+            $response->body = $body;
+            $response->raw = null;
         }
     }
-
 }
