@@ -342,18 +342,15 @@ class Gateway extends Base\Gateway
 
     protected function getCommonResponseFields($response, $input)
     {
-        $attributes = [
-            Entity::RECEIVED               => true,
-            Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
-            Entity::AMOUNT                 => $input['amount'],
-            Entity::STATUS                 => Status::CAPTURED,
-        ];
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
 
-        if ((isset($input['merchant_id'])) and
-            ($input['merchant_id'] === '2aTeFCKTYWwfrF'))
-        {
-            $attributes[Entity::CURRENCY] = $input['currency'];
-        }
+        $attributes = [
+            Entity::RECEIVED      => true,
+            Entity::APPROVAL_CODE => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::AMOUNT        => $input['amount'],
+            Entity::CURRENCY      => $currencyCode,
+            Entity::STATUS        => Status::CAPTURED,
+        ];
 
         $this->setApproval($attributes[Entity::APPROVAL_CODE]);
 
