@@ -79,7 +79,9 @@ class Validator
         $validSubject = $this->validateEmailSubject(
             $emailDetails['subject'], Orchestrator::FREECHARGE);
 
-        $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::FREECHARGE);
+        $validBody = $this->validateEmailBody(
+            $emailDetails[Orchestrator::BODY_HTML],
+            Orchestrator::FREECHARGE);
 
         return ($validSubject and $validBody);
     }

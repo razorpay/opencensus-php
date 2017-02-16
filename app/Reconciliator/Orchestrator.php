@@ -24,6 +24,7 @@ class Orchestrator extends Base\Core
     const EXTRA_DETAILS    = 'extra_details';
     const EMAIL_DETAILS    = 'email_details';
     const ATTACHMENT_COUNT = 'attachment_count';
+    const BODY_HTML        = 'body_html';
 
     /******************
      * Bank constants
@@ -279,7 +280,7 @@ class Orchestrator extends Base\Core
             // after extraction if necessary, deletes the zip file, keeping
             // the imp files
             //
-            $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
+            $this->fetchAndStoreLinkDocuments($input);
 
             $fileLocationType = FileProcessor::STORAGE;
         }
@@ -456,6 +457,8 @@ class Orchestrator extends Base\Core
             'to'        => $input['recipient'],
             'timestamp' => $input['timestamp'],
             'body'      => $input['stripped-text'],
+
+            self::BODY_HTML => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
 
         return $emailDetails;
@@ -872,9 +875,7 @@ class Orchestrator extends Base\Core
         return null;
     }
 
-    protected function fetchAndStoreLinkDocuments(
-        array $emailDetails,
-        array & $input)
+    protected function fetchAndStoreLinkDocuments(array & $input)
     {
         if (empty($input['attachment-count']) === true)
         {
@@ -882,7 +883,8 @@ class Orchestrator extends Base\Core
         }
 
         // retrieve the link from $input['stripped-text']
-        $link = $this->gatewayReconciliator->getSettlementFileLink($emailDetails['body']);
+        $link = $this->gatewayReconciliator->getSettlementFileLink(
+            $input['body-html']);
 
         $this->trace->info(
             TraceCode::RECON_FILE_LINK,
