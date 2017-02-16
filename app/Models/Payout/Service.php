@@ -7,27 +7,30 @@ use RZP\Models\Payout;
 
 class Service extends Base\Service
 {
-    public function getPayout($id)
+    public function __construct()
     {
-        Payout\Entity::verifyIdAndStripSign($id);
+        parent::__construct();
 
-        $payout = $this->repo->payout->findByIdAndMerchantId($id, $this->merchant->getId());
+        $this->core = new Payout\Core;
+    }
+
+    public function fetch(string $id) : array
+    {
+        $payout = $this->repo->payout->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $payout->toArrayPublic();
     }
 
-    public function getPayouts($input)
+    public function fetchMultiple(array $input) : array
     {
         $payouts = $this->repo->payout->fetch($input, $this->merchant->getId());
 
         return $payouts->toArrayPublic();
     }
 
-    public function postPayout($input)
+    public function create(array $input) : array
     {
-        $merchant = $this->merchant;
-
-        $payout = (new Payout\Core)->createPayout($input, $merchant);
+        $payout = $this->core->createPayout($input, $this->merchant);
 
         return $payout->toArrayPublic();
     }

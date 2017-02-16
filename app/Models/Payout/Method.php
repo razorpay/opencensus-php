@@ -9,13 +9,13 @@ class Method
 {
     const FUND_TRANSFER  = 'fund_transfer';
 
-    protected static $methods = array(
-        self::FUND_TRANSFER       => 'Fund Transfer',
-    );
+    protected static $methods = [
+        self::FUND_TRANSFER     => 'Fund Transfer',
+    ];
 
-    protected static $methodToEntityMap = array(
+    protected static $methodToEntityMap = [
         self::FUND_TRANSFER     => Constants\Entity::BANK_ACCOUNT
-    );
+    ];
 
     public static function formatted($method)
     {
@@ -29,7 +29,7 @@ class Method
 
     public static function validateMethod($method)
     {
-        if (defined(__CLASS__.'::'.strtoupper($method)) === false)
+        if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payout method: ' . $method);

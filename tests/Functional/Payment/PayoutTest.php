@@ -11,13 +11,13 @@ class PayoutTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/PayoutTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/PayoutTestData.php';
 
         parent::setUp();
 
         $this->ba->privateAuth();
 
-        $this->fixtures->merchant->editFeatures('payout');
+        $this->fixtures->merchant->addFeatures(['payout']);
     }
 
     public function testCreatePayout()

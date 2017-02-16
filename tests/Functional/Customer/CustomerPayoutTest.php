@@ -6,15 +6,13 @@ use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
-use Mockery;
-
 class CustomerPayoutTest extends TestCase
 {
     use RequestResponseFlowTrait;
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/CustomerPayoutTestData.php';
+        $this->testDataFilePath = __DIR__ . '/helpers/CustomerPayoutTestData.php';
 
         parent::setUp();
     }
@@ -37,12 +35,12 @@ class CustomerPayoutTest extends TestCase
     {
         $this->testAddCustomerBankAccount();
 
-        (new Carbon('Asia/Kolkata'))->setTimestamp(time()+1);
+        (new Carbon('Asia/Kolkata'))->setTimestamp(time() + 1);
 
         $this->testAddCustomerBankAccount();
 
         $accounts = $this->testGetCustomerBankAccounts();
 
-        $this->assertEquals(count($accounts['items']), 2);
+        $this->assertEquals(count($accounts['items']), 3);
     }
 }

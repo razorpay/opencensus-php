@@ -543,13 +543,15 @@ class Core extends Base\Core
 
         $amount = $payout->getAmount();
 
-        list($fee, $serviceTax, $ruleId) =
+        list($fee, $serviceTax, $feesSplit) =
             (new Pricing\Fee)->calculateMerchantFees($payout, false);
 
         $settledAt = time();
 
+        $payoutAmount = abs($amount + $fee);
+
         $values = array(
-            Transaction\Entity::DEBIT               => abs($amount + $fee),
+            Transaction\Entity::DEBIT               => $payoutAmount,
             Transaction\Entity::CREDIT              => 0,
             Transaction\Entity::CURRENCY            => 'INR',
             Transaction\Entity::GATEWAY_FEE         => 0,
@@ -560,8 +562,7 @@ class Core extends Base\Core
             Transaction\Entity::SETTLED_AT          => $settledAt,
             Transaction\Entity::FEE                 => $fee,
             Transaction\Entity::SERVICE_TAX         => $serviceTax,
-            Transaction\Entity::PRICING_RULE_ID     => $ruleId,
-            Transaction\Entity::AMOUNT              => abs($amount + $fee),
+            Transaction\Entity::AMOUNT              => $payoutAmount,
             Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
             Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
         );

@@ -237,8 +237,6 @@ class SettlementTest extends TestCase
 
     public function testSettlementWithPayout()
     {
-        //$this->fixtures->create('customer:bank_accounts');
-
         // Create payments and refunds with timestamps two days back
         $payments = $this->createPaymentEntities();
 
@@ -256,8 +254,8 @@ class SettlementTest extends TestCase
         // Generate settlements for above transactions
         $content = $this->initiateSettlements();
 
-        // (5 payments txn + 1 payout txn + 1 settlement txn)
-        $this->assertEquals($content['kotak']['transaction_count'], 7);
+        // (5 payments txn + 1 payout txn)
+        $this->assertEquals(6, $content['kotak']['transaction_count']);
     }
 
     public function testMerchantSettlement()
