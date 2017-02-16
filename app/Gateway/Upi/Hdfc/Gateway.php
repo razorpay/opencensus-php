@@ -228,22 +228,6 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Gets the correct URL from the
-     * Url class
-     * @param  string $type Action String
-     * @return String URL
-     */
-    protected function getUrl($type = null)
-    {
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
-
-        return parent::getUrl($type);
-    }
-
-    /**
      * Encrypts data
      * @param  string $data
      * @return string
@@ -469,6 +453,31 @@ class Gateway extends Base\Gateway
         $verify->verifyResponseContent = $content;
 
         return $content;
+    }
+
+    protected function getValidateVpaRequestArray(string $vpa): array
+    {
+        $data = [
+            $this->getMerchantId(),
+            random_alpha_string(10),
+            $vpa,
+            'T'
+        ];
+
+        $content = $this->transformRequestArrayToContent($data);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_SUPPORT_REQUEST,
+            [
+                'decrypted_content' => $data,
+                'encrypted'         => $content,
+                'gateway'           => $this->gateway,
+                'action'            => Action::VALIDATE_VPA,
+            ]);
+
+        return $request;
     }
 
     protected function getRefundRequestArray(array $input): array

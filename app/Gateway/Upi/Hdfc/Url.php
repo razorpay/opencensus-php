@@ -10,4 +10,6 @@ class Url
     const AUTHORIZE    = '/upi/meTransCollectSvc';
     const VERIFY       = '/upi/transactionStatusQuery';
     const REFUND       = '/upi/refundReqSvc';
+
+    const VALIDATE_VPA = '/upi/checkMeVirtualAddress';
 }

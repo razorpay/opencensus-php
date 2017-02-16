@@ -23,11 +23,22 @@ class Server extends Base\Mock\Server
         Action::COLLECT     => 7,
         Action::VERIFY      => 4
     ];
+
+    /**
+     * Total number of fields in every response
+     * including the NA padding
+     */
+    const RESPONSE_FIELD_COUNT = [
+        Action::AUTHORIZE       => 17,
+        Action::VALIDATE_VPA    => 14,
+        Action::VERIFY          => 21,
+        Action::CALLBACK        => 21,
+    ];
     public function authorize($input)
     {
-        $input = $this->parseInput($input, Action::COLLECT);
-
         parent::authorize($input);
+
+        $input = $this->parseInput($input);
 
         $this->validateAuthorizeInput($input);
 
@@ -45,16 +56,6 @@ class Server extends Base\Mock\Server
             'nemorazorpay@hdfcbank',
             // Payee VA
             'razorpay@hdfcbank',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
-            'NA',
         );
 
         $this->content($content);
@@ -64,6 +65,12 @@ class Server extends Base\Mock\Server
 
     protected function makeResponse($data)
     {
+        $action = $this->action;
+
+        $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
+
+        $data = $padding = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
+
         $content = implode('|', $data);
 
         $content = strtoupper(bin2hex($this->encrypt($content)));
@@ -106,13 +113,50 @@ class Server extends Base\Mock\Server
 
     public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
+        $this->action = Action::CALLBACK;
+
         $content = $this->S2SRequestContent($upiEntity, $payment);
 
-        $json = json_encode($content, JSON_PRETTY_PRINT);
+        $response = $this->makeResponse($content);
 
-        $encrypted = $this->encrypt($json);
+        return ('meRes=' . $response->content());
+    }
 
-        return base64_encode($encrypted);
+    protected function S2SRequestContent(array $upiEntity, array $payment)
+    {
+        $status = 'SUCCESS';
+
+        switch ($payment['vpa'])
+        {
+            case 'failed@hdfcbank':
+                $status = 'FAILED';
+                break;
+        }
+
+        return [
+            $upiEntity['gateway_payment_id'],
+            $payment['id'],
+            $this->formatAmount($payment['amount']),
+            '2017:12:01 00:00:02',
+            $status,
+            'Transaction success',
+            '00',
+            // Approval Number
+            random_integer(5),
+            $payment['vpa'],
+            // NPCI Reference Id
+            random_integer(16),
+            'NA'
+        ];
+    }
+
+    /**
+     * @param  int    $amount amount in paise
+     * @return string
+     */
+    protected function formatAmount(int $amount): string
+    {
+        return number_format($amount / 100 ,2, '.', '');
     }
 
     protected function getDefaultVerifyResponse(array $input, $payment): array
@@ -186,7 +230,7 @@ class Server extends Base\Mock\Server
             'NA'
         ];
 
-        return $this->makeResponse($res);
+        return $this->makeResponse($res, Action::VERIFY);
     }
 
     protected function getCipherInstance()

@@ -31,12 +31,20 @@ class UpiHdfcGatewayTest extends TestCase
     public function testPayment($status = 'created')
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
+
         $paymentId = $response['payment_id'];
 
         // Co Proto must be working
         $this->assertEquals('async', $response['type']);
 
         $this->checkPaymentStatus($paymentId, $status);
+
+        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $response = $this->makeS2SCallbackAndGetContent($content);
 
         return $paymentId;
     }

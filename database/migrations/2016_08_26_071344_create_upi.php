@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Constants\Table;

@@ -11,6 +11,7 @@ class ResponseFields
     const NPCI_UPI_TXN_ID       = 'npci_upi_txn_id';
     const PAYEE_VA              = 'payee_va';
     const PAYER_VA              = 'payer_va';
+    const PAYER_NAME            = 'payer_name';
     const PAYMENT_ID            = 'payment_id';
     const REFERENCE_ID          = 'reference_id';
     const REFUND_ID             = 'refund_id';
@@ -19,6 +20,7 @@ class ResponseFields
     const STATUS_DESCRIPTION    = 'status_description';
     const TXN_AUTH_DATE         = 'txn_auth_date';
     const UPI_TXN_ID            = 'upi_txn_id';
+    const VPA_STATUS            = 'vpa_status';
 
     /**
      * These are the expected field orders
@@ -76,5 +78,13 @@ class ResponseFields
         self::PAYER_VA,
         self::NPCI_UPI_TXN_ID,
         self::REFERENCE_ID
+    ];
+
+    const VALIDATE_VPA  = [
+        self::REFERENCE_ID,
+        self::PAYER_VA,
+        self::PAYER_NAME,
+        self::VPA_STATUS,
+        self::VPA_STATUS
     ];
 }
