@@ -10,7 +10,12 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
-    var _identity, _authenticated = false;
+    var _identity, 
+        _isPreSignupDone = false, 
+        _isVerified = false,
+        _authenticated = false;
+
+
     return {
       isIdentityResolved: function () {
         return angular.isDefined(_identity);
@@ -22,11 +27,15 @@ angular.module('app.services', [])
         _identity = identity;
         _authenticated = identity !== null;
       },
-
       getIdentity: function() {
         return _identity;
       },
-
+      isPreSignupDone: function() {
+        return _isPreSignupDone;
+      },
+      isVerified: function() {
+        return _isVerified;
+      },
       identity: function (force) {
         var deferred = $q.defer();
         if (force === true)
@@ -39,8 +48,18 @@ angular.module('app.services', [])
         $http.get('/user', { ignoreErrors: true }).success(function (data) {
           _identity = data.data;
           if (data.data.steps_finished) {
-            _identity.activation_progress = parseInt(data.data.steps_finished.length * 100 / 5);
+            _identity.activation_progress = data.data.activation_progress;
           }
+
+          // if any of the fields is missing, isPreSignupDone will be false
+          _isPreSignupDone = _identity.pre_signup && !!Object.keys(_identity.pre_signup)
+            // get all values
+            .map(function (key) {return _identity.pre_signup[key]})
+            // reduce all values using '&&'
+            .reduce(function (x, y){return x && y});
+
+          _isVerified = _identity.user.confirmed;
+
           _authenticated = data.success === true;
           if (_authenticated)
             $idle.watch();
@@ -69,12 +88,12 @@ angular.module('app.services', [])
       authorize: function () {
         return user.identity().then(function () {
           if ($rootScope.toState.data.role === 'auth') {
-            if (user.isAuthenticated() === false) {
+            if (!user.isAuthenticated() && !user.isVerified()) {
               $state.go('access.signin');
             }
           }
           else if ($rootScope.toState.data.role === 'guest') {
-            if (user.isAuthenticated() === true) {
+            if (user.isAuthenticated() && user.isVerified()) {
               if ($rootScope.role === 'sellerapp') {
                 $state.go('app.invoices');
               } else {
@@ -602,7 +621,15 @@ angular.module('app.services', [])
       null: 'bg-warning',
 
       // batch
-      processing: 'bg-info'
+      processing: 'bg-info',
+
+      // refund
+      partial: 'bg-info', // payment.refund_status
+
+      // invoice
+      draft: 'bg-light',
+      issued: 'bg-info',
+      expired: 'bg-danger'
     };
 
     return mapper[status];
@@ -764,12 +791,14 @@ angular.module('app.services', [])
           'card',
           'credits',
           'customer',
-          'daily_settlement',
+          'batch_settlement',
           'ebs',
+          'file_store',
           'first_data',
           'emi_plan',
           'hdfc',
           'iin',
+          'invoice',
           'merchant',
           'methods',
           'mobikwik',
@@ -795,10 +824,16 @@ angular.module('app.services', [])
       // we consider its value as well
       if (value && isTimestamp(key)) {
         return 'timestamp';
-      }  // All other entity links are considered here
-      else if (key.substr(-6) === 'amount') {
+      }
+      // Base Amounts are always in INR
+      // includes base_amount and base_amount_refunded
+      else if (key.substr(0,11) === 'base_amount') {
+        return 'amount_inr';
+      }
+      else if ((key.substr(-6) === 'amount') || (key.substr(0,7) === 'amount_')) {
         return 'amount';
       }
+      // All other entity links are considered here
       else if (isId(key)) {
         if (specialEntities.indexOf(key) > -1) {
           return getEntity(key);
@@ -814,25 +849,35 @@ angular.module('app.services', [])
 ])
 .factory('displayValue', [
   'getType',
-  function (getType) {
-    return function (key, value) {
+  '$filter',
+  function (getType, $filter) {
+    return function (key, value, entity) {
+      if (typeof entity === "undefined") {
+        entity = {};
+      }
       var type = getType(key, value);
       // Set timezone to IST
       moment().utcOffset(5.5);
       switch (type) {
-      case 'timestamp':
-        return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
-      case 'amount':
-        return 'INR ' + (value / 100).toFixed(2);
-      default:
-        if (value === null) {
-          return 'null';
-        // We want to display an empty string prominently
-        } else if (value === '') {
-          return '"\u2000"';
-        } else {
-          return value;
-        }
+        case 'timestamp':
+          return moment(value * 1000).format('D MMM YYYY h:mm:ss a (ddd) ') + 'IST';
+        case 'amount_inr':
+          return $filter('rupee')(value / 100);
+        case 'amount':
+          var currency = 'INR';
+          if (entity.hasOwnProperty('currency')) {
+            currency = entity.currency;
+          }
+          return $filter('propercurrency')(value / 100, currency);
+        default:
+          if (value === null) {
+            return 'null';
+          // We want to display an empty string prominently
+          } else if (value === '') {
+            return '"\u2000"';
+          } else {
+            return value;
+          }
       }
     };
 }])

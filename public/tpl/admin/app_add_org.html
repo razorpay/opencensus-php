@@ -137,6 +137,7 @@
             <div class="form-group" ng-show="organization.id">
               <label class="col-sm-3 control-label">Login Logo</label>
               <div class="col-sm-8">
+                <img src="{{organization.login_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')">
               </div>
             </div>
@@ -144,6 +145,7 @@
             <div class="form-group" ng-show="organization.id">
               <label class="col-sm-3 control-label">Main (Dashboard) Logo</label>
               <div class="col-sm-8">
+                <img src="{{organization.main_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="main_logo" ng-file-select="onMainLogoSelect($files, 'main_logo')">
               </div>
             </div>
@@ -151,6 +153,7 @@
             <div class="form-group" ng-show="organization.id">
               <label class="col-sm-3 control-label">Invoice Logo</label>
               <div class="col-sm-8">
+                <img src="{{organization.invoice_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="invoice_logo" ng-file-select="onInvoiceLogoSelect($files, 'invoice_logo')" accept="image/jpeg,image/jpg,image/png">
               </div>
             </div>

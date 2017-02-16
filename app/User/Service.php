@@ -9,11 +9,13 @@ use DrewM\MailChimp\MailChimp;
 use Auth;
 use Hash;
 use Input;
+use Session;
 
 use App\Base;
 use App\Invitation;
 use App\Merchant;
 use App\MerchantDetails;
+use App\Session as SessionTable;
 use App\User;
 use App\Lead;
 use App\AdminLead;
@@ -110,23 +112,25 @@ class Service extends Base\Service
         // These two branches are exclusive
         // You cannot accept an invite and create a merchant account
         // at the same time
-        if (isset($input['business_name']))
+        if ($invitationToken)
+        {
+            $this->attachUserToInvite($user, $invitation);
+
+            $data['login'] = true;
+        }
+        else
         {
             // See HACKING.md in the root of the repo for a detailed note
-            assert(! $invitationToken);
-
             $data = [
-                'business_name' =>  $input['business_name'],
+                'business_name'  =>  $input['business_name'],
                 'contact_mobile' =>  Input::get('contact_mobile', null)
             ];
 
             list($error, $data) = $this->createMerchantFromUser($user, $data, $referer);
+
+            (new Merchant\Service)->createMerchantOnApi($data['id']);
         }
-        else if ($invitationToken)
-        {
-            $this->attachUserToInvite($user, $invitation);
-            $data['login'] = true;
-        }
+
 
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
@@ -302,8 +306,9 @@ class Service extends Base\Service
         $user->merchants()->attach($merchant, ['role' => 'owner']);
 
         // Only send the confirmation email if the user isn't already confirmed
-        if ($user->confirm_token != NULL)
+        if ($user->getConfirmToken() != NULL)
         {
+            $user->token = $user->getConfirmToken();
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 
@@ -318,15 +323,11 @@ class Service extends Base\Service
     {
         $phoneNumber = Input::get('contact_mobile', null);
         $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
-        $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
-
-
         // We want to keep environment conditional checks as late as possible
 
         if (config('slack.enable'))
         {
             Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
-            Queue::push('App\User\Service@postToZapier', $zapierData);
         }
 
         // These are displayed on the frontend
@@ -361,20 +362,38 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getZapierData($merchant, $user, $referer, $phoneNumber)
+    public function getZapierData($merchant, $input)
     {
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
             ->format('j/m/Y');
 
+        $userName = $input['contact_name'] ?? '';
+
+        $phoneNumber = $input['contact_mobile'] ?? '';
+
+        $businessType = MerchantDetails\BusinessType::getType($input['business_type']) ?? '';
+
+        $transactionVolume = MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) ?? '';
+
+        $role = MerchantDetails\Role::getType($input['role']) ?? '';
+
+        $department = MerchantDetails\Department::getType($input['department']) ?? '';
+
+        $referrer = $merchant->referrer ?? '';
+
         return [
-            'id'            => $merchant->id,
-            'email'         => $user->email,
-            'individual'    => $user->name,
-            'name'          => $merchant->name,
-            'ref'           => $referer ? $referer : '',
-            'timestamp'     => $timestamp,
-            'contact'       => $phoneNumber? $phoneNumber : ''
+            'id'                    => $merchant->id,
+            'email'                 => $merchant->email,
+            'individual'            => $userName,
+            'name'                  => $merchant->name,
+            'ref'                   => $referrer,
+            'timestamp'             => $timestamp,
+            'contact'               => $phoneNumber,
+            'business_type'         => $businessType,
+            'transaction_volume'    => $transactionVolume,
+            'role'                  => $role,
+            'department'            => $department
         ];
     }
 
@@ -441,7 +460,7 @@ class Service extends Base\Service
             else
             {
                 // Login the user
-                Auth::attempt($credentials, false, true);
+            Auth::attempt($credentials, false, true);
             }
         }
         else
@@ -477,17 +496,8 @@ class Service extends Base\Service
             $user->password = Hash::make($user->password);
             $user->save();
 
-            if($user->hasMerchants())
-            {
-                $merchant = $user->merchants()
-                    ->where('email',$user->email)->first();
-
-                if($merchant)
-                {
-                    $merchant->password = $user->password;
-                    $merchant->save();
-                }
-            }
+            $currentSessionId = Session::getId();
+            (new SessionTable\Entity)->deleteAllOtherSessionsForUser($user->getAuthIdentifier(), $currentSessionId);
         });
 
         return [$error, null];

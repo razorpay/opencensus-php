@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md" ng-controller="TeamManagementCtrl" ng-init="getTeamMembers()">
-  <div class="panel panel-default panel-form invites-table col-sm-8 col-sm-offset-2" >
+  <div class="panel panel-default panel-form invites-table col-md-8 col-md-offset-2 col-sm-12">
     <div class="panel-heading m-t m-b">
       Invite users to your Organization Team
       <small class="pull-right">
@@ -37,44 +37,53 @@
       <div class="panel-heading m-t m-b">
         Team Members
       </div>
-      <div class="row wrapper">
-        <div class="row" ng-repeat="user in users" ng-show="user.email !== merchant.email">
-          <div class="m-b col-sm-4 b-w">{{ user.email }}</div>
-          <div class="m-b col-sm-2">{{ user.name }}</div>
-          <div class="m-b col-sm-3">
-            <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roles track by role" class="form-control" required>
-            </select>
-          </div>
-          <div class="m-b col-sm-3" ng-show="user.email !== merchant.email">
-            <button class="btn btn-sm btn-success" tooltip="Updates the user's role" ng-click="updateTeamMember(user)">Update</button>
-            <button class="btn btn-sm btn-danger" tooltip="Removes user from your team" ng-click="removeTeamMember(user)">
-              Remove
-            </button>
-          </div>
-        </div>
-      </div>
+      <table class="table table-noborder">
+        <tbody>
+          <tr ng-repeat="user in users" ng-show="user.email !== merchant.email">
+            <td>{{ user.email }}</td>
+            <td>{{ user.name }}</td>
+            <td>
+              <select ng-model="user.pivot.role" ng-options="role as (role | roletoname) for role in roles track by role" class="form-control" required>
+              </select>
+            </td>
+            <td>
+              <div style="min-width: 140px;" class="btn-toolbar" ng-show="user.email !== merchant.email">
+                <button class="btn btn-sm btn-success" tooltip="Updates the user's role" ng-click="updateTeamMember(user)">Update</button>
+                <button class="btn btn-sm btn-danger" tooltip="Removes user from your team" ng-click="removeTeamMember(user)">
+                  Remove
+                </button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
+
     <div class="pending-invitations" ng-show="invitations">
       <div class="panel-heading m-t m-b">
         Pending invitations
       </div>
-      <div class="row wrapper">
-        <div class="row" ng-repeat="invite in invitations" ng-show="invite.email !== merchant.email">
-          <div class="m-b col-sm-6 b-w">{{ invite.email }}</div>
-          <div class="m-b col-sm-3">
-            <select class="form-control" name="role" required
-              tooltip-placement="right" tooltip="User Role"
-              ng-model="invite.role" ng-options="role as (role | roletoname) for role in roles track by role"
-            >
-            </select>
-          </div>
-          <div class="m-b col-sm-3">
-            <button class="btn btn-sm btn-success" tooltip="Update role of the invited user" ng-click="updateInvitation(invite)">Update</button>
-            <button class="btn btn-sm btn-danger" tooltip="Cancels invitation" ng-click="removeInvitation(invite)">Cancel</button>
-            <button class="btn btn-sm btn-primary" tooltip="Resend invitation email" ng-click="resendInvitation(invite)">Resend</button>
-          </div>
-        </div>
-      </div>
+      <table class="table table-noborder">
+        <tbody>
+          <tr ng-repeat="invite in invitations" ng-show="invite.email !== merchant.email">
+            <td>{{ invite.email }}</td>
+            <td>
+              <select class="form-control" name="role" required
+                tooltip-placement="right" tooltip="User Role"
+                ng-model="invite.role" ng-options="role as (role | roletoname) for role in roles track by role"
+              >
+              </select>
+            </td>
+            <td style="min-width: 220px;">
+              <div class="btn-toolbar">
+                <button class="btn btn-sm btn-success" tooltip="Update role of the invited user" ng-click="updateInvitation(invite)">Update</button>
+                <button class="btn btn-sm btn-danger" tooltip="Cancels invitation" ng-click="removeInvitation(invite)">Cancel</button>
+                <button class="btn btn-sm btn-primary" tooltip="Resend invitation email" ng-click="resendInvitation(invite)">Resend</button>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
     </div>
   </div>
 </div>

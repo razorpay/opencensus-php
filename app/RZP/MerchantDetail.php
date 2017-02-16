@@ -12,6 +12,23 @@ use Razorpay\Api\Errors\BadRequestError as BadRequestError;
 
 class MerchantDetail extends Entity
 {
+    public function fetchDetails()
+    {
+        $error = $response = null;
+        try
+        {
+            $relativeUrl = 'merchant/activation';
+
+            $response = $this->request('GET', $relativeUrl)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+        }
+
+        return [ $error, $response ];
+    }
+
     public function submitDetails(array $input)
     {
         $error = $response = null;
@@ -39,6 +56,24 @@ class MerchantDetail extends Entity
             $relativeUrl = "merchant/activation/$merchantId/update";
 
             $response = $this->request('PUT', $relativeUrl, $input)->toArray();
+        }
+        catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error = [ $e->getMessage() ];
+        }
+
+        return [ $error, $response ];
+    }
+
+    public function getActivationFilesByAdmin($merchantId)
+    {
+        $error = $response = null;
+
+        try
+        {
+            $relativeUrl = "merchant/activation/$merchantId/files";
+
+            $response = $this->request('GET', $relativeUrl)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {

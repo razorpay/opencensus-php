@@ -96,12 +96,7 @@ app.controller('WebhooksCtrl', [
       var modalInstance = $modal.open({
         templateUrl: 'newWebhookModalContent.html',
         controller: 'newWebhookCtrl',
-        backdrop: 'static',
-        resolve: {
-          showInvoice: function () {
-            return ($scope.user.tags.indexOf('Invoice') > -1);
-          }
-        }
+        backdrop: 'static'
       });
 
       modalInstance.result.then($scope.createWebhook, $.noop);
@@ -115,9 +110,6 @@ app.controller('WebhooksCtrl', [
         resolve: {
           webhook: function () {
             return data;
-          },
-          showInvoice: function () {
-            return ($scope.user.tags.indexOf('Invoice') > -1);
           }
         }
       });
@@ -137,7 +129,7 @@ app.controller('WebhooksCtrl', [
           $scope.webhooks.count = data.data.count;
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
@@ -151,9 +143,7 @@ app.controller('WebhooksCtrl', [
 }]).controller('newWebhookCtrl', [
   '$scope',
   '$modalInstance',
-  'showInvoice',
-  function ($scope, $modalInstance, showInvoice) {
-    $scope.showInvoice = showInvoice;
+  function ($scope, $modalInstance) {
     $scope.webhook = {
       url: "",
       events: {
@@ -174,15 +164,13 @@ app.controller('WebhooksCtrl', [
   '$scope',
   '$modalInstance',
   'webhook',
-  'showInvoice',
-  function ($scope, $modalInstance, webhook, showInvoice) {
-    $scope.showInvoice = showInvoice;
+  function ($scope, $modalInstance, webhook) {
     $scope.webhook = webhook;
     $scope.ok = function (webhook) {
       $modalInstance.close(webhook);
     };
 
-    $scope.cancel = function (webhook) {
+    $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };
   }

@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="OrgsUsersCtrl">
+  <div class="panel panel-default users-table" ng-controller="OrgsUsersCtrl">
     <div class="panel-heading">
       List of all Users
     </div>
@@ -33,9 +33,10 @@
             <th>Name</th>
             <th>Username</th>
             <th>Email</th>
+            <th>Role</th>
             <th>Employee / Department / Branch / Location / Supervisor Code</th>
             <th>Locked</th>
-            <th>Disabled</th>
+            <th>Enabled</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -46,6 +47,9 @@
             <td>{{row.username}}</td>
             <td>{{row.email}}</td>
             <td>
+              {{row.roles && row.roles.length ? row.roles[0].name : '--'}}
+            </td>
+            <td>
               {{row.employee_code}} /
               {{row.department_code}} /
               {{row.branch_code}} /
@@ -55,14 +59,14 @@
             <td>
               <i class="fa" ng-class="{'fa-check text-success': row.locked == 1, 'fa-times text-danger':row.locked == 0}"></i>
             </td>
-            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 1, 'fa-times text-danger':row.disabled == 0}"></i></td>
+            <td><i class="fa" ng-class="{'fa-check text-success': row.disabled == 0 , 'fa-times text-danger':row.disabled == 1}"></i></td>
             <td>
               <div class="btn-group">
                 <a class="btn btn-default btn-xs" ui-sref="app.users.edit({ id: row.id })">
                   <i class="fa fa-pencil-square"></i>
                   edit
                 </a>
-                <button class="btn btn-default btn-xs" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="deleteOrgUser(row.id)">
+                <button class="btn btn-default btn-xs btn-admin-delete" ng-confirm-click="Are you sure you want to delete this admin?" ng-click="deleteOrgUser(row.id)">
                   <i class="fa fa-user-times text-danger"></i>
                   delete
                 </button>
@@ -72,7 +76,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td colspan="6" class="text-center">
+            <td colspan="9" class="text-center">
                 <ul class="pagination"></ul>
             </td>
           </tr>

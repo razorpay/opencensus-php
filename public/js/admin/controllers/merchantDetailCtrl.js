@@ -589,6 +589,40 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
+    $scope.suspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/suspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant suspended successfully', true);
+          $scope.merchant.details.suspended_at = Date.now() / 1000;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.unsuspendMerchant = function () {
+      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/unsuspend');
+      request.success(function (data) {
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'Merchant unsuspended successfully', true);
+          $scope.merchant.details.suspended_at = null;
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
 
     // Assign pricing modal
     $scope.openAssignPricing = function () {
@@ -825,14 +859,13 @@ app.controller('MerchantDetailCtrl', [
       }, $.noop);
     };
     $scope.openAutofillForms = function () {
-      var merchant = $scope.merchant;
       $modal.open({
         templateUrl: 'openAutofillForms.html',
         controller: 'openAutofillForms',
         windowClass: 'modal-print',
         resolve: {
           current: function () {
-            return merchant.details;
+            return $scope.merchant.details;
           }
         }
       });
@@ -918,10 +951,11 @@ app.controller('MerchantDetailCtrl', [
       var request = $http.get('/admin/merchant/' + $scope.merchant.id);
       request.success(function (data) {
         $scope.alerts.resetAlerts(true);
+
         if (data.success) {
           $scope.merchant = data.data;
           $scope.merchant.id = data.data.details.id;
-          $scope.merchant.details.activation_progress = parseInt($scope.merchant.details.steps_finished.length * 100 / 5);
+          $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
           $scope.merchant.details.international = data.data.details.international;
           var merchantGroups = data.data.groups || [];
@@ -933,6 +967,13 @@ app.controller('MerchantDetailCtrl', [
 
           $scope.merchant.creditsLogMode = 'live';
           getCreditsLog($scope.merchant.creditsLogMode);
+
+          if (data.data.details.confirmed === false)
+          {
+              $scope.unconfirmed = true;
+              $scope.alerts.addAlert('danger', 'Merchant not confirmed');
+          }
+
         } else {
           $scope.alerts.resetAlerts(true);
           angular.forEach(data.errors, function (value) {
@@ -951,7 +992,6 @@ app.controller('MerchantDetailCtrl', [
     function getMerchantFeatures() {
       var request = $http.get('/admin/features/' + $scope.merchant.id);
       request.success(function (data) {
-        $scope.alerts.resetAlerts(true);
         if (data.success) {
           // Full list of features which can be assigned to merchant
           $scope.merchant.details.allowedFeatures = data.data.all_features;
@@ -1083,7 +1123,8 @@ app.controller('MerchantDetailCtrl', [
       'amex',
       'netbanking',
       'debit_card',
-      'credit_card'
+      'credit_card',
+      'jiomoney'
     ];
     $scope.methods = {};
 
@@ -1377,13 +1418,13 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   function ($scope, $modalInstance, current) {
-    var merchant_details = current && current.merchant_details || {};
+    var merchant_details = current.merchant_details;
     var html = '';
     var bankDocument = '';
     $scope.ok = function () {
       if (bankDocument === 'hdfc-excel') {
-        var id = merchant_details.merchant_id;
-        window.location = '/admin/merchant/' + id + '/hdfc_excel';
+        var id = merchant_details.id;
+        window.location = '/admin/merchant/' + current.id + '/hdfc_excel';
       }
       if (html) {
         var w = window.open();

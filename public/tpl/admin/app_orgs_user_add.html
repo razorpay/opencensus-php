@@ -5,7 +5,7 @@
   </h1>
 </div>
 <div class="wrapper-md">
-  <div class="panel panel-default" ng-controller="OrgsAddUsersCtrl">
+  <div class="panel panel-default new-user" ng-controller="OrgsAddUsersCtrl">
     <div class="panel-heading">
       {{ user.id ? 'Edit ' + user.id : 'Add a new User' }}
     </div>
@@ -81,6 +81,14 @@
             <input type="checkbox" name="allow_all_merchants" class="form-control m-b" ng-model="user.allow_all_merchants" />
           </div>
         </div>
+
+        <div class="form-group">
+          <label class="col-lg-2 control-label">Disabled</label>
+          <div class="col-lg-10">
+            <input type="checkbox" name="disabled" class="form-control m-b" ng-model="user.disabled" />
+          </div>
+        </div>
+
         <div class="form-group">
           <label class="col-lg-2 control-label">Role</label>
           <div class="col-lg-10" >

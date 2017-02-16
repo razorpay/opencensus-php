@@ -116,9 +116,9 @@ class MerchantController extends Controller
 
     public function getConfirm($token)
     {
-        $error = (new Merchant\Service)->confirm($token);
+        list($error, $data) = (new Merchant\Service)->confirm($token);
 
-        return AppResponse::jsonResponse($error);
+        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getActivationDetails()
@@ -146,6 +146,7 @@ class MerchantController extends Controller
         else
         {
             $error = (new MerchantDetails\Service)->checkUploads();
+
         }
 
         return AppResponse::jsonResponse($error);
@@ -468,6 +469,26 @@ class MerchantController extends Controller
         $input = Input::all();
 
         list($error, $data) = (new Merchant\Service)->updateMerchantFeatures($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postSignup()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)->savePreSignupDetails($id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getSignup()
+    {
+        $id = Auth::user()->getCurrentMerchantId();
+
+        list($error, $data) = (new Merchant\Service)->getPreSignupDetails($id);
 
         return AppResponse::jsonResponse($error, $data);
     }

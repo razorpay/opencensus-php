@@ -13,6 +13,8 @@ use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
 
+use Queue;
+
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
@@ -316,17 +318,34 @@ class Service extends Base\Service
     public function confirm($token)
     {
         $user = User\Entity::getUserForConfirmation($token);
+
+        if (is_null($user))
+        {
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
+        }
+
         $merchant = $user->getOwnerMerchant();
 
         if (is_null($merchant))
         {
-            return array(static::INVALID_CONFIRMATION_TOKEN);
+            return [[static::NO_OWNED_MERCHANT], []];
         }
 
         return $this->confirmMerchantById($merchant->id);
     }
 
     public function confirmMerchantById($merchantId)
+    {
+        $merchant = $this->createMerchantOnApi($merchantId);
+
+        // Confirm the merchant and associated users (with same email)
+        // This also calls the mailing list subscription for the user email
+        $merchant->confirm();
+
+        return [null, ['email' => $merchant->email]];
+    }
+
+    public function createMerchantOnApi($merchantId)
     {
         $merchant = Merchant\Entity::findOrFail($merchantId);
 
@@ -335,7 +354,6 @@ class Service extends Base\Service
         // Once the merchant is created we also have to tag him
         // with the admin if he was invited by one.
         $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
-
         if ($lead)
         {
             $merchantApiData['admin_id'] = $lead->admin_id;
@@ -361,11 +379,7 @@ class Service extends Base\Service
             $response = $this->api->merchant->create($merchantApiData);
         }
 
-        // Confirm the merchant and associated users (with same email)
-        // This also calls the mailing list subscription for the user email
-        $merchant->confirm();
-
-        return array();
+        return $merchant;
     }
 
     public function tagAdmin($merchantOnApi)
@@ -391,7 +405,7 @@ class Service extends Base\Service
             {
                 $user = Auth::user()->get();
 
-                if ($user->confirm_token === null)
+                if ($user->getConfirmToken() === null)
                 {
                     return [['User already confirmed. You can login ' .
                              '<a href="'.\URL::to('#/access/signin').'">here</a>'], null];
@@ -795,7 +809,7 @@ class Service extends Base\Service
                 $query->addSelect(array('merchant_id', 'submitted'));
             }))
             ->withAnyTag($tag)
-            ->whereNull('archived_at')
+            ->whereNull('suspended_at')
             ->get(['id', 'name', 'activated', 'created_at', 'email']);
     }
 
@@ -983,5 +997,45 @@ class Service extends Base\Service
         }
 
         return [$error, $data];
+    }
+
+    public function savePreSignupDetails($merchantId, $input)
+    {
+        $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
+
+        $error = $merchantDetail->edit($input, 'preSignup');
+
+        if (empty($error))
+        {
+            $merchantDetail->saveOrFail();
+
+            if (empty($input['business_name']) === false)
+            {
+                $merchant = Merchant\Entity::findOrFail($merchantId);
+
+                $merchant->edit(['name' => $input['business_name']], 'changeName');
+
+                $merchant->saveOrFail();
+                (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
+
+                $zapierData = (new User\Service)->getZapierData($merchant, $input);
+
+                if (config('slack.enable'))
+                {
+                    Queue::push('App\User\Service@postToZapier', $zapierData);
+                }
+            }
+        }
+
+        (new MerchantDetails\Service)->saveDetailsOnAPI($input, $merchantId);
+
+        return [ $error, $merchantDetail->getPreSignupFields()];
+    }
+
+    public function getPreSignupDetails($merchantId)
+    {
+        $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
+
+        return $merchantDetail->getPreSignupFields();
     }
 }

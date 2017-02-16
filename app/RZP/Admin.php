@@ -43,11 +43,39 @@ class Admin extends Entity
         return $this->request('GET', $relativeUrl);
     }
 
+    public function fetchMerchants($orgId, $adminId, array $input)
+    {
+        $relativeUrl = "orgs/$orgId/admins/$adminId/merchants";
+
+        return $this->request('GET', $relativeUrl, $input);
+    }
+
     public function sendNewsletter($params)
     {
         $relativeUrl = $this->getEntityUrl(). 'newsletter/mail';
 
         return $this->request('POST', $relativeUrl, $params);
+    }
+
+    public function logout($orgId)
+    {
+        $relativeUrl = "orgs/$orgId/admin/logout";
+
+        return $this->request('POST', $relativeUrl);
+    }
+
+    public function forgotPassword($orgId, $input)
+    {
+        $relativeUrl = "orgs/$orgId/admin/forgot_password";
+
+        return $this->request('POST', $relativeUrl, $input);
+    }
+
+    public function resetPassword($orgId, $input)
+    {
+        $relativeUrl = "orgs/$orgId/admin/reset_password";
+
+        return $this->request('POST', $relativeUrl, $input);
     }
 
     public function triggerError()

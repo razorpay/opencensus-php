@@ -29,28 +29,30 @@ app.controller('PaymentDetailCtrl', [
     $scope.getStateMerchant = getStateMerchant;
 
     // Keys currently added the to good-looking view
+    // Or ones we do not want to show (entity, id, refunds)
     var shownByDefault = [
       'amount',
       'amount_refunded',
-      'currency',
-      'status',
-      'captured',
-      'method',
       'bank',
-      'wallet',
-      'refund_status',
+      'captured',
+      'contact',
+      'created_at',
+      'currency',
       'description',
       'email',
-      'contact',
-      'fee',
-      'service_tax',
+      'entity',
       'error_code',
       'error_description',
+      'fee',
+      'id',
+      'international',
+      'method',
       'notes',
-      'created_at',
-      // Not much point of showing these 2 in payment view
-      'entity',
-      'id'
+      'refund_status',
+      'refunds',
+      'service_tax',
+      'status',
+      'wallet'
     ];
 
     /**
@@ -80,6 +82,9 @@ app.controller('PaymentDetailCtrl', [
         resolve: {
           amount: function () {
             return $scope.entity.amount - $scope.entity.amount_refunded;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
@@ -124,21 +129,27 @@ app.controller('PaymentDetailCtrl', [
             }
 
             return baseAmount;
+          },
+          currency: function () {
+            return $scope.entity.currency;
           }
         }
       });
       modalInstance.result.then(function (amount) {
-        $scope.capture(amount);
+        $scope.capture(amount, $scope.entity.currency);
       }, function () {
       });
     };
-    $scope.capture = function (amount) {
+    $scope.capture = function (amount, currency) {
       var captureAmount = parseInt(amount);
       if (!captureAmount) {
         $scope.alerts.addAlert('danger', 'Invalid capture amount', true);
         return;
       }
-      var data = { amount: captureAmount };
+      var data = {
+        amount: captureAmount,
+        currency: currency
+      };
       var request = $http({
         method: 'post',
         url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/capture',
@@ -218,8 +229,12 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  function ($scope, $modalInstance, amount, currency) {
+
     $scope.amount = amount;
+    $scope.currency = currency;
+
     $scope.ok = function (amount) {
       $modalInstance.close(amount);
     };
@@ -232,10 +247,13 @@ app.controller('PaymentDetailCtrl', [
   '$scope',
   '$modalInstance',
   'amount',
-  function ($scope, $modalInstance, amount) {
+  'currency',
+  '$filter',
+  function ($scope, $modalInstance, amount, currency, $filter) {
 
-    // This is stored in INR
-    $scope.amount = (amount/100).toFixed(2);
+    // This is displayed with 2 decimal places
+    $scope.amount = $filter('propercurrency')(amount/100, '');
+    $scope.currency = currency;
     $scope.notes = {
       comment: null
     };
@@ -249,15 +267,22 @@ app.controller('PaymentDetailCtrl', [
     };
 
     $scope.ok = function (amount, comment) {
-      // We get amount in INR
+      // TODO: Change this so we do integers everywhere.
+      // Convert it back to a float from String
+      amount = parseFloat(amount.replace(/[, ]/, ''));
+      // We get amount with 2 decimal places
+      // Note: If we ever do a currency with more or less than 2 decimal places
+      // refunds will break
       var data = {
-        amount: amount*100
+        amount: amount * 100
       };
+
       if (comment !== '') {
         data.notes = {
           comment: comment
         };
       }
+
       $modalInstance.close(data);
     };
 

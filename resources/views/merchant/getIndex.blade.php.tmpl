@@ -10,6 +10,8 @@
 <!-- Merchant Js-->
 <script src='{{asset('js/generated/merchant.js')}}'></script>
 <!-- supportkiy code -->
-@include('partials/supportkit')
+@if(env('APP_ENV') !== 'testing')
+   @include('partials/supportkit')
+@endif
 
 @include('partials/footer')

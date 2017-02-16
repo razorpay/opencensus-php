@@ -53,7 +53,7 @@ app.controller('MerchantActivationCtrl', [
           angular.forEach(data.data.merchant.steps_finished, function (value, key) {
             $scope.check[value] = true;
           });
-          angular.forEach(data.data.activation.data, function (value, key) {
+          angular.forEach(data.data.merchant.merchant_details, function (value, key) {
             $scope.data[key] = value;
           });
           angular.forEach(data.data.activation.files, function (value, key) {

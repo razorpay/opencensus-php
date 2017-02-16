@@ -14,7 +14,7 @@
         <a href="{{'/admin/merchant/' + merchant.details.id + '/login'}}" ng-show="admin.permissions.indexOf('view_merchant_login') !== -1" target="_blank" class="list-group-item">
           Login as Merchant
         </a>
-        <a tooltip="Confirm merchant Account." ng-show="(unconfirmed===true) && (admin.permissions.indexOf('edit_merchant_confirm') !== -1)" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
+        <a tooltip="Confirm merchant Account." ng-show="(merchant.details.confirmed === false) && (admin.permissions.indexOf('edit_merchant_confirm') !== -1)" ng-click="confirmAccount()" class="list-group-item" ng-confirm-click="This will mark the merchant as confirmed. This skips email confirmation. Make sure that you have verified the email address on your own. Use with caution.">
           Confirm Merchant
         </a>
         <a ui-sref="app.merchants.activation({id:merchant.details.id})" ng-show="admin.permissions.indexOf('view_activation_form') !== -1" class="list-group-item see-activation-form">
@@ -123,6 +123,14 @@
         <a href class="list-group-item" ng-show="merchant.details.archived_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="archiveMerchant()" ng-confirm-click="Are you sure you want to archive merchant? (Make sure you have attempted all ways of convincing him before doing this)"
         >
           Archive Merchant <i class="pull-right fa fa-archive"></i>
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.suspended_at != null && admin.permissions.indexOf('edit_merchant_unarchive') !== -1" ng-click="unsuspendMerchant()"
+        >
+          Unsuspend Merchant <i class="pull-right fa fa-archive"></i>
+        </a>
+        <a href class="list-group-item" ng-show="merchant.details.suspended_at === null && admin.permissions.indexOf('edit_merchant_archive') !== -1" ng-click="suspendMerchant()" ng-confirm-click="Are you sure you want to suspend merchant? (Make sure you have attempted all ways of convincing him before doing this)"
+        >
+          Suspend Merchant <i class="pull-right fa fa-archive"></i>
         </a>
         <a href class="list-group-item" id="btn-tagMerchant" ng-click="openReferralTagModal()" ng-show="admin.permissions.indexOf('edit_merchant_mark_referred') !== -1">
           Mark as Referred <i class="pull-right fa fa-gift"></i>
@@ -234,10 +242,10 @@
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </div>
-        <div href="{{merchant.details.website}}" class="list-group-item">
+        <a href="{{merchant.details.website}}" class="list-group-item">
           <span class="pull-right">{{merchant.details.website}}</span>
           Website
-        </div>
+        </a>
         <div class="list-group-item">
           <span class="pull-right">{{merchant.details.category}}</span>
           MCC
@@ -250,12 +258,33 @@
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </div>
-        <div class="list-group-item">
-          <span class="pull-right">{{merchant.details.transaction_report_email}}</span>
+
+        <!--
+          If we have only one email, show it as such, but if there are more than one,
+          use a show/hide menu to list all the emails nicely
+        -->
+
+        <div class="list-group-item" ng-show="merchant.details.transaction_report_email.length == 1">
+          <a href="mailto:{{merchant.details.transaction_report_email[0]}}" class="pull-right">{{merchant.details.transaction_report_email[0]}}</a>
           Transaction Report Email
         </div>
+        <div class="list-group-item" ng-init="isTransactionReportEmailsCollapsed = false" ng-show="merchant.details.transaction_report_email.length>1">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isTransactionReportEmailsCollapsed = !isTransactionReportEmailsCollapsed" >Show/Hide</button>
+          </span>
+          Transaction Report Emails
+        </div>
+        <div ng-init="isTransactionReportEmailsCollapsed = true" collapse="isTransactionReportEmailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-repeat="email in merchant.details.transaction_report_email">
+            <a href="mailto:{{email}}" class="pull-right">{{email}}</a>
+            &nbsp;
+          </div>
+        </div>
+
         <div class="list-group-item">
-          <span class="pull-right">{{merchant.details.international}}</span>
+          <span class="pull-right">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.international === true, 'fa-times text-danger':merchant.details.international === false}"></i>
+          </span>
           International
         </div>
         <div class="list-group-item">
@@ -273,8 +302,8 @@
           Activation Date
         </div>
         <div class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.confirm_token == null ? 'Confirmed' : 'Not Confirmed'}}">
-            <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirm_token == null, 'fa-times text-danger':merchant.details.confirm_token != null}"></i>
+          <span class="pull-right" tooltip="{{merchant.details.confirmed == true ? 'Confirmed' : 'Not Confirmed'}}">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.confirmed == true, 'fa-times text-danger':merchant.details.confirmed == false}"></i>
           </span>
           Confirmed
         </div>
@@ -321,6 +350,12 @@
             {{merchant.details.fee_bearer|titlecase}}
           </span>
           Fee Bearer
+        </div>
+        <div class="list-group-item">
+          <span class="pull-right">
+            {{merchant.details.fee_model|titlecase}}
+          </span>
+          Fee Model
         </div>
         <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
@@ -375,6 +410,10 @@
             Payzapp
           </div>
           <div class="list-group-item">
+            <span class="pull-right" tooltip="{{merchant.details.methods.jiomoney == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.jiomoney == true, 'fa-times text-danger':merchant.details.methods.jiomoney == false}"></i></span>
+            Jiomoney
+          </div>
+          <div class="list-group-item">
             <span class="pull-right" tooltip="{{merchant.details.methods.upi == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods.upi == true, 'fa-times text-danger':merchant.details.methods.upi == false}"></i></span>
             UPI
           </div>
@@ -388,14 +427,18 @@
           <span class="pull-right" tooltip="{{merchant.details.archived_at == null ? 'Not Archived' : 'Archived'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.archived_at != null, 'fa-times text-danger':merchant.details.archived_at == null}"></i></span>
           Archived
         </div>
+         <div class="list-group-item">
+          <span class="pull-right" tooltip="{{merchant.details.suspended_at == null ? 'Not Suspended' : 'Suspended'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.suspended_at != null, 'fa-times text-danger':merchant.details.suspended_at == null}"></i></span>
+          Suspended
+        </div>
         <div class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </div>
-        <div target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
+        <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
           <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
           Print screenshots
-        </div>
+        </a>
         <div class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Show/Hide</button>
@@ -467,12 +510,14 @@
                     <th>Terminal Id</th>
                     <th>Mode</th>
                     <th>Gateway</th>
+                    <th>Deleted</th>
                     <th>Category</th>
                     <th>Network Category</th>
                     <th>Merchant Id</th>
                     <th>Merchant Id 2</th>
                     <th>Terminal Id</th>
                     <th>Card Allowed</th>
+                    <th>Netbanking</th>
                     <th>Emi</th>
                     <th>Emi Duration (Months)</th>
                     <th>Shared</th>
@@ -481,9 +526,14 @@
                   </thead>
                   <tbody>
                   <tr ng-repeat="terminal in merchant.terminals.items">
-                    <td>{{terminal.id}}</td>
+                    <td>
+                      <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
+                        <code>{{terminal.id}}</code>
+                      </a>
+                    </td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
+                    <td>{{!!terminal.deleted_at}}</td>
                     <td>{{terminal.category}}</td>
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
@@ -668,6 +718,7 @@
              <option value="upi_icici">UPI/ICICI</option>
              <option value="wallet_airtelmoney">Airtelmoney</option>
              <option value="wallet_freecharge">Freecharge</option>
+             <option value="wallet_jiomoney">Jiomoney</option>
              <option value="mobikwik">Mobikwik</option><
              <option value="billdesk">Billdesk</option>
              <option value="ebs">EBS</option>
@@ -675,7 +726,10 @@
              <option value="kotak">Kotak</option>
              <option value="netbanking_hdfc">Netbanking HDFC</option>
              <option value="netbanking_kotak">Netbanking KOTAK</option>
+             <option value="netbanking_axis">Netbanking AXIS</option>
+             <option value="netbanking_airtel">Netbanking AIRTEL</option>
              <option value="cybersource">Cybersource</option>
+             <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>
         </div>
       </div>
@@ -911,7 +965,7 @@
   </div>
   <div class="modal-body merchant-modal">
     <form class="form-horizontal" ng-init="merchant={international:current.international, category:current.category,
-    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, name: current.name, max_payment_amount: current.max_payment_amount/100}">
+    category2:current.category2, website:current.website, billing_label:current.billing_label, transaction_report_email: current.transaction_report_email.join(), settlement_schedule: current.settlement_schedule, risk_rating: current.risk_rating, fee_bearer: current.fee_bearer, fee_model: current.fee_model, name: current.name, max_payment_amount: current.max_payment_amount/100}">
       <div class="form-group">
         <label for="Name" class="col-lg-2 control-label">Name:</label>
         <div class="col-lg-10" >
@@ -984,6 +1038,15 @@
           <select class="form-control m-b" name="fee_bearer" ng-model="merchant.fee_bearer">
             <option value="platform">Platform</option>
             <option value="customer">Customer</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label for="fee_model" class="col-lg-2 control-label">Fee Model:</label>
+        <div class="col-lg-10" >
+          <select class="form-control m-b" name="fee_model" ng-model="merchant.fee_model">
+            <option value="prepaid">Prepaid</option>
+            <option value="postpaid">Postpaid</option>
           </select>
         </div>
       </div>
