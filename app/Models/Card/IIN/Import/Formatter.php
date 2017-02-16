@@ -3,8 +3,10 @@
 namespace RZP\Models\Card\IIN\Import;
 
 use RZP\Models\Card\IIN\Entity as IIN;
+use RZP\Models\Base as BaseModel;
 use RZP\Models\Card\Network;
-use RZP\Models\Base;
+use RZP\Models\Bank\Name;
+use RZP\Models\Bank\IFSC;
 use RZP\Exception;
 
 /**
@@ -16,23 +18,23 @@ use RZP\Exception;
  */
 class Formatter
 {
-    public $creditCard          =   0;
-    public $debitCard           =   0;
-    public $otherCardType       =   0;
-    public $unknownNetworkType  =   0;
+    public $creditCard          = 0;
+    public $debitCard           = 0;
+    public $otherCardType       = 0;
+    public $unknownNetworkType  = 0;
 
     public static $cardTypeMap = array(
-        'FC'    =>  'credit',
-        'DC'    =>  'credit',
-        'FD'    =>  'debit',
-        'DD'    =>  'debit'
+        'FC'    => 'credit',
+        'DC'    => 'credit',
+        'FD'    => 'debit',
+        'DD'    => 'debit'
     );
 
     public static $countryMap = array(
-        'DC'    =>  'IN',
-        'DD'    =>  'IN',
-        'FD'    =>  NULL,
-        'FC'    =>  NULL
+        'DC'    => 'IN',
+        'DD'    => 'IN',
+        'FD'    => null,
+        'FC'    => null,
     );
 
     /**
@@ -45,7 +47,7 @@ class Formatter
      */
     public function formatData($columns, $data)
     {
-        $iins = new Base\PublicCollection;
+        $iins = new BaseModel\PublicCollection;
 
         foreach ($data as $row)
         {
@@ -54,6 +56,8 @@ class Formatter
 
             foreach ($columns as $column)
             {
+                $row[$index] = trim($row[$index]);
+
                 switch (strtolower($column))
                 {
                     case 'type':
@@ -65,8 +69,12 @@ class Formatter
                         $input[IIN::IIN] = $row[$index];
                         break;
 
-                    case 'card_brand':
-                        // $input[IIN::CATEGORY] = $row[$index];
+                    case 'issuer':
+                        if (IFSC::exists($row[$index]) === true)
+                        {
+                            $input[IIN::ISSUER] = $row[$index];
+                            $input[IIN::ISSUER_NAME] = Name::getName($row[$index]);
+                        }
                         break;
 
                     default:
@@ -76,7 +84,29 @@ class Formatter
 
                 $index++;
             }
+
             $iins[] = $input;
+        }
+
+        return $iins;
+    }
+
+    public function formatIinDataRange($input)
+    {
+        $data = [];
+
+        $iins = new BaseModel\PublicCollection;
+
+        $min = $input['min'];
+        $max = $input['max'];
+
+        unset($input['min'], $input['max']);
+
+        for ($i = $min; $i <= $max; $i++)
+        {
+            $input[IIN::IIN] = $i;
+
+            $iins[$i] = $input;
         }
 
         return $iins;

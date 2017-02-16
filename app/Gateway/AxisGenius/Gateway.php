@@ -2,16 +2,11 @@
 
 namespace RZP\Gateway\AxisGenius;
 
-use RZP\Constants\Mode;
-use RZP\Error\ErrorCode;
+use RZP\Constants\HashAlgo;
 use RZP\Exception;
+use RZP\Gateway\AxisGenius;
 use RZP\Gateway\AxisMigs;
 use RZP\Gateway\Base;
-use RZP\Gateway\AxisGenius;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-use RZP\Constants\HashAlgo;
 
 class Gateway extends AxisMigs\Gateway
 {

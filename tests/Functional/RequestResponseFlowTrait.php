@@ -28,6 +28,7 @@ trait RequestResponseFlowTrait
             {
                 $response = $this->sendRequest($data['request']);
             }
+
         }
         catch (Exception\BaseException $e)
         {
@@ -100,6 +101,11 @@ trait RequestResponseFlowTrait
         $class = (isset($expected['class'])) ? $expected['class'] : Exception\RecoverableException::class;
 
         $this->assertExceptionClass($actual, $class);
+
+        if (isset($expected['two_fa_error']) === true)
+        {
+            $this->assertEquals($actual->hasTwoFaError(), $expected['two_fa_error']);
+        }
 
         $internalError = $actual->getError()->getAttributes();
 
@@ -246,6 +252,8 @@ trait RequestResponseFlowTrait
             $request['raw']);
 
         $this->response = $response;
+
+        $this->app['request']->generateId();
 
         return $response;
     }

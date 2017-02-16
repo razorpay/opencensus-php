@@ -4,7 +4,7 @@ namespace RZP\Gateway\AxisMigs;
 
 class VerStatus
 {
-    protected static $codes = array(
+    protected static $codes = [
         'Y' => 'The cardholder was successfully authenticated.',
         'E' => 'The cardholder is not enrolled.',
         'N' => 'The cardholder was not verified.',
@@ -18,9 +18,9 @@ class VerStatus
         'T' => 'ACS timed out.',
         'P' => 'Error parsing input from Issuer.',
         'I' => 'Internal Payment Server system error. This could be caused by a temporary DB failure or an error in the security module or by some error in an internal system.',
-    }
+    ];
 
-    protected static $eci = array(
+    protected static $eci = [
         'Y' => '05',
         'E' => '06',
         'N' => '-',
@@ -34,9 +34,9 @@ class VerStatus
         'T' => '-',
         'P' => '-',
         'I' => '?',
-    );
+    ];
 
-    protected static $secureCodeSli = array(
+    protected static $secureCodeSli = [
         'Y' => '2',
         'E' => '1',
         'N' => '-',
@@ -50,5 +50,5 @@ class VerStatus
         'T' => '-',
         'P' => '-',
         'I' => '?',
-    );
+    ];
 }

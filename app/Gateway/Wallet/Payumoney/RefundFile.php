@@ -4,12 +4,14 @@ namespace RZP\Gateway\Wallet\Payumoney;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'Payumoney_Wallet_Refunds';
 
-    protected static $headers = array(
+    protected static $headers = [
         'Sr No',
         'Transaction date',
         'Gateway reference #',
@@ -17,24 +19,32 @@ class RefundFile extends Base\RefundFile
         'Order Amount',
         'Refund Amount',
         'Merchant Code',
-    );
+    ];
 
     public function generate($input)
     {
         $data = $this->getRefundData($input);
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $fileName = $this->getFileToWriteNameWithoutExt();
+
+        $urlExcel = $this->writeToExcelFile($data, $fileName);
+
+        $creator = $this->createFile(
+            FileStore\Format::XLSX,
+            $data,
+            $fileName,
+            FileStore\Type::PAYUMONEY_WALLET_REFUND);
 
         $this->sendRefundEmail();
 
         return $urlExcel;
     }
 
-    protected function sendRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $fullPath = $this->getExcelFullFilePath();
 
-        $data['file'] = $fullpath;
+        $data['file'] = $fullPath;
         $data['body'] = 'Please find attached refunds information for PayUMoney';
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
@@ -50,6 +60,10 @@ class RefundFile extends Base\RefundFile
             $message->to($emails);
 
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::PAYU_MONEY_REFUNDS_MAIL);
         });
     }
 
@@ -57,12 +71,14 @@ class RefundFile extends Base\RefundFile
     {
         $i = 1;
 
+        $data = [];
+
         foreach ($input['data'] as $row)
         {
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
 
-            $data[] = array(
+            $data[] = [
                 'Sr No'               => $i++,
                 'Transaction date'    => $date,
                 'Gateway reference #' => $row['gateway']['gateway_payment_id'],
@@ -70,7 +86,7 @@ class RefundFile extends Base\RefundFile
                 'Order Amount'        => $row['payment']['amount'] / 100,
                 'Refund Amount'       => $row['refund']['amount'] / 100,
                 'Merchant Code'       => $row['terminal']['gateway_merchant_id'],
-            );
+            ];
         }
 
         return $data;

@@ -4,7 +4,6 @@ namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
 use RZP\Models\Merchant\Account;
-use RZP\Constants\Table;
 
 use Illuminate\Database\Eloquent\SoftDeletes;
 
@@ -34,8 +33,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'token';
 
     protected $entity           = 'token';
-
-    protected $table            = Table::TOKEN;
 
     protected $generateIdOnCreate = true;
 
@@ -129,6 +126,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Terminal\Entity');
     }
 
+    public function hasCard()
+    {
+        return $this->isAttributeNotNull(self::CARD_ID);
+    }
+
     public function getBank()
     {
         return $this->getAttribute(self::BANK);
@@ -179,6 +181,16 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MERCHANT_ID);
     }
 
+    public function getCardId()
+    {
+        return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
@@ -223,7 +235,7 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicCardAttribute(array & $array)
     {
-        if ($this->card !== null)
+        if ($this->hasCard())
         {
             $array[self::CARD] = $this->card->toArrayToken();
         }

@@ -25,6 +25,20 @@ return [
         ],
     ],
 
+    'testAddReverseAdjustment' => [
+        'request' => [
+            'content' => [
+            ],
+            'url' => '/adjustments/reversal',
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+
+    ],
+
    'testAddAdjustmentWithoutUpdatingEscrowBalance' => [
         'request' => [
             'content' => [
@@ -59,7 +73,7 @@ return [
         'api_fee' => 0,
         'gratis' => false,
         'balance' => 1000100,
-        'escrow_balance' => 1000100,
+//        'escrow_balance' => 1000100,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
         'channel' => 'kotak',
@@ -77,7 +91,7 @@ return [
         'api_fee' => 0,
         'gratis' => false,
         'balance' => 1000100,
-        'escrow_balance' => 1000000,
+//        'escrow_balance' => 1000000,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
         'channel' => 'kotak',
@@ -109,9 +123,9 @@ return [
         'gateway_fee' => 0,
         'api_fee' => 0,
         'balance' => 1048850,
-        'escrow_balance' => 1048850,
+//        'escrow_balance' => 1048850,
         'merchant_id' => '10000000000000',
-        'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        'pricing_rule_id' => null,
         'channel' => 'kotak',
     ],
 
@@ -144,7 +158,7 @@ return [
         'api_fee' => 0,
         'gratis' => false,
         'balance' => 998850,
-        'escrow_balance' => 998850,
+//        'escrow_balance' => 998850,
         'merchant_id' => '10000000000000',
         'pricing_rule_id' => null,
         'channel' => 'kotak',

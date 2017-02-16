@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Settlement;
 
-use RZP\Constants\Mode;
+use Carbon\Carbon;
 use RZP\Models\Base;
-use RZP\Models\Gateway;
-use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Models\Settlement\Icici;
+use RZP\Models\Settlement\Kotak;
+use RZP\Models\Transaction;
+use RZP\Exception;
 
 class Service extends Base\Service
 {
@@ -17,11 +19,29 @@ class Service extends Base\Service
         return $settler->settle($input, $channel);
     }
 
+    public function initiateSettlementsV2($input, $channel)
+    {
+        $data = (new Settlement\Processor)->process($input, $channel);
+
+        return $data;
+    }
+
+    public function generateSettlementFile($input)
+    {
+        (new Settlement\Validator)->validateInput('batch_fetch', $input);
+
+        $batchSettlementId = $input['batch_settlement_id'];
+
+        $setls = $this->repo->settlement->getSettlementsByBatchSettlementId($batchSettlementId);
+
+        $urls = (new Kotak\Service)->generateSettlementFile($setls);
+
+        return $urls;
+    }
+
     public function fetch($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
-
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
     }
@@ -57,11 +77,9 @@ class Service extends Base\Service
 
     public function getSettlementTransactions($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        $txns = $this->repo->transaction->fetchBySettlementId($id);
+        $txns = $this->repo->transaction->fetchBySettlement($setl);
 
         return $txns->toArrayPublic();
     }
@@ -93,12 +111,21 @@ class Service extends Base\Service
 
     public function deleteSetlFile($setlFileType)
     {
-        return (new Kotak\Service)->deleteSetlFile($setlFileType);
+        (new Kotak\Service)->deleteSetlFile($setlFileType);
     }
 
     public function getSettlementCombinedReport($input)
     {
         return (new Base\Report)->getReport($input, 'transaction');
+    }
+
+    public function postInitiateTransfer($input)
+    {
+        (new Settlement\Validator)->validateInput('nodal_transfer', $input);
+
+        $amount = $input['amount']/100;
+
+        return (new Icici\NodalAccount)->generateTransferFile($amount);
     }
 
     public function calculatePrevousSettlementFees()
@@ -130,7 +157,7 @@ class Service extends Base\Service
         return ['fees' => $totalFees, 'count' => $totalCount];
     }
 
-    public function calculatePrevousSettlementServiceTax()
+    public function calculatePreviousSettlementServiceTax()
     {
         $settlements = $this->repo->settlement->getSettlementWithServiceTaxNullOrZero();
 
@@ -159,11 +186,11 @@ class Service extends Base\Service
                 $totalCount ++;
             }
 
-            $repo->commit();
+            $this->repo->commit();
        }
-       catch (Exception $e)
+       catch (\Exception $e)
        {
-            $repo->rollback();
+            $this->repo->rollback();
             throw new Exception\RuntimeException(
                         'Failed generating Service Tax',
                        $e->getTrace());

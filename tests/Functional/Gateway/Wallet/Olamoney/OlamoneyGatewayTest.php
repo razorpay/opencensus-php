@@ -65,6 +65,20 @@ class OlamoneyGatewayTest extends TestCase
         });
     }
 
+    public function testEmailCellMismatchOnOtpGenerate()
+    {
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $payment['contact'] = '9022219027';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
     public function testThrottlingOnOtpGenerate()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
@@ -92,11 +106,38 @@ class OlamoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('failed', $payment['two_factor_auth']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertNull($wallet);
 
         $this->step = null;
+    }
+
+    public function testCallbackEmptyResponseBody()
+    {
+        $this->mockServerContentFunction(function (& $content)
+        {
+            $content = '';
+
+            return $content;
+        });
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNull($wallet);
     }
 
     public function testOtpRetrySuccessPayment()
@@ -140,12 +181,12 @@ class OlamoneyGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_olamoney',
-                            'otp_attempts'  => 3,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_olamoney',
+            'otp_attempts'  => 3,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
@@ -161,18 +202,18 @@ class OlamoneyGatewayTest extends TestCase
         $this->ba->publicAuth();
 
         $payment = $this->fixtures->create('payment', [
-                            'method'        => 'wallet',
-                            'wallet'        => self::WALLET,
-                            'gateway'       => 'wallet_olamoney',
-                            'contact'       => '9111111111',
-                            'otp_attempts'  => 2,
-                            'otp_count'     => 1,
-                            'terminal_id'   => $this->sharedTerminal->id
-                        ]);
+            'method'        => 'wallet',
+            'wallet'        => self::WALLET,
+            'gateway'       => 'wallet_olamoney',
+            'contact'       => '9111111111',
+            'otp_attempts'  => 2,
+            'otp_count'     => 1,
+            'terminal_id'   => $this->sharedTerminal->id
+        ]);
 
         $data = $this->testData[__FUNCTION__];
 
-        $url = $this->getOtpResendUrl($payment);
+        $url = $this->getOtpResendUrl($payment->getPublicId());
 
         $data['request']['url'] = $url;
 
@@ -209,7 +250,7 @@ class OlamoneyGatewayTest extends TestCase
         $response = $this->response->getOriginalContent()->data;
 
         // Send topup request
-        $response = $this->doWalletTopupViaAjaxRoute($response['payment_id']);
+        $response = $this->doWalletTopupViaAjaxRoute($response['data']['payment_id']);
 
         $this->assertArrayHasKey('razorpay_payment_id', $response);
 
@@ -236,19 +277,20 @@ class OlamoneyGatewayTest extends TestCase
         $data = $this->testData[__FUNCTION__];
 
         $payment = $this->fixtures->create('payment:failed', [
-                            PaymentEntity::EMAIL        => 'a@b.com',
-                            PaymentEntity::AMOUNT       => 50000,
-                            PaymentEntity::CONTACT      => '+919918899029',
-                            PaymentEntity::METHOD       => 'wallet',
-                            PaymentEntity::WALLET       => 'olamoney',
-                            PaymentEntity::GATEWAY      => 'wallet_olamoney',
-                            PaymentEntity::CARD_ID      => null,
-                            PaymentEntity::TERMINAL_ID  => $this->sharedTerminal->id
-                        ]);
+            PaymentEntity::EMAIL        => 'a@b.com',
+            PaymentEntity::AMOUNT       => 50000,
+            PaymentEntity::CONTACT      => '+919918899029',
+            PaymentEntity::METHOD       => 'wallet',
+            PaymentEntity::WALLET       => 'olamoney',
+            PaymentEntity::GATEWAY      => 'wallet_olamoney',
+            PaymentEntity::CARD_ID      => null,
+            PaymentEntity::TERMINAL_ID  => $this->sharedTerminal->id
+        ]);
 
         $id = $payment->getPublicId();
 
-        $this->runRequestResponseFlow($data, function() use ($id) {
+        $this->runRequestResponseFlow($data, function() use ($id)
+        {
             $this->verifyPayment($id);
         });
 
@@ -329,20 +371,19 @@ class OlamoneyGatewayTest extends TestCase
 
     protected function failOlamoneyAuthorizePayment()
     {
-        $server = $this->mockServerContentFunction(function (& $content)
-                        {
-                            $content['status'] = 'failed';
+        $this->mockServerContentFunction(function(& $content)
+        {
+            $content['status'] = 'failed';
 
-                            return $content;
-                        });
+            return $content;
+        });
 
-        $this->makeRequestAndCatchException(
-            function ()
-            {
-                $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $this->makeRequestAndCatchException(function()
+        {
+            $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
-                $content = $this->doAuthPayment($payment);
-            });
+            $content = $this->doAuthPayment($payment);
+        });
     }
 
     protected function runPaymentCallbackFlowWalletOlamoney($response, &$callback = null)
@@ -351,8 +392,7 @@ class OlamoneyGatewayTest extends TestCase
 
         list ($url, $method, $content) = $this->getDataForGatewayRequest($response, $callback);
 
-        $this->response     = $response;
-
+        $this->response = $response;
 
         if ($mock)
         {

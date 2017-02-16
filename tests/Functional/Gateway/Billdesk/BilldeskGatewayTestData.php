@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testPayment' => [
@@ -10,6 +11,7 @@ return [
         'amount' => 50000,
         'method' => 'netbanking',
         'status' => 'captured',
+        'two_factor_auth' => TwoFactorAuth::UNAVAILABLE,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
         'refund_status' => null,
@@ -38,14 +40,14 @@ return [
         'amount' => 50000,
         'fee' => 1438,
         'service_tax' => 188,
-        'pricing_rule_id' => '1zD0BXpeOyaqpB',
+        'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48562,
         'currency' => 'INR',
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048562,
+//        'escrow_balance' => 1048562,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => null,
@@ -66,7 +68,7 @@ return [
         'balance' => 1048562,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048562,
+//        'escrow_balance' => 1048562,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -196,9 +198,8 @@ return [
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'fee' => 0,
         'service_tax' => 0,
-        'escrow_balance' => 998562,
+//        'escrow_balance' => 998562,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => null,
@@ -220,7 +221,7 @@ return [
                 'netbanking' => [
                     'UTIB' => 'Axis Bank',
 //                    'BARB' => 'Bank of Baroda',
-                    'YESB' => 'Yes Bank',
+                    'YESB' => 'Yes Bank Ltd',
                 ],
                 'wallet' => [],
             ],
@@ -240,6 +241,67 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\BadRequestException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
+        ],
+    ],
+
+    'testReconcileCancelledTransactions' => [
+        'request' => [
+            'method' => 'POST',
+            'url' => '/reconciliate/billdesk/cancelled',
+        ],
+        'response' => [
+            'content' => [
+                'success_count' => 1,
+                'failure_count' => 0,
+            ],
+        ],
+    ],
+
+    'testPaymentAndNewPaymentOnDeleteTerminal' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\RuntimeException::class,
+            'internal_error_code'   => 'SERVER_ERROR_RUNTIME_ERROR',
+        ],
+    ],
+
+    'testPaymentVerifyError' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => 'GATEWAY_ERROR_INVALID_RESPONSE',
+        ],
+    ],
+
+    'testServerToServerCallback' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::SERVER_ERROR,
+                    'description'   => PublicErrorDescription::SERVER_ERROR,
+                ],
+            ],
+            'status_code' => 500,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\RuntimeException',
+            'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
 ];

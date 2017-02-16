@@ -7,7 +7,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'AxisMigs';
+    protected $entity = 'axis_migs';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
@@ -22,14 +22,6 @@ class Repository extends Base\Repository
     {
         return $this->newQuery()
                     ->where('vpc_MerchTxnRef', '=', $merchantTxnRef)
-                    ->firstOrFail();
-    }
-
-    public function findCapturedPaymentById($paymentId)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Command::CAPTURE)
                     ->firstOrFail();
     }
 
@@ -48,7 +40,7 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByPaymentIdAndCommand($paymentId, $command)
+    public function findByPaymentIdAndCommandOrFail($paymentId, $command)
     {
         return $this->newQuery()
                     ->where('payment_id', '=', $paymentId)
@@ -56,9 +48,24 @@ class Repository extends Base\Repository
                     ->firstOrFail();
     }
 
-    public function findByPaymentId($paymentId)
+    public function getSuccessfullyRefundedEntities($paymentId, $refundAmount)
     {
-        return $this->findByPaymentIdAndCommand($paymentId, 'pay');
+        return $this->newQuery()
+                    ->where('payment_id', '=', $paymentId)
+                    ->where('vpc_Command', '=', Command::REFUND)
+                    ->where('vpc_TxnResponseCode', '=', '0')
+                    ->where('vpc_Amount', '=', $refundAmount)
+                    ->get();
+    }
+
+    // TODO: Rename the function to a proper one
+    // and fix the get auth code function for emi
+    public function findCapturedPaymentByIdOrFail($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
+                    ->firstOrFail();
     }
 
     public function countPaymentsNearTransactionNo($txnNo, $terminalId)

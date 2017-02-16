@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Wallet\Payumoney;
 
 use RZP\Error;
-use RZP\Error\ErrorCode;
 
 class ResponseCode
 {

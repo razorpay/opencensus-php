@@ -2,20 +2,19 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
+use Carbon\Carbon;
 use Config;
+use Mail;
+use RZP\Error\PublicErrorDescription;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Error\PublicErrorDescription;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Batch\Header;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Constants\MailTags;
 
 class Processor extends Base\Core
 {
@@ -73,9 +72,10 @@ class Processor extends Base\Core
 
     /**
      * This function process batch.
-     * @param  Batch\Entity $batch   Batch Entity
-     * @param  array       $entries  Entries in the batch file
-     * @return void
+     *
+     * @param  array $entries Entries in the batch file
+     *
+     * @internal param Entity $batch Batch Entity
      */
     protected function processBatch(& $entries)
     {
@@ -137,11 +137,12 @@ class Processor extends Base\Core
     {
         $status = Status::PROCESSED;
 
-        if (($this->batch->getFailureCount() > 0) and
-            ($this->batch->getAttempts() < 3))
-        {
-            $status = Status::PROCESSING;
-        }
+        // TODO: Remove this comment. Currently we will mark the final state as processed.
+        // if (($this->batch->getFailureCount() > 0) and
+        //     ($this->batch->getAttempts() < 3))
+        // {
+        //     $status = Status::PROCESSING;
+        // }
 
         $this->batch->setStatus($status);
     }
@@ -170,7 +171,7 @@ class Processor extends Base\Core
 
                 $this->processRefundRequest($payment, $entry);
             }
-            catch (\Exception $e)
+            catch (Exception\BaseException $e)
             {
                 $this->trace->traceException($e, Trace::WARNING, TraceCode::BATCH_PROCESSING_ERROR);
 
@@ -189,9 +190,9 @@ class Processor extends Base\Core
      * If it exists then we update the status as success and refund id
      * If the refund is successful then we update the entry with status success and refund id
      * If there is any exception occured, we mark the entry as failed.
+     *
      * @param  Payment\Entity $payment Payment Entity
-     * @param  Array          $entry   Single Entry in excel
-     * @return void
+     * @param array           $entry   Single Entry in excel
      */
     protected function processRefundRequest(Payment\Entity $payment, array & $entry)
     {
@@ -204,6 +205,8 @@ class Processor extends Base\Core
         $entry[Header::REFUND_ID] = $refund->getPublicId();
         $entry[Header::REFUNDED_AMOUNT] = $refund->getAmount();
         $entry[Header::STATUS] = Status::SUCCESS;
+        $entry[Header::ERROR_CODE] = null;
+        $entry[Header::ERROR_DESCRIPTION] = null;
     }
 
     /**
@@ -401,6 +404,10 @@ class Processor extends Base\Core
             $message->to($emails);
 
             $message->attach($data['refundFile']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
         });
     }
 }

@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Card;
 
-
 class Type
 {
     const CREDIT     = 'credit';
@@ -16,8 +15,7 @@ class Type
             return self::CREDIT;
         }
 
-        if (($network === Network::RUPAY) or
-            ($network === Network::MAES))
+        if ($network === Network::MAES)
         {
             return self::DEBIT;
         }

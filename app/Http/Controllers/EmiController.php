@@ -3,9 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Emi;
 use Request;
+use RZP\Models\Emi;
 
 class EmiController extends Controller
 {

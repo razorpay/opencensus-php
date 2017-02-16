@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Merchant\Methods;
 
-use RZP\Models\Base;
-use RZP\Models\Payment\Processor\Netbanking;
+use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Payment\Processor\Netbanking;
 
 class Validator extends Base\Validator
 {
@@ -17,7 +16,6 @@ class Validator extends Base\Validator
 
     protected static $setMethodsRules = array(
         Entity::BANKS       => 'sometimes|array',
-        Entity::CARD        => 'sometimes|boolean',
         Entity::NETBANKING  => 'sometimes|boolean',
         Entity::AMEX        => 'sometimes|boolean',
         Entity::PAYTM       => 'sometimes|boolean',
@@ -27,15 +25,15 @@ class Validator extends Base\Validator
         Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
         Entity::FREECHARGE  => 'sometimes|boolean',
+        Entity::JIOMONEY    => 'sometimes|boolean',
         Entity::EMI         => 'sometimes|boolean',
-        Entity::CREDIT_CARD => 'sometimes_if:card,1|required_with:debit_card|boolean',
-        Entity::DEBIT_CARD  => 'sometimes_if:card,1|required_with:credit_card|boolean',
+        Entity::CREDIT_CARD => 'sometimes|boolean',
+        Entity::DEBIT_CARD  => 'sometimes|boolean',
         Entity::UPI         => 'sometimes|boolean',
     );
 
     protected static $setMethodsValidators = array(
-        'methodBanks',
-        'card');
+        'methodBanks');
 
     protected function validateMethodBanks(array $input)
     {
@@ -45,18 +43,6 @@ class Validator extends Base\Validator
         }
 
         $this->validateBanks($input);
-    }
-
-    protected function validateCard(array $input)
-    {
-        if ((isset($input[Entity::CREDIT_CARD])) and
-            (isset($input[Entity::DEBIT_CARD])) and
-            ($input[Entity::CREDIT_CARD] === '0') and
-            ($input[Entity::DEBIT_CARD]) === '0')
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Both debit card and credit card cannot be disabled if card is enabled.');
-        }
     }
 
     protected function validateBanks(array $input)

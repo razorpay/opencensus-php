@@ -4,15 +4,20 @@ namespace RZP\Models\Base;
 
 use Carbon\Carbon;
 
+use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
 use RZP\Models\Transaction;
+use RZP\Models\Pricing\Feature;
 use RZP\Trace\TraceCode;
+use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 
-class Report extends Service
+class Report extends Core
 {
+    use FileHandlerTrait;
+
     protected $allowed = array(
         E::ORDER,
         E::REFUND,
@@ -20,6 +25,16 @@ class Report extends Service
         E::SETTLEMENT,
         E::TRANSACTION,
     );
+
+    protected static $rules = [
+        'year'  =>  'required|digits:4',
+        'month' =>  'required|digits_between:1,2',
+        'day'   =>  'sometimes|digits_between:1,2',
+        'count' =>  'sometimes|integer|min:1',
+        'skip'  =>  'sometimes|integer|min:0',
+    ];
+
+    const BATCH_LIMIT = 20000;
 
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
@@ -71,21 +86,67 @@ class Report extends Service
 
     public function getReport($input, $entity)
     {
-        $this->checkAllowedEntity($entity);
-
-        $this->increaseAllowedSystemLimits();
-
-        $begin = time();
-
-        $merchantId = $this->merchant->getId();
-
-        (new Validator)->validateInput('report', $input);
-
-        date_default_timezone_set('Asia/Kolkata');
+        $this->preReportProcessing($input, $entity);
 
         list($from, $to) = $this->getTimestamps($input);
 
-        $repo = E::getEntityRepository($entity);
+        //list($count, $skip) = $this->getFetchLimits($input);
+
+        // currently limiting the api response can break the merchant integration
+        // so overwriting the limits for now
+        list($count, $skip) = [200000, 0];
+
+        list($data, $count) = $this->getReportData($entity, $from, $to, $count, $skip);
+
+        return $data;
+    }
+
+    public function getReportUrl($input, $entity)
+    {
+        $this->preReportProcessing($input, $entity);
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        list($count, $skip) = $this->getFetchLimits($input);
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
+
+        $append = false;
+
+        while ($count === self::BATCH_LIMIT)
+        {
+            list($data, $count) = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
+
+            $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
+
+            $skip += $count;
+
+            $append = true;
+        }
+
+        $csvMimeType = 'text/csv';
+
+        $key = 'report/' . $fileName . '.csv';
+
+        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+
+        $signedUrl = $this->getPreSignedUrlFromAws($key);
+
+        if (file_exists($fullpath))
+        {
+            unlink($fullpath);
+        }
+
+        return ['url' => $signedUrl];
+    }
+
+    public function getReportData($entity, $from, $to, $count, $skip)
+    {
+        $merchantId = $this->merchant->getId();
+
+        $begin = time();
 
         $this->trace->debug(
             TraceCode::MERCHANT_REPORT_GENERATION,
@@ -93,11 +154,16 @@ class Report extends Service
                 'entity'        => $entity,
                 'from'          => $from,
                 'to'            => $to,
+                'count'         => $count,
+                'skip'          => $skip,
                 'merchantId'    => $merchantId,
                 'time_started'  => $begin
             ]);
 
-        $entities = (new $repo)->fetchEntitiesForReport($merchantId, $from, $to);
+        $entities = $this->fetchEntitiesForReport(
+                                $merchantId, $entity, $from, $to, $count, $skip);
+
+        $fetchCount = $entities->count();
 
         $timeTaken = time() - $begin;
 
@@ -111,7 +177,7 @@ class Report extends Service
                 'time_taken'    => $timeTaken
             ]);
 
-        $data = $entities->toArrayReport();
+        $data = $this->fetchFormattedDataForReport($entities);
 
         $timeTaken = time() - $begin;
 
@@ -125,14 +191,92 @@ class Report extends Service
                 'time_taken'    => $timeTaken
             ]);
 
-        return $data;
+        return [$data, $fetchCount];
+    }
+
+    protected function preReportProcessing($input, $entity)
+    {
+        $this->checkAllowedEntity($entity);
+
+        $this->increaseAllowedSystemLimits();
+
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
+
+        date_default_timezone_set('Asia/Kolkata');
+    }
+
+    protected function fetchFormattedDataForReport($entities)
+    {
+        return $entities->toArrayReport();
+    }
+
+    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
+    {
+        $repo = $this->repo->$entity;
+
+        return $repo->fetchEntitiesForReport($merchantId, $from, $to, $count, $skip);
+    }
+
+    public function getInvoiceV2($input)
+    {
+        $merchantId = $this->merchant->getId();
+
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
+
+        list($from, $to) = $this->getTimestamps($input);
+
+        $feesBreakup = $this->repo->fee_breakup->fetchFeesBreakupForInvoice($merchantId, $from, $to);
+
+        $fees = $feesBreakup->getStringAttributesByKey('name');
+
+        $totalRzpFee = 0;
+
+        foreach (Feature::FEATURE_LIST as $feature)
+        {
+            if (isset($fees[$feature]) === true)
+            {
+                $totalRzpFee += intval($fees[$feature]['sum']);
+            }
+        }
+
+        $serviceTax = 0;
+        $swachBharatCess = 0;
+        $krishiKalyanCess = 0;
+
+        if (empty($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]) === false)
+        {
+            $serviceTax = intval($fees[Transaction\FeeBreakup\Name::SERVICE_TAX]['sum']);
+        }
+
+        if (empty($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]) === false)
+        {
+            $swachBharatCess = intval($fees[Transaction\FeeBreakup\Name::SWACHH_BHARAT_CESS]['sum']);
+        }
+
+        if (empty($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]) === false)
+        {
+            $krishiKalyanCess = intval($fees[Transaction\FeeBreakup\Name::KRISHI_KALYAN_CESS]['sum']);
+        }
+
+        $totalTax = $serviceTax + $swachBharatCess + $krishiKalyanCess;
+
+        return [
+            self::TOTAL_FEE    => $totalRzpFee + $totalTax,
+            self::RAZORPAY_FEE => $totalRzpFee,
+            self::TAX          => $totalTax,
+            self::TAXES        => [
+                self::SERVICE_TAX        => $serviceTax,
+                self::SWACH_BHARAT_CESS  => $swachBharatCess,
+                self::KRISHI_KALYAN_CESS => $krishiKalyanCess
+            ],
+        ];
     }
 
     public function getInvoice($input)
     {
         $merchantId = $this->merchant->getId();
 
-        (new Validator)->validateInput('report', $input);
+        (new JitValidator)->rules(self::$rules)->input($input)->validate();
 
         list($from, $to) = $this->getTimestamps($input);
 
@@ -301,9 +445,27 @@ class Report extends Service
         return [$from, $to];
     }
 
+    protected function getFetchLimits($input)
+    {
+        $count = self::BATCH_LIMIT;
+        $skip = 0;
+
+        if (isset($input['count']))
+        {
+            $count = min($count, (int) $input['count']);
+        }
+
+        if (isset($input['skip']))
+        {
+            $skip = (int) $input['skip'];
+        }
+
+        return [$count, $skip];
+    }
+
     protected function checkAllowedEntity($entity)
     {
-        if (in_array($entity, $this->allowed) === false)
+        if (in_array($entity, $this->allowed, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');

@@ -3,7 +3,6 @@
 namespace RZP\Models\Base;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class PublicCollection extends Collection
 {
@@ -40,7 +39,23 @@ class PublicCollection extends Collection
 
     public function toArrayReport()
     {
-        return $this->itemsToArrayReport();
+        $data = $this->itemsToArrayReport();
+
+        // remove nulls
+        $data = array_filter($data);
+
+        // return the values (array_filter adds indexes for in between nulls)
+        return array_values($data);
+    }
+
+    public function toArrayGateway()
+    {
+        return $this->itemsToArrayGateway();
+    }
+
+    public function toArrayPublicEmbedded()
+    {
+        return $this->itemsToArrayPublic();
     }
 
     public function getIds()
@@ -120,6 +135,15 @@ class PublicCollection extends Collection
         return array_filter($filteredEntities);
     }
 
+    public function callOnEveryItem($function)
+    {
+        return array_map(function($item) use ($function)
+        {
+            return $item->$function();
+
+        }, $this->items);
+    }
+
     protected function itemsToArrayPublic()
     {
         return array_map(function($item)
@@ -145,5 +169,19 @@ class PublicCollection extends Collection
             return $item->toArrayReport();
 
         }, $this->items);
+    }
+
+    protected function itemsToArrayGateway()
+    {
+        return array_map(function($item)
+        {
+            return $item->toArrayGateway();
+
+        }, $this->items);
+    }
+
+    public static function isPublicCollection($object)
+    {
+        return (get_class($object) === static::class);
     }
 }

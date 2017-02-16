@@ -54,6 +54,9 @@ class CreateSettlements extends Migration {
             $table->string(Settlement::FAILURE_REASON)
                   ->nullable();
 
+            $table->string(Settlement::REMARKS)
+                  ->nullable();
+
             $table->string(Settlement::RETURN_UTR)
                   ->nullable()
                   ->unique();
@@ -98,16 +101,16 @@ class CreateSettlements extends Migration {
         Schema::table(Table::TRANSACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TRANSACTION.'_'.Transaction\Entity::SETTLEMENT_ID.'_foreign');
+                Table::TRANSACTION.'_'.Transaction\Entity::SETTLEMENT_ID.'_foreign');
         });
 
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::TRANSACTION_ID.'_foreign');
+                Table::SETTLEMENT.'_'.Settlement::TRANSACTION_ID.'_foreign');
 
             $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::MERCHANT_ID.'_foreign');
+                Table::SETTLEMENT.'_'.Settlement::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::SETTLEMENT);

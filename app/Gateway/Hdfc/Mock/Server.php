@@ -6,9 +6,8 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Hdfc;
-use RZP\Gateway\Hdfc\Payment\Action;
 use RZP\Gateway\Hdfc\Mock;
-use RZP\Http\Route;
+use RZP\Gateway\Hdfc\Payment\Action;
 use RZP\Models\Card;
 use RZP\Models\Card\Network;
 
@@ -40,10 +39,12 @@ class Server extends Base\Mock\Server
         '4012001037490014',
         '6073849700004947',
         '4111111111111111',
+        '4012001037411127',
     );
 
     protected $notEnrolledDebitCardNumbers = array(
         '4012001037141112',
+        '4012001037411127',
     );
 
     protected $onlyPurchaseCardNetworks = array(
@@ -68,7 +69,6 @@ class Server extends Base\Mock\Server
         {
             $this->data['paymentid'] = $input['MD'];
             $ret = $this->getAuthResponse($input['MD']);
-            // sd($input);
             $ret['TermUrl'] = $input['TermUrl'];
             $ret['MD'] = $input['MD'];
 
@@ -138,7 +138,7 @@ class Server extends Base\Mock\Server
                 $res['result'] = 'AUTH ERROR';
             }
         }
-        elseif ($cardNumber === '4000000000000002')
+        else if ($cardNumber === '4000000000000002')
         {
             // mock timeout exception for enroll
             throw new \Requests_Exception("operation timed out", "operation timed out");
@@ -159,10 +159,12 @@ class Server extends Base\Mock\Server
 
     public function authEnrolled()
     {
+        $cardNumber = $this->data['card'];
+
         $this->processInput('authEnrolled');
         $this->setAction('authorize');
 
-        $res = $this->getAuthResponse($this->data['paymentid']);
+        $res = $this->getAuthResponse($this->data['paymentid'], $cardNumber);
 
         $this->content($res, $this->action);
 
@@ -171,9 +173,10 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($xml);
     }
 
-    protected function getAuthResponse($txnId)
+    protected function getAuthResponse($txnId, $cardNumber = null)
     {
         $gatewayTransaction = $this->getRepo()->findByGatewayTransactionIdOrFail($txnId);
+
         $card = $gatewayTransaction->payment->card;
 
         if ($gatewayTransaction === null)
@@ -210,7 +213,7 @@ class Server extends Base\Mock\Server
 
         $cardNumber = $this->data['card'];
 
-        $network = Card\Network::detectNetwork($cardNumber);
+        $network = $this->getCardNetwork($cardNumber);
 
         if ($this->isSpecialCardNumber($cardNumber))
         {
@@ -265,10 +268,8 @@ class Server extends Base\Mock\Server
     {
         $cardNumber = $this->data['card'];
 
-        // @todo: move this to iin
-        $iin = substr($cardNumber, 0, 6);
-        $network = Card\Network::detectNetwork($cardNumber);
-        $type = $this->getCardType($cardNumber, $iin);
+        $network = $this->getCardNetwork($cardNumber);
+        $type = $this->getCardType($cardNumber, $network);
 
         $res = array();
 
@@ -279,7 +280,7 @@ class Server extends Base\Mock\Server
 
         if (($type === 'credit') or
             ($type === '') or
-            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers) === true))
+            (in_array($cardNumber, $this->notEnrolledDebitCardNumbers, true) === true))
         {
             $res['result'] = 'NOT ENROLLED';
             $res['eci'] = $this->getEci($network);
@@ -304,17 +305,18 @@ class Server extends Base\Mock\Server
         return $res;
     }
 
-    protected function getCardType($cardNumber, $iin)
+    protected function getCardType($cardNumber, $network)
     {
         if (in_array($cardNumber, $this->debitCardNumbers))
         {
             return 'debit';
         }
-        else if (Card\Network::detectNetwork($cardNumber) === Card\Network::MAES)
+        else if ($network === Card\Network::MAES)
         {
             return 'debit';
         }
 
+        $iin = substr($cardNumber, 0, 6);
         $cardDetails = (new Card\Repository)->retrieveIinDetails($iin);
 
         if ($cardDetails === null)
@@ -409,7 +411,7 @@ class Server extends Base\Mock\Server
 
         if (isset($this->data['card']))
         {
-            $network = Card\Network::detectNetwork($this->data['card']);
+            $network = $this->getCardNetwork($this->data['card']);
         }
 
         if ($txn === null)
@@ -523,7 +525,7 @@ class Server extends Base\Mock\Server
 
     protected function handleSpecialCardNumber($cardNumber)
     {
-        if (in_array($cardNumber, $this->specialCardNumbers) === false)
+        if (in_array($cardNumber, $this->specialCardNumbers, true) === false)
         {
             throw new \LogicException('Card number given here is not special. Number: ' . $cardNumber);
         }
@@ -567,5 +569,12 @@ class Server extends Base\Mock\Server
         $error['result'] = $code . '-' . Hdfc\ErrorCode::$errorMessages[$code];
 
         return $error;
+    }
+
+    protected function getCardNetwork($number)
+    {
+        $iin = substr($number, 0, 6);
+
+        return Card\Network::detectNetwork($iin);
     }
 }

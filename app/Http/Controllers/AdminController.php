@@ -3,11 +3,10 @@
 namespace RZP\Http\Controllers;
 
 use ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Admin;
-use Request;
-use Redirect;
 use App;
+use Redirect;
+use Request;
+use RZP\Models\Admin;
 
 class AdminController extends Controller
 {
@@ -16,6 +15,19 @@ class AdminController extends Controller
         $input = Request::all();
 
         $data = (new Admin\Service)->fetchMultipleEntities($type, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getTerminalById($id)
+    {
+        // For Single Terminal fetch we want to display sub merchants
+        // Setting sub_merchant will give sub_merchant associated with terminal
+        $subMerchantFlag = true;
+
+        $type = 'terminal';
+
+        $data = (new Admin\Service)->fetchTerminalEntityByIdWithFlag($type, $id, $subMerchantFlag);
 
         return ApiResponse::json($data);
     }
@@ -73,5 +85,14 @@ class AdminController extends Controller
         $data = (new Admin\Scorecard)->generateScorecard($input);
 
         return ApiResponse::json($data);
+    }
+
+    public function postMailgunCallback($type)
+    {
+        $input = Request::all();
+
+        $responseStatus = (new Admin\Service)->processMailgunCallback($type, $input);
+
+        return ApiResponse::json([], $responseStatus);
     }
 }

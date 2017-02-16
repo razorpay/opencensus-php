@@ -45,6 +45,12 @@ class CreateBankAccounts extends Migration
             $table->string(BankAccount::BENEFICIARY_ADDRESS4, 30)
                   ->nullable();
 
+            $table->tinyInteger(BankAccount::MOBILE_BANKING_ENABLED)
+                  ->nullable();
+
+            $table->string(BankAccount::MPIN, 255)
+                  ->nullable();
+
             $table->string(BankAccount::BENEFICIARY_CITY, 30);
             $table->string(BankAccount::BENEFICIARY_STATE, 2);
             $table->string(BankAccount::BENEFICIARY_COUNTRY, 2);
@@ -53,7 +59,7 @@ class CreateBankAccounts extends Migration
 
             $table->string(BankAccount::BENEFICIARY_EMAIL, 255);
 
-            $table->char(BankAccount::BENEFICIARY_MOBILE, 11);
+            $table->char(BankAccount::BENEFICIARY_MOBILE, 32);
 
             $table->integer(BankAccount::CREATED_AT);
             $table->integer(BankAccount::UPDATED_AT);
@@ -94,7 +100,7 @@ class CreateBankAccounts extends Migration
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(
-                TABLE::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
+                Table::SETTLEMENT.'_'.Settlement::BANK_ACCOUNT_ID.'_foreign');
         });
 
         Schema::drop(Table::BANK_ACCOUNT);

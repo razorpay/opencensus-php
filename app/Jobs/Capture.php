@@ -43,7 +43,8 @@ class Capture
             $this->runCaptureFlowForQueue();
 
             $this->trace->info(
-                TraceCode::PAYMENT_QUEUE_CAPTURE_SUCCESS
+                TraceCode::PAYMENT_QUEUE_CAPTURE_SUCCESS,
+                $this->data
             );
 
             $job->delete();
@@ -105,6 +106,7 @@ class Capture
                     'message'      => 'Deleting the job after configured number of tries. Still unsuccessful.'
                 ]
             );
+
             $this->job->delete();
         }
         else

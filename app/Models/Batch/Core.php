@@ -2,18 +2,17 @@
 
 namespace RZP\Models\Batch;
 
-use Mail;
 use Config;
+use Mail;
+use RZP\Base\RuntimeManager;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Batch;
-use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Base\RuntimeManager;
+use RZP\Models\Payment;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
@@ -119,15 +118,17 @@ class Core extends Base\Core
                         'batch'         => $batch->toArrayPublic(),
                     ]);
 
-                if ($batch->getAttempts() >= 3)
-                {
-                    $batch->setStatus(Status::PROCESSED);
-                }
-                else
-                {
-                    $batch->setStatus(Status::PROCESSING);
-                }
+                // TODO: Remove this comment. Currently we will mark the final state as processed.
+                // if ($batch->getAttempts() >= 3)
+                // {
+                //     $batch->setStatus(Status::PROCESSED);
+                // }
+                // else
+                // {
+                //     $batch->setStatus(Status::PROCESSING);
+                // }
 
+                $batch->setStatus(Status::PROCESSED);
                 $this->repo->saveOrFail($batch);
             }
         }

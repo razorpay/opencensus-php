@@ -2,6 +2,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
@@ -10,7 +11,7 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Hdfc';
+    protected $entity = 'hdfc';
 
     protected $appFetchParamRules = array(
         Entity::PAYMENT_ID              => 'sometimes|string|min:14|max:18',
@@ -26,7 +27,7 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findCapturedPaymentById($paymentId)
+    public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
@@ -65,6 +66,7 @@ class Repository extends Base\Repository
             'gateway_transaction_id'    => $response['paymentid'],
             'action'                    => $request['action'],
             'amount'                    => $request['amt'],
+            'currency'                  => $request['currencycode'],
             'enroll_result'             => $response['enroll_result'],
             'status'                    => $status,
             'eci'                       => $response['eci']);
@@ -86,6 +88,7 @@ class Repository extends Base\Repository
             'payment_id'            => $id,
             'action'                => $requestData['action'],
             'amount'                => $requestData['amt'],
+            'currency'              => $requestData['currencycode'],
             'error_code'            => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $enrollResult,
@@ -287,7 +290,8 @@ class Repository extends Base\Repository
     public function retrieve($id)
     {
         return $this->newQuery()
-                    ->where('payment_id', '=', $id)->firstOrFail();
+                    ->where('payment_id', '=', $id)
+                    ->firstOrFail();
     }
 
     public function retrieveCapturedOrAcceptedCaptureErrorOrFail($paymentId)
@@ -332,7 +336,8 @@ class Repository extends Base\Repository
     public function retrieveMultiplePayments(array $ids)
     {
         return $this->newQuery()
-                    ->whereIn('payment_id', $ids)->get();
+                    ->whereIn('payment_id', $ids)
+                    ->get();
     }
 
     public function retrieveCapturedPayments(array $ids)
@@ -354,7 +359,7 @@ class Repository extends Base\Repository
     public function fetchBetweenTimestamps($from, $to)
     {
         return $this->newQuery()
-                    ->whereBetween('created_at', $from, $to);
+                    ->whereBetween('created_at', [$from, $to]);
     }
 
     public function findByGatewayTransactionIdOrFail($gatewayTxnId)
@@ -380,13 +385,6 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByPaymentId($id)
-    {
-        return $this->newQuery()
-                    ->where('payment_id', '=', $id)
-                    ->get();
-    }
-
     public function findByRefundIdOrderedById($refundId, $direction = 'desc')
     {
         return $this->newQuery()
@@ -401,5 +399,31 @@ class Repository extends Base\Repository
                     ->where('payment_id', '=', $id)
                     ->where('status', '=', $status)
                     ->get();
+    }
+
+    public function findSuccessfulRefundByRefundId($refundId)
+    {
+        $refundEntities =  $this->newQuery()
+                                ->where('refund_id', '=', $refundId)
+                                ->where('status', '=', Payment\Status::REFUNDED)
+                                ->get();
+
+        //
+        // There should never be more than one successful gateway refund entity
+        // for a given refund_id
+        //
+
+        if ($refundEntities->count() > 1)
+        {
+            throw new Exception\LogicException(
+                'Multiple successful refund entities found for a refund ID',
+                Error\ErrorCode::SERVER_ERROR_MULTIPLE_REFUNDS_FOUND,
+                [
+                    'refund_id' => $refundId,
+                    'refund_entities' => $refundEntities->toArray()
+                ]);
+        }
+
+        return $refundEntities;
     }
 }

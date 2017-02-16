@@ -13,7 +13,7 @@ class AuthorizeTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/authorize.php';
+        $this->testDataFilePath = __DIR__.'/helpers/AuthorizeTestData.php';
 
         parent::setUp();
 
@@ -66,6 +66,11 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testNegativeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testContactInvalidCountryCode()
     {
         $this->startTest();
@@ -80,7 +85,7 @@ class AuthorizeTest extends TestCase
         $this->assertEquals('43634423', $payment['contact']);
     }
 
-    public function testNonInrCurrency()
+    public function testNonSupportedCurrency()
     {
         $this->startTest();
     }
@@ -109,9 +114,9 @@ class AuthorizeTest extends TestCase
 
     public function testAuthorizeTimestamp()
     {
-        $lower = time()-1;
+        $lower = time() - 1;
         $this->defaultAuthPayment();
-        $upper = time()+1;
+        $upper = time() + 1;
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -143,7 +148,7 @@ class AuthorizeTest extends TestCase
     public function testPaymentWithBlankMethod()
     {
         $payment = [
-            'amount'            =>  '50000',
+            'amount'            => '50000',
             'currency'          => 'INR',
             'description'       => 'random description',
             'method'            => '',
@@ -242,9 +247,25 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testFixAuthorizedAt()
+    {
+        $time = time();
+
+        $payment = $this->fixtures->create('payment', ['status' => 'failed', 'authorized_at' => time()]);
+
+        $this->assertEquals($time, $payment['authorized_at']);
+
+        $this->testData[__FUNCTION__]['request']['url'] = '/payments/fix_authorized_at';
+        $this->testData[__FUNCTION__]['request']['content']['payment_ids'] = [$payment->getPublicId()];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
     public function testTimeoutOldPayment()
     {
-        $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - 60*100]);
+        $payment = $this->fixtures->create('payment:status_created', ['created_at' => time() - (60 * 100)]);
 
         $content = $this->timeoutOldPayment();
 
@@ -259,7 +280,7 @@ class AuthorizeTest extends TestCase
     public function testTimeoutOldPaymentWithErrorRetention()
     {
         $payment = $this->fixtures->create('payment:status_created', [
-            'created_at'          => time() - 60*100,
+            'created_at'          => time() - (60 * 100),
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_OTP_INCORRECT
         ]);
 
@@ -277,7 +298,7 @@ class AuthorizeTest extends TestCase
     {
         $payment = $this->fixtures->create(
             'payment',
-            ['created_at' => time() - 60*100, 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
+            ['created_at' => time() - (60 * 100), 'status' => 'authorized', 'terminal_id' => '1n25f6uN5S1Z5a']);
 
         $content = $this->timeoutOldPayment();
 
@@ -330,6 +351,19 @@ class AuthorizeTest extends TestCase
         $this->startTest();
     }
 
+    public function testInvalidWalletS2SPayment()
+    {
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
+
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
+        $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testWalletWithInternationalContact()
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
@@ -349,7 +383,8 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_payumoney_terminal');
 
-        $this->fixtures->merchant->editFeatures('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
         $this->fixtures->merchant->enableWallet('10000000000000', 'payumoney');
 
         $this->ba->privateAuth();
@@ -363,7 +398,8 @@ class AuthorizeTest extends TestCase
     {
         $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
 
-        $this->fixtures->merchant->editFeatures('s2swallet');
+        $this->fixtures->merchant->addFeatures(['s2swallet']);
+
         $this->fixtures->merchant->enableMobikwik('10000000000000');
 
         $this->ba->privateAuth();

@@ -11,28 +11,41 @@ class Service extends Base\Service
 {
     public function fetchEntityById($entity, $id)
     {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin();
+    }
+
+    public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
+    {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin($subMerchantFlag);
+    }
+
+    protected function fetchEntityByNameAndId($entity, $id)
+    {
         Entity::validateEntityOrFailPublic($entity);
 
         $entityClass = Entity::getEntityClass($entity);
 
-        $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        $entityObject = new $entityClass;
 
-        $repo = Entity::getEntityRepository($entity);
+        if ($entityObject->getIncrementing() === false)
+        {
+            $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        }
 
-        $entity = (new $repo)->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailPublic($id);
 
-        return $entity->toArrayAdmin();
+        return $entity;
     }
 
     public function fetchMultipleEntities($entity, $input)
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $repo = new $repo;
-
-        $entities = $repo->fetch($input);
+        $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
     }
@@ -65,5 +78,16 @@ class Service extends Base\Service
         $mailer->setRecipient($input['lists']);
 
         return $mailer->send();
+    }
+
+    public function processMailgunCallback($type, $input)
+    {
+        $validator = new Validator;
+
+        $validator->setStrictFalse();
+
+        $validator->validateInput('mailgun_webhook', $input);
+
+        return (new Mailgun)->processCallback($type, $input);
     }
 }

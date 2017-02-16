@@ -2,6 +2,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testPayment' => [
@@ -9,6 +10,7 @@ return [
         'amount'                    => 50000,
         'method'                    => 'netbanking',
         'status'                    => 'captured',
+        'two_factor_auth'           => TwoFactorAuth::UNAVAILABLE,
         'amount_authorized'         => 50000,
         'amount_refunded'           => 0,
         'currency'                  => 'INR',
@@ -36,14 +38,14 @@ return [
         'amount'                    => 50000,
         'fee'                       => 1438,
         'service_tax'               => 188,
-        'pricing_rule_id'           => '1zD0BXpeOyaqpB',
+        'pricing_rule_id'           => null,
         'debit'                     => 0,
         'credit'                    => 48562,
         'currency'                  => 'INR',
         'balance'                   => 0,
         'gateway_fee'               => 0,
         'api_fee'                   => 0,
-        'escrow_balance'            => 1048562,
+//        'escrow_balance'            => 1048562,
         'channel'                   => 'kotak',
         'settled'                   => false,
         'settled_at'                => null,
@@ -64,7 +66,7 @@ return [
         'balance'                   => 1048562,
         'gateway_fee'               => 0,
         'api_fee'                   => 0,
-        'escrow_balance'            => 1048562,
+//        'escrow_balance'            => 1048562,
         'channel'                   => 'kotak',
         'settled'                   => false,
         'settlement_id'             => null,
@@ -100,7 +102,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
+            'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED,
         ],
     ],
@@ -116,7 +118,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -132,7 +134,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -148,7 +150,7 @@ return [
             'status_code' => 504,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayTimeoutException',
+            'class'                 => RZP\Exception\GatewayTimeoutException::class,
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
         ],
     ],
@@ -164,7 +166,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\BadRequestException',
+            'class'                 => RZP\Exception\BadRequestException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED,
         ],
     ],
@@ -180,7 +182,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'class'                 => RZP\Exception\GatewayErrorException::class,
             'internal_error_code'   => 'BAD_REQUEST_PAYMENT_ACCOUNT_INSUFFICIENT_BALANCE',
         ],
     ],
@@ -196,7 +198,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\RuntimeException',
+            'class'                 => RZP\Exception\RuntimeException::class,
             'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
@@ -212,7 +214,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\PaymentVerificationException',
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],
@@ -228,7 +230,7 @@ return [
             'status_code' => 500,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\RuntimeException',
+            'class'                 => RZP\Exception\RuntimeException::class,
             'internal_error_code'   => ErrorCode::SERVER_ERROR_RUNTIME_ERROR,
         ],
     ],
@@ -275,7 +277,7 @@ return [
         'api_fee'                   => 0,
         'fee'                       => 0,
         'service_tax'               => 0,
-        'escrow_balance'            => 998562,
+//        'escrow_balance'            => 998562,
         'channel'                   => 'kotak',
         'settled'                   => false,
         'settled_at'                => null,

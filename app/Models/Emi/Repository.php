@@ -3,11 +3,11 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
+use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
     protected $entity = 'emi_plan';
@@ -24,7 +24,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchRelevantEmiPlan($iin, $duration)
+    public function fetchRelevantEmiPlan(IIN\Entity $iin, int $duration)
     {
         $bank = $iin->getIssuer();
         $network = $iin->getNetworkCode();

@@ -4,7 +4,6 @@ namespace RZP\Models\Customer;
 
 use App;
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
@@ -23,13 +22,20 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
-    const SHIPPING_ADDRESS      = 'shipping_address';
+    const FAIL_EXISTING         = 'fail_existing';
+
+    const VPAS                  = 'vpas';
+    const BANK_ACCOUNTS         = 'bank_accounts';
 
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
 
-    protected $table            = Table::CUSTOMER;
+    //
+    // Additional input keys. Not attributes of entity.
+    //
+    const BILLING_ADDRESS       = 'billing_address';
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected $generateIdOnCreate = true;
 
@@ -51,21 +57,25 @@ class Entity extends Base\PublicEntity
         self::ACTIVE,
         self::CONTACT,
         self::SHIPPING_ADDRESS,
-        self::NOTES,
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::SHIPPING_ADDRESS,
         self::CREATED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $defaults = array(
@@ -86,6 +96,11 @@ class Entity extends Base\PublicEntity
     public function isLocal()
     {
         return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+    }
+
+    public function invoices()
+    {
+        return $this->hasMany('RZP\Models\Invoice\Entity');
     }
 
     public function getName()
@@ -130,7 +145,7 @@ class Entity extends Base\PublicEntity
             return null;
         }
 
-        return $shippingAddresses->toArrayPublic();
+        return $shippingAddresses->toArrayPublicEmbedded();
     }
 
     // ----------------------------------- END ACCESSORS -----------------------------------
@@ -167,6 +182,16 @@ class Entity extends Base\PublicEntity
     public function tokens()
     {
         return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+
+    public function vpas()
+    {
+        return $this->hasMany('RZP\Models\Upi\Vpa\Entity');
+    }
+
+    public function bank_accounts()
+    {
+        return $this->hasMany('RZP\Models\BankAccount\Entity', 'entity_id');
     }
 
     // ----------------------------------- END RELATIONS -----------------------------------

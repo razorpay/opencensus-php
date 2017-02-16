@@ -5,7 +5,6 @@ namespace RZP\Models\Address;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use RZP\Constants;
 
 class Entity extends Base\PublicEntity
@@ -27,8 +26,6 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'addr';
 
     protected $entity           = 'address';
-
-    protected $table            = Table::ADDRESS;
 
     protected $generateIdOnCreate = true;
 

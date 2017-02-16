@@ -2,22 +2,19 @@
 
 namespace RZP\Models\Merchant;
 
-use RZP\Constants\Mode;
-use Carbon\Carbon;
 use Mail;
-
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Merchant;
 use RZP\Models\Card;
 use RZP\Models\Key;
+use RZP\Models\Merchant;
+use RZP\Models\Merchant\Webhook;
 use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
-use RZP\Models\Merchant\Webhook;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -110,6 +107,9 @@ class Activate extends Base\Core
                 $message->from($config['from_email'], $config['from_name']);
                 $message->cc('notifications@razorpay.com');
                 $message->subject($data['subject']);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
             }
         );
     }

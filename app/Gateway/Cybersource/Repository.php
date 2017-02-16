@@ -8,35 +8,31 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Cybersource';
+    protected $entity = 'cybersource';
 
     protected $appFetchParamRules = array(
-        Entity::PAYMENT_ID   => 'sometimes|string|min:14|max:18',
+        Entity::PAYMENT_ID   => 'sometimes|string|size:14',
+        Entity::REFUND_ID    => 'sometimes|string|size:14',
         Entity::RECEIVED     => 'sometimes|boolean',
         Entity::REF          => 'sometimes|string',
         Entity::CAPTURE_REF  => 'sometimes|string'
     );
 
-    public function retrieveByPaymentIdAndStatus($id, $status)
-    {
-        return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $id)
-                    ->where(Entity::STATUS, '=', $status)
-                    ->firstOrFail();
-    }
-
-    public function findCapturedPaymentById($paymentId)
+    // TODO: Rename the function to a proper one
+    // and fix the get auth code function for emi
+    public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
-                    ->where(Entity::ACTION, '=', Status::CAPTURED)
+                    ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->firstOrFail();
     }
 
-    public function retrieveCapturedByPaymentId($id)
+    public function findSuccessfulCapturedEntity($paymentId)
     {
         return $this->newQuery()
-                    ->where(Entity::PAYMENT_ID, '=', $id)
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
                     ->where(Entity::STATUS, '=', Status::CAPTURED)
                     ->first();
     }

@@ -12,9 +12,16 @@ class Entity extends Base\PublicEntity
     const ACTION        = 'action';
     const RECEIVED      = 'received';
 
+    public $incrementing = true;
+
     public function getReceived()
     {
         return $this->getAttribute(self::RECEIVED);
+    }
+
+    public function getAction()
+    {
+        return $this->getAttribute(self::ACTION);
     }
 
     public function getPaymentId()

@@ -2,15 +2,18 @@
 
 namespace RZP\Base;
 
-use RZP\Constants\Entity as E;
-use RZP\Constants\Table;
 use DB;
 use Illuminate\Support\Facades\App;
+
+use RZP\Models;
+use RZP\Exception;
+use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
-use RZP\Exception\DbQueryException;
 
 class Repository extends \Razorpay\Spine\Repository
 {
+    use RepositoryFetch;
+
     protected $app;
 
     protected $db;
@@ -45,6 +48,11 @@ class Repository extends \Razorpay\Spine\Repository
         $this->manager = $this->app['repo'];
     }
 
+    public static function getTableNameForEntity(string $entity)
+    {
+        return E::getTableNameForEntity($entity);
+    }
+
     public function createOrFail(array $attributes)
     {
         $class = $this->getEntityClass();
@@ -66,6 +74,63 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findMany($ids, $columns);
     }
 
+    public function findManyWithRelations($ids, $relations, $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (count($relations) > 0)
+        {
+            $query->with($relations);
+        }
+
+        return $query->findMany($ids, $columns);
+    }
+
+    public function findManyByPublicIds($ids)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndStripSignMultiple($ids);
+
+        return $this->findMany($ids);
+    }
+
+    public function saveOrFail($entity, array $options = array())
+    {
+        // Gets the attributes which are being newly inserted or updated.
+        $dirty = $entity->getDirty();
+
+        // Saves the entity in MySql.
+        $entity->saveOrFail($options);
+
+        // [Queue] saves in ES if certain conditions are met.
+        $this->saveInEs($entity, $dirty);
+    }
+
+    public function sync($entity, $relation, $ids = [])
+    {
+        $entity->$relation()->sync($ids);
+
+        return $this;
+    }
+
+    public function attach($entity, $relation, $id, array $attributes = [], $touch = true)
+    {
+        $entity->$relation()->attach($id, $attributes, $touch);
+
+        return $this;
+    }
+
+    public function getEntityClass()
+    {
+        return E::getEntityClass($this->entity);
+    }
+
+    public function getTableName()
+    {
+        return E::getTableNameForEntity($this->entity);
+    }
+
     protected function processDbQueryFailure($operation, $attributes = null)
     {
         $e = $this->getExceptionDataArray($operation, $attributes);
@@ -85,7 +150,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     protected function throwException(array $e)
     {
-        throw new DbQueryException($e);
+        throw new Exception\DbQueryException($e);
     }
 
     public function isTransactionActive()
@@ -100,7 +165,7 @@ class Repository extends \Razorpay\Spine\Repository
         return ($this->db->transactionLevel() > 0);
     }
 
-    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $relations = [])
+    public function fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip = 0, $relations = [])
     {
         $query = $this->getFetchBetweenTimestampQuery($merchantId, $from, $to);
 
@@ -109,7 +174,9 @@ class Repository extends \Razorpay\Spine\Repository
             $query->with(...$relations);
         }
 
-        return $query->get();
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
     }
 
     public function fetchAssociatedRelations($entities, $relation, $idCol = 'entity_id', $typeCol = 'type')
@@ -117,16 +184,22 @@ class Repository extends \Razorpay\Spine\Repository
         $relationships = array();
         $objects = array();
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $relationships[$entity->$typeCol][] = $entity->$idCol;
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($relationships as $type => $ids)
         {
-            $repo = E::getEntityRepository($type);
-
-            $typeEntities = (new $repo)->findMany($ids);
+            $typeEntities = $this->manager->$type->findMany($ids);
 
             foreach ($typeEntities as $entity)
             {
@@ -134,12 +207,20 @@ class Repository extends \Razorpay\Spine\Repository
             }
         }
 
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
         foreach ($entities as $entity)
         {
             $typeEntity = $objects[$entity->$idCol];
 
             $entity->setRelation($relation, $typeEntity);
         }
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
 
         return $entities;
     }
@@ -150,23 +231,62 @@ class Repository extends \Razorpay\Spine\Repository
                     ->get();
     }
 
+    /**
+     * Selects entity with FOR UPDATE lock.
+     * - If other sessions have already acquired LOCK FOR UPDATE on this entity,
+     *   this will wait till that gets free and so avoids bad reads.
+     * - If this session has acquired the lock first, others will wait (Same as
+     *   above).
+     *
+     * Also, setRawAttributes is being used because of the way PHP handles pass
+     * by reference for objects. If the passed object is ASSIGNED to another
+     * object/value, the original object from the calling function remains
+     * unaffected. Any change ON the passed object will affect the original
+     * object too.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param bool|boolean             $withTrashed
+     *
+     * @return null
+     *
+     * @throws Exception\LogicException
+     */
+    public function lockForUpdateAndReload(
+        Models\Base\PublicEntity $entity,
+        bool $withTrashed = false)
+    {
+        $lockedEntity = $this->lockForUpdate($entity->getId(), $withTrashed);
+
+        $entity->setRawAttributes($lockedEntity->getAttributes(), true);
+    }
+
+    /**
+     * Fetches entity with given id with a mysql lock for update
+     *
+     * @param string       $id
+     * @param bool|boolean $withTrashed - Whether to include soft deleted results?
+     *
+     * @return Models\Base\PublicEntity
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
+    {
+        assert($this->isTransactionActive());
+
+        $query = $this->newQuery()->lockForUpdate();
+
+        if ($withTrashed)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->findOrFail($id);
+    }
+
     protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
     {
         return $this->newQuery()
                     ->betweenTime($from, $to)
                     ->merchantId($merchantId);
-    }
-
-    public function saveOrFail($entity, array $options = array())
-    {
-        // Gets the attributes which are being newly inserted or updated.
-        $dirty = $entity->getDirty();
-
-        // Saves the entity in MySql.
-        $entity->saveOrFail($options);
-
-        // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
     }
 
     protected function saveInEs($entity, $dirty)
@@ -220,7 +340,12 @@ class Repository extends \Razorpay\Spine\Repository
         return join('\\', explode('\\', get_called_class(), -1));
     }
 
-    // Override this method in entity/repository in case the type name is different for that entity.
+    /**
+     * Override this method in entity/repository in case the type name is
+     * different for that entity.
+     *
+     * @return string
+     */
     protected function getEsType()
     {
         $parentNamespace = $this->getParentNamespace();
@@ -235,5 +360,28 @@ class Repository extends \Razorpay\Spine\Repository
         $typeName = constant("RZP\\Constants\\Table::$className");
 
         return $typeName;
+    }
+
+    protected function getAttributeWithTableName($col)
+    {
+        return $this->getTableName() . '.' . $col;
+    }
+
+    protected function validateInstanceIsOfCurrentEntity(Models\Base\Entity $entity)
+    {
+        if ($entity->getEntityName() !== $this->entity)
+        {
+            throw new Exception\LogicException(
+                'Can only handle ' . $this->entity . ' entities here. Provided: ' . $entity->getEntityName());
+        }
+    }
+
+    protected function validateIdGenerated($entity)
+    {
+        if ($entity->getKey() === null)
+        {
+            throw new Exception\LogicException(
+                'Unique id not generated for the entity');
+        }
     }
 }

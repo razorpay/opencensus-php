@@ -160,7 +160,7 @@ class Reconciliate
         $reconciliationType = $this->getTypeName($fileName);
 
         // Ideally, should never come here.
-        if ((in_array($reconciliationType, self::VALID_RECON_TYPES) === false) or
+        if ((in_array($reconciliationType, self::VALID_RECON_TYPES, true) === false) or
             ($reconciliationType === null))
         {
             $this->messenger->raiseReconAlert(
@@ -215,5 +215,20 @@ class Reconciliate
     public function getColumnHeadersForType($type)
     {
         return [];
+    }
+
+    /**
+     * This method returns the number of lines to be skipped from end or from
+     * beginning while reading csv files. Should be overriden by any gateway
+     * specific child classes.
+     *
+     * @return  int number of lines to skip from end
+     */
+    public function getNumLinesToSkip()
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 0,
+            FileProcessor::LINES_FROM_BOTTOM => 0
+        ];
     }
 }

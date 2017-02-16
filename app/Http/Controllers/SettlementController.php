@@ -4,7 +4,6 @@ namespace RZP\Http\Controllers;
 
 use ApiResponse;
 use Request;
-use RZP\Exception\RecoverableException;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details;
 use RZP\Models\Transaction;
@@ -16,6 +15,24 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = (new Settlement\Service)->initiateSettlements($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementInitiateV2($channel)
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->initiateSettlementsV2($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postSettlementFileGenerate()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->generateSettlementFile($input);
 
         return ApiResponse::json($data);
     }
@@ -97,26 +114,8 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getDailySettlement($id)
-    {
-        $data = (new Settlement\Daily\Service)->fetch($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function getDailySettlements()
-    {
-        $input = Request::all();
-
-        $data = (new Settlement\Daily\Service)->fetchMultiple($input);
-
-        return ApiResponse::json($data);
-    }
-
     public function getSettlementTransactions($id)
     {
-        $input = Request::all();
-
         $data = (new Settlement\Service)->fetchSettlementTransactions($id);
 
         return ApiResponse::json($data);
@@ -124,14 +123,14 @@ class SettlementController extends Controller
 
     public function postSettlementCalculateFees()
     {
-        $data = (new Settlement\Daily\Service)->calculatePrevousSettlementFees();
+        $data = (new Settlement\Batch\Service)->calculatePrevousSettlementFees();
 
         return ApiResponse::json($data);
     }
 
-    public function postDailySettlementCalculatePreviousFees()
+    public function postBatchSettlementCalculatePreviousFees()
     {
-        $data = (new Settlement\Daily\Service)->calculatePreviousDailySettlementFees();
+        $data = (new Settlement\Batch\Service)->calculatePreviousBatchSettlementFees();
 
         return ApiResponse::json($data);
     }
@@ -143,16 +142,16 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postComputeDailySettlementServiceTax()
+    public function postComputeBatchSettlementServiceTax()
     {
-        $data = (new Settlement\Daily\Service)->computeDailySettlementServiceTax();
+        $data = (new Settlement\Batch\Service)->computeBatchSettlementServiceTax();
 
         return ApiResponse::json($data);
     }
 
     public function postComputeSettlementServiceTax()
     {
-        $data = (new Settlement\Service)->calculatePrevousSettlementServiceTax();
+        $data = (new Settlement\Service)->calculatePreviousSettlementServiceTax();
 
         return ApiResponse::json($data);
     }
@@ -178,6 +177,15 @@ class SettlementController extends Controller
         $input = Request::all();
 
         $data = (new Settlement\Service)->getSettlementCombinedReport($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postInitiateTransfer()
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->postInitiateTransfer($input);
 
         return ApiResponse::json($data);
     }

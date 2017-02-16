@@ -34,6 +34,9 @@ class CreateFirstDataGateway extends Migration
 
             $table->integer(FirstData::AMOUNT);
 
+            $table->string(FirstData::CURRENCY, 3)
+                  ->nullable();
+
             $table->string(FirstData::STATUS, 20)
                   ->nullable();
 
@@ -53,6 +56,9 @@ class CreateFirstDataGateway extends Migration
                   ->nullable();
 
             $table->string(FirstData::GATEWAY_TERMINAL_ID, 20)
+                  ->nullable();
+
+            $table->string(FirstData::AUTH_CODE, 6)
                   ->nullable();
 
             $table->string(FirstData::APPROVAL_CODE, 100)

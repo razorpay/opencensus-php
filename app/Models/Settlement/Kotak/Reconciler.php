@@ -38,7 +38,7 @@ class Reconciler
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->dailySetlRepo = new Settlement\Daily\Repository;
+        $this->batchSetlRepo = new Settlement\Batch\Repository;
     }
 
     public function process($input)
@@ -50,17 +50,17 @@ class Reconciler
             return new Base\PublicCollection;
         }
 
-        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
+        $this->batchSettlement = $this->batchSetlRepo->getSettlementForTodayOrFail('kotak');
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 
-        $this->dailySettlement->addUrl('kotak_reconcile_txt', $url);
+        $this->batchSettlement->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseTextFile($reconcileFile);
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
 
-        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
+        $this->batchSettlement->addUrl('kotak_reconcile_excel', $url);
 
         $data = $this->reconcile($data);
 
@@ -84,8 +84,8 @@ class Reconciler
                 $collection->push($setl);
             }
 
-            $this->dailySettlement->reconciled_at = $this->reconciledAt;
-            $this->dailySettlement->saveOrFail();
+            $this->batchSettlement->reconciled_at = $this->reconciledAt;
+            $this->batchSettlement->saveOrFail();
 
             $this->setlRepo->commit();
         }
@@ -176,31 +176,7 @@ class Reconciler
         return $setl;
     }
 
-    protected function getSetlReconciliationFile($input)
-    {
-        // if (isset($input['setlReconciliationFile']))
-        // {
-        //     return $input['setlReconciliationFile']->;
-        // }
-
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $path = storage_path('files/settlement');
-
-        $name = 'Kotak_Settlement_Reconciliation';
-
-        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
-
-        if (file_exists($fullpath) === false)
-        {
-            // @todo: trace here
-            return null;
-        }
-
-        return $fullpath;
-    }
-
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 

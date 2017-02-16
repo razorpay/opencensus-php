@@ -2,16 +2,15 @@
 
 namespace RZP\Gateway\Ebs\Mock;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base;
-use RZP\Models\Bank\IFSC;
-use RZP\Gateway\Ebs;
-use RZP\Gateway\Ebs\BankCodes;
-use Requests_Response;
 use Requests_Cookie;
 use Requests_Cookie_Jar;
+use Requests_Response;
 use Requests_Response_Headers;
+use RZP\Exception;
+use RZP\Gateway\Base;
+use RZP\Gateway\Ebs;
+use RZP\Gateway\Ebs\BankCodes;
+use RZP\Models\Bank\IFSC;
 
 class Gateway extends Ebs\Gateway
 {

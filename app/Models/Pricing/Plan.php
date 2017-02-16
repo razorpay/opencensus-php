@@ -6,6 +6,7 @@ use RZP\Exception\LogicException;
 use RZP\Models\Bank;
 use RZP\Models\Payment\Method;
 use RZP\Models\Card\Network;
+use RZP\Models\Payment\Processor;
 use RZP\Models\Base\PublicCollection;
 
 class Plan extends PublicCollection
@@ -45,6 +46,7 @@ class Plan extends PublicCollection
                 switch ($method)
                 {
                     case Method::CARD:
+                    case Method::EMI:
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Network::getFullName($network);
                         break;
 
@@ -52,9 +54,13 @@ class Plan extends PublicCollection
                         $rule[Entity::PAYMENT_NETWORK_NAME] = Bank\Name::getName($network);
                         break;
 
+                    case Method::WALLET:
+                        $rule[Entity::PAYMENT_NETWORK_NAME] = Processor\Wallet::getName($network);
+                        break;
+
                     default:
                         throw new LogicException(
-                            'Network set for wrong method (not card/netbanking)',
+                            'Network set for wrong method',
                             null,
                             ['network' => $network, 'method' => $method]);
                 }

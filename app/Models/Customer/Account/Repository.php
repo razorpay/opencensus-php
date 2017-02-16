@@ -9,8 +9,6 @@ use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'customer';
 
     protected $appFetchParamRules = array(
@@ -20,12 +18,47 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
+    public function getGlobalCustomerForPayment($payment)
+    {
+        if ($payment->getGlobalCustomerId() !== null)
+        {
+            $customer = $this->findOrFail($payment->getGlobalCustomerId());
+            $payment->globalCustomer()->associate($customer);
+
+            return $customer;
+        }
+    }
+
+    public function fetchByAppToken($appToken)
+    {
+        if ($appToken->hasRelation('customer'))
+        {
+            return $appToken->customer;
+        }
+
+        $custId = $appToken->getCustomerId();
+
+        $customer = $this->findOrFail($custId);
+
+        $appToken->customer()->associate($customer);
+
+        return $customer;
+    }
+
     public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
+    }
+
+    public function fetchWithVpasBankAcnts($id, $columns = ['*'])
+    {
+        return $this->newQuery()
+                    ->select($columns)
+                    ->with(['vpas', 'bank_accounts'])
+                    ->find($id);
     }
 
     public function findByContactEmailAndMerchant($contact, $email, Merchant\Entity $merchant)
@@ -35,5 +68,12 @@ class Repository extends Base\Repository
                     ->where(Customer\Entity::EMAIL, '=', $email)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
+    }
+
+    public function fetchByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
     }
 }

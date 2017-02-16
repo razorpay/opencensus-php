@@ -6,14 +6,12 @@ use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Entity;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Netbanking\Base;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -24,6 +22,8 @@ class Gateway extends Base\Gateway
     protected $gateway = 'netbanking_kotak';
 
     protected $bank = 'kotak';
+
+    protected $tpv;
 
     protected $sortRequestContent = false;
 
@@ -58,7 +58,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content, $input);
 
         $request = $this->getRequestArray($content);
 
@@ -93,16 +93,18 @@ class Gateway extends Base\Gateway
         // is different than what we sent
         unset($content['DateTimeInGMT']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
+
+        $this->assertPaymentId((string) $gatewayPayment->getIntPaymentId(), $content['TraceNumber']);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];
 
-        $payment->fill($attrs);
+        $gatewayPayment->fill($attrs);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
 
         if ($attrs['status'] !== 'Y')
         {
@@ -114,6 +116,8 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -127,7 +131,6 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment($verify)
     {
-        $payment = $verify->payment;
         $content = $verify->verifyResponseContent;
 
         $status = VerifyResult::STATUS_MATCH;
@@ -171,16 +174,16 @@ class Gateway extends Base\Gateway
      */
     protected function fillStatusAndBankPaymentId($input, $content)
     {
-        $payment = $this->repo->retrieveByPaymentIdOrFail(
+        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail(
             $input['payment']['id']);
 
         $attrs['received'] = true;
         $attrs['status'] = $content['AuthorizationStatus'];
         $attrs['bank_payment_id'] = $content['BankReference'];
 
-        $payment->fill($attrs);
+        $gatewayPayment->fill($attrs);
 
-        $payment->saveOrFail();
+        $gatewayPayment->saveOrFail();
     }
 
     protected function validateCallbackChecksum($content)
@@ -203,6 +206,17 @@ class Gateway extends Base\Gateway
         $content = explode('|', $data);
 
         $fields = $this->getFieldsForAction($this->action);
+
+        /**
+         * If Gateway returns data in invalid format,
+         * then field count does not matches expected output format column count
+         * throw Gateway unknown error exception
+         */
+        if (count($fields) !== count($content))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
+        }
 
         $content = array_combine($fields, $content);
 
@@ -228,19 +242,30 @@ class Gateway extends Base\Gateway
             $data['MerchantId'] = $this->getTestMerchantId();
         }
 
+        // Change Content for Merchants with TPV Required
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['TransactionDescription'] = $input['order']['account_number'];
+
+            if ($this->mode === Mode::TEST)
+            {
+                $data['MerchantId'] = $this->getTestTPVMerchantId();
+            }
+        }
+
         return $data;
     }
 
     protected function sendPaymentVerifyRequest($verify)
     {
-        $payment = $verify->payment;
+        $gatewayPayment = $verify->payment;
         $input = $verify->input;
 
         $content = array(
             'MessageCode'   => MessageCodes::VERIFY,
-            'DateTimeInGMT' => $payment['date'],
-            'MerchantId'    => $payment['merchant_code'],
-            'TraceNumber'   => $payment['int_payment_id'],
+            'DateTimeInGMT' => $gatewayPayment['date'],
+            'MerchantId'    => $gatewayPayment['merchant_code'],
+            'TraceNumber'   => $gatewayPayment['int_payment_id'],
             'Future1'       => '',
             'Future2'       => '',
         );
@@ -315,9 +340,26 @@ class Gateway extends Base\Gateway
         return 'OSTEST';
     }
 
+    protected function getTestTPVMerchantId()
+    {
+        return 'OTTEST';
+    }
+
     protected function getLiveSecret()
     {
         assert ($this->mode === Mode::LIVE);
+
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_sec'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_sec'];
+            }
+        }
 
         return $this->config['live_hash_secret'];
     }
@@ -334,37 +376,5 @@ class Gateway extends Base\Gateway
         $str = $this->getStringToHash($content, '|');
 
         return $this->getHashOfString($str);
-    }
-
-    public function generateClaims($input)
-    {
-        $paymentIds = array();
-
-        $paymentIds = array_map(function($row)
-        {
-            return $row['payment']['id'];
-        }, $input['data']);
-
-        $payments = $this->repo->fetchByPaymentIdsAndAction(
-                                $paymentIds, Action::AUTHORIZE);
-
-        $payments = $payments->getDictionaryByAttribute(Entity::PAYMENT_ID);
-
-        $input['data'] = array_map(function($row) use ($payments)
-        {
-            $paymentId = $row['payment']['id'];
-
-            if (isset($payments[$paymentId]))
-            {
-                $row['gateway'] = $payments[$paymentId]->toArray();
-            }
-
-            return $row;
-        }, $input['data']);
-
-        $ns = $this->getGatewayNamespace();
-        $class = $ns . '\\' . 'ClaimsFile';
-
-        return (new $class)->generate($input);
     }
 }

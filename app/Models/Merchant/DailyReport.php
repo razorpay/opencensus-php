@@ -12,6 +12,8 @@ use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
+use RZP\Constants\MailTags;
 
 class DailyReport extends Base\Core
 {
@@ -31,24 +33,105 @@ class DailyReport extends Base\Core
      * Generates a new daily report
      * @param String $id Merchant Id
      */
-    function __construct($merchant, $data)
+    function __construct()
     {
         parent::__construct();
 
-        $this->merchant = $merchant;
-
-        // date format = 6th July 2015
-        $this->date = Carbon::yesterday("Asia/Kolkata")->format('jS F Y');
-
-        $this->data = array_merge($data, $this->getMerchantData());
-
-        // 00:00 Yesterday
-        $this->timeLowerLimit = Carbon::yesterday("Asia/Kolkata")->timestamp;
-
-        // 00:00 Today
-        $this->timeUpperLimit = Carbon::today("Asia/Kolkata")->timestamp;
-
         $this->increaseAllowedSystemLimits();
+    }
+
+    public function sendReportForAllMerchants($input)
+    {
+        $this->setTimestamps($input);
+
+        $from = $this->timeLowerLimit;
+
+        $to = $this->timeUpperLimit;
+
+        // Trace to indicate start of mailing
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_MAILING,
+            [$from, $to]
+        );
+
+        $authMerchants = $this->repo->payment
+                                ->fetchAuthorizedSummary()
+                                ->getStringAttributesByKey('merchant_id');
+
+        $captureMerchants = $this->repo->payment
+                                ->fetchCapturedSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $refundMerchants = $this->repo->refund
+                                ->fetchRefundSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        $setlMerchants = $this->repo->settlement
+                                ->fetchSettlementSummaryBetweenTimestamp($from, $to)
+                                ->getStringAttributesByKey('merchant_id');
+
+        // To allow manual report generation for specific merchants
+        if (isset($input['ids']) === true)
+        {
+            $merchantIds = $input['ids'];
+        }
+        else
+        {
+            $merchantIds = array_keys($captureMerchants + $authMerchants
+                                    + $refundMerchants + $setlMerchants);
+        }
+
+        // Summary of merchants mailed
+        $mailedMerchantsSummary = [
+            'sentIds'    => [],
+            'skippedIds' => 0,
+            'failedIds'  => []
+        ];
+
+        foreach ($merchantIds as $merchantId)
+        {
+            try
+            {
+                $zeroArray = array_fill_keys(['sum', 'count'], 0);
+
+                $data = [
+                    'authorized' => $authMerchants[$merchantId]    ?? $zeroArray,
+                    'captured'   => $captureMerchants[$merchantId] ?? $zeroArray,
+                    'refunds'    => $refundMerchants[$merchantId]  ?? $zeroArray,
+                    'settlements'=> $setlMerchants[$merchantId]    ?? $zeroArray,
+                ];
+
+                $merchant = $this->repo->merchant->findOrFailPublic($merchantId);
+
+                $data = array_merge($data, $this->getMerchantData($merchant));
+
+                $sentId = $this->send($merchant, $data);
+
+                if (is_null($sentId))
+                {
+                    $mailedMerchantsSummary['skippedIds']++;
+                }
+                else
+                {
+                    $mailedMerchantsSummary['sentIds'][] = $sentId;
+                }
+            }
+            catch (\Exception $ex)
+            {
+                $this->trace->traceException(
+                    $ex, Trace::WARNING, TraceCode::SETTLEMENT_DAILY_REPORT_FAILURE);
+
+                $mailedMerchantsSummary['failedIds'][] = $merchantId;
+            }
+        }
+
+        // Log just the result of the settlement reports
+        $this->trace->info(
+            TraceCode::SETTLEMENT_DAILY_REPORT_RESULT,
+            $mailedMerchantsSummary
+        );
+
+        return $mailedMerchantsSummary;
     }
 
     /**
@@ -56,13 +139,13 @@ class DailyReport extends Base\Core
      * @return array of summary data
      * array is empty if mail wasn't sent
      */
-    public function send()
+    public function send($merchant, $data)
     {
-        if ($this->isBlank() === false)
+        if ($this->isBlank($data) === false)
         {
-            $this->sendDailyReport();
+            $this->sendDailyReport($merchant, $data);
 
-            return $this->merchant->getId();
+            return $merchant->getId();
         }
 
         return null;
@@ -73,26 +156,25 @@ class DailyReport extends Base\Core
      * @param  String $id merchant id
      * @return null
      */
-    protected function sendDailyReport()
+    protected function sendDailyReport($merchant, $data)
     {
-        $data = $this->data;
-
         $view = ['html' => self::DAILY_REPORT_EMAIL_TEMPLATE];
 
         // Log merchant whose data has been computed
         $this->trace->info(
             TraceCode::SETTLEMENT_DAILY_REPORT_DATA,
             array(
-                    'merchant_id'   => $this->merchant->getId(),
-                    'merchant_name' => $this->merchant->getBillingLabelElseName(),
+                    'merchant_id'   => $merchant->getId(),
+                    'merchant_name' => $merchant->getBillingLabelElseName(),
                     'captured'      => $data['captured']['count'],
                     'authorized'    => $data['authorized']['count'],
                     'refunds'       => $data['refunds']['count'],
-                    'settlement'    => $data['settlement']['amount'],
+                    'settlement'    => $data['settlements']['sum'],
+                    'setl_count'    => $data['settlements']['count'],
                     )
         );
 
-        Mail::queue($view, $data, function($message) use ($data)
+        Mail::queue($view, $data, function($message) use ($data, $merchant)
         {
             $to = $data['email'];
 
@@ -118,27 +200,50 @@ class DailyReport extends Base\Core
             $message->cc('notifications@razorpay.com');
 
             $message->subject('Razorpay | Daily Transaction Report for ' . $data['date']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $merchant->getPublicId());
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
         });
     }
 
-    protected function getMerchantData()
+    protected function getMerchantData($merchant)
     {
         return [
-            'billing_label'  => $this->merchant->getBillingLabelElseName(),
-            'account_number' => $this->merchant->getRedactedAccountNumber(),
-            'email'          => $this->merchant->getTransactionReportEmail(),
+            'billing_label'  => $merchant->getBillingLabelElseName(),
+            'account_number' => $merchant->getRedactedAccountNumber(),
+            'email'          => $merchant->getTransactionReportEmail(),
             'date'           => $this->date,
         ];
     }
 
-    protected function isBlank()
+    protected function isBlank($data)
     {
-        $data = $this->data;
-
         return (($data['captured']['count'] === 0) and
                 ($data['authorized']['count'] === 0) and
                 ($data['refunds']['count'] === 0) and
-                ($data['settlement'] === null));
+                ($data['settlements']['count'] === 0));
+    }
+
+    protected function setTimestamps($input)
+    {
+        if (isset($input['on']) === true)
+        {
+            $on = Carbon::createFromFormat('Y-m-d', $input['on'], 'Asia/Kolkata');
+        }
+        else
+        {
+            $on = Carbon::yesterday('Asia/Kolkata');
+        }
+
+        // date format = 6th July 2015
+        $this->date = $on->format('jS F Y');
+
+        $this->timeLowerLimit = $on->timestamp;
+
+        $this->timeUpperLimit = $on->addDay()->timestamp;
     }
 
     protected function increaseAllowedSystemLimits()

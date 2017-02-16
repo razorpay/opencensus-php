@@ -5,12 +5,11 @@ namespace RZP\Models\Card;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
+use RZP\Models\Customer\Token;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Card';
+    protected $entity = 'card';
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',
@@ -41,9 +40,7 @@ class Repository extends Base\Repository
 
     public function getByParams($params)
     {
-        $repo = $this->repo;
-
-        $query = (new $repo)->newQuery();
+        $query = $this->newQuery();
 
         foreach ($params as $key => $value)
         {
@@ -53,9 +50,37 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('card'))
+        {
+            return $payment->card;
+        }
+
+        $card = $this->findOrFail($payment->getCardId());
+
+        $payment->setRelation('card', $card);
+
+        return $card;
+    }
+
+    public function fetchForToken(Token\Entity $token)
+    {
+        if ($token->hasRelation('card'))
+        {
+            return $token->card;
+        }
+
+        $card = $this->findOrFail($token->getCardId());
+
+        $token->setRelation('card', $card);
+
+        return $card;
+    }
+
     protected function addQueryParamInternational($query, $params)
     {
-        $international = Card\Entity::getAttributeWithTableName(Entity::INTERNATIONAL);
+        $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
 
         $query->where($international, '=', $params[Entity::INTERNATIONAL]);
     }
@@ -67,10 +92,10 @@ class Repository extends Base\Repository
 
         Payment\Validator::validateStatusArray($status);
 
-        $paymentCardId = Payment\Entity::getAttributeWithTableName(Payment\Entity::CARD_ID);
-        $cardId = Card\Entity::getAttributeWithTableName(Card\Entity::ID);
+        $paymentCardId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::CARD_ID);
+        $cardId = $this->getAttributeWithTableName(Card\Entity::ID);
 
-        $query->join(Payment\Entity::getTableName(), $paymentCardId, '=', $cardId)
+        $query->join($this->manager->payment->getTableName(), $paymentCardId, '=', $cardId)
               ->whereIn(Payment\Entity::STATUS, $status);
 
         $query->select($query->getModel()->getTable().'.*');

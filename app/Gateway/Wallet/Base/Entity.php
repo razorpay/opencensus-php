@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Base;
 
-use RZP\Constants\Table;
 use RZP\Gateway\Base;
 
 class Entity extends Base\Entity
@@ -28,8 +27,6 @@ class Entity extends Base\Entity
     const REFUND_ID             = 'refund_id';
     const REFERENCE1            = 'reference1';
     const REFERENCE2            = 'reference2';
-
-    protected $table = Table::WALLET;
 
     protected $entity = 'wallet';
 
@@ -79,9 +76,19 @@ class Entity extends Base\Entity
         self::REFERENCE2,
     );
 
+    public function getStatusCode()
+    {
+        return $this->getAttribute(self::STATUS_CODE);
+    }
+
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);
+    }
+
+    public function getAmount()
+    {
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getAmountAttribute()

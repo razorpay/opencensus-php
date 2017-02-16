@@ -2,18 +2,15 @@
 
 namespace RZP\Models\Card;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class Service extends Base\Service
 {
     public function fetchById($id)
     {
-        Card\Entity::verifyIdAndStripSign($id);
-
-        $card = $this->repo->card->findByIdAndMerchantId($id, $this->merchant->getId());
+        $card = $this->repo->card->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $card->toArrayPublic();
     }

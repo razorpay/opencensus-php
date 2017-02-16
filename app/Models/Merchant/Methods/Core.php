@@ -13,6 +13,9 @@ use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank;
+use RZP\Models\Emi;
+
+use Config;
 
 class Core extends Base\Core
 {
@@ -83,20 +86,58 @@ class Core extends Base\Core
         $this->validatePricingPlanForMethods($merchant, $plan, $methods);
     }
 
-    public function getMethods($merchant)
+    public function getMethods(Merchant\Entity $merchant)
     {
         $methods = $this->getPaymentMethods($merchant);
 
-        $supportedBanks = Netbanking::getSupportedBanks($this->mode, $merchant->isTPVRequired());
+        $supportedBanks = Netbanking::getSupportedBanks($merchant->isTPVRequired());
 
         $methods->setBanks($supportedBanks);
 
         return $methods;
     }
 
+    public function getFormattedMethods(Merchant\Entity $merchant)
+    {
+        $data = array(
+            'entity'        => 'methods',
+            'card'          => true,
+            'amex'          => false,
+            'netbanking'    => [],
+            'wallet'        => [],
+            'emi'           => false,
+            'upi'           => false,
+        );
+
+        $methods = $this->getMethods($merchant);
+
+        if ($methods !== null)
+        {
+            $data['card'] = $methods->isCardEnabled();
+            $data['amex'] = $methods->isAmexEnabled();
+            $netbankingEnabled = $methods->isNetbankingEnabled();
+            if ($netbankingEnabled === true)
+            {
+                $data['netbanking'] = $methods->toArrayWithBankNames();
+            }
+            $data['wallet'] = $methods->getEnabledWallets();
+            $data['upi'] = $methods->isUpiEnabled();
+            $emi = $methods->isEmiEnabled();
+
+            if ($emi === true)
+            {
+                $data['emi'] = $emi;
+
+                $data['emi_plans'] = (new Emi\Service)->all();
+            }
+        }
+
+        return $data;
+    }
+
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         return $this->getEnabledDisabledBanks($banks);
     }
@@ -117,11 +158,15 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        $methods->setCard(true);
+        $methods->setCreditCard(true);
+        $methods->setDebitCard(true);
         $methods->setAmex(true);
         $methods->setMobikwik(true);
         $methods->setPayzapp(true);
         $methods->setPayumoney(true);
+        $methods->setOlamoney(true);
+        $methods->setFreecharge(true);
+        $methods->setAirtelmoney(true);
 
         $this->setAllPaymentBanks($methods);
 
@@ -141,7 +186,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($banks === null)
         {
@@ -152,9 +197,9 @@ class Core extends Base\Core
         return $this->setPaymentBanks($banks, $input);
     }
 
-    protected function getPaymentMethods($merchant)
+    protected function getPaymentMethods(Merchant\Entity $merchant)
     {
-        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($methods === null)
         {
@@ -209,9 +254,15 @@ class Core extends Base\Core
 
             $message .= ' ' . $merchant->getEntity() . ' edited by ' . $user;
 
-            $this->app['slack']->queue($message, $data, ['channel' => '#operations_log',
-                                                         'username' => 'Jordan Belfort',
-                                                         'icon' => ':boom:']);
+            $this->app['slack']->queue(
+                $message,
+                $data,
+                [
+                    'channel'  => Config::get('slack.channels.operations_log'),
+                    'username' => 'Jordan Belfort',
+                    'icon'     => ':boom:'
+                ]
+            );
         }
     }
 

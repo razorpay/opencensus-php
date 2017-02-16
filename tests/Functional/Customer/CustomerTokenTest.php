@@ -19,7 +19,7 @@ class CustomerTokenTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures("tokens,cardsaving");
+        $this->fixtures->merchant->addFeatures(['tokens', 'cardsaving']);
     }
 
     public function testAddCustomerTokenCard()
@@ -57,6 +57,19 @@ class CustomerTokenTest extends TestCase
         $this->ba->privateAuth();
 
         return $this->startTest();
+    }
+
+    public function testUpdateCustomerToken()
+    {
+        $this->fixtures->edit('token', '1000custwallet', ['recurring' => 1]);
+
+        $this->ba->privateAuth();
+
+        $this->startTest();
+
+        $token = $this->getEntityById('token', 'token_1000custwallet', true);
+
+        $this->assertEquals(false, array_key_exists('recurring', $token));
     }
 
     public function testDeleteCustomerToken()

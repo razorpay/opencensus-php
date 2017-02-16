@@ -3,16 +3,14 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Methods';
+    protected $entity = 'methods';
 
     protected $appFetchParamRules = array(
         Entity::AMEX        => 'sometimes|in:0,1',
@@ -29,9 +27,18 @@ class Repository extends Base\Repository
         Entity::FREECHARGE  => 'sometimes|in:0,1',
     );
 
-    public function getMerchantMethods($id)
+    public function getMethodsForMerchant(Merchant\Entity $merchant)
     {
-        return $this->find($id);
+        $methods = $this->find($merchant->getId());
+
+        if ($methods !== null)
+        {
+            $methods->merchant()->associate($merchant);
+
+            $merchant->setRelation('methods', $methods);
+        }
+
+        return $methods;
     }
 
     protected function addQueryOrder($query)

@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Fixtures\Entity;
 use Config;
 use Eloquent;
 use RZP\Models;
+use RZP\Constants\Entity as E;
 use RZP\Tests\TestDummy\Factory;
 use RZP\Tests\Functional\Fixtures\Fixtures;
 use Illuminate\Support\Facades\DB;
@@ -40,6 +41,7 @@ class Base
         'terminal'      => \RZP\Models\Terminal\Entity::class,
         'emi_plan'      => \RZP\Models\Emi\Entity::class,
         'axis_migs'     => \RZP\Gateway\AxisMigs\Entity::class,
+        'billdesk'      => \RZP\Gateway\Billdesk\Entity::class,
         'app_token'     => \RZP\Models\Customer\AppToken\Entity::class,
         'adjustment'    => \RZP\Models\Adjustment\Entity::class,
         'settlement'    => \RZP\Models\Settlement\Entity::class,
@@ -49,6 +51,12 @@ class Base
         'address'       => \RZP\Models\Address\Entity::class,
         'batch'         => \RZP\Models\Batch\Entity::class,
         'wallet'        => \RZP\Gateway\Wallet\Base\Entity::class,
+        'fee_breakup'   => \RZP\Models\Transaction\FeeBreakup\Entity::class,
+        'feature'       => \RZP\Models\Feature\Entity::class,
+        'item'          => \RZP\Models\Item\Entity::class,
+        'invoice'       => \RZP\Models\Invoice\Entity::class,
+        'line_item'     => \RZP\Models\LineItem\Entity::class,
+        'device'        => \RZP\Models\Device\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -56,7 +64,9 @@ class Base
         'pricing',
         'methods',
         'emi_plan',
-        'iin'
+        'iin',
+        'schedule',
+        'feature'
     );
 
     public function create(array $attributes = array())
@@ -68,7 +78,7 @@ class Base
 
     public function createEntity($entity, array $attributes = array())
     {
-        if (in_array($entity, self::$liveAndTest))
+        if (E::isEntitySyncedInLiveAndTest($entity))
         {
             return $this->createEntityInTestAndLive($entity, $attributes);
         }
@@ -87,12 +97,12 @@ class Base
     {
         $this->stripSign($id);
 
-        if (in_array($entity, self::$liveAndTest))
+        if (E::isEntitySyncedInLiveAndTest($entity))
         {
             return $this->editEntityInTestAndLive($entity, $id, $attributes);
         }
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -109,7 +119,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -133,7 +143,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
         $entity = $entity::findOrFail($id);
 
         foreach ($attributes as $key => $value)
@@ -160,7 +170,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entity = self::$map[$entity];
+        $entity = E::getEntityClass($entity);
 
         $entity = Factory::build($entity, $attributes);
 
@@ -173,7 +183,7 @@ class Base
     {
         $this->eloquentUnguard();
 
-        $entityClass = self::$map[$entity];
+        $entityClass = E::getEntityClass($entity);
 
         $entity = Factory::create($entityClass, $attributes);
 

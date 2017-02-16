@@ -20,27 +20,64 @@ class FeaturesTest extends TestCase
 
     public function testAddFeatureToMerchant()
     {
-        $this->ba->appAuth();
-
         $this->startTest();
-    }
-
-    public function testResetFeatureForMerchant()
-    {
-        $this->fixtures->merchant->editFeatures("cardsaving,tokens");
-
-        $this->ba->appAuth();
-
-        $this->startTest();
-
-        $merchant = $this->getEntityById('merchant', '10000000000000', true);
-
-        $this->assertEquals($merchant['features'], []);
     }
 
     public function testAddInvalidFeatureToMerchant()
     {
-        $this->ba->appAuth();
+        $this->startTest();
+    }
+
+    public function testAddDuplicateFeatureToMerchant()
+    {
+        $this->testAddFeatureToMerchant();
+
+        $this->startTest();
+    }
+
+    public function testDeleteFeatureFromMerchant()
+    {
+        $features = $this->fixtures->merchant->addFeatures(['dummy']);
+
+        $request = [
+            'url'       => '/features/10000000000000/dummy',
+            'method'    => 'delete'
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $resultData = [
+            "id"            => (string)$features->first()->getId(),
+            "name"          => 'dummy',
+            "entity_id"     => '10000000000000',
+            "entity_type"   => 'merchant'
+        ];
+
+        $this->assertArraySelectiveEquals($resultData, $content);
+    }
+
+    public function testDeleteNonExistentFeatureFromMerchant()
+    {
+        $this->startTest();
+    }
+
+    public function testMultiAssignFeature()
+    {
+        $merch1 = $this->fixtures->create('merchant', ['id' => '10000000000001']);
+        $merch2 = $this->fixtures->create('merchant', ['id' => '10000000000002']);
+        $merch3 = $this->fixtures->create('merchant', ['id' => '10000000000003']);
+
+        $this->startTest();
+    }
+
+    public function testMultiRemoveFeature()
+    {
+        $merch1 = $this->fixtures->create('feature', ['entity_id' => '10000000000001',
+                    'name' => 'dummy']);
+        $merch2 = $this->fixtures->create('feature', ['entity_id' => '10000000000002',
+                    'name' => 'dummy']);
+        $merch3 = $this->fixtures->create('feature', ['entity_id' => '10000000000003',
+                    'name' => 'dummy']);
 
         $this->startTest();
     }
@@ -49,11 +86,6 @@ class FeaturesTest extends TestCase
     {
         $this->testAddFeatureToMerchant();
 
-        $this->startTest();
-    }
-
-    public function testGetAllFeatures()
-    {
         $this->startTest();
     }
 
@@ -66,7 +98,7 @@ class FeaturesTest extends TestCase
 
     public function testDummyFeatureRouteWithAccess()
     {
-        $this->testAddFeatureToMerchant();
+        $this->fixtures->merchant->addFeatures(['dummy']);
 
         $this->ba->privateAuth();
 

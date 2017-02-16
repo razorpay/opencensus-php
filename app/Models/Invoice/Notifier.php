@@ -1,0 +1,485 @@
+<?php
+
+namespace RZP\Models\Invoice;
+
+use App;
+use Config;
+use Mail;
+
+use Carbon\Carbon;
+use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Customer;
+use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
+use RZP\Exception;
+
+class Notifier extends Base\Core
+{
+    // 300 seconds (5*60)
+    const SCHEDULE_TIME_LEEWAY = 300;
+
+    const MAIL_TAG_MAP = [
+        Type::ECOD    => MailTags::ECOD,
+        Type::INVOICE => MailTags::INVOICE,
+    ];
+
+    /**
+     * @var Entity
+     */
+    protected $invoice;
+    protected $issuedPdfPath;
+    protected $mode;
+    protected $raven;
+    protected $slack;
+    protected $slackTechLogsChannel;
+    protected $mailSubjectTemplates;
+
+    public function __construct($invoice = null, string $issuedPdfPath = null)
+    {
+        parent::__construct();
+
+        $this->invoice = $invoice;
+
+        $this->issuedPdfPath = $issuedPdfPath;
+
+        $this->mode = Mode::TEST;
+
+        if (isset($this->app['rzp.mode']) === true)
+        {
+            $this->mode = $this->app['rzp.mode'];
+        }
+
+        $this->raven = $this->app['raven'];
+
+        $this->slack = $this->app['slack'];
+
+        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+
+        $this->setMailSubjectTemplates();
+    }
+
+    public function setInvoice($invoice)
+    {
+        $this->invoice = $invoice;
+    }
+
+    //
+    // Methods to notify (via sms|email) events (issued|expired) of invoice.
+    //
+
+    public function notifyInvoiceIssuedToCustomer()
+    {
+        if ($this->canNotifyInvoiceIssuedToCustomer() === false)
+        {
+            return false;
+        }
+
+        if ($this->invoice->getEmailStatus() !== null)
+        {
+            $this->emailInvoiceIssuedToCustomer();
+        }
+
+        if ($this->invoice->getSmsStatus() !== null)
+        {
+            $this->smsInvoiceIssuedToCustomer();
+        }
+
+        $this->repo->saveOrFail($this->invoice);
+
+        return true;
+    }
+
+    public function notifyInvoiceExpiredToCustomer()
+    {
+        if ($this->invoice->isExpired() === false)
+        {
+            return false;
+        }
+
+        return $this->emailInvoiceExpiredToCustomer();
+    }
+
+    //  -------------------------------------------------------------------
+
+    public function canNotifyInvoiceIssuedToCustomer()
+    {
+        if ($this->invoice->isIssued() === false)
+        {
+            return false;
+        }
+
+        $scheduledAt = $this->invoice->getScheduledAt();
+
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        // If it's not scheduled for within 5 minutes, do not send
+        // the notification. Ideally, scheduled_at would be the same
+        // as the current time if scheduled_in is set to 0.
+        // Since there was some confusion,
+        // this condition basically means, that if the invoice
+        // needs to be sent within the NEXT 5 minutes, send it now itself.
+        // No need to wait for 5 minutes before sending it.
+
+        if ($scheduledAt > ($currentTime + self::SCHEDULE_TIME_LEEWAY))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
+    public function emailInvoiceIssuedToCustomer()
+    {
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_ISSUED_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
+
+        $data = $this->getInvoiceIssuedMailPayload();
+
+        $this->dispatchMail(
+            'emails.invoice.customer.generated',
+            $data,
+            function($message)
+            {
+                if ($this->issuedPdfPath !== null)
+                {
+                    $pdfDisplayName = $this->invoice->getPdfDisplayName();
+
+                    $message->attach(
+                        $this->issuedPdfPath,
+                        ['as' => $pdfDisplayName, 'mime' => 'application/pdf']);
+                }
+            });
+
+        $this->invoice->setEmailStatus(NotifyStatus::SENT);
+
+        return true;
+    }
+
+    public function emailInvoiceExpiredToCustomer()
+    {
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_EXPIRED_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
+
+        $data = $this->getInvoiceExpiredMailPayload();
+
+        $this->dispatchMail('emails.invoice.customer.expired', $data);
+
+        return true;
+    }
+
+    public function smsInvoiceIssuedToCustomer()
+    {
+        $contact = $this->invoice->getCustomerContact();
+
+        if (empty($contact) === true)
+        {
+            return false;
+        }
+
+        $request = $this->getRavenSendInvoiceRequestInput($contact);
+
+        try
+        {
+            $response = $this->raven->sendSms($request);
+        }
+        catch (\Exception $ex)
+        {
+            $this->trace->traceException(
+                $ex,
+                null,
+                null,
+                [
+                    'contact' => $contact,
+                    'invoice_id' => $this->invoice->getId(),
+                ]);
+
+            return false;
+        }
+
+        if (isset($response['sms_id']))
+        {
+            $this->invoice->setSmsStatus(NotifyStatus::SENT);
+
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function emailInvoiceExpiringToCustomer()
+    {
+        $customerEmail = $this->invoice->getCustomerEmail();
+
+        $this->trace->info(
+            TraceCode::INVOICE_EMAIL_EXPIRING_REQUEST,
+            [
+                'invoice_id'     => $this->invoice->getId(),
+                'customer_email' => $customerEmail,
+            ]);
+
+        if (empty($customerEmail) === true)
+        {
+            return false;
+        }
+
+        $data = $this->getInvoiceExpiringMailPayload();
+
+        $this->dispatchMail('emails.invoice.customer.expiring', $data);
+
+        return true;
+    }
+
+    // -------------------------------------------------------------------
+
+    protected function dispatchMail(string $template, array $data, $callback = null)
+    {
+        Mail::send($template, $data, function($message) use ($data, $callback)
+        {
+            $message->from('invoices@razorpay.com', $data['merchant']['name']);
+
+            $message->replyTo('support@razorpay.com', 'Razorpay Support');
+
+            $message->subject($data['subject']);
+
+            $message->to($data['invoice']['customer']['email']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $data['invoice']['id']);
+
+            $headers->addTextHeader(MailTags::HEADER, $data['label']);
+
+            if ($callback !== null) call_user_func($callback, $message);
+        });
+    }
+
+    protected function getInvoiceIssuedMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceExpiredMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceExpiringMailPayload()
+    {
+        return $this->getInvoiceMailPayload(__FUNCTION__);
+    }
+
+    protected function getInvoiceMailPayload(string $callee)
+    {
+        $merchant     = $this->invoice->merchant;
+        $merchantName = $merchant->getBillingLabelElseName();
+
+        $subject = $this->getInvoiceMailSubject($callee, $merchantName);
+
+        $invoicePayload = $this->invoice->toArrayPublic();
+
+        $extraInvoicePayload = [
+            'formatted_amount' => $this->invoice->getFormattedAmount(),
+            'type_label'       => ucwords($this->invoice->getTypeLabel()),
+        ];
+
+        $invoicePayload += $extraInvoicePayload;
+
+        $merchantPayload = [
+            'name' => $merchantName,
+        ];
+
+        $label = $this->getLabel($this->invoice->getType());
+
+        return [
+            'invoice'  => $invoicePayload,
+            'merchant' => $merchantPayload,
+            'subject'  => $subject,
+            'label'    => $label,
+        ];
+    }
+
+    protected function getInvoiceMailSubject(string $callee, string $merchantName)
+    {
+        if (in_array($callee, array_keys($this->mailSubjectTemplates), true) === false)
+        {
+            throw new Exception\LogicException("No templates found for callee: $callee");
+        }
+
+        $type = $this->invoice->getType();
+
+        return sprintf($this->mailSubjectTemplates[$callee][$type], $merchantName);
+    }
+
+    protected function getLabel($type)
+    {
+        return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
+    }
+
+    public function sendNotificationsInBulk()
+    {
+        $smsIssuedInvoices   = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::SMS);
+
+        $emailIssuedInvoices = $this->repo
+                                    ->invoice
+                                    ->getInvoicesForIssuedNotificationToCustomer(Entity::EMAIL);
+
+        $expiringInvoices    = $this->repo
+                                    ->invoice
+                                     ->getInvoicesForExpiringNotificationToCustomer();
+
+        $sentSmsCount            = $this->smsInvoiceIssuedToCustomerInBulk($smsIssuedInvoices);
+        $sentEmailCount          = $this->emailInvoiceIssuedToCustomerInBulk($emailIssuedInvoices);
+        $expiringEmailsSentCount = $this->emailInvoiceExpiringToCustomerInBulk($expiringInvoices);
+
+        $results = [
+            'sms_issued_pending'     => count($smsIssuedInvoices),
+            'email_issued_pending'   => count($emailIssuedInvoices),
+            'sms_issued_sent'        => $sentSmsCount,
+            'email_issued_sent'      => $sentEmailCount,
+            'email_expiring_pending' => $expiringInvoices->count(),
+            'email_expiring_sent'    => $expiringEmailsSentCount,
+        ];
+
+        $this->trace->info(TraceCode::INVOICE_BULK_NOTIFICATION_SUMMARY, $results);
+
+        // Post summary to slack
+        $message = 'Invoice Notify result';
+        $meta    = ['channel' => $this->slackTechLogsChannel];
+
+        $this->slack->queue($message, $results, $meta);
+
+        return $results;
+    }
+
+    protected function smsInvoiceIssuedToCustomerInBulk(array $invoices)
+    {
+        $totalSent = 0;
+
+        foreach ($invoices as $invoice)
+        {
+            $this->setInvoice($invoice);
+
+            $sent = $this->smsInvoiceIssuedToCustomer();
+
+            if ($sent === true)
+            {
+                $totalSent += 1;
+            }
+
+            $this->repo->saveOrFail($this->invoice);
+        }
+
+        return $totalSent;
+    }
+
+    protected function emailInvoiceIssuedToCustomerInBulk(array $invoices)
+    {
+        $totalSent = 0;
+
+        foreach ($invoices as $invoice)
+        {
+            $this->setInvoice($invoice);
+
+            $sent = $this->emailInvoiceIssuedToCustomer();
+
+            if ($sent === true)
+            {
+                $totalSent += 1;
+            }
+
+            $this->repo->saveOrFail($this->invoice);
+        }
+
+        return $totalSent;
+    }
+
+    protected function emailInvoiceExpiringToCustomerInBulk(array $invoices)
+    {
+        $totalSent = 0;
+
+        foreach ($invoices as $invoice)
+        {
+            $this->setInvoice($invoice);
+
+            $sent = $this->emailInvoiceExpiringToCustomer();
+
+            if ($sent === true)
+            {
+                ++$totalSent;
+            }
+        }
+
+        return $totalSent;
+    }
+
+    protected function getRavenSendInvoiceRequestInput($contact)
+    {
+        $merchant = $this->invoice->merchant;
+
+        $request = [
+            'receiver' => $contact,
+            'source' => 'api.invoice',
+            'template' => 'sms.invoice',
+            'params' => [
+                'merchant_name' => $merchant->getBillingLabelElseName(),
+                'invoice_link'  => $this->invoice->getShortUrl(),
+                'amount'        => $this->invoice->getAmount() / 100,
+            ]
+        ];
+
+        $this->trace->info(
+            TraceCode::INVOICE_RAVEN_REQUEST,
+            [
+                'invoice_id' => $this->invoice->getId(),
+                'request' => $request,
+            ]);
+
+        return $request;
+    }
+
+    protected function setMailSubjectTemplates()
+    {
+        $this->mailSubjectTemplates = [
+            'getInvoiceIssuedMailPayload' => [
+                Type::LINK    => ' Razorpay | Payment requested by %s',
+                Type::ECOD    => ' Razorpay | Payment requested by %s',
+                Type::INVOICE => ' Razorpay | Invoice from %s',
+            ],
+            'getInvoiceExpiredMailPayload' => [
+                Type::LINK    => ' Razorpay | Payment requested from %s has expired',
+                Type::ECOD    => ' Razorpay | Payment requested from %s has expired',
+                Type::INVOICE => ' Razorpay | Invoice from %s has expired',
+            ],
+            'getInvoiceExpiringMailPayload' => [
+                Type::LINK    => ' Razorpay | Payment request from %s is expiring',
+                Type::ECOD    => ' Razorpay | Payment request from %s is expiring',
+                Type::INVOICE => ' Razorpay | Invoice from %s is expiring',
+            ],
+        ];
+    }
+}

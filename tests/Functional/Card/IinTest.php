@@ -52,6 +52,28 @@ class IinTest extends TestCase
         $this->startTest();
     }
 
+    public function testImportIinWithIssuer()
+    {
+        $file = $this->getUploadedIinFile(true);
+
+        $testData = &$this->testData['testImportIinWithIssuer'];
+
+        $testData['request']['files']['file'] = $file;
+
+        $this->startTest();
+    }
+
+    public function testIinRangeUploadWithType()
+    {
+        $this->startTest();
+
+        $iin = $this->getEntityById('iin', 652851, true);
+
+        $this->assertEquals('credit', $iin['type']);
+        $this->assertEquals('RuPay', $iin['network']);
+        $this->assertEquals(null, $iin['issuer']);
+    }
+
     public function startTest($testDataToReplace = [])
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

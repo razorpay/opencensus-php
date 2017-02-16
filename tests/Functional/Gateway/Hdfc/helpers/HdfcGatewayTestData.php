@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testPayment' => [
@@ -10,6 +11,7 @@ return [
         'amount' => 50000,
         'method' => 'card',
         'status' => 'captured',
+        'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
         'captured' => true,
         'amount_authorized' => 50000,
         'amount_refunded' => 0,
@@ -30,6 +32,32 @@ return [
         'entity' => 'payment',
     ],
 
+    'testInternationalUSDPaymentOnApi' => [
+        'merchant_id'       => '10000000000000',
+        'amount'            => 5000,
+        'method'            => 'card',
+        'status'            => 'captured',
+        'two_factor_auth'   => TwoFactorAuth::NOT_APPLICABLE,
+        'captured'          => true,
+        'amount_authorized' => 5000,
+        'amount_refunded'   => 0,
+        'refund_status'     => null,
+        'currency'          => 'USD',
+        'description'       => 'random description',
+        'bank'              => null,
+        'error_code'        => null,
+        'error_description' => null,
+        'email'             => 'a@b.com',
+        'contact'           => '+919918899029',
+        'notes'             => [
+            'merchant_order_id' => 'random order id',
+        ],
+        'gateway'           => 'hdfc',
+        'signed'            => false,
+        'verified'          => null,
+        'entity'            => 'payment',
+    ],
+
     'testTransactionAfterCapture' => [
         'type' => 'payment',
         'merchant_id' => '10000000000000',
@@ -41,7 +69,7 @@ return [
         'balance' => 1048850,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048850,
+//        'escrow_balance' => 1048850,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -74,6 +102,25 @@ return [
     ],
 
     'testHdfcPaymentEntity' => [
+        'refund_id' => null,
+//        'gateway_transaction_id' => '663191662573200',
+        'action' => 5,
+        'received' => true,
+        'amount' => '500',
+        'enroll_result' => null,
+        'status' => 'captured',
+        'result' => 'CAPTURED',
+        'eci' => null,
+        'auth' => '999999',
+//        'ref' => '789071669515',
+        'avr' => 'N',
+//        'postdate' => '0719',
+        'error_code' => null,
+        'error_text' => null,
+        'entity' => 'hdfc',
+    ],
+
+    'testHdfcUSDPaymentEntity' => [
         'refund_id' => null,
 //        'gateway_transaction_id' => '663191662573200',
         'action' => 5,

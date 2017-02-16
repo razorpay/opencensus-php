@@ -2,10 +2,9 @@
 
 namespace RZP\Models\Batch;
 
-use RZP\Models\Base;
-use RZP\Exception;
+use RZP\Base;
 use RZP\Error\ErrorCode;
-use RZP\Models\Batch\Header;
+use RZP\Exception;
 
 class Validator extends Base\Validator
 {
@@ -28,12 +27,24 @@ class Validator extends Base\Validator
 
         if ($totalEntries === 0)
         {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY);
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_BATCH_FILE_EMPTY,
+                null,
+                [
+                    'type' => $type,
+                    'total_entries' => $totalEntries,
+                ]);
         }
 
         if ($totalEntries > 1000)
         {
-           throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT);
+           throw new Exception\BadRequestException(
+               ErrorCode::BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT,
+               null,
+               [
+                   'type' => $type,
+                   'total_entries' => $totalEntries,
+               ]);
         }
 
         $validator = 'validate' .ucfirst($type) .'Entries';

@@ -153,6 +153,38 @@ return [
         ],
     ],
 
+    'testRefundWithFloatAmountString' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'amount'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
+    'testRefundWithFloatAmount' => [
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'field' => 'amount'
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE
+        ],
+    ],
+
     'testRefundWithBlankAmount' => [
         'response' => [
             'content' => [
@@ -195,6 +227,54 @@ return [
                     ],
                 ],
             ],
+        ],
+    ],
+
+    'testRefundCreateOnGatewayForMissingRefunds' => [
+        'request' => [
+            'method'    => 'post',
+            'url'       => '/refunds/billdesk/create_record',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => []
+        ]
+    ],
+
+    'testCreateMissingRefundTransaction' => [
+        'request' => [
+            'method'    => 'post',
+            'url'       => '/refunds/gateway_refunded/transaction',
+            'content'   => [],
+        ],
+        'response' => [
+            'content'   => [
+                'total_count' => 1,
+                'success_count' => 1,
+                'failures_count' => 0,
+                'failed_refunds' => [],
+            ]
+        ]
+    ],
+
+    'testRefundValidationOnWrongGateway' => [
+        'request' => [
+            'url'       => '/refunds/wallet_airtelmoney/validate',
+            'content'   => [],
+            'method'    => 'post',
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_INVALID_GATEWAY,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_INVALID_GATEWAY
         ],
     ],
 ];

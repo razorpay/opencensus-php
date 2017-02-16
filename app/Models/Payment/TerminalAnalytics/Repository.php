@@ -6,8 +6,6 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'terminal_analytics';
 
     // These are admin allowed params to search on.
@@ -16,7 +14,7 @@ class Repository extends Base\Repository
         Entity::TERMINAL_ID     => 'sometimes|alpha_num',
     );
 
-    public function fetchTerminalAnalyticsForPaymentIds($paymentIds = [])
+    public function fetchUsedTerminalsForPaymentIds($paymentIds = [])
     {
         return $this->newQuery()
             ->whereIn(Entity::PAYMENT_ID, $paymentIds)

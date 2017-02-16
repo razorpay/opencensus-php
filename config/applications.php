@@ -1,7 +1,6 @@
 <?php
 
 return array(
-
     'dashboard' => array(
         'url'       =>  env('APP_DASHBOARD_URL'),
         'secret'    =>  env('APP_DASHBOARD_SECRET'),
@@ -25,7 +24,7 @@ return array(
         'url'       =>  'razorpay.com',
         'key'       =>  env('MAILGUN_SECRET'),
         'mock'      =>  env('MAILGUN_MOCK'),
-        'secret'    =>  '',
+        'secret'    =>  env('APP_MAILGUN_SECRET'),
         'from_name' =>  'Team Razorpay',
         'from_email' => 'support@razorpay.com'
     ),
@@ -60,5 +59,33 @@ return array(
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
         'secret'    => env('MAXMIND_SECRET')
-    )
+    ),
+
+    'kotak' => array(
+        'secret'    => env('KOTAK_SECRET'),
+    ),
+
+    'lumberjack' => array(
+        'url'       => env('LUMBERJACK_URL'),
+        'secret'    => env('LUMBERJACK_SECRET')
+    ),
+
+    'elfin' => [
+        'mock'     => env('ELFIN_MOCK', true),
+        'services' => env('ELFIN_SERVICES', 'gimli,bitly'),
+        'gimli'    => [
+            'secret'   => env('GIMLI_SECRET'),
+            'base_url' => env('GIMLI_BASE_URL')
+        ],
+        'bitly'    => [
+            'secret'   => env('BITLY_ACCESS_TOKEN_PUBLIC', 'access_token'),
+        ],
+        'allow_fallback' => true,
+    ],
+
+    'exchange'  => [
+        'mock'      => env('EXCHANGE_MOCK', false),
+        'url'       => env('EXCHANGE_URL'),
+        'appId'     => env('EXCHANGE_APP_ID')
+    ],
 );

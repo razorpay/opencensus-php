@@ -2,18 +2,20 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
-use RZP\Trace\TraceCode;
-use RZP\Models\Base;
-use RZP\Models\Transaction;
-use RZP\Models\Settlement;
+use RZP\Constants\Table;
 use RZP\Exception;
+use RZP\Gateway\Billdesk;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Models\Settlement;
+use RZP\Models\Schedule;
+use RZP\Models\Transaction;
+use RZP\Trace\TraceCode;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Transaction';
+    protected $entity = 'transaction';
 
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
@@ -23,6 +25,20 @@ class Repository extends Base\Repository
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::RECONCILED      => 'sometimes|in:0,1',
     );
+
+    public function fetchByEntityAndAssociateMerchant($entity)
+    {
+        $txn = $this->newQuery()
+                    ->where(Transaction\Entity::ENTITY_ID, '=', $entity->getId())
+                    ->firstOrFail();
+
+        $entity->transaction()->associate($txn);
+        $txn->source()->associate($entity);
+
+        $txn->merchant()->associate($entity->merchant);
+
+        return $txn;
+    }
 
     public function fetchTxnsExpectedToSettle($timestamp)
     {
@@ -37,12 +53,49 @@ class Repository extends Base\Repository
 
     public function fetchUnsettledTransactions($timestamp)
     {
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+
+        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
+        $transactionData = $this->getAttributeWithTableName('*');
+
         return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
-                    ->orderBy(Transaction\Entity::MERCHANT_ID)
-                    ->orderBy(Transaction\Entity::ID)
+                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
+                    ->with('merchant')
+                    ->orderBy($transactionMerchantId)
+                    ->orderBy($transactionId)
+                    ->get();
+    }
+
+    public function fetchUnsettledTxnsForDueSchedules($timestamp)
+    {
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+        $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
+
+        $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
+
+        $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+        $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
+        $transactionType = $this->getAttributeWithTableName(Transaction\Entity::TYPE);
+        $transactionData = $this->getAttributeWithTableName('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                    ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
+                    ->where(Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Entity::SETTLED, '=', 0)
+                    ->where($transactionType, '!=', Type::SETTLEMENT)
+                    ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
+                    ->where(Schedule\Entity::NEXT_RUN, '<', $timestamp)
+                    ->with('merchant')
+                    ->orderBy($transactionMerchantId)
+                    ->orderBy($transactionId)
                     ->get();
     }
 
@@ -57,7 +110,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
@@ -75,6 +128,9 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
+                      ->with('source')
+                      ->take($count)
+                      ->skip($skip)
                       ->latest()
                       ->get();
 
@@ -82,9 +138,71 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        $txns = $this->fetchAssociatedRelations($txns, 'source');
+        return $txns;
+    }
+
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip)
+    {
+        $txns = $this->newQuery()
+                     ->merchantId($merchantId)
+                     ->betweenTime($from, $to)
+                     ->whereIn(Entity::TYPE, ['payment', 'refund'])
+                     ->with('merchant', 'feesBreakup')
+                     ->latest()
+                     ->get();
+
+        $this->trace->info(
+            TraceCode::MERCHANT_REPORT_GENERATION,
+            ['time' => time()]);
+
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source');
 
         return $txns;
+    }
+
+    public function fetchAssociatedRelationsWithLoadedEntities(
+        $entities,
+        $relation,
+        $idCol = 'entity_id',
+        $typeCol = 'type')
+    {
+        $relationships = array();
+        $objects = array();
+
+        foreach ($entities as $entity)
+        {
+            $relationships[$entity->$typeCol][] = $entity->$idCol;
+        }
+
+        foreach ($relationships as $type => $ids)
+        {
+            $eagerLoadRelations = [];
+
+            if ($type === 'payment')
+            {
+                $eagerLoadRelations = ['netbanking', 'billdesk', 'order'];
+            }
+            else if ($type === 'refund')
+            {
+                $eagerLoadRelations = ['payment', 'payment.netbanking', 'payment.billdesk'];
+            }
+
+            $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
+
+            foreach ($typeEntities as $entity)
+            {
+                $objects[$entity->getId()] = $entity;
+            }
+        }
+
+        foreach ($entities as $entity)
+        {
+            $typeEntity = $objects[$entity->$idCol];
+
+            $entity->setRelation($relation, $typeEntity);
+        }
+
+        return $entities;
     }
 
     public function fetchDataForInvoice($merchantId, $from, $to)
@@ -107,10 +225,10 @@ class Repository extends Base\Repository
 
         // Total fee includes our cut + service tax
         return [
-            'total_fee'         =>  $fee,
+            'total_fee'         => $fee,
             // This is a combined tax column
             // and includes more than just service_tax (sb cess, kk cess)
-            'tax'               =>  $serviceTax
+            'tax'               => $serviceTax
         ];
     }
 
@@ -141,6 +259,16 @@ class Repository extends Base\Repository
         }
 
         return $txns2;
+    }
+
+    public function updateSettledAtToNow($txn)
+    {
+        $id = $txn->getId();
+
+        return $this->newQuery()
+                    ->where(Transaction\Entity::ID, '=', $id)
+                    ->where(Transaction\Entity::SETTLED, '=', false)
+                    ->update([Transaction\Entity::SETTLED_AT  => 1]);
     }
 
     public function settled($txns, $settledAt)
@@ -199,10 +327,11 @@ class Repository extends Base\Repository
         return $count;
     }
 
-    public function findByEntityId($entityId, $fail = false)
+    public function findByEntityId($entityId, $merchant, $fail = false)
     {
         $txn = $this->newQuery()
                     ->where(Transaction\Entity::ENTITY_ID, '=', $entityId)
+                    ->merchantId($merchant->getId())
                     ->first();
 
         if (($txn === null) and
@@ -215,10 +344,33 @@ class Repository extends Base\Repository
         return $txn;
     }
 
-    public function fetchBySettlementId($setlId)
+    public function fetchBySettlement($setl)
     {
         return $this->newQuery()
-                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setlId)
+                    ->where(Transaction\Entity::SETTLEMENT_ID, '=', $setl->getId())
+                    ->get();
+    }
+
+    public function getCancelledBilldeskTransactions()
+    {
+        $billdeskPaymentId = Billdesk\Entity::getAttributeWithTableName(Billdesk\Entity::PAYMENT_ID);
+        $billdeskRefStatus = Billdesk\Entity::getAttributeWithTableName('RefStatus');
+
+        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+
+        $transactionEntityId = $this->getAttributeWithTableName(Entity::ENTITY_ID);
+        $transactionReconciledAt = $this->getAttributeWithTableName(Entity::RECONCILED_AT);
+
+        $transactionData = $this->getAttributeWithTableName('*');
+
+        return $this->newQuery()
+                    ->select($transactionData)
+                    ->join(Table::PAYMENT, $paymentId, '=', $transactionEntityId)
+                    ->join(Table::BILLDESK, $billdeskPaymentId, '=', $paymentId)
+                    ->where($billdeskRefStatus, '=', Billdesk\RefundStatus::CANCELLED)
+                    ->where($paymentStatus, '=', Payment\Status::REFUNDED)
+                    ->whereNull($transactionReconciledAt)
                     ->get();
     }
 
@@ -243,5 +395,64 @@ class Repository extends Base\Repository
         {
             $query->whereNotNull(Entity::RECONCILED_AT);
         }
+    }
+
+    public function getTransactionsToBeMigrated()
+    {
+        $query = $this->newQuery()
+                    ->select('transactions.*')
+                    ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                    ->where(Entity::TYPE, 'payment')
+                    ->where(Entity::GRATIS, false)
+                    ->where('transactions.service_tax', '>', 0)
+                    ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                    ->whereNotIn("transactions.id", function($query)
+                        {
+                            $query->select(FeeBreakup\Entity::TRANSACTION_ID)
+                                  ->from(TABLE::FEE_BREAKUP);
+                        });
+
+        return $query->limit(1000)->get();
+    }
+
+    public function getTransactionForReport($merchantId, $from, $to)
+    {
+        $txnIds = $this->newQuery()
+                       ->where("transactions.merchant_id", $merchantId)
+                       ->where(Entity::TYPE, 'payment')
+                       ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                       ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                       ->betweenTime($from, $to)
+                       ->select("transactions.id")
+                       ->get();
+
+        return $txnIds;
+    }
+
+    public function getTransactionsToSetPricingId()
+    {
+        $transactions = $this->newQuery()
+                            ->select('transactions.*')
+                            ->join(Table::PAYMENT, Entity::ENTITY_ID, '=', 'payments.id')
+                            ->where(Entity::TYPE, 'payment')
+                            ->whereNotNull(Payment\Entity::CAPTURED_AT)
+                            ->whereNull(Entity::PRICING_RULE_ID)
+                            ->get();
+
+        return $transactions;
+    }
+
+    public function fetchForPayment(Payment\Entity $payment)
+    {
+        if ($payment->hasRelation('transaction'))
+        {
+            return $payment->transaction;
+        }
+
+        $transaction = $this->findOrFail($payment->getTransactionId());
+
+        $payment->setRelation('transaction', $transaction);
+
+        return $transaction;
     }
 }

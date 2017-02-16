@@ -25,7 +25,8 @@ return array(
     |
     */
 
-    'channel' => '#transactions',
+    // #transactions
+    'channel' => 'C04260LMZ',
 
     /*
     |-------------------------------------------------------------
@@ -118,14 +119,31 @@ return array(
     // Allow Markdown in all fields
     'markdown_in_attachments' => ['pretext', 'text', 'title', 'fields', 'fallback'],
 
+    // Reference for Slack Channel IDs:
+    // https://github.com/razorpay/api/wiki/Slack-Channel-IDs
     'channels'  =>  [
-        'low'            => '#transactions',
-        'high'           => '#transactions_high',
-        'high_4'         => '#transactions_risk_4',
-        'risky'          => '#transactions_risky',
-        'reconciliation' => '#reconciliation',
-        'highrisk'       => '#transactions_highrisk',
-        'tech_logs'      => '#tech_logs',
+        // transactions_high
+        'high'              => 'C0KRNK0AF',
+        // transactions_risk_4
+        'high_4'            => 'C2CD9RXKR',
+        // transactions_highrisk
+        'highrisk'          => 'C1NBL61NE',
+        // transactions
+        'low'               => 'C04260LMZ',
+        // transactions_lt_10
+        'lt_10'             => 'C2R9JBVED',
+        // operations_log
+        'operations_log'    => 'C0KUX9WSE',
+        // reconciliation
+        'reconciliation'    => 'C1GNPHC07',
+        // transactions_risky
+        'risky'             => 'C0RL2C917',
+        // settlements
+        'settlements'       => 'C02LBK2D7',
+        // tech_logs
+        'tech_logs'         => 'C0E2Q6MJM',
+        // tech_logs_verify
+        'tech_logs_verify'  => 'C3AJ9V9EY',
     ],
 
     'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true

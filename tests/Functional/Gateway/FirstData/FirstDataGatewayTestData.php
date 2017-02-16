@@ -36,6 +36,21 @@ return [
         ],
     ],
 
+    'testInvalidAuthFields' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+        ],
+    ],
+
     'testFailedAuthPayment' => [
         'response'  => [
             'content'     => [
@@ -49,6 +64,38 @@ return [
         'exception' => [
             'class'                 => 'RZP\Exception\GatewayErrorException',
             'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
+        ],
+    ],
+
+    'testNoApprovalCodeInAuthResponse' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_ORDER_EXISTS,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
+        ],
+    ],
+
+    'testNoApprovalCodeOrFailReason' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ],
+            ],
+            'status_code' => 502,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
         ],
     ],
 
@@ -100,7 +147,7 @@ return [
         ],
     ],
 
-    'testFailedVerify' => [
+    'testFailedVerifyMismatch' => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -111,7 +158,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'                 => 'RZP\Exception\GatewayErrorException',
+            'class'                 => 'RZP\Exception\PaymentVerificationException',
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
         ],
     ],

@@ -7,10 +7,9 @@ use RZP\Models\Card;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
     use Base\RepositoryUpdateTestAndLive;
 
-    protected $entity = 'IIN';
+    protected $entity = 'iin';
 
     protected $appFetchParamRules = array(
         Entity::IIN             => 'sometimes|integer|digits:6',
@@ -22,6 +21,19 @@ class Repository extends Base\Repository
         Entity::ISSUER          => 'sometimes|string',
     );
 
+    protected function addQueryParamInternational($query, $params)
+    {
+        $international = $params[Entity::INTERNATIONAL];
+
+        if ($international === '1')
+        {
+            $query->where(Entity::COUNTRY, '!=', 'IN');
+        }
+        else
+        {
+            $query->where(Entity::COUNTRY, '=', 'IN');
+        }
+    }
 
     protected function addQueryOrder($query)
     {

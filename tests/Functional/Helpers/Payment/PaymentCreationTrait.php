@@ -84,9 +84,10 @@ trait PaymentCreationTrait
             '/payments/create/checkout',
             '/payments/create/redirect',
             '/payments/create/recurring',
+            '/payments/create/upi',
             '/payments');
 
-        return in_array($url, $urls);
+        return in_array($url, $urls, true);
     }
 
     protected function isOtpCallbackUrl($uri)
@@ -221,7 +222,7 @@ trait PaymentCreationTrait
                     }
                     else if ($content['type'] === 'async')
                     {
-                        return $response;
+                        return $this->processAsyncPaymentForm($response);
                     }
                 }
             }
@@ -322,6 +323,8 @@ trait PaymentCreationTrait
 
         if ($content['type'] === 'return')
         {
+            $this->assertS2SCallback($response);
+
             $this->merchantCallbackFlow = true;
 
             $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -331,6 +334,40 @@ trait PaymentCreationTrait
             $response = $this->makeRequestParent($request);
 
             $this->assertResponse('json', $response);
+
+            return $response;
+        }
+    }
+
+    protected function assertS2SCallback($response)
+    {
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $this->assertResponse('json', $response);
+        }
+    }
+
+    protected function processAsyncPaymentForm($response)
+    {
+        $this->assertTrue($this->isResponseInstanceType($response, 'http'));
+        $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+        $content = $response->getContent();
+
+        $marker = '// Async Payment data //';
+
+        if (strpos($content, $marker) !== false)
+        {
+            $start = 'var data = ';
+            $end = '// Async Payment data //';
+
+            $data = getTextBetweenStrings($content, $start, $end);
+
+            // Remove ';' at the end to get proper json string
+            $data = trim($data);
+            $content = substr($data, 0, -1);
+
+            $response->setContent($content);
 
             return $response;
         }
@@ -354,7 +391,6 @@ trait PaymentCreationTrait
         $response = $this->makeRequestParent($request);
 
         $statusCode = (int) $response->getStatusCode();
-
 
         if ($statusCode === 302)
         {

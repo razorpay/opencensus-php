@@ -3,6 +3,8 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
+
+use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -32,8 +34,11 @@ class SettlementTest extends TestCase
         {
             $payments = $this->fixtures->times(2)->create(
                 'payment:captured',
-                ['merchant_id' => $merchant->getId(),
-                 'amount' => '10000']);
+                [
+                    'merchant_id' => $merchant->getId(),
+                    'amount' => '10000',
+                ]
+            );
 
             foreach ($payments as $payment)
             {
@@ -109,10 +114,15 @@ class SettlementTest extends TestCase
         $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
         $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
 
-        $payments = $this->fixtures->times(5)->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
+        $payments = $this->fixtures->times(5)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
 
         return $payments;
     }
@@ -132,7 +142,6 @@ class SettlementTest extends TestCase
                 ['captured_at' => $capturedAt,
                  'created_at' => $createdAt,
                  'updated_at' => $createdAt + 10]);
-
 
         $setDate = Carbon::parse($days['payment_settlement_on'],'Asia/Kolkata');
 
@@ -256,13 +265,18 @@ class SettlementTest extends TestCase
         $this->ba->appAuth();
 
         // $this->fixtures->merchant->createBankAccount();
+        $this->fixtures->merchant->editFeeCredits('50000', Account::TEST_ACCOUNT);
+        $this->fixtures->merchant->editCreditsforNodalAccount('50000', 'fee');
 
         $payments = $this->createPaymentEntities();
 
         foreach ($payments as $payment)
         {
-            $attrs = ['payment' => $payments[0],
-                      'amount'  => '100'];
+            $attrs = [
+                'payment' => $payments[0],
+                'amount'  => '100'
+            ];
+
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
             $refunds[] = $refund;
         }
@@ -279,9 +293,79 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        // $request = array('url' => '/settlements/details', 'method' => 'post');
-        // $content = $this->makeRequestAndGetContent($request);
-        // sd($content);
+        $batchSetl = $this->getLastEntity('batch_settlement', true);
+
+        $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
+
+        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $batchSetl['id']]);
+        $content = $this->makeRequestAndGetContent($request);
+
+        $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
+
+        $this->assertArrayHasKey('entity', $content);
+        $this->assertSame('collection', $content['entity']);
+        $this->assertSame($content['count'], 5);
+
+        $totalAmount = 0;
+        $totalFeeCredits = 0;
+
+        foreach ($content['items'] as $details)
+        {
+            if ($details['type'] == 'debit')
+            {
+                $totalAmount -= $details['amount'];
+            }
+            else
+            {
+                $totalAmount += $details['amount'];
+            }
+
+            if (($details['type'] === 'credit') and
+                ($details['component'] === 'fee_credits'))
+            {
+                $totalFeeCredits += $details['amount'];
+            }
+        }
+
+        $totalTxnFeeCredits = 0;
+
+        foreach ($txns['items'] as $txn)
+        {
+            $totalTxnFeeCredits += $txn['fee_credits'];
+        }
+
+        $this->assertEquals($totalTxnFeeCredits, $totalFeeCredits);
+
+        $this->assertSame($totalAmount, $setl['amount']);
+    }
+
+    public function testMerchantSettlementV2()
+    {
+        $this->ba->appAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $payments = $this->createPaymentEntities();
+
+        foreach ($payments as $payment)
+        {
+            $attrs = ['payment' => $payments[0],
+                      'amount'  => '100'];
+            $refund = $this->fixtures->create('refund:from_payment', $attrs);
+            $refunds[] = $refund;
+        }
+
+        $input = array('count' => 10);
+        $txns = $this->getEntities('transaction', $input, true);
+
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $setl = $this->getLastEntity('settlement', true);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
@@ -304,6 +388,108 @@ class SettlementTest extends TestCase
         }
 
         $this->assertSame($totalAmount, $setl['amount']);
+    }
+
+    public function testSettlementIgnoredTxns()
+    {
+        $this->ba->appAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+
+        $payment = $this->fixtures->create(
+            'payment:captured',
+            [
+                'amount'      => '1000',
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        $refund = $this->fixtures->create(
+            'refund:from_payment',
+            [
+                'payment' => $payment,
+                'amount'  => '1000',
+            ]
+        );
+
+        // Payment for 10 rupees, followed by full refund.
+        // Net amount to be settled is -23 paise, so will be ignored.
+
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        $txns = $this->getEntities('transaction', ['count' => 2]);
+
+        foreach ($txns['items'] as $txn)
+        {
+            $this->assertEquals($txn['settled'], false);
+        }
+    }
+
+    public function testSettlementFileGeneration()
+    {
+        $this->testMerchantSettlement();
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $request = array(
+            'url' => '/settlements/file/generate',
+            'method' => 'POST',
+            'content' => [
+                'batch_settlement_id' => $setl['batch_settlement_id']
+            ]
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($content, null);
+    }
+
+    public function testIciciNodalTransfer()
+    {
+        $this->ba->appAuth();
+
+        $request = [
+            'url'     => '/nodal/transfer/icici',
+            'method'  => 'POST',
+            'content' => [
+                'amount' => 1076
+            ]
+        ];
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals(null, $content['file']);
+    }
+
+    protected function createAndAssignSchedule()
+    {
+        $request = array(
+            'url' => '/merchants/'.Account::TEST_ACCOUNT.'/schedules',
+            'method' => 'POST',
+            'content' => array(
+                'name'        => 'Basic T3',
+                'type'        => 'settlement',
+                'period'      => 'daily',
+                'interval'    => 1,
+                'delay'       => 3,
+                'next_run'    => 1451586600,
+            )
+        );
+
+        $response = $this->makeRequestAndGetContent($request);
+
+        return $response;
     }
 
     protected function startTest($testDataToReplace = array())

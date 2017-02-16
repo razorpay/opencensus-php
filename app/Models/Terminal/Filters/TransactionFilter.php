@@ -3,17 +3,14 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Constants\Mode;
-
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-
+use RZP\Models\Card\Network;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment\Method;
-use RZP\Models\Emi\Repository;
 use RZP\Models\Terminal\Shared;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
@@ -21,8 +18,10 @@ class TransactionFilter extends Terminal\Filter
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
+        'amount',
         'maestro',
         'recurring',
     ];
@@ -71,6 +70,22 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    public function currencyFilter($terminal, $input)
+    {
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $paymentCurrency = Currency::INR;
+        }
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
+    }
+
     public function internationalFilter($terminal, $input)
     {
         if ($input['payment']->isMethodCardOrEmi() === false)
@@ -115,7 +130,9 @@ class TransactionFilter extends Terminal\Filter
 
             $terminalGateway = $terminal->getGateway();
 
-            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $isTPV = $input['merchant']->isTPVRequired();
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
         }
@@ -129,9 +146,11 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // Only shared terminals support Maestro on Live mode.
+            // For HDFC, only shared terminals support
+            // Maestro cards on Live mode.
             if (($network === Network::MAES) and
-                ($input['mode'] === Mode::LIVE))
+                ($input['mode'] === Mode::LIVE) and
+                ($terminal->getGateway() === Gateway::HDFC))
             {
                 return Shared::isSharedTerminal($terminal);
             }
@@ -139,6 +158,7 @@ class TransactionFilter extends Terminal\Filter
 
         return true;
     }
+
 
     public function recurringFilter($terminal, $input)
     {
@@ -150,13 +170,17 @@ class TransactionFilter extends Terminal\Filter
         if ($payment->isRecurring() === true)
         {
             // for recurring payment, terminal must be cybersource
-            if ($terminal->getGateway() !== Gateway::CYBERSOURCE)
+            if (($terminal->getGateway() !== Gateway::CYBERSOURCE) or
+                ($terminal->getGatewayAcquirer() !== 'hdfc'))
             {
                 return false;
             }
 
+            $ba = app('basicauth');
+
             if (($payment->getTokenId() !== null) and
-                ($payment->localToken->isRecurring() === true))
+                ($payment->localToken->isRecurring() === true) and
+                ($ba->isPrivateAuth() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }
@@ -193,6 +217,22 @@ class TransactionFilter extends Terminal\Filter
         $emiDuration = $input['payment']->emiPlan->getDuration();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+    }
 
+    public function amountFilter(Terminal\Entity $terminal, array $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        $gateway = $terminal->getGateway();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $category = $terminal->getNetworkCategory();
+
+        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
+
+        $amount = $input['payment']->getAmount();
+
+        return ($amount >= $minAmount);
     }
 }

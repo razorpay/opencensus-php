@@ -2,11 +2,12 @@
 
 namespace RZP\Models\Card\IIN\Import;
 
+use App;
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 use RZP\Models\Card\IIN;
 use RZP\Models\Card\Network;
-use RZP\Exception;
-use App;
-use RZP\Trace\TraceCode;
 
 /**
  * This class is called by the service function with the input data.
@@ -35,7 +36,8 @@ class XLSImporter
     {
         if (isset($input['network']) === false)
         {
-            throw new Exception\BadRequestException("please pass network name as input for given file");
+            throw new Exception\BadRequestValidationFailureException(
+                'Please pass network name as input for given file');
         }
 
         // Extracts and returns the columns and data
@@ -55,17 +57,16 @@ class XLSImporter
         $successCount = count($cleaned);
 
         return array(
-            'duplicates'   => $duplicates,
-            'db_conflicts' => $conflicts,
+            'duplicates'     => $duplicates,
+            'db_conflicts'   => $conflicts,
             'network_errors' => $networkCheckFails,
-            'success' => $successCount,
+            'success'        => $successCount,
         );
     }
 
     public function importWithoutNetwork($file)
     {
         $ret = (new XLSFileHandler)->getCsvData($file);
-
 
         // Header of Csv data
         $ret['columns'] = array(
@@ -135,8 +136,8 @@ class XLSImporter
             'Debit Card'        => $formatter->debitCard,
             'Other Card'        => $formatter->otherCardType,
             'Unknown Network'   => $formatter->unknownNetworkType,
-            'Failed Count'      => sizeof($errArray),
-            'Sucessful Entries' => sizeof($formattedData) - sizeof($errArray),
+            'Failed Count'      => count($errArray),
+            'Sucessful Entries' => count($formattedData) - count($errArray),
         );
     }
     /**
@@ -146,36 +147,40 @@ class XLSImporter
      *
      * @param array $cleaned        the input entries.
      */
-    protected function enterIntoDB($cleaned, $chunkSize=5000)
+    protected function enterIntoDB($cleaned, $chunkSize = 5000)
     {
-        $time = time();
-
         // Too many entries crashes the sql query
         foreach (array_chunk($cleaned, $chunkSize) as $chunks)
         {
+            $iins = new Base\PublicCollection;
+
             foreach ($chunks as & $chunk)
             {
-                $chunk[IIN\Entity::CREATED_AT] = $time;
-                $chunk[IIN\Entity::UPDATED_AT] = $time;
+                $iinEntity = (new IIN\Entity)->build($chunk);
+
+                $iins->push($iinEntity);
             }
 
-            IIN\Entity::insert($chunks);
+            $this->app['repo']->saveOrFailCollection($iins);
         }
     }
 
     protected function updateIntoDB(& $conflicts)
     {
-        $columns = array(IIN\Entity::NETWORK, IIN\Entity::TYPE, IIN\Entity::COUNTRY);
+        $columns = array(IIN\Entity::TYPE, IIN\Entity::COUNTRY, IIN\Entity::ISSUER);
 
         foreach ($conflicts as $iinId => $entry)
         {
-            list($input, $conflict, $diff) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
+            list($input, $conflict, $diff) =
+                $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
 
             if (($conflict === false) and
                 (empty($input) === false))
             {
                 $entity = $this->app['repo']->iin->find($iinId);
+
                 $entity->edit($input);
+
                 $this->app['repo']->saveOrFail($entity);
             }
 
@@ -193,6 +198,7 @@ class XLSImporter
     protected function getInputForIinUpdate($dbEntry, $fileEntry, $columns)
     {
         unset($fileEntry[IIN\Entity::IIN]);
+        unset($fileEntry[IIN\Entity::NETWORK]);
 
         $conflict = false;
 
@@ -200,9 +206,14 @@ class XLSImporter
 
         foreach ($columns as $column)
         {
-            if (($column === 'country') or
-                ((isset($dbEntry[$column])) and
-                 ($dbEntry[$column] !== '')))
+            if (empty($fileEntry[$column]) === true)
+            {
+                unset($fileEntry[$column]);
+
+                continue;
+            }
+
+            if (empty($dbEntry[$column]) === false)
             {
                 if ($dbEntry[$column] !== $fileEntry[$column])
                 {

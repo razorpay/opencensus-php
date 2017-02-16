@@ -2,11 +2,13 @@
 
 namespace RZP\Models\Transaction;
 
-use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Adjustment;
 use RZP\Models\Payment;
-use RZP\Models\Transaction;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction;
+use RZP\Models\Merchant;
 
 class Entity extends Base\PublicEntity
 {
@@ -22,14 +24,19 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX         = 'service_tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
+    const GATEWAY_AMOUNT      = 'gateway_amount';
     const GATEWAY_FEE         = 'gateway_fee';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const API_FEE             = 'api_fee';
     const GRATIS              = 'gratis';
+    const FEE_CREDITS         = 'fee_credits';
     const ESCROW_BALANCE      = 'escrow_balance';
     const RECONCILED_AT       = 'reconciled_at';
     const CHANNEL             = 'channel';
+    const FEE_MODEL           = 'fee_model';
+    const FEE_BEARER          = 'fee_bearer';
+    const CREDIT_TYPE         = 'credit_type';
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
@@ -37,8 +44,6 @@ class Entity extends Base\PublicEntity
     const PAYMENT_ID        = 'payment_id';
 
     const RECONCILED        = 'reconciled';
-
-    protected $table = Table::TRANSACTION;
 
     protected static $sign = 'txn';
 
@@ -59,11 +64,15 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_SETTLED_AT,
         self::SERVICE_TAX,
         self::GRATIS,
+        self::FEE_CREDITS,
         self::BALANCE,
         self::ESCROW_BALANCE,
         self::PRICING_RULE_ID,
         self::RECONCILED_AT,
         self::CHANNEL,
+        self::FEE_MODEL,
+        self::FEE_BEARER,
+        self::CREDIT_TYPE,
         self::SETTLED_AT,
         self::SERVICE_TAX);
 
@@ -94,7 +103,24 @@ class Entity extends Base\PublicEntity
     );
 
     protected $defaults = array(
-        self::GRATIS    => false,
+        self::GRATIS                => false,
+        self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_AMOUNT        => null,
+        self::GATEWAY_FEE           => null,
+        self::GATEWAY_SERVICE_TAX   => null,
+        self::BALANCE               => null,
+        self::API_FEE               => null,
+        self::FEE_CREDITS           => 0,
+        self::ESCROW_BALANCE        => null,
+        self::SETTLED_AT            => null,
+        self::SETTLEMENT_ID         => null,
+        self::RECONCILED_AT         => null,
+        self::SETTLED               => 0,
+        self::PRICING_RULE_ID       => null,
+        self::SERVICE_TAX           => null,
+        self::FEE_MODEL             => Merchant\FeeModel::NA,
+        self::FEE_BEARER            => Merchant\FeeBearer::NA,
+        self::CREDIT_TYPE           => CreditType::DEFAULT,
     );
 
     protected $amounts = array(
@@ -119,6 +145,22 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_ID,
     );
 
+    protected $casts = [
+        self::CREDIT              => 'int',
+        self::DEBIT               => 'int',
+        self::AMOUNT              => 'int',
+        self::FEE                 => 'int',
+        self::SERVICE_TAX         => 'int',
+        self::BALANCE             => 'int',
+        self::GATEWAY_AMOUNT      => 'int',
+        self::GATEWAY_FEE         => 'int',
+        self::GATEWAY_SERVICE_TAX => 'int',
+        self::GRATIS              => 'bool',
+        self::FEE_CREDITS         => 'int',
+        self::FEE_MODEL           => 'int',
+        self::FEE_BEARER          => 'int',
+    ];
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
@@ -126,20 +168,7 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $type = $this->getAttribute(self::TYPE);
-
-        Transaction\Type::validateType($type);
-
-        $class = 'RZP\\Models\\';
-
-        if ($type === Transaction\Type::REFUND)
-        {
-            $class .= 'Payment\\';
-        }
-
-        $class .= ucfirst($type).'\\'.'Entity';
-
-        return $this->belongsTo($class, self::ENTITY_ID);
+        return $this->morphTo('source', 'type', 'entity_id');
     }
 
     /**
@@ -149,7 +178,9 @@ class Entity extends Base\PublicEntity
     public function sourceAssociate($entity)
     {
         $this->source()->associate($entity);
+
         $this->validateEntityIdUnique();
+
         $entity->transaction()->associate($this);
     }
 
@@ -158,14 +189,19 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Entity');
     }
 
+    public function feesBreakup()
+    {
+        return $this->hasMany('RZP\Models\Transaction\FeeBreakup\Entity', 'transaction_id');
+    }
+
     public function getCredit()
     {
-        return (int) $this->getAttribute(self::CREDIT);
+        return $this->getAttribute(self::CREDIT);
     }
 
     public function getDebit()
     {
-        return (int) $this->getAttribute(self::DEBIT);
+        return $this->getAttribute(self::DEBIT);
     }
 
     public function getNetAmount()
@@ -175,7 +211,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getType()
@@ -198,6 +234,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_ID);
     }
 
+    public function getGatewayAmount()
+    {
+        return $this->getAttribute(self::GATEWAY_AMOUNT);
+    }
+
     public function getGatewayFee()
     {
         return $this->getAttribute(self::GATEWAY_FEE);
@@ -208,17 +249,22 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_SERVICE_TAX);
     }
 
+    public function getFeeBearer()
+    {
+        return $this->getAttribute(self::FEE_BEARER);
+    }
+
+    public function getFeeModel()
+    {
+        return $this->getAttribute(self::FEE_MODEL);
+    }
+
+    public function getCreditType()
+    {
+        return $this->getAttribute(self::CREDIT_TYPE);
+    }
+
 /* ----------------------------- Accessors -----------------------------------*/
-
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
 
     protected function getApiFeeAttribute()
     {
@@ -233,16 +279,6 @@ class Entity extends Base\PublicEntity
     protected function getGatewayServiceTaxAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
-    }
-
-    protected function getDebitAttribute()
-    {
-        return (int) $this->attributes[self::DEBIT];
-    }
-
-    protected function getCreditAttribute()
-    {
-        return (int) $this->attributes[self::CREDIT];
     }
 
     protected function getBalanceAttribute()
@@ -284,17 +320,33 @@ class Entity extends Base\PublicEntity
         return (int) $gatewaySettledAt;
     }
 
-    protected function getGratisAttribute()
-    {
-        return (bool) $this->attributes[self::GRATIS];
-    }
-
     protected function getServiceTaxAttribute()
     {
         return (int) $this->attributes[self::SERVICE_TAX];
     }
 
+    protected function setFeeBearerAttribute($bearer)
+    {
+        $this->attributes[self::FEE_BEARER] = Merchant\FeeBearer::getValueForBearerString($bearer);
+    }
+
+    protected function getFeeBearerAttribute()
+    {
+        return Merchant\FeeBearer::getBearerStringForValue($this->attributes[self::FEE_BEARER]);
+    }
+
+    protected function getFeeModelAttribute()
+    {
+        return Merchant\FeeModel::getFeeModelStringForValue($this->attributes[self::FEE_MODEL]);
+    }
+
+    protected function setFeeModelAttribute($feeModel)
+    {
+        $this->attributes[self::FEE_MODEL] = Merchant\FeeModel::getValueForFeeModelString($feeModel);
+    }
+
 /* --------------------------- End Accessors ---------------------------------*/
+
 
     public function getGateway()
     {
@@ -311,6 +363,11 @@ class Entity extends Base\PublicEntity
     public function getFee()
     {
         return $this->getAttribute(self::FEE);
+    }
+
+    public function getFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
     }
 
     public function getApiFee()
@@ -333,6 +390,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PRICING_RULE_ID);
     }
 
+    public function getGatewaySettledAt()
+    {
+        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
+    }
+
     public function setReconciledAt($timestamp)
     {
         $this->setAttribute(self::RECONCILED_AT, $timestamp);
@@ -343,9 +405,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
     }
 
-    public function getGatewaySettledAt()
+    public function setGatewayAmount($gatewayAmount)
     {
-        return $this->getAttribute(self::GATEWAY_SETTLED_AT);
+        $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
     public function setGatewayFee($gatewayFee)
@@ -356,6 +418,11 @@ class Entity extends Base\PublicEntity
     public function setGatewayServiceTax($gatewayServiceTax)
     {
         $this->setAttribute(self::GATEWAY_SERVICE_TAX, $gatewayServiceTax);
+    }
+
+    public function setSettledAt($settledAt)
+    {
+        $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
     public function setEscrowBalance($balance)
@@ -398,6 +465,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::GRATIS, $gratis);
     }
 
+    public function setFeeCredits(int $credits)
+    {
+        $this->setAttribute(self::FEE_CREDITS, $credits);
+    }
+
     public function setDebit($amount)
     {
         assert ($amount >= 0);
@@ -438,6 +510,21 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $servicetax);
     }
 
+    public function setFeeBearer($bearer)
+    {
+        $this->setAttribute(self::FEE_BEARER, $bearer);
+    }
+
+    public function setFeeModel($feeModel)
+    {
+        $this->setAttribute(self::FEE_MODEL, $feeModel);
+    }
+
+    public function setCreditType($creditType)
+    {
+        $this->setAttribute(self::CREDIT_TYPE, $creditType);
+    }
+
     public function isReconciled()
     {
         return ($this->getAttribute(self::RECONCILED_AT) !== null);
@@ -453,9 +540,34 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::REFUND);
     }
 
+    public function isTypeSettlement()
+    {
+        return ($this->getType() === Type::SETTLEMENT);
+    }
+
+    public function isTypeAdjustment()
+    {
+        return ($this->getType() === Type::ADJUSTMENT);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
+    }
+
+    public function isFeeCredits()
+    {
+        return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isSettled()
+    {
+        return $this->getSettledAttribute();
+    }
+
+    public function isFeeBearerCustomer()
+    {
+        return $this->getAttribute(self::FEE_BEARER) === Merchant\FeeBearer::CUSTOMER;
     }
 
     public function toArrayReport()
@@ -464,9 +576,13 @@ class Entity extends Base\PublicEntity
 
         unset($reportTxn[self::ID]);
 
-        $reportTxn['description'] = null;
-        $reportTxn['notes'] = null;
-        $reportTxn['payment_id'] = null;
+        $reportTxn[Payment\Entity::DESCRIPTION] = null;
+        $reportTxn[Payment\Entity::NOTES] = null;
+        $reportTxn[Refund\Entity::PAYMENT_ID] = null;
+        $reportTxn['settlement_utr'] = null;
+        $reportTxn[Payment\Entity::ORDER_ID] = null;
+        $reportTxn['order_receipt'] = null;
+        $reportTxn[Payment\Entity::METHOD] = null;
 
         // settled_at will by default have date and time (d/m/y h:m:s) in it
         // while we only want to provide date.
@@ -476,13 +592,22 @@ class Entity extends Base\PublicEntity
         {
             $payment = $this->source;
 
-            $reportTxn['description'] = $payment->getDescription();
-            $reportTxn['notes'] = $payment->getNotesJson();
-
             if ($payment->hasBeenCaptured() === false)
             {
                 // Skip if the payment was not captured.
                 return null;
+            }
+
+            $reportTxn[Payment\Entity::METHOD] = $payment->getMethod();
+            $reportTxn[Payment\Entity::DESCRIPTION] = $payment->getDescription();
+            $reportTxn[Payment\Entity::NOTES] = $payment->getNotesJson();
+
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
             }
         }
         else if ($this->isTypeRefund())
@@ -496,7 +621,29 @@ class Entity extends Base\PublicEntity
                 return null;
             }
 
-            $reportTxn['payment_id'] = $payment->getPublicId();
+            $reportTxn[Refund\Entity::NOTES] = $refund->getNotesJson();
+            $reportTxn[Refund\Entity::PAYMENT_ID] = $payment->getPublicId();
+
+            if ($payment->hasOrder() === true)
+            {
+                $order = $payment->order;
+
+                $reportTxn[Payment\Entity::ORDER_ID] = $order->getPublicId();
+                $reportTxn['order_receipt'] = $order->getReceipt();
+            }
+        }
+        else if ($this->isTypeSettlement())
+        {
+            $settlement = $this->source;
+
+            $reportTxn['settlement_utr'] = $settlement->getUtr();
+            $reportTxn[self::SETTLED] = null;
+        }
+        else if ($this->isTypeAdjustment())
+        {
+            $adjustment = $this->source;
+
+            $reportTxn[Adjustment\Entity::DESCRIPTION] = $adjustment->getDescription();
         }
 
         return $reportTxn;
