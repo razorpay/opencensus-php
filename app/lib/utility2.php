@@ -113,3 +113,39 @@ if (! function_exists('utf8_json_encode'))
 
     }
 }
+
+if (! function_exists('get_rgb_components'))
+{
+    function get_rgb_components($hexColor = '')
+    {
+        $r = substr($hexColor, 1, 2);
+        $g = substr($hexColor, 3, 2);
+        $b = substr($hexColor, 5, 2);
+
+        return [
+            'r' => intval($r, 16),
+            'g' => intval($g, 16),
+            'b' => intval($b, 16),
+        ];
+    }
+}
+
+if (! function_exists('get_rgb_value'))
+{
+    function get_rgb_value($hexColor = '')
+    {
+        $rgb = get_rgb_components($hexColor);
+        return 'rgb(' . implode(',', $rgb) . ')';
+    }
+}
+
+if (! function_exists('get_brand_text_color'))
+{
+    function get_brand_text_color($hexColor)
+    {
+        $threshold = 75;
+        $rgb = get_rgb_components($hexColor);
+        $backgroundDelta = ($rgb['r'] * 0.299) + ($rgb['g'] * 0.587) + ($rgb['b'] * 0.114);
+        return ((255 - $backgroundDelta) < $threshold) ? "#000000" : "#ffffff";
+    }
+}

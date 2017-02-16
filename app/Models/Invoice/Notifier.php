@@ -106,7 +106,7 @@ class Notifier extends Base\Core
         $data = $this->getInvoiceIssuedMailPayload();
 
         $this->dispatchMail(
-            'emails.invoice.customer.generated',
+            'emails.invoice.customer.issued',
             $data,
             function($message)
             {
@@ -227,8 +227,9 @@ class Notifier extends Base\Core
 
     protected function getInvoiceMailPayload(string $callee)
     {
-        $merchant     = $this->invoice->merchant;
+        $merchant = $this->invoice->merchant;
         $merchantName = $merchant->getBillingLabelElseName();
+        $merchantBrandColor = $merchant->brand_color;
 
         $subject = $this->getInvoiceMailSubject($callee, $merchantName);
 
@@ -243,6 +244,8 @@ class Notifier extends Base\Core
 
         $merchantPayload = [
             'name' => $merchantName,
+            'brand_color' => get_rgb_value($merchantBrandColor),
+            'brand_text_color' => get_brand_text_color($merchantBrandColor),
         ];
 
         return [
