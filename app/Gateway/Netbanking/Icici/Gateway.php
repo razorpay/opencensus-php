@@ -53,7 +53,7 @@ class Gateway extends Base\Gateway
         $content = $this->getDataFromResponse($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'],
-                               $content[RequestFields::PAYMENT_REFERENCE_NUBER]);
+                               $content[RequestFields::PAYMENT_ID]);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
@@ -236,10 +236,10 @@ class Gateway extends Base\Gateway
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         return [
-            RequestFields::PAYMENT_REFERENCE_NUBER => $prn,
-            RequestFields::ITEM_CODE               => strtoupper($prn),
-            RequestFields::AMOUNT                  => $amount,
-            RequestFields::CURRENCY_CODE           => Currency::INR,
+            RequestFields::PAYMENT_ID    => $prn,
+            RequestFields::ITEM_CODE     => strtoupper($prn),
+            RequestFields::AMOUNT        => $amount,
+            RequestFields::CURRENCY_CODE => Currency::INR,
         ];
     }
 
@@ -264,6 +264,16 @@ class Gateway extends Base\Gateway
         }
     }
 
+    /**
+     * Converts array into a URL encoded query string
+     * Eg. Input: $data = ['key1' => $value1, 'key2' => $value2]
+     * Output: 'key1=$value1&key2=$value2'
+     * We cannot use http_build_query here as it will
+     * tamper with the format of the RU parameter
+     *
+     * @param array $data
+     * @return string $url
+     */
     protected function createQueryString(array $data)
     {
         $urlArray = [];

@@ -46,11 +46,11 @@ class Server extends Base\Mock\Server
     protected function createPostData(array $input)
     {
         $response = [
-            ResponseFields::PAYMENT_REFERENCE_NUBER => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
-            ResponseFields::ITEM_CODE               => strtoupper($input[RequestFields::ITEM_CODE]),
-            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY_CODE           => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::STATUS                  => Confirmation::YES,
+            ResponseFields::PAYMENT_ID    => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::ITEM_CODE     => strtoupper($input[RequestFields::ITEM_CODE]),
+            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT],
+            ResponseFields::CURRENCY_CODE => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::STATUS        => Confirmation::YES,
         ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
@@ -110,12 +110,12 @@ class Server extends Base\Mock\Server
     protected function createResponseArray(array $input)
     {
         return [
-            ResponseFields::ITEM_CODE               => $input[RequestFields::ITEM_CODE],
-            ResponseFields::PAYMENT_REFERENCE_NUBER => $input[RequestFields::PAYMENT_REFERENCE_NUBER],
-            ResponseFields::CURRENCY                => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::PAYMENT_DATE            => $input[RequestFields::PAYMENT_DATE],
-            ResponseFields::AMOUNT                  => $input[RequestFields::AMOUNT],
-            ResponseFields::STATE                   => Constants::SUCCESS,
+            ResponseFields::ITEM_CODE    => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_ID   => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
+            ResponseFields::PAYMENT_DATE => $input[RequestFields::PAYMENT_DATE],
+            ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
+            ResponseFields::STATE        => Constants::SUCCESS,
         ];
     }
 }

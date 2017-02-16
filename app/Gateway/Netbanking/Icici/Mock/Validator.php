@@ -6,18 +6,17 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
+use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
+use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
 
 class Validator extends Base\Validator
 {
-    const MODE_ECB = 1;
-
     protected static $authRules = [
-        RequestFields::MODE                      => 'required|alpha|in:P',
-        RequestFields::PAYEE_ID                  => 'required|string',
-        RequestFields::SPID                      => 'required|string',
-        RequestFields::ENCRYPTED_STRING          => 'required',
+        RequestFields::MODE             => 'required|alpha|in:P',
+        RequestFields::PAYEE_ID         => 'required|string',
+        RequestFields::SPID             => 'required|string',
+        RequestFields::ENCRYPTED_STRING => 'required|string',
     ];
 
     protected static $authValidators = [
@@ -25,15 +24,15 @@ class Validator extends Base\Validator
     ];
 
     protected static $verifyRules = [
-        RequestFields::MODE                      => 'required|alpha|size:1|in:V',
-        RequestFields::PAYEE_ID                  => 'required|string',
-        RequestFields::SPID                      => 'required|string',
-        RequestFields::AMOUNT                    => 'required|numeric',
-        RequestFields::PAYMENT_REFERENCE_NUBER   => 'required|alpha_num|size:14',
-        RequestFields::ITEM_CODE                 => 'required|alpha_num|size:14',
-        RequestFields::CURRENCY_CODE             => 'required|in:INR',
-        RequestFields::ACCOUNT_NO                => 'sometimes|string',
-        RequestFields::PAYMENT_DATE              => 'required|date_format:Y-m-d',
+        RequestFields::MODE          => 'required|alpha|size:1|in:V',
+        RequestFields::PAYEE_ID      => 'required|string',
+        RequestFields::SPID          => 'required|string',
+        RequestFields::AMOUNT        => 'required|numeric',
+        RequestFields::PAYMENT_ID    => 'required|alpha_num|size:14',
+        RequestFields::ITEM_CODE     => 'required|alpha_num|size:14',
+        RequestFields::CURRENCY_CODE => 'required|in:INR',
+        RequestFields::ACCOUNT_NO    => 'sometimes|string',
+        RequestFields::PAYMENT_DATE  => 'required|date_format:Y-m-d',
     ];
 
     protected function validateES(array $input)
@@ -55,7 +54,7 @@ class Validator extends Base\Validator
 
         $this->assertField($decryptedData, RequestFields::AMOUNT);
         $this->assertField($decryptedData, RequestFields::CURRENCY_CODE);
-        $this->assertField($decryptedData, RequestFields::PAYMENT_REFERENCE_NUBER);
+        $this->assertField($decryptedData, RequestFields::PAYMENT_ID);
         $this->assertField($decryptedData, RequestFields::ITEM_CODE);
         $this->assertField($decryptedData, RequestFields::RETURN_URL);
     }
@@ -71,7 +70,7 @@ class Validator extends Base\Validator
 
     protected function decryptString(string $string, string $masterKey)
     {
-        $aes = new AES(self::MODE_ECB);
+        $aes = new AES(Constants::MODE_ECB);
         $aes->setKey($masterKey);
 
         return $aes->decrypt($string);
