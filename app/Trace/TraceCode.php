@@ -265,6 +265,7 @@ class TraceCode
     const GATEWAY_VALIDATE_RESPONSE                 = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                  = 'GATEWAY_VALIDATE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                    = 'GATEWAY_VALIDATE_ERROR';
+    const GATEWAY_VALIDATE_REFUND_SUMMARY           = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                 = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_AUTHORIZE_ERROR                   = 'GATEWAY_AUTHORIZE_ERROR';
@@ -308,6 +309,8 @@ class TraceCode
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
+    const GATEWAY_REFUND_VALIDATION_FAILED          = 'GATEWAY_REFUND_VALIDATION_FAILED';
+    const GATEWAY_REFUND_FAILED                     = 'GATEWAY_REFUND_FAILED';
     const GATEWAY_REFUND_VERIFY_REQUEST             = 'GATEWAY_REFUND_VERIFY_REQUEST';
     const GATEWAY_REFUND_VERIFY_RESPONSE            = 'GATEWAY_REFUND_VERIFY_RESPONSE';
     const GATEWAY_PAYMENT_MISSING_FIELD             = 'GATEWAY_PAYMENT_MISSING_FIELD';
@@ -427,6 +430,7 @@ class TraceCode
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
+    const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
@@ -454,6 +458,7 @@ class TraceCode
     const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
+    const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
     //Trace code for Transaction Migration

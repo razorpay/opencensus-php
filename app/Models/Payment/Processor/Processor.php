@@ -130,7 +130,7 @@ class Processor
         $this->verifyRefundStatus = null;
     }
 
-    public function process($input)
+    public function process(array $input): array
     {
         if (isset($input['method']) === false)
         {
@@ -606,7 +606,7 @@ class Processor
         return $this->app['gateway']->call($gateway, $action, $gatewayData, $this->mode, $terminal);
     }
 
-    protected function createPaymentEntity($input)
+    protected function createPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
 
@@ -649,7 +649,7 @@ class Processor
         return $payment;
     }
 
-    protected function createDummyPaymentEntity($input)
+    protected function createDummyPaymentEntity(array $input): Payment\Entity
     {
         $payment = new Payment\Entity;
 
@@ -673,7 +673,7 @@ class Processor
      * @param $input
      * @throws Exception\BadRequestValidationFailureException
      */
-    protected function verifyProvidedFee($payment, $input)
+    protected function verifyProvidedFee(Payment\Entity $payment, array $input)
     {
         // This is not needed because FeeCalculater:calculateFee()
         // calculates the actual amount (amount - fee) in case of feebearer merchant
@@ -694,8 +694,7 @@ class Processor
         }
     }
 
-
-    protected function fetchOrderFromInput($input)
+    protected function fetchOrderFromInput(array $input): Order\Entity
     {
         $order = $this->orderRepo->findbyPublicId($input['order_id']);
 
@@ -793,7 +792,7 @@ class Processor
         $payment->invoice()->associate($invoice);
     }
 
-    protected function tracePaymentFailed($error, $traceCode)
+    protected function tracePaymentFailed($error, string $traceCode)
     {
         $traceData = array_merge(
                         $this->payment->toArrayTraceRelevant(),
@@ -814,7 +813,7 @@ class Processor
         $this->segment->trackPayment($this->payment, TraceCode::PAYMENT_FAILED, $traceData);
     }
 
-    protected function retrieveToken($input)
+    protected function retrieveToken(array $input)
     {
         $token = $this->repo->token->getByWalletTerminalAndCustomerId(
                             $input['payment']['wallet'],
@@ -824,7 +823,7 @@ class Processor
         return $token;
     }
 
-    protected function retrieve($id)
+    protected function retrieve(string $id): Payment\Entity
     {
         $this->payment = $this->repo->payment->findByPublicIdAndMerchant(
                                                 $id, $this->merchant);
@@ -832,7 +831,7 @@ class Processor
         return $this->payment;
     }
 
-    protected function getOrderForPayment($payment)
+    protected function getOrderForPayment(Payment\Entity $payment)
     {
         if ($payment->hasOrder())
         {
@@ -856,7 +855,7 @@ class Processor
      *
      * @param $payment
      */
-    protected function lockForUpdateAndReload($payment)
+    protected function lockForUpdateAndReload(Payment\Entity $payment)
     {
         $lockedPayment = $this->paymentRepo->lockForUpdate($payment->getKey());
 
@@ -872,14 +871,14 @@ class Processor
         $payment->setRawAttributes($lockedPayment->getAttributes(), true);
     }
 
-    public function setPayment(Payment\Entity $payment)
+    public function setPayment(Payment\Entity $payment): Processor
     {
         $this->payment = $payment;
 
         return $this;
     }
 
-    protected function tracePaymentNewRequest($input)
+    protected function tracePaymentNewRequest(array $input)
     {
         // @note: please keep this line here. It unsets card input in case
         // it's present
@@ -892,7 +891,7 @@ class Processor
         Dashboard::send($type, $entity);
     }
 
-    protected function getMerchantBankAccount($merchant)
+    protected function getMerchantBankAccount(Merchant\Entity $merchant): BankAccount\Entity
     {
         $ba = $merchant->bankAccount;
 
@@ -924,7 +923,7 @@ class Processor
         return $ba;
     }
 
-    protected function shouldAutoCapture(Payment\Entity $payment)
+    protected function shouldAutoCapture(Payment\Entity $payment): bool
     {
         // We do an auto capture only if payment is associated with an order.
         if ($payment->hasOrder() === false)
@@ -974,7 +973,7 @@ class Processor
         return true;
     }
 
-    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment)
+    protected function shouldAutoCaptureLateAuthorized(Payment\Entity $payment): bool
     {
         $merchant = $payment->merchant;
 
@@ -1042,6 +1041,7 @@ class Processor
 
         $this->repo->invoice->lockForUpdateAndReload($invoice);
 
+
         //
         // There could be a case where the current time is greater
         // than the expire_by of the invoice. But, if we haven't
@@ -1066,7 +1066,7 @@ class Processor
         return true;
     }
 
-    protected function acquireMutexOnPayment($payment)
+    protected function acquireMutexOnPayment(Payment\Entity $payment)
     {
         $resource = $payment->getId();
 
@@ -1077,12 +1077,12 @@ class Processor
         }
     }
 
-    protected function releaseMutexOnPayment($payment)
+    protected function releaseMutexOnPayment(Payment\Entity $payment)
     {
         $this->mutex->release($payment->getId());
     }
 
-    protected function createOrUpdateToken($input, $data)
+    protected function createOrUpdateToken(array $input, array $data): Customer\Token\Entity
     {
         $token = $this->retrieveToken($input);
 
@@ -1100,7 +1100,7 @@ class Processor
         return $token;
     }
 
-    protected function getFormattedContact($contact)
+    protected function getFormattedContact(string $contact): string
     {
         return substr($contact, -10);
     }
@@ -1158,7 +1158,7 @@ class Processor
 
     }
 
-    protected function getMethodsForMerchant($merchant)
+    protected function getMethodsForMerchant(Merchant\Entity $merchant)
     {
         if ($merchant->hasRelation('methods') === false)
         {

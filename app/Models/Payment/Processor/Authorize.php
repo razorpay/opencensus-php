@@ -44,7 +44,7 @@ trait Authorize
      */
     protected $type;
 
-    public function authorize(Payment\Entity $payment, array $input)
+    public function authorize(Payment\Entity $payment, array $input): array
     {
         $this->verifyMerchantIsLiveForLiveRequest();
 
@@ -65,7 +65,7 @@ trait Authorize
         return $this->authorizeAcrossTerminals($payment, $input, $gatewayInput);
     }
 
-    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput)
+    protected function authorizeAcrossTerminals(Payment\Entity $payment, array $input, array $gatewayInput): array
     {
         $totalTerminals = count($this->selectedTerminals);
 
@@ -171,7 +171,7 @@ trait Authorize
         return $this->processAuthResponse($request, $payment);
     }
 
-    protected function logAndCheckForAuthRetry($e, $payment)
+    protected function logAndCheckForAuthRetry($e, $payment): bool
     {
         $traceData = array(
             'error_code'    => $e->getCode(),
@@ -196,14 +196,14 @@ trait Authorize
         throw $e;
     }
 
-    protected function verifyFeesLessThanAmount($payment)
+    protected function verifyFeesLessThanAmount(Payment\Entity $payment)
     {
         // try calculating the fees, throws exception if fees is more than amount
 
         list($fee, $serviceTax, $feesSplit) = (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    protected function processAuthResponse($request, $payment)
+    protected function processAuthResponse($request, Payment\Entity $payment): array
     {
         //
         // If $request is not null, then payment is two-step process
@@ -253,7 +253,7 @@ trait Authorize
         }
     }
 
-    protected function getVerifyCaller()
+    protected function getVerifyCaller(): string
     {
         $route = $this->route->getCurrentRouteName();
 
@@ -279,7 +279,7 @@ trait Authorize
         return $caller;
     }
 
-    public function authorizeFailedPayment($payment)
+    public function authorizeFailedPayment(Payment\Entity $payment): array
     {
         $this->setPayment($payment);
 
@@ -324,7 +324,7 @@ trait Authorize
      * @return array $payment
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = [])
+    public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = []): array
     {
         $this->setPayment($payment);
 
@@ -527,7 +527,7 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
     }
 
-    protected function parseContact($contact)
+    protected function parseContact(string $contact): PhoneBook
     {
         // Constructor does the basic validation
         $phoneBook = new PhoneBook($contact, true);
@@ -536,7 +536,7 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function runInternationalChecks($payment)
+    protected function runInternationalChecks(Payment\Entity$payment)
     {
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
@@ -552,7 +552,7 @@ trait Authorize
         $this->validateBlockedInternationalCard($payment->card);
     }
 
-    protected function validateInternationalAllowed($payment)
+    protected function validateInternationalAllowed(Payment\Entity $payment)
     {
         $merchant = $payment->merchant;
 
@@ -567,7 +567,7 @@ trait Authorize
         }
     }
 
-    protected function validateBlockedInternationalCard($card)
+    protected function validateBlockedInternationalCard(Card\Entity $card)
     {
         if ($card->isBlocked())
         {
@@ -580,7 +580,7 @@ trait Authorize
         }
     }
 
-    protected function runAuthorizeFailedTransaction($payment)
+    protected function runAuthorizeFailedTransaction(Payment\Entity $payment)
     {
         $this->repo->transaction(function() use ($payment)
         {
@@ -756,7 +756,7 @@ trait Authorize
         $payment->setInternational();
     }
 
-    protected function preProcessPaymentWithoutSaving($payment, & $input, array & $gatewayInput)
+    protected function preProcessPaymentWithoutSaving($payment, array & $input, array & $gatewayInput)
     {
         // No card saving, normal simple flow
         if ($payment->isMethodCardOrEmi())
@@ -959,7 +959,7 @@ trait Authorize
         }
     }
 
-    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId)
+    protected function savePaymentMethod(Customer\Entity $customer, Payment\Entity $payment, $savedCardId): Token\Entity
     {
         $this->trace->info(
             TraceCode::PAYMENT_SAVE_METHOD,
@@ -1011,7 +1011,7 @@ trait Authorize
         return $token;
     }
 
-    protected function verifyPaymentMethodEnabled($payment)
+    protected function verifyPaymentMethodEnabled(Payment\Entity $payment)
     {
         $paymentMethod = $payment->getMethod();
 
@@ -1045,7 +1045,7 @@ trait Authorize
         }
     }
 
-    protected function setBankAndEmiPlanDetails(Payment\Entity $payment, $cardNumber, $emiDuration)
+    protected function setBankAndEmiPlanDetails(Payment\Entity $payment, string $cardNumber, int $emiDuration)
     {
         $iinEntity = $payment->card->iinRelation;
 
@@ -1072,7 +1072,7 @@ trait Authorize
         // so that controller can then redirect peacefully.
         $content = $returnData;
 
-        $returnData = array(
+        $returnData = [
             'version' => 1,
             'type' => 'return',
             'request' => [
@@ -1080,7 +1080,7 @@ trait Authorize
                 'method' => 'post',
                 'content' => $content,
             ],
-        );
+        ];
     }
 
     protected function checkAndFillSavedAppToken(array & $input)
@@ -1106,7 +1106,7 @@ trait Authorize
         }
     }
 
-    protected function getPaymentGatewayRequestData($request, Payment\Entity $payment)
+    protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
         if (Payment\Gateway::supportsAsync($payment->getGateway()))
         {
@@ -1122,7 +1122,7 @@ trait Authorize
      * @param Payment\Entity $payment
      * @return array payment response
      */
-    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment)
+    protected function getAsyncPaymentCreatedResponse($request, Payment\Entity $payment): array
     {
         $id = $payment->getPublicId();
 
@@ -1142,7 +1142,7 @@ trait Authorize
         return $response;
     }
 
-    protected function getFirstPaymentCreatedResponse($request, Payment\Entity $payment)
+    protected function getFirstPaymentCreatedResponse(array $request, Payment\Entity $payment): array
     {
         $data['type'] = 'first';
 
@@ -1209,7 +1209,7 @@ trait Authorize
         }
     }
 
-    protected function updateAndNotifyPaymentAuthorized($wasFailed = false)
+    protected function updateAndNotifyPaymentAuthorized(bool $wasFailed = false)
     {
         // Updates payment entity to authorized and adds a transaction.
         $updated = $this->updatePaymentAuthorized($wasFailed);
@@ -1233,7 +1233,7 @@ trait Authorize
         $this->notifyAuthorized($wasFailed);
     }
 
-    protected function updateAuthorizedOrderStatus($payment)
+    protected function updateAuthorizedOrderStatus(Payment\Entity $payment)
     {
         if ($payment->hasOrder())
         {
@@ -1256,7 +1256,7 @@ trait Authorize
      * This function is just meant for preparing the return value
      * after payment authorize processing and auto capturing, if applicable.
      */
-    protected function postPaymentAuthorizeProcessing($payment)
+    protected function postPaymentAuthorizeProcessing(Payment\Entity $payment): array
     {
         // Auto capture payment, if applicable
         $this->autoCapturePaymentIfApplicable($payment);
@@ -1270,7 +1270,7 @@ trait Authorize
      * @param  Payment\Entity $payment
      * @return array
      */
-    protected function processAuthorizeResponse(Payment\Entity $payment)
+    protected function processAuthorizeResponse(Payment\Entity $payment): array
     {
         //
         // If callback url has been set, then we need to redirect
@@ -1297,7 +1297,7 @@ trait Authorize
         return $returnData;
     }
 
-    protected function fillReturnDataWithOrder(Payment\Entity $payment, & $data)
+    protected function fillReturnDataWithOrder(Payment\Entity $payment, array & $data)
     {
         $data['razorpay_order_id'] = $payment->order->getPublicId();
 
@@ -1307,7 +1307,7 @@ trait Authorize
     /**
      * @param boolean $wasFailed If a payment is being converted from authorized to failed.
      */
-    protected function notifyAuthorized($wasFailed)
+    protected function notifyAuthorized(bool $wasFailed)
     {
         // Trigger notification events for authorization
         $notifier = new Notify($this->payment);
@@ -1353,10 +1353,10 @@ trait Authorize
 
     protected function eventPaymentAuthorized()
     {
-        $this->app['events']->fire('api.payment.authorized', array($this->payment));
+        $this->app['events']->fire('api.payment.authorized', [$this->payment]);
     }
 
-    protected function traceAuthorizeFailedOperationData($payment)
+    protected function traceAuthorizeFailedOperationData(Payment\Entity $payment)
     {
         $traceData = array(
             'payment_id' => $payment->getId(),
@@ -1378,7 +1378,7 @@ trait Authorize
     }
 
 
-    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, $retryAttempts)
+    protected function recordTerminalAudit(array $terminalData, Payment\Entity $payment, int $retryAttempts)
     {
         try
         {
@@ -1459,7 +1459,7 @@ trait Authorize
      * @param  array $input
      * @return boolean
      */
-    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input)
+    protected function canRunOtpPaymentFlow(Payment\Entity $payment, array $input): bool
     {
         $wallet = $payment->getWallet();
 
@@ -1514,7 +1514,7 @@ trait Authorize
         }
     }
 
-    protected function processOtpFlowResponse($request, $payment): array
+    protected function processOtpFlowResponse($request, Payment\Entity $payment): array
     {
         if ($request !== null)
         {
@@ -1540,7 +1540,7 @@ trait Authorize
         }
     }
 
-    protected function createCardEntity(array $cardInput, $vault, Merchant\Entity $merchant)
+    protected function createCardEntity(array $cardInput, bool $vault, Merchant\Entity $merchant)
     {
         //
         // Creates card entity. Card number is vaulted if vault is true
@@ -1579,11 +1579,11 @@ trait Authorize
      * @return
      * @throws \Exception
      */
-    protected function associateAndGetCardArrayForSavedToken($token, array & $input)
+    protected function associateAndGetCardArrayForSavedToken(Token\Entity $token, array & $input): array
     {
         $card = $this->repo->card->fetchForToken($token);
 
-        $cardNumber = Card\Tokenex::getCardNumber($card->getVaultToken());
+        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
 
         // Recurring terminals accept null cvv.
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
@@ -1607,10 +1607,11 @@ trait Authorize
      * @return
      * @throws \Exception
      */
-    protected function createCardEntityFromSavedToken($token, array & $input)
+    protected function createCardEntityFromSavedToken(Token\Entity $token, array & $input): array
     {
         $card = $this->repo->card->fetchForToken($token);
-        $cardNumber = Card\Tokenex::getCardNumber($token->card->getVaultToken());
+
+        $cardNumber = (new Card\Tokenex)->getCardNumber($card->getVaultToken());
 
         $cvv = isset($input['card']['cvv']) ? $input['card']['cvv'] : null;
 
@@ -1755,7 +1756,7 @@ trait Authorize
         }
     }
 
-    protected function validateUpiPspIsAllowed($payment)
+    protected function validateUpiPspIsAllowed(Payment\Entity $payment)
     {
         $disallowedPspJson = $this->cache->get(Upi\Core::EXCLUDED_PSPS, '[]');
 
@@ -1778,7 +1779,7 @@ trait Authorize
         }
     }
 
-    protected function updatePaymentAuthorized($wasFailed = false)
+    protected function updatePaymentAuthorized(bool $wasFailed = false)
     {
         $payment = $this->payment;
 
@@ -1854,7 +1855,7 @@ trait Authorize
         return $updated;
     }
 
-    protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment)
+    protected function isGatewayActuallyAuthorizingPayment(Payment\Entity $payment): bool
     {
         $gateway = $payment->getGateway();
 
@@ -1869,12 +1870,12 @@ trait Authorize
         return Payment\Gateway::supportsAuthAndCapture($gateway, $networkCode);
     }
 
-    protected function getEncryptedGatewayText($gateway)
+    protected function getEncryptedGatewayText(string $gateway)
     {
         return Crypt::encrypt($gateway . '__' . time());
     }
 
-    protected function verifyHash($inputHash, $paymentPublicId)
+    protected function verifyHash(string $inputHash, string $paymentPublicId)
     {
         $expectedHash = $this->getHashOf($paymentPublicId);
 
@@ -1892,7 +1893,7 @@ trait Authorize
      *
      * @return string Callback url
      */
-    protected function getCallbackUrl()
+    protected function getCallbackUrl(): string
     {
         $params = $this->getPaymentIdAndHashParams();
 
@@ -1901,7 +1902,7 @@ trait Authorize
         return $callbackUrl;
     }
 
-    protected function getOtpSubmitUrl()
+    protected function getOtpSubmitUrl(): string
     {
         $params = $this->getPaymentIdAndHashParams();
 
@@ -1910,7 +1911,7 @@ trait Authorize
         return $otpSubmitUrl;
     }
 
-    protected function getPaymentIdAndHashParams()
+    protected function getPaymentIdAndHashParams(): array
     {
         $publicId = $this->payment->getPublicId();
 
@@ -1925,7 +1926,7 @@ trait Authorize
      * @param string $string
      * @return string Hash of the string
      */
-    protected function getHashOf($string)
+    protected function getHashOf(string $string): string
     {
         $secret = $this->app->config->get('app.key');
 

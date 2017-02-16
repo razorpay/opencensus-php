@@ -391,6 +391,24 @@ trait Refund
         }
     }
 
+    protected function callGatewayForRefundValidation(array $data)
+    {
+        try
+        {
+            return $this->callGatewayFunction(
+                Payment\Action::VALIDATE_UNKNOWN_REFUND, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::GATEWAY_REFUND_VALIDATION_FAILED
+            );
+
+            throw $ex;
+        }
+    }
+
     protected function refundOnGateway($data)
     {
         $gateway = $data['payment']['gateway'];
@@ -793,5 +811,25 @@ trait Refund
         $this->refund->setGatewayRefunded(true);
 
         $this->recordTransactionAndUpdatePaymentForRefund();
+    }
+
+    public function validateUnknownGatewayRefund(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        assert ($refund->getTransactionId() !== null);
+
+        assert ($payment->getTransactionId() !== null);
+
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        return $this->callGatewayForRefundValidation($data);
     }
 }

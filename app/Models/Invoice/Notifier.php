@@ -11,12 +11,18 @@ use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 use RZP\Exception;
 
 class Notifier extends Base\Core
 {
     // 300 seconds (5*60)
     const SCHEDULE_TIME_LEEWAY = 300;
+
+    const MAIL_TAG_MAP = [
+        Type::ECOD    => MailTags::ECOD,
+        Type::INVOICE => MailTags::INVOICE,
+    ];
 
     /**
      * @var Entity
@@ -260,6 +266,12 @@ class Notifier extends Base\Core
 
             $message->to($data['invoice']['customer']['email']);
 
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, $data['invoice']['id']);
+
+            $headers->addTextHeader(MailTags::HEADER, $data['label']);
+
             if ($callback !== null) call_user_func($callback, $message);
         });
     }
@@ -299,10 +311,13 @@ class Notifier extends Base\Core
             'name' => $merchantName,
         ];
 
+        $label = $this->getLabel($this->invoice->getType());
+
         return [
-            'invoice' => $invoicePayload,
+            'invoice'  => $invoicePayload,
             'merchant' => $merchantPayload,
-            'subject' => $subject,
+            'subject'  => $subject,
+            'label'    => $label,
         ];
     }
 
@@ -316,6 +331,11 @@ class Notifier extends Base\Core
         $type = $this->invoice->getType();
 
         return sprintf($this->mailSubjectTemplates[$callee][$type], $merchantName);
+    }
+
+    protected function getLabel($type)
+    {
+        return self::MAIL_TAG_MAP[$type] ?? MailTags::INVOICE;
     }
 
     public function sendNotificationsInBulk()
