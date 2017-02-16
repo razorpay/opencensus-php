@@ -52,7 +52,7 @@ class EmiFile extends Base\Core
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = Card\Tokenex::getCardNumber($cardToken);
+        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
 
         return $cardNumber;
     }

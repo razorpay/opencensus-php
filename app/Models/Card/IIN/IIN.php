@@ -132,7 +132,7 @@ class IIN
         ],
     );
 
-    protected static function isValidCardForBank($bank, $cardNumber)
+    protected static function isValidCardForBank($bank, string $cardNumber): bool
     {
         if (in_array($bank, self::$emiBanks))
         {
@@ -150,7 +150,7 @@ class IIN
         return true;
     }
 
-    public static function validateEmiAvailableForCard($iin, $cardNumber)
+    public static function validateEmiAvailableForCard(Entity $iin, string $cardNumber)
     {
         if (self::isEmiAvailableForCard($iin, $cardNumber) === false)
         {
@@ -163,7 +163,7 @@ class IIN
      * This checks for the special case of Axis Bank which works on first 8 digits
      * of the card instea of the first 6.
      */
-    public static function isEmiAvailableForCard($iin, $cardNumber)
+    public static function isEmiAvailableForCard(Entity $iin, string $cardNumber): bool
     {
         $emi = (($iin->isEmiAvailable()) and
                 (self::isValidCardForBank($iin->getIssuer(), $cardNumber)));
