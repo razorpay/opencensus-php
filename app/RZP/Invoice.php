@@ -23,7 +23,7 @@ class Invoice extends Entity
         $role = Auth::user()->getUserRoleWithCurrentMerchant();
         if ($role === 'sellerapp')
         {
-            ApiRequest::addHeader('X-USER', Auth::user()->getAuthIdentifier());
+            ApiRequest::addHeader('X-Dashboard-User-Id', Auth::user()->getAuthIdentifier());
         }
     }
 
