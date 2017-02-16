@@ -118,7 +118,7 @@ class Service extends Base\Service
             }
         }
 
-        return array($error, $collection);
+        return [$error, $collection];
     }
 
     protected function fetchEntityCollection(array $input, $mode, $entity)
