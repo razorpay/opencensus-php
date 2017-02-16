@@ -16,7 +16,9 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->userId = $this->app['basicauth']->getDashboardHeaders()['user_id'];
+        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
+
+        $this->userId = $dashboardHeaders['user_id'] ?? null;
 
         $this->core = new Core();
     }
