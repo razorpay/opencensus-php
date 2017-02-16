@@ -55,7 +55,7 @@ class Orchestrator extends Base\Core
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE      => [],
         // TODO: Need to add axis nb emails
-        self::NETBANKING_AXIS => [],
+        self::NETBANKING_AXIS => ['mayankamencherla24@gmail.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN           => ['prashanth.yv@razorpay.com'],

@@ -3,13 +3,14 @@
 namespace RZP\Reconciliator\NetbankingAxis;
 
 use RZP\Reconciliator\Base;
+use RZP\Reconciliator\FileProcessor;
 
 class Reconciliate extends Base\Reconciliate
 {
     // For now Axis sends only payee specific
     // refund and combined are left on here for structure
     const SUCCESS = [
-        'Payeespecific' => self::PAYMENT,
+        'payeespecific' => self::PAYMENT,
         // 'refund'        => self::REFUND,
         // 'combined'      => self::COMBINED
     ];
@@ -29,7 +30,8 @@ class Reconciliate extends Base\Reconciliate
      * Determines the type of reconciliation
      * based on the name of the file.
      * It can either be refund, payment or combined.
-     * For now, only payment
+     * For now, only payment.
+     * we convert file name to lower case before sending
      *
      * @param string $fileName
      * @return null | string
@@ -59,5 +61,13 @@ class Reconciliate extends Base\Reconciliate
         }
 
         return $columnHeaders;
+    }
+
+    public function getNumLinesToSkip()
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 1,
+            FileProcessor::LINES_FROM_BOTTOM => 1
+        ];
     }
 }

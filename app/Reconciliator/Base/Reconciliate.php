@@ -191,7 +191,6 @@ class Reconciliate
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
 
         $this->subReconciliator = new $subReconciliatorClassName;
-
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
