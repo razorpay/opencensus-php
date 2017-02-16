@@ -13,6 +13,8 @@ use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
 
+use Queue;
+
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
@@ -964,15 +966,21 @@ class Service extends Base\Service
         {
             $merchantDetail->saveOrFail();
 
-            if (isset($input['business_name']))
+            if (empty($input['business_name']) === false)
             {
                 $merchant = Merchant\Entity::findOrFail($merchantId);
 
                 $merchant->edit(['name' => $input['business_name']], 'changeName');
 
                 $merchant->saveOrFail();
-
                 (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
+
+                $zapierData = (new User\Service)->getZapierData($merchant, $input);
+
+                if (config('slack.enable'))
+                {
+                    Queue::push('App\User\Service@postToZapier', $zapierData);
+                }
             }
         }
 

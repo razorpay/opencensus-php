@@ -118,7 +118,7 @@ class Service extends Base\Service
 
             $data['login'] = true;
         }
-        else 
+        else
         {
             // See HACKING.md in the root of the repo for a detailed note
             $data = [
@@ -311,15 +311,11 @@ class Service extends Base\Service
     {
         $phoneNumber = Input::get('contact_mobile', null);
         $sortingHatData = $this->getSortingHatData($merchant, $user, $referer, $phoneNumber);
-        $zapierData = $this->getZapierData($merchant, $user, $referer, $phoneNumber);
-
-
         // We want to keep environment conditional checks as late as possible
 
         if (config('slack.enable'))
         {
             Queue::push('App\User\Service@postToSortingHat', $sortingHatData);
-            Queue::push('App\User\Service@postToZapier', $zapierData);
         }
 
         // These are displayed on the frontend
@@ -354,20 +350,38 @@ class Service extends Base\Service
         ];
     }
 
-    protected function getZapierData($merchant, $user, $referer, $phoneNumber)
+    public function getZapierData($merchant, $input)
     {
         // This is the same format we'll set in the google spreadsheet
         $timestamp = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
             ->format('j/m/Y');
 
+        $userName = $input['contact_name'] ?? '';
+
+        $phoneNumber = $input['contact_mobile'] ?? '';
+
+        $businessType = MerchantDetails\BusinessType::getType($input['business_type']) ?? '';
+
+        $transactionVolume = MerchantDetails\TransactionVolume::getVolume($input['transaction_volume']) ?? '';
+
+        $role = MerchantDetails\Role::getType($input['role']) ?? '';
+
+        $department = MerchantDetails\Department::getType($input['department']) ?? '';
+
+        $referrer = $merchant->referrer ?? '';
+
         return [
-            'id'            => $merchant->id,
-            'email'         => $user->email,
-            'individual'    => $user->name,
-            'name'          => $merchant->name,
-            'ref'           => $referer ? $referer : '',
-            'timestamp'     => $timestamp,
-            'contact'       => $phoneNumber? $phoneNumber : ''
+            'id'                    => $merchant->id,
+            'email'                 => $merchant->email,
+            'individual'            => $userName,
+            'name'                  => $merchant->name,
+            'ref'                   => $referrer,
+            'timestamp'             => $timestamp,
+            'contact'               => $phoneNumber,
+            'business_type'         => $businessType,
+            'transaction_volume'    => $transactionVolume,
+            'role'                  => $role,
+            'department'            => $department
         ];
     }
 
