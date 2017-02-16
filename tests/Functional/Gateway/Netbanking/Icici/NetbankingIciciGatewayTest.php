@@ -224,7 +224,7 @@ class NetbankingIciciGatewayTest extends TestCase
         {
             if ($action === 'hash')
             {
-                $content['ES'] = str_shuffle($content['ES']);
+                $content['ES'] = 'This_is_a_random_string';
             }
         });
     }
