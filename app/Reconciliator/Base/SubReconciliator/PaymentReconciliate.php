@@ -399,6 +399,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Returns null by default
+     * Defined in corresponding class
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getBankPaymentId($row)
+    {
+        return null;
+    }
+
+    /**
      * A few netbanking gateways do not provide us with
      * gateway service tax in their reconciliation files.
      * For them, we mark the gateway service tax as null.
@@ -522,7 +534,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $this->gatewayPayment = $this->netbankingRepo->findByPaymentId($this->payment->getId());
+        $this->gatewayPayment = $this->netbankingRepo
+                                     ->findByPaymentId($this->payment->getId())
+                                     ->first();
 
         $bankPaymentId = $rowDetails[BaseReconciliate::BANK_PAYMENT_ID];
 
