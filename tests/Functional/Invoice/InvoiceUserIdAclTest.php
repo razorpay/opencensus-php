@@ -106,7 +106,7 @@ class InvoiceUserIdAclTest extends TestCase
 
     public function testExpireInvoiceWithUserIdHeaderForbidden()
     {
-        $this->createInvoice(['user_id' => '10000000UserId', 'status' => 'issued']);
+        $this->createInvoice(['user_id' => '10000001UserId', 'status' => 'issued']);
 
         $this->startTest();
     }
