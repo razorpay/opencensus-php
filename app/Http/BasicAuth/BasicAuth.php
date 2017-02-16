@@ -73,17 +73,6 @@ class BasicAuth
     private $merchant = null;
 
     /**
-     * User id
-     *
-     * - For now used to access control operations on invoice.
-     *   Gets sent in headers from the trusted dashboard client.
-     * - Invoice has user id column and it's service usage the same.
-     *
-     * @var string
-     */
-    private $userId = null;
-
-    /**
      * Admin who is authenticating himself
      * through adminAuth
      */
@@ -197,7 +186,6 @@ class BasicAuth
         $this->repo = $this->app['repo'];
         $this->route = $this->app['api.route'];
         $this->merchant = null;
-        $this->userId = null;
         $this->device = null;
     }
 
@@ -206,11 +194,6 @@ class BasicAuth
         $key = $this->request->getUser();
 
         $secret = $this->request->getPassword();
-
-        //
-        // TODO: Need to confirm if this is to be X-USER-ID?
-        //
-        $this->userId = $this->request->header('X-USER-ID', null);
 
         if (($key === null) and
             ($secret === null))
@@ -270,6 +253,8 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setDashboardHeaders();
+
             $this->setProxyTrue();
 
             return;
@@ -765,7 +750,13 @@ class BasicAuth
         $this->dashboardHeaders = array(
             'dashboard'     => $headers->get('X-Dashboard'),
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $headers->get('X-Dashboard-Username')
+            'admin_user'    => $headers->get('X-Dashboard-Username'),
+
+            //
+            // For now used to access control operations on invoice.
+            // Invoice has user id column and it's service usage the same.
+            //
+            'user_id'       => $headers->get('X-Dashboard-User-Id'),
         );
     }
 
@@ -827,11 +818,6 @@ class BasicAuth
     public function getMerchant()
     {
         return $this->merchant;
-    }
-
-    public function getUserId()
-    {
-        return $this->userId;
     }
 
     public function getDevice()
