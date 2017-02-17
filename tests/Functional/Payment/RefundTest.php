@@ -437,6 +437,14 @@ class RefundTest extends TestCase
         ];
     }
 
+
+    public function testRefundValidationOnWrongGateway()
+    {
+        $this->ba->appAuth();
+
+        parent::startTest();
+    }
+
     public function startTest($paymentId = null, $amount = null)
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
