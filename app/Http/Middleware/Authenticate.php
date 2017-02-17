@@ -51,7 +51,11 @@ class Authenticate {
 			$user = Auth::guard('user')->user();
 			ApiRequest::addHeader('X-Dashboard-Merchant', $user->email);
 			ApiRequest::addHeader('X-Dashboard-User-Id', $user->getAuthIdentifier());
-			ApiRequest::addHeader('X-Dashboard-User-Role', $user->getUserRoleWithCurrentMerchant());
+
+			if ($user->currentMerchant)
+			{
+				ApiRequest::addHeader('X-Dashboard-User-Role', $user->getUserRoleWithCurrentMerchant());
+			}
 
 			if ($user)
 			{
