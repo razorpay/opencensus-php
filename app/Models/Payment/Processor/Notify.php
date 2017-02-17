@@ -151,13 +151,13 @@ class Notify
             $this->invoice = $this->payment->invoice;
         }
 
-        $this->refreshTemplate();
-
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
 
         $this->domain = $this->app['config']->get('applications.mailgun.url');
+
+        $this->refreshTemplate();
     }
 
     /**

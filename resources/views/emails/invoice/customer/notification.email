@@ -73,7 +73,7 @@
 
                       @unless ($status === 'expired')
                         <div style="color: {{ $merchant['brand_text_color'] }}">
-                            The invoice for the same is attached in this mail.
+                            <!-- The invoice for the same is attached in this mail. -->
                         </div>
                       @endunless
                    </div>
@@ -143,16 +143,25 @@
         <tr>
             <td></td>
             <td class="content" style="padding-bottom: 24px;">
-                <div>
                     @if (isset($payment))
-                        <label>PAYMENT ID</label>
-                        <div>{{ $payment['public_id'] }}</div>
+                        <div>
+                            <label>PAYMENT ID</label>
+                            <div>{{ $payment['public_id'] }}</div>
+                        </div>
+                        <div style="margin-top: 24px;">
+                            <label>PAYMENT METHOD</label>
+                            <div>{{ $payment['method'][0] }}, {{ $payment['method'][1] }}</div>
+                        </div>
                     @elseif ($invoice['status'] === 'issued')
-                        <label>INVOICE EXPIRY</label>
-                        <div>{{ $invoice['date_formatted'] }}</div>
+                        <div>
+                            <label>INVOICE EXPIRY</label>
+                            <div>{{ $invoice['expire_by_formatted'] }}</div>
+                        </div>
                     @elseif ($invoice['status'] === 'expired')
-                        <label>EXPIRED ON</label>
-                        <div>{{ $invoice['date_formatted'] }}</div>
+                        <div>
+                            <label>EXPIRED ON</label>
+                            <div>{{ $invoice['expired_at_formatted'] }}</div>
+                        </div>
                     @endif
                 </div>
             </td>

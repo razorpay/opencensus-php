@@ -54,7 +54,7 @@
 
                       @unless ($status === 'expired')
                         <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
-                            The invoice for the same is attached in this mail.
+                            <!-- The invoice for the same is attached in this mail. -->
                         </div>
                       @endunless
                    </div>
@@ -105,18 +105,27 @@
             @endif
         </tr><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
             <td class="content" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 24px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff;">
-                <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
                     @if (isset($payment))
-                        <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">PAYMENT ID</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $payment['public_id'] }}</div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
+                            <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">PAYMENT ID</label>
+                            <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $payment['public_id'] }}</div>
+                        </div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px; margin-top: 24px;">
+                            <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">PAYMENT METHOD</label>
+                            <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $payment['method'][0] }}, {{ $payment['method'][1] }}</div>
+                        </div>
                     @elseif ($invoice['status'] === 'issued')
-                        <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">INVOICE EXPIRY</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date_formatted'] }}</div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
+                            <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">INVOICE EXPIRY</label>
+                            <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['expire_by_formatted'] }}</div>
+                        </div>
                     @elseif ($invoice['status'] === 'expired')
-                        <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">EXPIRED ON</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date_formatted'] }}</div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
+                            <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">EXPIRED ON</label>
+                            <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['expired_at_formatted'] }}</div>
+                        </div>
                     @endif
-                </div>
+
             </td>
             <td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
         </tr><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>

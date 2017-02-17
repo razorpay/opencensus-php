@@ -64,10 +64,19 @@ class ViewDataSerializer extends Base\Core
         $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
-        foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)
+        foreach ([Entity::ISSUED_AT, Entity::DATE, Entity::EXPIRE_BY, Entity::EXPIRED_AT] as $key)
         {
-            $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], 'Asia/Kolkata')
-                                                    ->format('j M Y');
+            $epoch = $invoiceData[$key];
+
+            if ($epoch === null)
+            {
+                $invoiceData[$key . '_formatted'] = null;
+            }
+            else
+            {
+                $invoiceData[$key . '_formatted'] = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                                          ->format('j M Y');
+            }
         }
 
         array_walk(

@@ -300,7 +300,6 @@ class Notifier extends Base\Core
     {
 
         $id    = $this->invoice->getPublicId();
-        $label = $this->getLabel($this->invoice->getType());
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
@@ -308,10 +307,12 @@ class Notifier extends Base\Core
             'type_label'    => ucwords($this->invoice->getTypeLabel()),
             'pdf_url'       => url("v1/invoices/$id/pdf"),
             'dashboard_url' => Config::get('applications.dashboard.url') . "/#/app/invoices/$id",
-            'label'         => $label,
         ];
 
         $viewPayload['invoice'] += $extraInvoicePayload;
+
+        $label = $this->getLabel($this->invoice->getType());
+        $viewPayload['label'] = $label;
 
         if ($callee)
         {
