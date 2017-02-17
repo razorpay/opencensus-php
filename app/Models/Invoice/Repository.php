@@ -43,6 +43,7 @@ class Repository extends Base\Repository
      * @param string|null     $userId
      *
      * @return Entity
+     * @throws Exception\BadRequestException
      */
     public function findByPublicIdAndMerchantAndUserId(
         string $id,
