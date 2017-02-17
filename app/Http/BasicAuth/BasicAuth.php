@@ -531,29 +531,21 @@ class BasicAuth
 
         //
         // A route can belong to multiple features
-        // This fetches an array of all features for the route
+        // This fetches an array of all features mapped to the route
         //
         $features = $this->route->getFeaturesForRoute();
 
         if (empty($features) === false)
         {
-            $allowed = false;
-
             //
             // If the merchant has atleast one of the features
             // in the $features array enabled, we allow the request
             //
-            foreach ($features as $feature)
-            {
-                if ($this->merchant->isFeatureEnabled($feature) === true)
-                {
-                    $allowed = true;
+            $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-                    break;
-                }
-            }
+            $commonFeatures = array_intersect($merchantFeatures, $features);
 
-            if ($allowed === true)
+            if (empty($commonFeatures) === false)
             {
                 return null;
             }
@@ -578,22 +570,9 @@ class BasicAuth
 
     protected function verifyAccountKey($key)
     {
-        $delimiter = Merchant\AccountEntity::getDelimiter();
+        $accountId = $key;
 
-        $sign = Merchant\AccountEntity::getSign();
-
-        $idLength = Merchant\AccountEntity::ID_LENGTH;
-
-        $parts = explode($delimiter, $key);
-
-        if ((count($parts) !== 2) or
-            ($parts[0] !== $sign) or
-            (strlen($parts[1]) !== $idLength))
-        {
-            return false;
-        }
-
-        return true;
+        return Merchant\AccountEntity::stripSign($accountId);
     }
 
     protected function verifyAndSetMode($key)

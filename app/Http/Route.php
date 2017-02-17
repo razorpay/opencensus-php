@@ -982,58 +982,28 @@ final class Route
     );
 
     /**
-     * Maps features to the routes allowed
-     * A route name can belong to multiple features
+     * A route can belong to multiple features, mapped here
      */
-    public static $featureToAllowedRoutesMap = [
-        Feature::AGGREGATOR         => [
-            'merchant_sub_create',
-        ],
-        Feature::BROKING_REPORT     => [
-            'reports_transaction_broking',
-        ],
-        Feature::DUMMY              => [
-            'feature_dummy',
-        ],
-        Feature::MARKETPLACE        => [
-            'payment_transfer',
-            'payment_fetch_transfers',
-            'transfer_create',
-            'transfer_fetch_multiple',
-            'transfer_fetch',
-            'transfer_create_reversal',
-            'merchant_sub_create',
-        ],
-        Feature::OPENWALLET         => [
-            'customer_get_wallet_balance',
-            'customer_get_wallet_statement',
-            'payment_transfer',
-            'payment_fetch_transfers',
-            'transfer_create',
-            'transfer_fetch_multiple',
-            'transfer_fetch',
-            'transfer_create_reversal',
-        ],
-        Feature::RECURRING          => [
-            'payment_create_recurring',
-        ],
-        Feature::S2S                => [
-            'payment_create_private_old',
-        ],
-        Feature::S2SUPI             => [
-            'payment_create_upi',
-        ],
-        Feature::S2SWALLET          => [
-            'payment_create_wallet',
-        ],
-        Feature::SETL_REPORT        => [
-            'setl_combined_report',
-        ],
-        Feature::TOKENS             => [
-            'customer_delete',
-            'customer_delete_token',
-            'customer_fetch_tokens',
-        ],
+    public static $routeNameToFeaturesMap = [
+        'feature_dummy'                     => [Feature::DUMMY],
+        'merchant_sub_create'               => [Feature::AGGREGATOR, Feature::MARKETPLACE],
+        'customer_delete'                   => [Feature::TOKENS],
+        'customer_delete_token'             => [Feature::TOKENS],
+        'customer_fetch_tokens'             => [Feature::TOKENS],
+        'payment_create_wallet'             => [Feature::S2SWALLET],
+        'payment_create_upi'                => [Feature::S2SUPI],
+        'payment_create_recurring'          => [Feature::RECURRING],
+        'payment_create_private_old'        => [Feature::S2S],
+        'setl_combined_report'              => [Feature::SETL_REPORT],
+        'reports_transaction_broking'       => [Feature::BROKING_REPORT],
+        'customer_get_wallet_balance'       => [Feature::OPENWALLET],
+        'customer_get_wallet_statement'     => [Feature::OPENWALLET],
+        'payment_transfer'                  => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'payment_fetch_transfers'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_create'                   => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_fetch_multiple'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_fetch'                    => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_create_reversal'          => [Feature::MARKETPLACE, Feature::OPENWALLET],
     ];
 
     /*
@@ -1311,18 +1281,8 @@ final class Route
     {
         $currentRoute = $this->getCurrentRouteName();
 
-        $features = self::$featureToAllowedRoutesMap;
+        $features = self::$routeNameToFeaturesMap;
 
-        $routeFeatures = [];
-
-        foreach ($features as $feature => $mappedRoutes)
-        {
-            if (in_array($currentRoute, $mappedRoutes, true) === true)
-            {
-                $routeFeatures[] = $feature;
-            }
-        }
-
-        return $routeFeatures;
+        return $features[$currentRoute] ?? [];
     }
 }

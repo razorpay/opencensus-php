@@ -206,7 +206,7 @@ class Base
         });
     }
 
-    protected function stripSign(& $id)
+    public function stripSign(& $id)
     {
         $ix = strpos($id, '_');
 

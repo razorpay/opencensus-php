@@ -262,16 +262,16 @@ class Authorization
 
     public function getAccountHeader()
     {
-        $account = [];
+        $headers = [];
 
         if ($this->account !== null)
         {
-            $account = [
+            $headers = [
                 'X-Razorpay-Account'    => $this->account
             ];
         }
 
-        return $account;
+        return $headers;
     }
 
     public function getKey()

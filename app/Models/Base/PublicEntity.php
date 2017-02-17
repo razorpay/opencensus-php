@@ -263,7 +263,7 @@ class PublicEntity extends UniqueIdEntity
         }
     }
 
-    protected static function stripSign(& $id)
+    public static function stripSign(& $id)
     {
         if (static::getSign() === '')
         {

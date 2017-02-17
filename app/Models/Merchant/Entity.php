@@ -257,11 +257,21 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        $assignedFeatures = $this->features
-                                 ->pluck(\RZP\Models\Feature\Entity::NAME)
-                                 ->toArray();
+        $assignedFeatures = $this->getEnabledFeatures();
 
         return (in_array($feature, $assignedFeatures, true) === true);
+    }
+
+    /**
+     * Return an array of features enabled for the merchant entity
+     *
+     * @return array
+     */
+    public function getEnabledFeatures()
+    {
+        return $this->features
+                    ->pluck(\RZP\Models\Feature\Entity::NAME)
+                    ->toArray();
     }
 
     public function activate()
