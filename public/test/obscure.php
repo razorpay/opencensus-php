@@ -86,6 +86,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
                 <option value="SBIN">SBI Bank</option>
                 <option value="ICIC">ICICI Bank</option>
                 <option value="AIRP">Airtel Payments Bank</option>
+                <option value="FDRL">Federal Bank</option>
                 <option value="CITI">CITI Bank</option>
                 <option value="UTIB">Axis Bank</option>
                 <option value="YESB">Yes Bank</option>
@@ -146,7 +147,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
         <td><input type="text" name="card[expiry_year]" value="2020"></td>
         <tr>
             <td colspan='40'>Amount:</td>
-            <td><input type="text" name="amount" size="25" value="1000"></td>
+            <td><input type="text" name="amount" size="25" value="100"></td>
             <td>
             <select name="currency">
                 <option value="INR">Indian Rupee</option>

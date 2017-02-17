@@ -26,6 +26,7 @@ return array(
         'netbanking_kotak',
         'netbanking_airtel',
         'netbanking_axis',
+        'netbanking_federal',
         'sharp',
         'wallet_olamoney',
         'upi_idfc',
@@ -52,6 +53,7 @@ return array(
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
     'mock_netbanking_airtel'  => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
+    'mock_netbanking_federal' => env('NETBANKING_FEDERAL_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
     'mock_ebs'                => env('EBS_MOCK'),
     'mock_wallet_olamoney'    => env('OLAMONEY_MOCK'),
@@ -233,6 +235,11 @@ return array(
     'netbanking_airtel' => [
         'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+    ],
+
+    'netbanking_federal' => [
+        'test_merchant_id'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_MERCHANT_ID'),
+        // 'test_hash_secret'  => env('NETBANKING_FEDERAL_GATEWAY_TEST_HASH_SECRET'),
     ],
 
     'sharp' => array(

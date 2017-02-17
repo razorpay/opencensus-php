@@ -1,0 +1,161 @@
+<?php
+
+namespace RZP\Gateway\Netbanking\Federal;
+
+use RZP\Exception;
+use Carbon\Carbon; //
+use RZP\Models\Payment; //
+use RZP\Constants\Mode; //
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Constants\HashAlgo; //
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Netbanking\Base;
+use RZP\Models\Currency\Currency;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Base\AuthorizeFailed;
+
+class Gateway extends Base\Gateway
+{
+    use AuthorizeFailed;
+
+    protected $gateway = 'netbanking_federal';
+
+    protected $bank = 'federal';
+
+    protected $map = [
+        RequestFields::AMOUNT     => Base\Entity::AMOUNT,
+        RequestFields::PAYMENT_ID => Base\Entity::PAYMENT_ID,
+        RequestFields::ITEM_CODE  => Base\Entity::CAPS_PAYMENT_ID
+    ];
+
+    public function authorize(array $input)
+    {
+        parent::authorize($input);
+
+        $content = $this->getRequestData($input);
+
+        $entityAttributes = $this->getEntityAttributes($input);
+
+        $this->createGatewayPaymentEntity($entityAttributes);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->traceGatewayPaymentRequest($request, $input);
+
+        return $request;
+    }
+
+    public function callback(array $input)
+    {
+        parent::callback($input);
+
+        $content = $input['gateway'];
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK,
+                            ['gateway_response' => $content,
+                             'payment_id'       => $input['payment']['id']]);
+
+        $this->assertPaymentId($input['payment']['id'],
+                               $content[ResponseFields::PAYMENT_ID]);
+
+        $this->saveCallbackResponse($content);
+
+        $this->checkCallbackStatus($content);
+
+        return $this->getCallbackResponseData($input);
+    }
+
+    public function verify (array $input)
+    {
+        parent::verify($input);
+    }
+
+    protected function getVerifyRequestData(array $input)
+    {
+        $data = $this->getRequestData($input);
+
+        $payment = $this->repo->payment
+                              ->findByPaymentId($input['payment']['id'])
+                              ->first();
+
+        $data[RequestFields::MODE]            = Constants::VERIFY_MODE;
+        $data[RequestFields::BANK_PAYMENT_ID] = $payment[Base\Entity::BANK_PAYMENT_ID];
+
+        return $data;
+    }
+
+    protected function getRequestData(array $input)
+    {
+        $data = [
+            RequestFields::ACTION       => Constants::CONFIRMATION,
+            RequestFields::BANK_ID      => Constants::BANK_ID,
+            RequestFields::MODE         => Constants::AUTH_MODE,
+            RequestFields::PAYEE_ID     => $this->getMerchantId(),
+            RequestFields::PAYMENT_ID   => $input['payment']['id'],
+            RequestFields::ITEM_CODE    => strtoupper($input['payment']['id']),
+            RequestFields::AMOUNT       => $input['payment']['amount'] / 100,
+            RequestFields::CURRENCY     => Currency::INR,
+            RequestFields::LANGUAGE_ID  => Constants::USER_LANG_ID,
+            RequestFields::STATE_FLAG   => Constants::STATE_FLAG,
+            RequestFields::USER_TYPE    => Constants::USER_TYPE,
+            RequestFields::APP_TYPE     => Constants::APP_TYPE,
+            RequestFields::CONFIRMATION => Constants::CONFIRMATION,
+            RequestFields::RETURN_URL   => $input['callbackUrl']
+        ];
+
+        return $data;
+    }
+
+    protected function getEntityAttributes(array $input)
+    {
+        $entityAttributes = [
+            RequestFields::AMOUNT     => $input['payment']['amount'] / 100,
+            RequestFields::PAYMENT_ID => $input['payment']['id'],
+            RequestFields::ITEM_CODE  => strtoupper($input['payment']['id'])
+        ];
+
+        return $entityAttributes;
+    }
+
+    protected function saveCallbackResponse(array $content)
+    {
+        // Still not sure what their response is
+        $attributes = [
+            //
+        ];
+
+        $gatewayPayment = $his->repo->findByPaymentIdAndActionOrFail(
+                                    $content[ResponseFields::PAYMENT_ID],
+                                    Action::AUTHORIZE);
+
+        $gatewayPayment->fill($attributes);
+
+        $gatewayPayment->saveOrFail();
+    }
+
+    protected function checkCallbackStatus(array $content)
+    {
+        if ((isset($content[ResponseFields::PAID]) === false) or
+            ($content[ResponseFields::PAID] !== Constants::CONFIRMATION))
+        {
+            $this->trace->error(
+                TraceCode::PAYMENT_CALLBACK_FAILURE,
+                ['content' => $content]);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function getMerchantId()
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->getTestMerchantId();
+        }
+
+        return $this->LiveMerchantId();
+    }
+}

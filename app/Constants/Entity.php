@@ -94,9 +94,10 @@ class Entity
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const NETBANKING_HDFC       = 'netbanking_hdfc';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
-    const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const NETBANKING_KOTAK      = 'netbanking_kotak';
     const NETBANKING_AXIS       = 'netbanking_axis';
+    const NETBANKING_FEDERAL    = 'netbanking_federal';
+    const WALLET_PAYUMONEY      = 'wallet_payumoney';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
@@ -150,6 +151,7 @@ class Entity
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
+        self::NETBANKING_FEDERAL    => \RZP\Gateway\Netbanking\Federal::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
@@ -173,6 +175,7 @@ class Entity
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_FEDERAL => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
         self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
         self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
