@@ -69,6 +69,8 @@ app.controller('EntitiesCtrl', [
       'netbanking_hdfc',
       'netbanking_kotak',
       'netbanking_axis',
+      'netbanking_icici',
+      'netbanking_airtel',
       'paytm',
       'sharp',
       'upi_icici',
