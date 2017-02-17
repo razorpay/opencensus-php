@@ -31,9 +31,6 @@ class AESCrypto
 
         $this->aes->setKey($masterKey);
 
-        if ($initializationVector !== '')
-        {
-            $this->aes->setIV($initializationVector);
-        }
+        $this->aes->setIV($initializationVector);
     }
 }
