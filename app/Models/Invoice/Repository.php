@@ -34,30 +34,6 @@ class Repository extends Base\Repository
     ];
 
     /**
-     * TODO: Discuss with sunny and shk on this method.
-     *       Why was it added? Not used(now) anywhere.
-     *
-     * @param object $order
-     *
-     * @return Entity
-     */
-    public function fetchForOrder($order)
-    {
-        $invoice = $this->newQuery()
-                        ->where(Entity::ORDER_ID, '=', $order->getId())
-                        ->first();
-
-        if ($invoice !== null)
-        {
-            $order->setRelation('invoice', $invoice);
-
-            $invoice->order()->associate($order);
-        }
-
-        return $invoice;
-    }
-
-    /**
      * - Fetches invoice entity for given public id and merchant.
      * - Follows by a check if the invoice's user id is same as the passed user
      *   id, failing which it throws a 403.
@@ -81,28 +57,6 @@ class Repository extends Base\Repository
         }
 
         return $invoice;
-    }
-
-    /**
-     * Fetches invoice after applying additional filter of user_id if it's set.
-     *
-     * @param array       $input
-     * @param string      $merchantId
-     * @param string|null $userId
-     *
-     * @return Base\PublicCollection
-     */
-    public function fetchFilteredByUserId(
-        array $input,
-        string $merchantId,
-        string $userId = null)
-    {
-        if ($userId !== null)
-        {
-            $input[Entity::USER_ID] = $userId;
-        }
-
-        return $this->fetch($input, $merchantId);
     }
 
     public function getInvoicesForIssuedNotificationToCustomer($medium)

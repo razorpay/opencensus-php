@@ -751,12 +751,8 @@ class BasicAuth
             'dashboard'     => $headers->get('X-Dashboard'),
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
             'admin_user'    => $headers->get('X-Dashboard-Username'),
-
-            //
-            // For now used to access control operations on invoice.
-            // Invoice has user id column and it's service usage the same.
-            //
             'user_id'       => $headers->get('X-Dashboard-User-Id'),
+            'user_role'     => $headers->get('X-Dashboard-User-Role'),
         );
     }
 

@@ -10,15 +10,13 @@ class Service extends Base\Service
 {
     protected $core;
 
-    protected  $userId;
+    protected  $userId = null;
 
     public function __construct()
     {
         parent::__construct();
 
-        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
-
-        $this->userId = $dashboardHeaders['user_id'] ?? null;
+        $this->setUserId();
 
         $this->core = new Core();
     }
@@ -43,10 +41,18 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $invoices = $this->repo->invoice->fetchFilteredByUserId(
-                                            $input,
-                                            $this->merchant->getId(),
-                                            $this->userId);
+        //
+        // Fetches invoice after applying additional filter of user_id
+        // if it's set.
+        //
+
+        if ($this->userId !== null)
+        {
+            $input[Entity::USER_ID] = $this->userId;
+        }
+
+        $invoices = $this->repo->invoice
+                               ->fetch($input, $this->merchant->getId());
 
         return $invoices->toArrayPublic();
     }
@@ -246,5 +252,23 @@ class Service extends Base\Service
         $path = $this->core->getInvoicePdfIfExistsOrCreate($invoice);
 
         return [$displayName, $path];
+    }
+
+    /**
+     * Ref: https://github.com/razorpay/api/issues/2397
+     *
+     * @return null
+     */
+    protected function setUserId()
+    {
+        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
+
+        $userRole = $dashboardHeaders['user_role'] ?? null;
+        $userId   = $dashboardHeaders['user_id'] ?? null;
+
+        if ($userRole === 'sellerapp')
+        {
+            $this->userId = $userId;
+        }
     }
 }

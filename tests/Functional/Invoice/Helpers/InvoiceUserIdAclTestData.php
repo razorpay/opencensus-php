@@ -11,7 +11,8 @@ return [
             'url'    => '/invoices',
             'method' => 'post',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [
                 'customer'      => [
@@ -52,7 +53,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'get',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],
@@ -68,7 +70,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'get',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],
@@ -87,13 +90,31 @@ return [
         ],
     ],
 
+    'testGetInvoiceWithUserIdAndDifferentRoleHeaderSuccess' => [
+        'request' => [
+            'url'    => '/invoices/inv_1000000invoice',
+            'method' => 'get',
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'newrandomrole',
+            ],
+            'content' => [],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'inv_1000000invoice',
+            ],
+        ],
+    ],
+
     'testListInvoiceWithUserIdHeader' => [
         'request' => [
             'url' => '/invoices',
             'method' => 'get',
             'content' => [],
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
         ],
         'response' => [
@@ -136,12 +157,41 @@ return [
         ],
     ],
 
+    'testListInvoiceWithUserIdAndDifferentRoleHeader' => [
+        'request' => [
+            'url' => '/invoices',
+            'method' => 'get',
+            'content' => [],
+            'server' => [
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'newrandomrole',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 3,
+                'items' => [
+                    [
+                        'id' => 'inv_1000002invoice',
+                    ],
+                    [
+                        'id' => 'inv_1000001invoice',
+                    ],
+                    [
+                        'id' => 'inv_1000000invoice',
+                    ]
+                ]
+            ],
+        ],
+    ],
+
     'testUpdateInvoiceWithUserIdHeaderSuccess' => [
         'request' => [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'patch',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [
                 'description' => 'Updated Description It Is',
@@ -160,7 +210,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'patch',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [
                 'description' => 'Updated Description It Is',
@@ -186,7 +237,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'delete',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],
@@ -200,7 +252,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice',
             'method' => 'delete',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],
@@ -224,7 +277,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice/expire',
             'method' => 'post',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],
@@ -241,7 +295,8 @@ return [
             'url'    => '/invoices/inv_1000000invoice/expire',
             'method' => 'post',
             'server' => [
-                'HTTP_X-Dashboard-User-Id' => '10000000UserId',
+                'HTTP_X-Dashboard-User-Id'   => '10000000UserId',
+                'HTTP_X-Dashboard-User-Role' => 'sellerapp',
             ],
             'content' => [],
         ],

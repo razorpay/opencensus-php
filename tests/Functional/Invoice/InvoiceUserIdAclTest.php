@@ -39,6 +39,13 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
+    public function testGetInvoiceWithUserIdAndDifferentRoleHeaderSuccess()
+    {
+        $this->createInvoice(['user_id' => '10000001UserId']);
+
+        $this->startTest();
+    }
+
 
     public function testListInvoiceWithUserIdHeader()
     {
@@ -50,6 +57,15 @@ class InvoiceUserIdAclTest extends TestCase
     }
 
     public function testListInvoiceWithoutUserIdHeader()
+    {
+        $this->createInvoice(['user_id' => '10000000UserId']);
+        $this->createInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
+        $this->createInvoice(['user_id' => '10000001UserId', 'id' => '1000002invoice']);
+
+        $this->startTest();
+    }
+
+    public function testListInvoiceWithUserIdAndDifferentRoleHeader()
     {
         $this->createInvoice(['user_id' => '10000000UserId']);
         $this->createInvoice(['user_id' => '10000000UserId', 'id' => '1000001invoice']);
