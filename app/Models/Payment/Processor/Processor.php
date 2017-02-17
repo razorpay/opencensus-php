@@ -21,6 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Feature\Constants as Feature;
 
@@ -880,10 +881,19 @@ class Processor
 
     protected function tracePaymentNewRequest(array $input)
     {
-        // @note: please keep this line here. It unsets card input in case
-        // it's present
-        unset($input['card']);
+        $this->unsetSensitiveCardDetails($input);
+
         $this->trace->debug(TraceCode::PAYMENT_NEW_REQUEST, $input);
+    }
+
+    protected function unsetSensitiveCardDetails(array & $input)
+    {
+        if ((isset($input['card'])) and
+            (is_array($input['card'])))
+        {
+            unset($input['card'][Card\Entity::CVV]);
+            unset($input['card'][Card\Entity::NUMBER]);
+        }
     }
 
     protected function notifyDashboard($type, $entity)
