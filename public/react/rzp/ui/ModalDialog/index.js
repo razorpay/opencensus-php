@@ -33,6 +33,7 @@ class ModalDialog extends Component {
           isOpen={!!props.component}
           onRequestClose={props.closeModal}
           closeTimeoutMS={300}
+          shouldCloseOnOverlayClick={false}
           class={`Modal ${props.size ? `Modal--${props.size}` : ''}`}
           contentLabel='Modal'
         >
