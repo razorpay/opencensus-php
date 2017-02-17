@@ -225,7 +225,7 @@ class Notifier extends Base\Core
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    protected function getInvoicePaidMailPayload()
+    public function getInvoicePaidMailPayload()
     {
         return $this->getInvoiceMailPayload();
     }
@@ -233,10 +233,14 @@ class Notifier extends Base\Core
     protected function getInvoiceMailPayload(string $callee = null)
     {
 
+        $id = $this->invoice->getPublicId();
+
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $extraInvoicePayload = [
             'type_label'       => ucwords($this->invoice->getTypeLabel()),
+            'pdf_url'          => url("v1/invoices/$id/pdf"),
+            'dashboard_url'    => Config::get('applications.dashboard.url') . "/#/app/invoices/$id",
         ];
 
         $viewPayload['invoice'] += $extraInvoicePayload;

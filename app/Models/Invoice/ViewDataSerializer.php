@@ -86,8 +86,8 @@ class ViewDataSerializer extends Base\Core
         $merchantBrandColor = $this->merchant->getBrandColor();
 
         $merchantData = [
-            'brand_color_rgb'      => get_rgb_value($merchantBrandColor),
-            'brand_text_color_rgb' => get_brand_text_color($merchantBrandColor),
+            'brand_color'      => get_rgb_value($merchantBrandColor),
+            'brand_text_color' => get_brand_text_color($merchantBrandColor),
             'image'                => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
             'name'                 => $this->merchant->getBillingLabelElseName(),
             'id'                   => $this->merchant->getId(),

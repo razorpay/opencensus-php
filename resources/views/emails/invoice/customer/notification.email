@@ -13,17 +13,17 @@
         $headerLabel = '';
         $status = $invoice['status'];
 
-        if ($status === 'issued')
+        if (isset($payment))
+        {
+            $ctaLabel = 'DOWNLOAD PDF';
+            $ctaHref = $invoice['pdf_url'];
+            $headerLabel = 'PAYMENT SUCCESSFUL';
+        }
+        elseif ($status === 'issued')
         {
             $ctaLabel = 'PROCEED TO PAY';
             $ctaHref = $invoice['short_url'];
-            $headerLabel = $merchant['name'] . 'has sent you an invoice for' . $invoice['currency'] . ' ' . $invoice['formatted_amount'];
-        }
-        elseif ($status === 'paid')
-        {
-            $ctaLabel = 'DOWNLOAD PDF';
-            $ctaHref = $invoice['short_url'];
-            $headerLabel = 'PAYMENT SUCCESSFUL';
+            $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
         }
         elseif ($status === 'expired')
         {
@@ -48,10 +48,13 @@
               border-right: 0;
             ">
               <div class="text-center">
-                  <img
-                      class="merchant__logo"
-                      src="https://www.treebo.com/blog/wp-content/uploads/2016/12/New-logo-color-01.png"
-                   />
+                  @if ($merchant['image'])
+                    <img
+                        class="merchant__logo"
+                        src="{{ $merchant['image'] }}"
+                     />
+                  @endif
+
                    <h2 style="color: {{ $merchant['brand_text_color'] }}">
                       Invoice from {{$merchant['name']}}
                   </h2>
@@ -141,15 +144,15 @@
             <td></td>
             <td class="content" style="padding-bottom: 24px;">
                 <div>
-                    @if ($invoice['status'] === 'issued')
-                        <label>INVOICE EXPIRY</label>
-                        <div>{{ $invoice['date'] }}</div>
-                    @elseif ($invoice['status'] === 'paid')
+                    @if (isset($payment))
                         <label>PAYMENT ID</label>
-                        <div>{{ $invoice['payment_id'] }}</div>
+                        <div>{{ $payment['public_id'] }}</div>
+                    @elseif ($invoice['status'] === 'issued')
+                        <label>INVOICE EXPIRY</label>
+                        <div>{{ $invoice['date_formatted'] }}</div>
                     @elseif ($invoice['status'] === 'expired')
                         <label>EXPIRED ON</label>
-                        <div>{{ $invoice['date'] }}</div>
+                        <div>{{ $invoice['date_formatted'] }}</div>
                     @endif
                 </div>
             </td>
@@ -165,7 +168,7 @@
                             <td>
                                 <label>AMOUNT</label>
                                 <div style="font-weight: bold; font-size: 18px;">
-                                    {{$invoice['currency']}} {{$invoice['formatted_amount']}}
+                                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
                                 </div>
                             </td>
                             <td class="text-right">
@@ -197,7 +200,7 @@
                     {{$merchant['name']}}
                 </div>
                 <div class="footerFerchant__address">
-                    1st Floor, Hosur Road, Adugodi, Bangalore
+                    {{ $merchant['business_registered_address'] }}
                 </div>
             </td>
             <td></td>

@@ -10,17 +10,17 @@
         $headerLabel = '';
         $status = $invoice['status'];
 
-        if ($status === 'issued')
+        if (isset($payment))
+        {
+            $ctaLabel = 'DOWNLOAD PDF';
+            $ctaHref = $invoice['pdf_url'];
+            $headerLabel = 'PAYMENT SUCCESSFUL';
+        }
+        elseif ($status === 'issued')
         {
             $ctaLabel = 'PROCEED TO PAY';
             $ctaHref = $invoice['short_url'];
-            $headerLabel = $merchant['name'] . 'has sent you an invoice for' . $invoice['currency'] . ' ' . $invoice['formatted_amount'];
-        }
-        elseif ($status === 'paid')
-        {
-            $ctaLabel = 'DOWNLOAD PDF';
-            $ctaHref = $invoice['short_url'];
-            $headerLabel = 'PAYMENT SUCCESSFUL';
+            $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
         }
         elseif ($status === 'expired')
         {
@@ -32,7 +32,11 @@
     <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; background-color: #fafafa; color: rgba(0,0,0,0.87); max-width: 600px; table-layout: fixed;"><tbody style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};"></td>
             <td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 0 !important; padding-bottom: 0; border-left: 0; border-right: 0; width: 94%; background-color: {{ $merchant['brand_color'] }}; color: {{ $merchant['brand_text_color'] }};">
               <div class="text-center" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; text-align: center;">
-                  <img class="merchant__logo" src="https://www.treebo.com/blog/wp-content/uploads/2016/12/New-logo-color-01.png" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; height: 48px; margin-bottom: 8px; width: 48px;"><h2 style="font-family: Verdana, Arial, sans-serif; line-height: 24px; font-size: 20px; margin: 0; color: {{ $merchant['brand_text_color'] }};">
+                  @if ($merchant['image'])
+                    <img class="merchant__logo" src="{{ $merchant['image'] }}" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; height: 48px; margin-bottom: 8px; width: 48px;">
+                  @endif
+
+                   <h2 style="font-family: Verdana, Arial, sans-serif; line-height: 24px; font-size: 20px; margin: 0; color: {{ $merchant['brand_text_color'] }};">
                       Invoice from {{$merchant['name']}}
                   </h2>
                   <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: {{ $merchant['brand_text_color'] }};">
@@ -102,15 +106,15 @@
         </tr><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
             <td class="content" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 24px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff;">
                 <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
-                    @if ($invoice['status'] === 'issued')
-                        <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">INVOICE EXPIRY</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date'] }}</div>
-                    @elseif ($invoice['status'] === 'paid')
+                    @if (isset($payment))
                         <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">PAYMENT ID</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['payment_id'] }}</div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $payment['public_id'] }}</div>
+                    @elseif ($invoice['status'] === 'issued')
+                        <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">INVOICE EXPIRY</label>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date_formatted'] }}</div>
                     @elseif ($invoice['status'] === 'expired')
                         <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">EXPIRED ON</label>
-                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date'] }}</div>
+                        <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">{{ $invoice['date_formatted'] }}</div>
                     @endif
                 </div>
             </td>
@@ -120,7 +124,7 @@
                 <table border="0" cellpadding="0" cellspacing="0" width="100%" style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><tbody style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td style="font-family: Verdana, Arial, sans-serif; line-height: 20px;">
                                 <label style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0, 0, 0, 0.54); font-size: 12px; font-weight: bold;">AMOUNT</label>
                                 <div style="font-family: Verdana, Arial, sans-serif; line-height: 20px; font-weight: bold; font-size: 18px;">
-                                    {{$invoice['currency']}} {{$invoice['formatted_amount']}}
+                                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
                                 </div>
                             </td>
                             <td class="text-right" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; text-align: right;">
@@ -138,7 +142,7 @@
                     {{$merchant['name']}}
                 </div>
                 <div class="footerFerchant__address" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; color: rgba(0,0,0,0.54); font-size: 10px;">
-                    1st Floor, Hosur Road, Adugodi, Bangalore
+                    {{ $merchant['business_registered_address'] }}
                 </div>
             </td>
             <td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>

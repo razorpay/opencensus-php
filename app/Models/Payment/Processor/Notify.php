@@ -631,7 +631,7 @@ class Notify
             ];
         }
 
-        if ($this->hasInvoice() == true)
+        if ($this->payment->hasInvoice() == true)
         {
             $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
 
