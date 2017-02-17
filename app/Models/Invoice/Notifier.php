@@ -106,7 +106,7 @@ class Notifier extends Base\Core
         $data = $this->getInvoiceIssuedMailPayload();
 
         $this->dispatchMail(
-            'emails.invoice.customer.issued',
+            'emails.invoice.customer.notification',
             $data,
             function($message)
             {
@@ -134,7 +134,7 @@ class Notifier extends Base\Core
 
         $data = $this->getInvoiceExpiredMailPayload();
 
-        $this->dispatchMail('emails.invoice.customer.expired', $data);
+        $this->dispatchMail('emails.invoice.customer.notification', $data);
 
         return true;
     }
