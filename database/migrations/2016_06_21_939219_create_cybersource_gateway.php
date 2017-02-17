@@ -44,6 +44,9 @@ class CreateCybersourceGateway extends Migration
 
             $table->integer(Cybersource::AMOUNT);
 
+            $table->string(Cybersource::CURRENCY, 3)
+                  ->nullable();
+
             $table->char(Cybersource::PARES_STATUS, 2)
                   ->nullable();
 

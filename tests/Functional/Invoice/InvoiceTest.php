@@ -43,9 +43,9 @@ class InvoiceTest extends TestCase
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
 
-        // $this->assertNotNull($response['expire_by']);
-        // $this->assertInternalType('int', $response['expire_by']);
-        // $this->assertEquals(5184000, $response['expire_by'] - $response['issued_at']);
+        $this->assertNotNull($response['expire_by']);
+        $this->assertInternalType('int', $response['expire_by']);
+        $this->assertEquals(5184000, $response['expire_by'] - $response['issued_at']);
     }
 
     public function testCreateInvoiceWithExistingCustomer()

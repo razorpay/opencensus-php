@@ -475,11 +475,12 @@ class Gateway extends Base\Gateway
         {
             // Fill only important fields that change during payment auth/capture/refund
             // lifecycle.
-            $array = array(
+            $array = [
                 'vpc_AuthorisedAmount',
                 'vpc_CapturedAmount',
                 'vpc_RefundedAmount',
-                'vpc_ShopTransactionNo');
+                'vpc_ShopTransactionNo'
+            ];
 
             foreach ($array as $key)
             {
@@ -511,18 +512,18 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentAuthorizeRequestContent($input)
     {
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => $input['payment']['currency'],
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
+        $attributes = [
+            'vpc_Command'     => Command::PAY,
+            'vpc_Amount'      => $input['payment']['amount'],
+            'vpc_Currency'    => $input['payment']['currency'],
+            'vpc_MerchTxnRef' => $input['payment']['id'],
+        ];
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = $input['card']['network'];
 
-        $content = array(
+        $content = [
             'vpc_Version'           => '1',
             'vpc_ReturnURL'         => $input['callbackUrl'],
             'vpc_Locale'            => 'en',
@@ -532,7 +533,7 @@ class Gateway extends Base\Gateway
             'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
             'vpc_CardSecurityCode'  => $input['card']['cvv'],
 //            'vpc_OrderInfo'             => 'testinfo',
-        );
+        ];
 
         $content = array_merge($attributes, $content);
 
@@ -554,47 +555,49 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => Command::CAPTURE,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-            'vpc_Amount'        => $input['amount']
-        );
+            'vpc_Amount'        => $input['amount'],
+            'vpc_Currency'      => $input['currency'],
+        ];
 
         return $content;
     }
 
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::QUERYDR,
             'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
-        );
+        ];
 
         return $content;
     }
 
     protected function getPaymentRefundRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_Currency'      => $input['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-        );
+        ];
 
         return $content;
     }
 
     protected function getPaymentReversalRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-        );
+        ];
 
         return $content;
     }
@@ -610,21 +613,23 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestArray($content)
     {
-        $request = array(
+        $request = [
             'url'       => $this->getUrl(Command::PAY),
             'content'   => $content,
-            'method'    => 'post');
+            'method'    => 'post'
+        ];
 
         return $request;
     }
 
     protected function getAmaRequestArray($content)
     {
-        $request = array(
+        $request = [
             'action'    => $this->action,
             'url'       => $this->getUrl('ama'),
             'content'   => $content,
-            'method'    => 'post');
+            'method'    => 'post'
+        ];
 
         return $request;
     }

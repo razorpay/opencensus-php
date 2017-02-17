@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -106,6 +107,9 @@ class Activate extends Base\Core
                 $message->from($config['from_email'], $config['from_name']);
                 $message->cc('notifications@razorpay.com');
                 $message->subject($data['subject']);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
             }
         );
     }

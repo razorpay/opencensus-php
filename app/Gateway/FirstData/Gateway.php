@@ -269,6 +269,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::AMOUNT             => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
+            Entity::CURRENCY           => $authRequest[ConnectRequestFields::CURRENCY],
             Entity::GATEWAY_PAYMENT_ID => $authRequest[ConnectRequestFields::ORDER_ID],
         ];
 
@@ -341,11 +342,14 @@ class Gateway extends Base\Gateway
 
     protected function getCommonResponseFields($response, $input)
     {
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
+
         $attributes = [
-            Entity::RECEIVED               => true,
-            Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
-            Entity::AMOUNT                 => $input['amount'],
-            Entity::STATUS                 => Status::CAPTURED,
+            Entity::RECEIVED      => true,
+            Entity::APPROVAL_CODE => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::AMOUNT        => $input['amount'],
+            Entity::CURRENCY      => $currencyCode,
+            Entity::STATUS        => Status::CAPTURED,
         ];
 
         $this->setApproval($attributes[Entity::APPROVAL_CODE]);

@@ -65,13 +65,20 @@ class InvoiceAction extends Job implements ShouldQueue
 
             $timeTaken = microtime(true) - $timeStarted;
 
-            $this->trace->debug(
-                TraceCode::INVOICE_ACTION_JOB_HANDLED,
-                $this->getTracePayload(
-                    [
-                        'time_taken'     => $timeTaken,
-                        'handler_result' => $handlerResult,
-                    ]));
+            $tracePayload = $this->getTracePayload(
+                [
+                    'time_taken'     => $timeTaken,
+                    'handler_result' => $handlerResult,
+                ]);
+
+            if ($handlerResult === false)
+            {
+                $this->trace->error(TraceCode::INVOICE_ACTION_JOB_ERROR, $tracePayload);
+            }
+            else
+            {
+                $this->trace->debug(TraceCode::INVOICE_ACTION_JOB_HANDLED, $tracePayload);
+            }
         }
         catch (\Throwable $e)
         {
@@ -80,12 +87,12 @@ class InvoiceAction extends Job implements ShouldQueue
     }
 
     /**
-     *
      * - Initializes instance variables: core, trace etc.
      * - Sets application mode, database connection based on the mode.
      * - Validates event
      *
-     * @return null;
+     * @return null
+     * @throws LogicException
      */
     private function init()
     {
@@ -107,6 +114,12 @@ class InvoiceAction extends Job implements ShouldQueue
         // Get invoice object
         //
 
+        //
+        // This will not return back deleted invoice.
+        // But, a deleted invoice will never reach this flow
+        // since only a draft invoice can be deleted.
+        // We don't perform any queue actions on a draft invoice.
+        //
         $this->invoice = $repo->invoice->findOrFail($this->id);
 
         //
@@ -129,6 +142,12 @@ class InvoiceAction extends Job implements ShouldQueue
     }
 
     // ------------------------- Handlers for various events -------------------------
+    //
+    // Conventions:
+    // - It should be of the following format: handle + Studly cased event constant
+    // - The handler method should return boolean and if it's false, it's considered
+    //   as error otherwise fine. Also, any exception thrown is considered error too.
+    //
 
     private function handleUpdated()
     {
@@ -151,7 +170,13 @@ class InvoiceAction extends Job implements ShouldQueue
 
     private function handleAuthorized()
     {
-        return $this->core->createInvoicePdf($this->invoice);
+        $this->core->createInvoicePdf($this->invoice);
+
+        //
+        // Unless it throws exception, above is assumed to be successful, hence
+        // returning true.
+        //
+        return true;
     }
 
     // ------------------------------------------------------------
@@ -164,7 +189,11 @@ class InvoiceAction extends Job implements ShouldQueue
 
         $jobAction = self::JOB_DELETED;
 
-        if ($this->attempts() <= self::MAX_ALLOWED_ATTEMPTS)
+        if ($this->attempts() > self::MAX_ALLOWED_ATTEMPTS)
+        {
+            $this->deleted();
+        }
+        else
         {
             $this->release(self::RELEASE_WAIT_SECS);
 
@@ -187,6 +216,9 @@ class InvoiceAction extends Job implements ShouldQueue
             'invoice_id'     => $this->id,
         ];
 
+        //
+        // It may not be set when an invalid invoice id is passed.
+        //
         if (isset($this->invoice) === true)
         {
             $payload['invoice_status'] = $this->invoice->getStatus();

@@ -111,7 +111,10 @@ class ReconciliationGenerator
 
         if ($generateFailedReconciliations === true)
         {
-            $data['Reject Reason']         = 'Dummy Reason';
+            $data['Reject Reason']  = 'This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit. This is a string which' .
+                ' test characters count limit. This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit.';
         }
 
         return $data;

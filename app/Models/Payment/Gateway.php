@@ -38,6 +38,10 @@ class Gateway
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
 
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
+
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
 
@@ -59,6 +63,14 @@ class Gateway
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
         self::BILLDESK,
+    ];
+
+    //
+    // Gateways for which we can validate the refunds
+    // if they are successful after they are 'initiated'
+    //
+    const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
+        self::WALLET_FREECHARGE
     ];
 
     public static $channels = array(
@@ -448,7 +460,7 @@ class Gateway
      * @param string $networkCode
      * @return bool
      */
-    public static function supportsAuthAndCapture($gateway, $networkCode = null)
+    public static function supportsAuthAndCapture($gateway, $networkCode = null): bool
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 
