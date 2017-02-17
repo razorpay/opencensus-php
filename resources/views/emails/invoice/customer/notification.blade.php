@@ -155,4 +155,5 @@
                             </td>
                         </tr></tbody></table></td>
             <td style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
+        </tr><tr style="font-family: Verdana, Arial, sans-serif; line-height: 20px;"><td colspan="3" style="font-family: Verdana, Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05);"></td>
         </tr></tbody></table></body></html>

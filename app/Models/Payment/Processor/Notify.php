@@ -103,7 +103,7 @@ class Notify
             'customer' => [
                 'from' => 'care',
                 'view' => [
-                    'html' => 'emails.invoice.customer.paid',
+                    'html' => 'emails.invoice.customer.notification',
                 ],
             ],
         ],
