@@ -59,6 +59,19 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $refund['gateway_refunded']);
     }
 
+    public function testRefundDirect()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment->getPublicId(),
+                'notes'      => ['a' => 'b'],
+            ]);
+
+        $this->assertEquals('refund', $refund['entity']);
+    }
+
     public function testMultipleRefunds()
     {
         $payment = $this->defaultAuthPayment();
@@ -422,6 +435,14 @@ class RefundTest extends TestCase
                 ]
             ]
         ];
+    }
+
+
+    public function testRefundValidationOnWrongGateway()
+    {
+        $this->ba->appAuth();
+
+        parent::startTest();
     }
 
     public function startTest($paymentId = null, $amount = null)

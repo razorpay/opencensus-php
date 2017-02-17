@@ -242,6 +242,11 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::SUBMITTED) === true);
     }
 
+    public function getBusinessRegisteredAddress()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
+    }
+
     public function setContactEmail($email)
     {
         $this->setAttribute(self::CONTACT_EMAIL, $email);

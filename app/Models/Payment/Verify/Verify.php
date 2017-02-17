@@ -225,7 +225,7 @@ class Verify extends Base\Core
     /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
-     * @param arary                 $bucketFilter
+     * @param array                 $bucketFilter
      * @param integer               $verifiableCount
      * @return array with aggregated results
      */
@@ -302,7 +302,9 @@ class Verify extends Base\Core
     /** Lock All Payments
      *
      * @param Base\PublicCollection $payments
-     * @return array with keys locked and not_locked,
+     * @param string                $filter
+     *
+     * @return Base\PublicCollection with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
      */
     protected function lockPaymentsForVerify(Base\PublicCollection $payments, string $filter)

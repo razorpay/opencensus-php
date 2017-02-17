@@ -28,6 +28,7 @@ class PublicController extends Controller
         $getParams = Request::query('data');
 
         // decode base64 string
+        $getParams = str_replace(' ', '+', $getParams);
         $data = json_decode(base64_decode($getParams), true);
 
         // Relevant info for re-directing to merchant url.
@@ -66,7 +67,7 @@ class PublicController extends Controller
         }
         else
         {
-            throw new Exception\ServerErrorException('Should not have reached here');
+            throw new Exception\LogicException('Should not have reached here');
         }
 
         $checkout = $this->getCheckoutCommon();

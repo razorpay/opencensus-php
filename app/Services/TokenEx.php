@@ -19,6 +19,8 @@ class TokenEx
     const VALID             = 'Valid';
     const VALUE             = 'Value';
 
+    const MAX_RETRY_COUNT = 1;
+
     protected $tokenScheme;
 
     protected $apiKey;
@@ -142,17 +144,42 @@ class TokenEx
     {
         $method = $request['method'];
 
-        try
+        $retryCount = 0;
+
+        while (true)
         {
-            $response = Requests::$method(
-                $request['url'],
-                $request['headers'],
-                json_encode($request['content']),
-                $request['options']);
-        }
-        catch(\Requests_Exception $e)
-        {
-            throw $e;
+            try
+            {
+                $response = Requests::$method(
+                    $request['url'],
+                    $request['headers'],
+                    json_encode($request['content']),
+                    $request['options']);
+
+                break;
+            }
+            catch(\Requests_Exception $e)
+            {
+                // check curl error, increase retry count if timeout
+                // throw the error if retry count reaches max allowed value
+                if (($retryCount < self::MAX_RETRY_COUNT) and
+                    (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
+                {
+                    $this->trace->info(
+                        TraceCode::TOKENEX_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'type'    => $e->getType(),
+                            'data'    => $e->getData()
+                        ]);
+
+                    $retryCount++;
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
         }
 
         return $response;

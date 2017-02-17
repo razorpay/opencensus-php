@@ -14,6 +14,7 @@ class TraceCode
     const PAYMENT_CREATED                           = 'PAYMENT_CREATED';
     const PAYMENT_CREATE_FAILED                     = 'PAYMENT_CREATE_FAILED';
     const PAYMENT_AUTH_SUCCESS                      = 'PAYMENT_AUTH_SUCCESS';
+    const PAYMENT_AUTH_PENDING                      = 'PAYMENT_AUTH_PENDING';
     const PAYMENT_AUTH_FAILURE                      = 'PAYMENT_AUTH_FAILURE';
     const PAYMENT_AUTHORIZED_NULL                   = 'PAYMENT_AUTHORIZED_NULL';
     const PAYMENT_CALLBACK_REQUEST                  = 'PAYMENT_CALLBACK_REQUEST';
@@ -113,6 +114,7 @@ class TraceCode
     const FILE_PERMISSION_CHANGE_FAILED             = 'FILE_PERMISSION_CHANGE_FAILED';
     const GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS     = 'GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS';
     const GATEWAY_ABSENT_REFUND_RETRY_FAILED        = 'GATEWAY_ABSENT_REFUND_RETRY_FAILED';
+    const RECON_FILE_LINK_NOT_FOUND                 = 'RECON_FILE_LINK_NOT_FOUND';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -144,7 +146,9 @@ class TraceCode
     const ORDERS_MULTIPLE_AUTHORIZED_REFUNDS        = 'ORDERS_MULTIPLE_AUTHORIZED_REFUNDS';
     const REFUND_EXCEPTION                          = 'REFUND_EXCEPTION';
 
-    const EXPIRE_INVOICES                           = 'EXPIRE_INVOICES';
+    const EXPIRE_INVOICE                            = 'EXPIRE_INVOICE';
+    const INVOICE_EXPIRE_VIA_CRON_FAILED            = 'INVOICE_EXPIRE_VIA_CRON_FAILED';
+    const INVOICES_EXPIRE_CRON_SUMMARY              = 'INVOICES_EXPIRE_CRON_SUMMARY';
     const INVOICE_INVALID_CONTACT_NUMBER            = 'INVOICE_INVALID_CONTACT_NUMBER';
     const INVOICE_CREATE_REQUEST                    = 'INVOICE_CREATE_REQUEST';
     const INVOICE_CREATED                           = 'INVOICE_CREATED';
@@ -156,12 +160,19 @@ class TraceCode
     const INVOICE_REMOVE_LINE_ITEM_REQUEST          = 'INVOICE_REMOVE_LINE_ITEM_REQUEST';
     const INVOICE_EXISTING_CUSTOMER                 = 'INVOICE_EXISTING_CUSTOMER';
     const INVOICE_LINKS                             = 'INVOICE_LINKS';
-    const INVOICE_EMAIL_REQUEST                     = 'INVOICE_EMAIL_REQUEST';
     const INVOICE_RAVEN_REQUEST                     = 'INVOICE_RAVEN_REQUEST';
     const INVOICE_BULK_NOTIFICATION_SUMMARY         = 'INVOICE_BULK_NOTIFICATION_SUMMARY';
     const EMAIL_SENDING_FAILED                      = 'EMAIL_SENDING_FAILED';
     const INVOICE_SEND_NOTIFICATION                 = 'INVOICE_SEND_NOTIFICATION';
+    const INVOICE_EMAIL_ISSUED_REQUEST              = 'INVOICE_EMAIL_ISSUED_REQUEST';
+    const INVOICE_EMAIL_EXPIRED_REQUEST             = 'INVOICE_EMAIL_EXPIRED_REQUEST';
+    const INVOICE_EMAIL_EXPIRING_REQUEST            = 'INVOICE_EMAIL_EXPIRING_REQUEST';
     const INVOICE_NEW_CUSTOMER                      = 'INVOICE_NEW_CUSTOMER';
+    const INVOICE_ACTION_JOB_RECEIVED               = 'INVOICE_ACTION_JOB_RECEIVED';
+    const INVOICE_ACTION_JOB_HANDLED                = 'INVOICE_ACTION_JOB_HANDLED';
+    const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
+    const INVOICE_PDF_GEN_FAILED                    = 'INVOICE_PDF_GEN_FAILED';
+    const INVOICE_PDF_GEN_TIME_TAKEN                = 'INVOICE_PDF_GEN_TIME_TAKEN';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
@@ -255,6 +266,7 @@ class TraceCode
     const GATEWAY_VALIDATE_RESPONSE                 = 'GATEWAY_VALIDATE_RESPONSE';
     const GATEWAY_VALIDATE_REQUEST                  = 'GATEWAY_VALIDATE_REQUEST';
     const GATEWAY_VALIDATE_ERROR                    = 'GATEWAY_VALIDATE_ERROR';
+    const GATEWAY_VALIDATE_REFUND_SUMMARY           = 'GATEWAY_VALIDATE_REFUND_SUMMARY';
     const GATEWAY_AUTHORIZE_RESPONSE                = 'GATEWAY_AUTHORIZE_RESPONSE';
     const GATEWAY_AUTHORIZE_REQUEST                 = 'GATEWAY_AUTHORIZE_REQUEST';
     const GATEWAY_AUTHORIZE_ERROR                   = 'GATEWAY_AUTHORIZE_ERROR';
@@ -298,6 +310,8 @@ class TraceCode
     const GATEWAY_REFUND_ERROR                      = 'GATEWAY_REFUND_ERROR';
     const GATEWAY_REFUND_RESPONSE                   = 'GATEWAY_REFUND_RESPONSE';
     const GATEWAY_REFUND_REQUEST                    = 'GATEWAY_REFUND_REQUEST';
+    const GATEWAY_REFUND_VALIDATION_FAILED          = 'GATEWAY_REFUND_VALIDATION_FAILED';
+    const GATEWAY_REFUND_FAILED                     = 'GATEWAY_REFUND_FAILED';
     const GATEWAY_REFUND_VERIFY_REQUEST             = 'GATEWAY_REFUND_VERIFY_REQUEST';
     const GATEWAY_REFUND_VERIFY_RESPONSE            = 'GATEWAY_REFUND_VERIFY_RESPONSE';
     const GATEWAY_PAYMENT_MISSING_FIELD             = 'GATEWAY_PAYMENT_MISSING_FIELD';
@@ -417,6 +431,7 @@ class TraceCode
 
     const TOKENEX_REQUEST                           = 'TOKENEX_REQUEST';
     const TOKENEX_RESPONSE                          = 'TOKENEX_RESPONSE';
+    const TOKENEX_RETRY                             = 'TOKENEX_RETRY';
     const RAVEN_REQUEST                             = 'RAVEN_REQUEST';
     const RAVEN_RESPONSE                            = 'RAVEN_RESPONSE';
 
@@ -444,6 +459,7 @@ class TraceCode
     const RECON_FILE_ROW                            = 'RECON_FILE_ROW';
     const RECON_FILE_DETAILS                        = 'RECON_FILE_DETAILS';
     const RECON_INFO_SUMMARY                        = 'RECON_INFO_SUMMARY';
+    const RECON_FILE_LINK                           = 'RECON_FILE_LINK';
     const IIN_INSERT_FAILED                         = 'IIN_INSERT_FAILED';
 
     //Trace code for Transaction Migration
