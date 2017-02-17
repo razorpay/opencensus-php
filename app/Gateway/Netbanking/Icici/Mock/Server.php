@@ -6,6 +6,7 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking\Icici\AESCrypto;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\ResponseFields;
 
@@ -67,9 +68,9 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $aes = new AESCrypto($masterKey);
+        $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        $content['ES'] = base64_encode($aes->encryptString($httpQuery));
+        $content['ES'] = $aes->encryptString($httpQuery);
 
         $this->content($content, 'hash');
 
@@ -80,9 +81,9 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $aes = new AESCrypto($masterKey);
+        $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        $decryptedString = $aes->decryptString(base64_decode($input['ES']));
+        $decryptedString = $aes->decryptString($input['ES']);
 
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);

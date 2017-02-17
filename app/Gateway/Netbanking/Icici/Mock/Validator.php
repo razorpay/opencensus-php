@@ -5,8 +5,8 @@ namespace RZP\Gateway\Netbanking\Icici\Mock;
 use RZP\Base;
 use RZP\Exception;
 use RZP\Constants\Mode;
-use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Constants;
+use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
 use RZP\Gateway\Netbanking\Icici\Gateway as IciciGateway;
 
@@ -39,7 +39,9 @@ class Validator extends Base\Validator
     {
         $masterKey = $this->getGatewayMasterKey();
 
-        $decryptedString = $this->decryptString(base64_decode($input['ES']), $masterKey);
+        $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
+
+        $decryptedString = $aes->decryptString($input['ES']);
 
         if ($decryptedString === false)
         {
@@ -66,14 +68,6 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 $field . ' not specified');
         }
-    }
-
-    protected function decryptString(string $string, string $masterKey)
-    {
-        $aes = new AES(Constants::MODE_ECB);
-        $aes->setKey($masterKey);
-
-        return $aes->decrypt($string);
     }
 
     protected function getGatewayMasterKey()
