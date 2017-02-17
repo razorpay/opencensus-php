@@ -102,8 +102,5 @@ class EventTrackerTest extends TestCase
         $response = $client->request('POST', $url, $options);
 
         $this->assertEquals($this->testData['responseLjSuccess'], $response->getBody()->getContents());
-
-
     }
-
 }

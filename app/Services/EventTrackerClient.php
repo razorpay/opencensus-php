@@ -104,8 +104,17 @@ class EventTrackerClient extends Base\Core
 
         try
         {
-            $options = ['json' => $this->getEventTrackerData()];
+            $eventData = $this->getEventTrackerData();
 
+            if ((isset($eventData) === false) or
+                (empty($eventData) === true))
+            {
+                return;
+            }
+
+            $options = ['json' => $eventData];
+
+            // remove comment after testing
             /*if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
@@ -162,7 +171,7 @@ class EventTrackerClient extends Base\Core
                 ['payment' => $this->payment->getId()]
             );
 
-            return;
+            return [];
         }
 
         $defaults = [
@@ -173,7 +182,7 @@ class EventTrackerClient extends Base\Core
 
         $context = $this->getEventContext();
 
-        if (isset($context) === true)
+        if ((isset($context) === true) and (empty($context) === false)
         {
             $defaults['context'] = $context;
         }
@@ -195,6 +204,10 @@ class EventTrackerClient extends Base\Core
         catch (Exception $e)
         {
             $this->trace->error($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
+        }
+        finally
+        {
+            return [];
         }
     }
 
@@ -445,7 +458,7 @@ class EventTrackerClient extends Base\Core
            {
                 $msg = [
                     'getterName' => $getterName,
-                    'key' => $key
+                    'key'        => $key
                 ];
 
                $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
@@ -457,6 +470,7 @@ class EventTrackerClient extends Base\Core
 
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
+        // remove comment after testing
         /*if ($this->mock === true)
         {
             return;
