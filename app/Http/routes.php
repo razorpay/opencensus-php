@@ -159,6 +159,7 @@ Route::group(['middleware' => ['web']], function () {
 
         // Registers a sub-merchant account
         Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
+        Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
 
         Route::get('/features', 'MerchantController@getMerchantFeatures');
         Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
