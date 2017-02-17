@@ -5,6 +5,7 @@ namespace RZP\Reconciliator\Freecharge;
 use Carbon\Carbon;
 use Requests;
 use Storage;
+use Symfony\Component\DomCrawler\Crawler;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 use RZP\Models\Payment\Gateway;
@@ -39,15 +40,24 @@ class Reconciliate extends Base\Reconciliate
         ];
     }
 
-    public function getSettlementFileLink(string $text)
+    public function getSettlementFileLink(string $html)
     {
         //
-        // Link lies between 'VIEW REPORT' and  'Best, Team Freecharge'
-        // By splitting the 'stripped-text', get the link
+        // The file link is hyperlink to VIEW REPORT
+        // Crawl the body-html, fetch the DomElement and
+        // extract 'href' attribute value
         //
-        $rawText = trim(explode('VIEW REPORT', $text)[1]);
-        $rawText = trim(explode('Best', $rawText)[0]);
+        $crawler = new Crawler($html);
+        $filter = $crawler->filter('a');
 
-        return stripcslashes(trim($rawText, '<>'));
+        foreach ($filter as $i => $content)
+        {
+            $element = new Crawler($content);
+
+            if ($element->html() === 'VIEW REPORT')
+            {
+                return $element->attr('href');
+            }
+        }
     }
 }
