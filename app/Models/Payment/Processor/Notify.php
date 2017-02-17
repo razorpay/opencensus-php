@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
 use RZP\Jobs\InvoiceAction;
 
 class Notify
@@ -630,19 +631,12 @@ class Notify
             ];
         }
 
-        if ($this->invoice !== null)
+        if ($this->hasInvoice() == true)
         {
-            $data['invoice'] = [
-                'id'         => $this->invoice->getId(),
-                'amount'     => $this->invoice->getFormattedAmountWithCurrency(),
-                'timestamp'  => $this->invoice->getCreatedAt(),
-                'payment_id' => $this->invoice->getPaymentId(),
-                'public_id'  => $this->invoice->getPublicId(),
-                'paid_at'    => $this->invoice->getPaidAt(),
-                'issued_at'  => $this->invoice->getIssuedAt(),
-                'type_label' => ucfirst($this->invoice->getTypeLabel()),
-                'short_url'  => $this->invoice->getShortUrl(),
-            ];
+            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
+
+            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
         return $data;

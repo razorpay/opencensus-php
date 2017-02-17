@@ -83,11 +83,14 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedMerchantDataForView()
     {
+        $merchantBrandColor = $this->merchant->getBrandColor();
+
         $merchantData = [
-            'color' => $this->merchant->getBrandColor(),
-            'image' => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'  => $this->merchant->getBillingLabelElseName(),
-            'id'    => $this->merchant->getId(),
+            'brand_color_rgb'      => get_rgb_value($merchantBrandColor),
+            'brand_text_color_rgb' => get_brand_text_color($merchantBrandColor),
+            'image'                => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'name'                 => $this->merchant->getBillingLabelElseName(),
+            'id'                   => $this->merchant->getId(),
         ];
 
         if ($this->merchant->getOrgId() !== null)

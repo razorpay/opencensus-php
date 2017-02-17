@@ -225,34 +225,30 @@ class Notifier extends Base\Core
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    protected function getInvoiceMailPayload(string $callee)
+    protected function getInvoicePaidMailPayload()
     {
-        $merchant = $this->invoice->merchant;
-        $merchantName = $merchant->getBillingLabelElseName();
-        $merchantBrandColor = $merchant->brand_color;
+        return $this->getInvoiceMailPayload();
+    }
 
-        $subject = $this->getInvoiceMailSubject($callee, $merchantName);
+    protected function getInvoiceMailPayload(string $callee = null)
+    {
 
-        $invoicePayload = $this->invoice->toArrayPublic();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $extraInvoicePayload = [
-            'formatted_amount' => $this->invoice->getFormattedAmount(),
             'type_label'       => ucwords($this->invoice->getTypeLabel()),
         ];
 
-        $invoicePayload += $extraInvoicePayload;
+        $viewPayload['invoice'] += $extraInvoicePayload;
 
-        $merchantPayload = [
-            'name' => $merchantName,
-            'brand_color' => get_rgb_value($merchantBrandColor),
-            'brand_text_color' => get_brand_text_color($merchantBrandColor),
-        ];
+        if ($callee)
+        {
+            $subject = $subject = $this->getInvoiceMailSubject($callee, $viewPayload['merchant']['name']);
 
-        return [
-            'invoice' => $invoicePayload,
-            'merchant' => $merchantPayload,
-            'subject' => $subject,
-        ];
+            $viewPayload['subject'] = $subject;
+        }
+
+        return $viewPayload;
     }
 
     protected function getInvoiceMailSubject(string $callee, string $merchantName)
