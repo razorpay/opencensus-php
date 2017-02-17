@@ -722,7 +722,7 @@ class Terminal extends Base
             'network_category'  => 'securities',
         ];
 
-        $this->createSharedNetbankingIciciTerminal($attributes);
+        return $this->createSharedNetbankingIciciTerminal($attributes);
     }
 
     public function createSharedNetbankingAirtelTerminal(array $attributes= [])

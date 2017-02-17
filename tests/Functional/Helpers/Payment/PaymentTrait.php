@@ -1019,7 +1019,7 @@ trait PaymentTrait
     {
         $var = 'gateway.mock_'.$this->gateway;
 
-        $this->config['gateway.mock_netbanking_hdfc'] = true;
+        $this->config[$var] = true;
     }
 
     protected function isGatewayMocked()

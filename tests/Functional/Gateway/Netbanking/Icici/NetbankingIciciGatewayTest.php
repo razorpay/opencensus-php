@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Icici;
 
+use Excel;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -28,7 +29,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPayment()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -40,7 +41,7 @@ class NetbankingIciciGatewayTest extends TestCase
             $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
-        $this->assertArrayHasKey('bank_payment_id', $gatewayPayment);
+        $this->assertEquals($gatewayPayment['bank_payment_id'], 9999999999);
         // Assert that BID is an integer
         $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
             FILTER_VALIDATE_INT) !== false);
@@ -48,9 +49,9 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testPaymentVerify()
     {
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
-        $content = $this->verifyPayment($payment['razorpay_payment_id']);
+        $content = $this->verifyPayment($payment['id']);
 
         assert($content['payment']['verified'] === 1);
     }
@@ -62,6 +63,9 @@ class NetbankingIciciGatewayTest extends TestCase
         // Refund the payment above in full
         $refund = $this->refundPayment($payment['id']);
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 50000);
         $this->assertEquals($payment['amount'], $refund['amount']);
     }
 
@@ -72,6 +76,9 @@ class NetbankingIciciGatewayTest extends TestCase
         // Refund the payment above partially
         $refund = $this->refundPayment($payment['id'], 10000);
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_refunded'], 10000);
         $this->assertEquals($refund['amount'], 10000);
     }
 
@@ -120,17 +127,28 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB('ICIC');
+        $filePath = $data['netbanking_icici']['file'];
 
         // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
         $this->assertEquals($data['netbanking_icici']['count'], 3);
-        $this->assertTrue(file_exists($data['netbanking_icici']['file']));
+        $this->assertTrue(file_exists($filePath));
+
+        $sheet = Excel::load($filePath)->all()->toArray();
+
+        $this->assertEquals(count($sheet[0]), 10);
+
+        $this->assertEquals($sheet[0]['refund_amount'], 500);
+        $this->assertEquals($sheet[1]['refund_amount'], 100);
+        $this->assertEquals($sheet[2]['refund_amount'], 400);
     }
 
     public function testTPVPayment()
     {
-        $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
+        $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
 
         $this->ba->privateAuth();
+
+        $data = $this->testData[__FUNCTION__]['request']['content'];
 
         $this->fixtures->merchant->enableTPV();
 
@@ -139,12 +157,17 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->payment['order_id'] = $order['id'];
 
-        $payment = $this->doAuthPayment($this->payment);
+        $payment = $this->doAuthAndCapturePayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
-        // Asserting that TPV terminal of ICICI gets picked and not regular
-        $this->assertEquals($payment['terminal_id'], '100NbIcicTpvTl');
+        // Asserting that TPV terminal of ICICI gets picked
+        $this->assertEquals($payment['terminal_id'], $terminal->getId());
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertNotNull($gatewayPayment['account_number']);
+        $this->assertEquals($gatewayPayment['account_number'], $data['account_number']);
 
         $this->fixtures->merchant->disableTPV();
     }

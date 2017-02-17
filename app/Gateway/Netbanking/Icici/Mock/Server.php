@@ -56,7 +56,7 @@ class Server extends Base\Mock\Server
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {
-            $response[ResponseFields::BANK_PAYMENT_ID] = mt_rand(1000000000, 9999999999);
+            $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
         }
 
         return $response;
