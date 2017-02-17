@@ -51,6 +51,19 @@ class PdfGenerator extends Base\Core
 
     public function generate()
     {
+        //
+        // Temporary:
+        // - There are issues with pdf file - layout, fonts.
+        // - Dependencies to go life as part of infra code in a day or two.
+        //
+        // Once above issues are resolved, following line will be removed.
+        //
+        // Returning null means, pdf won't be generated and mails will be sent
+        // without pdf.
+        //
+
+        return null;
+
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
         $timeStarted = microtime(true);
