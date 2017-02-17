@@ -279,7 +279,7 @@ class Orchestrator extends Base\Core
             // after extraction if necessary, deletes the zip file, keeping
             // the imp files
             //
-            $this->fetchAndStoreLinkDocuments($this->emailDetails, $input);
+            $this->fetchAndStoreLinkDocuments($input);
 
             $fileLocationType = FileProcessor::STORAGE;
         }
@@ -451,11 +451,12 @@ class Orchestrator extends Base\Core
         // 'X-Original-Sender' always contains just the email address.
 
         $emailDetails = [
-            'from'      => $input['X-Original-Sender'] ?? $input['sender'],
-            'subject'   => $input['subject'],
-            'to'        => $input['recipient'],
-            'timestamp' => $input['timestamp'],
-            'body'      => $input['stripped-text'],
+            'from'              => $input['X-Original-Sender'] ?? $input['sender'],
+            'subject'           => $input['subject'],
+            'to'                => $input['recipient'],
+            'timestamp'         => $input['timestamp'],
+            'body'              => $input['stripped-text'],
+            'body_html_text'    => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
 
         return $emailDetails;
@@ -760,7 +761,6 @@ class Orchestrator extends Base\Core
 
             $this->allFilesContents[] = $sheetArray;
         }
-
     }
 
     /**
@@ -872,17 +872,14 @@ class Orchestrator extends Base\Core
         return null;
     }
 
-    protected function fetchAndStoreLinkDocuments(
-        array $emailDetails,
-        array & $input)
+    protected function fetchAndStoreLinkDocuments(array & $input)
     {
         if (empty($input['attachment-count']) === true)
         {
             $input['attachment-count'] = 0;
         }
 
-        // retrieve the link from $input['stripped-text']
-        $link = $this->gatewayReconciliator->getSettlementFileLink($emailDetails['body']);
+        $link = $this->gatewayReconciliator->getSettlementFileLink($input['body-html']);
 
         $this->trace->info(
             TraceCode::RECON_FILE_LINK,
@@ -890,6 +887,22 @@ class Orchestrator extends Base\Core
                 'link'    => $link,
                 'gateway' => $this->gateway,
             ]);
+
+        if ($link === null)
+        {
+            $this->messenger->raiseReconAlert(
+                [
+                    'trace_code'   => TraceCode::RECON_FILE_LINK_NOT_FOUND,
+                    'message'      => 'Unable to get the link for the MIS file',
+                    'gateway'      => $this->gateway,
+                ]);
+
+            throw new Exception\ReconciliationException(
+                'Unable to get the link',
+                [
+                    'gateway' => $this->gateway
+                ]);
+        }
 
         $file = $this->fileProcessor->getAndStoreFileFromLink($link);
 
