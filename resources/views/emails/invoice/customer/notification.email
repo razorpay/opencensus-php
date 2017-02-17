@@ -1,248 +1,74 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-    <meta name="viewport" content="width=device-width"/>
-    @php
-        $themeBgColor = $merchant['brand_color'];
-        $themeFontColor = $merchant['brand_text_color'];
-        $themed = 'background-color: ' . $themeBgColor . '; color: ' . $merchant['brand_text_color'] . ';';
+<div>
+  @php
+      $status = $invoice['status'];
+      $headerLabel = '';
+      $ctaLabel = '';
+      $ctaHref = '';
 
-        $ctaLabel = '';
-        $ctaHref = '';
-        $headerLabel = '';
-        $status = $invoice['status'];
+      if (isset($payment))
+      {
+          $ctaLabel = 'DOWNLOAD PDF';
+          $ctaHref = $invoice['short_url'];
+          $headerLabel = 'PAYMENT SUCCESSFUL';
+      }
+      elseif ($status === 'issued')
+      {
+          $ctaLabel = 'PROCEED TO PAY';
+          $ctaHref = $invoice['short_url'];
+          $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+      }
+      elseif ($status === 'expired')
+      {
+          $headerLabel = 'INVOICE EXPIRED';
+      }
+  @endphp
 
-        if (isset($payment))
-        {
-            $ctaLabel = 'DOWNLOAD PDF';
-            $ctaHref = $invoice['pdf_url'];
-            $headerLabel = 'PAYMENT SUCCESSFUL';
-        }
-        elseif ($status === 'issued')
-        {
-            $ctaLabel = 'PROCEED TO PAY';
-            $ctaHref = $invoice['short_url'];
-            $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
-        }
-        elseif ($status === 'expired')
-        {
-            $headerLabel = 'INVOICE EXPIRED';
-        }
-    @endphp
-  </head>
-  <body>
-    <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
-      <tbody>
-        <tr>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-            "></td>
-            <td style="
-              width: 94%;
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-              padding: 24px 0 !important;
-              border-left: 0;
-              border-right: 0;
-            ">
-              <div class="text-center">
-                  @if ($merchant['image'])
-                    <img
-                        class="merchant__logo"
-                        src="{{ $merchant['image'] }}"
-                     />
-                  @endif
 
-                   <h2 style="color: {{ $merchant['brand_text_color'] }}">
-                      Invoice from {{$merchant['name']}}
-                  </h2>
-                  <div style="color: {{ $merchant['brand_text_color'] }}">
-                      @if ($invoice['receipt'])
-                          Invoice Receipt: {{$invoice['receipt']}}
-                      @else
-                          Invoice Id: {{$invoice['id']}}
-                      @endif
-                  </div>
+  @extends('emails.invoice.notification')
 
-                   <div style="margin-top: 12px; color: {{ $merchant['brand_text_color'] }}">
-                      <div style="color: {{ $merchant['brand_text_color'] }}">
-                          {{ $headerLabel }}
-                      </div>
-
-                      @unless ($status === 'expired')
-                        <div style="color: {{ $merchant['brand_text_color'] }}">
-                            <!-- The invoice for the same is attached in this mail. -->
-                        </div>
-                      @endunless
-                   </div>
-              </div>
-            </td>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-            "></td>
-        </tr>
-
-        @if ($invoice['description'])
-        <tr>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-            "></td>
-            <td class="content" style="border-top: 1px solid rgba(0,0,0,0.05);">
-                <div>
-                    <label>INVOICE SUMMARY</label>
-                    <div>{{$invoice['description']}}</div>
-                </div>
-            </td>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-            "></td>
-        </tr>
+  @section('header')
+    <div class="text-center">
+        @if ($merchant['image'])
+          <img
+              class="merchant__logo"
+              src="{{ $merchant['image'] }}"
+           />
         @endif
 
-        <tr>
-            @if ($invoice['description'])
-                <td></td>
+         <h2 style="color: {{ $merchant['brand_text_color'] }}">
+            Invoice from {{$merchant['name']}}
+        </h2>
+        <div style="color: {{ $merchant['brand_text_color'] }}">
+            @if ($invoice['receipt'])
+                Invoice Receipt: {{$invoice['receipt']}}
             @else
-              <td style="
-                background-color: {{ $merchant['brand_color'] }};
-                color: {{ $merchant['brand_text_color'] }};
-              "></td>
+                Invoice Id: {{$invoice['id']}}
             @endif
-            <td class="content">
-                <div>
-                    <label>BILLING TO</label>
-                    <div>
-                        @if ($invoice['customer_details']['customer_name'])
-                            {{$invoice['customer_details']['customer_name']}}
-                            @if ($invoice['customer_details']['customer_contact'])
-                                , {{$invoice['customer_details']['customer_contact']}}
-                            @endif
-                        @endif
+        </div>
 
-                        <div>
-                            {{$invoice['customer_details']['customer_email']}}
-                        </div>
-                    </div>
-                </div>
-            </td>
-            @if ($invoice['description'])
-                <td></td>
-            @else
-              <td style="
-                background-color: {{ $merchant['brand_color'] }};
-                color: {{ $merchant['brand_text_color'] }};
-              "></td>
-            @endif
-        </tr>
+         <div style="margin-top: 12px; color: {{ $merchant['brand_text_color'] }}">
+            <div style="color: {{ $merchant['brand_text_color'] }}">
+                {{ $headerLabel }}
+            </div>
 
-        <tr>
-            <td></td>
-            <td class="content" style="padding-bottom: 24px;">
-                    @if (isset($payment))
-                        <div>
-                            <label>PAYMENT ID</label>
-                            <div>{{ $payment['public_id'] }}</div>
-                        </div>
-                        <div style="margin-top: 24px;">
-                            <label>PAYMENT METHOD</label>
-                            <div>{{ $payment['method'][0] }}, {{ $payment['method'][1] }}</div>
-                        </div>
-                    @elseif ($invoice['status'] === 'issued')
-                        <div>
-                            <label>INVOICE EXPIRY</label>
-                            <div>{{ $invoice['expire_by_formatted'] }}</div>
-                        </div>
-                    @elseif ($invoice['status'] === 'expired')
-                        <div>
-                            <label>EXPIRED ON</label>
-                            <div>{{ $invoice['expired_at_formatted'] }}</div>
-                        </div>
-                    @endif
-                </div>
-            </td>
-            <td></td>
-        </tr>
+            @unless ($status === 'expired')
+              <div style="color: {{ $merchant['brand_text_color'] }}">
+                  <!-- The invoice for the same is attached in this mail. -->
+              </div>
+            @endunless
+         </div>
+    </div>
+  @endsection
 
-        <tr>
-            <td></td>
-            <td class="footer content" style="width: 94%;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <label>AMOUNT</label>
-                                <div style="font-weight: bold; font-size: 18px;">
-                                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
-                                </div>
-                            </td>
-                            <td class="text-right">
-                              @if ($ctaLabel)
-                                <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="
-                                  color: {{ $themeFontColor }};
-                                  background-color: {{ $themeBgColor }};
-                                  border: 1px solid {{ $themeBgColor }};
-                                ">
-                                  {{ $ctaLabel }}
-                                </a>
-                              @endif
-                            </td>
-                        </tr>
-                     </tbody>
-                </table>
-            </td>
-            <td></td>
-        </tr>
-
-        <tr>
-            <td></td>
-            <td class="text-center" style="
-              padding-bottom: 24px;
-              background-color: #fafafa;
-              border: 0;
-            ">
-                <div class="footerFerchant">
-                    {{$merchant['name']}}
-                </div>
-                <div class="footerFerchant__address">
-                    {{ $merchant['business_registered_address'] }}
-                </div>
-            </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td></td>
-            <td class="content" style="
-                border-bottom: 1px solid rgba(0,0,0,0.05);
-                border-top: 1px solid rgba(0,0,0,0.05);
-            ">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td style="vertical-align: top">
-                                <a href="https://razorpay.com/" target="_blank">
-                                    <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
-                                </a>
-                            </td>
-                            <td class="footerRZP">
-                                <div>
-                                    Sign up at <a href="https://razorpay.com/" target="_blank">razorpay.com/invoices</a> to create invoices and accept payments for your business.
-                                </div>
-                            </td>
-                        </tr>
-                     </tbody>
-                </table>
-            </td>
-            <td></td>
-        </tr>
-        <tr>
-            <td colspan="3"></td>
-        </tr>
-      </tbody>
-    </table>
-  </body>
-</html>
+  @section('footerCTA')
+    @if ($ctaLabel)
+        <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="
+          color: {{ $merchant['brand_text_color'] }};
+          background-color: {{ $merchant['brand_color'] }};
+          border: 1px solid {{ $merchant['brand_color'] }};
+        ">
+          {{ $ctaLabel }}
+        </a>
+    @endif
+  @endsection
+</div>

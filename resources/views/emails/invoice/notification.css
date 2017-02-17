@@ -1,12 +1,13 @@
 * {
-  font-family: Verdana, Arial, sans-serif;
+  font-family: Arial, sans-serif;
   line-height: 20px;
+  color: rgba(0,0,0,0.87);
 }
 
 h2 {
-  margin:0;
-  font-size:20px;
-  line-height:24px;
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
 }
 
 label {
@@ -27,7 +28,6 @@ label {
   max-width: 600px;
   table-layout: fixed;
   background-color: #fafafa;
-  color: rgba(0,0,0,0.87);
 }
 
 .table > tbody > tr > td {

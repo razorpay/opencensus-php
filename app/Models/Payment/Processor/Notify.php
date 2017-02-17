@@ -122,7 +122,6 @@ class Notify
             'merchant' => [
                 'view' => [
                     'html' => 'emails.invoice.merchant.captured',
-                    'text' => 'emails.invoice.merchant.captured_text',
                 ]
             ]
         ],
