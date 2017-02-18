@@ -40,6 +40,14 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function findByPaymentIdAndStatus($paymentId, $status)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where('status', '=', $status)
+                    ->get();
+    }
+
     public function findByTraceIdAndAction($paymentId, $action)
     {
         return $this->newQuery()

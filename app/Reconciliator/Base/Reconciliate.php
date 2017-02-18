@@ -38,7 +38,7 @@ class Reconciliate
     const GATEWAY_FEE         = 'gateway_fee';
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const ISSUER              = 'issuer';
-    const REFERENCE_NUMBER    = 'bank_payment_id';
+    const REFERENCE_NUMBER    = 'reference_number';
 
     /*************************
      * Card types

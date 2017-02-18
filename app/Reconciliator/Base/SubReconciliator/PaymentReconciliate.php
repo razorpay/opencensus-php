@@ -34,6 +34,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $iinRepo;
     protected $cardRepo;
     protected $transactionRepo;
+    protected $netbankingRepo;
 
     protected $payment;
     protected $paymentIin;
@@ -147,8 +148,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             $this->app['trace']->traceException($ex);
 
             throw $ex;
-
-            //return;
         }
     }
 
@@ -333,7 +332,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
-        $this->persistBankPaymentId($rowDetails);
+        $this->persistReferenceNumber($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
@@ -355,7 +354,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return null;
         }
 
-        $bankPaymentId = $this->getBankPaymentId($row) ?? null;
+        $referenceNumber = $this->getReferenceNumber($row);
 
         $this->setPaymentAndTransaction($row, $paymentId);
 
@@ -372,7 +371,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
             BaseReconciliate::GATEWAY_FEE         => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT  => $gatewaySettledAt,
-            BaseReconciliate::REFERENCE_NUMBER    => $bankPaymentId,
+            BaseReconciliate::REFERENCE_NUMBER    => $referenceNumber,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -406,7 +405,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getBankPaymentId($row)
+    protected function getReferenceNumber($row)
     {
         return null;
     }
@@ -528,22 +527,32 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistBankPaymentId($rowDetails)
+    protected function persistReferenceNumber($rowDetails)
     {
         if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
         {
             return;
         }
 
-        $this->gatewayPayment = $this->netbankingRepo
-                                     ->findByPaymentId($this->payment->getId())
-                                     ->first();
+        $this->gatewayPayment = $this->netbankingRepo->findByPaymentIdAndStatus(
+                                                     $this->payment->getId(),
+                                                     $this->getAuthorizedStatus())
+                                                     ->first();
 
-        $bankPaymentId = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
+        $paymentReference = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
-        $this->gatewayPayment->setBankPaymentId($bankPaymentId);
+        $this->gatewayPayment->setBankPaymentId($paymentReference);
 
         $this->gatewayPayment->saveOrFail();
+    }
+
+    /**
+     * Each gateway has a different measure of defining a successfully authorized
+     * payment. This method is overriden in the child class.
+     */
+    protected function getAuthorizedStatus()
+    {
+        return Payment\Status::AUTHORIZED;
     }
 
     protected function persistIssuer($reconIssuer)

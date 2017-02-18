@@ -15,17 +15,6 @@ class Reconciliate extends Base\Reconciliate
         // 'combined'      => self::COMBINED
     ];
 
-    const PAYMENT_COLUMN_HEADERS = [
-        'BID',
-        'User Id',
-        'User Name',
-        'ITC No',
-        'PRN No',
-        'Amount',
-        'Date',
-        'Status'
-    ];
-
     /**
      * Determines the type of reconciliation
      * based on the name of the file.
@@ -51,22 +40,10 @@ class Reconciliate extends Base\Reconciliate
         return $typeName;
     }
 
-    public function getColumnHeadersForType($type)
-    {
-        $columnHeaders = [];
-
-        if ($type === self::PAYMENT)
-        {
-            $columnHeaders = self::PAYMENT_COLUMN_HEADERS;
-        }
-
-        return $columnHeaders;
-    }
-
     public function getNumLinesToSkip()
     {
         return [
-            FileProcessor::LINES_FROM_TOP    => 1,
+            FileProcessor::LINES_FROM_TOP    => 0,
             FileProcessor::LINES_FROM_BOTTOM => 1
         ];
     }
