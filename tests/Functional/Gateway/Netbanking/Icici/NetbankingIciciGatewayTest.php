@@ -58,10 +58,7 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefund()
     {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        // Refund the payment above in full
-        $refund = $this->refundPayment($payment['id']);
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -96,10 +93,8 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
         // Refund the payment above in full
-        $refund = $this->refundPayment($payment['id']);
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
 
         // Create a new payment #2
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -121,9 +116,7 @@ class NetbankingIciciGatewayTest extends TestCase
         }
 
         // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
-        $payment = $this->doAuthAndCapturePayment($this->payment);
-
-        $this->refundPayment($payment['id']);
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
 
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB('ICIC');
