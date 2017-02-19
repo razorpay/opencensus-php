@@ -70,6 +70,77 @@ class Gateway extends Base\Gateway
     public function verify (array $input)
     {
         parent::verify($input);
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
+    }
+
+    protected function sendPaymentVerifyRequest(Verify $verify)
+    {
+        $content = $this->getVerifyRequestData($verify->input);
+
+        $request = $this->getStandardRequestArray($content);
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $request);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'response' => $response->body
+            ]);
+
+        // TODO: handle response
+
+        // TODO: handle response status and put it into verifyContent
+    }
+
+    protected function verifyPayment(Verify $verify)
+    {
+        $content = $verify->verifyResponseContent;
+
+        $status = $this->getVerifyMatchStatus($content);
+
+        $verify->status = $status;
+
+        $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
+
+        // TODO: add this method below
+        $verify->payment = $this->saveVerifyContent($verify);
+    }
+
+    protected function getVerifyMatchStatus(array $content)
+    {
+        $status = VerifyResult::STATUS_MISMATCH;
+
+        $this->checkApiSuccess($verify);
+
+        $this->checkGatewaySuccess($verify, $content);
+
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        {
+            $status = VerifyResult::STATUS_MATCH;
+        }
+
+        return $status;
+    }
+
+    protected function checkApiSuccess(Verify $verify)
+    {
+        $verify->apiSuccess = true;
+
+        if (($verify->input['payment']['status'] === 'created') or
+            ($verify->input['payment']['status'] === 'failed'))
+        {
+            $verify->apiSuccess = false;
+        }
+    }
+
+    protected function checkGatewaySuccess(Verify $verify, array $content)
+    {
+        // TODO: check for the content if the response contains a success
     }
 
     protected function getVerifyRequestData(array $input)
@@ -121,7 +192,7 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content)
     {
-        // Still not sure what their response is
+        // TODO: Get the response from federal
         $attributes = [
             //
         ];
