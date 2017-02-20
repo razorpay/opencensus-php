@@ -20,6 +20,14 @@ class Merchant extends Base
         // Default merchant to be used for tests
         $this->fixtures->create('merchant', ['id' => '10000000000000', 'email' => 'test@razorpay.com']);
 
+        // Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'                 => '10000000000000',
+                'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+            ]);
+
         // Merchant on whom all shared terminals are created
         $this->fixtures->create('merchant', ['id' => '1MercShareTerm']);
 
