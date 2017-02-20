@@ -428,9 +428,7 @@ trait Enroll
         switch ($enrollResult)
         {
             case Payment\Result::FSS0001_ENROLLED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $this->enrollResponse,
-                    Hdfc\ErrorCode::FSS0001);
+                $errorCode = Hdfc\ErrorCode::FSS0001;
                 break;
 
             case Payment\Result::UNKNOWN_ERROR_ENROLLED:
@@ -438,26 +436,22 @@ trait Enroll
                 // If enroll failed with an invalid code, set error
                 // for that and mark the operation as failure.
                 //
-
-                $this->enrollResponse['error'] =
-                    Hdfc\ErrorHandler::getInvalidResultCodeError();
+                $errorCode = Hdfc\ErrorCode::getInvalidResultCodeErrorCode();
                 break;
 
             case Payment\Result::AUTH_ERROR:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $this->enrollResponse,
-                    Hdfc\ErrorCode::RP00010);
+                $errorCode = Hdfc\ErrorCode::RP00010;
                 break;
 
             case Payment\Result::NOT_SUPPORTED:
-                Hdfc\ErrorHandler::setErrorInResponse(
-                    $this->enrollResponse,
-                    Hdfc\ErrorCode::RP00012);
+                $errorCode = Hdfc\ErrorCode::RP00012;
                 break;
 
             default:
                 throw new Exception\LogicException('Should not reach here');
         }
+
+        $this->enrollResponse['error'] = Hdfc\ErrorHandler::setErrorInResponse($errorCode);
 
         $this->enrollResponse['error']['enroll_result'] = $this->enrollResponse['data']['enroll_result'];
 

@@ -522,7 +522,7 @@ class Gateway extends Base\Gateway
 
             $curlErrorMessage = strtolower($e->getData()['message']);
 
-            Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
+            $response['error'] = Hdfc\ErrorHandler::setTimeoutError($curlErrorMessage);
 
             $this->error = true;
 
@@ -568,11 +568,11 @@ class Gateway extends Base\Gateway
             // This is an error, set respective error code/desc.
             if ($this->checkForServiceUnavailability($response) === true)
             {
-                Hdfc\ErrorHandler::setTimeoutError($response);
+                $response['error'] = Hdfc\ErrorHandler::setTimeoutError();
             }
             else
             {
-                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $statusCode);
+                $response['error'] = Hdfc\ErrorHandler::setGatewayWrongStatusCode($statusCode);
             }
 
             return true;

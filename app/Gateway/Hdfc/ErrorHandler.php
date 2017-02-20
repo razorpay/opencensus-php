@@ -58,6 +58,11 @@ class ErrorHandler
         return self::getErrorDetails(Hdfc\ErrorCode::RP00002);
     }
 
+    public static function getInvalidResultCodeErrorCode()
+    {
+        return Hdfc\ErrorCode::RP00002;
+    }
+
     public static function getErrorDetails($code)
     {
         self::checkErrorCode($code);
@@ -67,14 +72,14 @@ class ErrorHandler
         return array('code' => $code, 'text' => $text);
     }
 
-    public static function setErrorInResponse(array & $response, $code)
+    public static function setErrorInResponse($code)
     {
         self::checkErrorCode($code);
 
-        $response['error'] = self::getErrorDetails($code);
+        return self::getErrorDetails($code);
     }
 
-    public static function setTimeoutError(array & $response, $curlMessage = null)
+    public static function setTimeoutError($curlMessage = null)
     {
         $code = Hdfc\ErrorCode::RP00003;
 
@@ -84,24 +89,28 @@ class ErrorHandler
             $code = Hdfc\ErrorCode::RP00013;
         }
 
-        $response['error'] = self::getErrorDetails($code);
+        return self::getErrorDetails($code);
     }
 
-    public static function setGatewayWrongStatusCode(array & $response, $status_code)
+    public static function setGatewayWrongStatusCode($status_code)
     {
         $code = Hdfc\ErrorCode::RP00008;
 
-        $response['error'] = self::getErrorDetails($code);
+        $error = self::getErrorDetails($code);
 
-        $response['error']['text'] .= ' status_code: ' . $status_code;
+        $error['text'] .= ' status_code: ' . $status_code;
+
+        return $error;
     }
 
-    public static function setGatewayWrongContentType(array & $response, $contentType)
+    public static function setGatewayWrongContentType($contentType)
     {
         $code = Hdfc\ErrorCode::RP00009;
 
-        $response['error'] = self::getErrorDetails($code);
+        $error = self::getErrorDetails($code);
 
-        $response['error']['text'] .= ' content-type: ' . $contentType;
+        $error['text'] .= ' content-type: ' . $contentType;
+
+        return $error;
     }
 }
