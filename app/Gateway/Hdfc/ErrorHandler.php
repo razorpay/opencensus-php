@@ -58,11 +58,6 @@ class ErrorHandler
         return self::getErrorDetails(Hdfc\ErrorCode::RP00002);
     }
 
-    public static function getInvalidResultCodeErrorCode()
-    {
-        return Hdfc\ErrorCode::RP00002;
-    }
-
     public static function getErrorDetails($code)
     {
         self::checkErrorCode($code);

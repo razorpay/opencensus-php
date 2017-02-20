@@ -383,4 +383,9 @@ class ErrorCode
 
         return self::$invalidResultErrorCode;
     }
+
+    public static function getInvalidResultCodeErrorCode()
+    {
+        return self::RP00002;
+    }
 }

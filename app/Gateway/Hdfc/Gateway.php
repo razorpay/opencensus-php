@@ -47,12 +47,6 @@ class Gateway extends Base\Gateway
     protected $gateway = 'hdfc';
 
     /**
-     * App payment id
-     * @var string
-     */
-    protected $id;
-
-    /**
      * Curent Hdfc Payment Model
      * @var Hdfc\Entity
      */
@@ -65,13 +59,6 @@ class Gateway extends Base\Gateway
      * @var boolean
      */
     protected $error = false;
-
-    /**
-     * The gateway terminal on which to make
-     * the request
-     * @var array
-     */
-    protected $terminal;
 
     const TIMEOUT = 60;
 
@@ -526,7 +513,7 @@ class Gateway extends Base\Gateway
 
             $this->error = true;
 
-            return;
+            return $this->error;
         }
 
         $response['xml'] = $response['response']->body;
@@ -535,12 +522,14 @@ class Gateway extends Base\Gateway
 
         if ($this->error === true)
         {
-            return;
+            return $this->error;
         }
 
         Utility::parseResponseXml($response);
 
         $this->error = $this->checkResponseErrorCode($response);
+
+        return $this->error;
     }
 
     protected function checkForServiceUnavailability($response)

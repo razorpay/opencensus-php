@@ -64,14 +64,14 @@ trait Enroll
         // This function also checks for and sets
         // generic error
         //
-        $this->runRequestResponseFlow(
-            $this->enrollRequest,
-            $this->enrollResponse);
+        $error = $this->runRequestResponseFlow(
+                    $this->enrollRequest,
+                    $this->enrollResponse);
 
         //
         // If there is an error then just throw an exception
         //
-        if ($this->error)
+        if ($error)
         {
             $this->persistAfterEnrollError();
 
@@ -388,11 +388,6 @@ trait Enroll
      */
     protected function isEnrollSuccess()
     {
-        if ($this->error)
-        {
-            return false;
-        }
-
         $result = & $this->enrollResponse['data']['result'];
 
         //
@@ -421,8 +416,6 @@ trait Enroll
      */
     protected function setErrorOnEnrollFailure()
     {
-        assert ($this->error === false);
-
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
 
         switch ($enrollResult)
