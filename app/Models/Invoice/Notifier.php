@@ -298,8 +298,7 @@ class Notifier extends Base\Core
 
     protected function getInvoiceMailPayload(string $callee = null)
     {
-
-        $id    = $this->invoice->getPublicId();
+        $id = $this->invoice->getPublicId();
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
@@ -314,9 +313,9 @@ class Notifier extends Base\Core
         $label = $this->getLabel($this->invoice->getType());
         $viewPayload['label'] = $label;
 
-        if ($callee)
+        if ($callee !== null)
         {
-            $subject = $subject = $this->getInvoiceMailSubject($callee, $viewPayload['merchant']['name']);
+            $subject = $this->getInvoiceMailSubject($callee, $viewPayload['merchant']['name']);
 
             $viewPayload['subject'] = $subject;
         }
