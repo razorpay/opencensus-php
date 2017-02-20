@@ -115,11 +115,11 @@ class EventTrackerClient extends Base\Core
             $options = ['json' => $eventData];
 
             // remove comment after testing
-            /*if (($this->mock) or
+            if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
-            }*/
+            }
 
             $response = $client->request('POST', $url, $options);
 
@@ -182,7 +182,7 @@ class EventTrackerClient extends Base\Core
 
         $context = $this->getEventContext();
 
-        if ((isset($context) === true) and (empty($context) === false)
+        if ((isset($context) === true) and (empty($context) === false))
         {
             $defaults['context'] = $context;
         }
@@ -471,10 +471,10 @@ class EventTrackerClient extends Base\Core
     public function trackPayment(Payment\Entity $payment, $eventName, array $customProperties = [])
     {
         // remove comment after testing
-        /*if ($this->mock === true)
+        if ($this->mock === true)
         {
             return;
-        }*/
+        }
 
         try
         {
