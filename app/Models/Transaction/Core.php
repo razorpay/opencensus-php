@@ -29,8 +29,6 @@ class Core extends Base\Core
 
     protected $nodalBalance = null;
 
-    protected $customerBalance = null;
-
     protected $merchant;
 
     public function __construct()
@@ -156,7 +154,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
             [
-                'type'          => 'account_credit',
+                'type'          => 'linked_account_credit',
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId()
             ]);
@@ -624,7 +622,7 @@ class Core extends Base\Core
      * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/merchant)
      * @return Transaction\Entity
      */
-    public function createFromTransfer($transfer, $to)
+    public function createFromTransfer(Transfer\Entity $transfer, Base\Entity $to)
     {
         $txn = new Transaction\Entity;
 
@@ -635,7 +633,7 @@ class Core extends Base\Core
         $values = [
             Transaction\Entity::DEBIT         => $amount,
             Transaction\Entity::CREDIT        => 0,
-            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => time(),
@@ -653,7 +651,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
             [
-                'type'           => 'marketplace_debit',
+                'type'           => 'merchant_debit',
                 'transaction_id' => $txn->getId()
             ]);
 
@@ -661,7 +659,7 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($transfer);
 
-        $this->creditBalancesForTransfer($to, $txn);
+        $this->updateBalances($txn, false);
 
         return $txn;
     }
@@ -713,16 +711,6 @@ class Core extends Base\Core
         return (new Pricing\Fee)->calculateMerchantFees($payment);
     }
 
-    protected function creditBalancesForTransfer($to, $txn)
-    {
-        if ($to instanceof Customer\Entity)
-        {
-            $this->creditCustomerBalance($to, $txn);
-        }
-
-        $this->updateBalances($txn, false);
-    }
-
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
     {
         $txn = $this->updateMerchantBalance($txn);
@@ -766,13 +754,6 @@ class Core extends Base\Core
 
     //     return $txn;
     // }
-
-    public function creditCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
-    {
-        $balance = $this->getCustomerBalanceLockForUpdate($customer, $txn->merchant);
-
-        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
-    }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
@@ -882,27 +863,6 @@ class Core extends Base\Core
         $this->merchantBalance = $merchantBalance;
 
         return $merchantBalance;
-    }
-
-    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer, Merchant\Entity $merchant)
-    {
-        if ($this->customerBalance !== null)
-        {
-            return $this->customerBalance;
-        }
-
-        $customerId = $customer->getId();
-
-        // Try to create the customer_balance entity first - if not already exists
-        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer, $merchant);
-
-        $balance = $this->repo
-                        ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId);
-
-        $this->customerBalance = $balance;
-
-        return $balance;
     }
 
     protected function getSettledAtTimestamp($payment)

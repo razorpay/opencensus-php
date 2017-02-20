@@ -312,22 +312,26 @@ class Processor
 
         $validator = $payment->getValidator();
 
-        $validator->validateInput('transfer', $input);
-
         $validator->validateIsCaptured();
 
-        return $this->repo->transaction(function () use ($payment, $input)
+        $validator->validateInput('transfer', $input);
+
+        return $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $input)
         {
-            $transfers = (new TransferCore)->createForPayment(
-                            $payment,
-                            $input['transfers'],
-                            $this->merchant);
+            return $this->repo->transaction(function () use ($payment, $input)
+            {
+                $transfers = (new TransferCore)->createForPayment(
+                                $payment,
+                                $input['transfers'],
+                                $this->merchant);
 
-            $this->trace->info(
-                TraceCode::PAYMENT_TRANSFER_SUCCESS,
-                ['transfer_ids' => $transfers->getIds()]);
+                $this->trace->info(
+                    TraceCode::PAYMENT_TRANSFER_SUCCESS,
+                    ['transfer_ids' => $transfers->getIds()]);
 
-            return $transfers;
+                return $transfers;
+            });
+
         });
     }
 

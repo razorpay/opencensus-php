@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
@@ -68,6 +69,9 @@ trait Reversal
     /**
      * Check if the refund should be processed with Marketplace transfer reversals,
      * This also modifies the input array to add reversals, if required
+     *
+     * Documented here:
+     * https://docs.google.com/document/d/1Tz_apm6NU0SJPl6z4ctZ9PRfvmf-nliT1Xz1rhJfoPA/edit#heading=h.tu2zrnpp106m
      *
      * @param  Payment\Entity   $payment
      * @param  array            $input
@@ -148,7 +152,10 @@ trait Reversal
         {
             $transferCount = $transfers->count();
 
-            assert ($transferCount !== 0);
+            if ($transferCount === 0)
+            {
+                throw new Exception\LogicException('Zero transfers found for reversal');
+            }
 
             if ($transferCount > 1)
             {
@@ -179,7 +186,7 @@ trait Reversal
         }
         else
         {
-            assert (false);
+            throw new Exception\LogicException('Payment transfer reversal - Invalid refund type : ' . $refundType);
         }
 
         return $reverseAll;

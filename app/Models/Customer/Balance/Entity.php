@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Customer\Balance;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
@@ -90,7 +91,10 @@ class Entity extends Base\PublicEntity
 
     public function setBalance(int $balance)
     {
-        assert($balance >= 0);
+        if ($balance < 0)
+        {
+            throw new Exception\LogicException('Customer Balance: Tried to set negative balance - ' . $balance);
+        }
 
         $this->setAttribute(self::BALANCE, $balance);
     }
@@ -163,7 +167,10 @@ class Entity extends Base\PublicEntity
     {
         $balance = $this->getBalance() - $amount;
 
-        assert($balance >= 0);
+        if ($balance < 0)
+        {
+            throw new Exception\LogicException('Customer Balance: Balance went negative on debit - ' . $balance);
+        }
 
         $this->setAttribute(self::BALANCE, $balance);
     }

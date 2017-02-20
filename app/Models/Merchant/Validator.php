@@ -146,11 +146,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantForMarketplaceTransfer($account, Entity $merchant, $mode)
+    public function validateMerchantForMarketplaceTransfer($account, $mode)
     {
         if (($account === null) or
             ($account->isAccount() === false) or
-            ($account->getParentId() !== $merchant->getId()))
+            ($account->getParentId() !== $this->entity->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID,

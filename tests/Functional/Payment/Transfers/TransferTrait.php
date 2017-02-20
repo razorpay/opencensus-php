@@ -52,7 +52,7 @@ trait TransferTrait
             $id = $this->payment['id'];
         }
 
-        $url = '/payments/' . $id . '/transfer';
+        $url = '/payments/' . $id . '/transfers';
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
     }

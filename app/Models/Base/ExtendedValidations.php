@@ -20,8 +20,7 @@ class ExtendedValidations extends \Razorpay\Spine\Validation\LaravelValidatorEx
         //
         if ($match !== 1)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                $attribute . ' is not valid.');
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_ID);
         }
 
         return true;

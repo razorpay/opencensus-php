@@ -564,7 +564,7 @@ trait PaymentTrait
     {
         $request = [
             'method'        => 'POST',
-            'url'           => '/payments/' . $id . '/transfer',
+            'url'           => '/payments/' . $id . '/transfers',
             'content'       => [
                 'transfers' => $transfers,
             ],

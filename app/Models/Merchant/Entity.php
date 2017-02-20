@@ -422,7 +422,7 @@ class Entity extends Base\PublicEntity
 
     public function transfers()
     {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
     }
 
     public function merchantDetail()

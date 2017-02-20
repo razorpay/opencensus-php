@@ -211,14 +211,14 @@ class BasicAuth
 
         $this->creds['public_key'] = $key;
 
-        $account = $this->checkAndSetAccountKey($linkedAccId);
+        $keyError = $this->checkAndSetKeyId($key);
 
-        if ($account !== null)
+        if ($keyError !== null)
         {
-            return $account;
+            return $keyError;
         }
 
-        return $this->checkAndSetKeyId($key);
+        return $this->checkAndSetAccountKey($linkedAccId);
     }
 
     public function checkAndSetKeyId($key)
@@ -244,7 +244,8 @@ class BasicAuth
     /**
      * Validate and store if an account_id was sent in the request
      *
-     * @param  mixed $accountKey
+     * @param  mixed                $accountKey
+     * @return null|ApiResponse
      */
     protected function checkAndSetAccountKey($accountKey)
     {
@@ -252,7 +253,7 @@ class BasicAuth
         {
             $this->creds['account_key'] = '';
 
-            return;
+            return null;
         }
 
         if ($this->verifyAccountKey($accountKey) === false)
@@ -261,6 +262,8 @@ class BasicAuth
         }
 
         $this->creds['account_key'] = $accountKey;
+
+        return null;
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -570,7 +573,7 @@ class BasicAuth
         return (substr($key, 0, 4) === 'rzp_');
     }
 
-    protected function verifyAccountKey($key)
+    protected function verifyAccountKey(string $key)
     {
         $accountId = $key;
 
@@ -1133,7 +1136,7 @@ class BasicAuth
             ]);
 
         return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT);
+            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
     protected function isKeyBlank()

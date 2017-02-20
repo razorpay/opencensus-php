@@ -42,12 +42,16 @@ class Core extends Base\Core
     /**
      * Debit an amount from customer_balance account
      *
-     * @param  Entity $balance
+     * @param  string $customerId
      * @param  int    $amount
      * @return Entity
      */
-    public function debit(Entity $balance, int $amount) : Entity
+    public function debit(string $customerId, int $amount) : Entity
     {
+        $balance = $this->repo
+                        ->customer_balance
+                        ->lockForUpdate($customerId);
+
         $balance->getValidator()->validateBalanceForDebit($amount);
 
         $balance->deductBalance($amount);
@@ -103,8 +107,10 @@ class Core extends Base\Core
             return $balance;
         }
 
+        //
         // No existing wallet found for the customer ID linked
         // to the current merchant, create one instead
+        //
         return $this->create($customer, $merchant);
     }
 
@@ -119,7 +125,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId);
+                        ->lockForUpdate($customerId);
 
         return $this->credit($balance, $amount, true);
     }
@@ -134,6 +140,12 @@ class Core extends Base\Core
      */
     protected function validateIndianContact(string $number)
     {
+        if (empty($number) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
         $number = new PhoneBook($number, true);
 
         $country = $number->getRegionCodeForNumber();
@@ -155,8 +167,10 @@ class Core extends Base\Core
     {
         $lastTxnTime = $balance->getLastLoadedAt();
 
+        //
         // No previous transaction on the wallet
         // (shouldn't happen - entity is created on first credit)
+        //
         if ($lastTxnTime === null)
         {
             return $this->resetAllUsages($balance, $amount);

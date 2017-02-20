@@ -186,7 +186,7 @@ class Entity extends Base\PublicEntity
         self::LATE_AUTHORIZED,
         self::CONVERT_CURRENCY,
         self::CREATED_AT,
-        self::UPDATED_AT
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -218,7 +218,7 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
         self::ERROR_CODE,
         self::ERROR_DESCRIPTION,
-        self::CREATED_AT
+        self::CREATED_AT,
     ];
 
     protected $publicSetters = [
@@ -228,7 +228,7 @@ class Entity extends Base\PublicEntity
         self::INVOICE_ID,
         self::CARD_ID,
         self::CUSTOMER_ID,
-        self::TOKEN_ID
+        self::TOKEN_ID,
     ];
 
     protected $guarded = array(self::ID);
@@ -280,7 +280,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::FEE,
-        self::SERVICE_TAX
+        self::SERVICE_TAX,
     ];
 
     protected $casts = [

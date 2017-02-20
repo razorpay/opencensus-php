@@ -346,18 +346,15 @@ trait Refund
 
     /**
      * Get the type of refund being processed - FULL / PARTIAL,
-     * based on the input amount and amount already refunded
+     * based on the refund amount and amount already refunded
      *
-     * @param  Payment\Entity $payment
-     * @param  array          $input
      * @return string
      */
-    protected function getPaymentRefundType(Payment\Entity $payment, array $input)
+    protected function getPaymentRefundType()
     {
         $type = Payment\Refund\Status::PARTIAL;
 
-        if ((isset($input['amount']) === false) or
-            ((int) $input['amount'] === $payment->getAmountUnrefunded()))
+        if ($this->refund->getAmount() === $this->payment->getAmountUnrefunded())
         {
             $type = Payment\Refund\Status::FULL;
         }

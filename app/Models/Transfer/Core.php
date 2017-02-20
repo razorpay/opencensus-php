@@ -86,21 +86,12 @@ class Core extends Base\Core
      * Edit the attributes of a transfer entity
      * Currently allowed for on_hold and on_hold_until fields
      *
-     * @param  string           $id
+     * @param  Transfer\Entity  $transfer
      * @param  array            $input
      * @return Transfer\Entity
      */
-    public function edit(string $id, array $input, Merchant\Entity $merchant) : Entity
+    public function edit(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
     {
-        $this->trace->info(
-            TraceCode::TRANSFER_EDIT_REQUEST,
-            [
-                'transfer_id' => $id,
-                'input'       => $input,
-            ]);
-
-        $transfer = $this->repo->transfer->findByPublicIdAndMerchant($id, $merchant);
-
         $transfer->edit($input);
 
         // if ($transfer->getOnHold() === false)
@@ -115,8 +106,8 @@ class Core extends Base\Core
             $this->updatePaymentHold($transfer, $input);
 
             $this->trace->info(
-            TraceCode::TRANSFER_EDIT_SUCCESS,
-            ['transfer_id' => $transfer->getId()]);
+                TraceCode::TRANSFER_EDIT_SUCCESS,
+                ['transfer_id' => $transfer->getId()]);
 
             return $transfer;
         });
@@ -139,31 +130,24 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant) : Entity
     {
-        $transferData = [
-            Entity::TO_ID           => $to->getId(),
-            Entity::TO_TYPE         => $to->getEntityName(),
-            Entity::SOURCE_ID       => $source->getId(),
-            Entity::SOURCE_TYPE     => $source->getEntityName(),
-        ];
-
-        $transferData = $transferData + $input;
-
         $transfer = new Entity;
 
-        $transfer->generate($transferData);
+        $transfer->generate($input);
 
-        $transfer->fill($transferData);
+        $transfer->fill($input);
 
         $transfer->generateId();
 
         $transfer->merchant()->associate($merchant);
 
+        $transfer->source()->associate($source);
+
+        $transfer->to()->associate($to);
+
         // Create a transaction for the transfer; debits the source merchant
         $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
 
         $this->repo->saveOrFail($txn);
-
-        $transfer->transaction()->associate($txn);
 
         $this->repo->saveOrFail($transfer);
 
@@ -219,12 +203,9 @@ class Core extends Base\Core
                 'amount'        => $amount,
             ]);
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $amount)
-        {
-            $payment->transferAmount($amount);
+        $payment->transferAmount($amount);
 
-            $this->repo->saveOrFail($payment);
-        });
+        $this->repo->saveOrFail($payment);
     }
 
     /**
@@ -240,8 +221,6 @@ class Core extends Base\Core
         $validator = new Validator;
 
         $validator->validateInput('transfer', $input);
-
-        $validator->validateHoldParameters($input);
 
         if (isset($input[ToType::CUSTOMER]) === true)
         {
@@ -272,17 +251,25 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant) : Entity
     {
-        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
-
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
             ['transfer' => $input]);
+
+        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
 
         $to = $this->repo
                    ->customer
                    ->findByPublicIdAndMerchant($customerId, $merchant);
 
+        // Create a transfer its corresponding txn - debits the merchant
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
+
+        $txn = $transfer->transaction;
+
+        // Fetch customer balance and credit
+        $balance = $this->getCustomerBalanceLockForUpdate($to, $txn->merchant);
+
+        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
 
         $customerTxn = (new Customer\Transaction\Core)
                             ->createForCustomerCredit($transfer, $input['amount'], $to->getId(), $merchant);
@@ -306,11 +293,11 @@ class Core extends Base\Core
      */
     protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant)
     {
-        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
-
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
             ['transfer' => $input]);
+
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
 
         $originPayment = null;
 
@@ -318,7 +305,7 @@ class Core extends Base\Core
                    ->merchant
                    ->fetchByAccountIdAndMerchant($accountId, $merchant);
 
-        (new Merchant\Validator)->validateMerchantForMarketplaceTransfer($to, $merchant, $this->mode);
+        $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
 
         $originPayment = $this->checkAndSetSourcePayment($source, $accountId, $merchant);
 
@@ -338,7 +325,7 @@ class Core extends Base\Core
         if ($merchant->isFeatureEnabled($feature) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                    "$feature is not supported");
+                    'This transfer is not supported');
         }
     }
 
@@ -388,5 +375,15 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
         }
+    }
+
+    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer, Merchant\Entity $merchant)
+    {
+        $customerId = $customer->getId();
+
+        // Try to create the customer_balance entity first - if not already exists
+        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer, $merchant);
+
+        return $balance;
     }
 }

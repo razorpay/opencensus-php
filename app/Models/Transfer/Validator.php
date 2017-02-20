@@ -21,6 +21,10 @@ class Validator extends Base\Validator
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
 
+    protected static $transferValidators = [
+        'hold_parameters'
+    ];
+
     protected static $editRules = [
         Entity::ON_HOLD        => 'required|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
@@ -147,15 +151,15 @@ class Validator extends Base\Validator
 
     public function validateHoldParameters(array $input)
     {
-        if ((isset($input['on_hold']) === false) and
-            (isset($input['on_hold_until']) === false))
+        if ((isset($input[Entity::ON_HOLD]) === false) and
+            (isset($input[Entity::ON_HOLD]) === false))
         {
             return;
         }
 
-        if (isset($input['on_hold_until']) === true)
+        if (isset($input[Entity::ON_HOLD_UNTIL]) === true)
         {
-            if ($input['on_hold'] === '0')
+            if ($input[Entity::ON_HOLD] === '0')
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold field must be set to 1, if on_hold_until is sent');
@@ -163,7 +167,7 @@ class Validator extends Base\Validator
 
             $now = Carbon::now('Asia/Kolkata');
 
-            if ($input['on_hold_until'] < $now->timestamp)
+            if ($input[Entity::ON_HOLD_UNTIL] < $now->timestamp)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');

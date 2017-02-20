@@ -35,12 +35,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::MERCHANT_ID,
-        self::TO_ID,
-        self::TO_TYPE,
         self::AMOUNT,
         self::CURRENCY,
-        self::SOURCE_ID,
-        self::SOURCE_TYPE,
         self::ON_HOLD,
         self::ON_HOLD_UNTIL,
     ];
@@ -109,6 +105,11 @@ class Entity extends Base\PublicEntity
     }
 
     public function source()
+    {
+        return $this->morphTo();
+    }
+
+    public function to()
     {
         return $this->morphTo();
     }
