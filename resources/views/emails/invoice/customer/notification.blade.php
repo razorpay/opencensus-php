@@ -20,7 +20,7 @@
       }
       elseif ($status === 'expired')
       {
-          $headerLabel = 'INVOICE EXPIRED';
+          $headerLabel = strtoupper($invoice['type_label']) . ' EXPIRED';
       }
   @endphp
 

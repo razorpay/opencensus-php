@@ -302,10 +302,16 @@ class Notifier extends Base\Core
 
         $viewPayload = (new ViewDataSerializer($this->invoice))->get();
 
+        $invoiceDetailsDashboardUrl = "#/app/invoices/$id/details";
+
+        if ($this->invoice->type === 'invoice') {
+            $invoiceDetailsDashboardUrl = "#/app/invoices/$id";
+        }
+
         $extraInvoicePayload = [
             'type_label'    => ucwords($this->invoice->getTypeLabel()),
             'pdf_url'       => url("v1/invoices/$id/pdf"),
-            'dashboard_url' => Config::get('applications.dashboard.url') . "#/app/invoices/$id",
+            'dashboard_url' => Config::get('applications.dashboard.url') . $invoiceDetailsDashboardUrl,
         ];
 
         $viewPayload['invoice'] += $extraInvoicePayload;

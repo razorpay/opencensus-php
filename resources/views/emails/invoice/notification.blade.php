@@ -19,9 +19,6 @@
             $ctaLabel = 'PROCEED TO PAY';
             $ctaHref = $invoice['short_url'];
         }
-        elseif ($status === 'expired')
-        {
-        }
     @endphp
   
   </p>
