@@ -4,7 +4,7 @@ namespace RZP\Reconciliator\NetbankingAxis;
 
 use RZP\Reconciliator\Base;
 use RZP\Gateway\Base\Action;
-use RZP\Gateway\Netbanking\Axis\Constants;
+use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -15,28 +15,48 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getPaymentId($row)
     {
-        return $row[self::COLUMN_PAYMENT_REF_NO];
+        if (isset($row[self::COLUMN_PAYMENT_REF_NO]) === true)
+        {
+            return $row[self::COLUMN_PAYMENT_REF_NO];
+        }
+
+        return null;
     }
 
     protected function getReferenceNumber($row)
     {
-        return $row[self::COLUMN_BANK_PAYMENT_ID];
+        if (isset($row[self::COLUMN_BANK_PAYMENT_ID]) === true)
+        {
+            return $row[self::COLUMN_BANK_PAYMENT_ID];
+        }
+
+        return null;
     }
 
-    protected function getCustomerId($row)
+    protected function getNbCustomerId($row)
     {
-        return $row[self::COLUMN_BANK_CUSTOMER_ID];
+        if (isset($row[self::COLUMN_BANK_CUSTOMER_ID]))
+        {
+            return $row[self::COLUMN_BANK_CUSTOMER_ID];
+        }
+
+        return null;
     }
 
-    protected function getCustomerName($row)
+    protected function getNbCustomerName($row)
     {
-        return $row[self::COLUMN_BANK_CUSTOMER_NAME];
+        if (isset($row[self::COLUMN_BANK_CUSTOMER_NAME]))
+        {
+            return $row[self::COLUMN_BANK_CUSTOMER_NAME];
+        }
+
+        return null;
     }
 
     protected function getGatewayPayment($paymentId)
     {
         return $this->netbankingRepo->findByPaymentIdActionAndStatus($paymentId,
                                                                      Action::AUTHORIZE,
-                                                                     Constants::YES);
+                                                                     Axis\Constants::YES);
     }
 }

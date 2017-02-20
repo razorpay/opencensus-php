@@ -54,7 +54,7 @@ class Orchestrator extends Base\Core
         self::PAYTM           => [],
         self::KOTAK           => ['BankAlerts@kotak.com'],
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE      => [],
+        self::FREECHARGE      => ['noreply@freechargemail.in'],
         // TODO: Need to add axis nb emails
         self::NETBANKING_AXIS => [],
         // Used when someone from the team needs to send the

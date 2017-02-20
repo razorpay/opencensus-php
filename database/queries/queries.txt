@@ -434,12 +434,12 @@ ALTER TABLE netbanking
     ADD COLUMN status VARCHAR(255) AFTER int_payment_id;
 
 ALTER TABLE netbanking
-    ADD COLUMN customer_id BIGINT DEFAULT NULL AFTER merchant_code;
+    ADD COLUMN customer_id VARCHAR(255) AFTER merchant_code,
     ADD COLUMN customer_name VARCHAR(255) AFTER customer_id;
 
 ALTER TABLE payments
     ADD COLUMN order_id VARCHAR(14) AFTER status;
-
+Ac
 UPDATE axis
     SET vpc_Command="pay" WHERE vpc_Command="queryDR";
 ALTER TABLE payments
@@ -1483,12 +1483,12 @@ ALTER TABLE transactions
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
     ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
 
-UPDATE transactions 
-  SET credit_type = 'amount' 
+UPDATE transactions
+  SET credit_type = 'amount'
   WHERE gratis is true;
 
-UPDATE transactions 
-  SET credit_type = 'fee' 
+UPDATE transactions
+  SET credit_type = 'fee'
   WHERE fee_credits > 0;
 
 # Adds cross org access control via flag
@@ -1628,7 +1628,7 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
-    
+
 ALTER TABLE merchant_details
     ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
 

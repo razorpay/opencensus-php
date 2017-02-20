@@ -334,7 +334,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistReferenceNumber($rowDetails);
 
-        $this->persistCustomerDetails($rowDetails);
+        $this->persistNbCustomerDetails($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
@@ -368,9 +368,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
-        $customerId = $this->getCustomerId($row);
+        $customerId = $this->getNbCustomerId($row);
 
-        $customerName = $this->getCustomerName($row);
+        $customerName = $this->getNbCustomerName($row);
 
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
@@ -579,17 +579,19 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistCustomerDetails($rowDetails)
+    protected function persistNbCustomerDetails($rowDetails)
     {
         if (isset($rowDetails[BaseReconciliate::CUSTOMER_ID]) === true)
         {
-            $this->persistCustomerId($rowDetails);
+            $this->persistNbCustomerId($rowDetails);
         }
 
         if (isset($rowDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
         {
-            $this->persistCustomerName($rowDetails);
+            $this->persistNbCustomerName($rowDetails);
         }
+
+        $this->gatewayPayment->saveOrFail();
     }
 
     /**
@@ -597,13 +599,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistCustomerId($rowDetails)
+    protected function persistNbCustomerId($rowDetails)
     {
         $customerId = $rowDetails[BaseReconciliate::CUSTOMER_ID];
 
         $this->gatewayPayment->setCustomerId($customerId);
-
-        $this->gatewayPayment->saveOrFail();
     }
 
     /**
@@ -611,13 +611,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistCustomerName($rowDetails)
+    protected function persistNbCustomerName($rowDetails)
     {
         $customerName = $rowDetails[BaseReconciliate::CUSTOMER_NAME];
 
         $this->gatewayPayment->setCustomerName($customerName);
-
-        $this->gatewayPayment->saveOrFail();
     }
 
     /**
