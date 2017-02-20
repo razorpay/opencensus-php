@@ -22,7 +22,7 @@ class AESCrypto
         $aes = $this->createAesCrypter();
 
         // returning Encrypted String
-        return base64_encode($aes->encrypt($string));
+        return $aes->encrypt($string);
     }
 
     public function decryptString(string $string)
@@ -30,7 +30,7 @@ class AESCrypto
         $aes = $this->createAesCrypter();
 
         // returning Decrypted String
-        return $aes->decrypt(base64_decode($string));
+        return $aes->decrypt($string);
     }
 
     protected function createAesCrypter()

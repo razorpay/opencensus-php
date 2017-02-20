@@ -10,7 +10,11 @@ class AESCrypto
 
     public function __construct(int $mode, string $masterKey, string $initializationVector = '')
     {
-        $this->createAesCrypter($mode, $masterKey, $initializationVector);
+        $this->aes = new AES($mode);
+
+        $this->aes->setKey($masterKey);
+
+        $this->aes->setIV($initializationVector);
     }
 
     public function encryptString(string $string)
@@ -23,14 +27,5 @@ class AESCrypto
     {
         // returning Decrypted String
         return $this->aes->decrypt(base64_decode($string));
-    }
-
-    protected function createAesCrypter(int $mode, string $masterKey, string $initializationVector)
-    {
-        $this->aes = new AES($mode);
-
-        $this->aes->setKey($masterKey);
-
-        $this->aes->setIV($initializationVector);
     }
 }

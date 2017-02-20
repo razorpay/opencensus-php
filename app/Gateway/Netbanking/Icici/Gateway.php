@@ -208,7 +208,7 @@ class Gateway extends Base\Gateway
 
         $aes = new Base\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        return $aes->encryptString($queryString);
+        return base64_encode($aes->encryptString($queryString));
     }
 
     protected function getAuthorizeRequestData(array $input)
@@ -296,7 +296,7 @@ class Gateway extends Base\Gateway
 
         $string = str_replace(' ', '+', $data['ES']);
 
-        $decryptedString = $aes->decryptString($string);
+        $decryptedString = $aes->decryptString(base64_decode($string));
 
         parse_str($decryptedString, $content);
 

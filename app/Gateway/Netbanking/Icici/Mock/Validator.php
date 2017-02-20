@@ -41,7 +41,7 @@ class Validator extends Base\Validator
 
         $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        $decryptedString = $aes->decryptString($input['ES']);
+        $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
         if ($decryptedString === false)
         {

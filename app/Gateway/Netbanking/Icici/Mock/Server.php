@@ -70,7 +70,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        $content['ES'] = $aes->encryptString($httpQuery);
+        $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
         $this->content($content, 'hash');
 
@@ -83,7 +83,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
 
-        $decryptedString = $aes->decryptString($input['ES']);
+        $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);
