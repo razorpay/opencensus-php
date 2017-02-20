@@ -439,7 +439,7 @@ ALTER TABLE netbanking
 
 ALTER TABLE payments
     ADD COLUMN order_id VARCHAR(14) AFTER status;
-Ac
+
 UPDATE axis
     SET vpc_Command="pay" WHERE vpc_Command="queryDR";
 ALTER TABLE payments
