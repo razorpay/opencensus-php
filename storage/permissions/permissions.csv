@@ -108,3 +108,7 @@
 6mPyoxYii0lQSJ,"edit_permission","permission",""
 6mPyoxYii0lQSK,"delete_permission","permission",""
 6mPyoxYii0lQSL,"get_permission","permission",""
+6mPyoxYii0lQRS,"create_org_fieldmap","org_fieldmap",""
+6mPyoxYii0lQRT,"edit_org_fieldmap","org_fieldmap",""
+6mPyoxYii0lQSU,"get_org_fieldmap","org_fieldmap",""
+6mPyoxYii0lQRW,"delete_org_fieldmap","org_fieldmap",""

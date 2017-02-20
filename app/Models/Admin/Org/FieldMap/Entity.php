@@ -12,28 +12,28 @@ class Entity extends Base\PublicEntity
     const ID          = 'id';
     const ORG_ID      = 'org_id';
     const ENTITY      = 'entity';
-    const FIELD_NAME  = 'field_name';
+    const FIELDS      = 'fields';
 
     protected $entity = 'org_fieldmap';
 
     protected $fillable = [
         self::ORG_ID,
         self::ENTITY,
-        self::FIELD_NAME,
+        self::FIELDS,
     ];
 
     protected $visible = [
         self::ID,
         self::ORG_ID,
         self::ENTITY,
-        self::FIELD_NAME,
+        self::FIELDS,
     ];
 
     protected $public = [
         self::ID,
         self::ORG_ID,
         self::ENTITY,
-        self::FIELD_NAME,
+        self::FIELDS,
     ];
 
     public function org()

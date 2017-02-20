@@ -120,6 +120,13 @@ class PermissionSeeder extends Seeder
             Permission::DELETE_ORG    => 'Delete organization',
         ],
 
+        PermissionCategory::ORG_FIELDMAP => [
+            Permission::CREATE_ORG_FIELDMAP => 'Create Org Specific Entity Fields',
+            Permission::GET_ORG_FIELDMAP    => 'Get Org Specific Entity Fields',
+            Permission::EDIT_ORG_FIELDMAP   => 'Edit Org Specific Entity Fields',
+            Permission::DELETE_ORG_FIELDMAP => 'Delete Org Specific Entity Fields',
+        ],
+
         // Roles
         PermissionCategory::ROLE => [
             Permission::VIEW_ALL_ROLE => 'View all roles',

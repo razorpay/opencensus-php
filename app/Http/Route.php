@@ -357,6 +357,10 @@ final class Route
         'org_get_multiple'                        => ['get',      'orgs',                                           'OrganizationController@getOrganizations'                           ],
         'org_edit'                                => ['put',      'orgs/{orgId}',                                   'OrganizationController@putOrganization'                            ],
         'org_delete'                              => ['delete',   'orgs/{orgId}',                                   'OrganizationController@deleteOrganization'                         ],
+        'org_fieldmap_create'                     => ['post',     'orgs/{orgId}/field-map',                         'OrganizationController@postOrgFieldMap'                            ],
+        'org_fieldmap_get'                        => ['get',      'orgs/{orgId}/field-map/{entity}',                'OrganizationController@getOrgFieldMap'                             ],
+        'org_fieldmap_edit'                       => ['put',      'orgs/{orgId}/field-map/{entity}',                'OrganizationController@putOrgFieldMap'                             ],
+        'org_fieldmap_delete'                     => ['delete',   'orgs/{orgId}/field-map/{entity}',                'OrganizationController@deleteOrgFielMap'                           ],
         'role_create'                             => ['post',     'orgs/{orgId}/roles',                             'OrganizationController@createRole'                                 ],
         'role_get_multiple'                       => ['get',      'orgs/{orgId}/roles',                             'OrganizationController@getMultipleRoles'                           ],
         'role_get'                                => ['get',      'orgs/{orgId}/roles/{id}',                        'OrganizationController@getRole'                                    ],
@@ -806,6 +810,10 @@ final class Route
         'org_create',
         'org_edit',
         'org_delete',
+        'org_fieldmap_create',
+        'org_fieldmap_get',
+        'org_fieldmap_edit',
+        'org_fieldmap_delete',
         'role_create',
         'role_get_multiple',
         'role_get',
@@ -865,6 +873,10 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'org_fieldmap_create'            => [Permission::CREATE_ORG_FIELDMAP],
+        'org_fielmap_get'                => [Permission::GET_ORG_FIELDMAP],
+        'org_fieldmap_edit'              => [Permission::EDIT_ORG_FIELDMAP],
+        'org_fieldmap_delete'            => [Permission::DELETE_ORG_FIELDMAP],
     ];
 
     public static $direct = array(

@@ -25,9 +25,9 @@ class CreateOrgFieldmap extends Migration
 
             $table->string(FieldMap::ENTITY, 250);
 
-            $table->string(FieldMap::FIELD_NAME, 250);
+            $table->text(FieldMap::FIELDS);
 
-            $table->unique(FieldMap::ORG_ID, FieldMap::FIELD_NAME);
+            $table->unique(FieldMap::ORG_ID, FieldMap::ENTITY);
 
             $table->integer(FieldMap::CREATED_AT);
             $table->integer(FieldMap::UPDATED_AT);

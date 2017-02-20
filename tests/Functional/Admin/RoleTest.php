@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
+use RZP\Models\Admin\Permission\Name;
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
 use RZP\Tests\Functional\TestCase;
@@ -131,7 +132,9 @@ class RoleTest extends TestCase
 
         $result = $this->startTest();
 
-        $this->assertEquals(110, count($result['permissions']));
+        $expectedPermissionCount =
+
+        $this->assertEquals(114, count($result['permissions']));
     }
 
     public function testDeleteRole()
