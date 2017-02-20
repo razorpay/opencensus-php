@@ -355,16 +355,7 @@ trait Capture
             $this->payment->getId(),
             function() use($data)
             {
-                try
-                {
-                    $this->callAndHandleCaptureOnGateway($data);
-                }
-                catch (Exception\BaseException $ex)
-                {
-                    $this->trace->traceException($ex);
-
-                    throw $ex;
-                }
+                $this->callAndHandleCaptureOnGateway($data);
 
                 // In case of a failure (marking the payment as failed),
                 // we won't record this capture since we throw the exception
