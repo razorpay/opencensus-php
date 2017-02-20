@@ -64,7 +64,9 @@ class ViewDataSerializer extends Base\Core
         $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
-        foreach ([Entity::ISSUED_AT, Entity::DATE, Entity::EXPIRE_BY, Entity::EXPIRED_AT] as $key)
+        $epochsToFormat = [Entity::ISSUED_AT, Entity::DATE, Entity::EXPIRE_BY, Entity::EXPIRED_AT];
+
+        foreach ($epochsToFormat as $key)
         {
             $epoch = $invoiceData[$key];
 
@@ -94,7 +96,12 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantBrandColor = $this->merchant->getBrandColor();
 
-        if ($merchantBrandColor === null) {
+        //
+        // If brand_color is not set, use a default value.
+        // Same value is used in invoice.js (hosted page, pdf etc)
+        //
+        if ($merchantBrandColor === null)
+        {
             $merchantBrandColor = '#6A5DD1';
         }
 

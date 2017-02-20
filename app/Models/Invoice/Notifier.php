@@ -305,7 +305,7 @@ class Notifier extends Base\Core
         $extraInvoicePayload = [
             'type_label'    => ucwords($this->invoice->getTypeLabel()),
             'pdf_url'       => url("v1/invoices/$id/pdf"),
-            'dashboard_url' => Config::get('applications.dashboard.url') . "/#/app/invoices/$id",
+            'dashboard_url' => Config::get('applications.dashboard.url') . "#/app/invoices/$id",
         ];
 
         $viewPayload['invoice'] += $extraInvoicePayload;
