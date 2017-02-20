@@ -158,7 +158,7 @@ trait Support
         {
             $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
 
-            $response['error'] = Hdfc\ErrorHandler::setErrorInResponse($errorCode);
+            $response['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
 
             $this->error = true;
 

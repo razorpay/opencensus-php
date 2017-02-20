@@ -251,7 +251,7 @@ trait Authorize
 
         if ($errorCode !== null)
         {
-            $authResponse['error'] = Hdfc\ErrorHandler::setErrorInResponse($errorCode);
+            $authResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
             $this->error = true;
         }
 

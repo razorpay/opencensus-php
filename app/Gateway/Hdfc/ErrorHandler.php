@@ -72,13 +72,6 @@ class ErrorHandler
         return array('code' => $code, 'text' => $text);
     }
 
-    public static function setErrorInResponse($code)
-    {
-        self::checkErrorCode($code);
-
-        return self::getErrorDetails($code);
-    }
-
     public static function setTimeoutError($curlMessage = null)
     {
         $code = Hdfc\ErrorCode::RP00003;

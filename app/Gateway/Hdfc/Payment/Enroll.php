@@ -451,7 +451,7 @@ trait Enroll
                 throw new Exception\LogicException('Should not reach here');
         }
 
-        $this->enrollResponse['error'] = Hdfc\ErrorHandler::setErrorInResponse($errorCode);
+        $this->enrollResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
 
         $this->enrollResponse['error']['enroll_result'] = $this->enrollResponse['data']['enroll_result'];
 
