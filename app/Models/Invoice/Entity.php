@@ -350,6 +350,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
