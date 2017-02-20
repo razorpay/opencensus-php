@@ -2,7 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Federal\Mock;
 
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Netbanking\Federal\RequestFields;
+use RZP\Gateway\Netbanking\Federal\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -33,7 +34,15 @@ class Server extends Base\Mock\Server
 
     protected function getCallbackResponseData($input)
     {
-
+        return [
+            ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
+            ResponseFields::BANK_PAYMENT_ID => 99999999,
+            ResponseFields::ITEM_CODE       => $input[RequestFields::ITEM_CODE],
+            ResponseFields::PAYMENT_ID      => $input[RequestFields::PAYMENT_ID],
+            ResponseFields::STATE_FLAG      => $input[RequestFields::STATE_FLAG],
+            ResponseFields::PAYEE_ID        => $input[RequestFields::PAYEE_ID],
+            ResponseFields::PAID            => Constants::CONFIRMATION,
+        ];
     }
 
     protected function getVerifyResponseData($input)

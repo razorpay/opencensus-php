@@ -192,12 +192,12 @@ class Gateway extends Base\Gateway
 
     protected function saveCallbackResponse(array $content)
     {
-        // TODO: Get the response from federal
         $attributes = [
-            //
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
+            Base\Entity::STATUS          => $content[ResponseFields::PAID],
         ];
 
-        $gatewayPayment = $his->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                     $content[ResponseFields::PAYMENT_ID],
                                     Action::AUTHORIZE);
 

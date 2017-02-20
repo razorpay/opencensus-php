@@ -6,5 +6,11 @@ use RZP\Base;
 
 class Validator extends Base\Validator
 {
+    protected $authRules = [
 
+    ];
+
+    protected $verifyRules = [
+
+    ];
 }

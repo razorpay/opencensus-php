@@ -4,9 +4,11 @@ namespace RZP\Gateway\Netbanking\Federal;
 
 class ResponseFields
 {
-    const ITEM_CODE  = 'ITC';
-    const PAYMENT_ID = 'PRN';
-    const AMOUNT     = 'AMT';
-    const BANK_ID    = 'BID';
-    const PAID       = 'Y';
+    const ITEM_CODE       = 'ITC';
+    const PAYMENT_ID      = 'PRN';
+    const AMOUNT          = 'AMT';
+    const BANK_PAYMENT_ID = 'BID';
+    const PAID            = 'Y';
+    const STATE_FLAG      = 'STATFLG';
+    const PAYEE_ID        = 'PID';
 }
