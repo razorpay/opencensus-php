@@ -16,8 +16,8 @@ trait FraudDetector
         $riskFields = $this->getRiskDetectionField($payment);
 
         if ((isset($riskFields) === true) and
-            (isset($riskFields['riskScore']) === true) and
-            ((float) $riskFields['riskScore'] > 5))
+            (isset($riskFields['risk_score']) === true) and
+            ((float) $riskFields['risk_score'] > 5))
         {
             $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
