@@ -63,6 +63,7 @@ class Entity
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
+    const ORG_FIELDMAP          = 'org_fieldmap';
 
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const OFFER                 = 'offer';
@@ -159,6 +160,7 @@ class Entity
         self::WALLET_JIOMONEY       => \RZP\Gateway\Wallet\Jiomoney::class,
         self::ORG                   => \RZP\Models\Admin\Org::class,
         self::ORG_HOSTNAME          => \RZP\Models\Admin\Org\Hostname::class,
+        self::ORG_FIELDMAP          => \RZP\Models\Admin\Org\FieldMap::class,
         self::ROLE                  => \RZP\Models\Admin\Role::class,
         self::PERMISSION            => \RZP\Models\Admin\Permission::class,
         self::GROUP                 => \RZP\Models\Admin\Group::class,
@@ -186,6 +188,7 @@ class Entity
     protected static $syncedInLiveAndTest = array(
         self::ORG,
         self::ORG_HOSTNAME,
+        self::ORG_FIELDMAP,
         self::ROLE,
         self::PERMISSION,
         self::GROUP,

@@ -60,6 +60,7 @@ class Table
     const ROLE_MAP              = 'role_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
     const ADMIN_LEAD            = 'admin_leads';
+    const ORG_FIELDMAP          = 'org_fieldmap';
 
     // Gateway related
     const EBS                   = 'ebs';

@@ -1,0 +1,43 @@
+<?php
+
+namespace RZP\Models\Admin\Org\FieldMap;
+
+use App;
+use RZP\Constants\Table;
+use RZP\Models\Base;
+use RZP\Models\Admin\Admin;
+
+class Entity extends Base\PublicEntity
+{
+    const ID          = 'id';
+    const ORG_ID      = 'org_id';
+    const ENTITY      = 'entity';
+    const FIELD_NAME  = 'field_name';
+
+    protected $entity = 'org_fieldmap';
+
+    protected $fillable = [
+        self::ORG_ID,
+        self::ENTITY,
+        self::FIELD_NAME,
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::ORG_ID,
+        self::ENTITY,
+        self::FIELD_NAME,
+    ];
+
+    protected $public = [
+        self::ID,
+        self::ORG_ID,
+        self::ENTITY,
+        self::FIELD_NAME,
+    ];
+
+    public function org()
+    {
+        return $this->hasOne('RZP\Models\Org\Entity');
+    }
+}
