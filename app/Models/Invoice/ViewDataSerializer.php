@@ -11,7 +11,17 @@ use RZP\Exception;
 
 class ViewDataSerializer extends Base\Core
 {
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
+
+    protected static $appendEpochsFormatted = [
+        Entity::ISSUED_AT,
+        Entity::DATE,
+        Entity::EXPIRE_BY,
+        Entity::EXPIRED_AT
+    ];
+
     protected $invoice;
+    protected $merchant;
 
     public function __construct(Entity $invoice)
     {
@@ -64,9 +74,7 @@ class ViewDataSerializer extends Base\Core
         $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
-        $epochsToFormat = [Entity::ISSUED_AT, Entity::DATE, Entity::EXPIRE_BY, Entity::EXPIRED_AT];
-
-        foreach ($epochsToFormat as $key)
+        foreach (self::$appendEpochsFormatted as $key)
         {
             $epoch = $invoiceData[$key];
 
@@ -102,7 +110,7 @@ class ViewDataSerializer extends Base\Core
         //
         if ($merchantBrandColor === null)
         {
-            $merchantBrandColor = '#6A5DD1';
+            $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
         }
 
         $merchantData = [
