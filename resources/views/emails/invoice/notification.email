@@ -31,55 +31,58 @@
     <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
       <tbody>
         <tr>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
+            <td class="first" style="
+                background-color: {{ $merchant['brand_color'] }};
+                color: {{ $merchant['brand_text_color'] }};
             "></td>
-            <td style="
-              width: 94%;
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
-              padding: 24px 0 !important;
-              border-left: 0;
-              border-right: 0;
+            <td colspan="2" style="
+                width: 92%;
+                background-color: {{ $merchant['brand_color'] }};
+                color: {{ $merchant['brand_text_color'] }};
+                padding: 24px 0 !important;
+                border-left: 0;
+                border-right: 0;
             ">
               @yield('header')
             </td>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
+            <td class="last" style="
+                background-color: {{ $merchant['brand_color'] }};
+                color: {{ $merchant['brand_text_color'] }};
             "></td>
         </tr>
 
         @if ($invoice['description'])
         <tr>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
+            <td class="first" style="
+                background-color: {{ $merchant['brand_color'] }};
+                color: {{ $merchant['brand_text_color'] }};
             "></td>
-            <td class="content" style="border-top: 1px solid rgba(0,0,0,0.05);">
+            <td colspan="2" class="content" style="
+                width: 92%;
+                border-top: 1px solid rgba(0,0,0,0.05);
+            ">
                 <div>
-                    <label>INVOICE SUMMARY</label>
+                    <label>{{ $invoice['type_label'] }} SUMMARY</label>
                     <div>{{$invoice['description']}}</div>
                 </div>
             </td>
-            <td style="
-              background-color: {{ $merchant['brand_color'] }};
-              color: {{ $merchant['brand_text_color'] }};
+            <td class="last" style="
+                background-color: {{ $merchant['brand_color'] }};
+                color: {{ $merchant['brand_text_color'] }};
             "></td>
         </tr>
         @endif
 
         <tr>
             @if ($invoice['description'])
-                <td></td>
+                <td class="first"></td>
             @else
-              <td style="
-                background-color: {{ $merchant['brand_color'] }};
-                color: {{ $merchant['brand_text_color'] }};
-              "></td>
+                <td class="first" style="
+                    background-color: {{ $merchant['brand_color'] }};
+                    color: {{ $merchant['brand_text_color'] }};
+                "></td>
             @endif
-            <td class="content">
+            <td colspan="2" class="content" style="width: 92%;">
                 <div>
                     <label>BILLING TO</label>
                     <div>
@@ -97,18 +100,21 @@
                 </div>
             </td>
             @if ($invoice['description'])
-                <td></td>
+                <td class="last"></td>
             @else
-              <td style="
-                background-color: {{ $merchant['brand_color'] }};
-                color: {{ $merchant['brand_text_color'] }};
-              "></td>
+                <td class="last" style="
+                    background-color: {{ $merchant['brand_color'] }};
+                    color: {{ $merchant['brand_text_color'] }};
+                "></td>
             @endif
         </tr>
 
         <tr>
-            <td></td>
-            <td class="content" style="padding-bottom: 24px;">
+            <td class="first"></td>
+            <td colspan="2" class="content" style="
+                width: 92%;
+                padding-bottom: 24px;
+            ">
                     @if (isset($payment))
                         <div>
                             <label>PAYMENT ID</label>
@@ -120,7 +126,7 @@
                         </div>
                     @elseif ($invoice['status'] === 'issued')
                         <div>
-                            <label>INVOICE EXPIRY</label>
+                            <label>{{ $invoice['type_label'] }} EXPIRY</label>
                             <div>{{ $invoice['expire_by_formatted'] }}</div>
                         </div>
                     @elseif ($invoice['status'] === 'expired')
@@ -131,38 +137,28 @@
                     @endif
                 </div>
             </td>
-            <td></td>
+            <td class="last"></td>
         </tr>
 
         <tr>
-            <td></td>
-            <td class="footer content" style="width: 94%;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <label>AMOUNT</label>
-                                <div style="font-weight: bold; font-size: 18px;">
-                                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
-                                </div>
-                            </td>
-                            <td class="text-right">
-                                @yield("footerCTA")
-                            </td>
-                        </tr>
-                     </tbody>
-                </table>
+            <td class="first"></td>
+            <td class="footer content" style="border-right: 0; width: 35%;">
+                <label>AMOUNT</label>
+                <div style="font-weight: bold; font-size: 18px;">
+                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
+                </div>
             </td>
-            <td></td>
+            <td class="footer content text-right" style="
+                border-left: 0;
+            ">
+                @yield("footerCTA")
+            </td>
+            <td class="last"></td>
         </tr>
 
         <tr>
-            <td></td>
-            <td class="text-center" style="
-              padding-bottom: 24px;
-              background-color: #fafafa;
-              border: 0;
-            ">
+            <td class="first"></td>
+            <td colspan="2" class="text-center" style="padding-bottom: 24px;">
                 <div class="footerFerchant">
                     {{$merchant['name']}}
                 </div>
@@ -170,35 +166,37 @@
                     {{ $merchant['business_registered_address'] }}
                 </div>
             </td>
-            <td></td>
+            <td class="last"></td>
         </tr>
+
+
         <tr>
-            <td></td>
+            <td class="first"></td>
             <td class="content" style="
+                border-right: 0;
+                vertical-align: top;
                 border-bottom: 1px solid rgba(0,0,0,0.05);
                 border-top: 1px solid rgba(0,0,0,0.05);
             ">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%">
-                    <tbody>
-                        <tr>
-                            <td style="vertical-align: top">
-                                <a href="https://razorpay.com/" target="_blank">
-                                    <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
-                                </a>
-                            </td>
-                            <td class="footerRZP">
-                                <div>
-                                    Sign up at <a href="https://razorpay.com/" target="_blank">razorpay.com/invoices</a> to create invoices and accept payments for your business.
-                                </div>
-                            </td>
-                        </tr>
-                     </tbody>
-                </table>
+                <a href="https://razorpay.com/" target="_blank">
+                    <img style="height: 24px;" src="https://razorpay.com/images/logo-black.png"/>
+                </a>
             </td>
-            <td></td>
+            <td class="content footerRZP" style="
+                border-left: 0;
+                border-bottom: 1px solid rgba(0,0,0,0.05);
+                border-top: 1px solid rgba(0,0,0,0.05);
+            ">
+                <div>
+                    Sign up at <a href="https://razorpay.com/" target="_blank">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                </div>
+            </td>
+            <td class="last"></td>
         </tr>
-        <tr>
-            <td colspan="3"></td>
+         <tr>
+            <td class="first"></td>
+            <td colspan="2"></td>
+            <td class="last"></td>
         </tr>
       </tbody>
     </table>

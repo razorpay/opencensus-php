@@ -25,34 +25,34 @@
     @endphp
   
   </p>
-    <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; background-color: #fafafa; max-width: 600px; table-layout: fixed;"><tbody style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
-            <td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 0 !important; padding-bottom: 0; border-left: 0; border-right: 0; width: 94%; background-color: {{ $merchant['brand_color'] }};">
+    <table class="table" border="0" cellpadding="0" cellspacing="0" height="100%" width="100%" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; table-layout: fixed; width: 100%; background-color: #fafafa; max-width: 600px;"><tbody style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
+            <td colspan="2" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 0 !important; padding-bottom: 0; width: 92%; background-color: {{ $merchant['brand_color'] }}; border-left: 0; border-right: 0;">
               @yield('header')
             </td>
-            <td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
+            <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
         </tr>
 
         @if ($invoice['description'])
-        <tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
-            <td class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff; border-top: 1px solid rgba(0,0,0,0.05);">
+        <tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
+            <td colspan="2" class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); width: 92%; border-top: 1px solid rgba(0,0,0,0.05);">
                 <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                    <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">INVOICE SUMMARY</label>
+                    <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">{{ $invoice['type_label'] }} SUMMARY</label>
                     <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">{{$invoice['description']}}</div>
                 </div>
             </td>
-            <td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
+            <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
         </tr>
         @endif
 
         <tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
             @if ($invoice['description'])
-                <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
+                <td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
             @else
-              <td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
+                <td class="first" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
             @endif
-            <td class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff;">
+            <td colspan="2" class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); width: 92%;">
                 <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                    <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">BILLING TO</label>
+                    <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">BILLING TO</label>
                     <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
                         @if ($invoice['customer_details']['customer_name'])
                             {{$invoice['customer_details']['customer_name']}}
@@ -68,50 +68,48 @@
                 </div>
             </td>
             @if ($invoice['description'])
-                <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0;"></td>
+                <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
             @else
-              <td style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); background-color: {{ $merchant['brand_color'] }};"></td>
+                <td class="last" style="color: {{ $merchant['brand_text_color'] }}; font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%; background-color: {{ $merchant['brand_color'] }};"></td>
             @endif
-        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
-            <td class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 24px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff;">
+        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+            <td colspan="2" class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 24px; background-color: #fff; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); width: 92%;">
                     @if (isset($payment))
                         <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">PAYMENT ID</label>
+                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">PAYMENT ID</label>
                             <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">{{ $payment['public_id'] }}</div>
                         </div>
                         <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; margin-top: 24px;">
-                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">PAYMENT METHOD</label>
+                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">PAYMENT METHOD</label>
                             <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">{{ $payment['method'][0] }}, {{ $payment['method'][1] }}</div>
                         </div>
                     @elseif ($invoice['status'] === 'issued')
                         <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">INVOICE EXPIRY</label>
+                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">{{ $invoice['type_label'] }} EXPIRY</label>
                             <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">{{ $invoice['expire_by_formatted'] }}</div>
                         </div>
                     @elseif ($invoice['status'] === 'expired')
                         <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">EXPIRED ON</label>
+                            <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">EXPIRED ON</label>
                             <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">{{ $invoice['expired_at_formatted'] }}</div>
                         </div>
                     @endif
                 
             </td>
-            <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
-        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
-            <td class="footer content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px dashed rgba(0,0,0,0.10); padding-bottom: 0; padding: 24px 4%; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff; width: 94%;">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tbody style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                                <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">AMOUNT</label>
-                                <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; font-weight: bold; font-size: 18px;">
-                                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
-                                </div>
-                            </td>
-                            <td class="text-right" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; text-align: right;">
-                                @yield("footerCTA")
-                            </td>
-                        </tr></tbody></table></td>
-            <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
-        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
-            <td class="text-center" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; text-align: center; padding: 24px 4%; padding-bottom: 24px; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fafafa; border: 0;">
+            <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+            <td class="footer content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px dashed rgba(0,0,0,0.10); padding-bottom: 0; padding: 24px 4%; background-color: #fff; border-left: 1px solid rgba(0,0,0,0.05); border-right: 0; width: 35%;">
+                <label style="color: rgba(0, 0, 0, 0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold; text-transform: uppercase;">AMOUNT</label>
+                <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; font-weight: bold; font-size: 18px;">
+                    {{$invoice['currency']}} {{$invoice['amount_formatted']}}
+                </div>
+            </td>
+            <td class="footer content text-right" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; text-align: right; border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px dashed rgba(0,0,0,0.10); padding-bottom: 0; padding: 24px 4%; background-color: #fff; border-left: 0; border-right: 1px solid rgba(0,0,0,0.05);">
+                @yield("footerCTA")
+            </td>
+            <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+            <td colspan="2" class="text-center" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; text-align: center; padding: 24px 4%; padding-bottom: 24px;">
                 <div class="footerFerchant" style="color: rgba(0,0,0,0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 12px; font-weight: bold;">
                     {{$merchant['name']}}
                 </div>
@@ -119,19 +117,19 @@
                     {{ $merchant['business_registered_address'] }}
                 </div>
             </td>
-            <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
-        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05);"></td>
-            <td class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05); background-color: #fff; border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px solid rgba(0,0,0,0.05);">
-                <table border="0" cellpadding="0" cellspacing="0" width="100%" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tbody style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; vertical-align: top;">
-                                <a href="https://razorpay.com/" target="_blank" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                                    <img style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; height: 24px;" src="https://razorpay.com/images/logo-black.png"></a>
-                            </td>
-                            <td class="footerRZP" style="color: rgba(0,0,0,0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 10px; padding-bottom: 24px; padding-left: 10%; text-align: right;">
-                                <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
-                                    Sign up at <a href="https://razorpay.com/" target="_blank" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">razorpay.com/invoices</a> to create invoices and accept payments for your business.
-                                </div>
-                            </td>
-                        </tr></tbody></table></td>
-            <td style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05);"></td>
-        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td colspan="3" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); border-right: 1px solid rgba(0,0,0,0.05);"></td>
+            <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+            <td class="content" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; background-color: #fff; border-left: 1px solid rgba(0,0,0,0.05); border-right: 0; vertical-align: top; border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px solid rgba(0,0,0,0.05);">
+                <a href="https://razorpay.com/" target="_blank" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
+                    <img style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; height: 24px;" src="https://razorpay.com/images/logo-black.png"></a>
+            </td>
+            <td class="content footerRZP" style="color: rgba(0,0,0,0.54); font-family: Arial, sans-serif; line-height: 20px; font-size: 10px; padding-bottom: 0; padding-left: 10%; text-align: right; padding: 24px 4%; background-color: #fff; border-left: 0; border-right: 1px solid rgba(0,0,0,0.05); border-bottom: 1px solid rgba(0,0,0,0.05); border-top: 1px solid rgba(0,0,0,0.05);">
+                <div style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">
+                    Sign up at <a href="https://razorpay.com/" target="_blank" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;">razorpay.com/invoices</a> to create invoices and accept payments for your business.
+                </div>
+            </td>
+            <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+        </tr><tr style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px;"><td class="first" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-left: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
+            <td colspan="2" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0;"></td>
+            <td class="last" style="color: rgba(0,0,0,0.87); font-family: Arial, sans-serif; line-height: 20px; padding: 24px 4%; padding-bottom: 0; border-right: 1px solid rgba(0,0,0,0.05); width: 4%;"></td>
         </tr></tbody></table></body></html>

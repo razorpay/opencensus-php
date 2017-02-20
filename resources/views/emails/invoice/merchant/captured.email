@@ -1,10 +1,10 @@
-<div>
+<! -- >
   @extends('emails.invoice.notification')
 
   @section('header')
     <div class="text-center">
          <h2 style="color: {{ $merchant['brand_text_color'] }}">
-            Invoice: {{ $invoice['receipt'] or $invoice['id'] }} paid successfully
+            {{ $invoice['type_label'] }}: {{ $invoice['receipt'] or $invoice['id'] }} paid successfully
         </h2>
         <div style="color: {{ $merchant['brand_text_color'] }}; margin-top: 8px;">
             {{ $invoice['receipt'] or $invoice['id'] }} issued on {{ $invoice['issued_at_formatted'] }} has been paid
@@ -21,4 +21,4 @@
         VIEW ON DASHBOARD
       </a>
   @endsection
-</div>
+<! -- >

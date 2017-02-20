@@ -1,4 +1,4 @@
-<div>
+<! -- >
   @php
       $status = $invoice['status'];
       $headerLabel = '';
@@ -36,13 +36,13 @@
         @endif
 
          <h2 style="color: {{ $merchant['brand_text_color'] }}">
-            Invoice from {{$merchant['name']}}
+            {{ $invoice['type_label'] }} from {{$merchant['name']}}
         </h2>
         <div style="color: {{ $merchant['brand_text_color'] }}">
             @if ($invoice['receipt'])
-                Invoice Receipt: {{$invoice['receipt']}}
+                {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
             @else
-                Invoice Id: {{$invoice['id']}}
+                {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
             @endif
         </div>
 
@@ -71,4 +71,4 @@
         </a>
     @endif
   @endsection
-</div>
+<! -- >
