@@ -42,9 +42,6 @@ class NetbankingIciciGatewayTest extends TestCase
 
         // Asserts that bank payment id exists in response and is an int
         $this->assertEquals($gatewayPayment['bank_payment_id'], 9999999999);
-        // Assert that BID is an integer
-        $this->assertTrue(filter_var($gatewayPayment['bank_payment_id'],
-            FILTER_SANITIZE_STRING) !== false);
     }
 
     public function testPaymentVerify()
