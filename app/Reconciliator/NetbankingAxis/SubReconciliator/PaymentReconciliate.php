@@ -8,8 +8,10 @@ use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
-    const COLUMN_PAYMENT_REF_NO  = 'PRN No';
-    const COLUMN_BANK_PAYMENT_ID = 'BID';
+    const COLUMN_PAYMENT_REF_NO     = 'PRN No';
+    const COLUMN_BANK_PAYMENT_ID    = 'BID';
+    const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
+    const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
 
     protected function getPaymentId($row)
     {
@@ -21,10 +23,20 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[self::COLUMN_BANK_PAYMENT_ID];
     }
 
-    protected function getGatewayPayment()
+    protected function getCustomerId($row)
+    {
+        return $row[self::COLUMN_BANK_CUSTOMER_ID];
+    }
+
+    protected function getCustomerName($row)
+    {
+        return $row[self::COLUMN_BANK_CUSTOMER_NAME];
+    }
+
+    protected function getGatewayPayment($paymentId)
     {
         return $this->netbankingRepo->findByPaymentIdActionAndStatus(
-                                                            $this->payment->getId(),
+                                                            $paymentId,
                                                             Action::AUTHORIZE,
                                                             Axis\Gateway::getAuthorizedStatus());
     }

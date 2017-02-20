@@ -334,6 +334,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistReferenceNumber($rowDetails);
 
+        $this->persistCustomerDetails($rowDetails);
+
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
         return $recordSuccess;
@@ -366,12 +368,18 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
+        $customerId = $this->getCustomerId($row);
+
+        $customerName = $this->getCustomerName($row);
+
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
             BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
             BaseReconciliate::GATEWAY_FEE         => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT  => $gatewaySettledAt,
             BaseReconciliate::REFERENCE_NUMBER    => $referenceNumber,
+            BaseReconciliate::CUSTOMER_ID         => $customerId,
+            BaseReconciliate::CUSTOMER_NAME       => $customerName,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -411,6 +419,30 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Returns null by default
+     * Defined in corresponding class
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getCustomerId($row)
+    {
+        return null;
+    }
+
+    /**
+     * Returns null by default
+     * Defined in corresponding class
+     *
+     * @param $row
+     * @return null
+     */
+    protected function getCustomerName($row)
+    {
+        return null;
+    }
+
+    /**
      * A few netbanking gateways do not provide us with
      * gateway service tax in their reconciliation files.
      * For them, we mark the gateway service tax as null.
@@ -440,6 +472,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
+            $this->gatewayPayment = $this->getGatewayPayment($paymentId);
 
             //
             // It's possible that the payment is in failed state and hence the transaction
@@ -534,8 +567,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $this->gatewayPayment = $this->getGatewayPayment();
-
         $paymentReference = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
         $this->gatewayPayment->setBankPaymentId($paymentReference);
@@ -544,10 +575,56 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Saving customer information into the DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistCustomerDetails($rowDetails)
+    {
+        if (isset($rowDetails[BaseReconciliate::CUSTOMER_ID]) === true)
+        {
+            $this->persistCustomerId($rowDetails);
+        }
+
+        if (isset($rowDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
+        {
+            $this->persistCustomerName($rowDetails);
+        }
+    }
+
+    /**
+     * Saving customer Id into the DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistCustomerId($rowDetails)
+    {
+        $customerId = $rowDetails[BaseReconciliate::CUSTOMER_ID];
+
+        $this->gatewayPayment->setCustomerId($customerId);
+
+        $this->gatewayPayment->saveOrFail();
+    }
+
+    /**
+     * Saving customer Name into the DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistCustomerName($rowDetails)
+    {
+        $customerName = $rowDetails[BaseReconciliate::CUSTOMER_NAME];
+
+        $this->gatewayPayment->setCustomerName($customerName);
+
+        $this->gatewayPayment->saveOrFail();
+    }
+
+    /**
      * Getting the gatewayPayment associated with payment entity.
      * It is implemented in the child class
      */
-    protected function getGatewayPayment()
+    protected function getGatewayPayment($paymentId)
     {
         return null;
     }

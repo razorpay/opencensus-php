@@ -39,6 +39,8 @@ class Reconciliate
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
     const ISSUER              = 'issuer';
     const REFERENCE_NUMBER    = 'reference_number';
+    const CUSTOMER_ID         = 'customer_id';
+    const CUSTOMER_NAME       = 'customer_name';
 
     /*************************
      * Card types
