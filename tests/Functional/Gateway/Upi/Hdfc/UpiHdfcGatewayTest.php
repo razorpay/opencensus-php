@@ -70,7 +70,6 @@ class UpiHdfcGatewayTest extends TestCase
     /**
      * Force the gateway to raise a failure on trying
      * to initiate web collect
-     * @return [type] [description]
      */
     public function testFailedCollect()
     {
@@ -130,6 +129,40 @@ class UpiHdfcGatewayTest extends TestCase
         {
             $this->payment = $this->verifyPayment($paymentId);
         });
+    }
+
+    /**
+     * Create a payment, and reject it so callback
+     * returns failure
+     */
+    public function testCollectRejectedFailure()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $payment['vpa'] = 'failed@hdfcbank';
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['payment_id'];
+
+        $this->checkPaymentStatus($paymentId, 'created');
+
+        $upiEntity = $this->getLastEntity('upi', true);
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($content)
+        {
+            $response = $this->makeS2SCallbackAndGetContent($content);
+        });
+
+        $payment = $this->getEntityById('payment', $paymentId, true);
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)

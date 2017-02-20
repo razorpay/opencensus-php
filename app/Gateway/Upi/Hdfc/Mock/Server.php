@@ -205,26 +205,6 @@ class Server extends Base\Mock\Server
 
         $response = $this->getDefaultVerifyResponse($input, $payment);
 
-        if (isset($payment['notes']['status']) === true)
-        {
-            $response['resp_code'] = 'NA';
-
-            $response['approval_num'] = 'NA';
-
-            switch ($payment['notes']['status'])
-            {
-                case 'created':
-                    $response['status'] = 'PENDING';
-                    $response['message'] = 'Collect request sent to NPCI, waiting for approval.';
-                    break;
-
-                case 'failed':
-                    $status = 'FAILED';
-                    $message = 'Transaction fail';
-                    break;
-            }
-        }
-
         $res = [
             $response['txn_id'],
             $response['payment_id'],
