@@ -1,87 +1,116 @@
-import ajax from 'merchant/utils/ajax'
-import { fromJS } from 'immutable'
+import { set, merge, unshift, remove } from 'rzp/utils/immutable'
+import Customer from 'merchant/models/Customer'
 
 const CUSTOMERS_FETCH = 'CUSTOMERS_FETCH'
-const CUSTOMER_ADDED = 'CUSTOMER_ADDED'
-const CUSTOMER_EDITED = 'CUSTOMER_EDITED'
+const CUSTOMERS_AUTOCOMPLETE_FETCH = 'CUSTOMERS_AUTOCOMPLETE_FETCH'
+const CUSTOMER_CREATE = 'CUSTOMER_CREATE'
+const CUSTOMER_EDIT = 'CUSTOMER_EDIT'
+const CUSTOMER_DELETED = 'CUSTOMER_DELETED'
+const HIGHLIGHT_CUSTOMER = 'HIGHLIGHT_CUSTOMER'
+const REMOVE_HIGHLIGHT = 'REMOVE_HIGHLIGHT'
 
-export const fetchCustomers = () => {
+export const fetchCustomers = (params) => {
   return (dispatch) => {
     return dispatch({
       type: CUSTOMERS_FETCH,
-      payload: ajax('/customers')
+      payload: Customer.fetchAll(params)
     })
   }
 }
 
-export const createCustomer = (data) => {
+export const fetchCustomersForAutocomplete = () => {
   return (dispatch) => {
-    return ajax({
-      url: '/customer',
-      method: 'post',
-      data
+    return dispatch({
+      type: CUSTOMERS_AUTOCOMPLETE_FETCH,
+      payload: Customer.fetchForAutocomplete()
     })
   }
 }
 
-export const editCustomer = (id, data) => {
+export const saveCustomer = (params) => {
   return (dispatch) => {
-    return ajax({
-      url: `/customer/${id}`,
-      method: 'put',
-      data
+    let customer = new Customer(params)
+    return dispatch({
+      type: customer.isNew ? CUSTOMER_CREATE : CUSTOMER_EDIT,
+      payload: customer.save()
     })
   }
 }
 
-
-export const customerAdded = (customer) => {
-  return {
-    type: CUSTOMER_ADDED,
-    payload: customer
+export const deleteCustomer = (params) => {
+  return (dispatch) => {
+    let customer = new Customer(params)
+    return customer.delete().then(() => {
+      dispatch({
+        type: CUSTOMER_DELETED,
+        payload: customer
+      })
+    })
   }
 }
 
-export const customerEdited = (customer) => {
-  return {
-    type: CUSTOMER_EDITED,
-    payload: customer
+export const highlightCustomerRow = (params) => {
+  return (dispatch) => {
+    dispatch({
+      type: HIGHLIGHT_CUSTOMER,
+      payload: params
+    })
+
+    setTimeout(() => {
+      dispatch({
+        type: REMOVE_HIGHLIGHT
+      })
+    }, 6000)
   }
 }
 
 let initialState = {
   loading: true,
   customers: [],
-  count: 0
+  count: 0,
+  highlightRowId: null
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${CUSTOMERS_FETCH}::PENDING`:
-      return state.set('loading', true)
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::PENDING`:
+      return merge(state, {
+        loading: true,
+        highlightRowId: null
+      })
 
     case `${CUSTOMERS_FETCH}::SUCCESS`:
-      return state.merge({
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::SUCCESS`:
+      return merge(state, {
         loading: false,
         customers: action.payload.data.items,
         count: action.payload.data.count
       })
 
     case `${CUSTOMERS_FETCH}::ERROR`:
-      return state.merge({
+    case `${CUSTOMERS_AUTOCOMPLETE_FETCH}::ERROR`:
+      return merge(state, {
         loading: false,
         error: action.error
       })
 
-    case CUSTOMER_ADDED:
-      return state.set('customers', state.get('customers').unshift(action.payload))
+    case `${CUSTOMER_CREATE}::SUCCESS`:
+      return set(state, 'customers', unshift(state.customers, action.payload))
 
-    case CUSTOMER_EDITED:
-      let customers = state.get('customers')
-      return state.set('customers', customers.update(
-        customers.findIndex((item) => item.get('id') === action.payload.id),
-        (item) => item.merge(action.payload)
-      ))
+    case `${CUSTOMER_EDIT}::SUCCESS`:
+      let customerIndex = state.customers.findIndex((item) => item.id === action.payload.id)
+      return set(state, `customers.${customerIndex}`, action.payload)
+
+    case CUSTOMER_DELETED:
+      var customersList = remove(state.customers, (customer) => customer.id === action.payload.id)
+      return set(state, 'customers', customersList)
+
+    case HIGHLIGHT_CUSTOMER:
+      return set(state, 'highlightRowId', action.payload.id)
+
+    case REMOVE_HIGHLIGHT:
+      return set(state, 'highlightRowId', null)
 
     default:
       return state

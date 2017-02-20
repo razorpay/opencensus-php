@@ -5,7 +5,7 @@ const ModalHeader = (props) => (
     {
       props.onCloseClick &&
       <button type='button' class='close' onClick={props.onCloseClick}>
-        <span>×</span>
+        <i class='fa fa-times'></i>
       </button>
     }
 

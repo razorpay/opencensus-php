@@ -1,0 +1,43 @@
+.Modal {
+  width: 625px;
+  margin: 65px auto;
+  padding: 0;
+  border: 0;
+  box-shadow: 0 0 8px 0 rgba(0, 0, 0, 0.3);
+  background-color: #fafafa;
+  border-radius: 5px;
+
+  .modal-header {
+    padding: 24px 24px 0;
+    border-bottom: 0;
+
+    .modal-title {
+      font-size: 20px;
+      font-weight: bold;
+    }
+  }
+
+  .modal-body {
+    padding: 24px;
+  }
+
+  .Modal__actions {
+    padding-top: 24px;
+  }
+}
+
+.Modal--small {
+  width: 328px;
+}
+
+.Modal--confirm {
+  .Modal__actions {
+    > .btn {
+      width: 48%;
+    }
+
+    > .btn + .btn {
+      margin-left: 4%;
+    }
+  }
+}
