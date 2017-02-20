@@ -22,24 +22,15 @@ class Service extends Base\Service
      */
     public function getBalance(string $customerId) : array
     {
-        $balance = $this->repo
-                        ->customer_balance
-                        ->findByIdAndMerchant($customerId, $this->merchant);
+        // $balance = $this->repo
+        //                 ->customer_balance
+        //                 ->findByIdAndMerchant($customerId, $this->merchant);
 
-        return $balance->toArrayPublic();
-    }
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 
-    /**
-     * Credit customer wallet account
-     *
-     * @param  Customer\Entity $customer
-     * @param  int             $amount
-     */
-    public function credit(Customer\Entity $customer, int $amount)
-    {
         $balance = $this->core->fetchOrCreate($customer, $this->merchant);
 
-        return $this->core->credit($balance, $amount);
+        return $balance->toArrayPublic();
     }
 
     /**

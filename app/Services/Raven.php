@@ -47,7 +47,7 @@ class Raven
 
         $this->baseUrl = $this->config['url'];
 
-        $this->mode = $app['rzp.mode'];
+        $this->mode = 'live';
 
         $this->key = 'rzp';
 

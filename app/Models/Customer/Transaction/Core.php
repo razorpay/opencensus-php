@@ -31,6 +31,8 @@ class Core extends Base\Core
 
         $customerTxn->setEntityId($input['payment']['id']);
 
+        $customerTxn->setDescription($input['payment']['description'] ?? 'No description');
+
         $balance = (new Customer\Balance\Service)->debit($customerId, $amount);
 
         $customerTxn->setBalance($balance->getBalance());
@@ -48,7 +50,7 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createForCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant) : Entity
+    public function createForCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant)
     {
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
 
@@ -100,7 +102,7 @@ class Core extends Base\Core
         return $customerTxn;
     }
 
-    protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId) : Entity
+    protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId)
     {
         $customerTxn = new Entity;
 

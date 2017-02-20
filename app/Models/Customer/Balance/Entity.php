@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer\Balance;
 
+use Carbon\Carbon;
+
 use RZP\Models\Base;
 use RZP\Models\Customer;
 
@@ -44,6 +46,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
+        self::MONTHLY_USAGE,
+        self::MAX_BALANCE,
     ];
 
     protected $defaults = [
@@ -181,6 +185,23 @@ class Entity extends Base\PublicEntity
         }
 
         return (int) $balance;
+    }
+
+    protected function setPublicMonthlyUsageAttribute(array & $array)
+    {
+        $monthlyUsage = $this->getAttribute(self::MONTHLY_USAGE);
+
+        $lastTxnTime = $balance->getLastLoadedAt();
+
+        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
+
+        $now = Carbon::now();
+
+        if ($lastTxnTime->month !== $now->month)
+        {
+            $resetMonth = true;
+        }
+
     }
 
     protected function setPublicCustomerIdAttribute(array & $array)

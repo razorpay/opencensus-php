@@ -166,6 +166,17 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * @param  otp verification data
+     * @return success with tokens or failure
+     */
+    public function verifyOtpApp($input)
+    {
+        $data = $this->core->verifyOtpApp($input, $this->merchant);
+
+        return $data->toArrayPublic();
+    }
+
     public function fetchBankAccountsByContact($contact)
     {
         $contact = Customer\Validator::validateAndParseContact($contact);
@@ -552,9 +563,13 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        $customerBalance = $this->repo
-                                ->customer_balance
-                                ->findByIdAndMerchant($customerId, $this->merchant);
+        // $customerBalance = $this->repo
+        //                         ->customer_balance
+        //                         ->findByIdAndMerchant($customerId, $this->merchant);
+
+        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+
+        $customerBalance = (new Customer\Balance\Core)->fetchOrCreate($customer, $this->merchant);
 
         $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
 

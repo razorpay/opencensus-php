@@ -146,6 +146,29 @@ class Core extends Base\Core
         return $response;
     }
 
+    public function verifyOtpApp(array $input, Merchant\Entity $merchant)
+    {
+        Customer\Validator::validateWalletAppCustomerCreateInput($input);
+
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+
+        (new Customer\Balance\Core)->validateIndianContact($input[Entity::CONTACT]);
+
+        // Verify the otp with raven service
+        $this->verifyRavenOtp($input, $merchant);
+
+        unset($input['otp']);
+
+        $customer = $this->repo->customer->findByContactAndMerchant($input[Entity::CONTACT], $this->merchant);
+
+        if ($customer === null)
+        {
+            $customer = $this->createLocalCustomer($input, $this->merchant);
+        }
+
+        return $customer;
+    }
+
     protected function createCustomerAppToken($customer, $input, $merchant)
     {
         // Currently all app_tokens will be generated for common rzp merchant

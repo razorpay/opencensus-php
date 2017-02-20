@@ -132,7 +132,7 @@ class Core extends Base\Core
      * @return  null
      * @throws  Exception\BadRequestException
      */
-    protected function validateIndianContact(string $number)
+    public function validateIndianContact(string $number)
     {
         $number = new PhoneBook($number, true);
 

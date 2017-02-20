@@ -235,6 +235,15 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function verifyOtpApp()
+    {
+        $input = Request::all();
+
+        $data = $this->customer->verifyOtpApp($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function validateDeviceToken($deviceToken)
     {
         $input = Request::all();
