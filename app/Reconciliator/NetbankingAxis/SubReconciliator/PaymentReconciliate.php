@@ -33,6 +33,14 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return null;
     }
 
+    protected function getNbCustomerDetails($row)
+    {
+        return [
+            Base\Reconciliate::CUSTOMER_ID   => $this->getNbCustomerId($row),
+            Base\Reconciliate::CUSTOMER_NAME => $this->getNbCustomerName($row),
+        ];
+    }
+
     protected function getNbCustomerId($row)
     {
         if (isset($row[self::COLUMN_BANK_CUSTOMER_ID]))

@@ -368,9 +368,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewaySettledAt = $this->getGatewaySettledAt($row);
 
-        $customerId = $this->getNbCustomerId($row);
-
-        $customerName = $this->getNbCustomerName($row);
+        $customerDetails = $this->getNbCustomerDetails($row);
 
         $rowDetails = [
             BaseReconciliate::PAYMENT_ID          => $paymentId,
@@ -378,8 +376,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_FEE         => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT  => $gatewaySettledAt,
             BaseReconciliate::REFERENCE_NUMBER    => $referenceNumber,
-            BaseReconciliate::CUSTOMER_ID         => $customerId,
-            BaseReconciliate::CUSTOMER_NAME       => $customerName,
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -389,6 +385,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         if (empty(array_filter($cardDetails)) === false)
         {
             $rowDetails[BaseReconciliate::CARD_DETAILS] = array_filter($cardDetails);
+        }
+
+        // We set customer details only for netbanking
+        if (empty(array_filter($customerDetails)) === false)
+        {
+            $rowDetails[BaseReconciliate::CUSTOMER_DETAILS] = array_filter($customerDetails);
         }
 
         return $rowDetails;
@@ -425,19 +427,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @param $row
      * @return null
      */
-    protected function getCustomerId($row)
-    {
-        return null;
-    }
-
-    /**
-     * Returns null by default
-     * Defined in corresponding class
-     *
-     * @param $row
-     * @return null
-     */
-    protected function getCustomerName($row)
+    protected function getNbCustomerDetails($row)
     {
         return null;
     }
@@ -581,14 +571,16 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistNbCustomerDetails($rowDetails)
     {
-        if (isset($rowDetails[BaseReconciliate::CUSTOMER_ID]) === true)
+        $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
+
+        if (isset($customerDetails[BaseReconciliate::CUSTOMER_ID]) === true)
         {
-            $this->persistNbCustomerId($rowDetails);
+            $this->persistNbCustomerId($customerDetails);
         }
 
-        if (isset($rowDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
+        if (isset($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
         {
-            $this->persistNbCustomerName($rowDetails);
+            $this->persistNbCustomerName($customerDetails);
         }
 
         $this->gatewayPayment->saveOrFail();
@@ -597,11 +589,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * Saving customer Id into the DB
      *
-     * @param array $rowDetails
+     * @param array $customerDetails
      */
-    protected function persistNbCustomerId($rowDetails)
+    protected function persistNbCustomerId($customerDetails)
     {
-        $customerId = $rowDetails[BaseReconciliate::CUSTOMER_ID];
+        $customerId = $customerDetails[BaseReconciliate::CUSTOMER_ID];
 
         $this->gatewayPayment->setCustomerId($customerId);
     }
@@ -609,11 +601,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     /**
      * Saving customer Name into the DB
      *
-     * @param array $rowDetails
+     * @param array $customerDetails
      */
-    protected function persistNbCustomerName($rowDetails)
+    protected function persistNbCustomerName($customerDetails)
     {
-        $customerName = $rowDetails[BaseReconciliate::CUSTOMER_NAME];
+        $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
         $this->gatewayPayment->setCustomerName($customerName);
     }
