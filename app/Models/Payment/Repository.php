@@ -61,6 +61,7 @@ class Repository extends Base\Repository
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
         Entity::AMOUNT             => 'sometimes|integer',
+        Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
     ];
 
     protected $esWhitelistedParams = [
@@ -147,7 +148,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function lockForUpdate($id)
+    /**
+     * Fetches entity with given id with a mysql lock for update
+     *
+     * @param string       $id
+     * @param bool|boolean $withTrashed
+     *
+     * withTrashed: Method signature changed to make it compatible
+     *              with Base/Repository's method.
+     *
+     * @return Entity
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
     {
         return $this->newQuery()
                     ->lockForUpdate()->findOrFail($id);

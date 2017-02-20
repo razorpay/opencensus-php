@@ -41,7 +41,7 @@ class Repository extends Base\Repository
         if ($this->sharedMerchant === null)
         {
             $this->sharedMerchant = $this->newQuery()
-                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->where(Entity::ID, '=', Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 

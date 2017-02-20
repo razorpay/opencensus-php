@@ -18,6 +18,7 @@ class Bucket extends Base\Bucket
         Type::ICICI_NODAL_TRANSFER                   => 'h2h_bucket',
         Type::BATCH_INPUT                            => 'batch_bucket',
         Type::BATCH_OUTPUT                           => 'batch_bucket',
+        Type::INVOICE_PDF                            => 'invoice_bucket',
 
         MerchantDetail::BUSINESS_PROOF_URL           => 'activation_bucket',
         MerchantDetail::BUSINESS_OPERATION_PROOF_URL => 'activation_bucket',

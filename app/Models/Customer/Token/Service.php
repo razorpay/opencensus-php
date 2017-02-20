@@ -27,7 +27,7 @@ class Service extends Base\Service
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $token = (new Token\Core)->create($customer, $input);
+        $token = $this->core->create($customer, $input);
 
         return $token->toArrayPublic();
     }
@@ -61,7 +61,7 @@ class Service extends Base\Service
     {
         $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $token = $this->repo->token->getByTokenIdAndCustomer($tokenId, $customer);
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
         return $token->toArrayPublic();
     }
@@ -97,7 +97,7 @@ class Service extends Base\Service
 
             $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
+            $tokens = $this->core->fetchTokensByCustomer($app->customer);
         }
 
         return $tokens->toArrayPublic();
@@ -134,7 +134,7 @@ class Service extends Base\Service
 
     protected function deleteTokenForCustomer($tokenId, $customer)
     {
-        $token = (new Token\Core)->getByTokenIdAndCustomer($tokenId, $customer);;
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);;
 
         if ($token === null)
         {
