@@ -35,13 +35,13 @@ class GatewayController extends Controller
 
         $mode = $this->app['repo']->determineLiveOrTestModeForEntity($paymentId, 'payment');
 
-        \Database\DefaultConnection::set($mode);
-
         if ($mode === null)
         {
             throw new Exception\LogicException(
                 'Payment id not found in either database: ' . $paymentId);
         }
+
+        \Database\DefaultConnection::set($mode);
 
         $this->app['basicauth']->setMode($mode);
 

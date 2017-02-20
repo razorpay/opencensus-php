@@ -29,16 +29,35 @@ return [
         'entity' => 'payment',
     ],
 
-    'testPaymentUpiEntity' => [
-        'action'                => 'authorize',
-        'amount'                => 50000,
-        'bank'                  => 'hdfc',
-        'received'              => true,
-        'email'                 => null,
-        'contact'               => null,
-        'gateway_merchant_id'   => '123456',
-        'status_code'           => '0',
-        'vpa'                   => 'shk@hdfc',
-        'entity'                => 'upi',
+    'testFailedCollect' => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
+    'testVerificationFailure' => [
+        'response'  => [
+            'content'   => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\PaymentVerificationException::class,
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
+        ]
     ],
 ];

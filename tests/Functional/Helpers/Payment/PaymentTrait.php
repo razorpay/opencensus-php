@@ -413,9 +413,17 @@ trait PaymentTrait
     {
         $request = [
             'url'    => '/callback/' . $this->gateway,
-            'method' => 'post',
-            'raw'    => $content
+            'method' => 'post'
         ];
+
+        if (is_string($content))
+        {
+            $request['raw'] = $content;
+        }
+        else
+        {
+            $request['content'] = $content;
+        }
 
         $response = $this->makeRequestAndGetContent($request);
 

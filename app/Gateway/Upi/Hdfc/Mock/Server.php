@@ -40,9 +40,11 @@ class Server extends Base\Mock\Server
 
         $input = $this->parseInput($input);
 
+        $vpa = $input[2];
+
         $this->validateAuthorizeInput($input);
 
-        $content = array(
+        $content = [
             // Razorpay Payment Id
             $input[1],
             // Bank Payment Id
@@ -53,10 +55,16 @@ class Server extends Base\Mock\Server
             // Description
             'Transaction Collect request initiated successfully',
             // Payer VA
-            'nemorazorpay@hdfcbank',
+            $vpa,
             // Payee VA
             'razorpay@hdfcbank',
-        );
+        ];
+
+        if ($vpa === 'failedcollect@hdfcbank')
+        {
+            $content[3] = 'FAILED';
+            $content[4] = 'Transaction collect request failed';
+        }
 
         $this->content($content);
 
@@ -119,7 +127,9 @@ class Server extends Base\Mock\Server
 
         $response = $this->makeResponse($content);
 
-        return ('meRes=' . $response->content());
+        return [
+            'meRes' => $response->content()
+        ];
     }
 
     protected function S2SRequestContent(array $upiEntity, array $payment)
@@ -135,7 +145,7 @@ class Server extends Base\Mock\Server
 
         return [
             $upiEntity['gateway_payment_id'],
-            $payment['id'],
+            $upiEntity['payment_id'],
             $this->formatAmount($payment['amount']),
             '2017:12:01 00:00:02',
             $status,

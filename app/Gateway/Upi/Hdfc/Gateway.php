@@ -260,18 +260,6 @@ class Gateway extends Base\Gateway
         return $cipher->decrypt(hex2bin($data));
     }
 
-    protected function hex2str($hex)
-    {
-        $str = '';
-
-        for($i = 0; $i < strlen($hex); $i += 2)
-        {
-           $str .= chr(hexdec(substr($hex,$i,2)));
-        }
-
-        return $str;
-    }
-
     protected function getAuthorizeRequestArray($input)
     {
         $payment = $input['payment'];
@@ -310,15 +298,11 @@ class Gateway extends Base\Gateway
      * @param  array  $input
      * @return string 4 digit integer as string.
      *                  Default value is 6012, as per HDFC
+     *                  (Check pgtech group)
      */
     protected function getMerchantCategoryCode(array $input)
     {
-        if ($input['merchant']['category'])
-        {
-            return $input['merchant']['category'];
-        }
-
-        return '6012';
+        return $input['merchant']['category'] ?? '6012';
     }
 
     /**
@@ -330,11 +314,7 @@ class Gateway extends Base\Gateway
     {
         $description = $input['merchant']->getBillingLabelElseName();
 
-        $remark = ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
-
-        // Since | is used for padding, it can't be present in the remark
-
-        return str_replace('|', ' ', $remark);
+        return ($description ? substr($description, 0, 50) : 'Pay via Razorpay');
     }
 
     /**
@@ -348,11 +328,7 @@ class Gateway extends Base\Gateway
 
         $description = $description ?? 'Razorpay';
 
-        $remark = "Refund for " . substr($description, 0, 36);
-
-        // TODO: Shift the pipe replace to the request generator instead
-
-        return str_replace('|', ' ', $remark);
+        return "Refund for " . substr($description, 0, 36);
     }
 
     /**
@@ -368,12 +344,20 @@ class Gateway extends Base\Gateway
 
         $data = array_merge($data, $suffixArray);
 
+        // Drop any `|` in any of the field values
+        $data = array_map(function($e)
+        {
+            return str_replace('|', '', $e);
+        }, $data);
+
         $data = implode('|', $data);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_REQUEST,
             [
                 'data'              => $data,
+                'gateway'           => $this->gateway,
+                'action'            => $this->action
             ]);
 
         $msg = $this->encrypt($data);

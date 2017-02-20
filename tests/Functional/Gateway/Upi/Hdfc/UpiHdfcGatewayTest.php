@@ -28,6 +28,9 @@ class UpiHdfcGatewayTest extends TestCase
         $this->payment = $this->getDefaultUpiPaymentArray();
     }
 
+    /**
+     * Tests the happy-flow of a complete payment
+     */
     public function testPayment($status = 'created')
     {
         $response = $this->doAuthPaymentViaAjaxRoute($this->payment);
@@ -39,14 +42,46 @@ class UpiHdfcGatewayTest extends TestCase
 
         $this->checkPaymentStatus($paymentId, $status);
 
-        $upiEntity = $this->getLastEntity('upi_icici', true);
+        $upiEntity = $this->getLastEntity('upi', true);
+
         $payment = $this->getEntityById('payment', $paymentId, true);
 
         $content = $this->mockServer()->getAsyncCallbackContent($upiEntity, $payment);
 
         $response = $this->makeS2SCallbackAndGetContent($content);
 
-        return $paymentId;
+        // We should have gotten a successful response
+        $this->assertEquals(['success' => true], $response);
+
+        // The payment should now be authorized
+        $payment = $this->getEntityById('payment', $paymentId, true);
+        $this->assertEquals('authorized', $payment['status']);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $this->assertNotNull($upiEntity['npci_reference_id']);
+        $this->assertNotNull($upiEntity['gateway_payment_id']);
+
+        // Add a capture as well, just for completeness sake
+        $this->capturePayment($paymentId, $payment['amount']);
+
+        return $payment;
+    }
+
+    /**
+     * Force the gateway to raise a failure on trying
+     * to initiate web collect
+     * @return [type] [description]
+     */
+    public function testFailedCollect()
+    {
+        $this->payment['vpa'] = 'failedcollect@hdfcbank';
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->doAuthPaymentViaAjaxRoute($this->payment);
+        });
     }
 
     public function testPaymentViaRedirection()
@@ -70,16 +105,31 @@ class UpiHdfcGatewayTest extends TestCase
 
     public function testVerifyPayment()
     {
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
-
-        $upiEntity = $this->getLastEntity('upi', true);
-        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+        // First we test that verification works
+        // for a captured payment
+        $payment = $this->testPayment();
 
         $this->payment = $this->verifyPayment($payment['id']);
 
         $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
+    // API Payment = created
+    // Gateway = success
+    public function testVerificationFailure()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        $response = $this->doAuthPayment($this->payment);
+
+        $paymentId = $response['payment_id'];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($paymentId)
+        {
+            $this->payment = $this->verifyPayment($paymentId);
+        });
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)
