@@ -85,13 +85,24 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payments/'. $payment->getPublicId() . '/payout';
+        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
 
-        $this->startTest();
+        $payout = $this->startTest();
 
         $payment = $this->getLastEntity('payment', true);
 
         $this->assertEquals(1000, $payment['amount_paidout']);
+
+        $payout2 = $this->getLastEntity('payout', true);
+
+        $this->assertEquals($payout['id'], $payout2['id']);
+
+        $this->assertEquals($payment['id'], 'pay_' . $payout2['payment_id']);
+    }
+
+    public function testPaymentPayoutAmountGreater()
+    {
+
     }
 
     public function testCreatePaymentPayoutNotSettled()
@@ -100,7 +111,7 @@ class PayoutTest extends TestCase
 
         $request = & $this->testData[__FUNCTION__]['request'];
 
-        $request['url'] = '/payments/'. $payment->getPublicId() . '/payout';
+        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
 
         $this->startTest();
     }

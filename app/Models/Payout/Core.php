@@ -13,7 +13,27 @@ use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
-    public function createPayout(array $input, Merchant\Entity $merchant) : Entity
+    public function directPayout(array $input, Merchant\Entity $merchant)
+    {
+        $payout = $this->createPayout($input, $merchant);
+
+        $this->repo->saveOrFail($payout);
+
+        return $payout;
+    }
+
+    public  function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
+    {
+        $payout = $this->createPayout($input, $merchant);
+
+        $payout->payment()->associate($payment);
+
+        $this->repo->saveOrFail($payout);
+
+        return $payout;
+    }
+
+    protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
     {
         $this->validateMerchantStatus($merchant);
 
@@ -89,8 +109,6 @@ class Core extends Base\Core
         $txnCore->updateBalances($txn, true);
 
         $this->repo->saveOrFail($txn);
-
-        $this->repo->saveOrFail($payout);
     }
 
     protected function validateMerchantBalance(Entity $payout)

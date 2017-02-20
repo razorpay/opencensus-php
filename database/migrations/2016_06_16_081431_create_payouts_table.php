@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Customer;
 use RZP\Models\Merchant;
+use RZP\Models\Payment;
 use RZP\Models\Payout\Entity as Payout;
 use RZP\Models\Transaction;
 
@@ -27,19 +28,23 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::MERCHANT_ID, Payout::ID_LENGTH);
 
-            $table->char(Payout::CUSTOMER_ID, Payout::ID_LENGTH);
+            $table->char(Payout::CUSTOMER_ID, Customer\Entity::ID_LENGTH);
 
             $table->string(Payout::METHOD);
 
             $table->char(Payout::DESTINATION, Payout::ID_LENGTH);
 
             $table->integer(Payout::AMOUNT)
-                ->unsigned();
+                  ->unsigned();
 
             $table->char(Payout::CURRENCY);
 
+            $table->char(Payout::PAYMENT_ID, Payment\Entity::ID_LENGTH)
+                  ->nullable()
+                  ->default(null);
+
             $table->string(Payout::NOTES)
-                ->nullable();
+                  ->nullable();
 
             $table->integer(Payout::FEE)
                   ->unsigned()
@@ -84,6 +89,11 @@ class CreatePayoutsTable extends Migration
                   ->on(Table::CUSTOMER)
                   ->on_delete('restrict');
 
+            $table->foreign(Payout::PAYMENT_ID)
+                  ->references(Payment\Entity::ID)
+                  ->on(Table::PAYMENT)
+                  ->on_delete('restrict');
+
             $table->foreign(Payout::TRANSACTION_ID)
                   ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
@@ -103,6 +113,8 @@ class CreatePayoutsTable extends Migration
             $table->dropForeign(Table::PAYOUT.'_'.Payout::CUSTOMER_ID.'_foreign');
 
             $table->dropForeign(Table::PAYOUT.'_'.Payout::MERCHANT_ID.'_foreign');
+
+            $table->dropForeign(Table::PAYOUT.'_'.Payout::PAYMENT_ID.'_foreign');
 
             $table->dropForeign(Table::PAYOUT.'_'.Payout::TRANSACTION_ID.'_foreign');
         });

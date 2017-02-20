@@ -23,6 +23,7 @@ class Entity extends Base\PublicEntity
     const NOTES             = 'notes';
     const FEE               = 'fee';
     const SERVICE_TAX       = 'service_tax';
+    const PAYMENT_ID        = 'payment_id';
     const TRANSACTION_ID    = 'transaction_id';
     const STATUS            = 'status';
     const CHANNEL           = 'channel';
@@ -62,6 +63,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::FEE,
         self::SERVICE_TAX,
+        self::PAYMENT_ID,
         self::TRANSACTION_ID,
         self::STATUS,
         self::CHANNEL,
@@ -128,6 +130,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     public function transaction()

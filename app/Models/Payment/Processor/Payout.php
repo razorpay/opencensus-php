@@ -23,11 +23,13 @@ trait Payout
 
         $payment = $this->retrieve($id);
 
-        $this->validateIsSettled($payment);
+        $this->validatePaymentForPayout($payment);
 
         return $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
-            $payout = (new PayoutCore)->createPayout($input, $this->merchant);
+            $this->validateAndSetAmount($payment, $input);
+
+            $payout = (new PayoutCore)->paymentPayout($input, $payment, $this->merchant);
 
             $this->updatePaymentAmountPaidout($payment, $payout->getAmount());
 
@@ -57,14 +59,41 @@ trait Payout
         $this->repo->saveOrFail($payment);
     }
 
-    protected function validateIsSettled(Payment\Entity $payment)
+    protected function validatePaymentForPayout(Payment\Entity $payment)
     {
-        $txn = $payment->transaction;
+        if ($payment->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
 
-        if ($txn->isSettled() === false)
+        if ($payment->transaction->isSettled() === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
         }
     }
+
+    protected function validateAndSetAmount(Payment\Entity $payment, array & $input)
+    {
+        $payoutAmountPending = $payment->getAmount() - $payment->getAmountPaidout();
+
+        if ($payoutAmountPending === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_PAIDOUT);
+        }
+
+        if (isset($input['amount']) === true)
+        {
+            if ((int) $input['amount'] > $payoutAmountPending)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING);
+            }
+        }
+
+        $input['amount'] = $input['amount'] ?? $payoutAmountPending;
+    }
+
 }
