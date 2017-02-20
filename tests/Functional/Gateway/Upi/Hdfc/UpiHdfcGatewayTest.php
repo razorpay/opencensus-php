@@ -162,7 +162,30 @@ class UpiHdfcGatewayTest extends TestCase
 
         $payment = $this->getEntityById('payment', $paymentId, true);
 
-        $this->assertEquals($payment['status'], 'failed');
+        $this->assertEquals('failed', $payment['status']);
+    }
+
+    public function testRefundSuccess()
+    {
+        $payment = $this->testPayment();
+
+        // Attempt a partial refund
+        $this->refundPayment($payment['id'], 10000);
+    }
+
+    public function testRefundFailure()
+    {
+        $this->payment['vpa'] = 'failedrefund@hdfcbank';
+
+        $payment = $this->testPayment();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->refundPayment($payment['id'], 10000);
+        });
+
     }
 
     protected function checkPaymentStatus($id, $expectedStatus)

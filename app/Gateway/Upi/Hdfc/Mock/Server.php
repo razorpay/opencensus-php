@@ -21,7 +21,8 @@ class Server extends Base\Mock\Server
      */
     const REQUEST_FIELD_COUNT = [
         Action::COLLECT     => 7,
-        Action::VERIFY      => 4
+        Action::VERIFY      => 4,
+        Action::REFUND      => 10,
     ];
 
     /**
@@ -33,6 +34,7 @@ class Server extends Base\Mock\Server
         Action::VALIDATE_VPA    => 14,
         Action::VERIFY          => 21,
         Action::CALLBACK        => 21,
+        Action::REFUND          => 21,
     ];
     public function authorize($input)
     {
@@ -221,6 +223,53 @@ class Server extends Base\Mock\Server
         ];
 
         return $this->makeResponse($res, Action::VERIFY);
+    }
+
+    public function refund($input)
+    {
+        parent::refund($input);
+
+        $input = $this->parseInput($input, Action::REFUND);
+
+        $paymentId = $input[2];
+
+        $app = App::getFacadeRoot();
+
+        $payment = $app['repo']->payment->find($paymentId);
+
+        $response = $this->getDefaultRefundResponse($input, $payment);
+
+        if ($payment['vpa'] === 'failedrefund@hdfcbank')
+        {
+            $response[4] = 'FAILED';
+        }
+
+        return $this->makeResponse($response, Action::REFUND);
+    }
+
+    protected function getDefaultRefundResponse(array $input, $payment)
+    {
+        return [
+            // UPI Txn Id
+            random_int(100000, 999999),
+            // Refund Id
+            $input[1],
+            // Amount
+            $input[6],
+            date('Y:m:d h:i:s', time()),
+            // REFUND_SUCCESS is just S
+            'S',
+            'Transaction success',
+            // response code
+            '00',
+            // Approval number
+            random_integer(12),
+            $payment['vpa'],
+            // NPCI UPI ID (customer reference number)
+            $input[4],
+            // Reference Id, currently null
+            'NA'
+        ];
     }
 
     protected function getCipherInstance()

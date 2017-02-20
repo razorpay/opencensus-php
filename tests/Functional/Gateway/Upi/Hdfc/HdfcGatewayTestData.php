@@ -76,4 +76,20 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ]
     ],
+
+    'testRefundFailure' =>  [
+        'response'  =>  [
+            'content'   =>  [
+                'error' =>  [
+                    'code'          => PublicErrorCode::GATEWAY_ERROR,
+                    'description'   => PublicErrorDescription::GATEWAY_ERROR,
+                ]
+            ],
+            'status_code'           => 502
+        ],
+        'exception' => [
+            'class'                 => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code'   => ErrorCode::GATEWAY_ERROR_PAYMENT_REFUND_FAILED
+        ]
+    ],
 ];
