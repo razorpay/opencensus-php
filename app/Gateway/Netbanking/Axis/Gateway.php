@@ -360,4 +360,9 @@ class Gateway extends Base\Gateway
 
         return $this->config['live_hash_secret'];
     }
+
+    public static function getAuthorizedStatus()
+    {
+        return Constants::YES;
+    }
 }

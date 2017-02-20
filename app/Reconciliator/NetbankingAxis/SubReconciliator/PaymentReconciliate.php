@@ -3,12 +3,13 @@
 namespace RZP\Reconciliator\NetbankingAxis;
 
 use RZP\Reconciliator\Base;
+use RZP\Gateway\Base\Action;
+use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
     const COLUMN_PAYMENT_REF_NO  = 'PRN No';
     const COLUMN_BANK_PAYMENT_ID = 'BID';
-    const AUTHORIZED             = 'Y';
 
     protected function getPaymentId($row)
     {
@@ -20,8 +21,11 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         return $row[self::COLUMN_BANK_PAYMENT_ID];
     }
 
-    protected function getAuthorizedStatus()
+    protected function getGatewayPayment()
     {
-        return self::AUTHORIZED;
+        return $this->netbankingRepo->findByPaymentIdActionAndStatus(
+                                                            $this->payment->getId(),
+                                                            Action::AUTHORIZE,
+                                                            Axis\Gateway::getAuthorizedStatus());
     }
 }

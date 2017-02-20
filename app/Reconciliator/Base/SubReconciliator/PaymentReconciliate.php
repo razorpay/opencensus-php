@@ -534,10 +534,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             return;
         }
 
-        $this->gatewayPayment = $this->netbankingRepo->findByPaymentIdAndStatus(
-                                                     $this->payment->getId(),
-                                                     $this->getAuthorizedStatus())
-                                                     ->first();
+        $this->gatewayPayment = $this->getGatewayPayment();
 
         $paymentReference = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
@@ -547,12 +544,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Each gateway has a different measure of defining a successfully authorized
-     * payment. This method is overriden in the child class.
+     * Getting the gatewayPayment associated with payment entity.
+     * It is implemented in the child class
      */
-    protected function getAuthorizedStatus()
+    protected function getGatewayPayment()
     {
-        return Payment\Status::AUTHORIZED;
+        return null;
     }
 
     protected function persistIssuer($reconIssuer)
