@@ -14,9 +14,13 @@ export default class ListFilter extends Component {
   }
 
   render() {
-    let { handleSubmit, onSubmit, reset } = this.props
+    let { handleSubmit, onSubmit, reset, form } = this.props
     return (
-      <form onSubmit={handleSubmit(onSubmit)} class='list-filter-container'>
+      <form
+        name={form}
+        onSubmit={handleSubmit(onSubmit)}
+        class='list-filter-container'
+      >
         {this.props.children}
         <div class='form-group list-filter-item btn-toolbar'>
           <AsyncButton

@@ -10,6 +10,7 @@ const webpackConfig = {
     alias: {
       moment: 'moment/min/moment.min.js',
       react: path.resolve(__dirname, 'node_modules/react'),
+      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
     },
     modules: [
       path.resolve(__dirname, 'node_modules'),
