@@ -225,8 +225,10 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
+        self::EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
@@ -346,6 +348,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
     }
 
     public function getDescription()

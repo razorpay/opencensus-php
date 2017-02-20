@@ -12,6 +12,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal;
+use RZP\Models\Report;
 
 class MerchantController extends Controller
 {
@@ -442,14 +443,18 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\Report)->getReport($input, $entity);
+        $report = new Report\BasicEntityReport($entity);
+
+        return $report->getReport($input);
     }
 
     public function getPublicEntityReportUrl($entity)
     {
         $input = Request::all();
 
-        $data = (new \RZP\Models\Base\Report)->getReportUrl($input, $entity);
+        $report = new Report\BasicEntityReport($entity);
+
+        $data = $report->getReportUrl($input);
 
         return ApiResponse::json($data);
     }
@@ -458,14 +463,23 @@ class MerchantController extends Controller
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\BrokerTransactionReport)->getReport($input, E::TRANSACTION);
+        $report = new Report\BrokerTransactionReport(E::TRANSACTION);
+
+        return $report->getReport($input);
     }
 
     public function getInvoiceReport()
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\Report)->getInvoiceV2($input);
+        return (new Report\InvoiceReport)->getInvoice($input);
+    }
+
+    public function getInvoiceReportV2()
+    {
+        $input = Request::all();
+
+        return (new Report\InvoiceReport)->getInvoiceV2($input);
     }
 
     /**
