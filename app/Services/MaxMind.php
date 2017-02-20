@@ -61,8 +61,6 @@ class MaxMind
         ])->withBilling([
             'first_name' => $card->getFirstName(),
             'last_name' => $card->getLastName(),
-            'phone_number' => $payment->getContactWithoutCountryCode(),
-            'phone_country_code' => $payment->getContactCountryCode()
         ])->withCreditCard([
             'issuer_id_number' => $card->getIin(),
             'last_4_digits' => $card->getLast4(),

@@ -1209,7 +1209,7 @@ trait PaymentTrait
 
                         if (isset($binRiskMapping[$bin]) === true)
                         {
-                            return ['riskScore' => $binRiskMapping[$bin]];
+                            return ['risk_score' => $binRiskMapping[$bin]];
                         }
 
                         return null;
