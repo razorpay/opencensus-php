@@ -138,7 +138,6 @@ class WebhookTest extends TestCase
                 'customer_name'    => null,
                 'customer_email'   => null,
                 'customer_contact' => null,
-                'customer_address' => null,
             ]);
 
         $payment = $this->getDefaultPaymentArray();

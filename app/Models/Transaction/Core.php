@@ -516,7 +516,18 @@ class Core extends Base\Core
 
         if ($payment->hasBeenCaptured())
         {
-            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            $paymentTxn = $payment->transaction;
+
+            if ($paymentTxn->isSettled() === true)
+            {
+                $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            }
+            else
+            {
+                $paymentSettledAt = $paymentTxn->getSettledAt();
+
+                $txnData[Transaction\Entity::SETTLED_AT] = $paymentSettledAt;
+            }
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;

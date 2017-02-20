@@ -193,13 +193,19 @@ class Converter
         {
             while (($row = fgetcsv($handle)) !== false)
             {
-                if ($currentLineNumber < $linesToSkipFromTop)
+                //
+                // Skip the first few ($linesToSkipFromTop) rows
+                // Or jump right over it if it's an empty row.
+                //
+                if (($currentLineNumber < $linesToSkipFromTop) or
+                    (empty(array_filter($row))))
                 {
                     $currentLineNumber++;
 
                     continue;
                 }
 
+                // Skip the last few ($totalLinesToRead) rows
                 if (($totalLinesToRead !== null) and
                     ($currentLineNumber >= $totalLinesToRead))
                 {

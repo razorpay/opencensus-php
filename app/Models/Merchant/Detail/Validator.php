@@ -140,6 +140,15 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::COMMENT                         => 'sometimes|max:255',
+        Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
+        Entity::BANK_BENEFICIARY_ADDRESS1       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS2       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS3       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_CITY           => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_STATE          => 'sometimes|max:2',
+        Entity::BANK_BENEFICIARY_PIN            => 'sometimes|max:15',
     ];
 
     protected static $migrateRules = [

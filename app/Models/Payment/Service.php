@@ -16,6 +16,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -766,14 +767,6 @@ class Service extends Base\Service
 
                 $refunded++;
             }
-            catch (Exception\GatewayErrorException $e)
-            {
-                $failed++;
-
-                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
-
-                // Now Just continue
-            }
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
@@ -782,6 +775,14 @@ class Service extends Base\Service
 
                 // Just continue
                 $timedOut++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
+                // Now Just continue
             }
             catch (\Exception $e)
             {
@@ -1075,8 +1076,10 @@ class Service extends Base\Service
 
                 $headers = $message->getHeaders();
 
+                $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
+
                 foreach ($data['payments'] as $payment) {
-                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                    $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
                 }
             });
     }

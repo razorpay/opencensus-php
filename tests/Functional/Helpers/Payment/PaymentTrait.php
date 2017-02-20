@@ -613,6 +613,18 @@ trait PaymentTrait
         return $content;
     }
 
+    protected function refund($params)
+    {
+        $this->ba->privateAuth();
+
+        $request = array(
+            'method'    => 'POST',
+            'url'       => '/refunds',
+            'content'   => $params);
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
@@ -1291,6 +1303,21 @@ trait PaymentTrait
     {
         $request = [
             'url'     => '/refunds/' . $gateway . '/create_record',
+            'action'  => 'post',
+            'content' => [],
+        ];
+
+        $this->ba->appAuth();
+
+        $response = $this->sendRequest($request);
+
+        return json_decode($response->getContent(), true);
+    }
+
+    public function startGatewayRefundValidateCron(string $gateway)
+    {
+        $request = [
+            'url'     => '/refunds/' . $gateway . '/validate',
             'action'  => 'post',
             'content' => [],
         ];

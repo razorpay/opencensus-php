@@ -19,6 +19,7 @@ class PublicErrorDescription
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ROUTE_DISABLED                                            = 'The requested route is disabled.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
+    const BAD_REQUEST_FORBIDDEN                                                 = 'Access forbidden for requested resource';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
@@ -307,6 +308,7 @@ class PublicErrorDescription
 
     const BAD_REQUEST_PASSWORD_EXPIRED                                          = 'Account password has expired. Please contact administrator';
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                 = 'Duplicate value for receipt in invoice';
+    const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                     = 'Invoice expiry failed as payment exists or is in progress for this invoice.';
 
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                       = 'The operation cannot be performed without an API key being generated';
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                = 'Cannot edit/delete an item with which invoices have been created already';

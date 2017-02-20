@@ -40,6 +40,10 @@ class Gateway
     const WALLET_PAYZAPP     = 'wallet_payzapp';
     const MARKETPLACE        = 'marketplace';
 
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
+
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
 
@@ -61,6 +65,14 @@ class Gateway
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
         self::BILLDESK,
+    ];
+
+    //
+    // Gateways for which we can validate the refunds
+    // if they are successful after they are 'initiated'
+    //
+    const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
+        self::WALLET_FREECHARGE
     ];
 
     public static $channels = [
@@ -366,8 +378,18 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+
+    /**
+     * For the banks that require a refundfile generated everyday,
+     * we map IFSC codes to Gateways
+     *
+     * @var array
+     */
+    public static $refundFileNetbankingGateways = array(
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -450,7 +472,7 @@ class Gateway
      * @param string $networkCode
      * @return bool
      */
-    public static function supportsAuthAndCapture($gateway, $networkCode = null)
+    public static function supportsAuthAndCapture($gateway, $networkCode = null): bool
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 

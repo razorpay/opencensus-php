@@ -72,10 +72,8 @@ class Handler extends BaseHandler
 
             $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }
-
         catch (\Exception $e)
         {
-
             $this->trace->traceException($e);
 
             throw $e;

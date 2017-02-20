@@ -80,7 +80,7 @@ class Validator extends Base\Validator
         'email',
     ];
 
-    protected function validateEmail($input)
+    protected function validateEmail(array $input)
     {
         $allowedPaymentMethods = [
             'aeps',
@@ -122,7 +122,7 @@ class Validator extends Base\Validator
         Wallet::validateExists($value);
     }
 
-    protected function validateCardKey($input)
+    protected function validateCardKey(array $input)
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
@@ -151,7 +151,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAmount($input)
+    protected function validateAmount(array $input)
     {
         $amount = $input['amount'];
 
@@ -189,7 +189,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    public function validateUpiVpaPsp(string $vpa, array $excludedPsps)
     {
         $vpaParts = explode('@', $vpa);
 
