@@ -32,7 +32,7 @@ export default class SessionProvider extends Component {
     user.identity().then((user) => {
       this.updateSession(user)
     }).catch((err) => {
-      this.updateSession(null)
+      throw err
     })
   }
 

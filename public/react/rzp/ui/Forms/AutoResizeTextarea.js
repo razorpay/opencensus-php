@@ -22,6 +22,10 @@ export default class AutoResizeTextarea extends Component {
     this.measureHeight()
   }
 
+  componentWillReceiveProps() {
+    this.measureHeight();
+  }
+
   measureHeight(event = {}) {
     let $target = event.target || this.textarea
     setTimeout(() => {
