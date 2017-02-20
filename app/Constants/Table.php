@@ -59,6 +59,7 @@ class Table
     const ADMIN_TOKEN           = 'admin_tokens';
     const ROLE_MAP              = 'role_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
+    const ADMIN_LEAD            = 'admin_leads';
 
     // Gateway related
     const EBS                   = 'ebs';
