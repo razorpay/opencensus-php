@@ -226,6 +226,42 @@ class OrganizationController extends Controller
 
 // --------------------- END CRUD for Groups  -------------------------------------
 
+// --------------------- CRUD for Org FieldMap ----------------------------------------
+
+    public function createOrgFieldMap(string $id)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Org\FieldMap\Service)->createFieldMapForEntity($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function editOrgFieldMap(string $id, string $entity)
+    {
+        $input = Request::all();
+
+        $data = (new Admin\Org\FieldMap\Service)->editFieldMapForEntity($id, $entity, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOrgFieldMap(string $id, string $entity)
+    {
+        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function deleteOrgFieldMap(string $id, string $entity)
+    {
+        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+// --------------------- END CRUD for Org FieldMap ----------------------------------------
+
 // --------------------- CRUD for Permissions ----------------------------------------
 
      public function createPermission()

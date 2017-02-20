@@ -40,4 +40,32 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne('RZP\Models\Org\Entity');
     }
+
+    public function getFieldsAttribute()
+    {
+        $fields = $this->attributes[self::FIELDS];
+
+        if (empty($fields) === true)
+        {
+            return [];
+        }
+
+        return explode(',', $fields);
+    }
+
+    public function setFieldsAttribute(array $fields)
+    {
+        $this->attributes[self::FIELDS] = implode(',', $fields);
+    }
+
+
+    public function getFields() : array
+    {
+        return $this->getAttribute(self::FIELDS);
+    }
+
+    public function setFields(array $fields)
+    {
+        $this->setAttribute(self::FIELDS, $fields);
+    }
 }
