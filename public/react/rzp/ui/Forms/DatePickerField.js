@@ -23,7 +23,6 @@ export default class DatePickerField extends Component {
       input,
       name,
       onDateChange,
-      isOutsideRange = () => false,
       meta: { touched, error },
       ...otherProps
     } = this.props
@@ -36,7 +35,10 @@ export default class DatePickerField extends Component {
           id={input.name}
           date={date}
           focused={focused}
-          isOutsideRange={isOutsideRange}
+          isOutsideRange={(day) => {
+            let diff = (moment().diff(day, 'hours'))/24
+            return !(diff <= 60 && diff >= 0)
+          }}
           onDateChange={(date) => {
             input.onChange(date.unix())
             onDateChange(date)
