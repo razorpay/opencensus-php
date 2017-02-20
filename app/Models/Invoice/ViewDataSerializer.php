@@ -94,6 +94,10 @@ class ViewDataSerializer extends Base\Core
     {
         $merchantBrandColor = $this->merchant->getBrandColor();
 
+        if ($merchantBrandColor === null) {
+            $merchantBrandColor = '#6A5DD1';
+        }
+
         $merchantData = [
             'brand_color'      => get_rgb_value($merchantBrandColor),
             'brand_text_color' => get_brand_text_color($merchantBrandColor),
