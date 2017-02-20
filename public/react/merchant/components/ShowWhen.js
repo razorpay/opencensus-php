@@ -19,6 +19,8 @@ export default class ShowWhen extends Component {
 
     if (user) {
       userRole = user.merchants[user.id].pivot.role
+    } else {
+      return null
     }
 
     if(roles.indexOf(userRole) > -1) {

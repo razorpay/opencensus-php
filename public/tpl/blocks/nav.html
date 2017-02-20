@@ -3,32 +3,35 @@
     <li ng-show="merchant" class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Features</span>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp support">
+    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.dashboard" ui-sref-active="active">
       <a id="dashboardNav" ui-sref="app.dashboard" ui-sref-active="active">
         <i class="fa fa-area-chart text-info"></i>
         <span>Dashboard</span>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp">
+    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.payments.list" ui-sref-active="active">
       <a id="paymentsNav" ui-sref="app.payments.list" ui-sref-active="active">
         <i class="fa fa-inr text-primary-lter"></i>
         <span>Payments</span>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp">
+    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.orders.list" ui-sref-active="active">
       <a id="ordersNav" ui-sref="app.orders.list" ui-sref-active="active">
         <i class="fa fa-archive text-success-lter"></i>
         <span>Orders</span>
         <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp">
+    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.refunds.list" ui-sref-active="active">
       <a id="refundsNav" ui-sref="app.refunds.list" ui-sref-active="active">
         <i class="fa fa-mail-reply icon text-warning-lter"></i>
         <span>Refunds</span>
       </a>
     </li>
-    <li ng-show="merchant">
+    <li ng-show="merchant"
+      ui-sref="app.invoices.list"
+      ng-class="{active: ('app.invoices.list' | includedByState) || ('app.invoices.details' | includedByState) || ('app.invoices.new' | includedByState) || ('app.invoices.edit' | includedByState)}"
+    >
       <a
         id="invoicesNav"
         ui-sref="app.invoices.list"
@@ -39,7 +42,7 @@
         <b class="badge bg-success dk pull-right ng-binding">new</b>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp support">
+    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.settlements.list" ui-sref-active="active">
       <a id="settlementsNav" ui-sref="app.settlements.list" ui-sref-active="active">
         <i class="fa  fa-check-square-o icon text-success"></i>
         <span>Settlements</span>
@@ -52,20 +55,20 @@
         <span>Transaction</span>
       </a>
     </li> -->
-    <li ng-show="merchant" not-my-role="sellerapp">
+    <li ng-show="merchant" not-my-role="sellerapp" ui-sref="app.addfunds" ui-sref-active="active">
       <a id="addFundsNav" ui-sref="app.addfunds" ui-sref-active="active">
         <i class="icon icon-wallet text-info-lter"></i>
         <span>Add Funds</span>
       </a>
     </li>
-    <li ng-show="merchant" not-my-role="sellerapp support">
+    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.generatereport" ui-sref-active="active">
       <a id="generateReportNav" ui-sref="app.generatereport" ui-sref-active="active">
         <i class="fa fa-file-excel-o icon text-danger-lter"></i>
         <!-- <b class="badge bg-success dk pull-right ng-binding">beta</b> -->
         <span>Reports</span>
       </a>
     </li>
-    <li ng-show="merchant && user.primaryOwner">
+    <li ng-show="merchant && user.primaryOwner" ui-sref="app.teammanagement" ui-sref-active="active">
       <a id="manageTeamNav" ui-sref="app.teammanagement" ui-sref-active="active">
         <i class="fa fa-users icon text-info-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>
@@ -73,14 +76,14 @@
         </a>
     </li>
 
-    <li ng-show="merchant" not-my-role="sellerapp support">
+    <li ng-show="merchant" not-my-role="sellerapp support" ui-sref="app.credits" ui-sref-active="active">
       <a id="manageCredits" ui-sref="app.credits" ui-sref-active="active">
         <i class="fa fa-credit-card icon text-warning-lter"></i>
         <span>Credits</span>
         </a>
     </li>
 
-    <li ng-show="merchant && user.tags.indexOf('Referral') != -1" not-my-role="sellerapp support">
+    <li ng-show="merchant && user.tags.indexOf('Referral') != -1" not-my-role="sellerapp support" ui-sref="app.referrals" ui-sref-active="active">
       <a id="referredNav" ui-sref="app.referrals" ui-sref-active="active">
         <i class="fa fa-gift icon text-danger-lter"></i>
         <b class="badge bg-success dk pull-right ng-binding">beta</b>
@@ -111,33 +114,33 @@
     <li class="hidden-folded padder m-t m-b-sm text-muted text-xs">
       <span>Settings</span>
     </li>
-    <li ng-show="merchant" my-role="owner admin">
+    <li ng-show="merchant" my-role="owner admin" ui-sref="app.keys" ui-sref-active="active">
       <a id="keysNav" ui-sref="app.keys" ui-sref-active="active">
         <i class="icon-key icon text-success-lter"></i>
         <span>Api Keys</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager admin">
+    <li ng-show="merchant" my-role="owner manager admin" ui-sref="app.activation" ui-sref-active="active">
       <a id="activationNav" ui-sref="app.activation" ui-sref-active="active">
         <i class="icon-question icon text-success-lter"></i>
         <b class="badge bg-success dk pull-right">{{user.activation_progress}}%</b>
         <span>Activation</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager admin">
+    <li ng-show="merchant" my-role="owner manager admin" ui-sref="app.webhooks" ui-sref-active="active">
       <a id="webhookNav" ui-sref="app.webhooks" ui-sref-active="active">
         <i class="icon-share icon text-success-lter"></i>
         <span>Webhook</span>
       </a>
     </li>
-    <li>
+    <li ui-sref="app.profile" ui-sref-active="active">
       <a id="profileNav" ui-sref="app.profile" ui-sref-active="active">
         <i class="icon-user icon text-warning-lter"></i>
         <span>Profile</span>
       </a>
     </li>
-    <li ng-show="merchant" my-role="owner manager admin">
-      <a id="configNav" ui-sref="app.config" ui-sref-active="active">
+    <li ng-show="merchant" my-role="owner manager admin" ui-sref="app.config" ui-sref-active="active">
+      <a ui-sref="app.config" ui-sref-active="active">
         <i class="icon-settings icon text-warning-lter"></i>
         <span>Configuration</span>
       </a>

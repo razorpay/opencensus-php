@@ -72,7 +72,8 @@ let initialState = {
   loading: true,
   invoice: {
     customer_details: {},
-    line_items: []
+    line_items: [],
+    notes: {},
   },
   error: null
 }
