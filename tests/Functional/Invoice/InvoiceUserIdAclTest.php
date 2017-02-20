@@ -18,12 +18,10 @@ class InvoiceUserIdAclTest extends TestCase
         $this->ba->proxyAuth();
     }
 
-
     public function testCreateInvoiceWithUserIdHeader()
     {
         $this->startTest();
     }
-
 
     public function testGetInvoiceWithUserIdHeaderSuccess()
     {
@@ -45,7 +43,6 @@ class InvoiceUserIdAclTest extends TestCase
 
         $this->startTest();
     }
-
 
     public function testListInvoiceWithUserIdHeader()
     {
@@ -74,7 +71,6 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
-
     public function testUpdateInvoiceWithUserIdHeaderSuccess()
     {
         $this->createInvoice(['user_id' => '10000000UserId']);
@@ -90,7 +86,6 @@ class InvoiceUserIdAclTest extends TestCase
 
         $this->startTest();
     }
-
 
     public function testDeleteInvoiceWithUserIdHeaderSuccess()
     {
@@ -110,7 +105,6 @@ class InvoiceUserIdAclTest extends TestCase
         $this->startTest();
     }
 
-
     public function testExpireInvoiceWithUserIdHeaderSuccess()
     {
         $this->createInvoice(['user_id' => '10000000UserId', 'status' => 'issued']);
@@ -126,7 +120,6 @@ class InvoiceUserIdAclTest extends TestCase
 
         $this->startTest();
     }
-
 
     private function createInvoice(array $with = [])
     {
