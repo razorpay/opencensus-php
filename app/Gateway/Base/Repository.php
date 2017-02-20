@@ -3,6 +3,8 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Base;
+use RZP\Models\Payment;
+use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {
@@ -40,7 +42,9 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function findByPaymentIdActionAndStatus($paymentId, $action, $status)
+    public function findByPaymentIdActionAndStatus(string $paymentId,
+                                                   string $action,
+                                                   string $status)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
