@@ -2,6 +2,7 @@
   font-family: Arial, sans-serif;
   line-height: 20px;
   color: rgba(0,0,0,0.87);
+  white-space: normal;
 }
 
 h2 {
