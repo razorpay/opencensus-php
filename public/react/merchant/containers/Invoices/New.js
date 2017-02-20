@@ -303,10 +303,11 @@ export default class InvoicesNewContainer extends Component {
       action: () => {
         return invoice.id ?
           this.props.deleteInvoice(invoice).then(() => {
-            this.navigateToList()
-            this.props.showNotification({
-              type: 'success',
-              message: 'Invoice deleted successfully'
+            this.navigateToList().then(() => {
+              this.props.showNotification({
+                type: 'success',
+                message: 'Invoice deleted successfully'
+              })
             })
           }).catch(({ errors }) => {
             this.props.showNotification({
