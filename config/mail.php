@@ -110,4 +110,5 @@ return [
 
     // Uncomment this for local mailgun testing
     // 'to' => ['address' => 'prashanth.yv@razorpay.com', 'name' => 'Prashanth YV'],
+    'to' => ['address' => 'jitendra.ojha@razorpay.com', 'name' => 'Prashanth YV'],
 ];
