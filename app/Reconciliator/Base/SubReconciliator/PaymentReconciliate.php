@@ -332,9 +332,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistCardDetailsIfAbsent($rowDetails);
 
-        $this->persistReferenceNumber($rowDetails);
-
-        $this->persistNbCustomerDetails($rowDetails);
+        $this->persistGatewayData($rowDetails);
 
         $this->persistGatewaySettledAt($this->payment, $rowDetails);
 
@@ -545,6 +543,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Saving Gateway Data into DB
+     *
+     * @param array $rowDetails
+     */
+    protected function persistGatewayData($rowDetails)
+    {
+        $this->persistReferenceNumber($rowDetails);
+
+        $this->persistNbCustomerDetails($rowDetails);
+
+        $this->gatewayPayment->saveOrFail();
+    }
+
+    /**
      * Saving the Bank Payment Id from reconciliator file
      * Replacing existing value or adding it to the DB
      *
@@ -560,8 +572,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $paymentReference = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
         $this->gatewayPayment->setBankPaymentId($paymentReference);
-
-        $this->gatewayPayment->saveOrFail();
     }
 
     /**
@@ -573,6 +583,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     {
         $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
 
+        if (empty(array_filter($customerDetails)) === true)
+        {
+            return;
+        }
+
         if (isset($customerDetails[BaseReconciliate::CUSTOMER_ID]) === true)
         {
             $this->persistNbCustomerId($customerDetails);
@@ -582,8 +597,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->persistNbCustomerName($customerDetails);
         }
-
-        $this->gatewayPayment->saveOrFail();
     }
 
     /**

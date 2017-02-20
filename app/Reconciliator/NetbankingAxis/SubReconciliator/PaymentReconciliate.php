@@ -43,7 +43,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getNbCustomerId($row)
     {
-        if (isset($row[self::COLUMN_BANK_CUSTOMER_ID]))
+        if (isset($row[self::COLUMN_BANK_CUSTOMER_ID]) === true)
         {
             return $row[self::COLUMN_BANK_CUSTOMER_ID];
         }
@@ -53,7 +53,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getNbCustomerName($row)
     {
-        if (isset($row[self::COLUMN_BANK_CUSTOMER_NAME]))
+        if (isset($row[self::COLUMN_BANK_CUSTOMER_NAME]) === true)
         {
             return $row[self::COLUMN_BANK_CUSTOMER_NAME];
         }

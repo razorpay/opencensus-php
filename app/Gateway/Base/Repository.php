@@ -3,8 +3,6 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Base;
-use RZP\Models\Payment;
-use RZP\Gateway\Base\Action;
 
 class Repository extends Base\Repository
 {
