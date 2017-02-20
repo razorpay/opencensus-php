@@ -18,41 +18,42 @@ class Utility extends \RZP\Gateway\Utility
         return $xml;
     }
 
-    public static function getAndParseError(array & $response)
-    {
-        $error = self::getFieldFromXML($response['xml'], 'error_code_tag');
-
-        if ($error === null)
-        {
-            return false;
-        }
-
-        $response['error']['code'] = $error;
-        $response['error']['text'] = self::getFieldFromXML($response['xml'], 'error_text');
-        $response['error']['result'] = self::getFieldFromXML($response['xml'], 'result');
-
-        return true;
-    }
-
+    /**
+     * First checks for error code field.
+     * If it's set then gets error related fields otherwise
+     * gets other normal field values.
+     */
     public static function parseResponseXml(array & $response)
     {
-        if (self::getAndParseError($response))
-        {
-            return;
-        }
+        $xml = $response['xml'];
 
-        self::getFieldsFromXML(
-            $response['xml'],
-            $response['fields'],
-            $response['data']);
+        $errorCode = self::getFieldFromXML($xml, 'error_code_tag');
+
+        if ($errorCode !== null)
+        {
+            // There is an error, only set error fields.
+            $response['error'] = [
+                'code' => $errorCode,
+                'text' => self::getFieldFromXML($xml, 'error_text'),
+                'result' => self::getFieldFromXML($xml, 'result'),
+            ];
+        }
+        else
+        {
+            $response['data'] = self::getFieldsFromXML($xml, $response['fields']);
+        }
     }
 
-    public static function getFieldsFromXML($xml, $fields, &$array)
+    public static function getFieldsFromXML($xml, $fields)
     {
+        $data = [];
+
         foreach ($fields as $field)
         {
-            $array[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
+            $data[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
         }
+
+        return $data;
     }
 
     public static function getFieldFromXML($xml, $field)

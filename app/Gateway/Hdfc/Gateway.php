@@ -182,8 +182,7 @@ class Gateway extends Base\Gateway
         'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'type'      => 'inquiry',
         'xml'       => '',
-        'data'      => array(),
-        'error'     => null);
+        'data'      => array());
 
     protected $inquiryResponse = array(
         'type' => 'inquiry',
