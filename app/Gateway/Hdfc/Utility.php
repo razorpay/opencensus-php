@@ -18,7 +18,7 @@ class Utility extends \RZP\Gateway\Utility
         return $xml;
     }
 
-    public static function getAndParseError(array &$response)
+    public static function getAndParseError(array & $response)
     {
         $error = self::getFieldFromXML($response['xml'], 'error_code_tag');
 

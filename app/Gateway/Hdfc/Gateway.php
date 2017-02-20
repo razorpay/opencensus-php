@@ -240,8 +240,6 @@ class Gateway extends Base\Gateway
      */
     protected $authorize = true;
 
-    protected $callbackUrl;
-
     protected $purchaseNetworks = array(
         Card\Network::MAES,
         Card\Network::RUPAY,
@@ -556,12 +554,9 @@ class Gateway extends Base\Gateway
 
     protected function checkResponseStatusCodeAndContentType(& $response)
     {
-        $error = $this->checkResponseStatusCode($response);
-
-        if ($error === false)
-        {
-            $error = $this->checkResponseContentType($response);
-        }
+        // Checks status code and content type
+        $error = (($this->checkResponseStatusCode($response)) or
+                  ($this->checkResponseContentType($response)));
 
         return $error;
     }
@@ -572,6 +567,7 @@ class Gateway extends Base\Gateway
 
         if ($statusCode >= 500)
         {
+            // This is an error, set respective error code/desc.
             if ($this->checkForServiceUnavailability($response) === true)
             {
                 Hdfc\ErrorHandler::setTimeoutError($response);
@@ -580,8 +576,6 @@ class Gateway extends Base\Gateway
             {
                 Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $statusCode);
             }
-
-            $this->error = true;
 
             return true;
         }
@@ -600,8 +594,6 @@ class Gateway extends Base\Gateway
             $this->trace->info(
                 TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
                 $contentType);
-
-            $this->error = true;
 
             return true;
         }
@@ -654,7 +646,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->processResponse($response);
+        $response = $this->processResponse($response);
 
         return $response;
     }
@@ -790,7 +782,13 @@ class Gateway extends Base\Gateway
 
     // -------------------------Exceptions Ends ------------------------------------
 
-    protected function processResponse(& $response)
+    /**
+     * Removes the card number in case it comes in response.
+     * If card number comes, then it's always under <pan></pan> tags
+     * @param  Requests_Response $response
+     * @return array
+     */
+    protected function processResponse($response)
     {
         $body = $response->body;
 
@@ -804,5 +802,7 @@ class Gateway extends Base\Gateway
             $response->body = $body;
             $response->raw = null;
         }
+
+        return $response;
     }
 }

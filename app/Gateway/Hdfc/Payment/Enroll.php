@@ -138,6 +138,8 @@ trait Enroll
 
         $url = $input['callbackUrl'];
 
+        // This is required in case of rupay for handling
+        // s2s callback during development.
         if ($this->env === 'dev')
         {
             $url = $this->getCallbackUrlForDev($url);
