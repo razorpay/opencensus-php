@@ -109,8 +109,6 @@ trait Support
                                             $input['payment']['id'], $status);
         }
 
-        $this->id = $input['payment']['id'];
-
         return $this->model;
     }
 

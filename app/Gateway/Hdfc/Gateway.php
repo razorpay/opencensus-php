@@ -327,17 +327,16 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input, $network);
 
-        $this->id = $input['payment']['id'];
-
         $this->model = $this->repo->findByGatewayTransactionIdOrFail(
             $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
 
-        if ($this->id !== $paymentId)
+        if ($input['payment']['id'] !== $paymentId)
         {
             throw new Exception\LogicException(
-                'api payment '. $this->id . ' should be equal to payment id . '. $paymentId);
+                'api payment '. $input['payment']['id'] .
+                ' should be equal to payment id . '. $paymentId);
         }
 
         $this->postAuthEnrolledRequest($input);
@@ -672,13 +671,6 @@ class Gateway extends Base\Gateway
     protected function getModel($id)
     {
         $this->model = $this->repo->retrieve($id);
-
-        $this->id = $id;
-    }
-
-    protected function setId($id)
-    {
-        $this->id = $id;
     }
 
     /**
