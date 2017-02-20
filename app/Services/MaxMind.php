@@ -2,10 +2,12 @@
 
 namespace RZP\Services;
 
+use Carbon\Carbon;
 use MaxMind\MinFraud;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Entity as Payment;
 
 class MaxMind
 {
@@ -36,7 +38,7 @@ class MaxMind
         $this->maxmind = new MinFraud($config['id'], $config['secret']);
     }
 
-    public function query($payment)
+    public function query(Payment $payment)
     {
         if (($this->mode === Mode::TEST) or
             ($this->basicauth->isPrivateAuth() === true))
@@ -47,32 +49,31 @@ class MaxMind
         $card = $payment->card;
 
         $request = $this->maxmind->withDevice([
-            'ip_address' => $this->request->getRealClientIp(),
-            'user_agent'        => $this->request->header('User-Agent'),
-            'accept_language'   => $this->request->header('Accept-Language'),
+            'ip_address'       => $this->request->getRealClientIp(),
+            'user_agent'       => $this->request->header('User-Agent'),
+            'accept_language'  => $this->request->header('Accept-Language'),
         ])->withEvent([
-            'transaction_id' => $payment->getId(),
-            'shop_id' => $payment->getMerchantId(),
-            'time' => Carbon::createFromTimestamp($payment->getCreatedAt())->toIso8601String(),
-            'type' => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
+            'transaction_id'   => $payment->getId(),
+            'shop_id'          => $payment->getMerchantId(),
+            'time'             => Carbon::createFromTimestamp($payment->getCreatedAt())->toIso8601String(),
+            'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
         ])->withEmail([
-            'email' => md5($payment->getEmail()),
-            'domain' => $this->getEmailDomain($payment)
+            'email'            => md5($payment->getEmail()),
+            'domain'           => $this->getEmailDomain($payment)
         ])->withBilling([
-            'first_name' => $card->getFirstName(),
-            'last_name' => $card->getLastName(),
+            'first_name'       => $card->getFirstName(),
+            'last_name'        => $card->getLastName(),
         ])->withCreditCard([
             'issuer_id_number' => $card->getIin(),
-            'last_4_digits' => $card->getLast4(),
+            'last_4_digits'    => $card->getLast4(),
         ])->withOrder([
-            'amount' => $this->getFormattedAmount($payment),
-            'currency' => $paymeny->getCurrency(),
+            'amount'           => $this->getFormattedAmount($payment),
+            'currency'         => $paymeny->getCurrency(),
         ]);
 
-        $response = $request->factors();
+        $response = $request->score();
 
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
-            'input' => $input,
             'payment_id' => $payment->getId(),
             'merchant_id' => $payment->getMerchantId(),
             'merchant' => $payment->merchant->getBillingLabelElseName(),
