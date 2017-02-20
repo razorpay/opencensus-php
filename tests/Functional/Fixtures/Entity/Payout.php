@@ -8,12 +8,12 @@ class Payout extends Base
 {
     use TransactionTrait;
 
-    public function create(array $attributes = array())
+    public function create(array $attributes = [])
     {
-        $defaultValues = array(
+        $defaultValues = [
             'customer_id' => '100000customer',
             'destination' => '1000000lcustba',
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

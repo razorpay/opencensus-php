@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction;
 

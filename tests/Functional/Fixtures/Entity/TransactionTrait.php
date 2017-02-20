@@ -24,7 +24,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($refund)
         {
-            return  (new \RZP\Models\Transaction\Core)->createFromRefund($refund);
+            return (new \RZP\Models\Transaction\Core)->createFromRefund($refund);
         });
     }
 
@@ -32,7 +32,7 @@ trait TransactionTrait
     {
         return $this->transaction(function() use ($payout)
         {
-            return  (new \RZP\Models\Transaction\Core)->createFromPayout($payout);
+            return (new \RZP\Models\Transaction\Core)->createFromPayout($payout);
         });
     }
 }

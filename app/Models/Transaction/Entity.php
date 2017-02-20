@@ -425,6 +425,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SETTLED_AT, $settledAt);
     }
 
+    public function setSettled(bool $settled = true)
+    {
+        $this->setAttribute(self::SETTLED, $settled);
+    }
+
     public function setEscrowBalance($balance)
     {
         assert ($balance >= 0);

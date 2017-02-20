@@ -1479,12 +1479,12 @@ ALTER TABLE transactions
     ADD COLUMN fee_model TINYINT(1) NOT NULL DEFAULT 0 AFTER fee_bearer,
     ADD COLUMN credit_type VARCHAR(25) NOT NULL DEFAULT 'default' AFTER fee_model;
 
-UPDATE transactions 
-  SET credit_type = 'amount' 
+UPDATE transactions
+  SET credit_type = 'amount'
   WHERE gratis is true;
 
-UPDATE transactions 
-  SET credit_type = 'fee' 
+UPDATE transactions
+  SET credit_type = 'fee'
   WHERE fee_credits > 0;
 
 # Adds cross org access control via flag
@@ -1624,7 +1624,7 @@ UPDATE merchant_details
 UPDATE merchant_details
     SET promoter_address_url = substr(promoter_address_url, 6)
     where promoter_address_url LIKE "file_%";
-    
+
 ALTER TABLE merchant_details
     ADD COLUMN activation_progress INTEGER DEFAULT 0 AFTER steps_finished;
 
@@ -1684,3 +1684,8 @@ ALTER TABLE cybersource
 
 ALTER TABLE first_data
     ADD COLUMN currency VARCHAR(3) AFTER amount;
+
+# PR 383 - payouts
+
+ALTER TABLE payments
+    ADD COLUMN amount_paidout INTEGER UNSIGNED DEFAULT 0 AFTER base_amount_refunded;

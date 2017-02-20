@@ -19,6 +19,19 @@ class Payment extends Base
         return $this->fixtures->create('payment:card_captured', $attributes);
     }
 
+    public function createSettled(array $attributes = [])
+    {
+        $payment = $this->createCaptured($attributes);
+
+        $txn = $payment->transaction;
+
+        $txn->setSettled();
+
+        $txn->saveOrFail();
+
+        return $payment;
+    }
+
     public function createStatusCreated(array $attributes = array())
     {
         $attributes['status'] = 'created';

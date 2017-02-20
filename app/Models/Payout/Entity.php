@@ -67,7 +67,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UTR,
         self::FAILURE_REASON,
-        self::RETURN_UTR
+        self::RETURN_UTR,
     ];
 
     protected $public = [
@@ -91,7 +91,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY,
         self::DESTINATION,
-        self::CUSTOMER_ID
+        self::CUSTOMER_ID,
     ];
 
     protected $defaults = [

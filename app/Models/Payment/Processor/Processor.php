@@ -34,6 +34,7 @@ class Processor
     use OtpResend;
     use Topup;
     use FraudDetector;
+    use Payout;
 
     /**
      * Callback urls can be hit multiple times by customers.

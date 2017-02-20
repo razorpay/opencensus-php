@@ -123,4 +123,66 @@ return [
             ]
         ]
     ],
+
+    'testCreatePaymentPayout' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'destination' => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'service_tax' => 77,
+                'fee'         => 587,
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ]
+    ],
+
+    'testCreatePaymentPayoutNotSettled' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 1000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT,
+        ],
+    ],
 ];

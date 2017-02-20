@@ -78,4 +78,30 @@ class PayoutTest extends TestCase
 
         $this->assertEquals($payout, $payout2);
     }
+
+    public function testCreatePaymentPayout()
+    {
+        $payment = $this->fixtures->create('payment:settled');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payments/'. $payment->getPublicId() . '/payout';
+
+        $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(1000, $payment['amount_paidout']);
+    }
+
+    public function testCreatePaymentPayoutNotSettled()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $request = & $this->testData[__FUNCTION__]['request'];
+
+        $request['url'] = '/payments/'. $payment->getPublicId() . '/payout';
+
+        $this->startTest();
+    }
 }
