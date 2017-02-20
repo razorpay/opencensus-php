@@ -3,8 +3,8 @@
 namespace RZP\Http\Controllers;
 
 use Config;
-use Request;
 use Response;
+use Illuminate\Http\Request as Request;
 use Illuminate\Http\Response as BaseResponse;
 
 class MockLumberjackController extends Controller
@@ -50,7 +50,7 @@ class MockLumberjackController extends Controller
         }
 
         return Response::json(
-                ['success' => true]
-            );
+            ['success' => true]
+        );
     }
 }

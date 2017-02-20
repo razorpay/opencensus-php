@@ -3,9 +3,12 @@
 use GuzzleHttp\Client;
 
 use RZP\Tests\Functional\TestCase;
+use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 class EventTrackerTest extends TestCase
 {
+    use RequestResponseFlowTrait;
+
     protected $config;
 
     public function setUp()
@@ -14,61 +17,9 @@ class EventTrackerTest extends TestCase
 
         parent::setUp();
 
+        $this->ba->basicAuth();
+
         $this->config = $this->app['config']->get('applications.lumberjack');
-    }
-
-    public function testIncorrectAuth()
-    {
-        $config = $this->config;
-
-        $key = $config['key'];
-
-        $secret = $config['secret'] . 'incorrect';
-
-        $signature = hash_hmac('sha1', $key, $secret);
-
-        $headers = [
-            'content-type'  => 'application/json',
-            'x-signature'   =>  $signature,
-            'x-identifier'  =>  $config['identifier'],
-        ];
-
-        $url = $config['url'] . 'track';
-
-        $options = ['json' => $this->testData['dummyPayload']];
-
-        $client = new Client(['headers' => $headers, 'http_errors' => false]);
-
-        $response = $client->request('POST', $url, $options);
-
-        $this->assertEquals($this->testData['responseLjFailed'], $response->getBody()->getContents());
-    }
-
-    public function testIncorrectKey()
-    {
-        $config = $this->config;
-
-        $key = $config['key'];
-
-        $secret = $config['secret'];
-
-        $signature = hash_hmac('sha1', $key, $secret);
-
-        $headers = [
-            'content-type'  => 'application/json',
-            'x-signature'   =>  $signature,
-            'x-identifier'  =>  $config['identifier'],
-        ];
-
-        $url = $config['url'] . 'track';
-
-        $options = ['json' => $this->testData['dummyPayload']];
-
-        $client = new Client(['headers' => $headers, 'http_errors' => false]);
-
-        $response = $client->request('POST', $url, $options);
-
-        $this->assertEquals($this->testData['responseLjFailed'], $response->getBody()->getContents());
     }
 
     public function testEventTrackSuccess()
@@ -81,26 +32,47 @@ class EventTrackerTest extends TestCase
 
         $signature = hash_hmac('sha1', $key, $secret);
 
+        $headers = $this->testData[__FUNCTION__]['request']['server'];
+
         $headers = [
-            'content-type'  => 'application/json',
-            'x-signature'   =>  $signature,
-            'x-identifier'  =>  $config['identifier'],
+            'HTTP_content-type'  => 'application/json',
+            'HTTP_x-signature'   =>  $signature,
+            'HTTP_x-identifier'  =>  $config['identifier'],
         ];
 
-        $url = $config['url'] . 'track';
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
 
-        $data = $this->testData['dummyPayload'];
+        // append keys
+        $this->testData[__FUNCTION__]['request']['content']['key'] = $key;
 
-        unset($data['key']);
+        $this->startTest();
+    }
 
-        $data['key'] = $key;
+    public function testEventTrackFailed()
+    {
+        $config = $this->config;
 
-        $options = ['json' => $data];
+        $key = $config['key'];
 
-        $client = new Client(['headers' => $headers, 'http_errors' => false]);
+        $secret = $config['secret'] . 'incorrect';
 
-        $response = $client->request('POST', $url, $options);
+        $signature = hash_hmac('sha1', $key, $secret);
 
-        $this->assertEquals($this->testData['responseLjSuccess'], $response->getBody()->getContents());
+        $headers = $this->testData[__FUNCTION__]['request']['server'];
+
+        $headers = [
+            'HTTP_content-type'  => 'application/json',
+            'HTTP_x-signature'   =>  $signature,
+            'HTTP_x-identifier'  =>  $config['identifier'],
+        ];
+
+        // append headers
+        $this->testData[__FUNCTION__]['request']['server'] = $headers;
+
+        // append keys
+        $this->testData[__FUNCTION__]['request']['content']['key'] = $key;
+
+        $this->startTest();
     }
 }
