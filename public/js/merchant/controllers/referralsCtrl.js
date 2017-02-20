@@ -67,6 +67,29 @@ app.controller('ReferralsCtrl', [
       });
     }
 
+    $scope.createUser = function(input) {
+      var request = $http({
+        method: 'post',
+        url: '/subusers',
+        data: input
+      });
+
+      request.success(function (data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.alerts.addAlert('success', 'User was created successfully');
+          fetchReferrals();
+        } else {
+          $scope.alerts.resetAlerts();
+          angular.forEach(data.errors, function (value, key) {
+            $scope.alerts.addAlert('danger', value);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    }
+
     fetchReferrals();
 
     $scope.openCreateMerchant = function() {
@@ -75,6 +98,23 @@ app.controller('ReferralsCtrl', [
         controller: 'createMerchantCtrl'
       });
       modalInstance.result.then($scope.createMerchant, $.noop);
+    };
+
+    $scope.openCreateUserModal = function (merchant) {
+      var modalInstance = $modal.open({
+        templateUrl: 'createUserModal.html',
+        controller: 'createUserModalCtrl',
+        resolve: {
+          'password': '',
+          'password_confirmation': ''
+        }
+      });
+      modalInstance.result.then(function (password) {
+        merchant.password = password.password;
+        merchant.password_confirmation = password.password_confirmation;
+        $scope.createUser(merchant);
+      }, function () {
+      });
     };
 
 }]).controller('createMerchantCtrl', [
@@ -89,6 +129,17 @@ app.controller('ReferralsCtrl', [
       $modalInstance.close(merchant);
     };
 
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('createUserModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  function ($scope, $modalInstance) {
+    $scope.ok = function (password, password_confirmation) {
+      $modalInstance.close({'password': password, 'password_confirmation': password_confirmation});
+    };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
     };

@@ -383,12 +383,21 @@ class Service extends Base\Service
 
         foreach ($sessionsCollection as $session)
         {
-            $session->id = Crypt::encrypt($session->id);
-            $parser = Parser::create();
-            $session->parsed_user_agent = $parser->parse($session->user_agent);
-            $session->parsed_last_activity = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
+            $session['current'] = false;
 
-            unset($session['id']);
+            if ($session['id'] === Session::getId())
+            {
+                $session['current'] = true;
+            }
+
+            $session['id'] = Crypt::encrypt($session['id']);
+
+            $parser = Parser::create();
+
+            $session['parsed_user_agent'] = $parser->parse($session['user_agent']);
+            // 9 Feb 2017 03:12 pm
+            $session['parsed_last_activity'] = Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j M Y h:i a');
+
             $sessions[] = $session;
         }
 
@@ -405,6 +414,7 @@ class Service extends Base\Service
     public function deleteOneAdminSessions($sessionId)
     {
         $sessionId = Crypt::decrypt($sessionId);
+
         (new SessionTable\Entity)->deleteOneSessionForAdmin($sessionId);
     }
 
@@ -787,7 +797,7 @@ class Service extends Base\Service
             $merchantDetails->fill($merchantDetailsData);
             $merchantDetails->save();
 
-            (new MerchantDetails\Service)->saveDetailsOnAPI($merchantDetailsData, $id);
+            (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
@@ -1927,7 +1937,7 @@ class Service extends Base\Service
 
         return [$response, $error];
     }
-    
+
     public function unassignSubMerchantToTerminal($mode, $terminalId, $merchantId)
     {
         $error = $response = null;

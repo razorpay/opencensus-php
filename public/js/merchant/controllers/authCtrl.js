@@ -231,7 +231,6 @@ app.controller('AuthCtrl', [
     }
 
     $scope.sendDetails = function () {
-      pushToDrip()
       var payload = {
         method: 'post',
         url: '/user/pre_signup',
@@ -244,6 +243,7 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         hideSpinner()
         if (data.success) {
+          pushToDrip()
           if ($scope.signup.currentSubStep == 4) {
             goToVerification()
           } else {
@@ -432,7 +432,7 @@ app.controller('AuthCtrl', [
         if (data.success) {
           // check questions have been answered or not
           user.identity(true).then(function(userDetails) {
-            var role = userDetails.merchants[userDetails.id].pivot.role;
+            var role = userDetails.merchants && userDetails.merchants[userDetails.id].pivot.role;
             $scope.goToDashboard(role)
           });
         } else {

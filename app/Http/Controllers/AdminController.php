@@ -947,8 +947,7 @@ class AdminController extends Controller
 
     public function getMerchantBankAccount($merchantId)
     {
-        list($error, $bankAccount) = (new Admin\Service)
-            ->fetchBankAccount($merchantId);
+        list($error, $bankAccount) = (new Admin\Service)->fetchBankAccount($merchantId);
 
         return AppResponse::jsonResponse($error, $bankAccount);
     }

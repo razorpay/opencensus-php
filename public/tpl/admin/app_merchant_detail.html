@@ -242,10 +242,10 @@
           <span class="pull-right">{{merchant.details.created_at*1000 | date:'medium'}}</span>
           Registration Date
         </div>
-        <div href="{{merchant.details.website}}" class="list-group-item">
+        <a href="{{merchant.details.website}}" class="list-group-item">
           <span class="pull-right">{{merchant.details.website}}</span>
           Website
-        </div>
+        </a>
         <div class="list-group-item">
           <span class="pull-right">{{merchant.details.category}}</span>
           MCC
@@ -258,12 +258,33 @@
           <span class="pull-right">{{merchant.details.billing_label}}</span>
           Billing Label
         </div>
-        <div class="list-group-item">
-          <span class="pull-right">{{merchant.details.transaction_report_email}}</span>
+
+        <!--
+          If we have only one email, show it as such, but if there are more than one,
+          use a show/hide menu to list all the emails nicely
+        -->
+
+        <div class="list-group-item" ng-show="merchant.details.transaction_report_email.length == 1">
+          <a href="mailto:{{merchant.details.transaction_report_email[0]}}" class="pull-right">{{merchant.details.transaction_report_email[0]}}</a>
           Transaction Report Email
         </div>
+        <div class="list-group-item" ng-init="isTransactionReportEmailsCollapsed = false" ng-show="merchant.details.transaction_report_email.length>1">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isTransactionReportEmailsCollapsed = !isTransactionReportEmailsCollapsed" >Show/Hide</button>
+          </span>
+          Transaction Report Emails
+        </div>
+        <div ng-init="isTransactionReportEmailsCollapsed = true" collapse="isTransactionReportEmailsCollapsed" class="panel-body">
+          <div class="list-group-item" ng-repeat="email in merchant.details.transaction_report_email">
+            <a href="mailto:{{email}}" class="pull-right">{{email}}</a>
+            &nbsp;
+          </div>
+        </div>
+
         <div class="list-group-item">
-          <span class="pull-right">{{merchant.details.international}}</span>
+          <span class="pull-right">
+            <i class="fa" ng-class="{'fa-check text-success': merchant.details.international === true, 'fa-times text-danger':merchant.details.international === false}"></i>
+          </span>
           International
         </div>
         <div class="list-group-item">
@@ -414,10 +435,10 @@
           <span class="pull-right" tooltip="{{merchant.details.receipt_email_enabled == 1 ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.receipt_email_enabled == 1, 'fa-times text-danger':merchant.details.receipt_email_enabled == 0}"></i></span>
           Customer Receipt Emails
         </div>
-        <div target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
+        <a target="_blank" href="/admin/merchant/{{merchant.id}}/screenshot" class="list-group-item">
           <span class="pull-right" tooltip="Print screenshots"><i class="fa fa-cloud-download"></i></span>
           Print screenshots
-        </div>
+        </a>
         <div class="list-group-item" ng-init="isPricingCollapsed = true">
             <span class="pull-right">
               <button class="btn btn-default btn-xs"  ng-click="isPricingCollapsed = !isPricingCollapsed" ng-show="merchant.pricing_plan.length != 0">Show/Hide</button>
@@ -489,6 +510,7 @@
                     <th>Terminal Id</th>
                     <th>Mode</th>
                     <th>Gateway</th>
+                    <th>Deleted</th>
                     <th>Category</th>
                     <th>Network Category</th>
                     <th>Merchant Id</th>
@@ -511,6 +533,7 @@
                     </td>
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
+                    <td>{{!!terminal.deleted_at}}</td>
                     <td>{{terminal.category}}</td>
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
@@ -705,6 +728,7 @@
              <option value="netbanking_kotak">Netbanking KOTAK</option>
              <option value="netbanking_axis">Netbanking AXIS</option>
              <option value="netbanking_airtel">Netbanking AIRTEL</option>
+             <option value="netbanking_icici">Netbanking ICICI</option>
              <option value="cybersource">Cybersource</option>
              <option value="wallet_openwallet">RZP Open Wallet</option>
           </select>

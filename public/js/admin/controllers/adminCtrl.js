@@ -101,17 +101,17 @@ app.controller('AdminCtrl', [
       });
     });
     $scope.showActivity = function () {
-      if ($scope.activity)
-      {
-        $scope.activity = null;
+      if ($scope.activities) {
+        $scope.activities = null;
         return;
       }
+
       $http({
         method: 'get',
         url: '/admin/activity',
       }).success(function (data) {
         if (data.success) {
-          $scope.activity = data.data
+          $scope.activities = data.data
         }
       }).error(function () {
         $scope.alerts.addAlert('danger', null, true);

@@ -5,7 +5,10 @@ namespace App\Admin;
 use Requests_Session;
 use Sunra\PhpSimple\HtmlDomParser;
 
-/** Fetches company data from MCA website */
+/**
+ * Fetches company data from MCA website
+ * Dataset is generated using the script at https://gist.github.com/captn3m0/28290674a042384d9c53ffb4d7b419a1
+ */
 class Company
 {
     const PORTAL_BASE_URL = 'http://www.mca.gov.in';

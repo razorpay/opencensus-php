@@ -13,6 +13,8 @@ use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
 
+use Queue;
+
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
@@ -28,6 +30,8 @@ class Service extends Base\Service
     const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
     const SUBMERCHANT_NOT_ALLOWED       = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const SUBMERCHANT_EMAIL_NOT_UNIQUE  = "Unique email is required to create a new user";
+    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT = "Cannot access merchant";
     const BANK_ACCOUNT_NOT_FOUND        = "Could not find a Bank Account";
 
     public function __construct()
@@ -142,6 +146,47 @@ class Service extends Base\Service
             $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
 
             return [null, $merchant->toArray()];
+        }
+        else
+        {
+            return [$error, null];
+        }
+    }
+
+    public function registerSubMerchantUser(array $input)
+    {
+        $currentMerchant = $this->currentMerchant;
+        $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
+
+        $error = (new Merchant\Validator)
+            ->validateInput('create_submerchant_user', $input)->messages();
+
+        if (empty($error))
+        {
+            $submerchant = $this->fetch($input['id']);
+            $email = $submerchant['email'];
+            if ($email === $currentMerchant->email)
+            {
+                return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
+            }
+
+            if ($currentUser->ownsMerchant($submerchant) !== true) //checks if the main merchant's user owns the sub-merchant being given user access
+            {
+                return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
+            }
+
+            $input['email'] = $email;
+            $input['name'] = $submerchant['name'];
+            $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
+
+            $user = (new User\Service)->createUserForSubmerchant($input);
+
+            $user->save();
+
+            // Finally attach the new user to the sub merchant
+            $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+            return [null, $user->toArray()];
         }
         else
         {
@@ -844,7 +889,7 @@ class Service extends Base\Service
             }))
             ->withAnyTag($tag)
             ->whereNull('suspended_at')
-            ->get(['id', 'name', 'activated', 'created_at']);
+            ->get(['id', 'name', 'activated', 'created_at', 'email']);
     }
 
     public function fetchMerchantConfig($merchantId)
@@ -1043,15 +1088,21 @@ class Service extends Base\Service
         {
             $merchantDetail->saveOrFail();
 
-            if (isset($input['business_name']))
+            if (empty($input['business_name']) === false)
             {
                 $merchant = Merchant\Entity::findOrFail($merchantId);
 
                 $merchant->edit(['name' => $input['business_name']], 'changeName');
 
                 $merchant->saveOrFail();
-
                 (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
+
+                $zapierData = (new User\Service)->getZapierData($merchant, $input);
+
+                if (config('slack.enable'))
+                {
+                    Queue::push('App\User\Service@postToZapier', $zapierData);
+                }
             }
         }
 
