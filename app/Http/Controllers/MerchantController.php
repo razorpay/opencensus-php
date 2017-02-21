@@ -310,6 +310,7 @@ class MerchantController extends Controller
     public function getReferredMerchants()
     {
         $id = Auth::user()->getCurrentMerchantId();
+
         $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
         return AppResponse::jsonResponse([], $data);

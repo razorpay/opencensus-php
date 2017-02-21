@@ -403,6 +403,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api
                          ->transaction
                          ->getInvoiceData($input)

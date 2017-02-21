@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Auth;
 use App\Api;
 use App\Merchant;
+use App\MerchantDetails;
 use App\Http\AppResponse;
 use App\Transaction;
 use Input;
@@ -282,12 +283,19 @@ class TransactionController extends Controller
     public function getInvoiceReport($mode)
     {
         $this->checkMode($mode);
+
         $input = Input::all();
 
         list($error, $data) = (new Api\Service)->getInvoiceReportData($mode, $input);
 
         if ($error === null)
         {
+            $merchantId = $data['merchant']['id'];
+
+            $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+            $data['merchant_details'] = $merchantDetails;
+
             // return PDF::url('http://google.com');
             // PDF::setOutputMode('F');
             // return PDF::html('merchant.invoice', $data);//->download('invoice.pdf');
