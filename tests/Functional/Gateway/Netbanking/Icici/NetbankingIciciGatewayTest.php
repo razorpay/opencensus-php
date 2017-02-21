@@ -232,8 +232,6 @@ class NetbankingIciciGatewayTest extends TestCase
                     Mockery::any(),
                     Mockery::on(function ($data)
                     {
-                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
-
                         $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
 
                         $this->assertEquals($body, $data['body']);
