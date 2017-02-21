@@ -30,7 +30,7 @@ class TraceWriter extends Logger
 
         $this->debug = Config::get('app.debug');
 
-        $this->contextEnv = Config::get('app.context');
+        $this->contextEnv = Config::get('app.env');
 
         $this->defineHandlers();
 

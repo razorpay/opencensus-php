@@ -26,7 +26,7 @@ class AwsInstance
     {
         $app = \App::getFacadeRoot();
 
-        $this->cloud = $this->checkCloud($app['config']->get('app.context'));
+        $this->cloud = $this->checkCloud($app['config']->get('app.env'));
 
         $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
 

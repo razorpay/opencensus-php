@@ -21,7 +21,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $this->request = App::make('request');
 
-        $this->context = App::make('config')->get('app.context');
+        $this->context = App::make('config')->get('app.env');
 
         $data = $this->getServerData() + $this->getUserData();
 
