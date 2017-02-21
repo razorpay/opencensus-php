@@ -40,7 +40,7 @@ return [
         'entity' => 'netbanking',
     ],
 
-    'testTPVPayment' => [
+    'testTpvPayment' => [
         'request' => [
             'content' => [
                 'amount'         => 50000,
