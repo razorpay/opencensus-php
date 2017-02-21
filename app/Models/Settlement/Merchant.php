@@ -260,6 +260,7 @@ class Merchant
         $setl->setFees($this->fee);
         $setl->setServiceTax($this->serviceTax);
         $setl->setChannel($this->channel);
+        $setl->setVersion(Version::V2);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
@@ -276,8 +277,8 @@ class Merchant
 
     protected function saveChangesToDb()
     {
-        // Saves to db
         $this->repo->saveOrFail($this->setlTransaction);
+
         $this->repo->saveOrFail($this->setl);
 
         $this->repo->saveOrFailCollection($this->setlDetails);

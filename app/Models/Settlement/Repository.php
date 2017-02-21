@@ -15,7 +15,6 @@ class Repository extends Base\Repository
         Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num|max:14',
         Entity::TRANSACTION_ID      => 'sometimes|alpha_num|max:14',
         Entity::STATUS              => 'sometimes|in:created,processed,failed',
-        Entity::UTR                 => 'sometimes|alpha_num',
     );
 
     public function getSettlementWithFeesAsNullOrZero()

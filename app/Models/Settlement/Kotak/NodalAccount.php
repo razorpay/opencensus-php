@@ -6,8 +6,10 @@ use Carbon\Carbon;
 use Excel;
 use Mail;
 use RZP\Exception;
+use RZP\Models\BankTransferAttempt;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
+use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
 use RZP\Models\Transaction;
 
@@ -125,11 +127,14 @@ class NodalAccount
                 $neftCount++;
             }
 
+            // create bank transfer attempt entity
+            $bankTransferAttempt = $this->createBankTransferEntity($settlement);
+
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
                 'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $settlement->getPublicId(),
+                'Payment_Ref_No.'       => $bankTransferAttempt->getId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
@@ -175,6 +180,17 @@ class NodalAccount
         $this->sendKotakSettlementMail($count, $amounts);
 
         return [$urlText, $urlExcel];
+    }
+
+    protected function createBankTransferEntity(Settlement\Entity $settlement)
+    {
+        $bankTransferAttempt = (new BankTransferAttempt\Entity)->generateId();
+
+        $bankTransferAttempt->setEntityType(BankTransferAttempt\EntityType::SETTLEMENT);
+
+        $bankTransferAttempt->setEntityId($settlement->getId());
+
+        return $bankTransferAttempt;
     }
 
     protected function getEmptyArray()

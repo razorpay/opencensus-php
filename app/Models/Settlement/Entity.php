@@ -65,6 +65,8 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
     );
 
+    // --------------------------------- relations -------------------------------
+
     public function bankTransferAttempts()
     {
         return $this->hasMany('RZP\Models\BankTransferAttempt');
@@ -74,12 +76,6 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
-
-    // Look at how this needs to change, and will affect its usages
-    // public function getUtr()
-    // {
-    //     return $this->getAttribute(self::UTR);
-    // }
 
     public function bankAccount()
     {
@@ -99,20 +95,23 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
     }
 
-    public function isStatusCreated()
-    {
-        return ($this->getStatus() === Status::CREATED);
-    }
-
-    public function isStatusFailed()
-    {
-        return ($this->getStatus() === Status::FAILED);
-    }
-
     public function setlTransactions()
     {
         return $this->hasMany('RZP\Models\Transaction\Entity');
     }
+
+    public function adjustment()
+    {
+        return $this->hasOne('RZP\Models\Adjustment\Entity');
+    }
+
+    // --------------------------------- getters -------------------------------
+
+    // Look at how this needs to change, and will affect its usages
+    // public function getUtr()
+    // {
+    //     return $this->getAttribute(self::UTR);
+    // }
 
     public function getAmount()
     {
@@ -148,6 +147,18 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::REMARKS);
     }
+
+    public function getVersion()
+    {
+        return $this->getAttribute(self::VERSION);
+    }
+
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    // --------------------------------- setters -------------------------------
 
     public function setAmount($amount)
     {
@@ -200,21 +211,18 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
+    public function setVersion($version)
+    {
+        $this->setAttribute(self::VERSION, $version);
+    }
+
     // Fix usages
     // public function setRemarks($remarks)
     // {
     //     $this->setAttribute(self::REMARKS, $remarks);
     // }
 
-    public function getTransactionId()
-    {
-        return $this->getAttribute(self::TRANSACTION_ID);
-    }
-
-    public function adjustment()
-    {
-        return $this->hasOne('RZP\Models\Adjustment\Entity');
-    }
+    // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()
     {
@@ -236,6 +244,18 @@ class Entity extends Base\PublicEntity
         }
 
         return $fee;
+    }
+
+    // --------------------------------- entity methods -------------------------------
+
+    public function isStatusCreated()
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
     }
 
     public function save(array $options = array())

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\BankTransferAttempt;
 
+use RZP\Models\Base;
+
 class Entity extends Base\PublicEntity
 {
     const ENTITY_TYPE           = 'entity_type';
@@ -73,5 +75,15 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setEntityType($type)
+    {
+        $this->setAttribute(self::ENTITY_TYPE, $type);
+    }
+
+    public function setEntityId($id)
+    {
+        $this->setAttribute(self::ENTITY_ID, $id);
     }
 }

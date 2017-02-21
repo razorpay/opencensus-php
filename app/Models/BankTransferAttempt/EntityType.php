@@ -1,0 +1,24 @@
+<?php
+
+namespace RZP\Models\BankTransferAttempt;
+
+use RZP\Exception;
+
+class EntityType
+{
+    const SETTLEMENT = 'settlement';
+
+    public static function validateEntityType($type)
+    {
+        if (defined(__CLASS__.'::'.strtoupper($type)) === false)
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid BankTransferAttempt type: ' . $type);
+        }
+    }
+
+    public static function getEntityClass($type)
+    {
+        return 'RZP\\Models\\' . ucfirst($type) . '\Entity';
+    }
+}
