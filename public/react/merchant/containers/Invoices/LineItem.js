@@ -2,6 +2,7 @@ import { Component } from 'react'
 import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import InlineField from 'rzp/ui/Forms/InlineField'
+import InputField from 'rzp/ui/Forms/InputField'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import ItemCreation from 'merchant/containers/Items/New'
@@ -126,12 +127,13 @@ export default class InvoiceLineItem extends Component {
           <InlineField
             formName='newInvoice'
             name={`${fieldName}.quantity`}
-            component='input'
+            component={InputField}
             class='form-control text-right input-xs'
             type='number'
             min={1}
             rightAlign={true}
             disabled={disabled || isEmptyRow}
+            showInlineErrorText={false}
           />
         </td>
 

@@ -5,19 +5,20 @@ export default (props) => {
     input,
     validate,
     tagName = 'input',
-    meta: { touched, error },
+    meta: { submitFailed, error },
+    showInlineErrorText = true,
     ...otherProps
   } = props
 
   return (
-    <div class={`InputField clearfix ${touched && error ? 'InputField--error' : ''}`}>
+    <div class={`InputField ${ submitFailed && error ? 'InputField--error' : '' }`}>
       {
         tagName === 'textarea' ?
         <textarea {...input} {...otherProps} /> :
         <input {...input} {...otherProps} />
       }
 
-      {touched && error && <div class='InputField__ErrorText text-danger'>{error}</div>}
+      { showInlineErrorText && submitFailed && error && <div class='InputField__ErrorText text-danger'>{error}</div> }
     </div>
   )
 }
