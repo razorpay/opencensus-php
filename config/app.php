@@ -244,13 +244,11 @@ return array(
 
         // Don't name it OAuth (http://php.net/manual/en/book.oauth.php)
         'OAuthFacade'     => Artdarek\OAuth\Facade\OAuth::class,
-        
+
         'Mailgun'         => Bogardo\Mailgun\Facades\Mailgun::class,
         'PDF'             => Nitmedia\Wkhtml2pdf\Facades\Wkhtml2pdf::class,
         'Slack'           => Maknz\Slack\Facades\Slack::class,
         'Trace'           => App\Trace\Facade::class,
         'Uuid'            => App\Facades\Uuid::class,
-    ),
-
-    'context' => env('CONTEXT', 'dev'),
+    )
 );
