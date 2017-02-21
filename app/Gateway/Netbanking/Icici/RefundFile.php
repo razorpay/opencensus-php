@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
@@ -73,5 +74,29 @@ class RefundFile extends Base\RefundFile
         }
 
         return $data;
+    }
+
+    protected function sendRefundEmail($fileData = [])
+    {
+        $fullpath = $this->getExcelFullFilePath();
+
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('refunds@razorpay.com', 'Icici Netbanking refunds');
+
+            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+            $message->subject('Icici Netbanking refunds file for ' . $today);
+
+            $message->to($emails);
+
+            $message->attach($fileData['file_path']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader('x-mailgun-tag', MailTags::ICICI_NETBANKING_REFUNDS_MAIL);
+        });
     }
 }

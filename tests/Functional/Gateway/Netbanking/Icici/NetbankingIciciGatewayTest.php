@@ -2,7 +2,9 @@
 
 namespace RZP\Tests\Functional\Gateway\Netbanking\Icici;
 
+use Mail;
 use Excel;
+use Mockery;
 use Carbon\Carbon;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
@@ -115,21 +117,12 @@ class NetbankingIciciGatewayTest extends TestCase
         // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
         $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
 
+        $this->checkMailQueue();
+
         // Hitting the refunds route on API - goes to RefundFile.php
         $data = $this->generateRefundsExcelForNB('ICIC');
-        $filePath = $data['netbanking_icici']['file'];
 
-        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
-        $this->assertEquals($data['netbanking_icici']['count'], 3);
-        $this->assertTrue(file_exists($filePath));
-
-        $sheet = Excel::load($filePath)->all()->toArray();
-
-        $this->assertEquals(count($sheet[0]), 10);
-
-        $this->assertEquals($sheet[0]['refund_amount'], 500);
-        $this->assertEquals($sheet[1]['refund_amount'], 100);
-        $this->assertEquals($sheet[2]['refund_amount'], 400);
+        $this->checkRefundFileData($data);
     }
 
     public function testTpvPayment()
@@ -211,6 +204,44 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment){
             $this->verifyPayment($payment['id']);
         });
+    }
+
+    protected function checkRefundFileData($data)
+    {
+        $filePath = $data['netbanking_icici']['file'];
+
+        // Data shows 3 refunds - payment 1 = full, payment 2 = 100 and 400. Payment 3 doesn't show up
+        $this->assertEquals($data['netbanking_icici']['count'], 3);
+        $this->assertTrue(file_exists($filePath));
+
+        $sheet = Excel::load($filePath)->all()->toArray();
+
+        $this->assertEquals(count($sheet[0]), 10);
+
+        $this->assertEquals($sheet[0]['refund_amount'], 500);
+        $this->assertEquals($sheet[1]['refund_amount'], 100);
+        $this->assertEquals($sheet[2]['refund_amount'], 400);
+    }
+
+    protected function checkMailQueue()
+    {
+         // Mail catch with amount and refund everywhere
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+                        $body = 'Please forward the ICICI Netbanking refunds file to UBPS operations team';
+
+                        $this->assertEquals($body, $data['body']);
+
+                        return true;
+                    }),
+                    Mockery::any()
+                );
     }
 
     protected function mockPaymentFailure()
