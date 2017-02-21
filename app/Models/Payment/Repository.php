@@ -61,6 +61,7 @@ class Repository extends Base\Repository
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
         Entity::AMOUNT             => 'sometimes|integer',
+        Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
     ];
 
     protected $esWhitelistedParams = [
@@ -433,10 +434,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, $count, $skip, ['card']);
+                        $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)

@@ -107,7 +107,7 @@ class Validator extends Base\Validator
 
     protected static $axisMigsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:axis_migs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:6',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',

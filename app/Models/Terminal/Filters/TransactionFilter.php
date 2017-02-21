@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -135,6 +136,16 @@ class TransactionFilter extends Terminal\Filter
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+        else if ($input['payment']->isCard())
+        {
+            $issuer = $input['payment']->card->getIssuer();
+
+            if (($issuer === Issuer::ICIC) and
+                ($terminal->getGateway() === Gateway::FIRST_DATA))
+            {
+                return false;
+            }
         }
 
         return true;
