@@ -132,7 +132,7 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals($sheet[2]['refund_amount'], 400);
     }
 
-    public function testTPVPayment()
+    public function testTpvPayment()
     {
         $terminal = $this->fixtures->create('terminal:shared_netbanking_icici_tpv_terminal');
 
@@ -217,7 +217,6 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            // results in a bad request error
             $content['PAID'] = 'N';
         });
     }
@@ -226,7 +225,6 @@ class NetbankingIciciGatewayTest extends TestCase
     {
         $this->mockServerContentFunction(function(&$content, $action = null)
         {
-            // Payment verify failure
             $content['STATUS'] = 'FAILED';
         });
     }
