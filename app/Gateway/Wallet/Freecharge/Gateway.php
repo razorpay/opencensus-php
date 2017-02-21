@@ -677,8 +677,7 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId($terminal)
     {
-        if (($this->mode === Mode::TEST) and
-            ($this->app['env'] === 'dev'))
+        if ($this->mode === Mode::TEST)
         {
             return $this->config['test_merchant_id'];
         }
@@ -688,22 +687,12 @@ class Gateway extends Base\Gateway
 
     protected function getDealerId($terminal)
     {
-        //
-        // We use shared terminals in testing mode
-        // So we need not pick from config
-        // In case of dev, Terminal may not be created for gateway
-        // pick dealerId from config
-        //
-        if (($this->mode === Mode::TEST) and
-            ($this->app['env'] === 'dev'))
+        if ($this->mode === Mode::TEST)
         {
             return $this->config['test_dealer_id'];
         }
 
-        if ((empty($terminal['gateway_merchant_id2']) === false))
-        {
-            return $terminal['gateway_merchant_id2'];
-        }
+        return $terminal['gateway_merchant_id2'];
     }
 
     protected function getUrlDomain()
