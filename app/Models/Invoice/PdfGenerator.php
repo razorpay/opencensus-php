@@ -75,6 +75,7 @@ class PdfGenerator extends Base\Core
                     ->mime('application/pdf')
                     ->store(FileStore\Store::S3)
                     ->entity($this->invoice)
+                    ->merchant($this->invoice->merchant)
                     ->type(FileStore\Type::INVOICE_PDF)
                     ->save()
                     ->getFullFilePath();

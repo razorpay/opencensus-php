@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
@@ -224,6 +225,20 @@ class Creator extends Base\Core
     public function columnFormat($columnFormat = [])
     {
         $this->columnFormat = $columnFormat;
+
+        return $this;
+    }
+
+    /**
+     * Sets merchant which is used for association later.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return Creator
+     */
+    public function merchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
 
         return $this;
     }
