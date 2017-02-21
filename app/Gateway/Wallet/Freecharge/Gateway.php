@@ -677,12 +677,33 @@ class Gateway extends Base\Gateway
 
     protected function getMerchantId($terminal)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) and
+            ($this->app['env'] === 'dev'))
         {
             return $this->config['test_merchant_id'];
         }
 
         return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getDealerId($terminal)
+    {
+        //
+        // We use shared terminals in testing mode
+        // So we need not pick from config
+        // In case of dev, Terminal may not be created for gateway
+        // pick dealerId from config
+        //
+        if (($this->mode === Mode::TEST) and
+            ($this->app['env'] === 'dev'))
+        {
+            return $this->config['test_dealer_id'];
+        }
+
+        if ((empty($terminal['gateway_merchant_id2']) === false))
+        {
+            return $terminal['gateway_merchant_id2'];
+        }
     }
 
     protected function getUrlDomain()
@@ -835,14 +856,21 @@ class Gateway extends Base\Gateway
 
     protected function getDebitRequestArray($input)
     {
-        $content = array(
+        $content = [
             RequestFields::ACCESS_TOKEN    => '',
             RequestFields::AMOUNT          => (string) ($input['payment']['amount'] / 100),
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
             RequestFields::CURRENCY        => $input['payment']['currency'],
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
-        );
+        ];
+
+        $dealerId = $this->getDealerId($input['terminal']);
+
+        if (empty($dealerId) === false)
+        {
+            $content[RequestFields::DEALER_ID] = $dealerId;
+        }
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
 
