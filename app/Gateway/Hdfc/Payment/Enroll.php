@@ -298,9 +298,8 @@ trait Enroll
             $this->enrollResponse);
 
         $this->model = $this->repo->persistAfterEnrollError(
-            $this->input['payment']['id'],
-            $this->enrollResponse['error'],
-            $this->enrollRequest['data']);
+            $this->enrollRequest['data'],
+            $this->enrollResponse['error']);
     }
 
     /**

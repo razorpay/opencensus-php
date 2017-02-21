@@ -24,6 +24,7 @@
 
 namespace RZP\Gateway\Hdfc;
 
+use Requests_Response;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -561,7 +562,7 @@ class Gateway extends Base\Gateway
             }
             else
             {
-                $response['error'] = Hdfc\ErrorHandler::setGatewayWrongStatusCode($statusCode);
+                $response['error'] = Hdfc\ErrorHandler::getGatewayWrongStatusCodeError($statusCode);
             }
 
             return true;
@@ -576,7 +577,7 @@ class Gateway extends Base\Gateway
 
         if (strpos($contentType, 'application/xml') === false)
         {
-            Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
+            $response['error'] = Hdfc\ErrorHandler::getGatewayWrongContentTypeError($contentType);
 
             $this->trace->info(
                 TraceCode::GATEWAY_VERIFY_INVALID_HEADER,

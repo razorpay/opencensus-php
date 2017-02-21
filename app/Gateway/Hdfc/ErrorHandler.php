@@ -80,18 +80,18 @@ class ErrorHandler
         return self::getErrorDetails($code);
     }
 
-    public static function setGatewayWrongStatusCode($status_code)
+    public static function getGatewayWrongStatusCodeError($statusCode)
     {
         $code = Hdfc\ErrorCode::RP00008;
 
         $error = self::getErrorDetails($code);
 
-        $error['text'] .= ' status_code: ' . $status_code;
+        $error['text'] .= ' status_code: ' . $statusCode;
 
         return $error;
     }
 
-    public static function setGatewayWrongContentType($contentType)
+    public static function getGatewayWrongContentTypeError($contentType)
     {
         $code = Hdfc\ErrorCode::RP00009;
 

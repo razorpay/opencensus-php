@@ -22,6 +22,8 @@ class Utility extends \RZP\Gateway\Utility
      * First checks for error code field.
      * If it's set then gets error related fields otherwise
      * gets other normal field values.
+     *
+     * @param array $response
      */
     public static function parseResponseXml(array & $response)
     {
@@ -63,11 +65,18 @@ class Utility extends \RZP\Gateway\Utility
 
     /**
      * Unsets specified fields
+     *
+     * @param $data
+     * @param $fields
+     *
+     * @return null
      */
     public static function unsetFields($data, $fields)
     {
         if ($data === null)
+        {
             return null;
+        }
 
         $data = array_diff_key($data, array_flip($fields));
 
