@@ -9,7 +9,6 @@ use Illuminate\Http\Response as BaseResponse;
 
 class MockLumberjackController extends Controller
 {
-
     const X_IDENTIFIER = 'x-identifier';
 
     const X_SIGNATURE = 'x-signature';
@@ -23,7 +22,7 @@ class MockLumberjackController extends Controller
     {
         $identifier = $request->header(self::X_IDENTIFIER);
 
-        $signature = $request->header('x-signature');
+        $signature = $request->header(self::X_SIGNATURE);
 
         $secret = $this->app['config']->get('applications.lumberjack.secret');
 
