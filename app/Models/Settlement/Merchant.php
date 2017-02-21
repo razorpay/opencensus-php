@@ -104,6 +104,8 @@ class Merchant
             SetlDetails\Component::PAYMENT,
             SetlDetails\Component::REFUND,
             SetlDetails\Component::ADJUSTMENT,
+            SetlDetails\Component::TRANSFER,
+            SetlDetails\Component::REVERSAL,
         );
 
         $details = [];
@@ -137,6 +139,14 @@ class Merchant
                 $details[$componentType]['amount'] += $txn->getCredit();
 
                 $details[$componentType]['amount'] -= $txn->getDebit();
+            }
+            else if ($txn->getType() === Transaction\Type::TRANSFER)
+            {
+                $details[$componentType]['amount'] -= $txn->getAmount();
+            }
+            else if ($txn->getType() === Transaction\Type::REVERSAL)
+            {
+                $details[$componentType]['amount'] += $txn->getAmount();
             }
 
             $totalServiceTax += $txn->getServiceTax();

@@ -11,7 +11,7 @@ use RZP\Models\Merchant;
 class Validator extends Base\Validator
 {
     protected static $reversalRules = [
-        'amount'                => 'sometimes|integer|min:100'
+        Entity::AMOUNT      => 'sometimes|integer|min:100'
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

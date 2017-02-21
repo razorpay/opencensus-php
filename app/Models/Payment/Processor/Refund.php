@@ -35,7 +35,7 @@ trait Refund
     {
         $refund = $this->buildRefundEntity($payment, $input, $batch);
 
-        $this->processRefund($input);
+        $this->processRefund();
 
         return $refund;
     }
@@ -234,17 +234,18 @@ trait Refund
     }
 
     /**
-     * Refund a payment that has Marketplace transfers
+     * Process refund on a payment that has Marketplace transfers
      *
-     * @param  array $input
+     * @param Payment\Entity $payment
+     * @param array $input
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function refundPaymentWithTransfers(array $input)
+    public function processRefundWithTransfers(Payment\Entity $payment, array $input)
     {
         if (isset($input['reversals']) === false)
         {
-            $input['reversals'] = [];
+            return;
 
             // throw new Exception\BadRequestValidationFailureException(
             //         'The reversals parameter is required for this refund request');
@@ -350,11 +351,12 @@ trait Refund
      *
      * @return string
      */
-    protected function getPaymentRefundType()
+    protected function getPaymentRefundType(Payment\Entity $payment, array $input)
     {
         $type = Payment\Refund\Status::PARTIAL;
 
-        if ($this->refund->getAmount() === $this->payment->getAmountUnrefunded())
+        if ((isset($input['amount']) === false) or
+           ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
         {
             $type = Payment\Refund\Status::FULL;
         }
@@ -598,12 +600,7 @@ trait Refund
 
         $refund->setBaseAmount();
 
-        //
-        // For payments that have been transferred, we validate merchant
-        // balance after reversals have been processed for those transfers
-        //
-        if (($this->payment->isCaptured() === true) and
-            ($this->payment->isTransferred() === false))
+        if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund);
         }
@@ -615,7 +612,7 @@ trait Refund
         return $refund;
     }
 
-    protected function processRefund(array $input)
+    protected function processRefund()
     {
         $payment = $this->refund->payment;
 
@@ -628,23 +625,9 @@ trait Refund
             $data['card'] = $card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $input)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            // Determine if transfer reversals should be processed along with the refund
-            $processReversals = $this->shouldProcessReversals($this->payment, $input);
-
-            if ($processReversals === true)
-            {
-                $this->refundPaymentWithTransfers($input);
-
-                $this->validateMerchantBalance($this->refund);
-            }
-
-            if ($payment->isTransfer() === true)
-            {
-                ; // Marketplace: do nothing, refunds on transfer payments are internal
-            }
-            else if ($payment->getTransactionId() !== null)
+            if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
 
@@ -797,31 +780,15 @@ trait Refund
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
         }
 
-        return $this->refund($payment, $input, $batch);
-    }
+        // Determine if transfer reversals should be processed along with the refund
+        $processReversals = $this->shouldProcessReversals($payment, $input);
 
-    /**
-     * Refund an internal marketplace payment (of method = transfer)
-     *
-     * @param  Payment\Entity $payment
-     * @param  int            $amount
-     *
-     * @return Payment\Refund\Entity
-     * @throws Exception\BadRequestException
-     */
-    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
-    {
-        if ($payment->isTransfer() === false)
+        if ($processReversals === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
+            $this->processRefundWithTransfers($payment, $input);
         }
 
-        $this->validatePaymentForRefund($payment);
-
-        $input['amount'] = $amount;
-
-        return $this->refund($payment, $input);
+        return $this->refund($payment, $input, $batch);
     }
 
     protected function validatePaymentForRefund(Payment\Entity $payment)

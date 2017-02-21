@@ -8,20 +8,20 @@ use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
+use RZP\Models\Transaction;
 
 trait Reversal
 {
     /**
-     * Refund the transfer payment and
+     * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param  Payment\Entity $payment
-     * @param  string         $accountId
-     * @param  int            $amount
+     * @param  Transfer\Entity  $transfer
+     * @param  int              $amount
+     * @return Reversal\Entity
      */
     public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, int $amount)
     {
-
         $transferPayment = $this->repo
                                 ->payment
                                 ->findByTransferIdAndMerchant(
@@ -37,6 +37,41 @@ trait Reversal
     }
 
     /**
+     * Refund an internal marketplace payment (method = transfer)
+     *
+     * @param  Payment\Entity $payment
+     * @param  int            $amount
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
+    {
+        if ($payment->isTransfer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
+        }
+
+        $this->validatePaymentForRefund($payment);
+
+        $input['amount'] = $amount;
+
+        $refund = (new Payment\Refund\Entity)->build($input, $payment);
+
+        $this->refund = $refund;
+
+        $this->payment = $payment;
+
+        $refund->merchant()->associate($this->merchant);
+
+        $refund->setBaseAmount();
+
+        $txn = (new Transaction\Core)->createFromRefund($refund);
+
+        $this->repo->saveOrFail($txn);
+    }
+
+    /**
      * Process reversal of transfers send in the `reversals` attribute
      *
      * @param  array  $reversals
@@ -49,20 +84,23 @@ trait Reversal
                              ->transfer
                              ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
 
-            $amountUnreversed = $transfer->getAmountUnreversed();
-
-            if ($reversal['amount'] > $amountUnreversed)
+            $this->mutex->acquireAndRelease($transfer->getId(), function() use ($transfer, $reversal)
             {
-                $message = 'Reversal amount exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
+                $amountUnreversed = $transfer->getAmountUnreversed();
 
-                throw new Exception\BadRequestValidationFailureException(
-                    $message,
-                    'reversal_amount',
-                    ['unreversed_amount' => $amountUnreversed]
-                    );
-            }
+                if ($reversal['amount'] > $amountUnreversed)
+                {
+                    $message = 'Reversal amount exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
 
-            $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+                    throw new Exception\BadRequestValidationFailureException(
+                        $message,
+                        'reversal_amount',
+                        ['unreversed_amount' => $amountUnreversed]
+                        );
+                }
+
+                $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+            });
         }
     }
 
@@ -82,12 +120,10 @@ trait Reversal
         //
         // Don't process if either:
         //  - Payment has not been transferred (amount_transferred = 0), or
-        //  - Payment method = 'transfer', or
-        //  - Payment is fully refunded
+        //  - Payment method = 'transfer'
         //
         if (($payment->isTransferred() === false) or
-            ($payment->isTransfer() === true) or
-            ($payment->getRefundStatus() === Payment\Refund\Status::FULL))
+            ($payment->isTransfer() === true))
         {
             return false;
         }

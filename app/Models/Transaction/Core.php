@@ -125,19 +125,9 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
+        $this->updateBalances($txn);
 
         return [$txn, $feesSplit];
-    }
-
-    public function shouldUpdateNodalBalance(Payment\Entity $payment) : bool
-    {
-        if ($payment->isOpenwalletPayment() === true)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -541,18 +531,12 @@ class Core extends Base\Core
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
-                // Openwallet refunds are internal, and wont change Nodal balance
-                if ($payment->isOpenwalletPayment() === true)
-                {
-                    break;
-                }
-
                 // When refunding authorized payments, we do not charge merchants
                 //$this->updateNodalBalance($txn);
 
                 break;
             case Payment\Status::CAPTURED:
-                $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
+                $this->updateBalances($txn);
 
                 break;
             case Payment\Status::REFUNDED:
@@ -884,6 +868,7 @@ class Core extends Base\Core
             $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
 
+        // Implements delayed settlements, commented temporarily
         // $onHoldUntilTime = $payment->getOnHoldUntil();
 
         // return max($returnTime, $onHoldUntilTime);
