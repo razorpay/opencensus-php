@@ -66,7 +66,8 @@ class Permission extends Base
 
     public function getAllPermissions()
     {
-        $records = self::getPermissionRecordsFromFile(storage_path().'/permissions/permissions.csv');
+        $records = self::getPermissionRecordsFromFile(
+            storage_path() . '/permissions/permissions.csv');
 
         $records = array_map(function ($record) {
             return $record[0];

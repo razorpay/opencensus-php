@@ -228,7 +228,7 @@ class OrganizationController extends Controller
 
 // --------------------- CRUD for Org FieldMap ----------------------------------------
 
-    public function createOrgFieldMap(string $id)
+    public function postOrgFieldMap(string $id)
     {
         $input = Request::all();
 
@@ -237,7 +237,7 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function editOrgFieldMap(string $id, string $entity)
+    public function putOrgFieldMap(string $id, string $entity)
     {
         $input = Request::all();
 
@@ -248,7 +248,7 @@ class OrganizationController extends Controller
 
     public function getOrgFieldMap(string $id, string $entity)
     {
-        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $input);
+        $data = (new Admin\Org\FieldMap\Service)->getFieldsForEntity($id, $entity);
 
         return ApiResponse::json($data);
     }

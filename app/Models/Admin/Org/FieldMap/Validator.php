@@ -3,17 +3,71 @@
 namespace RZP\Models\Admin\Org\FieldMap;
 
 use RZP\Base;
+use RZP\Constants;
 use RZP\Exception;
 
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        Entity::ENTITY              => 'required|string|max:255',
+        Entity::ENTITY_NAME         => 'required|string|max:255|custom',
         Entity::ORG_ID              => 'required|string|max:20',
-        Entity::FIELDS              => 'required',
+        Entity::FIELDS              => 'required|array',
     ];
 
     protected static $editRules = [
-        Entity::FIELDS              => 'required|string',
+        Entity::FIELDS              => 'required|array',
     ];
+
+    protected static $createValidators = [
+        'fields',
+    ];
+
+    protected static $editValidators = [
+        'fields',
+    ];
+
+    protected function validateEntityName($attribute, $entity)
+    {
+        // Only validate the entities for ehich namespace is defined
+        $namespaces = Constants\Entity::$namespace;
+
+        if (in_array($entity, array_keys($namespaces), true) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The entity name is not registered in the api',
+                ['entity' => $entity]);
+        }
+    }
+
+    protected function validateFields(array $input)
+    {
+        if (isset($input[Entity::ENTITY_NAME]) === false)
+        {
+            // if called by edit validator
+            $entityName = $this->entity->getNameOfEntity();
+        }
+        else
+        {
+            $entityName = $input[Entity::ENTITY_NAME];
+        }
+
+        $class = Constants\Entity::$namespace[$entityName] . '\Entity';
+
+        $entity = new $class;
+
+        $fillableFields = $entity->getFillableFields();
+
+        // We only consider fillable fields for addition or deletion
+        $diffArray = array_diff($input[Entity::FIELDS], $fillableFields);
+
+        if (empty($diffArray) === false)
+        {
+            $data = ['entity' => $entity, 'invalidFields' => $diffArray];
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Few fields are invalid for the given entity',
+                $data);
+        }
+
+    }
 }

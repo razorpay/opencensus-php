@@ -11,34 +11,44 @@ class Entity extends Base\PublicEntity
 {
     const ID          = 'id';
     const ORG_ID      = 'org_id';
-    const ENTITY      = 'entity';
+    const ENTITY_NAME = 'entity_name';
     const FIELDS      = 'fields';
 
     protected $entity = 'org_fieldmap';
 
     protected $fillable = [
         self::ORG_ID,
-        self::ENTITY,
+        self::ENTITY_NAME,
         self::FIELDS,
     ];
 
     protected $visible = [
         self::ID,
         self::ORG_ID,
-        self::ENTITY,
+        self::ENTITY_NAME,
         self::FIELDS,
     ];
 
     protected $public = [
         self::ID,
         self::ORG_ID,
-        self::ENTITY,
+        self::ENTITY_NAME,
         self::FIELDS,
     ];
 
     public function org()
     {
         return $this->hasOne('RZP\Models\Org\Entity');
+    }
+
+    public function setFieldsAttribute(array $fields)
+    {
+        $this->attributes[self::FIELDS] = implode(',', $fields);
+    }
+
+    public function setFields(array $fields)
+    {
+        $this->setAttribute(self::FIELDS, $fields);
     }
 
     public function getFieldsAttribute()
@@ -53,19 +63,18 @@ class Entity extends Base\PublicEntity
         return explode(',', $fields);
     }
 
-    public function setFieldsAttribute(array $fields)
-    {
-        $this->attributes[self::FIELDS] = implode(',', $fields);
-    }
-
-
     public function getFields() : array
     {
         return $this->getAttribute(self::FIELDS);
     }
 
-    public function setFields(array $fields)
+    public function getNameOfEntity() : string
     {
-        $this->setAttribute(self::FIELDS, $fields);
+        return $this->getAttribute(self::ENTITY_NAME);
+    }
+
+    public function getFillableFields()
+    {
+        return $this->fillable;
     }
 }

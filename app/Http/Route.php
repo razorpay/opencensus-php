@@ -874,7 +874,7 @@ final class Route
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
         'org_fieldmap_create'            => [Permission::CREATE_ORG_FIELDMAP],
-        'org_fielmap_get'                => [Permission::GET_ORG_FIELDMAP],
+        'org_fieldmap_get'               => [Permission::GET_ORG_FIELDMAP],
         'org_fieldmap_edit'              => [Permission::EDIT_ORG_FIELDMAP],
         'org_fieldmap_delete'            => [Permission::DELETE_ORG_FIELDMAP],
     ];

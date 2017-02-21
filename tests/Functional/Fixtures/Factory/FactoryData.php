@@ -402,6 +402,10 @@ final class FactoryData
             'auth_type'     => 'password',
         ]);
 
+        $factory(\RZP\Models\Admin\Org\FieldMap\Entity::class, [
+            'id'            => $faker->uniqueid,
+        ]);
+
         $factory(\RZP\Models\Admin\Org\Hostname\Entity::class, [
             'id'            => $faker->uniqueid,
             'org_id'        => $faker->uniqueid,
