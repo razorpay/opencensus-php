@@ -123,10 +123,6 @@ class EventTrackerClient extends Base\Core
 
             $response = $client->request('POST', $url, $options);
 
-            $this->trace->info(
-                TraceCode::TRACE_MISC_CODE,
-                ['response' => $response->getBody()->getContents()]
-            );
         }
         catch (Exception $e)
         {
