@@ -31,7 +31,7 @@ class Reconciler3
     protected static $extraHeadings = array(
         'Status Of transaction',
         'UTR number',
-        'Reject Reason',
+        'Remarks',
         'DateTime',
         'Int.ref no.',
         'Dummy');
@@ -188,7 +188,7 @@ class Reconciler3
 
         $status = $row['Status Of transaction'];
 
-        $remarks = substr($row['Reject Reason'], 0, 255);
+        $remarks = substr($row['Remarks'], 0, 255);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 

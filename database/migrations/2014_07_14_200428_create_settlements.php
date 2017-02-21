@@ -8,7 +8,8 @@ use RZP\Models\Settlement\Entity as Settlement;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
 
-class CreateSettlements extends Migration {
+class CreateSettlements extends Migration
+{
 
     /**
      * Run the migrations.
@@ -47,19 +48,14 @@ class CreateSettlements extends Migration {
 
             $table->string(Settlement::CHANNEL, 8);
 
-            $table->string(Settlement::UTR)
-                  ->nullable()
-                  ->unique();
-
             $table->string(Settlement::FAILURE_REASON)
-                  ->nullable();
-
-            $table->string(Settlement::REMARKS)
                   ->nullable();
 
             $table->string(Settlement::RETURN_UTR)
                   ->nullable()
                   ->unique();
+
+            $table->string(Settlement::VERSION, 3);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);
