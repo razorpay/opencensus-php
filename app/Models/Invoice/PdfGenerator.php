@@ -92,7 +92,7 @@ class PdfGenerator extends Base\Core
 
         if ($pdfContent === false)
         {
-            throw new Exception\LogicException('Pdf generation failed: Content is empty.');
+            throw new Exception\LogicException('Pdf generation failed: ' . $pdf->getError());
         }
 
         return $pdfContent;
