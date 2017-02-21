@@ -202,7 +202,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 <div style="max-width: 400px; margin: 0 auto">
 <form name ="capture" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="capture_id" placeholder = "Enter payment id to capture"/>
-<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="1000" />
+<input type = "text" id = "amount" name = "amount" placeholder = "Enter amount to capture" value="100" />
 <select name="currency">
     <option value="INR">Indian Rupee</option>
     <option value="USD">US Dollar</option>
@@ -212,7 +212,7 @@ $callback_url = 'http://'.$baseurl.'/return/callback?key_id='.$key_id;
 
 <form name ="refund" method="post" action="//<?=$private_url?>/payments/">
 <input type="text" id="refund_id" placeholder="Enter payment id to refund"/>
-<input type="text" id="amount" name="amount" value="1000"/>
+<input type="text" id="amount" name="amount" value="100"/>
 <input type="submit" value="Refund" onClick="javascript:document.refund.action = document.refund.action + document.getElementById('refund_id').value +'/refund'; document.refund.submit(); return false;"/>
 </form>
 </div>
