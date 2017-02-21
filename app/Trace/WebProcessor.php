@@ -21,7 +21,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     {
         $this->request = App::make('request');
 
-        $this->context = App::make('config')->get('app.context');
+        $this->env = App::make('config')->get('app.env');
 
         $data = $this->getServerData() + $this->getUserData();
 
@@ -54,7 +54,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'origin'    => $this->request->header('origin'),
             'client_ip' => $this->getClientIp(),
             'server_ip' => $this->request->server('SERVER_ADDR'),
-            'context'   => $this->context);
+            'env'       => $this->env);
 
         return $serverData;
     }

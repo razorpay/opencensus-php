@@ -26,7 +26,7 @@ class AwsInstance
     {
         $app = \App::getFacadeRoot();
 
-        $this->cloud = $this->checkCloud($app['config']->get('app.context'));
+        $this->cloud = $this->checkCloud($app['config']->get('app.env'));
 
         $this->instanceDataFile = $app['config']->get('trace.instance_data_file');
 
@@ -139,9 +139,9 @@ class AwsInstance
         return $this->data;
     }
 
-    protected function checkCloud($context)
+    protected function checkCloud($env)
     {
-        if($context === 'beta' or $context === 'production')
+        if ($env === 'beta' or $env === 'production')
         {
             return true;
         }
