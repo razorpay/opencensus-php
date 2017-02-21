@@ -311,7 +311,6 @@ class Gateway extends Base\Gateway
                 TraceCode::PAYMENT_CALLBACK_FAILURE,
                 $errorContent);
 
-            // Decryption fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
         }

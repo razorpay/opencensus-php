@@ -19,13 +19,11 @@ class AESCrypto
 
     public function encryptString(string $string)
     {
-        // returning Encrypted String
         return $this->aes->encrypt($string);
     }
 
     public function decryptString(string $string)
     {
-        // returning Decrypted String
         return $this->aes->decrypt($string);
     }
 }

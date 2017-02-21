@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Icici\AESCrypto;
 use RZP\Gateway\Netbanking\Icici\Constants;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Base as Netbanking;
