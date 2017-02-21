@@ -100,8 +100,6 @@ class EventTrackerClient extends Base\Core
      */
     protected function sendLumberjackRequest(array $headers, string $url)
     {
-        $client = new Client(['headers' => $headers, 'http_errors' => false]);
-
         try
         {
             // remove comment after testing
@@ -119,6 +117,8 @@ class EventTrackerClient extends Base\Core
             }
 
             $options = ['json' => $eventData];
+
+            $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
             $response = $client->request('POST', $url, $options);
 
