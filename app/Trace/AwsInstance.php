@@ -139,9 +139,9 @@ class AwsInstance
         return $this->data;
     }
 
-    protected function checkCloud($context)
+    protected function checkCloud($env)
     {
-        if($context === 'beta' or $context === 'production')
+        if ($env === 'beta' or $env === 'production')
         {
             return true;
         }

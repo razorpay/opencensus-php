@@ -30,7 +30,7 @@ class TraceWriter extends Logger
 
         $this->debug = Config::get('app.debug');
 
-        $this->contextEnv = Config::get('app.env');
+        $this->env = Config::get('app.env');
 
         $this->defineHandlers();
 
@@ -69,7 +69,7 @@ class TraceWriter extends Logger
 
         if (($this->debug) or
             ($this->config['introspection']) or
-            ($this->contextEnv === 'beta'))
+            ($this->env === 'beta'))
         {
             $this->pushIntrospectionProcessor();
         }
