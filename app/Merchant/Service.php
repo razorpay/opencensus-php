@@ -51,8 +51,7 @@ class Service extends Base\Service
             'email' =>  $user->email,
         ];
 
-        $error = (new Merchant\Validator)
-            ->validateInput('create', $merchantData)->messages();
+        $error = (new Merchant\Validator)->validateInput('create', $merchantData)->messages();
 
         $merchant = null;
 
@@ -71,18 +70,6 @@ class Service extends Base\Service
             }
 
             $merchant->save();
-
-            $details = [
-                'merchant_id'    => $merchant->id,
-                'contact_email'  => $merchant->email,
-            ];
-
-            if (isset($data['contact_mobile']))
-            {
-                $details['contact_mobile'] = $data['contact_mobile'];
-            }
-
-            MerchantDetails\Entity::createOrFail($details);
         }
 
         return [$error, $merchant];
@@ -134,13 +121,6 @@ class Service extends Base\Service
             }
 
             $merchant->save();
-
-            $details = [
-                'merchant_id'   => $merchant->id,
-                'contact_email' => $merchant->email
-            ];
-
-            MerchantDetails\Entity::createOrFail($details);
 
             // Finally attach the current user to the new user's team
             $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');
@@ -210,9 +190,10 @@ class Service extends Base\Service
 
         $this->setApiCredentials($aggregator->id);
 
-        $response = $this->api->merchant
-            ->createSubMerchant($data)
-            ->toArray();
+        $response = $this->api
+                         ->merchant
+                         ->createSubMerchant($data)
+                         ->toArray();
 
         return $response;
     }
@@ -420,13 +401,49 @@ class Service extends Base\Service
         return array(array(static::INVALID_EMAIL_OR_PASSWORD), array());
     }
 
-    public function fetch($merchant_id)
+    public function fetch($merchantId)
     {
-        $merchant = Merchant\Entity::findOrSoftFail($merchant_id);
+        list($error, $merchant) = $this->fetchMerchantFromApi($merchantId);
 
-        $merchant['tags'] = $merchant->tags;
+        $tags = Merchant\Entity::select(['id'])
+                                ->with('tagged')
+                                ->where('id', $merchantId);
 
-        return $merchant->toArray();
+        return array_merge($merchant, $tags->get()->toArray()[0]);
+    }
+
+    public function fetchMerchantFromApi($merchantId)
+    {
+        $this->setApiCredentials();
+        $error = $response = null;
+
+        try
+        {
+            $response = $this->api
+                             ->merchant
+                             ->fetch($merchantId)
+                             ->toArray();
+        }
+        catch(BadRequestError $e)
+        {
+            $error = [$e->getMessage()];
+        }
+
+        if (empty($response) === false)
+        {
+            $response =  [
+                'id'           => $response['id'],
+                'name'         => $response['name'],
+                'email'        => $response['email'],
+                'activated'    => (int) $response['activated'],
+                'created_at'   => $response['created_at'],
+                'updated_at'   => $response['updated_at'],
+                'archived_at'  => $response['archived_at'],
+                'suspended_at' => $response['suspended_at'],
+            ];
+        }
+
+        return [$error, $response];
     }
 
     public function fetchKeysFromApi($merchant_id, $mode)
@@ -1080,13 +1097,13 @@ class Service extends Base\Service
 
     public function savePreSignupDetails($merchantId, $input)
     {
-        $merchantDetail = MerchantDetails\Entity::findorfail($merchantId);
+        $error = (new MerchantDetails\Entity)->edit($input, 'preSignup');
 
-        $error = $merchantDetail->edit($input, 'preSignup');
+        $merchantDetails = [];
 
         if (empty($error))
         {
-            $merchantDetail->saveOrFail();
+            list($error, $merchantDetails) = (new MerchantDetails\Service)->saveDetailsOnAPI($input, $merchantId);
 
             if (empty($input['business_name']) === false)
             {
@@ -1106,16 +1123,14 @@ class Service extends Base\Service
             }
         }
 
-        (new MerchantDetails\Service)->saveDetailsOnAPI($input, $merchantId);
+        $presignupDetails = (new MerchantDetails\Service)->getPresignupDetails($merchantId, $merchantDetails);
 
-        return [ $error, $merchantDetail->getPreSignupFields()];
+        return [ $error, $presignupDetails];
     }
 
     public function getPreSignupDetails($merchantId)
     {
-        $merchantDetail = MerchantDetails\Entity::findOrFail($merchantId);
-
-        return $merchantDetail->getPreSignupFields();
+        return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
     }
 
     public function createCustomer($mode, $params)

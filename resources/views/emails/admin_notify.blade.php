@@ -8,9 +8,9 @@
 
         <div>
             <p>Activation form has been submitted by {{{$merchant_details['business_name']}}}</p>
-            <p>The merchant id is {{{$merchant_details['merchant_id']}}}</p>
+            <p>The merchant id is {{'id'}}</p>
 
-            <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$merchant_details['merchant_id'].'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
+            <p>Please verify the details <a href="{{ URL::to('/admin#/app/merchants/'.$id.'/detail') }}" target="_blank">here</a> and communicate with the merchant as necessary.</p>
 
             <p>The DBA for the merchant is: {{{$merchant_details['business_dba']}}}.</p>
 

@@ -776,7 +776,7 @@ class Service extends Base\Service
 
         $this->setApiCredentials();
 
-        $merchantDetails = MerchantDetails\Entity::findorfail($id);
+        $error = $merchantDetail = [];
 
         try
         {
@@ -794,10 +794,7 @@ class Service extends Base\Service
                 'bank_beneficiary_state'     => $input['beneficiary_state']
             );
 
-            $merchantDetails->fill($merchantDetailsData);
-            $merchantDetails->save();
-
-            (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
+            list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($merchantDetailsData, $id);
 
             $this->logActionToSlack($id, Actions::BANK_DETAILS_EDITED, $input);
         }
@@ -807,22 +804,18 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return [$error, $merchantDetails->toArray()];
+        return [$error, $merchantDetails];
     }
 
     public function postEditMerchantComment($id, $comment)
     {
-        $error = array();
-
-        $merchantDetails = MerchantDetails\Entity::findorfail($id);
-
-        $merchantDetails->comment = $comment;
-        $merchantDetails->save();
+        $error = $merchantDetails = [];
 
         $params = ['comment' => $comment];
-        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
-        return array($error, $comment);
+        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
+
+        return [$error, $comment];
     }
 
     public function postMerchantBanks($id, $input)
@@ -1047,23 +1040,11 @@ class Service extends Base\Service
 
     public function lockMerchant($id)
     {
-        $error = array();
-
-        $merchantDetails = MerchantDetails\Entity::findorfail($id);
-
-        if ($merchantDetails->isLocked())
-        {
-            $error[] = 'Merchant already locked.';
-
-            return $error;
-        }
-
-        $merchantDetails->locked = 1;
-        $merchantDetails->save();
+        $error = $merchantDetails = [];
 
         $params = ['locked' => true];
 
-        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
+        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_LOCKED);
 
@@ -1072,22 +1053,11 @@ class Service extends Base\Service
 
     public function unlockMerchant($id)
     {
-        $error = array();
-
-        $merchantDetails = MerchantDetails\Entity::findorfail($id);
-
-        if ($merchantDetails->locked === 0)
-        {
-            $error[] = 'Merchant already unlocked.';
-            return $error;
-        }
-
-        $merchantDetails->locked = 0;
-        $merchantDetails->save();
+        $error = $merchantDetails = [];
 
         $params = ['locked' => false];
 
-        (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
+        list($error, $merchantDetails) = (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($params, $id);
 
         $this->logActionToSlack($id, Actions::FORM_UNLOCKED);
 
@@ -1310,12 +1280,6 @@ class Service extends Base\Service
             if ($merchant['activated'] === false)
             {
                 $this->api->merchant->fetch($id)->activate();
-
-                // Log activation on marketing google spreadsheet
-                $zapierData = $this->activationZapierData($details);
-                Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
-
-                $this->logActionToSlack($id, Actions::ACTIVATED);
             }
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
@@ -1323,9 +1287,27 @@ class Service extends Base\Service
             return array($e->getMessage());
         }
 
-        $merchant = Merchant\Entity::findorfail($id);
+        try
+        {
+            if ($merchant['activated'] === false)
+            {
+                // Log activation on marketing google spreadsheet
+                $zapierData = $this->activationZapierData($details);
+                Queue::push('App\Admin\Service@postActivationToZapier', $zapierData);
 
-        return $this->activateMerchantOnDashboard($merchant);
+                $this->logActionToSlack($id, Actions::ACTIVATED);
+            }
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+
+        }
+        finally
+        {
+            $merchant = Merchant\Entity::findorfail($id);
+
+            return $this->activateMerchantOnDashboard($merchant);
+        }
     }
 
     public function postActivationToZapier($job, $data)
@@ -1343,22 +1325,20 @@ class Service extends Base\Service
 
     protected function activationZapierData(array $merchant)
     {
-
-        $date =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y');
+        $date =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
 
         $merchantDetails = $merchant['merchant_details'];
 
         return [
-            'date'  =>  $date,
-            'id'    =>  $merchant['id'],
-            'email' =>  $merchant['email'],
-            'name'          =>  $merchant['name'],
-            'contact_name'  =>  $merchantDetails['contact_name'],
-            'business_name' =>  $merchantDetails['business_name'],
-            'business_dba'  =>  $merchantDetails['business_dba'],
-            'business_website'  =>  $merchantDetails['business_website'],
-            'ref'   =>  $merchant['referrer'],
+            'date'             => $date,
+            'id'               => $merchant['id'],
+            'email'            => $merchant['email'],
+            'name'             => $merchant['name'],
+            'contact_name'     => $merchantDetails['contact_name'],
+            'business_name'    => $merchantDetails['business_name'],
+            'business_dba'     => $merchantDetails['business_dba'],
+            'business_website' => $merchantDetails['business_website'],
+            'ref'              => $merchant['referrer'],
         ];
     }
 
@@ -1737,9 +1717,11 @@ class Service extends Base\Service
      */
     public function captureScreenshot($id)
     {
-        $merchant =  MerchantDetails\Entity::findorfail($id);
-        $urls = $merchant->getUrls();
-        $name = $merchant->business_name;
+        $merchantDetails = (new MerchantDetails\Service)->fetchDetails($id);
+
+        $name = $merchantDetails['business_name'];
+
+        $urls = (new MerchantDetails\Service)->getWebsiteUrls($merchantDetails);
 
         if (count($urls) >= 7)
         {

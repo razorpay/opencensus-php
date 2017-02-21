@@ -136,13 +136,13 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationStep($id)
+    public function postSaveActivationStep($stepNumber)
     {
         $input = Input::all();
 
-        if ((int) $id !== 5)
+        if ((int) $stepNumber !== 5)
         {
-            $error = (new MerchantDetails\Service)->saveDetails($id, $input);
+            $error = (new MerchantDetails\Service)->saveDetails($stepNumber, $input);
         }
         else
         {
