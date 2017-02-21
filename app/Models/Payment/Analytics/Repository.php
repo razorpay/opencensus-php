@@ -29,7 +29,6 @@ class Repository extends Base\Repository
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->orderBy(Entity::CREATED_AT, 'desc')
                     ->firstOrFail();
-
     }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

@@ -128,12 +128,10 @@ class EventTrackerClient extends Base\Core
                 ['response' => $response->getBody()->getContents()]
             );
         }
-
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_POST_FAILED);
         }
-
         finally
         {
             $this->events = [];
@@ -345,7 +343,6 @@ class EventTrackerClient extends Base\Core
 
             return $properties;
         }
-
         catch (Exception $e)
         {
             $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_MISSING_PAYMENT_PROPERTY);

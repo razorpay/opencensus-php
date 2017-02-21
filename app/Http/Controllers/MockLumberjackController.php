@@ -3,7 +3,7 @@
 namespace RZP\Http\Controllers;
 
 use Config;
-use Response;
+use ApiResponse;
 use Illuminate\Http\Request as Request;
 use Illuminate\Http\Response as BaseResponse;
 
@@ -21,21 +21,11 @@ class MockLumberjackController extends Controller
 
     public function mockEventTrack(Request $request)
     {
-        $identifier = null;
+        $identifier = $request->header(self::X_IDENTIFIER);
 
-        $signature = null;
+        $signature = $request->header('x-signature');
 
-        if ($request->hasHeader(self::X_IDENTIFIER) === true)
-        {
-            $identifier = $request->header(self::X_IDENTIFIER);
-        }
-
-        if ($request->hasHeader(self::X_SIGNATURE) === true)
-        {
-            $signature = $request->header('x-signature');
-        }
-
-        $secret = $this->app['config']->get('applications.lumberjack')['secret'];
+        $secret = $this->app['config']->get('applications.lumberjack.secret');
 
         $key = $request->get('key', null);
 
@@ -43,13 +33,13 @@ class MockLumberjackController extends Controller
 
         if ($signature !== $calcSign)
         {
-            return Response::json(
+            return ApiResponse::json(
                 ['success' => false],
                 BaseResponse::HTTP_UNAUTHORIZED
             );
         }
 
-        return Response::json(
+        return ApiResponse::json(
             ['success' => true]
         );
     }

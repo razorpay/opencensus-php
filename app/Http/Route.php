@@ -427,7 +427,7 @@ final class Route
         'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
-        'mock_event_tracker'                      => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                              ],
+        'mock_event_tracker'                      => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
     );
 
     public static $public = array(
