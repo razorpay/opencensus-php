@@ -73,53 +73,52 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    * constructs headers and fetches url
-    * to be sent to lumberjack
-    */
+     * constructs headers and fetches url
+     * to be sent to lumberjack
+     */
     public function buildRequestAndSend()
     {
         $url = $this->ljConfig['url'].self::TRACK_EVENT_URLPATTERN;
 
         $headers = [
             'content-type'  => 'application/json',
-            'x-signature'   =>  $this->generateSignature(),
-            'x-identifier'  =>  $this->ljConfig['identifier'],
+            'x-signature'   => $this->generateSignature(),
+            'x-identifier'  => $this->ljConfig['identifier'],
         ];
 
         $this->sendLumberjackRequest($headers, $url);
     }
 
     /**
-    * Sends POST request to Lumberjack
-    * url_pattern = /v1/track
-    *
-    * Sets events and defaults null after request
-    *
-    * @param $headers array
-    * @param $url string
-    */
+     * Sends POST request to Lumberjack
+     * url_pattern = /v1/track
+     *
+     * Sets events and defaults null after request
+     *
+     * @param $headers array
+     * @param $url string
+     */
     protected function sendLumberjackRequest(array $headers, string $url)
     {
-        $client = new Client(['headers' => $headers, 'http_errors' => false]);
-
         try
         {
-            $eventData = $this->getEventTrackerData();
-
-            if ((isset($eventData) === false) or
-                (empty($eventData) === true))
-            {
-                return;
-            }
-
-            $options = ['json' => $eventData];
-
             // remove comment after testing
             if (($this->mock) or
                 ($this->mode === Mode::TEST))
             {
                 return;
             }
+
+            $eventData = $this->getEventTrackerData();
+
+            if (empty($eventData) === true)
+            {
+                return;
+            }
+
+            $options = ['json' => $eventData];
+
+            $client = new Client(['headers' => $headers, 'http_errors' => false]);
 
             $response = $client->request('POST', $url, $options);
 
@@ -185,10 +184,10 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    *
-    * Gets metadata and key
-    * sets in the default array for event
-    */
+     *
+     * Gets metadata and key
+     * sets in the default array for event
+     */
     protected function getEventContext()
     {
         try
@@ -204,14 +203,14 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    *
-    * Forms an event object with properites
-    * appends it to $this->events array
-    *
-    * @param $payment Payment\Entity
-    * @param $eventName string
-    * @param $customProperties array
-    */
+     *
+     * Forms an event object with properites
+     * appends it to $this->events array
+     *
+     * @param $payment Payment\Entity
+     * @param $eventName string
+     * @param $customProperties array
+     */
     protected function appendEvent(Payment\Entity $payment, string $eventName, array $customProperties = [])
     {
         // payment-related properties
@@ -281,13 +280,13 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    *
-    * Gets data related to a particular payment
-    * appends it to the properties of the event
-    *
-    * @param $payment Payment\Entity
-    * @return $properties array
-    */
+     *
+     * Gets data related to a particular payment
+     * appends it to the properties of the event
+     *
+     * @param $payment Payment\Entity
+     * @return $properties array
+     */
     protected function getPaymentProperties(Payment\Entity $payment)
     {
         try
@@ -344,14 +343,14 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    *
-    * Gets data of terminal associated
-    * with a payment entitity
-    *
-    * @param $terminal Terminal\Entity
-    * @return $data array
-    *
-    */
+     *
+     * Gets data of terminal associated
+     * with a payment entitity
+     *
+     * @param $terminal Terminal\Entity
+     * @return $data array
+     *
+     */
     protected function fetchTerminalData(Terminal\Entity $terminal)
     {
         try
@@ -374,13 +373,13 @@ class EventTrackerClient extends Base\Core
     }
 
     /**
-    *
-    * Gets Payment Metadata
-    * from payment entity
-    *
-    * @return $analytics array (context)
-    *
-    */
+     *
+     * Gets Payment Metadata
+     * from payment entity
+     *
+     * @return $analytics array (context)
+     *
+     */
     protected function fetchAndFilterMetadata()
     {
         $metadata = $this->payment->getMetadata();
@@ -403,7 +402,6 @@ class EventTrackerClient extends Base\Core
 
         return $analytics;
     }
-
 
     /**
      * Gets data from Payment\Analytics Entity
@@ -433,7 +431,7 @@ class EventTrackerClient extends Base\Core
 
         foreach (self::CONTEXT_KEYS as $key)
         {
-           try
+            try
             {
                 // generates getter function
                 $getterName = 'get'.studly_case($key);
@@ -445,15 +443,15 @@ class EventTrackerClient extends Base\Core
                    $analytics[$key] = $getterValue;
                 }
             }
-           catch (Exception $e)
-           {
+            catch (Exception $e)
+            {
                 $msg = [
                     'getterName' => $getterName,
                     'key'        => $key
                 ];
 
                $this->trace->warning(TraceCode::LUMBERJACK_MISSING_PAYMENT_CONTEXT, $msg);
-           }
+            }
         }
 
         return $analytics;
