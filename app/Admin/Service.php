@@ -646,13 +646,13 @@ class Service extends Base\Service
                 $csvEmail = implode(',', $input['transaction_report_email']);
             }
 
-            $this->logMerchantEdits($id, $input);
-
             $data = $this->api
-                        ->merchant
-                        ->fetch($id)
-                        ->edit($input)
-                        ->toArray();
+                         ->merchant
+                         ->fetch($id)
+                         ->edit($input)
+                         ->toArray();
+
+            $this->logMerchantEdits($id, $input);
 
             if (isset($input['transaction_report_email']))
             {
