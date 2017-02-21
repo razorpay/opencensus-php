@@ -1,41 +1,15 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Report;
 
 use Carbon\Carbon;
 
 use RZP\Base\JitValidator;
-use RZP\Base\RuntimeManager;
-use RZP\Constants\Entity as E;
-use RZP\Exception;
 use RZP\Models\Transaction;
 use RZP\Models\Pricing\Feature;
-use RZP\Trace\TraceCode;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
-
-class Report extends Core
+class InvoiceReport extends Base
 {
-    use FileHandlerTrait;
-
-    protected $allowed = array(
-        E::ORDER,
-        E::REFUND,
-        E::PAYMENT,
-        E::SETTLEMENT,
-        E::TRANSACTION,
-    );
-
-    protected static $rules = [
-        'year'  =>  'required|digits:4',
-        'month' =>  'required|digits_between:1,2',
-        'day'   =>  'sometimes|digits_between:1,2',
-        'count' =>  'sometimes|integer|min:1',
-        'skip'  =>  'sometimes|integer|min:0',
-    ];
-
-    const BATCH_LIMIT = 20000;
-
     // Corresponds to 15th November 2015 00:00
     const SWACH_BHARAT_CUTOFF_TIMESTAMP = 1447525800;
     const SWACH_BHARAT_CESS = 'Swachh Bharat Cess';
@@ -70,7 +44,6 @@ class Report extends Core
     protected $SBCessMonth;
     protected $KKCessMonth;
 
-
     public function __construct()
     {
         parent::__construct();
@@ -82,139 +55,6 @@ class Report extends Core
         $this->KKCessMonth = Carbon::createFromDate(
             self::KK_COMPLEX_CASE['year'],
             self::KK_COMPLEX_CASE['month']);
-    }
-
-    public function getReport($input, $entity)
-    {
-        $this->preReportProcessing($input, $entity);
-
-        list($from, $to) = $this->getTimestamps($input);
-
-        //list($count, $skip) = $this->getFetchLimits($input);
-
-        // currently limiting the api response can break the merchant integration
-        // so overwriting the limits for now
-        list($count, $skip) = [200000, 0];
-
-        list($data, $count) = $this->getReportData($entity, $from, $to, $count, $skip);
-
-        return $data;
-    }
-
-    public function getReportUrl($input, $entity)
-    {
-        $this->preReportProcessing($input, $entity);
-
-        list($from, $to) = $this->getTimestamps($input);
-
-        list($count, $skip) = $this->getFetchLimits($input);
-
-        $now = Carbon::now('Asia/Kolkata')->timestamp;
-
-        $fileName = $this->merchant->getId() . '_' . $entity . '_' . $now;
-
-        $append = false;
-
-        while ($count === self::BATCH_LIMIT)
-        {
-            list($data, $count) = $this->getReportData($entity, $from, $to, self::BATCH_LIMIT, $skip);
-
-            $fullpath = $this->createCsvFile($data, $fileName, null, 'files/report', $append);
-
-            $skip += $count;
-
-            $append = true;
-        }
-
-        $csvMimeType = 'text/csv';
-
-        $key = 'report/' . $fileName . '.csv';
-
-        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
-
-        $signedUrl = $this->getPreSignedUrlFromAws($key);
-
-        if (file_exists($fullpath))
-        {
-            unlink($fullpath);
-        }
-
-        return ['url' => $signedUrl];
-    }
-
-    public function getReportData($entity, $from, $to, $count, $skip)
-    {
-        $merchantId = $this->merchant->getId();
-
-        $begin = time();
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'count'         => $count,
-                'skip'          => $skip,
-                'merchantId'    => $merchantId,
-                'time_started'  => $begin
-            ]);
-
-        $entities = $this->fetchEntitiesForReport(
-                                $merchantId, $entity, $from, $to, $count, $skip);
-
-        $fetchCount = $entities->count();
-
-        $timeTaken = time() - $begin;
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_taken'    => $timeTaken
-            ]);
-
-        $data = $this->fetchFormattedDataForReport($entities);
-
-        $timeTaken = time() - $begin;
-
-        $this->trace->debug(
-            TraceCode::MERCHANT_REPORT_GENERATION,
-            [
-                'entity'        => $entity,
-                'from'          => $from,
-                'to'            => $to,
-                'merchantId'    => $merchantId,
-                'time_taken'    => $timeTaken
-            ]);
-
-        return [$data, $fetchCount];
-    }
-
-    protected function preReportProcessing($input, $entity)
-    {
-        $this->checkAllowedEntity($entity);
-
-        $this->increaseAllowedSystemLimits();
-
-        (new JitValidator)->rules(self::$rules)->input($input)->validate();
-
-        date_default_timezone_set('Asia/Kolkata');
-    }
-
-    protected function fetchFormattedDataForReport($entities)
-    {
-        return $entities->toArrayReport();
-    }
-
-    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
-    {
-        $repo = $this->repo->$entity;
-
-        return $repo->fetchEntitiesForReport($merchantId, $from, $to, $count, $skip);
     }
 
     public function getInvoiceV2($input)
@@ -321,12 +161,6 @@ class Report extends Core
         return $data;
     }
 
-    /**
-     * Adds two invoice disjoint datasets together
-     * This is used for the november 2015 breakdown
-     * where we calculate separately for before and after
-     * 15th of november
-     */
     protected function sumInvoiceData($beforeSBCCutoff, $afterSBCCutoff)
     {
         return [
@@ -395,86 +229,5 @@ class Report extends Core
         );
 
         return $inputDate->eq($this->SBCessMonth);
-    }
-
-    protected function getTimestamps($input)
-    {
-        $year = (int) $input['year'];
-
-        // If day is set, `from` and `to` are of that day start and end only.
-        // If day is not set, month should be set. `from` and `to` will be
-        // the first day and the last day of the month.
-        if (isset($input['day']))
-        {
-            $day = (int) $input['day'];
-            $month = (int) $input['month'];
-
-            $date = Carbon::today('Asia/Kolkata')
-                          ->month($month)
-                          ->day($day)
-                          ->year($year)
-                          ->startOfDay();
-
-            $from = $date->timestamp;
-            $to = $date->addDay()->timestamp - 1;
-        }
-        else if (isset($input['month']))
-        {
-            $month = (int) $input['month'];
-
-            assertTrue($month > 0);
-            assertTrue($month <= 12);
-
-            $from = Carbon::today('Asia/Kolkata')
-                                  ->month($month)
-                                  ->year($year)
-                                  ->startOfMonth()
-                                  ->timestamp;
-
-            $to   = Carbon::today('Asia/Kolkata')
-                                  ->month($month)
-                                  ->year($year)
-                                  ->endOfMonth()
-                                  ->timestamp;
-        }
-        else
-        {
-            $from = $to = null;
-        }
-
-        return [$from, $to];
-    }
-
-    protected function getFetchLimits($input)
-    {
-        $count = self::BATCH_LIMIT;
-        $skip = 0;
-
-        if (isset($input['count']))
-        {
-            $count = min($count, (int) $input['count']);
-        }
-
-        if (isset($input['skip']))
-        {
-            $skip = (int) $input['skip'];
-        }
-
-        return [$count, $skip];
-    }
-
-    protected function checkAllowedEntity($entity)
-    {
-        if (in_array($entity, $this->allowed, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Cannot get report for the given entity');
-        }
-    }
-
-    protected function increaseAllowedSystemLimits()
-    {
-        RuntimeManager::setMemoryLimit('1024M');
-        RuntimeManager::setTimeLimit(501);
     }
 }

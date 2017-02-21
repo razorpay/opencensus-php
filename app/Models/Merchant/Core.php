@@ -62,6 +62,16 @@ class Core extends Base\Core
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
 
+        $aggregatorOrgId = $aggregatorMerchant->getOrgId();
+
+        if ($aggregatorOrgId !== null)
+        {
+           $org = $this->repo->org->findOrFailPublic($aggregatorOrgId);
+
+            // Link sub-merchant to its aggregator's org
+            $subMerchant->org()->associate($org);
+        }
+
         $this->repo->saveOrFail($subMerchant);
 
         $this->addMerchantSupportingEntities($subMerchant);

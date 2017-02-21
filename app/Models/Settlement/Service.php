@@ -4,6 +4,8 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Report\BasicEntityReport;
+use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Icici;
 use RZP\Models\Settlement\Kotak;
@@ -116,7 +118,9 @@ class Service extends Base\Service
 
     public function getSettlementCombinedReport($input)
     {
-        return (new Base\Report)->getReport($input, 'transaction');
+        $report = new BasicEntityReport(E::TRANSACTION);
+
+        return $report->getReport($input);
     }
 
     public function postInitiateTransfer($input)
