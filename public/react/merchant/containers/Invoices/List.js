@@ -68,7 +68,7 @@ export default class InvoicesListContainer extends ListContainer {
                 class='btn btn-primary btn-rounded'
               >
                 <i class='fa fa-plus'></i>
-                <span>New Invoice</span>
+                <span>Create Invoice</span>
               </a>
             </ShowWhen>
           </div>

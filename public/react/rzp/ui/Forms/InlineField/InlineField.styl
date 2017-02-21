@@ -27,7 +27,9 @@ $errorTextColor = #F65656
     -moz-appearance: textfield;
   }
 
-  .error, .error + .inlineField__value-container {
+  .error,
+  .error + .inlineField__value-container,
+  .InputField--error + .inlineField__value-container {
     animation: shake 0.82s cubic-bezier(.36,.07,.19,.97) both;
     transform: translate3d(0, 0, 0);
     backface-visibility: hidden;
@@ -81,7 +83,7 @@ $errorTextColor = #F65656
     color: transparent;
 
     &:hover {
-      border-color: #cfdadd;
+      border-color: #b8b2dc;
     }
   }
 
@@ -103,11 +105,12 @@ $errorTextColor = #F65656
   .powerselect--focused,
   .datepicker--focused .SingleDatePickerInput,
   .datepicker--focused .DateInput__display-text {
-    border-color: #cfdadd;
+    border-color: #b8b2dc;
     color: #555;
   }
 
-  .powerselect.error {
+  .powerselect.error,
+  .InputField--error {
     background-color: $errorBgColor;
 
     .powerselect__trigger-input {
@@ -115,7 +118,8 @@ $errorTextColor = #F65656
     }
 
     + .inlineField__value-container {
-      .inlineField__placeholder {
+      .inlineField__placeholder,
+      .inlineField__value {
         color: $errorTextColor;
       }
     }
@@ -127,7 +131,7 @@ $errorTextColor = #F65656
 
   .powerselect:hover .powerselect__trigger-status,
   .powerselect:focus .powerselect__trigger-status {
-    border-top-color: #cfdadd;
+    border-top-color: #b8b2dc;
   }
 
   .input-xs,

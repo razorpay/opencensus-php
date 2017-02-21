@@ -3,7 +3,6 @@ import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
 import Alert from 'rzp/ui/Forms/Alert'
-import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
 import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
 import TypeAhead from 'rzp/ui/Select/TypeAhead'
@@ -28,7 +27,9 @@ import * as ModalActions from 'merchant/modules/modals'
 import * as NotificationsActions from 'merchant/modules/notifications'
 
 function validate(values) {
-  let errors = {}
+  let errors = {
+    line_items: []
+  }
   let lineItems = values.line_items.filter((item) => !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name))
 
   if (!values.customer_id) {
@@ -36,9 +37,17 @@ function validate(values) {
   }
 
   if (!lineItems.length) {
-    errors.line_items = [{
+    errors.line_items[0] = {
       item_id: 'Please select an item'
-    }]
+    }
+  } else {
+    lineItems.forEach((item, index) => {
+      if (Number(item.quantity) < 1) {
+        errors.line_items[index] = {
+          quantity: 'Quantity should be greater than zero'
+        }
+      }
+    })
   }
   return errors
 }
@@ -224,9 +233,18 @@ export default class InvoicesNewContainer extends Component {
 
   saveAndIssue(props) {
     return this.showIssueConfirmModal((notifyProps) => {
-      return this.save({
+      return this._save({
         ...props,
         ...notifyProps
+      }).then((invoice) => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Invoice Issued'
+        })
+        this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
+          notify: false
+        })
+        return invoice
       })
     }, false)
   }
@@ -454,6 +472,7 @@ export default class InvoicesNewContainer extends Component {
                                   class='form-control input-xs'
                                   placeholder='Receipt number'
                                   disabled={locked}
+                                  autoFocus={true}
                                 />
                             }
                           </div>
@@ -567,6 +586,15 @@ export default class InvoicesNewContainer extends Component {
                             placeholder='Terms and Conditions'
                             disabled={locked}
                           />
+                        </div>
+                      </div>
+
+                      <div class='inv__Footer'>
+                        <div class='inv__Footer__merchantName'>
+                          { this.state.merchantName }
+                        </div>
+                        <div class='inv__Footer__merchantAddress'>
+                          { this.props.session.user.business_registered_address }
                         </div>
                       </div>
                     </div>

@@ -18,7 +18,7 @@ const selector = formValueSelector('issueInvoice')
   ModalActions
 )
 @reduxForm({
-  form: 'issueInvoice'
+  form: 'issueInvoice',
 })
 export default class IssueInvoiceConfirmModal extends Component {
   constructor() {
@@ -27,6 +27,16 @@ export default class IssueInvoiceConfirmModal extends Component {
       paymentLink: ''
     }
     this.onIssueClick = ::this.onIssueClick
+  }
+
+  componentWillMount() {
+    let customer = this.props.customer
+    if (customer) {
+      this.props.initialize({
+        sms_notify: !!customer.contact,
+        email_notify: !!customer.email,
+      })
+    }
   }
 
   onIssueClick(props) {

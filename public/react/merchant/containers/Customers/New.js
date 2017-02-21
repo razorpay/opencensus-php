@@ -8,6 +8,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import { required, email, phone } from 'rzp/utils/validators'
 import * as CustomerActions from 'merchant/modules/customers'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 
 function validate(values) {
   let errors = {}
@@ -23,7 +24,8 @@ function validate(values) {
   null,
   {
     ...CustomerActions,
-    ...ModalActions
+    ...ModalActions,
+    ...NotificationsActions,
   }
 )
 @reduxForm({
@@ -48,6 +50,10 @@ export default class AddCustomer extends Component {
   save(props) {
     return this.props.saveCustomer(props).then((customer) => {
       this.props.onSave(customer)
+      this.props.showNotification({
+        type: 'success',
+        message: 'Customer saved successfully'
+      })
     }).catch((err) => {
       this.setState({
         errors: err.errors
