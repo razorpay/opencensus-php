@@ -84,6 +84,7 @@ class PdfGenerator extends Base\Core
     {
         $options = [
             'ignoreWarnings' => false,
+            'encoding'       => 'UTF-8'
         ];
 
         $pdf = (new Pdf($options))->addPage($html);
