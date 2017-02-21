@@ -8,6 +8,7 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payout\Core as PayoutCore;
+use RZP\Models\Payout\Validator as PayoutValidator;
 
 trait Payout
 {
@@ -74,26 +75,12 @@ trait Payout
         }
     }
 
-    protected function validateAndSetAmount(Payment\Entity $payment, array & $input)
+    protected function validateAndSetAmount(Payment\Entity $payment, & $input)
     {
-        $payoutAmountPending = $payment->getAmount() - $payment->getAmountPaidout();
+        (new PayoutValidator)->validatePaymentPayout($input, $payment);
 
-        if ($payoutAmountPending === 0)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_PAIDOUT);
-        }
+        $paymentPayoutPending = $payment->getAmount() - $payment->getAmountPaidout();
 
-        if (isset($input['amount']) === true)
-        {
-            if ((int) $input['amount'] > $payoutAmountPending)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING);
-            }
-        }
-
-        $input['amount'] = $input['amount'] ?? $payoutAmountPending;
+        $input['amount'] = $input['amount'] ?? $paymentPayoutPending;
     }
-
 }

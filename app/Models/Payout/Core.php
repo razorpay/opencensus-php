@@ -49,11 +49,11 @@ class Core extends Base\Core
 
     protected function createPayoutEntity(array $input, Merchant\Entity $merchant) : Entity
     {
+        $payout = (new Entity)->build($input);
+
         $customer = $this->getCustomer($input, $merchant);
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
-
-        $payout = (new Entity)->build($input);
 
         $payout->setChannel(Settlement\Channel::KOTAK);
 

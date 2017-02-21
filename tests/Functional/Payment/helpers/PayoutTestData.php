@@ -156,6 +156,68 @@ return [
         ]
     ],
 
+    'testPaymentPayoutAmountGreaterThanCapture' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 3000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED,
+        ],
+    ],
+
+    'testPaymentPayoutPartial' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/payments/{id}/payout',
+            'content' => [
+                'amount'      => 2000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'method'      => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'entity'      => 'payout',
+                'amount'      => 2000,
+                'currency'    => 'INR',
+                'customer_id' => 'cust_100000customer',
+                'destination' => 'fund_transfer',
+                'destination' => 'ba_1000000lcustba',
+                'service_tax' => 78,
+                'fee'         => 598,
+                'notes'       => [
+                    'abc' => 'xyz',
+                ],
+            ],
+        ]
+    ],
+
     'testCreatePaymentPayoutNotSettled' => [
         'request' => [
             'method'  => 'POST',

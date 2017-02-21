@@ -3,6 +3,8 @@
 namespace RZP\Models\Payout;
 
 use RZP\Base;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -22,5 +24,35 @@ class Validator extends Base\Validator
     protected function validateMethod($input)
     {
         Method::validateMethod($input[Entity::METHOD]);
+    }
+
+    public function validatePaymentPayout($input, $payment)
+    {
+        if (isset($input['amount']) === false)
+        {
+            return;
+        }
+
+        $payoutAmount = $input['amount'];
+
+        $payoutAmountPending = $payment->getAmount() - $payment->getAmountPaidout();
+
+        if ($payoutAmountPending === 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FULLY_PAIDOUT);
+        }
+
+        if ($payoutAmount > $payment->getAmount())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED);
+        }
+
+        if ($payoutAmount > $payoutAmountPending)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING);
+        }
     }
 }

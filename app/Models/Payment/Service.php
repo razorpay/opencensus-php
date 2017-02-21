@@ -123,7 +123,7 @@ class Service extends Base\Service
      * @param  string $id
      * @param  array  $input
      *
-     * @return Payment\Refund\Entity
+     * @return array
      */
     public function refund($id, array $input)
     {
@@ -395,7 +395,7 @@ class Service extends Base\Service
      * @param string    $id
      * @param array     $input
      *
-     * @return Payout\Entity
+     * @return array
      */
     public function payout(string $id, array $input) : array
     {

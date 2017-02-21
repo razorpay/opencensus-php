@@ -83,9 +83,7 @@ class PayoutTest extends TestCase
     {
         $payment = $this->fixtures->create('payment:settled');
 
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
+        $this->setPaymentPayoutUrl($payment, $this->testData[__FUNCTION__]['request']);
 
         $payout = $this->startTest();
 
@@ -100,19 +98,41 @@ class PayoutTest extends TestCase
         $this->assertEquals($payment['id'], 'pay_' . $payout2['payment_id']);
     }
 
-    public function testPaymentPayoutAmountGreater()
+    public function testPaymentPayoutAmountGreaterThanCapture()
     {
+        $payment = $this->fixtures->create('payment:settled', ['amount' => 2500]);
 
+        $this->setPaymentPayoutUrl($payment, $this->testData[__FUNCTION__]['request']);
+
+        $payout = $this->startTest();
+    }
+
+    public function testPaymentPayoutPartial()
+    {
+        $payment = $this->fixtures->create('payment:settled', ['amount' => 7000]);
+
+        $this->setPaymentPayoutUrl($payment, $this->testData[__FUNCTION__]['request']);
+
+        $payout1 = $this->startTest();
+
+        $payout2 = $this->startTest();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount_paidout'], $payout1['amount'] + $payout2['amount']);
     }
 
     public function testCreatePaymentPayoutNotSettled()
     {
         $payment = $this->fixtures->create('payment:captured');
 
-        $request = & $this->testData[__FUNCTION__]['request'];
-
-        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
+        $this->setPaymentPayoutUrl($payment, $this->testData[__FUNCTION__]['request']);
 
         $this->startTest();
+    }
+
+    public function setPaymentPayoutUrl($payment, & $request)
+    {
+        $request['url'] = '/payments/'. $payment->getPublicId() . '/payouts';
     }
 }
