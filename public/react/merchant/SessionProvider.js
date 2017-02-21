@@ -19,9 +19,12 @@ export default class SessionProvider extends Component {
       user,
       mode: this.props.modeFactory.getMode()
     })
-    this.setState({
-      loading: false
-    })
+
+    if (!this.isUnmounted) {
+      this.setState({
+        loading: false
+      })
+    }
   }
 
   componentWillMount() {
@@ -32,8 +35,12 @@ export default class SessionProvider extends Component {
     user.identity().then((user) => {
       this.updateSession(user)
     }).catch((err) => {
-      throw err
+      this.updateSession(null)
     })
+  }
+
+  componentWillUnmount() {
+    this.isUnmounted = true
   }
 
   render() {

@@ -303,15 +303,19 @@ var injectScript = (function () {
 })();
 
 var reactTemplateProvider = function(template) {
+  var calledOnce = false
+  var deferred = null
   return ['$q', '$stateParams', function ($q) {
-    var deferred = $q.defer();
+    deferred = deferred || $q.defer();
     if (!window.React) {
-      // Really dirty hack which will vanish soon
-      var url = "<% asset('js/generated/merchant_react.js') %>";
-      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js';
-      injectScript(url, function() {
-        deferred.resolve(template);
-      });
+      if (!calledOnce) {
+        calledOnce = true
+        var url = "<% asset('js/generated/merchant_react.js') %>";
+        url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js';
+        injectScript(url, function() {
+          deferred.resolve(template);
+        });
+      }
     } else {
       deferred.resolve(template);
     }
