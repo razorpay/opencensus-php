@@ -681,6 +681,45 @@ class Service extends Base\Service
         return [$errors, $data];
     }
 
+    public function editInvoice($mode, $id, $input)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->edit($id, $input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function deleteInvoice($mode, $id)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->delete($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
         $errors = $data = [];
@@ -712,6 +751,46 @@ class Service extends Base\Service
             $data = $this->api->invoice->sendNotification($invoiceId, $medium)->toArray();
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function markInvoiceAsIssued($mode, $id)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->markAsIssued($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function markInvoiceAsExpired($mode, $id)
+    {
+        $merchantId = $this->currentUser->getCurrentMerchantId();
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->invoice->markAsExpired($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
         {
             $errors[] = $e->getMessage();
         }
@@ -1052,5 +1131,120 @@ class Service extends Base\Service
     public function getPreSignupDetails($merchantId)
     {
         return (new MerchantDetails\Service)->getPresignupDetails($merchantId);
+    }
+
+    public function createCustomer($mode, $params)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->customer->create($params)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function editCustomer($mode, $id, $params)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->customer->fetch($id)->edit($params)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function deleteCustomer($mode, $id)
+    {
+        $merchantId = $this->currentMerchant->id;
+
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->customer->delete($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function createItem($mode, $input)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->item->create($input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function editItem($mode, $id, $input)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->item->edit($id, $input)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
+    }
+
+    public function deleteItem($mode, $id)
+    {
+        $merchantId = $this->currentMerchant->id;
+        $this->setApiCredentials($merchantId, $mode);
+
+        $errors = $data = [];
+
+        try
+        {
+            $data = $this->api->item->delete($id)->toArray();
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $errors[] = $e->getMessage();
+        }
+
+        return [$errors, $data];
     }
 }

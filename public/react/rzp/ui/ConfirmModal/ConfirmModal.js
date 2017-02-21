@@ -1,5 +1,6 @@
 import { PropTypes } from 'react'
 import Modal from 'react-modal'
+import AsyncButton from 'react-async-button'
 
 const ConfirmModal = (props, context) => {
   let confirmModelStyle = {
@@ -10,26 +11,42 @@ const ConfirmModal = (props, context) => {
       width: '325px'
     })
   }
+  let { header, message } = props.options
 
   return (
     <div>
       <Modal
         isOpen={props.show}
         style={confirmModelStyle}
-        shouldCloseOnOverlayClick={false}
-        closeTimeoutMS={300} >
-
+        onRequestClose={props.onAbort}
+        closeTimeoutMS={300}
+        class={`Modal Modal--small Modal--confirm`}
+      >
         <div class='modal-header'>
-          <h3 class='modal-title'>{props.options.header || 'Alert'}</h3>
+          <h3 class='modal-title'>
+            { typeof header === 'function' ? header() : (header || 'Alert') }
+          </h3>
         </div>
 
         <div class='modal-body'>
-          <h4>{props.options.message}</h4>
-        </div>
+          { typeof message === 'function' ? message() : <p>{message}</p> }
 
-        <div class='modal-footer'>
-          <button type='button' class='btn btn-default' onClick={props.onAbort}>Cancel</button>
-          <button type='button' class='btn btn-primary' onClick={props.onAffirm}>Ok</button>
+          <div class='Modal__actions'>
+            <button
+              type='button'
+              class='btn btn-default'
+              onClick={props.onAbort}
+            >
+              {props.options.abortLabel}
+            </button>
+            <AsyncButton
+              type='button'
+              class='btn btn-primary'
+              onClick={props.onAffirm}
+              text={props.options.affirmativeLabel}
+              pendingText={props.options.affirmativePendingLabel}
+            />
+          </div>
         </div>
       </Modal>
     </div>
@@ -38,9 +55,8 @@ const ConfirmModal = (props, context) => {
 
 ConfirmModal.defaultProps = {
   show: false,
-  options: {
-    message: 'Are you sure to continue ?'
-  }
+  abortLabel: 'Cancel',
+  affirmativeLabel: 'OK'
 }
 
 ConfirmModal.propTypes = {

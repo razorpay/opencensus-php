@@ -1,5 +1,4 @@
 import ajax from 'merchant/utils/ajax'
-import { fromJS } from 'immutable'
 
 const SUBSCRIPTIONS_FETCH = 'SUBSCRIPTIONS_FETCH'
 
@@ -18,7 +17,7 @@ let initialState = {
   count: 0
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${SUBSCRIPTIONS_FETCH}::PENDING`:
       return state.set('loading', true)

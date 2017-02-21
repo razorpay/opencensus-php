@@ -3,97 +3,100 @@ import { connect } from 'react-redux'
 import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
+import Alert from 'rzp/ui/Forms/Alert'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import validator from 'rzp/utils/validator'
+import { required } from 'rzp/utils/validators'
 import * as ItemActions from 'merchant/modules/items'
+import * as ModalActions from 'merchant/modules/modals'
 
-const selector = formValueSelector('newItem')
 @connect(
-  (state) => {
-    let isNew = !selector(state, 'id')
-    return {
-      isNew
-    }
-  },
-  ItemActions
+  null,
+  {
+    ...ItemActions,
+    ...ModalActions
+  }
 )
 @reduxForm({
-  form: 'newItem',
-  validate: validator({
-    name: {
-      presence: true
-    },
-    rate: {
-      presence: true
-    }
-  })
+  form: 'newItem'
 })
 export default class AddItem extends Component {
   constructor() {
     super(...arguments)
-    this.create = ::this.create
-    this.edit = ::this.edit
+    this.state = {
+      errors: null
+    }
+
+    this.save = ::this.save
   }
 
-  create(fieldProps) {
-    return this.props.createItem(fieldProps).then((response) => {
-      let item = response.data.item
-      this.props.itemAdded(item)
-      this.props.onSave(item)
-    })
+  componentWillMount() {
+    if (this.props.item) {
+      this.props.initialize(this.props.item)
+    }
   }
 
-  edit(fieldProps) {
-    let { id, ...params } = fieldProps
-    return this.props.editItem(id, params).then((response) => {
-      let item = response.data.item
-      this.props.itemEdited(item)
+  save(props) {
+    return this.props.saveItem(props).then((item) => {
       this.props.onSave(item)
+    }).catch((err) => {
+      this.setState({
+        errors: err.errors
+      })
     })
   }
 
   render() {
-    const { handleSubmit, isNew } = this.props
-    let action = isNew ? this.create : this.edit
+    const {
+      handleSubmit,
+      invalid,
+      item,
+    } = this.props
 
     return (
       <div>
         <ModalHeader
-          title={isNew ? 'New Item' : 'Edit Item'}
+          title={ item && item.id ? 'Edit Item' : 'New Item' }
           onCloseClick={this.props.closeModal}
         />
 
-        <form class='form-horizontal'>
-          <div class='modal-body'>
+        <div class='modal-body'>
+          <Alert
+            type='error'
+            message={this.state.errors}
+          />
+
+          <form onSubmit={handleSubmit(this.save)}>
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Name</label>
-              <div class='col-md-9'>
+              <label class='label-required'>Name</label>
+              <div>
                 <Field
                   name='name'
                   component={InputField}
                   class='form-control'
                   autoFocus={true}
+                  validate={required()}
                 />
               </div>
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Rate</label>
-              <div class='col-md-9'>
+              <label class='label-required'>Rate</label>
+              <div>
                 <div class='input-group'>
                   <span class='input-group-addon'>INR</span>
                   <Field
-                    name='rate'
+                    name='amountInINR'
                     component={InputField}
                     class='form-control'
+                    validate={required()}
                   />
                 </div>
               </div>
             </div>
 
             <div class='form-group'>
-              <label class='col-md-3 control-label'>Description</label>
-              <div class='col-md-9'>
+              <label>Description</label>
+              <div>
                 <Field
                   name='description'
                   component='textarea'
@@ -101,26 +104,25 @@ export default class AddItem extends Component {
                 />
               </div>
             </div>
-          </div>
 
-          <div class='modal-footer'>
-            <button
-              type='button'
-              class='btn btn-default'
-              onClick={this.props.closeModal}
-            >
-              Cancel
-            </button>
-
-            <AsyncButton
-              type='button'
-              class='btn btn-primary'
-              text='Save'
-              onClick={handleSubmit(action)}
-            />
-          </div>
-        </form>
+            <div class='Modal__actions'>
+              <AsyncButton
+                type='submit'
+                class='btn btn-primary btn-block'
+                text={this.props.saveLabel}
+                pendingText='Saving...'
+                disabled={invalid}
+                onClick={handleSubmit(this.save)}
+              />
+            </div>
+          </form>
+        </div>
       </div>
     )
   }
+}
+
+AddItem.defaultProps = {
+  onSave: () => {},
+  saveLabel: 'Save'
 }
