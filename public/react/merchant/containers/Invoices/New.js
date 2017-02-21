@@ -224,9 +224,18 @@ export default class InvoicesNewContainer extends Component {
 
   saveAndIssue(props) {
     return this.showIssueConfirmModal((notifyProps) => {
-      return this.save({
+      return this._save({
         ...props,
         ...notifyProps
+      }).then((invoice) => {
+        this.props.showNotification({
+          type: 'success',
+          message: 'Invoice Issued'
+        })
+        this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
+          notify: false
+        })
+        return invoice
       })
     }, false)
   }
@@ -454,6 +463,7 @@ export default class InvoicesNewContainer extends Component {
                                   class='form-control input-xs'
                                   placeholder='Receipt number'
                                   disabled={locked}
+                                  autoFocus={true}
                                 />
                             }
                           </div>
@@ -567,6 +577,15 @@ export default class InvoicesNewContainer extends Component {
                             placeholder='Terms and Conditions'
                             disabled={locked}
                           />
+                        </div>
+                      </div>
+
+                      <div class='inv__Footer'>
+                        <div class='inv__Footer__merchantName'>
+                          { this.state.merchantName }
+                        </div>
+                        <div class='inv__Footer__merchantAddress'>
+                          { this.props.session.user.business_registered_address }
                         </div>
                       </div>
                     </div>

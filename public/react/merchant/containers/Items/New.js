@@ -8,12 +8,14 @@ import ModalHeader from 'rzp/ui/ModalHeader'
 import { required } from 'rzp/utils/validators'
 import * as ItemActions from 'merchant/modules/items'
 import * as ModalActions from 'merchant/modules/modals'
+import * as NotificationsActions from 'merchant/modules/notifications'
 
 @connect(
   null,
   {
     ...ItemActions,
-    ...ModalActions
+    ...ModalActions,
+    ...NotificationsActions,
   }
 )
 @reduxForm({
@@ -38,6 +40,10 @@ export default class AddItem extends Component {
   save(props) {
     return this.props.saveItem(props).then((item) => {
       this.props.onSave(item)
+      this.props.showNotification({
+        type: 'success',
+        message: 'Item saved successfully'
+      })
     }).catch((err) => {
       this.setState({
         errors: err.errors

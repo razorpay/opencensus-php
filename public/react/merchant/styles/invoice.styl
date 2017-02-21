@@ -15,7 +15,7 @@ $muted = rgba(0, 0, 0, 0.27)
 
   .invoice {
     background-color: #fff;
-    padding: 40px;
+    padding: 40px 40px 0 40px;
     border-radius: 4px;
     box-shadow: 0 0 8px 0 rgba(0,0,0,0.1);
     min-height: 761px;
@@ -85,6 +85,22 @@ $muted = rgba(0, 0, 0, 0.27)
       bottom: -5px
       right: 0
     }
+  }
+
+  .inv__Footer {
+    padding: 24px 0;
+    border-top: 1px solid #f3f3f3;
+    color: $semiMuted;
+    text-align: center;
+  }
+
+  .inv__Footer__merchantName {
+    font-size: 12px;
+    font-weight: bold;
+  }
+
+  .inv__Footer__merchantAddress {
+    font-size: 10px;
   }
 
   .inv__cta {
