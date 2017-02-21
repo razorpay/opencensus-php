@@ -22,10 +22,6 @@ export function isBlank(obj) {
   return !obj
 }
 
-export function isPresent(obj) {
-  return !isBlank(obj)
-}
-
 export const findBy = (array, prop, value) => {
   return array.find((item) => {
     return item[prop] === value
@@ -53,21 +49,14 @@ export const pipe = (...funcs) => {
   }
 }
 
-export const normalizeDate = date => (moment(date).format('D/M/Y'))
-
-export const getFixedINRAmount = (amount) => (Number(amount)/100).toFixed(2)
-
-
-export const objectDiff = (oldObj = {}, newObj = {}) => {
-  return Object.keys(newObj).reduce((prev, key) => {
-    let value = newObj[key]
-    let oldValue = oldObj[key]
-
-    if (JSON.stringify(value) !== JSON.stringify(oldValue)) {
-      prev[key] = value
-    }
-    return prev
-  }, {})
+export const isEmail = (email) => {
+  let emailRegExp = new RegExp(/^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$/)
+  return emailRegExp.test(email)
 }
 
-export const noop = () => {}
+export const isValidPhone = (phone) => {
+  let phoneRegExp = new RegExp(/^\+?[0-9]{8,15}$/)
+  return phoneRegExp.test(phone)
+}
+
+export const normalizeDate = date => (moment(date).format('D/M/Y'))

@@ -1,4 +1,4 @@
-'use strict'
+'use strict';
 
 const gulp = require('gulp');
 const webpack = require('webpack');
@@ -6,7 +6,9 @@ const through = require('through');
 const plumber = require('gulp-plumber');
 const run = require('run-sequence');
 const lazypipe = require('lazypipe');
+
 const dot = require('dot');
+
 const stylus = require('gulp-stylus');
 const cssnano = require('gulp-cssnano');
 const bootstrap = require('bootstrap-styl');
@@ -17,32 +19,31 @@ const rev = require('gulp-rev');
 const webpackConfig = require('./webpack.config.js');
 
 const revMap = {};
-let isDevelopment = false;
 
 // functions and variables to be passed to blade.php.tmpl file
 const tmplData = {
   asset: function(path) {
     if (path in revMap) {
-      path = revMap[path]
+      path = revMap[path];
     }
-    return `/${path}`
+    return `/${path}`;
   }
 };
 
 // minimal string interpolation for processing tmpl
 function interpolate(template, pattern) {
-  pattern = pattern || /\{\{([^\}]+)\}\}/g
+  pattern = pattern || /\{\{([^\}]+)\}\}/g;
   return template.replace(pattern, (match, keypath)=> {
-    return new Function('_', 'return _.' + keypath.trim())(tmplData)
-  })
+    return new Function('_', 'return _.' + keypath.trim())(tmplData);
+  });
 }
 
 function revReference(file) {
-  var list = JSON.parse(String(file.contents))
+  var list = JSON.parse(String(file.contents));
   for (let i in list) {
-    revMap[i] = list[i]
+    revMap[i] = list[i];
   }
-  this.emit('data', file)
+  this.emit('data', file);
 }
 
 const stylus2css = lazypipe()
@@ -130,7 +131,7 @@ gulp.task('js:prod', () => {
   return concatJs()
     .pipe(uglify())
     .on('error', function(e){
-        console.log(e)
+        console.log(e);
      })
     .pipe(rev())
     .pipe(gulp.dest('public'))
@@ -141,34 +142,34 @@ gulp.task('js:prod', () => {
 gulp.task('tmpl', ()=> {
   gulp.src('resources/views/**/*.blade.php.tmpl')
     .pipe(through(function(file) {
-      file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1')
-      file.contents = new Buffer(interpolate(String(file.contents)))
-      this.emit('data', file)
+      file.path = file.path.replace(/\/([^\/]+)\.tmpl$/, '/tmp$1');
+      file.contents = new Buffer(interpolate(String(file.contents)));
+      this.emit('data', file);
     }))
     .pipe(gulp.dest('resources/views'));
 });
 
 gulp.task('dev', ()=> {
-  run('compileThemes', ['css', 'js'], 'tmpl')
+  run('compileThemes', ['css', 'js'], 'tmpl');
 });
 
 gulp.task('reactRevReplace', () => {
   return gulp.src(`public/${revMap['js/generated/merchant.js']}`)
     .pipe(through(function(file) {
-      file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g))
-      this.emit('data', file)
+      file.contents = new Buffer(interpolate(String(file.contents), /\<\%([^\}]+)\%\>/g));
+      this.emit('data', file);
     }))
     .pipe(gulp.dest('public/js/generated'));
 });
 
 const runWebpack = (webpackConfig, cb) => {
   webpack(webpackConfig, (err, stats) => {
+    if (err) {
+      throw new Error(err);
+    }
     console.log(stats.toString({
       colors: true
     }));
-    if (stats.hasErrors() && !isDevelopment) {
-      throw new Error('Webpack failed');
-    }
     cb();
   });
 };
@@ -199,11 +200,6 @@ gulp.task('webpack:prod', (cb) => {
   runWebpack(config, cb);
 });
 
-gulp.task('dev:setENV', (cb) => {
-  isDevelopment = true;
-  cb();
-})
-
 gulp.task('default', (cb) => {
   run('webpack:prod', 'compileThemes', ['css:prod', 'js:prod'], 'tmpl', 'reactRevReplace', cb);
 });
@@ -212,7 +208,7 @@ gulp.task('dev', (cb) => {
   run(['css', 'js'], 'tmpl', cb);
 });
 
-gulp.task('dev:webpack', ['dev:setENV'], (cb) => {
+gulp.task('dev:webpack', (cb) => {
   run('webpack', 'dev', cb);
 });
 

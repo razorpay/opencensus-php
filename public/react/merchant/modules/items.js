@@ -1,66 +1,51 @@
-import Item from 'merchant/models/Item'
-import { set, merge, unshift, remove } from 'rzp/utils/immutable'
+import ajax from 'merchant/utils/ajax'
+import { fromJS } from 'immutable'
 
 const ITEMS_FETCH = 'ITEMS_FETCH'
-const ITEMS_AUTOCOMPLETE_FETCH = 'ITEMS_AUTOCOMPLETE_FETCH'
-const ITEM_CREATE = 'ITEM_CREATE'
-const ITEM_EDIT = 'ITEM_EDIT'
-const ITEM_DELETED = 'ITEM_DELETED'
-const HIGHLIGHT_ITEM = 'HIGHLIGHT_ITEM'
-const REMOVE_ITEM_HIGHLIGHT = 'REMOVE_ITEM_HIGHLIGHT'
+const ITEMS_ADDED = 'ITEMS_ADDED'
+const ITEMS_EDITED = 'ITEMS_EDITED'
 
-export const fetchItems = (params) => {
+export const fetchItems = () => {
   return (dispatch) => {
     return dispatch({
       type: ITEMS_FETCH,
-      payload: Item.fetchAll(params)
+      payload: ajax('/items')
     })
   }
 }
 
-export const fetchItemsForAutocomplete = () => {
+export const createItem = (data) => {
   return (dispatch) => {
-    return dispatch({
-      type: ITEMS_AUTOCOMPLETE_FETCH,
-      payload: Item.fetchForAutocomplete()
+    return ajax({
+      url: '/item',
+      method: 'post',
+      data
     })
   }
 }
 
-export const saveItem = (params) => {
+export const editItem = (id, data) => {
   return (dispatch) => {
-    let item = new Item(params)
-    return dispatch({
-      type: item.isNew ? ITEM_CREATE : ITEM_EDIT,
-      payload: item.save()
+    return ajax({
+      url: `/item/${id}`,
+      method: 'put',
+      data
     })
   }
 }
 
-export const deleteItem = (params) => {
-  return (dispatch) => {
-    let item = new Item(params)
-    return item.delete().then(() => {
-      dispatch({
-        type: ITEM_DELETED,
-        payload: item
-      })
-    })
+
+export const itemAdded = (item) => {
+  return {
+    type: ITEMS_ADDED,
+    payload: item
   }
 }
 
-export const highlightItemRow = (params) => {
-  return (dispatch) => {
-    dispatch({
-      type: HIGHLIGHT_ITEM,
-      payload: params
-    })
-
-    setTimeout(() => {
-      dispatch({
-        type: REMOVE_ITEM_HIGHLIGHT
-      })
-    }, 6000)
+export const itemEdited = (item) => {
+  return {
+    type: ITEMS_EDITED,
+    payload: item
   }
 }
 
@@ -68,50 +53,36 @@ export const highlightItemRow = (params) => {
 let initialState = {
   loading: true,
   items: [],
-  count: 0,
-  highlightRowId: null
+  count: 0
 }
 
-export default function (state = initialState, action) {
+export default function (state = fromJS(initialState), action) {
   switch(action.type) {
     case `${ITEMS_FETCH}::PENDING`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::PENDING`:
-      return merge(state, {
-        loading: true,
-        highlightRowId: null
-      })
+      return state.set('loading', true)
 
     case `${ITEMS_FETCH}::SUCCESS`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::SUCCESS`:
-      return merge(state, {
+      return state.merge({
         loading: false,
         items: action.payload.data.items,
         count: action.payload.data.count
       })
 
     case `${ITEMS_FETCH}::ERROR`:
-    case `${ITEMS_AUTOCOMPLETE_FETCH}::ERROR`:
-      return merge(state, {
+      return state.merge({
         loading: false,
         error: action.error
       })
 
-    case `${ITEM_CREATE}::SUCCESS`:
-      return set(state, 'items', unshift(state.items, action.payload))
+    case ITEMS_ADDED:
+      return state.set('items', state.get('items').unshift(action.payload))
 
-    case `${ITEM_EDIT}::SUCCESS`:
-      let itemIndex = state.items.findIndex((item) => item.id === action.payload.id)
-      return set(state, `items.${itemIndex}`, action.payload)
-
-    case ITEM_DELETED:
-      var itemsList = remove(state.items, (item) => item.id === action.payload.id)
-      return set(state, 'items', itemsList)
-
-    case HIGHLIGHT_ITEM:
-      return set(state, 'highlightRowId', action.payload.id)
-
-    case REMOVE_ITEM_HIGHLIGHT:
-      return set(state, 'highlightRowId', null)
+    case ITEMS_EDITED:
+      let items = state.get('items')
+      return state.set('items', items.update(
+        items.findIndex((item) => item.get('id') === action.payload.id),
+        (item) => item.merge(action.payload)
+      ))
 
     default:
       return state

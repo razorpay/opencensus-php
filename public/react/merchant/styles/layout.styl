@@ -4,32 +4,7 @@
 @import './bootstrap-ext'
 @import 'react-dates/lib/css/_datepicker.css';
 @import 'react-power-select/dist/react-power-select.css';
-@import 'react-simple-dropdown/styles/Dropdown.css';
 @import './invoice'
-
-.react-root {
-  ::-webkit-input-placeholder { /* WebKit, Blink, Edge */
-    color: #aaa;
-  }
-  :-moz-placeholder { /* Mozilla Firefox 4 to 18 */
-   color: #aaa;
-  }
-  ::-moz-placeholder { /* Mozilla Firefox 19+ */
-   color: #aaa;
-  }
-  :-ms-input-placeholder { /* Internet Explorer 10-11 */
-    color: #aaa;
-  }
-
-  h3, h2 {
-    margin: 0;
-  }
-
-  h3 {
-    font-weight: bold;
-    font-size: 20px;
-  }
-}
 
 .content-wrapper {
   padding: 30px 20px;
@@ -80,20 +55,6 @@ body.ReactModal__Body--open {
   }
 }
 
-// React Tooltip
-
-.__react_component_tooltip.__react_component_tooltip {
-  padding: 4px 12px;
-}
-
-.__react_component_tooltip.__react_component_tooltip.place-top:before,
-.__react_component_tooltip.__react_component_tooltip.place-top:after {
-  $caretWidth = 6px;
-  border-width: $caretWidth;
-  bottom: -($caretWidth);
-  margin-left: -($caretWidth);
-}
-
 // react-dates style overrides
 
 .SingleDatePicker {
@@ -106,14 +67,6 @@ body.ReactModal__Body--open {
 
 .SingleDatePicker__tether--show {
   top: -11px !important;
-}
-
-.SingleDatePicker__picker {
-  top: 45px;
-}
-
-.DateInput__input {
-  cursor: pointer;
 }
 
 .DateInput {
@@ -154,6 +107,8 @@ body.ReactModal__Body--open {
   border-color: #23b7e5;
 }
 
+
+
 // End of third party style overrides
 
 .butterbar {
@@ -178,11 +133,10 @@ body.ReactModal__Body--open {
 }
 
 .quick-create {
-  padding: 2px 5px;
+  padding: 8px 12px;
   background-color: rgba(195, 195, 195, 0.23);
   color: #337ab7;
   cursor: pointer;
-  font-size: 12px;
 }
 
 .row-action > .btn-group {
@@ -221,161 +175,5 @@ tr:hover .row-action > .btn-group {
 }
 
 .alert-sm {
-  padding: 2px 4px;
-  font-size: 12px;
-}
-
-.label-required {
-  position: relative;
-
-  &::after {
-    content: '*';
-    position: absolute;
-    top: 0;
-    right: -10px;
-    color: #e68686;
-  }
-}
-
-.form-horizontal .control-label.label-required::after {
-  right: 7px;
-  top: 7px;
-}
-
-// List Filter Container
-
-.list-filter-container {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: flex-start;
-  margin: 15px -5px;
-}
-
-.list-filter-item {
-  flex: 1;
-  flex-basis: 185px;
-  flex-grow: 0;
-  margin-left: 25px;
-
-  &.count {
-    flex-basis: 70px;
-  }
-
-  &.btn-toolbar {
-    margin-top: 25px;
-    flex-basis: initial;
-
-    > .btn:first-child {
-      margin-left: 0;
-    }
-  }
-}
-
-.status-label {
-  display: inline-block;
-  width: 80px;
-  font-size: 13px;
-  padding-top: 5px;
-  padding-bottom: 5px;
-}
-
-.btn-group > .tooltip-wrapper {
-  display: inline-block;
-}
-
-.label-draft {
-  background-color: #ccc;
-  color: #fff;
-}
-
-.breadcrumb__backNav {
-  padding: 0;
-  background-color: transparent;
-  margin-bottom: 25px;
-}
-
-.breadcrumb__backNav--heading {
-  display: inline-block;
-}
-
-.breadcrumb__backNav--heading + .label-draft {
-  margin-left: 5px;
-}
-
-a.breadcrumb__backNav--link {
-  color: #7266ba;
-}
-
-.breadcrumb > li + li {
-  padding-left: 16px;
-  margin-left: 16px;
-  position: relative;
-
-  &:before {
-    content: '';
-    display: block;
-    height: 24px;
-    border-left: 1px solid rgba(0, 0, 0, 0.54);
-    position: absolute;
-    left: 0;
-    bottom: -2px;
-    transform: rotate(24deg)
-  }
-}
-
-
-
-.rzpChecbox {
-  margin-bottom: 5px;
-
-  [type='checkbox']:not(:checked), [type='checkbox']:checked {
-    position: absolute;
-    left: -9999px;
-
-    + label {
-      position: relative;
-      padding-left: 25px;
-      cursor: pointer;
-
-      &::before {
-        content: '';
-        width: 20px;
-        height: 20px;
-        border: 1px solid #e0e0e0;
-        border-radius: 4px;
-        background-color: #f5f5f5;
-        display: inline-block;
-        position: absolute;
-        left: 0;
-      }
-
-      &::after {
-        content: '✔';
-        color: #7266ba;
-        position: absolute;
-        bottom: 0;
-        left: 4px;
-        transition: opacity 0.2s ease-out;
-      }
-    }
-  }
-
-  [type='checkbox']:not(:checked) + label::after {
-    opacity: 0
-  }
-
-  [type='checkbox']:checked + label::after {
-    opacity: 1
-  }
-}
-
-.Modal {
-  .alert {
-    margin-left: -24px;
-    margin-right: -24px;
-  }
-
-  .form-group > label {
-    font-weight: bold;
-  }
+  padding: 5px 10px;
 }

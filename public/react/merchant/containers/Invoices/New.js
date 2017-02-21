@@ -1,684 +1,212 @@
-import { Component, PropTypes } from 'react'
+import React, { Component } from 'react'
 import { Field, FieldArray, reduxForm, formValueSelector } from 'redux-form'
 import { connect } from 'react-redux'
 import AsyncButton from 'react-async-button'
-import Alert from 'rzp/ui/Forms/Alert'
+
+import Modal from 'rzp/ui/Modal'
+import Header from 'rzp/ui/Header'
 import InputField from 'rzp/ui/Forms/InputField'
 import DatePickerField from 'rzp/ui/Forms/DatePickerField'
-import AutoResizeTextarea from 'rzp/ui/Forms/AutoResizeTextarea'
-import TypeAhead from 'rzp/ui/Select/TypeAhead'
-import Spinner from 'rzp/ui/Spinner'
-import InlineField from 'rzp/ui/Forms/InlineField'
-import { findBy } from 'rzp/utils/rzp-utils'
+import ReduxPowerSelect from 'rzp/ui/Forms/ReduxPowerSelect'
 
 import LineItemTable from './LineItemTable'
+import { fetchCustomers } from 'merchant/modules/customers'
+import { fetchItems } from 'merchant/modules/items'
 import CustomerCreation from 'merchant/containers/Customers/New'
-import IssueConfirmModal from './IssueConfirmModal'
-import AddInternalNoteModal from './AddInternalNoteModal'
-import InvoiceBreadcrumbNav from 'merchant/components/Invoices/InvoiceBreadcrumbNav'
-import InvoiceInfo from 'merchant/components/Invoices/InvoiceInfo'
-import InvoiceNotes from 'merchant/components/Invoices/InvoiceNotes'
-import InvoiceLogo from 'merchant/components/Invoices/InvoiceLogo'
-import { fetchConfig } from 'merchant/modules/config'
-import { fetchCustomersForAutocomplete } from 'merchant/modules/customers'
-import { fetchItemsForAutocomplete } from 'merchant/modules/items'
-import { saveInvoice, highLightInvoice, deleteInvoice } from 'merchant/modules/invoices/list'
-import * as InvoiceActions from 'merchant/modules/invoices/details'
-import * as ModalActions from 'merchant/modules/modals'
-import * as NotificationsActions from 'merchant/modules/notifications'
-
-function validate(values) {
-  let errors = {}
-  let lineItems = values.line_items.filter((item) => !!((item.item_id && item.item_id !== 'NULL') || item.id || item.name))
-
-  if (!values.customer_id) {
-    errors.customer_id = 'Please select a customer'
-  }
-
-  if (!lineItems.length) {
-    errors.line_items = [{
-      item_id: 'Please select an item'
-    }]
-  }
-  return errors
-}
+import ModalContainer from 'merchant/containers/ModalContainer'
 
 const selector = formValueSelector('newInvoice')
 @connect(
   (state) => {
-    let customers = state.customers.customers
+    let itemsState = state.items.toJS()
+    let customersState = state.customers.toJS()
+
     return {
-      session: state.session,
-      customers,
-      items: state.items.items,
-      customer: findBy(customers, 'id', selector(state, 'customer_id')),
-      invoice: state.invoice.invoice,
-      invoice_line_items: selector(state, 'line_items')
+      customers: customersState.customers,
+      items: itemsState.items,
+      customer: selector(state, 'customer')
     }
   },
-  {
-    fetchCustomersForAutocomplete,
-    fetchItemsForAutocomplete,
-    saveInvoice,
-    highLightInvoice,
-    deleteInvoice,
-    fetchConfig,
-    ...InvoiceActions,
-    ...ModalActions,
-    ...NotificationsActions,
-  }
+  { fetchCustomers, fetchItems }
 )
 @reduxForm({
   form: 'newInvoice',
-  enableReInitialize: true,
-  validate,
   initialValues: {
-    date: Math.ceil(new Date().getTime()/1000),
-    draft: 0,
-    type: 'invoice',
+    invoice_date: Math.ceil(new Date().getTime()/1000),
+    due_on: 30,
+    notes: 'Thanks for your business',
     line_items: [
       {
         quantity: 1,
-        amountInINR: '0.00'
+        rate: '0.00'
       }
     ]
   }
 })
-export default class InvoicesNewContainer extends Component {
-  static contextTypes = {
-    ngRouter: PropTypes.object,
-    confirm: PropTypes.func
-  }
-
+export default class InvoicesNewContainer extends ModalContainer {
   constructor() {
     super(...arguments)
-    this.state = {
-      status: {}
-    }
     this.save = ::this.save
     this.selectCustomerAndCloseModal = ::this.selectCustomerAndCloseModal
-    this.quickCreateCustomer = ::this.quickCreateCustomer
-    this.resendInvoice = ::this.resendInvoice
-    this.deleteInvoice = ::this.deleteInvoice
-    this.downloadInvoicePDF = ::this.downloadInvoicePDF
-    this.expireInvoice = ::this.expireInvoice
-    this.addInternalNote = ::this.addInternalNote
-    this.handleBackNavClick = ::this.handleBackNavClick
   }
 
   componentWillMount() {
-    this.getMerchantInfo()
-    let promises = [
-      this.props.fetchCustomersForAutocomplete(),
-      this.props.fetchItemsForAutocomplete(),
-    ]
-
-    if (this.props.id) {
-      promises.push(this.props.fetchInvoice(this.props.id))
-    } else {
-      this.props.initializeInvoice()
-    }
-
-    this.setState({
-      isLoading: true
-    })
-
-    Promise.all(promises).then(([customers, items, invoice]) => {
-      if (invoice) {
-        this.props.initialize(invoice)
-      }
-      this.setState({
-        isLoading: false
-      })
-    }).catch(({ errors }) => {
-      this.props.showNotification({
-        type: 'error',
-        message: errors
-      })
-    })
-
-    this.handleWindowClose()
-  }
-
-  getMerchantInfo() {
-    return this.props.fetchConfig().then((config) => {
-      let user = this.props.session.user
-      let merchant = user.merchants[user.current]
-      let logoUrl = ''
-
-      if (config.logo_url) {
-        let cdnName = window.location.hostname.indexOf('-') !== -1 ? 'betacdn' : 'cdn'
-        logoUrl = `https://${cdnName}.razorpay.com${config.logo_url.replace(/\.([^\.]+$)/,'_medium.$1')}`
-      }
-
-      this.setState({
-        merchantLogoUrl: logoUrl,
-        merchantName: merchant.name,
-      })
-    })
-  }
-
-  calculateItemsSubTotal() {
-    let lineItems = this.props.invoice_line_items || []
-    return lineItems.reduce((total, line_item) => {
-      return total + (Number(line_item.quantity) * Number(line_item.amountInINR))
-    }, 0).toFixed(2)
-  }
-
-  calculateInvoiceTotal() {
-    return this.calculateItemsSubTotal()
+    this.props.fetchCustomers()
+    this.props.fetchItems()
   }
 
   selectCustomerAndCloseModal(customer) {
-    this.props.change('customer_id', customer.id)
-    this.props.closeModal()
+    this.props.change('customer', customer)
+    this.closeModal()
   }
 
-  quickCreateCustomer({ searchTerm = '' }) {
-    this.props.openModal({
-      size: 'small',
-      component: <CustomerCreation
-        saveLabel='Create and add this customer'
-        onSave={this.selectCustomerAndCloseModal}
-        customer={{
-          name: searchTerm
-        }}
-      />
-    })
-  }
-
-  _save(props) {
-    this.setState({
-      isSaving: true
-    })
-    return this.props.saveInvoice(props).then((invoice) => {
-      this.setState({
-        isSaving: false
-      })
-      this.props.initialize(invoice)
-      return invoice
-    }).catch((error) => {
-      this.props.showNotification({
-        type: 'error',
-        message: error.errors
-      })
-      this.setState({
-        isSaving: false
-      })
-      throw error
-    })
+  quickCreateCustomer() {
+    this.openModal()
   }
 
   save(props) {
-    return this._save(props).then((invoice) => {
-      this.props.showNotification({
-        type: 'success',
-        message: 'Invoice Saved'
-      })
-      this.context.ngRouter.transitionTo('app.invoices.edit', invoice, {
-        notify: false
-      })
-      return invoice
-    })
-  }
-
-  saveAndIssue(props) {
-    return this.showIssueConfirmModal((notifyProps) => {
-      return this.save({
-        ...props,
-        ...notifyProps
-      })
-    }, false)
-  }
-
-  resendInvoice(props) {
-    this.showIssueConfirmModal((notifyProps) => {
-      let promises = []
-
-      if (notifyProps.email_notify) {
-        promises.push(this.props.notifyCustomer(props, 'email'))
-      }
-      if (notifyProps.sms_notify) {
-        promises.push(this.props.notifyCustomer(props, 'sms'))
-      }
-
-      return Promise.all(promises).then(([emailStatus, smsStatus]) => {
-        this.props.showNotification({
-          type: 'success',
-          message: 'Invoice has been sent successfully!'
-        })
-      }).catch(({ errors }) => {
-        this.props.showNotification({
-          type: 'error',
-          message: errors
-        })
-      })
-    })
-  }
-
-  showIssueConfirmModal(onIssueCallback, disableIssueOnEmptySelection) {
-    this.props.openModal({
-      size: 'small',
-      component: <IssueConfirmModal
-        customer={this.props.customer}
-        disableIssueOnEmptySelection={disableIssueOnEmptySelection}
-        onIssue={(notifyProps) => {
-          return onIssueCallback(notifyProps)
-        }}
-      />
-    })
-  }
-
-  downloadInvoicePDF(invoice) {
-    // TODO: handle download
-  }
-
-  navigateToList() {
-    return this.context.ngRouter.transitionTo('app.invoices.list')
-  }
-
-  deleteInvoice() {
-    if (!this.props.dirty) {
-      return this.navigateToList()
-    }
-
-    let invoice = this.props.invoice
-    this.context.confirm({
-      header: 'Delete Invoice?',
-      message: () => (
-        <div class='text-semi-muted'>
-          <p>The Invoice will be deleted. There is no coming back!. Are you sure?</p>
-          <div>
-            If you have added any item or customer, you can still use them in other invoices.
-          </div>
-        </div>
-      ),
-      affirmativeLabel: 'Yes, Delete',
-      affirmativePendingLabel: 'Deleting...',
-      abortLabel: 'No, don\'t!',
-      action: () => {
-        return invoice.id ?
-          this.props.deleteInvoice(invoice).then(() => {
-            this.navigateToList().then(() => {
-              this.props.showNotification({
-                type: 'success',
-                message: 'Invoice deleted successfully'
-              })
-            })
-          }).catch(({ errors }) => {
-            this.props.showNotification({
-              type: 'error',
-              message: errors
-            })
-          }) :
-          this.navigateToList()
-      }
-    })
-  }
-
-  expireInvoice() {
-    let invoice = this.props.invoice
-    this.context.confirm({
-      header: 'Expire Invoice?',
-      message: () => (
-        <div class='text-semi-muted'>
-          <p>The Invoice will be expired and the customer will not be able to pay for it.</p>
-        </div>
-      ),
-      affirmativeLabel: 'Yes, Expire',
-      affirmativePendingLabel: 'Expiring...',
-      abortLabel: 'No, don\'t!',
-      action: () => {
-        return this.props.expireInvoice(invoice).then((invoice) => {
-          this.props.initialize(invoice)
-          this.props.showNotification({
-            type: 'success',
-            message: 'Invoice expired!'
-          })
-        }).catch(({ errors }) => {
-          this.props.showNotification({
-            type: 'error',
-            message: errors
-          })
-        })
-      }
-    })
-  }
-
-  addInternalNote(props) {
-    let invoice = this.props.invoice
-    this.props.openModal({
-      size: 'small',
-      component: <AddInternalNoteModal
-        onSave={(note) => {
-          return this._save({
-            ...invoice,
-            notes: {
-              ...invoice.notes,
-              ...note
-            }
-          })
-        }}
-      />
-    })
-  }
-
-  handleBackNavClick() {
-    if (!(this.props.anyTouched && this.props.dirty)) {
-      return this.navigateToList()
-    }
-
-    this.context.confirm({
-      header: 'Unsaved changes',
-      message: 'You have some unsaved changes. Do you want to leave this page ?',
-      affirmativeLabel: 'Yes, leave',
-      abortLabel: 'No, stay'
-    }).then(() => {
-      this.navigateToList()
-    })
-  }
-
-  handleWindowClose() {
-    window.onbeforeunload = function() {
-      return (this.props.anyTouched && this.props.dirty) ? 'Unsaved changes will be deleted. Do you want to leave the page?' : null
-    }.bind(this)
-  }
-
-  componentWillUnmount() {
-    window.onbeforeunload = null
+    alert(JSON.stringify(props))
   }
 
   render() {
-    const {
-      handleSubmit,
-      customer,
-      invoice,
-    } = this.props
-
-    let isNew = !invoice.id
-    let status = invoice.status
-    let isDraft = status === 'draft'
-    let isIssued = status === 'issued'
-    let isPaid = status === 'paid'
-    let isExpired = status === 'expired'
-    let locked = isPaid || isExpired
-
-    let invoiceTotal = this.calculateInvoiceTotal()
+    const { handleSubmit } = this.props
+    let selectedCustomer = this.props.customer || {}
 
     return (
-      <div class='react-root'>
-        {
-          this.state.isLoading ?
-          <div class='page-spinner-container'>
-            <Spinner />
-          </div> :
-          <div class='content-wrapper invoice-creation-container'>
-            <form onSubmit={handleSubmit(this.save)}>
-              <div class='row'>
-                <div class='col-md-8'>
-                  <div class='invoice-container pull-right'>
-                    <InvoiceBreadcrumbNav
-                      invoice={invoice}
-                      onBackNavClick={this.handleBackNavClick}
-                    />
+      <div>
+        <Header title='New Invoice'>
+          <a href='#/app/invoices' class='pull-right btn btn-link btn-sm'>
+            <i class='fa fa-close'></i>
+          </a>
+        </Header>
 
-                    <Alert
-                      type={this.state.status.type}
-                      message={this.state.status.message}
-                    />
+        <Modal
+          isOpen={this.state.isModalOpen}
+          onRequestClose={this.closeModal}
+          closeTimeoutMS={300}
+        >
+          <CustomerCreation
+            onSave={this.selectCustomerAndCloseModal}
+            closeModal={this.closeModal}
+          />
+        </Modal>
 
-                    <div class='invoice'>
-                      <InvoiceLogo
-                        logo={this.state.merchantLogoUrl}
-                        name={this.state.merchantName}
+        <div class='content-wrapper invoice-creation-container'>
+          <div class='panel panel-default'>
+            <div class='panel-body'>
+              <form onSubmit={handleSubmit(this.save)}>
+                <div class='row'>
+                  <div class='col-md-4'>
+                    <div class='form-group'>
+                      <label>Invoice No</label>
+                      <Field
+                        name='invoice_number'
+                        component={InputField}
+                        class='form-control'
+                        placeholder='Enter Invoice NO'
                       />
+                    </div>
+                  </div>
+                </div>
 
-                      <div class='row'>
-                        <div class='col-md-6'>
-                          <div class='inv__titlesection'>
-                            <h3>Invoice</h3>
-                            {
-                              (locked && !invoice.receipt) ?
-                                <InlineField
-                                  formName='newInvoice'
-                                  name='id'
-                                  component='input'
-                                  class='form-control input-xs'
-                                  disabled={true}
-                                  size={30}
-                                /> :
-                                <InlineField
-                                  formName='newInvoice'
-                                  name='receipt'
-                                  component='input'
-                                  class='form-control input-xs'
-                                  placeholder='Receipt number'
-                                  disabled={locked}
-                                />
-                            }
+                <div class='row'>
+                  <div class='col-md-4'>
+                    <div class='form-group'>
+                      <label>Customer Name</label>
+                      <Field
+                        name='customer'
+                        component={ReduxPowerSelect}
+                        options={this.props.customers}
+                        selected={selectedCustomer}
+                        selectedLabel='name'
+                        optionComponent={(option) => <span>{option.name}</span>}
+                        searchIndices={['name']}
+                        placeholder='Select a customer'
+                        afterOptionsComponent={({ select }) => (
+                          <div
+                            class='quick-create'
+                            onClick={() => {
+                              this.quickCreateCustomer()
+                              select.close()
+                            }}
+                          >
+                            <i class='fa fa-plus'></i>
+                            <span>Add New Customer</span>
                           </div>
+                        )}
+                      />
+                      {
+                        selectedCustomer.address &&
+                        <small class='text-muted'>
+                          <b>Billing Address: </b>
+                          {selectedCustomer.address}
+                        </small>
+                      }
+                    </div>
+                  </div>
 
-                          <InlineField
-                            formName='newInvoice'
-                            name='description'
-                            component={AutoResizeTextarea}
-                            class='form-control input-xs'
-                            placeholder='Summary or brief'
-                            rows='1'
-                            disabled={isIssued || locked}
-                          />
-                        </div>
-                        <div class='col-md-6 text-right'>
-                          <label>AMOUNT DUE</label>
-                          <h3 class='inv__amountdue'>₹ {invoiceTotal}</h3>
-                        </div>
-                      </div>
-
-                      <div class='row'>
-                        <div class='col-md-6'>
-                          <label>BILLING TO</label>
-                          <InlineField
-                            formName='newInvoice'
-                            name='customer_id'
-                            component={TypeAhead}
-                            options={this.props.customers}
-                            selected={this.props.customer_id}
-                            selectedLabel={(selectedCustomer) => {
-                              return selectedCustomer.name || selectedCustomer.contact || selectedCustomer.email
-                            }}
-                            optionLabelPath='displayName'
-                            placeholder='Select a customer'
-                            onQuickAdd={this.quickCreateCustomer}
-                            disabled={isIssued || locked}
-                            onOptionChange={(selectedCustomer) => {
-                              this.props.change('customer_id', selectedCustomer.id || '')
-                            }}
-                            normalizeValue={(value) => {
-                              let selected = findBy(this.props.customers || [], 'id', value)
-                              if (selected) {
-                                return selected.name || selected.contact || selected.email
-                              }
-                              return value
-                            }}
-                          />
-
-                          {
-                            customer &&
-                              <div class='inv__customerdetails'>
-                                { customer.name && <div>{customer.contact}</div> }
-                                {
-                                  customer.name || customer.contact ? <div>{customer.email}</div> : ''
-                                }
-                              </div>
-                          }
-                        </div>
-                        <div class='col-md-6 text-right'>
-                          <label>INVOICE DATE</label>
-                            <InlineField
-                              formName='newInvoice'
-                              name='date'
-                              component={DatePickerField}
-                              class='form-control'
-                              rightAlign={true}
-                              normalizeValue={(value) => {
-                                if (value) {
-                                  return moment.unix(value).format('DD MMM YYYY')
-                                }
-                                return value
-                              }}
-                              disabled={isIssued || locked}
-                            />
-                        </div>
-                      </div>
-                      <div class='row'>
-                        <div class='col-md-12'>
-                          <FieldArray
-                            name='line_items'
-                            component={LineItemTable}
-                            items={this.props.items}
-                            disabled={isIssued || locked}
-                            invoiceTotal={invoiceTotal}
+                  <div class='col-md-6 pull-right'>
+                    <div class='row'>
+                      <div class='col-md-6'>
+                        <div class='form-group'>
+                          <label>Invoice Date</label>
+                          <Field
+                            name='invoice_date'
+                            component={DatePickerField}
+                            class='form-control'
                           />
                         </div>
                       </div>
 
-                      <div class='row'>
-                        <div class='col-md-12'>
-                          <InlineField
-                            formName='newInvoice'
-                            name='comment'
-                            component={AutoResizeTextarea}
-                            class='form-control input-xs'
-                            rows={2}
-                            placeholder='Customer Notes'
-                            disabled={locked}
-                          />
-                        </div>
-                      </div>
-
-                      <div class='row'>
-                        <div class='col-md-12'>
-                          <InlineField
-                            formName='newInvoice'
-                            name='terms'
-                            component={AutoResizeTextarea}
-                            class='form-control input-xs'
-                            rows={3}
-                            placeholder='Terms and Conditions'
-                            disabled={locked}
+                      <div class='col-md-6'>
+                        <div class='form-group'>
+                          <label>Due Date</label>
+                          <Field
+                            name='due_date'
+                            component={DatePickerField}
+                            class='form-control'
                           />
                         </div>
                       </div>
                     </div>
                   </div>
                 </div>
-                <div class='col-md-4' style={{marginTop: '48px'}}>
-                  {
-                    !locked &&
-                      <div class='inv__cta'>
-                        <div class='btn-group-vertical'>
-                          {
-                            (isNew || isDraft) &&
-                              <AsyncButton
-                                type='button'
-                                class='btn btn-primary btn-block btn-lg'
-                                disabled={this.state.isSaving}
-                                onClick={handleSubmit((props) => {
-                                  return this.saveAndIssue({
-                                    ...props,
-                                    ...{ draft: 0 }
-                                  })
-                                })}
-                              >
-                                <i class='fa fa-check'></i>
-                                <span>Finalize and Issue</span>
-                              </AsyncButton>
-                          }
 
-                          {
-                            isIssued &&
-                              <AsyncButton
-                                type='button'
-                                class='btn btn-primary btn-block btn-lg'
-                                disabled={this.state.isSaving}
-                                onClick={handleSubmit(this.resendInvoice)}
-                              >
-                                <i class='fa fa-paper-plane'></i>
-                                <span>Resend Invoice</span>
-                              </AsyncButton>
-                          }
 
-                          {
-                            !locked &&
-                              <AsyncButton
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                text='Save Invoice'
-                                pendingText='Saving...'
-                                disabled={this.state.isSaving}
-                                onClick={handleSubmit((props) => {
-                                  return this.save({
-                                    ...props,
-                                    ...{ draft: isIssued ? 0 : 1 }
-                                  })
-                                })}
-                              >
-                                <i class='fa fa-floppy-o'></i>
-                                <span>Save Invoice</span>
-                              </AsyncButton>
-                          }
+                <FieldArray
+                  name='line_items'
+                  component={LineItemTable}
+                  items={this.props.items}
+                />
 
-                          {/*
-                            !(isNew || isDraft) &&
-                              <button
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                onClick={this.downloadInvoicePDF}
-                              >
-                                <i class='fa fa-download'></i>
-                                <span>Download PDF</span>
-                              </button>
-                          */}
-
-                          {
-                            (isNew || isDraft) &&
-                              <button
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                onClick={this.deleteInvoice}
-                                disabled={this.state.isSaving}
-                              >
-                                <i class='fa fa-times'></i>
-                                <span>Delete Invoice</span>
-                              </button>
-                          }
-                          {
-                            isIssued &&
-                              <button
-                                type='button'
-                                class='btn btn-default btn-block btn-lg'
-                                onClick={this.expireInvoice}
-                                disabled={this.state.isSaving}
-                              >
-                                <i class='fa fa-eye-slash'></i>
-                                <span>Expire Invoice</span>
-                              </button>
-                          }
-                        </div>
-                      </div>
-                  }
-
-                  <InvoiceInfo invoice={invoice} />
-                  <InvoiceNotes
-                    invoice={invoice}
-                    isSaving={this.state.isSaving}
-                    onAddClick={this.addInternalNote}
+                <div class='form-group'>
+                  <label>Invoice Notes</label>
+                  <Field
+                    name='notes'
+                    component='textarea'
+                    class='form-control'
                   />
                 </div>
-              </div>
-            </form>
+
+                <div class='btn-toolbar'>
+                  <AsyncButton
+                    type='button'
+                    class='btn btn-primary'
+                    text='Save'
+                    pendingText='Saving...'
+                    onClick={handleSubmit(this.save)}
+                  />
+                  <a
+                    href='#/app/invoices'
+                    class='btn btn-default'
+                  >
+                    Cancel
+                  </a>
+                </div>
+              </form>
+            </div>
           </div>
-        }
+        </div>
       </div>
     )
   }

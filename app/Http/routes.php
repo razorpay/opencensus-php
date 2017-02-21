@@ -147,28 +147,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment')->name('post_capture');
         Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment')->name('post_refund');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
-        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
-        Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
-        Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoice_create');
-        Route::patch('/{mode}/invoices/{id}', 'MerchantController@patchInvoice')->name('invoice_edit');
-        Route::delete('/{mode}/invoices/{id}', 'MerchantController@deleteInvoice')->name('invoice_delete');
+        Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoices_fetch_all');
+        Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoices_fetch_single');
+        Route::post('/{mode}/invoices', 'MerchantController@postCreateInvoice')->name('invoices_create');
         Route::post('/{mode}/invoices/{invoiceId}/notify/{medium}', 'MerchantController@sendInvoiceNotification')->name('invoices_send_notification');
-        Route::post('/{mode}/invoices/{invoiceId}/issue', 'MerchantController@markInvoiceAsIssued')->name('invoice_issue');
-        Route::post('/{mode}/invoices/{invoiceId}/expire', 'MerchantController@markInvoiceAsExpired')->name('invoice_expire');
-
-        Route::get('/{mode}/customers', 'MerchantController@getCustomers')->name('customer_fetch_all');
-        Route::get('/{mode}/customers/autocomplete', 'MerchantController@getCustomersForAutocomplete')->name('customer_autocomplete');
-        Route::post('/{mode}/customers', 'MerchantController@postCustomer')->name('customer_create');
-        Route::put('/{mode}/customers/{id}', 'MerchantController@putCustomer')->name('customer_edit');
-        Route::delete('/{mode}/customers/{id}', 'MerchantController@deleteCustomer')->name('customer_delete');
-
-        Route::get('/{mode}/items', 'MerchantController@getItems')->name('item_fetch_all');
-        Route::get('/{mode}/items/autocomplete', 'MerchantController@getItemsForAutocomplete')->name('item_autocomplete');
-        Route::post('/{mode}/items', 'MerchantController@postItem')->name('item_create');
-        Route::patch('/{mode}/items/{id}', 'MerchantController@patchItem')->name('item_edit');
-        Route::delete('/{mode}/items/{id}', 'MerchantController@deleteItem')->name('item_delete');
-
-
         Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
         Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 

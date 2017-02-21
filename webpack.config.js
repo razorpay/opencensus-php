@@ -2,18 +2,16 @@
 
 const path = require('path')
 const webpack = require('webpack')
-const CaseSensitivePathsPlugin = require('case-sensitive-paths-webpack-plugin');
 
 const webpackConfig = {
   context: process.cwd() + '/public/react',
   resolve: {
     alias: {
       moment: 'moment/min/moment.min.js',
-      react: path.resolve(__dirname, 'node_modules/react'),
-      'react-dom': path.resolve(__dirname, 'node_modules/react-dom'),
+      react: path.resolve(__dirname, 'node_modules/react')
     },
     modules: [
-      path.resolve(__dirname, 'node_modules'),
+      'node_modules',
       'web_modules',
       path.resolve(__dirname, 'public/react'),
     ],
@@ -68,8 +66,6 @@ webpackConfig.module.loaders = [
 // ------------------------------------
 // Plugins
 // ------------------------------------
-webpackConfig.plugins = [
-  new CaseSensitivePathsPlugin()
-]
+webpackConfig.plugins = []
 
 module.exports = webpackConfig

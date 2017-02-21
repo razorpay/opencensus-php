@@ -9,7 +9,7 @@ import PlanCreation from 'merchant/containers/Plans/New'
 import ModalContainer from 'merchant/containers/ModalContainer'
 
 @connect(
-  (state) => state.plans,
+  (state) => state.plans.toJS(),
   { fetchPlans }
 )
 @reduxForm({

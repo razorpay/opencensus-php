@@ -1,19 +1,15 @@
-import 'rzp/utils/polyfills'
 import 'merchant/styles/layout.styl'
 import React from 'react'
 import ReactDOM from 'react-dom'
 import { Provider } from 'react-redux'
 import NgRouterProvider from 'rzp/Providers/NgRouterProvider'
-import ConfirmModalProvider from 'rzp/ui/ConfirmModal/ConfirmModalProvider'
-import ModalDialog from 'rzp/ui/ModalDialog'
-import Notifications from 'rzp/ui/Notifications'
 import SessionProvider from './SessionProvider'
 import store from './store'
 
 // import './mocks/faker'
 
-import CustomersListContainer from './containers/Customers/List'
-import ItemsListContainer from './containers/Items/List'
+// import CustomersListContainer from './containers/Customers/List'
+// import ItemsListContainer from './containers/Items/List'
 import InvoicesListContainer from './containers/Invoices/List'
 import InvoicesNewContainer from './containers/Invoices/New'
 import InvoiceDetailsContainer from './containers/Invoices/Details'
@@ -50,17 +46,7 @@ function contextProvider({ component, ngRouter, store, user, modeFactory }) {
         React.createElement(
           SessionProvider,
           { user, modeFactory },
-          React.createElement(
-            ConfirmModalProvider,
-            null,
-            React.createElement(
-              'div',
-              null,
-              React.createElement(component, props),
-              React.createElement(ModalDialog),
-              React.createElement(Notifications),
-            )
-          )
+          React.createElement(component, props)
         )
       )
     )
@@ -85,11 +71,11 @@ function createNgDirective(directiveName, component, ...args) {
   ])
 }
 
-createNgDirective('invoicesNew', InvoicesNewContainer, ['id'])
+createNgDirective('invoicesNew', InvoicesNewContainer)
 createNgDirective('invoicesList', InvoicesListContainer)
 createNgDirective('invoiceDetail', InvoiceDetailsContainer, ['id'])
-createNgDirective('customersList', CustomersListContainer)
-createNgDirective('itemsList', ItemsListContainer)
 // createNgDirective('subscriptionsList', SubscriptionsListContainer)
 // createNgDirective('subscriptionsNew', SubscriptionsNewContainer)
+// createNgDirective('customersList', CustomersListContainer)
 // createNgDirective('plansList', PlansListContainer)
+// createNgDirective('itemsList', ItemsListContainer)

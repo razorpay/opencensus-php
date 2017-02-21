@@ -1,4 +1,4 @@
-import { PropTypes, Component } from 'react'
+import { Component } from 'react'
 
 export default class Pager extends Component {
   constructor() {
@@ -9,7 +9,7 @@ export default class Pager extends Component {
 
   onNext() {
     let newParams = {
-      skip: Number(this.props.skip) + Number(this.props.count),
+      skip: this.props.skip + this.props.count,
       count: this.props.count
     }
     this.props.onClick(newParams)
@@ -17,21 +17,19 @@ export default class Pager extends Component {
 
   onPrev() {
     let newParams = {
-      skip: Number(this.props.skip) - Number(this.props.count),
+      skip: this.props.skip - this.props.count,
       count: this.props.count
     }
     this.props.onClick(newParams)
   }
 
   render() {
-    let { length, onClick } = this.props
-    let count = +this.props.count
-    let skip = +this.props.skip
+    let { count, skip, length, onClick } = this.props
     let nextDisabled = length < count
     let prevDisabled = !skip
 
     return (
-      <div class='clearfix text-center' style={{
+      <div class='clearfix' style={{
         margin: '20px'
       }}>
         {
@@ -51,16 +49,7 @@ export default class Pager extends Component {
             ></button>
           </div> : null
         }
-
-        <small class='text-muted'>
-          Showing {skip + 1} - { skip + length }
-        </small>
       </div>
     )
   }
-}
-
-Pager.defaultProps = {
-  count: 25,
-  skip: 0
 }

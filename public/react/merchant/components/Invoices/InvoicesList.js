@@ -1,19 +1,14 @@
-import ReactTooltip from 'react-tooltip'
-import TableBody from '../TableBody'
+import TableLoader from 'rzp/ui/TableLoader'
+import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
 import InvoiceStatus from './InvoiceStatus'
 
-const InvoiceListItem = (props) => {
-  let { invoice, canHighlight } = props
+const InvoiceListItem = ({ invoice, ...attrs }) => {
   return (
-    <tr class={canHighlight ? 'luminate' : ''}>
+    <tr {...attrs}>
       <td>
-        <a
-          href={`${invoice.type === 'invoice' ? `#/app/invoices/${invoice.id}` : `#/app/invoices/${invoice.id}/details`}`}
-        >
-          {invoice.id}
-        </a>
+        <a href={`#/app/invoices/${invoice.id}`}>{invoice.id}</a>
       </td>
       <td>
         <Time value={invoice.date} />
@@ -34,33 +29,26 @@ const InvoiceListItem = (props) => {
       <td class='text-right'>
         <InvoiceStatus status={invoice.status} />
       </td>
-      <td>
-        <div class='row-action'>
-          <div class='btn-group'>
-            <div
-              class='tooltip-wrapper'
-              data-tip={!invoice.isEditable ? 'Paid invoice cannot be edited' : ''}
-              data-place='left'
-            >
-              <button
-                class='btn btn-xs btn-default'
-                disabled={!invoice.isEditable}
-                onClick={props.onEditClick}
-              >
-                <i class='fa fa-edit'></i>
-                <span>edit</span>
-              </button>
-            </div>
-          </div>
-        </div>
-        <ReactTooltip effect='solid' />
-      </td>
     </tr>
   )
 }
 
-export default (props) => {
-  let { invoices, isLoading, highlightRow = () => {} } = props
+export default ({ invoices, isLoading, highlightRow = () => {} }) => {
+  let tableRowComponent
+
+  if (isLoading) {
+    tableRowComponent = <TableLoader colSpan='8' />
+  } else if (invoices.length) {
+    tableRowComponent = invoices.map((invoice) =>
+      <InvoiceListItem
+        key={invoice.id}
+        invoice={invoice}
+        class={highlightRow(invoice) ? 'luminate' : ''}
+      />
+    )
+  } else {
+    tableRowComponent = <EmptyTableRow colSpan='8' message='No Invoices found!' />
+  }
 
   return (
     <div class='table-responsive'>
@@ -69,33 +57,17 @@ export default (props) => {
           <tr>
             <th>Invoice Id</th>
             <th>Invoice Date</th>
-            <th>Receipt No.</th>
+            <th>Receipt</th>
             <th>Customer</th>
             <th>Payment Link</th>
             <th>Type</th>
             <th class='text-right'>Amount (INR)</th>
             <th class='text-right'>Status</th>
-            <th>Actions</th>
           </tr>
         </thead>
-        <TableBody
-          isLoading={isLoading}
-          colSpan={8}
-          rows={invoices}
-          emptyTableMsg='No Invoices found!'
-        >
-          {
-            invoices.map((invoice) =>
-              <InvoiceListItem
-                key={invoice.id}
-                invoice={invoice}
-                canHighlight={highlightRow(invoice)}
-                onEditClick={() => props.onEdit(invoice)}
-                onDeleteClick={() => props.onDelete(invoice)}
-              />
-            )
-          }
-        </TableBody>
+        <tbody>
+          {tableRowComponent}
+        </tbody>
       </table>
     </div>
   )

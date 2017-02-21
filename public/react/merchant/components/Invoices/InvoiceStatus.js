@@ -8,5 +8,5 @@ const invoicesStatusMap = {
 }
 
 export default ({ status }) => (
-  <span class={`status-label label ${invoicesStatusMap[status]}`}>{titleCase(status)}</span>
+  <span class={`label ${invoicesStatusMap[status]}`}>{titleCase(status)}</span>
 )

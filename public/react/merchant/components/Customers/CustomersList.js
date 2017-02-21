@@ -1,9 +1,10 @@
-import TableBody from '../TableBody'
+import TableLoader from 'rzp/ui/TableLoader'
+import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 
 const CustomersListItem = (props) => {
-  let { customer, canHighlightRow } = props
+  let { customer } = props
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
+    <tr>
       <td>{customer.name}</td>
       <td>{customer.email}</td>
       <td>{customer.contact}</td>
@@ -16,29 +17,28 @@ const CustomersListItem = (props) => {
             <i class='fa fa-edit'></i>
             <span>edit</span>
           </button>
-{/*
-          <button
-            class='btn btn-xs btn-default'
-            onClick={props.onDelete}
-          >
-            <i class='fa fa-trash text-danger'></i>
-            <span>delete</span>
-          </button>
-*/}
         </div>
       </td>
     </tr>
   )
 }
 
-const CustomersList = (props) => {
-  let {
-    customers,
-    isLoading,
-    onEdit,
-    onDelete,
-    highlightRow
-  } = props
+export default ({ customers, isLoading, onEdit }) => {
+  let tableRowComponent
+
+  if (isLoading) {
+    tableRowComponent = <TableLoader colSpan='4' />
+  } else if (customers.length) {
+    tableRowComponent = customers.map((customer) =>
+      <CustomersListItem
+        key={customer.id}
+        customer={customer}
+        onEdit={() => onEdit(customer)}
+      />
+    )
+  } else {
+    tableRowComponent = <EmptyTableRow colSpan='4' message='No Customers found!' />
+  }
 
   return (
     <div class='table-responsive'>
@@ -48,34 +48,13 @@ const CustomersList = (props) => {
             <th>Customer Name</th>
             <th>Email</th>
             <th>Contact</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
-        <TableBody
-          isLoading={isLoading}
-          colSpan={4}
-          rows={customers}
-          emptyTableMsg='No Customers found!'
-        >
-          {
-            customers.map((customer) =>
-              <CustomersListItem
-                key={customer.id}
-                customer={customer}
-                canHighlightRow={highlightRow(customer)}
-                onEdit={() => onEdit(customer)}
-                onDelete={() => onDelete(customer)}
-              />
-            )
-          }
-        </TableBody>
+        <tbody>
+          {tableRowComponent}
+        </tbody>
       </table>
     </div>
   )
 }
-
-CustomersList.defaultProps = {
-  highlightRow: () => {}
-}
-
-export default CustomersList

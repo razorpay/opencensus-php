@@ -1,12 +1,13 @@
-import TableBody from '../TableBody'
+import TableLoader from 'rzp/ui/TableLoader'
+import EmptyTableRow from 'rzp/ui/EmptyTableRow'
 
 const ItemsListItem = (props) => {
-  let { item, canHighlightRow } = props
+  let { item } = props
   return (
-    <tr class={canHighlightRow ? 'luminate' : ''}>
+    <tr>
       <td>{item.name}</td>
       <td>{item.description}</td>
-      <td class='text-right'>{item.amountInINR}</td>
+      <td class='text-right'>{item.rate}</td>
       <td class='row-action'>
         <div class='btn-group'>
           <button
@@ -14,14 +15,12 @@ const ItemsListItem = (props) => {
             onClick={props.onEdit}
           >
             <i class='fa fa-edit'></i>
-            <span>edit</span>
           </button>
           <button
-            class='btn btn-xs btn-default'
+            class='btn btn-xs btn-danger'
             onClick={props.onDelete}
           >
-            <i class='fa fa-trash text-danger'></i>
-            <span>delete</span>
+            <i class='fa fa-trash'></i>
           </button>
         </div>
       </td>
@@ -29,14 +28,23 @@ const ItemsListItem = (props) => {
   )
 }
 
-const ItemsList = (props) => {
-  let {
-    items,
-    isLoading,
-    onEdit,
-    onDelete,
-    highlightRow
-  } = props
+export default ({ items, isLoading, onEdit, onDelete }) => {
+  let tableRowComponent
+
+  if (isLoading) {
+    tableRowComponent = <TableLoader colSpan='4' />
+  } else if (items.length) {
+    tableRowComponent = items.map((item) =>
+      <ItemsListItem
+        key={item.id}
+        item={item}
+        onEdit={() => onEdit(item)}
+        onDelete={() => onDelete(item)}
+      />
+    )
+  } else {
+    tableRowComponent = <EmptyTableRow colSpan='4' message='No Items found!' />
+  }
 
   return (
     <div class='table-responsive'>
@@ -46,34 +54,13 @@ const ItemsList = (props) => {
             <th>Item Name</th>
             <th>Description</th>
             <th class='text-right'>Amount (INR)</th>
-            <th>Actions</th>
+            <th></th>
           </tr>
         </thead>
-        <TableBody
-          isLoading={isLoading}
-          colSpan={4}
-          rows={items}
-          emptyTableMsg='No Items found!'
-        >
-        {
-          items.map((item) =>
-            <ItemsListItem
-              key={item.id}
-              item={item}
-              canHighlightRow={highlightRow(item)}
-              onEdit={() => onEdit(item)}
-              onDelete={() => onDelete(item)}
-            />
-          )
-        }
-        </TableBody>
+        <tbody>
+          {tableRowComponent}
+        </tbody>
       </table>
     </div>
   )
 }
-
-ItemsList.defaultProps = {
-  highlightRow: () => {}
-}
-
-export default ItemsList

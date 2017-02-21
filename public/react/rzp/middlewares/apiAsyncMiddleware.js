@@ -18,8 +18,6 @@ export default ({ dispatch, getState }) => {
           payload: response,
           extraArgs: action.extraArgs
         })
-
-        return response
       }).catch((error) => {
         dispatch({
           type: `${action.type}::ERROR`,
