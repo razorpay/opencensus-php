@@ -1,0 +1,98 @@
+* {
+  font-family: -apple-system, BlinkMacSystemFont, Arial, sans-serif;
+  line-height: 20px;
+  color: rgba(0,0,0,0.87);
+  white-space: normal;
+}
+
+h2 {
+  margin: 0;
+  font-size: 20px;
+  line-height: 24px;
+}
+
+label {
+  font-size: 12px;
+  color: rgba(0, 0, 0, 0.54);
+  font-weight: bold;
+  text-transform: uppercase;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-right {
+  text-align: right;
+}
+
+table {
+  width: 100%;
+  table-layout: fixed;
+}
+
+.table {
+  max-width: 600px;
+  background-color: #fafafa;
+}
+
+.table > tbody > tr > td {
+  padding: 24px 4%;
+  padding-bottom: 0;
+}
+
+.table > tbody > tr > td.first {
+  border-left: 1px solid rgba(0,0,0,0.05);
+  width: 4%;
+}
+
+.table > tbody > tr > td.last {
+  border-right: 1px solid rgba(0,0,0,0.05);
+  width: 4%;
+}
+
+.table > tbody > tr > td.content {
+  background-color: #fff;
+  border-left: 1px solid rgba(0,0,0,0.05);
+  border-right: 1px solid rgba(0,0,0,0.05);
+}
+
+.merchant__logo {
+  width: 48px;
+  height: 48px;
+  margin-bottom: 8px;
+}
+
+.footer {
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  border-top: 1px dashed rgba(0,0,0,0.10);
+  padding-bottom: 24px;
+}
+
+.footer--cta {
+  text-decoration: none;
+  padding: 10px 5%;
+  display: inline-block;
+  border-radius: 5px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.footerFerchant {
+  font-size: 12px;
+  font-weight: bold;
+  color: rgba(0,0,0,0.54);
+}
+
+.footerFerchant__address {
+  font-size: 10px;
+  color: rgba(0,0,0,0.54);
+}
+
+.footerRZP {
+  text-align: right;
+  padding-left: 10%;
+  padding-bottom: 24px;
+  font-size: 10px;
+  color: rgba(0,0,0,0.54);
+}
