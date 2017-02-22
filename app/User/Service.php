@@ -311,6 +311,7 @@ class Service extends Base\Service
         if ($user->getConfirmToken() != NULL)
         {
             $user->token = $user->getConfirmToken();
+
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 

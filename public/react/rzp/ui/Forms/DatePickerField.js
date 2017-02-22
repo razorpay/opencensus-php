@@ -22,7 +22,7 @@ export default class DatePickerField extends Component {
     let {
       input,
       name,
-      isOutsideRange = () => false,
+      onDateChange,
       meta: { touched, error },
       ...otherProps
     } = this.props
@@ -30,17 +30,23 @@ export default class DatePickerField extends Component {
     let date = (input.value && moment.unix(input.value, this.props.displayFormat)) || null
 
     return (
-      <SingleDatePicker
-        id={name}
-        date={date}
-        focused={focused}
-        isOutsideRange={isOutsideRange}
-        onDateChange={(date) => {
-          input.onChange(date.unix())
-        }}
-        onFocusChange={this.handleFocusChange}
-        {...otherProps}
-      />
+      <div class={`datepicker-container ${focused ? 'datepicker--focused' : ''}`}>
+        <SingleDatePicker
+          id={input.name}
+          date={date}
+          focused={focused}
+          isOutsideRange={(day) => {
+            let diff = (moment().diff(day, 'hours'))/24
+            return !(diff <= 60 && diff >= 0)
+          }}
+          onDateChange={(date) => {
+            input.onChange(date.unix())
+            onDateChange(date)
+          }}
+          onFocusChange={this.handleFocusChange}
+          {...otherProps}
+        />
+      </div>
     )
   }
 }
@@ -48,9 +54,6 @@ export default class DatePickerField extends Component {
 DatePickerField.defaultProps = {
   numberOfMonths: 1,
   enableOutsideDays: true,
-  displayFormat: 'DD MMM YYYY'
-}
-
-DatePickerField.propTypes = {
-  name: PropTypes.string.isRequired
+  displayFormat: 'DD MMM YYYY',
+  onDateChange: () => {}
 }
