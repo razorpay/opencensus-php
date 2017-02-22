@@ -418,7 +418,7 @@ final class Route
         'upi_get_key_list'                        => ['get',      'upi/keyList',                                    'UpiController@getPublicKeyList'                                    ],
         'upi_npci_request'                        => ['post',     'upi_npci/{api}/1.0/urn:txnid:{id}',              'UpiController@newHandle'                                           ],
         'upi_get_bank_list'                       => ['get',      'upi/banks',                                      'UpiController@getBankList'                                         ],
-        'zero_upi_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
+        'upi_zero_call'                           => ['any',      'upi_npci/call/{api}',                            'UpiController@zeroCall'                                            ],
         'upi_read_async'                          => ['get',      'upi/status/{msgId}',                             'UpiController@getStatus'                                           ],
         'p2p_create'                              => ['post',     'upi/p2p',                                        'P2pController@createP2p'                                           ],
         'p2p_fetch'                               => ['get',      'upi/p2p/{id}',                                   'P2pController@getP2p'                                              ],
@@ -428,6 +428,7 @@ final class Route
         'device_customer_fetch'                   => ['get',      'upi/profile',                                    'CustomerController@getDeviceCustomer'                              ],
         'upi_psp_disallow'                        => ['post',     'upi/psp/disallow',                               'UpiController@postPspDisallow'                                     ],
         'upi_psp_allow'                           => ['post',     'upi/psp/allow',                                  'UpiController@postPspAllow'                                        ],
+        'mock_event_tracker'                      => ['post',     'mock/track',                                     'MockLumberjackController@mockEventTrack'                           ],
         'payout_fetch_by_id'                      => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                   => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_create'                           => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
@@ -891,7 +892,7 @@ final class Route
         'mock_hdfc_3dsecure',
         'transparent_redirect_get',
         'upi_npci_request',
-        'zero_upi_call',
+        'upi_zero_call',
         'transparent_redirect_post',
         'gateway_payment_callback_get',
         'gateway_payment_callback_post',
@@ -900,6 +901,7 @@ final class Route
         'mailgun_webhook',
         'checkout_onyx',
         'checkout_hosted',
+        'mock_event_tracker',
     );
 
     public static $internalApps = array(

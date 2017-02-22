@@ -19,6 +19,7 @@ class PublicErrorDescription
     const BAD_REQUEST_URL_NOT_FOUND                                             = 'The requested URL was not found on the server.';
     const BAD_REQUEST_ROUTE_DISABLED                                            = 'The requested route is disabled.';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
+    const BAD_REQUEST_FORBIDDEN                                                 = 'Access forbidden for requested resource';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
@@ -214,7 +215,7 @@ class PublicErrorDescription
     const BAD_REQUEST_PAYMENT_MAX_TRANSACTIONS_PER_ORDER_EXCEEDED               = 'The maximum number of transactions per order has been exceeded';
     const BAD_REQUEST_PAYMENT_PIN_ATTEMPTS_EXCEEDED                             = 'Max number of PIN retries exceeded.';
     const BAD_REQUEST_PAYMENT_PIN_INCORRECT                                     = 'Incorrect Pin';
-    const BAD_REQUEST_PAYMENT_TERMINAL_STATE_CODE_EXCEEDED_LENGTH               = 'The terminal_state_code field has exceeded the maximum length of 2';
+    const BAD_REQUEST_PAYMENT_TERMINAL_STATE_CODE_EXCEEDED_LENGTH               = 'This transaction is not permitted by gateway.';
     const BAD_REQUEST_PAYMENT_TXN_NOT_PUSHED_TO_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
     const BAD_REQUEST_PAYMENT_TXN_REJECTED_FROM_NET_BANKING                     = 'Transaction was not posted to Net Banking.';
     const BAD_REQUEST_PAYMENT_VOID_NOT_SUPPORTED                                = 'Void is not supported for refund transaction on this endpoint.';

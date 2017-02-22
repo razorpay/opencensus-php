@@ -113,3 +113,61 @@ if (! function_exists('utf8_json_encode'))
 
     }
 }
+
+if (! function_exists('get_rgb_components'))
+{
+    /**
+     * Returns rgb components of given hex color code
+     *
+     * @param string $hexColor - Hex color code, eg. #ff9900
+     *
+     * @return array
+     */
+    function get_rgb_components($hexColor = '')
+    {
+        $hexColor = ltrim($hexColor, '#');
+
+        list($r, $g, $b) = sscanf($hexColor, "%02x%02x%02x");
+
+        return ['r' => $r, 'g' => $g, 'b' => $b];
+    }
+}
+
+if (! function_exists('get_rgb_value'))
+{
+    /**
+     * Get string rgb value
+     *
+     * @param string $hexColor
+     *
+     * @return string
+     */
+    function get_rgb_value($hexColor = '')
+    {
+        $rgb = get_rgb_components($hexColor);
+
+        return 'rgb(' . implode(',', $rgb) . ')';
+    }
+}
+
+if (! function_exists('get_brand_text_color'))
+{
+    /**
+     * Gets branch text color (which will be used over the theme color) based on
+     * the hex color code (brand theme) of merchant.
+     *
+     * @param string $hexColor
+     *
+     * @return
+     */
+    function get_brand_text_color($hexColor)
+    {
+        $threshold = 75;
+
+        $rgb = get_rgb_components($hexColor);
+
+        $backgroundDelta = ($rgb['r'] * 0.299) + ($rgb['g'] * 0.587) + ($rgb['b'] * 0.114);
+
+        return ((255 - $backgroundDelta) < $threshold) ? "#000000" : "#ffffff";
+    }
+}

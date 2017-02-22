@@ -355,41 +355,13 @@ trait Capture
             $this->payment->getId(),
             function() use($data)
             {
-                try
-                {
-                    $this->callAndHandleCaptureOnGateway($data);
-                }
-                catch (Exception\BaseException $ex)
-                {
-                    $this->trace->traceException($ex);
-
-                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex);
-                }
+                $this->callAndHandleCaptureOnGateway($data);
 
                 // In case of a failure (marking the payment as failed),
                 // we won't record this capture since we throw the exception
                 // after marking the payment as failed.
                 $this->recordCapture();
             });
-    }
-
-    protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
-        Exception\BaseException $ex)
-    {
-        //
-        // For validation failures from the gateway or
-        // request exceptions, we shouldn't mark capture as failed ever.
-        //
-        if (($ex instanceof Exception\BadRequestValidationFailureException) or
-            ($ex instanceof Exception\BadRequestException) or
-            ($ex instanceof Exception\GatewayRequestException))
-        {
-            throw $ex;
-        }
-
-        $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
-
-        throw $ex;
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
