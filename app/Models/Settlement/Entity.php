@@ -19,9 +19,9 @@ class Entity extends Base\PublicEntity
     const STATUS                = 'status';
     const TRANSACTION_ID        = 'transaction_id';
     const CHANNEL               = 'channel';
+    const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
     const RETURN_UTR            = 'return_utr';
-    const VERSION               = 'version';
 
     protected static $sign = 'setl';
 
@@ -47,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
         self::CHANNEL,
+        self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -57,6 +58,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::FEES,
         self::SERVICE_TAX,
+        self::UTR,
         self::CREATED_AT);
 
     protected $amounts = array(
@@ -107,11 +109,10 @@ class Entity extends Base\PublicEntity
 
     // --------------------------------- getters -------------------------------
 
-    // Look at how this needs to change, and will affect its usages
-    // public function getUtr()
-    // {
-    //     return $this->getAttribute(self::UTR);
-    // }
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
 
     public function getAmount()
     {
@@ -185,11 +186,10 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
-    // Fix usages
-    // public function setUtr($utr)
-    // {
-    //     $this->setAttribute(self::UTR, $utr);
-    // }
+    public function setUtr($utr)
+    {
+        $this->setAttribute(self::UTR, $utr);
+    }
 
     public function setReturnUtr($utr)
     {

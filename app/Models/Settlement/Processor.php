@@ -125,7 +125,7 @@ class Processor extends Base\Core
     {
         try
         {
-            list($settlements, $txnCount) = $this->createSettlements($channel, $schedule);
+            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel, $schedule);
 
             $data = [
                 'channel'               => $channel,
@@ -133,9 +133,9 @@ class Processor extends Base\Core
                 'transaction_count'     => $txnCount,
             ];
 
-            if ($settlements->count() > 0)
+            if ($setlAttempts->count() > 0)
             {
-                list($urlText, $urlExcel) = $this->generateSettlementFile($settlements, $channel);
+                list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel);
 
                 $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
 
@@ -157,13 +157,14 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function createSettlements($channel, $schedule)
+    protected function createSettlements($channel, $schedule): array
     {
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
 
-            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
+            list($settlements, $settledTxnsCount, $setlAttempts) =
+                $this->processUnsettledTransactions($txns, $channel);
         }
         else
         {
@@ -171,7 +172,8 @@ class Processor extends Base\Core
 
             $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
 
-            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
+            list($settlements, $settledTxnsCount, $setlAttempts) =
+                $this->processUnsettledTransactions($txns, $channel);
 
             $schedules->callOnEveryItem('updateNextRun');
 
@@ -180,16 +182,16 @@ class Processor extends Base\Core
             $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
         }
 
-        return [$settlements, $settledTxnsCount];
+        return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function processUnsettledTransactions($txns, $channel)
+    protected function processUnsettledTransactions($txns, $channel): array
     {
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
-        list($settlements, $settledTxnsCount) = $this->createSettlementsFromTxns($txns, $channel);
+        list($settlements, $settledTxnsCount, $setlAttempts) = $this->createSettlementsFromTxns($txns, $channel);
 
-        return [$settlements, $settledTxnsCount];
+        return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
     protected function filterTransactionsForSettlement($txns, $channel)
@@ -226,9 +228,10 @@ class Processor extends Base\Core
         return $filteredTxns;
     }
 
-    protected function createSettlementsFromTxns($txns, $channel)
+    protected function createSettlementsFromTxns($txns, $channel): array
     {
         $settlements = new Base\PublicCollection;
+        $setlAttempts = new Base\PublicCollection;
         $txnsSettledCount = 0;
 
         $i = 0;
@@ -289,12 +292,12 @@ class Processor extends Base\Core
             // create settlement and update batch settlement entity in transaction
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $setl = $this->repo->transaction(
+            list($setl, $bankTransferAtpt) = $this->repo->transaction(
                 function()
                     use ($merchantSettler, $setlTxns, $setlAmount,
                          $setlFee, $setlApiFee, $serviceTax)
                 {
-                    $setl = $merchantSettler->settle(
+                    list($setl, $bankTransferAtpt) = $merchantSettler->settle(
                                             $setlTxns,
                                             $setlAmount,
                                             $setlFee,
@@ -307,17 +310,23 @@ class Processor extends Base\Core
 
                     $this->repo->saveOrFail($setl);
 
+                    $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
+                    $this->repo->saveOrFail($bankTransferAtpt);
+
                     $this->repo->transaction->settled($setlTxns, $this->setlTime);
 
-                    return $setl;
+                    return [$setl, $bankTransferAtpt];
                 });
 
             $txnsSettledCount += $setlTxns->count();
 
             $settlements->push($setl);
+
+            $setlAttempts->push($bankTransferAtpt);
         }
 
-        return [$settlements, $txnsSettledCount];
+        return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
     protected function createBatchSettlementEntity($setl, $txnsCount)
@@ -374,13 +383,13 @@ class Processor extends Base\Core
         $this->repo->saveOrFail($batchSettlement);
     }
 
-    protected function generateSettlementFile($settlements, $channel)
+    protected function generateSettlementFile($setlAttempts, $channel)
     {
         $data = null;
 
         if ($channel === Channel::KOTAK)
         {
-            $data = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
+            $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
         }
 
         return $data;

@@ -109,30 +109,9 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content['kotak']['transaction_count']);
     }
 
-    public function createPaymentEntities()
-    {
-        $prEntities = array();
-
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
-
-        $payments = $this->fixtures->times(5)->create(
-            'payment:captured',
-            [
-                'captured_at' => $capturedAt,
-                'method'      => 'card',
-                'created_at'  => $createdAt,
-                'updated_at'  => $createdAt + 10
-            ]
-        );
-
-        return $payments;
-    }
-
     // Random settlement holiday - Test for live mode
     public function testSettlementOnHolidayInLiveMode()
     {
-
         $this->ba->publicLiveAuth();
 
         $days = $this->getDaysForSettlementHolidayTests();
@@ -274,7 +253,12 @@ class SettlementTest extends TestCase
 
         $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
 
-        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $batchSetl['id']]);
+        $request = [
+            'url' => '/settlements/file/generate',
+            'method' => 'post',
+            'content' => ['batch_settlement_id' => $batchSetl['id']]
+        ];
+
         $content = $this->makeRequestAndGetContent($request);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
@@ -343,13 +327,13 @@ class SettlementTest extends TestCase
             $refunds[] = $refund;
         }
 
-        $input = array('count' => 10);
+        $input = ['count' => 10];
         $txns = $this->getEntities('transaction', $input, true);
 
-        $request = array(
+        $request = [
             'url' => '/settlements/initiate2/kotak',
             'method' => 'POST'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
@@ -376,6 +360,11 @@ class SettlementTest extends TestCase
         }
 
         $this->assertSame($totalAmount, $setl['amount']);
+
+        $bta = $this->getLastEntity('bank_transfer_attempt', true);
+
+        $this->assertEquals('settlement', $bta['entity_type']);
+        $this->assertEquals($setl['id'], $bta['entity_id']);
     }
 
     public function testSettlementIgnoredTxns()
@@ -463,7 +452,7 @@ class SettlementTest extends TestCase
     protected function createAndAssignSchedule()
     {
         $request = array(
-            'url' => '/merchants/'.Account::TEST_ACCOUNT.'/schedules',
+            'url' => '/merchants/'. Account::TEST_ACCOUNT . '/schedules',
             'method' => 'POST',
             'content' => array(
                 'name'        => 'Basic T3',
@@ -490,5 +479,25 @@ class SettlementTest extends TestCase
         $this->replaceValuesRecursively($testData, $testDataToReplace);
 
         return $this->runRequestResponseFlow($testData);
+    }
+
+    protected function createPaymentEntities()
+    {
+        $prEntities = array();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+
+        $payments = $this->fixtures->times(5)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        return $payments;
     }
 }

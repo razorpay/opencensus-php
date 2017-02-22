@@ -154,7 +154,7 @@ class Settler
 
         try
         {
-            list($settlements, $txns, $amounts) = $this->process($txns, Channel::KOTAK);
+            list($settlements, $txns, $amounts, $setlAttempts) = $this->process($txns, Channel::KOTAK);
 
             $data['count'] = $settlements->count();
             $data['transaction_count'] = $txns->count();
@@ -171,7 +171,7 @@ class Settler
 
         if ($settlements->count() !== 0)
         {
-            list($urlText, $urlExcel) = $this->createSettlementFile($settlements);
+            list($urlText, $urlExcel) = $this->createSettlementFile($setlAttempts);
 
             $data['settlement_text_file'] = $urlText;
 
@@ -240,14 +240,15 @@ class Settler
 
     protected function process($txns, $channel)
     {
-        list($settlements, $txnsSettled, $amounts) = $this->createSettlements($txns, $channel);
+        list($settlements, $txnsSettled, $amounts, $setlAttempts) = $this->createSettlements($txns, $channel);
 
-        return array($settlements, $txnsSettled, $amounts);
+        return array($settlements, $txnsSettled, $amounts, $setlAttempts);
     }
 
     protected function createSettlements($txns, $channel)
     {
         $settlements = new Base\PublicCollection;
+        $setlAttempts = new Base\PublicCollection;
         $txnsSettled = new Base\PublicCollection;
 
         $i = 0;
@@ -333,15 +334,15 @@ class Settler
 
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            $setl = $this->repo->transaction(function() use ($merchantSettler, $setlTxns,
+            list($setl, $bankTransferAtpt) = $this->repo->transaction(function() use ($merchantSettler, $setlTxns,
                 $setlAmount, $setlFee, $setlApiFee, $serviceTax)
             {
-                $setl = $merchantSettler->settle(
-                                            $setlTxns,
-                                            $setlAmount,
-                                            $setlFee,
-                                            $setlApiFee,
-                                            $serviceTax);
+                list($setl, $bankTransferAtpt) = $merchantSettler->settle(
+                                                    $setlTxns,
+                                                    $setlAmount,
+                                                    $setlFee,
+                                                    $setlApiFee,
+                                                    $serviceTax);
 
                 $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
 
@@ -349,12 +350,17 @@ class Settler
 
                 $this->repo->saveOrFail($setl);
 
+                $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
+                $this->repo->saveOrFail($bankTransferAtpt);
+
                 $this->repo->transaction->settled($setlTxns, self::$settlementTimestamp);
 
-                return $setl;
+                return [$setl, $bankTransferAtpt];
             });
 
             $settlements->push($setl);
+            $setlAttempts->push($bankTransferAtpt);
             $txnsSettled = $txnsSettled->merge($setlTxns);
 
             $totalSetlAmount += $setlAmount;
@@ -372,7 +378,7 @@ class Settler
             'gateway_fee'   => $totalSetlGatewayFee,
         );
 
-        return [$settlements, $txnsSettled, $amounts];
+        return [$settlements, $txnsSettled, $amounts, $setlAttempts];
     }
 
     /**
@@ -385,9 +391,7 @@ class Settler
 
         $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
 
-        $shouldSettle = (($txn->getChannel() === $channel) and
-                         ($merchant->holdFunds() === false));
-
+        $shouldSettle = (($txn->getChannel() === $channel) and ($merchant->holdFunds() === false));
 
         assert ($merchant->bankAccount !== null);
 
@@ -407,9 +411,9 @@ class Settler
         return $shouldSettle;
     }
 
-    protected function createSettlementFile($settlements)
+    protected function createSettlementFile($setlAttempts)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($settlements);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
 
         $this->trace->info(TraceCode::SETTLEMENT_FILE_GENERATED_KOTAK);
 
@@ -557,7 +561,7 @@ class Settler
 
         $sixPm = Carbon::today('Asia/Kolkata')->hour(18)->timestamp;
 
-        $boundary = $sixPm - (5*60); // Subtract 5 mintues
+        $boundary = $sixPm - (5 * 60); // Subtract 5 mintues
 
         $now = time();
 

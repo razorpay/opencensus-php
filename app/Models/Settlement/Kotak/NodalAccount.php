@@ -82,21 +82,25 @@ class NodalAccount
         $this->mail = \Mail::getFacadeRoot();
     }
 
-    public function generateSettlementFile($settlements, $h2h = true)
+    public function generateSettlementFile($setlAttempts, $h2h = true)
     {
-        $textData = array();
-        $excelData = array();
+        $textData = [];
+        $excelData = [];
 
         $row = 2; // row number
 
         $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = 0;
-
-        foreach ($settlements as $settlement)
+        $neftCount   = $iftCount   = $totalAttemptCount = 0;
+        s(count($setlAttempts));
+        foreach ($setlAttempts as $attempt)
         {
+            $totalAttemptCount++;
+
+            $settlement = $attempt->source;
+            // s($settlement);
             $merchant = $settlement->merchant;
 
-            $ba = $merchant->bankAccount;
+            $ba = $attempt->bankAccount;
 
             //
             // @note: Convert the amount to string for text file otherwise
@@ -127,14 +131,11 @@ class NodalAccount
                 $neftCount++;
             }
 
-            // create bank transfer attempt entity
-            $bankTransferAttempt = $this->createBankTransferEntity($settlement);
-
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
                 'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $bankTransferAttempt->getId(),
+                'Payment_Ref_No.'       => $attempt->getId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
@@ -143,7 +144,9 @@ class NodalAccount
                 'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),
-                'Payment Details 3'     => $ba->getId()
+                'Payment Details 3'     => $ba->getId(),
+                'Enrichment_1'          => $settlement->getId(),
+                'Enrichment_2'          => $attempt->getVersion(),
             );
 
             $array = $this->getAllFields($array);
@@ -162,7 +165,7 @@ class NodalAccount
         $amounts['neft'] = $neftAmount;
         $amounts['ift'] = $iftAmount;
 
-        $count['total'] = $settlements->count();
+        $count['total'] = $totalAttemptCount;
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
 
@@ -180,17 +183,6 @@ class NodalAccount
         $this->sendKotakSettlementMail($count, $amounts);
 
         return [$urlText, $urlExcel];
-    }
-
-    protected function createBankTransferEntity(Settlement\Entity $settlement)
-    {
-        $bankTransferAttempt = (new BankTransferAttempt\Entity)->generateId();
-
-        $bankTransferAttempt->setEntityType(BankTransferAttempt\EntityType::SETTLEMENT);
-
-        $bankTransferAttempt->setEntityId($settlement->getId());
-
-        return $bankTransferAttempt;
     }
 
     protected function getEmptyArray()

@@ -4,11 +4,11 @@ namespace RZP\Models\BankTransferAttempt;
 
 use RZP\Exception;
 
-class EntityType
+class Type
 {
     const SETTLEMENT = 'settlement';
 
-    public static function validateEntityType($type)
+    public static function validateType($type)
     {
         if (defined(__CLASS__.'::'.strtoupper($type)) === false)
         {

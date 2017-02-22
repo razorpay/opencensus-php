@@ -3,28 +3,49 @@
 namespace RZP\Models\BankTransferAttempt;
 
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 
 class Entity extends Base\PublicEntity
 {
     const ENTITY_TYPE           = 'entity_type';
     const ENTITY_ID             = 'entity_id';
+    const BANK_ACCOUNT_ID       = 'bank_account_id';
+    const CHANNEL               = 'channel';
+    const VERSION               = 'version';
+    const BANK_STATUS_CODE      = 'bank_status_code';
     const STATUS                = 'status';
     const UTR                   = 'utr';
     const REMARKS               = 'remarks';
     const DATE_TIME             = 'date_time';
     const CMS_REF_NO            = 'cms_ref_no';
+    const FAILURE_REASON        = 'failure_reason';
+    const BATCH_TRANSFER_ID     = 'batch_transfer_id';
 
     protected $entity = 'bank_transfer_attempt';
+
+    protected $fillable = [
+        self::ENTITY_TYPE,
+        self::ENTITY_ID,
+        self::CHANNEL,
+        self::VERSION,
+        self::STATUS,
+    ];
 
     protected $visible = [
         self::ID,
         self::ENTITY_TYPE,
         self::ENTITY_ID,
+        self::BANK_ACCOUNT_ID,
+        self::CHANNEL,
+        self::VERSION,
+        self::BANK_STATUS_CODE,
         self::STATUS,
         self::UTR,
         self::REMARKS,
         self::DATE_TIME,
         self::CMS_REF_NO,
+        self::FAILURE_REASON,
+        self::BATCH_TRANSFER_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
@@ -33,7 +54,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY_TYPE,
         self::ENTITY_ID,
-        self::UTR
+        self::STATUS,
+        self::UTR,
     ];
 
     public function source()
@@ -53,6 +75,19 @@ class Entity extends Base\PublicEntity
         $entity->bankTransferAttempt()->associate($this);
     }
 
+    public function bankAccount()
+    {
+        return $this->belongsTo(
+                    'RZP\Models\BankAccount\Entity',
+                    self::BANK_ACCOUNT_ID,
+                    BankAccount\Entity::ID);
+    }
+
+    public function batchTransfer()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+    }
+
     // ------------------------------- getters ---------------------------------
 
     public function getRemarks()
@@ -63,6 +98,11 @@ class Entity extends Base\PublicEntity
     public function getUtr()
     {
         return $this->getAttribute(self::UTR);
+    }
+
+    public function getVersion()
+    {
+        return $this->getAttribute(self::VERSION);
     }
 
     // ------------------------------- setters ---------------------------------

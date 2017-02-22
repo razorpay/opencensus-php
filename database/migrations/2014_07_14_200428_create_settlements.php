@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Settlement\Entity as Settlement;
+use RZP\Models\BankAccount\Entity as BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Merchant;
 
@@ -27,7 +28,7 @@ class CreateSettlements extends Migration
 
             $table->char(Settlement::MERCHANT_ID, Settlement::ID_LENGTH);
 
-            $table->char(Settlement::BANK_ACCOUNT_ID, Settlement::ID_LENGTH)
+            $table->char(Settlement::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
 
             $table->bigInteger(Settlement::AMOUNT)
@@ -48,14 +49,16 @@ class CreateSettlements extends Migration
 
             $table->string(Settlement::CHANNEL, 8);
 
+            $table->string(Settlement::UTR)
+                  ->nullable()
+                  ->unique();
+
             $table->string(Settlement::FAILURE_REASON)
                   ->nullable();
 
             $table->string(Settlement::RETURN_UTR)
                   ->nullable()
                   ->unique();
-
-            $table->string(Settlement::VERSION, 3);
 
             // Adds created_at and updated_at columns to the table
             $table->integer(Settlement::CREATED_AT);

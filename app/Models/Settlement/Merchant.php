@@ -8,6 +8,7 @@ use RZP\Models;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Adjustment;
+use RZP\Models\BankTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
@@ -20,6 +21,7 @@ class Merchant
     protected $apiFee;
     protected $setl;
     protected $setlTransaction;
+    protected $bankTransferAtpt;
     protected $txns;
     protected $setlDetails;
     protected $fee;
@@ -37,7 +39,7 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function settle($txns, $amount, $fee, $apiFee, $serviceTax)
+    public function settle($txns, $amount, $fee, $apiFee, $serviceTax): array
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -46,9 +48,12 @@ class Merchant
         $this->serviceTax = $serviceTax;
 
         $setl = $this->createSetlEntityAndTxn();
-        $this->setlDetails = new Base\PublicCollection;
+
+        // Create Settlement attempt entity
+        $bankTransferAtpt = $this->createSettlementAttemptEntity();
 
         // Create Settlement Details entity
+        $this->setlDetails = new Base\PublicCollection;
         $this->createSettlementDetailsEntities();
 
         // Updates merchant and api balance
@@ -56,10 +61,10 @@ class Merchant
 
         $this->saveChangesToDb();
 
-        return $setl;
+        return [$setl, $bankTransferAtpt];
     }
 
-    public function collectApiFees($apiFee)
+    public function collectApiFees($apiFee): array
     {
         $this->amount = $apiFee;
         $this->fee = 0;
@@ -191,7 +196,7 @@ class Merchant
         }
     }
 
-    protected function createSetlDetailsEntity($component, $type, $count, $amount)
+    protected function createSetlDetailsEntity($component, $type, $count, $amount): SetlDetails\Entity
     {
         $input = array(
             SetlDetails\Entity::COMPONENT => $component,
@@ -211,7 +216,7 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function createSetlEntityAndTxn()
+    protected function createSetlEntityAndTxn(): Settlement\Entity
     {
         // Create settlement transaction
         $setlTransaction = $this->newSettlementTransaction();
@@ -224,7 +229,7 @@ class Merchant
         return $setl;
     }
 
-    protected function newSettlementTransaction()
+    protected function newSettlementTransaction(): Transaction\Entity
     {
         $txn = new Transaction\Entity;
 
@@ -251,7 +256,7 @@ class Merchant
         return $txn;
     }
 
-    protected function newSettlementEntity()
+    protected function newSettlementEntity(): Settlement\Entity
     {
         $setl = (new Settlement\Entity)->generateId();
 
@@ -260,7 +265,6 @@ class Merchant
         $setl->setFees($this->fee);
         $setl->setServiceTax($this->serviceTax);
         $setl->setChannel($this->channel);
-        $setl->setVersion(Version::V2);
 
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
@@ -275,18 +279,43 @@ class Merchant
         return $setl;
     }
 
+    protected function createSettlementAttemptEntity(): BankTransferAttempt\Entity
+    {
+        $bankTransferAttempt = new BankTransferAttempt\Entity;
+
+        $values = [
+            BankTransferAttempt\Entity::ENTITY_TYPE     => BankTransferAttempt\Type::SETTLEMENT,
+            BankTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
+            BankTransferAttempt\Entity::CHANNEL         => $this->setl->getChannel(),
+            BankTransferAttempt\Entity::VERSION         => BankTransferAttempt\Version::V2,
+            BankTransferAttempt\Entity::STATUS          => BankTransferAttempt\Status::CREATED,
+        ];
+
+        $bankTransferAttempt->fillAndGenerateId($values);
+
+        $bankTransferAttempt->source()->associate($this->setl);
+
+        $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
+
+        $this->bankTransferAtpt = $bankTransferAttempt;
+
+        return $bankTransferAttempt;
+    }
+
     protected function saveChangesToDb()
     {
         $this->repo->saveOrFail($this->setlTransaction);
 
         $this->repo->saveOrFail($this->setl);
 
+        $this->repo->saveOrFail($this->bankTransferAtpt);
+
         $this->repo->saveOrFailCollection($this->setlDetails);
 
         $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
     }
 
-    protected function updateBalances()
+    protected function updateBalances(): Transaction\Entity
     {
         return (new Transaction\Core)->updateBalances($this->setlTransaction);
     }
@@ -294,7 +323,7 @@ class Merchant
     /**
      * Attaches bank account to merchant entity
      */
-    protected function attachMerchantBankAccount()
+    protected function attachMerchantBankAccount(): BankAccount\Entity
     {
         $mode = BasicAuth::getMode();
 
@@ -318,7 +347,7 @@ class Merchant
         return $ba;
     }
 
-    protected function attachTestBank($merchant)
+    protected function attachTestBank($merchant): BankAccount\Entity
     {
         $attributes = array(
             'ifsc_code'             => BankAccount\Entity::SPECIAL_IFSC_CODE,
