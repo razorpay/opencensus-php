@@ -433,10 +433,6 @@ UPDATE bank_accounts SET account_number="007805008260" WHERE merchant_id="4VUhFi
 ALTER TABLE netbanking
     ADD COLUMN status VARCHAR(255) AFTER int_payment_id;
 
-ALTER TABLE netbanking
-    ADD COLUMN customer_id VARCHAR(255) AFTER merchant_code,
-    ADD COLUMN customer_name VARCHAR(255) AFTER customer_id;
-
 ALTER TABLE payments
     ADD COLUMN order_id VARCHAR(14) AFTER status;
 
@@ -1688,3 +1684,7 @@ ALTER TABLE cybersource
 
 ALTER TABLE first_data
     ADD COLUMN currency VARCHAR(3) AFTER amount;
+
+ALTER TABLE netbanking
+    ADD COLUMN customer_id VARCHAR(255) AFTER merchant_code,
+    ADD COLUMN customer_name VARCHAR(255) AFTER customer_id;
