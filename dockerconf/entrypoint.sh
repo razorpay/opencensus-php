@@ -27,7 +27,7 @@ sed -i 's/^SLAVE_DB_TEST_HOST=localhost/#SLAVE_DB_TEST_HOST=localhost/' environm
 sed -i 's/^CACHE_DRIVER=file/CACHE_DRIVER=redis/' environment/.env.docker
 sed -i 's/^SECURE_CACHE_DRIVER=file/SECURE_CACHE_DRIVER=redis/' environment/.env.docker
 sed -i 's/^REDIS_HOST=127.0.0.1/#REDIS_HOST=127.0.0.1/' environment/.env.docker
-sed -i 's/^SECURE_REDIS_HOST=127.0.0.1/#SECURE_REDIS_HOST=127.0.0.1/' environment/.env.docker
+sed -i 's/^MUTEX_MOCK=(true)/MUTEX_MOCK=false/' environment/.env.docker
 
 # Set DB credentials for .env.docker
 sed -i 's/^DB_LIVE_USERNAME=user/DB_LIVE_USERNAME=api_user/' environment/.env.docker
@@ -64,12 +64,12 @@ echo "$date Seeding live database"
 cd /app/ && \
 php artisan rzp:dbr --install --seed
 echo "$date Seeding Test database"
-APP_ENV=testing php artisan rzp:dbr --install
+APP_ENV=testing_docker php artisan rzp:dbr --install
 echo "$date Starting Apache"
-export PATH=$PATH:/app/
+export PATH=$PATH:/app/:/app/vendor/bin/
 
-echo "$date Apache"
 # start httpd
+echo "$date Apache"
 mkdir /tmp/run
 chown 0775 /tmp/run/
 /usr/sbin/httpd -D FOREGROUND
