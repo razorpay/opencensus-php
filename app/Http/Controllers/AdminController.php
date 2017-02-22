@@ -298,6 +298,7 @@ class AdminController extends Controller
     public function getMerchantActivation($id)
     {
         $dashboardOnly = Input::get('dashboard', false);
+
         $error = (new Admin\Service)->activateMerchant($id, $dashboardOnly);
 
         return AppResponse::jsonResponse($error);
@@ -855,8 +856,7 @@ class AdminController extends Controller
      */
     public function postConfirmMerchant($merchantId)
     {
-        list($error, $data) = $response = (new Admin\Service)
-            ->confirmMerchant($merchantId);
+        list($error, $data) = $response = (new Admin\Service)->confirmMerchant($merchantId);
 
         return AppResponse::jsonResponse($error, $response);
     }

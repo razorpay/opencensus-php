@@ -8,8 +8,8 @@ import SubscriptionsList from 'merchant/components/Subscriptions/SubscriptionsLi
 
 @connect(
   (state) => {
-    let plansState = state.plans.toJS()
-    let subscriptionsState = state.subscriptions.toJS()
+    let plansState = state.plans
+    let subscriptionsState = state.subscriptions
 
     return {
       subscriptions: subscriptionsState.subscriptions,

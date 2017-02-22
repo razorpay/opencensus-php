@@ -1,5 +1,4 @@
 import ajax from 'merchant/utils/ajax'
-import { fromJS } from 'immutable'
 
 const PLANS_FETCH = 'PLANS_FETCH'
 const PLAN_ADDED = 'PLAN_ADDED'
@@ -56,7 +55,7 @@ let initialState = {
   count: 0
 }
 
-export default function (state = fromJS(initialState), action) {
+export default function (state = initialState, action) {
   switch(action.type) {
     case `${PLANS_FETCH}::PENDING`:
       return state.set('loading', true)

@@ -427,6 +427,7 @@ app.controller('EntitiesCtrl', [
         ],
         save: booleanList,
         status: statusList,
+        terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
         verified: [
           'all',

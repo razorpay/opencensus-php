@@ -288,11 +288,6 @@ class Entity extends Base\Entity
         );
     }
 
-    public function merchantDetails()
-    {
-        return $this->hasOne('App\MerchantDetails\Entity');
-    }
-
     public function hasInvitiationForEmail($email)
     {
         return $this->invitations()

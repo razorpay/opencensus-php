@@ -157,6 +157,7 @@ class UserController extends Controller
 
             // And finally, for backwards compatibility
             $merchant = (new Merchant\Service)->fetchCurrentMerchantForUser($user);
+
             $data = $data + $merchant;
         }
 
