@@ -22,6 +22,7 @@
         "php-http/guzzle6-adapter": "^1.1",
         "phpseclib/phpseclib": "^2.0",
         "jenssegers/agent": "^2.3",
+        "minfraud/http": "^1.70",
         "razorpay/upi-clients": "dev-master",
         "robrichards/xmlseclibs": "^2.0.1",
         "bjeavons/zxcvbn-php": "^0.2.0",

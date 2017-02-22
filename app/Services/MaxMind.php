@@ -2,12 +2,10 @@
 
 namespace RZP\Services;
 
-use Carbon\Carbon;
-use MaxMind\MinFraud;
+use CreditCardFraudDetection;
 use RZP\Constants\Mode;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
-use RZP\Models\Payment\Entity as Payment;
 
 class MaxMind
 {
@@ -31,14 +29,16 @@ class MaxMind
 
         $this->request = $app['request'];
 
-        $config = $app['config']->get('applications.maxmind');
+        $this->config = $app['config']->get('applications.maxmind');
+
+        $this->licenseKey = $this->config['secret'];
 
         $this->basicauth = $app['basicauth'];
 
-        $this->maxmind = new MinFraud($config['id'], $config['secret']);
+        $this->maxmind = new CreditCardFraudDetection;
     }
 
-    public function query(Payment $payment)
+    public function query($payment)
     {
         if (($this->mode === Mode::TEST) or
             ($this->basicauth->isPrivateAuth() === true))
@@ -48,38 +48,38 @@ class MaxMind
 
         $card = $payment->card;
 
-        $request = $this->maxmind->withDevice([
-            'ip_address'       => $this->request->getRealClientIp(),
-            'user_agent'       => $this->request->header('User-Agent'),
-            'accept_language'  => $this->request->header('Accept-Language'),
-        ])->withEvent([
-            'transaction_id'   => $payment->getId(),
-            'shop_id'          => $payment->getMerchantId(),
-            'time'             => Carbon::createFromTimestamp($payment->getCreatedAt())->toIso8601String(),
-            'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
-        ])->withEmail([
-            'email'            => md5($payment->getEmail()),
-            'domain'           => $this->getEmailDomain($payment)
-        ])->withBilling([
-            'first_name'       => $card->getFirstName(),
-            'last_name'        => $card->getLastName(),
-        ])->withCreditCard([
-            'issuer_id_number' => $card->getIin(),
-            'last_4_digits'    => $card->getLast4(),
-        ])->withOrder([
-            'amount'           => $this->getFormattedAmount($payment),
-            'currency'         => $paymeny->getCurrency(),
-        ]);
+        $input = array(
+            'license_key'       => $this->licenseKey,
+            'i'                 => $this->request->getRealClientIp(),
+            'user_agent'        => $this->request->header('User-Agent'),
+            'accept_language'   => $this->request->header('Accept-Language'),
+            'domain'            => $this->getEmailDomain($payment),
+            'custPhone'         => $payment->getContact(),
+            'emailMD5'          => md5($payment->getEmail()),
+            'bin'               => $payment->card->getIin(),
+            'txnID'             => $payment->getId(),
+            'shopID'            => $payment->getMerchantId(),
+            'order_amount'      => $this->getFormattedAmount($payment),
+            'order_currency'    => $payment->getCurrency(),
+            'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),
+            'requested_type'    => 'standard'
+        );
 
-        $response = $request->score();
+        $this->maxmind->input($input);
+        $this->maxmind->query();
+
+        $response = $this->maxmind->output();
+
+        unset($input['license_key']);
 
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
-            'payment_id' => $payment->getId(),
-            'merchant_id' => $payment->getMerchantId(),
-            'merchant' => $payment->merchant->getBillingLabelElseName(),
-            'response' => $response->jsonSerialize()]);
+                'input' => $input,
+                'payment_id' => $payment->getId(),
+                'merchant_id' => $payment->getMerchantId(),
+                'merchant' => $payment->merchant->getBillingLabelElseName(),
+                'response' => $response]);
 
-        return $response->jsonSerialize();
+        return $response;
     }
 
     protected function getFormattedAmount($payment)

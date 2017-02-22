@@ -16,8 +16,8 @@ trait FraudDetector
         $riskFields = $this->getRiskDetectionField($payment);
 
         if ((isset($riskFields) === true) and
-            (isset($riskFields['risk_score']) === true) and
-            ((float) $riskFields['risk_score'] > 5))
+            (isset($riskFields['riskScore']) === true) and
+            ((float) $riskFields['riskScore'] > 5))
         {
             $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
@@ -34,7 +34,14 @@ trait FraudDetector
 
         try
         {
-            $response = $this->app['maxmind']->query($payment);
+            if ($payment->getMerchantId() === '6ZJzxyLFWrGs74')
+            {
+                $response = $this->app['maxmind2']->query($payment);
+            }
+            else
+            {
+                $response = $this->app['maxmind']->query($payment);
+            }
         }
         catch (\Exception $e)
         {
