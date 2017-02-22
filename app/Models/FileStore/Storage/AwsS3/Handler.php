@@ -118,9 +118,7 @@ class Handler extends BaseHandler
 
         if ($this->mode === Mode::TEST)
         {
-            // TODO:
-            // Uncomment this after test
-            // return 'rzp-test-bucket';
+            return 'rzp-test-bucket';
         }
 
         return $this->config[$bucketType];
