@@ -151,9 +151,11 @@ class Core extends Base\Core
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
+        $onHold = $payment->getOnHold() ?? false;
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setAttribute(Entity::ON_HOLD, $onHold);
 
         $this->updateCredits($txn, $payment);
 
@@ -603,10 +605,9 @@ class Core extends Base\Core
      * Record and associate a transaction for a payment transfer.
      *
      * @param  Transfer\Entity      $transfer Transfer entity
-     * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/merchant)
      * @return Transaction\Entity
      */
-    public function createFromTransfer(Transfer\Entity $transfer, Base\Entity $to)
+    public function createFromTransfer(Transfer\Entity $transfer)
     {
         $txn = new Transaction\Entity;
 

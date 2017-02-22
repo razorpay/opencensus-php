@@ -75,7 +75,11 @@ class Merchant extends Base
 
         $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => '0']);
 
-        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId]);
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test');
 
         return $merchant;
     }

@@ -20,11 +20,27 @@ trait TransactionTrait
         });
     }
 
+    protected function createTransactionOnPaymentMethodTransfer($payment)
+    {
+        return $this->transaction(function() use ($payment)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromPaymentTransferred($payment);
+        });
+    }
+
     protected function createTransactionOnRefund($refund)
     {
         return $this->transaction(function() use ($refund)
         {
             return  (new \RZP\Models\Transaction\Core)->createFromRefund($refund);
+        });
+    }
+
+    protected function createTransactionOnTransfer($transfer)
+    {
+        return $this->transaction(function() use ($transfer)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromTransfer($transfer);
         });
     }
 }
