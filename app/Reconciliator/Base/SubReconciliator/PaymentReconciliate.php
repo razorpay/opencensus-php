@@ -549,6 +549,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistGatewayData(array $rowDetails)
     {
+        if ($this->gatewayPayment === null)
+        {
+            return;
+        }
+
         $this->persistReferenceNumber($rowDetails);
 
         $this->persistNbCustomerDetails($rowDetails);
