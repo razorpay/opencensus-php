@@ -205,6 +205,20 @@
               <code>{{refund.id}}</code>
             </a>
           </div>
+          <div class="list-group-item"  ng-init="isAnalyticsCollapsed = true">
+            <span class="pull-right">
+              <button class="btn btn-default btn-xs pull-right"  ng-click="showAnalytics()">Show/Hide</button>
+            </span>
+            Payment Analytics
+          </div>
+          <div collapse="isAnalyticsCollapsed" class="panel-body">
+            <div class="list-group-item" ng-repeat="(key,value) in entity.analytics">
+              <span class="pull-right" ng-class="displayClass(key, value)">
+                {{displayValue(key, value)}}
+              </span>
+              {{key|titlecase}}
+            </div>
+          </div>
         </div>
         <div class="text-center">
           <span ng-show="entity.status==='authorized'">
