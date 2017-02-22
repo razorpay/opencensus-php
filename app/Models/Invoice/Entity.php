@@ -190,6 +190,9 @@ class Entity extends Base\PublicEntity
         self::ISSUED_AT,
         self::PAID_AT,
         self::CUSTOMER_DETAILS,
+        self::CUSTOMER_NAME,
+        self::CUSTOMER_CONTACT,
+        self::CUSTOMER_EMAIL,
         self::LINE_ITEMS,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
@@ -617,6 +620,11 @@ class Entity extends Base\PublicEntity
 
     protected function getPaymentIdAttribute()
     {
+        if (array_key_exists(self::PAYMENT_ID, $this->attributes))
+        {
+            return $this->attributes[self::PAYMENT_ID];
+        }
+
         $orderId = $this->getOrderId();
 
         //

@@ -79,6 +79,19 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     protected function updateQuery(& $query) {}
 
+    /**
+     * Serializes a given model for indexing
+     * Please override this per need to avoid unnecessary MySQL queries.
+     *
+     * @param Base\PublicEntity $entity
+     *
+     * @return array
+     */
+    protected function serialize(Base\PublicEntity $entity)
+    {
+        return $entity->setVisible($this->fields)->toArray();
+    }
+
     public function getFields()
     {
         return $this->fields;
@@ -238,7 +251,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $this->buildQuery($this->indexName, $this->indexName, [], $params);
 
-
+        return $this->search();
     }
 
     public function addMerchantIdInEsParamsIfSet(array & $params, string $merchantId = null)
@@ -354,9 +367,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $entity = $query->find($id);
 
-        $serialized = $entity->toArray();
-
-        return array_only($serialized, $this->fields);
+        return $this->serialize($entity);
     }
 
     public function fetchForIndex(int $skip = 0, int $take = 100)
@@ -367,14 +378,12 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $collection = $query->skip($skip)->take($take)->get();
 
-        $serialized = $collection->toArray();
-
-        $mapper = function($v)
-                  {
-                      return array_only($v, $this->fields);
-                  };
-
-        return array_map($mapper, $serialized);
+        return array_map(
+            function ($v)
+            {
+                return $this->serialize($v);
+            },
+            $collection->all());
     }
 
     /**
@@ -388,8 +397,9 @@ class EsRepository extends \Razorpay\Spine\Repository
     public function fireSync($job, $data)
     {
         $tracePayload = [
-            'data'         => $data,
             'job_attempts' => $job->attempts(),
+            'class'        => get_class($this),
+            'data'         => $data,
         ];
 
         $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);

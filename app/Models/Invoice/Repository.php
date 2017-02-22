@@ -17,10 +17,6 @@ class Repository extends Base\Repository
     protected $entityFetchParamRules = [
         Entity::PAYMENT_ID        => 'sometimes|string|min:14|max:18',
         Entity::RECEIPT           => 'sometimes|string|min:1|max:40',
-        EsRepository::SEARCH_HITS => 'sometimes|boolean',
-        EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
-        Entity::DESCRIPTION       => 'sometimes|string|min:1|max:100',
-        Entity::TERMS             => 'sometimes|string|min:1|max:100',
     ];
 
     protected $proxyFetchParamRules = [
@@ -30,6 +26,8 @@ class Repository extends Base\Repository
         Entity::CUSTOMER_NAME    => 'sometimes|string|max:255',
         Entity::CUSTOMER_CONTACT => 'sometimes|contact_syntax',
         Entity::CUSTOMER_EMAIL   => 'sometimes|email',
+        EsRepository::SEARCH_HITS => 'sometimes|boolean',
+        EsRepository::QUERY       => 'sometimes|string|min:1|max:100',
     ];
 
     protected $appFetchParamRules = [
