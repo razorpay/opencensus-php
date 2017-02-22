@@ -215,7 +215,14 @@ class Service extends Base\Service
 
         foreach (self::PRE_SIGNUP_FIELDS as $key)
         {
-            $presignupDetails[$key] = $merchantDetails[$key];
+            if (isset($merchantDetails[$key]))
+            {
+                $presignupDetails[$key] = $merchantDetails[$key];
+            }
+            else
+            {
+                $presignupDetails[$key] = null;
+            }
         }
 
         return $presignupDetails;

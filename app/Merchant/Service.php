@@ -12,6 +12,7 @@ use App\User;
 use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
+use App\Exceptions\EntityNotFoundException;
 
 use Queue;
 
@@ -414,6 +415,7 @@ class Service extends Base\Service
     public function fetchMerchantFromApi($merchantId)
     {
         $this->setApiCredentials();
+
         $error = $response = null;
 
         try
@@ -425,7 +427,7 @@ class Service extends Base\Service
         }
         catch(BadRequestError $e)
         {
-            $error = [$e->getMessage()];
+            throw new EntityNotFoundException("merchant");
         }
 
         if (empty($response) === false)
@@ -1077,6 +1079,7 @@ class Service extends Base\Service
     public function updateMerchantFeatures($merchantId, $input)
     {
         $this->setApiCredentials($merchantId);
+
         $error = $data = null;
 
         try
@@ -1108,7 +1111,17 @@ class Service extends Base\Service
                 $merchant->edit(['name' => $input['business_name']], 'changeName');
 
                 $merchant->saveOrFail();
+
                 (new Admin\Service)->editName($merchantId, ['name' => $input['business_name']]);
+
+                $user = $merchant->primaryOwner();
+
+                $user->edit([
+                        'contact_mobile' => $input['contact_mobile'],
+                        'name'           => $input['contact_name']
+                    ], 'preSignup');
+
+                $user->saveOrFail();
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 

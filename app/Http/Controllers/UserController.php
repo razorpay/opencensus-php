@@ -39,16 +39,18 @@ class UserController extends Controller
         $input = Input::all();
         $data = null;
         $error = [];
+
         try
         {
             list($error, $data) = (new User\Service)->register($input);
+
             if (empty($error))
             {
                 $credentials = [
                     'email'     => $input['email'],
                     'password'  => $input['password']
                 ];
-                
+
                 Auth::attempt($credentials, false, true);
             }
         }
@@ -56,6 +58,7 @@ class UserController extends Controller
         {
             $error = [$e->getMessage()];
         }
+
         return AppResponse::jsonResponse($error, $data);
     }
 
