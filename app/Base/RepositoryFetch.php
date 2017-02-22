@@ -192,7 +192,7 @@ trait RepositoryFetch
             return $this->esRepo->fetch($params, $merchantId);
         }
 
-        return $this->esRepo->search($entity, $params, $merchantId);
+        return $this->esRepo->buildQueryAndSearch($entity, $params, $merchantId);
     }
 
     protected function isEntityInOldEsFlow(string $entity)

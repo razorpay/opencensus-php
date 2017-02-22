@@ -216,34 +216,90 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao->createIndexIfNotExistsInDefaultHost($this->indexName, $settings, $mappings);
     }
 
-    public function search(string $entity, array $params, string $merchantId = null, array $groups = [])
+    /**
+     * Makes search in ES on this model with given params.
+     *
+     * @param string      $entity
+     * @param array       $params
+     * @param string|null $merchantId
+     * @param array       $groups
+     *
+     * @return PublicCollection
+     */
+    public function buildQueryAndSearch(
+        string $entity,
+        array $params,
+        string $merchantId = null,
+        array $groups = [])
     {
         $this->setIndexName($this->mode . '_' . $entity);
 
-        $params['merchant_id'] = $merchantId;
+        $this->addMerchantIdInEsParamsIfSet($params, $merchantId);
 
         $this->buildQuery($this->indexName, $this->indexName, [], $params);
 
-        $esRequestParams = $this->getEsRequestParams();
 
-        $response = $this->esDao->search($esRequestParams);
+    }
 
-        $hits = array_map(function ($res) { return $res['_source'] ?? ['id' => $res['_id']]; }, $response['hits']['hits']);
+    public function addMerchantIdInEsParamsIfSet(array & $params, string $merchantId = null)
+    {
+        if ($merchantId !== null)
+        {
+            $params['merchant_id'] = $merchantId;
+        }
+    }
 
+    /**
+     * Actually does the search, once query is built.
+     *
+     * @return PublicCollection
+     */
+    public function search()
+    {
+        //
+        // Gets request params and calls search method of EsDao's class
+        //
+        $requestParams = $this->getEsRequestParams();
+
+        $response = $this->esDao->search($requestParams);
+
+        //
+        // Plucks the source fields if set, else ids and forms an uniform array
+        //
+        $hits = array_map(
+            function ($res)
+            {
+                return $res['_source'] ?? ['id' => $res['_id']];
+            },
+            $response['hits']['hits']);
+
+        //
+        // Returns empty collection if no hits
+        //
+        if (count($hits) === 0)
+        {
+            return new PublicCollection;
+        }
+
+        //
+        // If only es search hits expected then hydrates the array into
+        // PublicCollection and returns.
+        //
         if ($this->searchHitsOnly === true)
         {
             return $this->esHitsToCollection($hits);
         }
 
+        //
+        // Else, gets the ids and queries db and returns the PublicCollection
+        //
         $ids = collect($hits)->pluck('id')->all();
-
-        if (count($ids) === 0)
-        {
-            return new PublicCollection;
-        }
 
         $entities = $this->newQuery()->findMany($ids, array('*'));
 
+        //
+        // Raises and alert if there are entities in ES which are not in MySQL
+        //
         if (count($ids) !== $entities->count())
         {
             $this->trace->error(TraceCode::ES_MYSQL_RESULTS_MISMATCH, ['ids' => $ids]);
