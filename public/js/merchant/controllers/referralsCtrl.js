@@ -104,11 +104,8 @@ app.controller('ReferralsCtrl', [
       var modalInstance = $modal.open({
         templateUrl: 'createUserModal.html',
         controller: 'createUserModalCtrl',
-        resolve: {
-          'password': '',
-          'password_confirmation': ''
-        }
       });
+      modalInstance.merchant = merchant;
       modalInstance.result.then(function (password) {
         merchant.password = password.password;
         merchant.password_confirmation = password.password_confirmation;
@@ -137,6 +134,7 @@ app.controller('ReferralsCtrl', [
   '$scope',
   '$modalInstance',
   function ($scope, $modalInstance) {
+    $scope.merchant = $modalInstance.merchant;
     $scope.ok = function (password, password_confirmation) {
       $modalInstance.close({'password': password, 'password_confirmation': password_confirmation});
     };

@@ -138,13 +138,15 @@ class Service extends Base\Service
         $currentMerchant = $this->currentMerchant;
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
+        $submerchant = $this->fetch($input['id']);
+        $email = $submerchant['email'];
+        $input['email'] = $email;
+
         $error = (new Merchant\Validator)
             ->validateInput('create_submerchant_user', $input)->messages();
 
         if (empty($error))
         {
-            $submerchant = $this->fetch($input['id']);
-            $email = $submerchant['email'];
             if ($email === $currentMerchant->email)
             {
                 return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
@@ -155,14 +157,11 @@ class Service extends Base\Service
                 return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
             }
 
-            $input['email'] = $email;
             $input['name'] = $submerchant['name'];
             $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
 
             $user = (new User\Service)->createUserForSubmerchant($input);
-
             $user->save();
-
             // Finally attach the new user to the sub merchant
             $user->joinMerchantByIdWithRole($input['id'], 'owner');
 
