@@ -13,7 +13,7 @@ class RequestFields
     const CURRENCY_CODE    = 'CRN';
     const RETURN_URL       = 'RU';
     const CONFIRMATION     = 'CG';
-    const ACCOUNT_NO       = 'ACCNO';
+    const ACCOUNT_NO       = 'ACNO';
     const ENCRYPTED_STRING = 'ES';
     const PAYMENT_DATE     = 'Pmt_Date';
 }
