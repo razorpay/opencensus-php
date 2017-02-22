@@ -3,6 +3,7 @@
 namespace RZP\Reconciliator\Base;
 
 use RZP\Exception\ReconciliationException;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Models\Card\IIN;
@@ -407,9 +408,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Returns null by default
-     * Defined in corresponding class
-     *
+     * If this is being implemented in the child class, ensure that
+     * the setter for storing the reference number is present
+     * in the gateway entity.
      * @param $row
      * @return null
      */
@@ -419,8 +420,9 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
-     * Returns null by default
-     * Defined in corresponding class
+     * If this is being implemented in the child class, ensure that
+     * the setters for customerId and customerName are present
+     * for the gateway entity.
      *
      * @param $row
      * @return null
@@ -460,7 +462,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         {
             $this->payment = $this->paymentRepo->findOrFail($paymentId);
             $this->paymentTransaction = $this->payment->transaction;
-            $this->gatewayPayment = $this->getGatewayPayment($paymentId);
 
             //
             // It's possible that the payment is in failed state and hence the transaction
@@ -549,42 +550,46 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistGatewayData(array $rowDetails)
     {
-        if ($this->gatewayPayment === null)
+        $gatewayPayment = $this->getGatewayPayment($this->payment->getId());
+
+        if ($gatewayPayment === null)
         {
             return;
         }
 
-        $this->persistReferenceNumber($rowDetails);
+        $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
-        $this->persistNbCustomerDetails($rowDetails);
+        $this->persistNbCustomerDetails($rowDetails, $gatewayPayment);
 
-        $this->gatewayPayment->saveOrFail();
+        $gatewayPayment->saveOrFail();
     }
 
     /**
      * Saving the Bank Payment Id from reconciliator file
      * Replacing existing value or adding it to the DB
      *
-     * @param array $rowDetails
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistReferenceNumber(array $rowDetails)
+    protected function persistReferenceNumber(array $rowDetails, PublicEntity $gatewayPayment)
     {
         if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
         {
             return;
         }
 
-        $paymentReference = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
+        $referenceNumber = $rowDetails[BaseReconciliate::REFERENCE_NUMBER];
 
-        $this->gatewayPayment->setBankPaymentId($paymentReference);
+        $this->setReferenceNumberInGateway($referenceNumber, $gatewayPayment);
     }
 
     /**
      * Saving customer information into the DB
      *
-     * @param array $rowDetails
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerDetails(array $rowDetails)
+    protected function persistNbCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
     {
         $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
 
@@ -595,42 +600,47 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         if (isset($customerDetails[BaseReconciliate::CUSTOMER_ID]) === true)
         {
-            $this->persistNbCustomerId($customerDetails);
+            $this->persistNbCustomerId($customerDetails, $gatewayPayment);
         }
 
         if (isset($customerDetails[BaseReconciliate::CUSTOMER_NAME]) === true)
         {
-            $this->persistNbCustomerName($customerDetails);
+            $this->persistNbCustomerName($customerDetails, $gatewayPayment);
         }
     }
 
     /**
      * Saving customer Id into the DB
      *
-     * @param array $customerDetails
+     * @param array        $customerDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerId(array $customerDetails)
+    protected function persistNbCustomerId(array $customerDetails, PublicEntity $gatewayPayment)
     {
         $customerId = $customerDetails[BaseReconciliate::CUSTOMER_ID];
 
-        $this->gatewayPayment->setCustomerId($customerId);
+        $gatewayPayment->setCustomerId($customerId);
     }
 
     /**
      * Saving customer Name into the DB
      *
-     * @param array $customerDetails
+     * @param array        $customerDetails
+     * @param PublicEntity $gatewayPayment
      */
-    protected function persistNbCustomerName(array $customerDetails)
+    protected function persistNbCustomerName(array $customerDetails, PublicEntity $gatewayPayment)
     {
         $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
-        $this->gatewayPayment->setCustomerName($customerName);
+        $gatewayPayment->setCustomerName($customerName);
     }
 
     /**
      * Getting the gatewayPayment associated with payment entity.
-     * It is implemented in the child class
+     * It is implemented in the child class.
+     *
+     * NOTE: If this is being implemented in the child class,
+     * ensure that the relevant setters are implemented in the entity.
      */
     protected function getGatewayPayment($paymentId)
     {
@@ -1090,5 +1100,20 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function validatePaymentAmountEqualsReconAmount(array $row)
     {
         return true;
+    }
+
+    /**
+     * The reason that it is implemented this way is because different
+     * gateway entities may have different attribute names to store the
+     * reference number.
+     * So, other gateways can implement this function with the
+     * appropriate setter.
+     *
+     * @param string       $referenceNumber
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
+    {
+        $gatewayPayment->setBankPaymentId($referenceNumber);
     }
 }
