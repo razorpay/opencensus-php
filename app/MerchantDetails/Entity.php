@@ -162,10 +162,10 @@ class Entity extends Base\Entity
         'business_proof'           => 'business_proof_url',
         'business_operation_proof' => 'business_operation_proof_url',
         'business_pan_proof'       => 'business_pan_url',
-        'address_proof'             => 'address_proof_url',
-        'promoter_proof'            => 'promoter_proof_url',
-        'promoter_pan_proof'        => 'promoter_pan_url',
-        'promoter_address_proof'    => 'promoter_address_url'
+        'address_proof'            => 'address_proof_url',
+        'promoter_proof'           => 'promoter_proof_url',
+        'promoter_pan_proof'       => 'promoter_pan_url',
+        'promoter_address_proof'   => 'promoter_address_url'
     ];
 
     const UPLOAD_DOCUMENTS = array(
@@ -258,15 +258,6 @@ class Entity extends Base\Entity
         ];
     }
 
-    public function getUrls()
-    {
-        // Filter = Remove null values
-        // Intersect + Flip = filter to the required keys
-        return array_filter(array_intersect_key(
-            $this->attributes, array_flip(self::$URL_KEYS)
-        ));
-    }
-
     public function checkUploadedFiles($isAccount = false)
     {
         $error = array();
@@ -304,42 +295,6 @@ class Entity extends Base\Entity
         $this->attributes['steps_finished'] = json_encode($value);
     }
 
-    public function addStepToStepsFinished($step)
-    {
-        if ($step > 5)
-        {
-            throw new \LogicException('Step should be less than 5' . $step);
-        }
-
-        $stepsFinished = $this->getAttribute('steps_finished');
-
-        if (in_array($step, $stepsFinished) === false)
-        {
-            $stepsFinished[] = (int)$step;
-
-            $this->setAttribute('steps_finished', $stepsFinished);
-        }
-    }
-
-    public function markSubmitted()
-    {
-        $this->setAttribute('submitted', 1);
-        $this->setAttribute('submitted_at', time());
-    }
-
-    public function isLocked()
-    {
-        return $this->getAttribute('locked');
-    }
-
-    public function isStepFinished($step)
-    {
-        // Check if already finished
-        $stepsFinished = $this->getAttribute('steps_finished');
-
-        return in_array(5, $stepsFinished);
-    }
-
     public function getStepsNotFinished()
     {
         $steps = range(1, 5);
@@ -368,23 +323,9 @@ class Entity extends Base\Entity
         return $error;
     }
 
-    public static function getUrlKeys()
-    {
-        return self::$URL_KEYS;
-    }
-
     public function getBillingLabel()
     {
         return $this->getAttribute('business_dba');
-    }
-
-    public function changeTransactionEmail($email)
-    {
-        $input = [
-            'transaction_report_email'  => $email
-        ];
-
-        $error = $this->edit($input, 'editEmail');
     }
 
     public function getPreSignupFields()

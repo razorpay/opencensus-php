@@ -59,7 +59,8 @@ var app = angular.module('app', [
   '$compileProvider',
   '$filterProvider',
   '$provide',
-  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide) {
+  '$httpProvider',
+  function ($stateProvider, $urlRouterProvider, $controllerProvider, $compileProvider, $filterProvider, $provide, $httpProvider) {
     // lazy controller, directive and service
     app.controller = $controllerProvider.register;
     app.directive = $compileProvider.directive;
@@ -75,6 +76,9 @@ var app = angular.module('app', [
       }
       return '/app/dashboard'
     });
+
+    $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
+
     $stateProvider  //Logged in routes
 .state('app', {
       abstract: true,
@@ -185,31 +189,40 @@ var app = angular.module('app', [
 
     .state('app.invoices', {
       url: '/invoices',
+      templateUrl: 'tpl/app_invoices.html'
+    }).state('app.invoices.list', {
+      url: '/list',
       templateProvider: reactTemplateProvider('<invoices-list />')
-    }).state('app.invoicesnew', {
-      url: '/invoices/new',
+    }).state('app.invoices.customers', {
+      url: '/customers',
+      templateProvider: reactTemplateProvider('<customers-list />')
+    }).state('app.invoices.items', {
+      url: '/items',
+      templateProvider: reactTemplateProvider('<items-list />')
+    }).state('app.invoices.new', {
+      url: '/new',
       templateProvider: reactTemplateProvider('<invoices-new />')
-    }).state('app.invoicedetails', {
-      url: '/invoices/:id',
+    }).state('app.invoices.details', {
+      url: '/:id/details',
       controller: ['$scope', '$stateParams', function($scope, $stateParams) {
         $scope.invoiceId = $stateParams.id;
       }],
       templateProvider: reactTemplateProvider('<invoice-detail id="invoiceId" />')
+    }).state('app.invoices.edit', {
+      url: '/:id',
+      controller: ['$scope', '$stateParams', function($scope, $stateParams) {
+        $scope.invoiceId = $stateParams.id
+      }],
+      templateProvider: reactTemplateProvider('<invoices-new id="invoiceId" />')
     }).state('app.subscriptions', {
       url: '/subscriptions',
       templateProvider: reactTemplateProvider('<subscriptions-list />')
     }).state('app.subscriptionsnew', {
       url: '/subscriptions/new',
       templateProvider: reactTemplateProvider('<subscriptions-new />')
-    }).state('app.customers', {
-      url: '/customers',
-      templateProvider: reactTemplateProvider('<customers-list />')
     }).state('app.plans', {
       url: '/plans',
       templateProvider: reactTemplateProvider('<plans-list />')
-    }).state('app.items', {
-      url: '/items',
-      templateProvider: reactTemplateProvider('<items-list />')
     })
 
 
@@ -293,15 +306,19 @@ var injectScript = (function () {
 })();
 
 var reactTemplateProvider = function(template) {
+  var calledOnce = false
+  var deferred = null
   return ['$q', '$stateParams', function ($q) {
-    var deferred = $q.defer();
+    deferred = deferred || $q.defer();
     if (!window.React) {
-      // Really dirty hack which will vanish soon
-      var url = "<% asset('js/generated/merchant_react.js') %>";
-      url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js';
-      injectScript(url, function() {
-        deferred.resolve(template);
-      });
+      if (!calledOnce) {
+        calledOnce = true
+        var url = "<% asset('js/generated/merchant_react.js') %>";
+        url = (url.indexOf('-') !== -1) ? url : 'js/generated/merchant_react.js';
+        injectScript(url, function() {
+          deferred.resolve(template);
+        });
+      }
     } else {
       deferred.resolve(template);
     }

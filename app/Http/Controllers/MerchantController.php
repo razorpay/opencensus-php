@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers;
 
+use Illuminate\Http\Request;
 use App\Http\AppResponse;
 use App\Merchant;
 use App\MerchantDetails;
@@ -149,7 +150,7 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationStep($id, $merchantId = null)
+    public function postSaveActivationStep($stepNumber, $merchantId = null)
     {
         $input = Input::all();
 
@@ -164,9 +165,9 @@ class MerchantController extends Controller
             $uploadStep = 3;
         }
 
-        if ((int) $id !== $uploadStep)
+        if ((int) $stepNumber !== $uploadStep)
         {
-            $error = $service->saveDetails($id, $input, $merchantId);
+            $error = $service->saveDetails($stepNumber, $input, $merchantId);
         }
         else
         {
@@ -269,9 +270,43 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function patchInvoice(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->editInvoice($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deleteInvoice($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Merchant\Service)->deleteInvoice($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function sendInvoiceNotification($mode, $invoiceId, $medium)
     {
-        list($error, $data)  = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
+        list($error, $data) = (new Merchant\Service)->sendInvoiceNotification($mode, $invoiceId, $medium);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function markInvoiceAsIssued($mode, $id)
+    {
+        list($error, $data) = (new Merchant\Service)->markInvoiceAsIssued($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function markInvoiceAsExpired($mode, $id)
+    {
+        list($error, $data) = (new Merchant\Service)->markInvoiceAsExpired($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -307,6 +342,7 @@ class MerchantController extends Controller
     public function getReferredMerchants()
     {
         $id = Auth::user()->getCurrentMerchantId();
+
         $data = (new Merchant\Service)->fetchReferredMerchants($id);
 
         return AppResponse::jsonResponse([], $data);
@@ -355,6 +391,20 @@ class MerchantController extends Controller
 
         list($error, $data) = (new Merchant\Service)
             ->registerSubMerchant($input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    /**
+     * Registers a new user account for a
+     * sub-merchant with his own email.
+     */
+    public function postRegisterSubUser()
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Merchant\Service)
+            ->registerSubMerchantUser($input);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -507,6 +557,110 @@ class MerchantController extends Controller
         $id = Auth::user()->getCurrentMerchantId();
 
         list($error, $data) = (new Merchant\Service)->getPreSignupDetails($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getCustomers(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'customer');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getCustomersForAutocomplete($mode)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'customer');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postCustomer(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->createCustomer($mode, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function putCustomer(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Merchant\Service)->editCustomer($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deleteCustomer($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Merchant\Service)->deleteCustomer($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getItems(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'item');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getItemsForAutocomplete($mode)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'item');
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function postItem(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->createItem($mode, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function patchItem(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->editItem($mode, $id, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function deleteItem(Request $request, $mode, $id)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data)  = (new Merchant\Service)->deleteItem($mode, $id);
 
         return AppResponse::jsonResponse($error, $data);
     }

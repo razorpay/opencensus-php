@@ -23,3 +23,7 @@ are not being used together.
 Note that referral could still be sent during an invitation user registration
 process, and will just be silently ignored since we won't try merchant
 registration at all.
+
+# Aggregator Model
+
+We have an aggregator model using which a merchant can register other merchants under him and handle the dashboard on their behalf. In this case, the sub-merchant has a separate merchant account but its default owner is the user account of the main merchant. The email id of the sub-merchant is same as main merchant's by default but a new email can be optionally provided. We are now introducing an option to give the sub-merchant with different email his own user account based on that email. When this option is availed, the sub-merchant has two owners, self and the main merchant's user.

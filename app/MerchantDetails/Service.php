@@ -85,13 +85,37 @@ class Service extends Base\Service
     ];
 
      const UPLOAD_KEYS = [
-         'business_proof_url'           => 'business_proof',
-         'business_operation_proof_url' => 'business_operation_proof',
-         'business_pan_url'             => 'business_pan_proof',
-         'address_proof_url'            => 'address_proof',
-         'promoter_proof_url'           => 'promoter_proof',
-         'promoter_pan_url'             => 'promoter_pan_proof',
-         'promoter_address_url'         => 'promoter_address_proof',
+         'business_proof_url'   => 'business_proof',
+         'business_pan_url'     => 'business_pan_proof',
+         'address_proof_url'    => 'address_proof',
+         'promoter_address_url' => 'promoter_address_proof',
+    ];
+
+    const UPLOAD_DOCUMENTS = [
+        'business_proof'         => "Please upload business proof",
+        'business_pan_proof'     => "Please upload business pan card scan.",
+        'address_proof'          => "Please upload address proof.",
+        'promoter_address_proof' => "Please upload authorised signatory address  proof."
+    ];
+
+    const PRE_SIGNUP_FIELDS = [
+        'business_type',
+        'transaction_volume',
+        'role',
+        'department',
+        'contact_name',
+        'business_name',
+        'contact_mobile',
+    ];
+
+    const WEBSITE_URLS = [
+        'business_website',
+        'website_about',
+        'website_contact',
+        'website_privacy',
+        'website_terms',
+        'website_refund',
+        'website_pricing'
     ];
 
     const STEP_FINISHED           = [1, 2, 3, 4, 5];
@@ -104,7 +128,7 @@ class Service extends Base\Service
         if ($user)
         {
             $this->merchant = $user->currentMerchant;
-            $this->merchantDetails = $user->currentMerchant->MerchantDetails;
+
             $this->user = $user;
         }
     }
@@ -142,7 +166,6 @@ class Service extends Base\Service
 
                     $merchantDetails['activation_progress'] = intval(count($finishedSteps) * 100/ 5);
                 }
-
             }
         }
 
@@ -156,7 +179,7 @@ class Service extends Base\Service
             $merchantDetails['locked'] = ($merchantDetails['locked'] === true) ? 1: 0;
         }
 
-        $merchantDetails['files'] = $this->getFileDetails($merchantId);
+        $merchantDetails['files'] = $this->getFileDetails($merchantDetails);
 
         return $merchantDetails;
     }
@@ -167,22 +190,10 @@ class Service extends Base\Service
 
         if ($merchantId !== null)
         {
-            $merchantId = $this->checkAndSetAccount($merchantId);
-        }
-        else
-        {
-            $merchantId = $this->merchant->id;
+            $this->checkAndSetAccount($merchantId);
         }
 
-        //TODO: Move this check on API side
-        $merchantDetails =  Entity::findorfail($merchantId);
-
-        if ($merchantDetails->submitted === 1)
-        {
-            return;
-        }
-
-        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input, $merchantId);
+        list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
 
         if (empty($error))
         {
@@ -192,12 +203,6 @@ class Service extends Base\Service
             }
             else
             {
-                $merchantDetails = $this->merchantDetails;
-
-                $merchantDetails->markSubmitted();
-
-                $merchantDetails->saveOrFail();
-
                 $this->fireActivationTrigger($merchantDetails);
             }
         }
@@ -205,48 +210,59 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function saveDetails($step, array $input, $merchantId = null)
+    public function saveDetails(int $step, array $input, $merchantId = null)
     {
-        $step = intval($step);
-
         $bankStep = 4;
 
         if ($merchantId !== null)
         {
-            $merchantId = $this->checkAndSetAccount($merchantId);
+            $this->checkAndSetAccount($merchantId);
 
             $bankStep = 2;
         }
 
-        // Check if already finished
-        $merchantDetails = $this->merchantDetails;
-
-        if ($merchantDetails->isLocked())
-        {
-            return $this->isLockedError();
-        }
-
-        // 4 is the Bank Account Details step
+        // 4 is the Bank Account Details (2 for marketplace accounts)
         // We disable this because this doesn't edit the Bank Account
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
         if ($this->merchant->isActive() and ($step === $bankStep))
         {
-            return ['Editing bank account is not permitted for activated merchants'];
+            return ["Bank account updation not allowed after account is updated"];
         }
 
-        $error = $merchantDetails->finishStep($step, $input, $this->account);
+        $error = (new Entity)->edit($input, 'step' . $step);
 
         // Save the finished steps if there are no errors
         if (empty($error))
         {
-            $merchantDetails->saveOrFail();
-
-            // Save to API
-            $this->saveDetailsOnAPI($input, $merchantId);
+            list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
         }
 
         return $error;
+    }
+
+    public function getPresignupDetails($merchantId, $merchantDetails = null)
+    {
+        if ($merchantDetails === null)
+        {
+            $merchantDetails = $this->getDetailsFromAPI($merchantId);
+        }
+
+        $presignupDetails = [];
+
+        foreach (self::PRE_SIGNUP_FIELDS as $key)
+        {
+            if (isset($merchantDetails[$key]))
+            {
+                $presignupDetails[$key] = $merchantDetails[$key];
+            }
+            else
+            {
+                $presignupDetails[$key] = null;
+            }
+        }
+
+        return $presignupDetails;
     }
 
     public function getActivationFiles($merchantId)
@@ -288,47 +304,19 @@ class Service extends Base\Service
 
         if ($merchantId !== null)
         {
-            $merchantId = $this->checkAndSetAccount($merchantId);
+            $this->checkAndSetAccount($merchantId);
         }
 
-        $merchantDetails = $this->merchantDetails;
+        $merchantDetails = $this->fetchDetails();
 
-        if ($merchantDetails->isLocked())
+        $files = $merchantDetails['files'];
+
+        foreach (self::UPLOAD_DOCUMENTS as $key => $value)
         {
-            return $this->isLockedError();
-        }
-
-        $error = $merchantDetails->checkUploadedFiles($this->account);
-
-        if (empty($error))
-        {
-            // $merchantDetails->addStepToStepsFinished(5);
-
-            $merchantDetails->saveOrFail();
-        }
-
-        return $error;
-    }
-
-    /**
-     * This is a static call because we don't need Merchant Auth for this
-     * which is checked in the constructor
-     * @param  string $id    Merchant Id
-     * @param  string $email New Transaction report email
-     * @return array Errors
-     */
-    public function changeTransactionEmail($id, $csvEmail)
-    {
-        $merchantDetails = Entity::findorfail($id);
-
-        $error = $merchantDetails->changeTransactionEmail($csvEmail);
-
-        if (empty($error))
-        {
-            $merchantDetails->saveOrFail();
-
-            $input = ['transaction_report_email' => $csvEmail];
-            $this->updateMerchantByAdminOnAPI($input, $id);
+            if (in_array($key, $files) === false)
+            {
+                $error[] = $value;
+            }
         }
 
         return $error;
@@ -338,84 +326,20 @@ class Service extends Base\Service
     {
         if ($merchantId !== null)
         {
-            $merchantId = $this->checkAndSetAccount($merchantId);
-        }
-
-        $merchantDetails = $this->merchantDetails;
-
-        if ($merchantDetails->locked)
-        {
-            return $this->isLockedError();
+            $this->checkAndSetAccount($merchantId);
         }
 
         $error = Validator::checkFileUpload($input);
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             $data = Entity::getFileUploadData($input);
-            $error = $this->uploadFileToS3($data);
 
-            // If there is error while uploading, we dont send it to API
-            if (empty($error))
-            {
-                $params = [ $data['field'] => $data['file'] ];
-                $this->uploadFileToAPI($params);
-            }
-        }
-
-        return $error;
-    }
-
-    protected function uploadFileToS3($data)
-    {
-        $merchantDetails = $this->merchantDetails;
-        $id = $merchantDetails->getMerchantId();
-
-        $error = array();
-
-        $extension = $data['file']->getClientOriginalExtension();
-        $mime = $data['file']->getMimeType();
-
-        try
-        {
-            $s3 = $this->getS3Client();
-
-            $s3Obj = [
-                'Bucket'        => env('AWS_ACTIVATION_BUCKET'),
-                'Key'           => $id.'/'.$data['key'].'.'.$extension,
-                'ContentType'   => $mime,
-                'SourceFile'    => $data['file']->getRealPath(),
+            $params = [
+                $data['field'] => $data['file']
             ];
 
-            $field = $data['field'];
-
-            if (env('S3_MOCK'))
-            {
-                $url = 'https://example.com';
-            }
-            else
-            {
-                $response = $s3->putObject($s3Obj);
-                $url = $response->get('ObjectURL');
-
-                Trace::debug('MISC_TRACE_CODE', [
-                    'request'  => $s3Obj,
-                    'response' => $response->toArray()
-                ]);
-            }
-
-            $merchantDetails->$field = $url;
-            $merchantDetails->saveOrFail();
-        }
-        catch(\Exception $e)
-        {
-            $error[] = 'An error occured in file upload.';
-
-            Trace::debug('MISC_TRACE_CODE', [
-                    'error'     => "Error occured in file upload",
-                    'exception' => $e->getMessage(),
-            ]);
-
+            $this->uploadFileToAPI($params);
         }
 
         return $error;
@@ -427,24 +351,25 @@ class Service extends Base\Service
      */
     protected function fireActivationTrigger($merchantDetails)
     {
-        $customer = array(
-            'id' => $merchantDetails->getAttribute('merchant_id'),
-            'name' => $merchantDetails->getAttribute('contact_name'),
-            'email' => $merchantDetails->getAttribute('contact_email'),
-            'business_name' => $merchantDetails->getAttribute('business_name'),
-            'dba' => $merchantDetails->getAttribute('business_dba'),
-            'website' => $merchantDetails->getAttribute('business_website')
-        );
+        $customer = [
+            'id'            => $this->merchant->id,
+            'name'          => $merchantDetails['contact_name'],
+            'email'         => $merchantDetails['contact_email'],
+            'business_name' => $merchantDetails['business_name'],
+            'dba'           => $merchantDetails['business_dba'],
+            'website'       => $merchantDetails['business_website']
+        ];
 
         $user = Auth::user();
-        $mailer = new MerchantMailer($this->merchant);
+
+        $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
 
         $mailer->confirmActivationSubmission()->queueAndDeliver();
 
         $mailer->notifyActivationSubmission()->queueAndDeliver();
 
         // Take screenshots as well
-        $urls = $merchantDetails->getUrls();
+        $urls = $this->getWebsiteUrls($merchantDetails);
 
         Queue::push('App\Admin\Creevey', [
             $customer['id'],
@@ -454,16 +379,17 @@ class Service extends Base\Service
 
         // We also send over details to slack
         $link = "<https://dashboard.razorpay.com/admin#/app/merchants/{$customer['id']}/activation|See activation form>";
+
         $this->slackPost('New activation form submitted', $customer, '#activations_log', $link);
 
         $zapierData = $this->activationZapierData($customer);
+
         Queue::push('App\MerchantDetails\Service@postFormSubmissionToZapier', $zapierData);
     }
 
     protected function activationZapierData(array $customer)
     {
-        $customer['date'] =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")
-            ->format('j/m/Y');
+        $customer['date'] =  Carbon::createFromTimeStamp(time(), "Asia/Kolkata")->format('j/m/Y');
 
         $customer['contact_name'] = $this->user->name;
 
@@ -483,23 +409,16 @@ class Service extends Base\Service
         $job->delete();
     }
 
-    protected function isLockedError()
-    {
-        $error[] = 'Form has been locked for editing by admin.';
-
-        return $error;
-    }
-
     public function getDetailsFromAPI($merchantId = null)
     {
+        if ($this->account === true)
+        {
+            $this->checkAndSetAccount($merchantId);
+        }
+
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
-        }
-
-        if ($this->account === true)
-        {
-            $merchantId = $this->checkAndSetAccount($merchantId);
         }
 
         Trace::debug('MISC_TRACE_CODE', [
@@ -565,6 +484,8 @@ class Service extends Base\Service
                     'exception' => $error,
             ]);
         }
+
+        return [$error, $merchantDetails];
     }
 
 
@@ -579,51 +500,41 @@ class Service extends Base\Service
 
     protected function unsetExtraValues(array $input)
     {
-        unset($input['1']);
-        unset($input['2']);
-        unset($input['3']);
-        unset($input['4']);
-        unset($input['5']);
-        unset($input['6']);
-        unset($input['steps_finished']);
-        unset($input['submitted']);
-        unset($input['submitted_at']);
-        unset($input['created_at']);
-        unset($input['updated_at']);
-        unset($input['verification']);
-        unset($input['can_submit']);
-        unset($input['bank_account_number_confirmation']);
-        unset($input['locked']);
-        unset($input['activation_progress']);
-        unset($input['agree_terms']);
-        unset($input['files']);
+        $fieldsToDrop = [
+            '1', '2', '3', '4', '5', '6',
+            'steps_finished', 'submitted', 'submitted_at', 'created_at', 'updated_at', 'verification',
+            'can_submit', 'bank_account_number_confirmation', 'locked', 'activation_progress',
+            'agree_terms', 'files', 'business_proof_url', 'business_operation_proof_url',
+            'business_pan_url', 'address_proof_url', 'promoter_proof_url', 'promoter_pan_url', 'promoter_address_url',
+        ];
 
-        if (isset($input['transaction_volume']) && $input['transaction_volume'] === '')
+        $dropIfEmpty = [
+            'transaction_volume',
+            'transaction_value',
+            'business_international',
+        ];
+
+        foreach ($fieldsToDrop as $key)
         {
-            unset($input['transaction_volume']);
+            unset($input[$key]);
         }
 
-        if (isset($input['transaction_value']) && $input['transaction_value'] === '')
+        foreach ($dropIfEmpty as $key)
         {
-            unset($input['transaction_value']);
+            if (isset($input[$key]) and empty($input[$key]))
+            {
+                unset($input[$key]);
+            }
         }
 
         if (isset($input['business_international']))
         {
+            // This is boolean, but needs to be passed as 0, 1 to API
             $input['business_international'] = intval($input['business_international']);
         }
 
         return $input;
 
-    }
-
-    public function saveMerchantDetails(array $input)
-    {
-        $merchantDetails = $this->merchantDetails;
-
-        $merchantDetails->fill($input);
-
-        $merchantDetails->saveOrFail();
     }
 
     protected function calculateSteps(array $response = null)
@@ -656,22 +567,13 @@ class Service extends Base\Service
         return $stepFinished;
     }
 
-    protected function getFileDetails($merchantId)
+    protected function getFileDetails($merchantDetail)
     {
-        if ($merchantId === null)
-        {
-            $merchantId = $this->merchant->id;
-        }
-
-        $merchantDetail = Entity::findorfail($merchantId);
-
-        $merchantDetailArr = $merchantDetail->toArray();
-
         $fileResponse = [];
 
         foreach (self::UPLOAD_KEYS as $key => $value)
         {
-            if (isset($merchantDetailArr[$key]))
+            if (empty($merchantDetail[$key]) === false)
             {
                 $fileResponse[] = $value;
             }
@@ -701,8 +603,16 @@ class Service extends Base\Service
         }
 
         $this->merchant = Merchant\Entity::findorfail($account->id);
-        $this->merchantDetails = $this->merchant->MerchantDetails;
 
         return $account->id;
+    }
+
+    public function getWebsiteUrls(array $merchantDetails)
+    {
+        // Filter = Remove null values
+        // Intersect + Flip = filter to the required keys
+        return array_filter(array_intersect_key(
+            $merchantDetails, array_flip(self::WEBSITE_URLS)
+        ));
     }
 }

@@ -76,17 +76,17 @@ class Validator extends Base\Validator
     );
 
     protected static $step4Rules = array(
-        'bank_account_number'   => 'required|alpha_num|between:5,20',
-        'bank_account_name'     => 'required|alpha_space_num|max:40',
-        'bank_account_type'     => 'required|alpha_space|max:20',
-        'bank_branch'           => 'sometimes|max:255',
-        'bank_branch_ifsc'      => 'required|alpha_num|max:11',
+        'bank_account_number'       => 'required|alpha_num|between:5,20',
+        'bank_account_name'         => 'required|alpha_space_num|max:40',
+        'bank_account_type'         => 'required|alpha_space|max:20',
+        'bank_branch'               => 'sometimes|max:255',
+        'bank_branch_ifsc'          => 'required|alpha_num|max:11',
         'bank_beneficiary_address1' => 'required|max:30',
         'bank_beneficiary_address2' => 'max:30',
         'bank_beneficiary_address3' => 'max:30',
-        'bank_beneficiary_city'      => 'required|max:30',
-        'bank_beneficiary_state'     => 'required|max:2',
-        'bank_beneficiary_pin'       => 'required|integer|digits:6'
+        'bank_beneficiary_city'     => 'required|max:30',
+        'bank_beneficiary_state'    => 'required|max:2',
+        'bank_beneficiary_pin'      => 'required|integer|digits:6'
     );
 
     // Rules for vendor account validation

@@ -441,10 +441,10 @@ td
  <tr height=157 style='mso-height-source:userset;height:118.0pt'>
   <td colspan=2 height=157 class=xl85 width=370 style='height:118.0pt;
   width:278pt'>{{{$merchant->name}}} [{{{$merchant->id}}}]<br>
-  {{{$merchant->merchantDetails->business_registered_address}}}<br>
-  {{{$merchant->merchantDetails->business_registered_city}}} -
-  {{{$merchant->merchantDetails->business_registered_pin}}}<br>
-  {{{$merchant->merchantDetails->business_registered_state}}}<br>
+  {{{$merchant_details['business_registered_address']}}}<br>
+  {{{$merchant_details['business_registered_city']}}} -
+  {{{$merchant_details['business_registered_pin']}}}<br>
+  {{{$merchant_details['business_registered_state']}}}<br>
   <td class=xl82>{{{$invoice_id}}}</td>
   <td class=xl83>{{{$dates['billingDate']}}}</td>
   <td colspan=5 style='mso-ignore:colspan'></td>

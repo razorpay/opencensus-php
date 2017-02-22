@@ -91,6 +91,36 @@ class Service extends Base\Service
         return $this->fetchEntityCollection($input, $mode, $entity);
     }
 
+    public function fetchCollectionForAutocomplete($mode, $entity)
+    {
+        $error = null;
+        $count = 100;
+        $collection = [
+            'entity' => 'collection',
+            'count'  => 0,
+            'items'  => [],
+        ];
+
+        for ($i = 0; $i < 5; $i++)
+        {
+            $input = [
+                'skip' => $i * $count,
+                'count' => $count
+            ];
+
+            list($error, $list) = $this->fetchEntityCollection($input, $mode, $entity);
+            $collection['count'] = $collection['count'] + $list['count'];
+            $collection['items'] = array_merge($collection['items'], $list['items']);
+
+            if ($list['count'] < $count)
+            {
+                break;
+            }
+        }
+
+        return [$error, $collection];
+    }
+
     protected function fetchEntityCollection(array $input, $mode, $entity)
     {
         $data = array();
@@ -416,6 +446,7 @@ class Service extends Base\Service
         try
         {
             $this->setApiCredentials($this->merchantId, $mode);
+
             $data = $this->api
                          ->transaction
                          ->getInvoiceData($input)

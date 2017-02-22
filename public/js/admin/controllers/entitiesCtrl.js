@@ -70,6 +70,8 @@ app.controller('EntitiesCtrl', [
       'netbanking_hdfc',
       'netbanking_kotak',
       'netbanking_axis',
+      'netbanking_icici',
+      'netbanking_airtel',
       'paytm',
       'sharp',
       'upi_icici',
@@ -428,6 +430,7 @@ app.controller('EntitiesCtrl', [
         ],
         save: booleanList,
         status: statusList,
+        terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
         transfer_id: ['Transfer Id'],
         verified: [

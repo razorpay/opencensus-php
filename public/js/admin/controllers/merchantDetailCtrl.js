@@ -1419,13 +1419,13 @@ app.controller('MerchantDetailCtrl', [
   '$modalInstance',
   'current',
   function ($scope, $modalInstance, current) {
-    var merchant_details = current;
+    var merchant_details = current.merchant_details;
     var html = '';
     var bankDocument = '';
     $scope.ok = function () {
       if (bankDocument === 'hdfc-excel') {
         var id = merchant_details.id;
-        window.location = '/admin/merchant/' + id + '/hdfc_excel';
+        window.location = '/admin/merchant/' + current.id + '/hdfc_excel';
       }
       if (html) {
         var w = window.open();
