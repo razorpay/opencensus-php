@@ -2,13 +2,6 @@
 
 namespace RZP\Models\Base;
 
-use App;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Base;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
-
 trait EsQuery
 {
     protected $index;

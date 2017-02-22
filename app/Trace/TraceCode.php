@@ -445,6 +445,7 @@ class TraceCode
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
     const ES_SAVE_REQUEST                           = 'ES_SAVE_REQUEST';
+    const ES_FETCH_FAILED                           = 'ES_FETCH_FAILED';
 
     const RECON_ALERT                               = 'RECON_ALERT';
     const RECON_FILE_SKIP                           = 'RECON_FILE_SKIP';

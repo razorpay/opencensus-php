@@ -12,6 +12,7 @@ use RZP\Trace\TraceCode;
 class EsRepository extends \Razorpay\Spine\Repository
 {
     use EsQuery;
+    use EsHitsToCollection;
 
     protected $esDao;
     protected $indexName;
@@ -196,21 +197,16 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $esRequestParams = $this->getEsRequestParams();
 
-        $searchResult = $this->esDao->search($esRequestParams);
+        $response = $this->esDao->search($esRequestParams);
 
-        $collection = new EsPublicCollection;
-
-        foreach ($searchResult['hits']['hits'] as $hit)
-        {
-            $collection->push(($hit['_source']) ?? ['id' => $hit['_id']]);
-        }
+        $hits = array_map(function ($res) { return $res['_source'] ?? ['id' => $res['_id']]; }, $response['hits']['hits']);
 
         if ($this->searchHitsOnly === true)
         {
-            return $collection;
+            return $this->esHitsToCollection($hits);
         }
 
-        $ids = $collection->pluck('id')->all();
+        $ids = collect($hits)->pluck('id')->all();
 
         if (count($ids) === 0)
         {

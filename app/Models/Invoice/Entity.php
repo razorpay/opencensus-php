@@ -601,9 +601,9 @@ class Entity extends Base\PublicEntity
     protected function getCustomerDetailsAttribute()
     {
         return [
-            self::CUSTOMER_NAME            => $this->attributes[self::CUSTOMER_NAME],
-            self::CUSTOMER_EMAIL           => $this->attributes[self::CUSTOMER_EMAIL],
-            self::CUSTOMER_CONTACT         => $this->attributes[self::CUSTOMER_CONTACT],
+            self::CUSTOMER_NAME            => $this->getAttribute(self::CUSTOMER_NAME),
+            self::CUSTOMER_EMAIL           => $this->getAttribute(self::CUSTOMER_EMAIL),
+            self::CUSTOMER_CONTACT         => $this->getAttribute(self::CUSTOMER_CONTACT),
             self::CUSTOMER_ADDRESS         => null,
         ];
     }
@@ -654,9 +654,9 @@ class Entity extends Base\PublicEntity
     protected function setPublicCustomerAttribute(array & $array)
     {
         $array[self::CUSTOMER] = [
-            Customer\Entity::NAME    => $this->attributes[self::CUSTOMER_NAME],
-            Customer\Entity::EMAIL   => $this->attributes[self::CUSTOMER_EMAIL],
-            Customer\Entity::CONTACT => $this->attributes[self::CUSTOMER_CONTACT],
+            Customer\Entity::NAME    => $this->getAttribute(self::CUSTOMER_NAME),
+            Customer\Entity::EMAIL   => $this->getAttribute(self::CUSTOMER_EMAIL),
+            Customer\Entity::CONTACT => $this->getAttribute(self::CUSTOMER_CONTACT),
         ];
 
         if ($this->hasCustomerBillingAddress() === true)
