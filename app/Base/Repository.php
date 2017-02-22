@@ -6,6 +6,7 @@ use DB;
 use Illuminate\Support\Facades\App;
 
 use RZP\Models;
+use RZP\Models\Base\EsRepository;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\Trace;
@@ -100,19 +101,22 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function saveOrFail($entity, array $options = array())
     {
-        // Gets the attributes which are being newly inserted or updated.
         $dirty = $entity->getDirty();
 
-        // Saves the entity in MySql.
         $entity->saveOrFail($options);
 
-        // [Queue] saves in ES if certain conditions are met.
-        $this->saveInEs($entity, $dirty);
-
-        /**
-         * Above one should be removed later, once we migrate notes to the new flow.
-         */
-        $this->syncToEs($entity, 'upsert', $dirty);
+        //
+        // The new flow to indexing models into es usage syncToEs method
+        // and plan is to deprecate the other method, but not just now.
+        //
+        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        {
+            $this->saveInEs($entity, $dirty);
+        }
+        else
+        {
+            $this->syncToEs($entity, EsRepository::UPSERT, $dirty);
+        }
     }
 
     public function deleteOrFail($entity)
@@ -304,62 +308,73 @@ class Repository extends \Razorpay\Spine\Repository
                     ->merchantId($merchantId);
     }
 
-    protected function saveInEs($entity, $dirty)
+    /**
+     * DEPRECATED!
+     *
+     * Saves dirtied entities to es if few conditions met.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param array                    $dirty
+     *
+     * @return null
+     */
+    protected function saveInEs(Models\Base\PublicEntity $entity, array $dirty)
     {
         if ($this->doesEsRepoExists() === false)
-        {
-            return;
-        }
-
-        if ($this->isEntityInOldEsFlow($entity->getEntity()) === false)
         {
             return;
         }
 
         $this->setEsRepo();
 
-        try
-        {
-            if (empty(array_intersect(array_keys($dirty), $this->esRepo->getFields())) === false)
-            {
-                $esRepoClassPath = $this->getEsRepoClassPath();
+        $esFields = $this->esRepo->getFields();
 
-                $esType = $this->getEsType();
-
-                $queueData = [
-                    'es_type'           => $esType,
-                    // This entity object is converted into an array because Queue::push
-                    // decodes and encodes it with assoc array flag set to true.
-                    'entity'            => $entity->toArray(),
-                    'mode'              => $this->app['rzp.mode'],
-                ];
-
-                // Saving the entity in ES.
-                $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
-            }
-        }
-        catch (\Exception $ex)
-        {
-            // Shouldn't fail for any reason
-            $this->trace->error(
-                TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
-        }
-    }
-
-    protected function syncToEs(
-        Models\Base\PublicEntity $entity,
-        string $action = 'upsert',
-        array $dirty = [])
-    {
-        if ($this->doesEsRepoExists() === false)
+        if (empty(array_intersect(array_keys($dirty), $esFields)) === true)
         {
             return;
         }
 
-        if ($this->isEntityInOldEsFlow($entity->getEntity()) === true)
+        try
+        {
+            $esRepoClassPath = $this->getEsRepoClassPath();
+
+            $esType = $this->getEsType();
+
+            $queueData = [
+                'es_type'           => $esType,
+                'entity'            => $entity->toArray(),
+                'mode'              => $this->app['rzp.mode'],
+            ];
+
+            $this->queue->push($esRepoClassPath.'@fireStoreEntity', $queueData);
+        }
+        catch (\Throwable $ex)
+        {
+            $this->trace->traceException(
+                $ex, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $entity->toArray());
+        }
+    }
+
+    /**
+     * Syncs model changes to es.
+     * Upserts in case of addition/updates and deletes es document otherwise.
+     *
+     * Has set of conditions:
+     * - Only follows if there is corresponding EsRepository class for model and
+     *   dirtied (in case of updates) fields are in list of indexed fields.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param string                   $action
+     * @param array                    $dirty
+     *
+     * @return null
+     */
+    protected function syncToEs(
+        Models\Base\PublicEntity $entity,
+        string $action = EsRepository::UPSERT,
+        array $dirty = [])
+    {
+        if ($this->doesEsRepoExists() === false)
         {
             return;
         }
@@ -373,7 +388,7 @@ class Repository extends \Razorpay\Spine\Repository
             return;
         }
 
-        if (($action === 'upsert') and
+        if (($action === EsRepository::UPSERT) and
             (empty(array_intersect(array_keys($dirty), $esFields)) === true))
         {
             return;
@@ -389,14 +404,19 @@ class Repository extends \Razorpay\Spine\Repository
                 'action' => $action,
             ];
 
+            //
+            // TODO:
+            // - Use new queue for es updates
+            //
+
             $this->queue->push($esRepoClass . '@fireSync', $queueData);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException(
                 $e,
                 Trace::ERROR,
-                null,
+                TraceCode::ES_SAVE_FAILED,
                 [
                     'entity_id' => $entity->getId(),
                     'action'    => $action,

@@ -23,13 +23,22 @@ class EsRepository extends \Razorpay\Spine\Repository
     const MAX_JOB_ATTEMPTS = 10;
     const JOB_RELEASE_WAIT = 120;
 
+    //
+    // Different actions on es document
+    //
+    const UPSERT           = 'upsert';
+    const DELETE           = 'delete';
+
+    //
+    // Some common query params which searching for es
+    //
     const QUERY            = 'q';
     const SEARCH_HITS      = 'search_hits';
 
-    /**
-     * Fields indexed in es and their mappings.
-     * These fields will be queried to db and will be indexed.
-     */
+    //
+    // Fields indexed in es and their mappings.
+    // These fields will be queried to db and will be indexed.
+    //
     protected $fields         = [];
     protected $fieldMappings  = [];
 
@@ -55,7 +64,19 @@ class EsRepository extends \Razorpay\Spine\Repository
         $this->esDao = new EsDao();
     }
 
+    /**
+     * Sets field mappings for es index
+     */
     protected function setFieldMappings() {}
+
+    /**
+     * Updates the default query for fetch of models for indexing.
+     * Eg. In case of merchant, it needs join with mercant_detail, etc.
+     *
+     * @param object $query
+     *
+     * @return null
+     */
     protected function updateQuery(& $query) {}
 
     public function getFields()
@@ -63,6 +84,14 @@ class EsRepository extends \Razorpay\Spine\Repository
         return $this->fields;
     }
 
+    /**
+     * Returns list of fields (possible) that can appear in fetch query params.
+     *
+     * This is generally controlled in fetch rules vars in Repo class of entity,
+     * but this is here to be consumed in RepositoryFetch->isEsFetch method.
+     *
+     * @return array
+     */
     public function getPossibleFieldsInParam()
     {
         return array_merge($this->fields, [self::QUERY, self::SEARCH_HITS]);
@@ -302,6 +331,13 @@ class EsRepository extends \Razorpay\Spine\Repository
      */
     public function fireSync($job, $data)
     {
+        $tracePayload = [
+            'data'         => $data,
+            'job_attempts' => $job->attempts(),
+        ];
+
+        $this->trace->debug(TraceCode::ES_SAVE_REQUEST, $tracePayload);
+
         $id     = $data['id'];
         $mode   = $data['mode'];
         $action = $data['action'];
@@ -317,10 +353,13 @@ class EsRepository extends \Razorpay\Spine\Repository
         try
         {
             $this->sync($id, $action);
+
+            $job->delete();
         }
         catch(\Exception $e)
         {
-            $this->trace->traceException($e, Trace::ERROR, null, [$data]);
+            $this->trace->traceException(
+                $e, Trace::ERROR, TraceCode::ES_SAVE_FAILED, $tracePayload);
 
             if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
             {
@@ -336,7 +375,7 @@ class EsRepository extends \Razorpay\Spine\Repository
     protected function sync(string $id, string $action)
     {
         switch ($action) {
-            case 'upsert':
+            case self::UPSERT:
 
                 $document = $this->findForIndex($id);
 
@@ -344,7 +383,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
                 break;
 
-            case 'delete':
+            case self::DELETE:
 
                 $this->deleteDocument($id);
 

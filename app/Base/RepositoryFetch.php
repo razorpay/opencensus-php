@@ -20,9 +20,9 @@ trait RepositoryFetch
 
     protected $originalFetchParamRules;
 
-    /**
-     * *Temporary: Will be removed once notes index is migrated to new flow.
-     */
+    //
+    // Temporary: Will be removed once notes index is migrated to new flow.
+    //
     protected $entitiesInOldFlow = [
         Constants\Entity::ORDER,
         Constants\Entity::PAYMENT,
@@ -76,8 +76,12 @@ trait RepositoryFetch
         $this->validateFetchParams($params);
 
         //
-        // Checks if need to fetch from ES. This is done based on fetch params
-        // sent. Also, sets esParams and mysqlParams.
+        // Checks if need to fetch from ES.
+        // This is done based on fetch params sent.
+        // Also, splits params and sets esParams and mysqlParams for further usage.
+        //
+        // Also, if es fetch fails for some reason (rare case), just log and
+        // return MySQL fetch results.
         //
 
         $isEs = $this->isEsFetch($params);
@@ -116,8 +120,8 @@ trait RepositoryFetch
     }
 
     /**
-     * TODO:
-     * - Update the comment here.
+     * Checks if fetch needs to happen via ES or not.
+     * It also splits params and sets mysqlParams and esParams.
      *
      * @param array $params
      *
@@ -162,6 +166,9 @@ trait RepositoryFetch
 
         $isEsFetch = count($this->esParams) > 0;
 
+        //
+        // If isEsFetch, just append the original params to it, eg. count,skip etc.
+        //
         if ($isEsFetch)
         {
             foreach ($this->originalFetchParamRules as $k => $v)
@@ -180,12 +187,12 @@ trait RepositoryFetch
     {
         $entity = $this->entity;
 
-        if ($this->isEntityInOldEsFlow($entity) === false)
+        if ($this->isEntityInOldEsFlow($entity) === true)
         {
-            return $this->esRepo->search($entity, $params, $merchantId);
+            return $this->esRepo->fetch($params, $merchantId);
         }
 
-        return $this->esRepo->fetch($params, $merchantId);
+        return $this->esRepo->search($entity, $params, $merchantId);
     }
 
     protected function isEntityInOldEsFlow(string $entity)

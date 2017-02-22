@@ -18,6 +18,17 @@ trait EsQuery
 
     protected $searchHitsOnly = false;
 
+    /**
+     * Builds query on given index and type with given incomplete query(optional)
+     * and an array of params.
+     *
+     * @param string $index
+     * @param string $type
+     * @param array  $query
+     * @param array  $params
+     *
+     * @return null
+     */
     public function buildQuery(
         string $index,
         string $type,
@@ -29,6 +40,11 @@ trait EsQuery
         $this->doBuildQuery($params);
     }
 
+    /**
+     * Gets param for making ES search call using the PHP client.
+     *
+     * @return array
+     */
     public function getEsRequestParams()
     {
         return [
@@ -43,6 +59,17 @@ trait EsQuery
         ];
     }
 
+    /**
+     * Sets class members.
+     * Mostly called from this class itself.
+     *
+     * @param string $index
+     * @param string $type
+     * @param array  $query
+     * @param array  $params
+     *
+     * @return null
+     */
     public function setProperties(
         string $index,
         string $type,
@@ -63,6 +90,14 @@ trait EsQuery
         $this->source = $this->searchHitsOnly;
     }
 
+    /**
+     * Actually builds the query by calling builder for every fields in params.
+     * In fall back case, usage default impl.
+     *
+     * @param array $params
+     *
+     * @return null
+     */
     public function doBuildQuery(array $params)
     {
         foreach ($params as $field => $value)
@@ -80,6 +115,10 @@ trait EsQuery
         }
     }
 
+    // ------------------------------------------------------------------------
+    // Query helper methods
+    //
+
     public function addMust(array $clause)
     {
         $this->query['bool']['must'][] = $clause;
@@ -93,6 +132,15 @@ trait EsQuery
 
         return $this;
     }
+
+    // ------------------------------------------------------------------------
+
+
+    // ------------------------------------------------------------------------
+    //
+    // Implementation of query builder for common fields. Of course, these can
+    // be overridden in their own repo class.
+    //
 
     public function buildQueryForFieldDefaultImpl(string $field, string $value)
     {
@@ -148,4 +196,6 @@ trait EsQuery
 
         $this->addFilter($filter);
     }
+
+    // ------------------------------------------------------------------------
 }
