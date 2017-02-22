@@ -253,6 +253,8 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setDashboardHeaders();
+
             $this->setProxyTrue();
 
             return;
@@ -748,7 +750,9 @@ class BasicAuth
         $this->dashboardHeaders = array(
             'dashboard'     => $headers->get('X-Dashboard'),
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $headers->get('X-Dashboard-Username')
+            'admin_user'    => $headers->get('X-Dashboard-Username'),
+            'user_id'       => $headers->get('X-Dashboard-User-Id'),
+            'user_role'     => $headers->get('X-Dashboard-User-Role'),
         );
     }
 
