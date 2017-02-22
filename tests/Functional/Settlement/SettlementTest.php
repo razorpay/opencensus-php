@@ -7,11 +7,13 @@ use Carbon\Carbon;
 use RZP\Models\Merchant\Account;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class SettlementTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use EntityActionTrait;
 
     public function setUp()
     {
@@ -312,6 +314,17 @@ class SettlementTest extends TestCase
         $this->assertEquals($totalTxnFeeCredits, $totalFeeCredits);
 
         $this->assertSame($totalAmount, $setl['amount']);
+
+        // check settlement report
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+        $settlementReport = $this->fetchReport('settlement', $input);
+        assert(count($settlementReport) === 1);
     }
 
     public function testMerchantSettlementV2()
