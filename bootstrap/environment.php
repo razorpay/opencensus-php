@@ -18,23 +18,48 @@ $app->useEnvironmentPath($envDir);
 // Otherwise, we get the environement from the file
 // environment/env.php
 //
-
 $env = 'production';
 
-if (env('APP_ENV') === 'testing')
+$appEnvironment = env('APP_ENV');
+
+$dockerEnvironment = false;
+
+if (strpos($appEnvironment, 'testing') !== false)
 {
     $env = 'testing';
+
+    if (strpos($appEnvironment, 'docker') !== false)
+    {
+        $dockerEnvironment = true;
+    }
 }
 else if (file_exists($file = __DIR__ . '/../environment/env.php'))
 {
-    $env = require $file;
+    $appEnvironment = require $file;
+
+    if (strpos($appEnvironment, 'dev') !== false)
+    {
+        $env = 'dev';
+
+        if (strpos($appEnvironment, 'docker') !== false)
+        {
+            $dockerEnvironment = true;
+        }
+    }
+    else
+    {
+        $env = $appEnvironment;
+    }
 }
 
 putenv("APP_ENV=$env");
 
-$file = $app->environmentFile();
-
 $cascadingEnvFile = '.env.' . $env;
+
+if ($dockerEnvironment === true)
+{
+    $cascadingEnvFile .= '_docker';
+}
 
 //
 // Environment variable files are loaded in the order
