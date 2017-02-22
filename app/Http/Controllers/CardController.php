@@ -32,6 +32,13 @@ class CardController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateSavedCards()
+    {
+        $data = (new Card\Service)->updateSavedCards();
+
+        return ApiResponse::json($data);
+    }
+
     public function getIins()
     {
         $input = Request::all();

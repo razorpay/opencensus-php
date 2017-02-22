@@ -21,4 +21,13 @@ class Service extends Base\Service
 
         return $cards->toArrayPublic();
     }
+
+    public function updateSavedCards()
+    {
+        $count = $this->repo->card->updateSavedCardsWithIins();
+
+        return [
+            'updated_cards' => $count,
+        ];
+    }
 }

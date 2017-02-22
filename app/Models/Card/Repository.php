@@ -78,6 +78,31 @@ class Repository extends Base\Repository
         return $card;
     }
 
+    public function updateSavedCardsWithIins()
+    {
+        $count = $this->db->update('
+                    UPDATE cards
+                    INNER JOIN iins
+                        ON cards.iin = iins.iin
+                    SET
+                        cards.issuer     = iins.issuer,
+                        cards.country    = iins.country,
+                        cards.emi        = iins.emi,
+                        cards.network    = iins.network
+                    WHERE
+                        vault IS NOT NULL AND
+                        (
+                            cards.issuer  != iins.issuer OR
+                            cards.issuer  != iins.issuer OR
+                            cards.country != iins.country OR
+                            cards.emi     != iins.emi OR
+                            cards.network != iins.network
+                        );
+                    ');
+
+        return $count;
+    }
+
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
