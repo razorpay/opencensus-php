@@ -14,6 +14,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -187,13 +188,15 @@ class Reconciler3
 
         $status = $row['Status Of transaction'];
 
-        $failureReason = $row['Reject Reason'];
+        $remarks = substr($row['Reject Reason'], 0, 255);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $tenPm = $recordDate->hour(22)->timestamp;
+
+        $failureReason = null;
 
         if ($status === 'P')
         {
@@ -209,15 +212,11 @@ class Reconciler3
             if ($now < $tenPm)
             {
                 $status = Settlement\Status::CREATED;
-
-                $failureReason = null;
             }
-            else if ((empty($failureReason) === true) or
-                (in_array($failureReason, self::SUCCESS_STATUS) === true))
+            else if ((empty($remarks) === true) or
+                (in_array($remarks, self::SUCCESS_STATUS) === true))
             {
                 $status = Settlement\Status::PROCESSED;
-
-                $failureReason = null;
             }
             else
             {
@@ -254,11 +253,7 @@ class Reconciler3
 
             $setl->setFailureReason($failureReason);
 
-            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
-
-            $setlHandler = (new Settlement\Handler($setl));
-
-            $setlHandler->process($holdMerchantFunds);
+            $setl->setRemarks($remarks);
 
             $this->repo->saveOrFail($setl);
 
@@ -325,6 +320,10 @@ class Reconciler3
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 

@@ -67,7 +67,7 @@ class RefundFile extends Base\RefundFile
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
         });
     }
 

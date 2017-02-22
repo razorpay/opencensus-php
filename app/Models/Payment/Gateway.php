@@ -25,6 +25,7 @@ class Gateway
     const MOBIKWIK           = 'mobikwik';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const PAYTM              = 'paytm';
     const SHARP              = 'sharp';
@@ -32,9 +33,14 @@ class Gateway
     const UPI_IDFC           = 'upi_idfc';
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
+    const WALLET_JIOMONEY    = 'wallet_jiomoney';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
+
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -59,6 +65,14 @@ class Gateway
         self::BILLDESK,
     ];
 
+    //
+    // Gateways for which we can validate the refunds
+    // if they are successful after they are 'initiated'
+    //
+    const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
+        self::WALLET_FREECHARGE
+    ];
+
     public static $channels = array(
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
@@ -72,12 +86,14 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
         self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
         self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
         self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
+        self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK
@@ -107,6 +123,7 @@ class Gateway
             self::EBS,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
+            self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
         ),
 
@@ -230,6 +247,7 @@ class Gateway
         Wallet::PAYUMONEY   => Gateway::WALLET_PAYUMONEY,
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
+        Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
     );
 
     public static $upiToGatewayMap = array(
@@ -253,6 +271,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
@@ -345,8 +364,20 @@ class Gateway
      */
     public static $netbankingToGatewayMap = array(
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK);
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+
+    /**
+     * For the banks that require a refundfile generated everyday,
+     * we map IFSC codes to Gateways
+     *
+     * @var array
+     */
+    public static $refundFileNetbankingGateways = array(
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -429,7 +460,7 @@ class Gateway
      * @param string $networkCode
      * @return bool
      */
-    public static function supportsAuthAndCapture($gateway, $networkCode = null)
+    public static function supportsAuthAndCapture($gateway, $networkCode = null): bool
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 

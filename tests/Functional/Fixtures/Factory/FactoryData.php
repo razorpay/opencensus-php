@@ -285,25 +285,26 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Invoice\Entity::class, [
-            'id'               => '1000000invoice',
-            'merchant_id'      => '10000000000000',
-            'customer_id'      => '100000customer',
-            'order_id'         => '100000000order',
-            'customer_email'   => 'test@razorpay.com',
-            'customer_contact' => '1234567890',
-            'customer_name'    => 'test',
-            'customer_address' => null,
-            'short_url'        => 'http://bitly.dev/2eZ11Vn',
-            'type'             => 'invoice',
-            'view_less'        => 1,
-            'sms_status'       => 'sent',
-            'email_status'     => 'sent',
-            'notes'            => null,
-            'status'           => 'issued',
-            'due_by'           => $faker->timestamp,
-            'scheduled_at'     => $faker->timestamp,
-            'amount'           => 100000,
-            'currency'         => 'INR',
+            'id'                       => '1000000invoice',
+            'merchant_id'              => '10000000000000',
+            'customer_id'              => '100000customer',
+            'order_id'                 => '100000000order',
+            'customer_email'           => 'test@razorpay.com',
+            'customer_contact'         => '1234567890',
+            'customer_name'            => 'test',
+            'customer_billing_addr_id' => null,
+            'short_url'                => 'http://bitly.dev/2eZ11Vn',
+            'type'                     => 'invoice',
+            'view_less'                => 1,
+            'sms_status'               => 'sent',
+            'email_status'             => 'sent',
+            'notes'                    => null,
+            'status'                   => 'issued',
+            'due_by'                   => $faker->timestamp,
+            'scheduled_at'             => $faker->timestamp,
+            'expire_by'                => $faker->timestamp('+2 day'),
+            'amount'                   => 100000,
+            'currency'                 => 'INR',
         ]);
 
         $factory(\RZP\Models\LineItem\Entity::class, [
@@ -325,6 +326,12 @@ final class FactoryData
             'payment_id' => null,
             'amount' => null,
             'received' => true,
+        ]);
+
+        $factory(\RZP\Gateway\Netbanking\Base\Entity::class, [
+            'id'     => '0',
+            'action' => 'authorize',
+            'amount' => 1000,
         ]);
 
         $factory(\RZP\Models\Customer\Entity::class, [

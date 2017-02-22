@@ -195,6 +195,10 @@ class Entity extends Base\PublicEntity
         self::BANK_BENEFICIARY_CITY,
         self::BANK_BENEFICIARY_STATE,
         self::BANK_BENEFICIARY_PIN,
+        self::BUSINESS_PROOF_URL,
+        self::BUSINESS_PAN_URL,
+        self::ADDRESS_PROOF_URL,
+        self::PROMOTER_ADDRESS_URL,
         self::ROLE,
         self::DEPARTMENT,
         self::CREATED_AT,
@@ -236,6 +240,11 @@ class Entity extends Base\PublicEntity
     public function isSubmitted()
     {
         return ($this->getAttribute(self::SUBMITTED) === true);
+    }
+
+    public function getBusinessRegisteredAddress()
+    {
+        return $this->getAttribute(self::BUSINESS_REGISTERED_ADDRESS);
     }
 
     public function setContactEmail($email)

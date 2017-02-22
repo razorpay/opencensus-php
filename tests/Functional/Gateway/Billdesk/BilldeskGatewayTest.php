@@ -185,6 +185,7 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
+
         $this->assertEquals(59, $count);
     }
 

@@ -275,14 +275,14 @@ trait Capture
      * Captures the payment.
      *
      * @param  Payment\Entity $payment
-     * @param                 $captureAmount
-     * @param                 $currency
+     * @param  integer        $captureAmount
+     * @param  string         $currency
      *
      * @return Payment\Entity
      * @throws Exception\BadRequestException
      * @internal param int $amount
      */
-    protected function capturePayment(Payment\Entity $payment, int $captureAmount, $currency)
+    protected function capturePayment(Payment\Entity $payment, int $captureAmount, string $currency)
     {
         //
         // If the fee bearer is customer then please to adjust input amount
@@ -355,41 +355,13 @@ trait Capture
             $this->payment->getId(),
             function() use($data)
             {
-                try
-                {
-                    $this->callAndHandleCaptureOnGateway($data);
-                }
-                catch (Exception\BaseException $ex)
-                {
-                    $this->trace->traceException($ex);
-
-                    $this->updatePaymentIfApplicableOnGatewayCaptureFailure($ex);
-                }
+                $this->callAndHandleCaptureOnGateway($data);
 
                 // In case of a failure (marking the payment as failed),
                 // we won't record this capture since we throw the exception
                 // after marking the payment as failed.
                 $this->recordCapture();
             });
-    }
-
-    protected function updatePaymentIfApplicableOnGatewayCaptureFailure(
-        Exception\BaseException $ex)
-    {
-        //
-        // For validation failures from the gateway or
-        // request exceptions, we shouldn't mark capture as failed ever.
-        //
-        if (($ex instanceof Exception\BadRequestValidationFailureException) or
-            ($ex instanceof Exception\BadRequestException) or
-            ($ex instanceof Exception\GatewayRequestException))
-        {
-            throw $ex;
-        }
-
-        $this->updatePaymentFailed($ex, TraceCode::PAYMENT_CAPTURE_FAILURE);
-
-        throw $ex;
     }
 
     protected function callAndHandleCaptureOnGateway(array $data)
@@ -494,16 +466,42 @@ trait Capture
             $this->tracePaymentInfo(TraceCode::PAYMENT_CAPTURE_SUCCESS);
         });
 
-        $this->eventOrderPaid();
-        $this->notifyInvoicePaid();
+        $this->eventPaymentCaptured();
+
+        $this->notifyPaymentCaptured();
 
         //
         // Analytics
         //
         $this->notifyDashboard('payment', $this->payment);
+    }
 
-        $notifier = new Notify($this->payment);
-        $notifier->trigger(Notify::CAPTURED);
+    /**
+     * Fires multiple events after payment is captured:
+     * - api.order.paid
+     * - api.invoice.paid
+     *
+     * @return null
+     */
+    protected function eventPaymentCaptured()
+    {
+        $this->eventOrderPaid();
+
+        $this->eventInvoicePaid();
+    }
+
+    /**
+     * Triggers notifications after payment is captured.
+     *
+     * @return null
+     */
+    protected function notifyPaymentCaptured()
+    {
+        $hasInvoice = $this->payment->hasInvoice();
+
+        $event = $hasInvoice ? Notify::INVOICE_PAYMENT_CAPTURED : Notify::CAPTURED;
+
+        (new Notify($this->payment))->trigger($event);
     }
 
     protected function eventOrderPaid()
@@ -516,40 +514,15 @@ trait Capture
         }
     }
 
-    protected function notifyInvoicePaid()
+    protected function eventInvoicePaid()
     {
         $payment = $this->payment;
-        $invoice = null;
 
-        if ($payment->getApiOrderId() === null)
+        if ($payment->hasInvoice() === false)
         {
             return;
         }
 
-        $order = $payment->order;
-        $invoice = $order->invoice;
-
-        if ($invoice === null)
-        {
-            return;
-        }
-
-        $this->eventInvoicePaid($payment);
-
-        $this->communicateInvoicePaid($invoice);
-    }
-
-    protected function communicateInvoicePaid(Invoice\Entity $invoice)
-    {
-        $notifier = new Notify($this->payment, $invoice);
-
-        $trigger = Notify::INVOICE_PAID;
-
-        $notifier->trigger($trigger);
-    }
-
-    protected function eventInvoicePaid($payment)
-    {
         $this->app['events']->fire('api.invoice.paid', array($payment));
     }
 

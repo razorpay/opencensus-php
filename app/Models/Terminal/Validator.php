@@ -107,7 +107,7 @@ class Validator extends Base\Validator
 
     protected static $axisMigsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:axis_migs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:6',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
@@ -188,6 +188,19 @@ class Validator extends Base\Validator
 
     protected static $walletFreechargeTerminalRules = [
         Entity::GATEWAY                     => 'required|in:wallet_freecharge',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|string',
+        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
+    ];
+
+    protected static $walletJiomoneyTerminalRules = [
+        Entity::GATEWAY                   => 'required|in:wallet_jiomoney',
+        Entity::GATEWAY_MERCHANT_ID       => 'required|string',
+        Entity::GATEWAY_ACCESS_CODE       => 'required|string',
+        Entity::GATEWAY_TERMINAL_PASSWORD => 'required|string',
+    ];
+
+    protected static $netbankingAirtelTerminalRules = [
+        Entity::GATEWAY                     => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
         Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];

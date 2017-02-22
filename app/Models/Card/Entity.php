@@ -170,7 +170,7 @@ class Entity extends Base\PublicEntity
     {
         if (isset($input[self::VAULT]))
         {
-            $vaultToken = Card\Tokenex::getVaultToken($input['number']);
+            $vaultToken = (new Card\Tokenex)->getVaultToken($input['number']);
 
             $this->setAttribute(self::VAULT_TOKEN, $vaultToken);
         }
@@ -247,6 +247,24 @@ class Entity extends Base\PublicEntity
     protected function getNetworkCodeAttribute()
     {
         return Card\Network::getCode($this->getNetwork());
+    }
+
+    public function getFirstName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[0];
+    }
+
+    public function getLastName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[1] ?? '';
     }
 
     public function getType()

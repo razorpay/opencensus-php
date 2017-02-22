@@ -72,9 +72,6 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(Merchant::FEATURES)
-                  ->nullable();
-
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
@@ -100,6 +97,9 @@ class CreateMerchants extends Migration
                   ->nullable()
                   ->default(null);
 
+            $table->tinyInteger(Merchant::AUTO_CAPTURE_LATE_AUTH)
+                  ->default(0);
+
             $table->tinyInteger(Merchant::CONVERT_CURRENCY)
                   ->nullable();
 
@@ -120,6 +120,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+            $table->index(Merchant::AUTO_REFUND_DELAY);
         });
     }
 

@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Gateway\Wallet\Freecharge;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -82,10 +84,10 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, $count, $skip, ['payment']);
+                        $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchRefundSummaryBetweenTimestamp($from, $to)
@@ -271,6 +273,52 @@ class Repository extends Base\Repository
                                      ' JOIN ' . $gatewayTable . ' ON ' . $refundIdAttr . ' = ' . $gatewayRefundIdAttr .
                                  ')'
                          )
+                         ->get();
+
+        return $response;
+    }
+
+    public function fetchWalletFreechargeRefundsForValidation()
+    {
+        //
+        //    SELECT `refunds`.*
+        //    FROM `refunds`
+        //    INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        //    INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
+        //    WHERE `payments`.`gateway` = 'wallet_freecharge'
+        //        AND `refunds`.`transaction_id` IS NOT NULL
+        //        AND `wallet`.`status_code` = 'INITIATED';
+        //
+
+        $gateway = Payment\Gateway::WALLET_FREECHARGE;
+        $gatewayTable = Table::getTableNameForEntity($gateway);
+        $paymentTable = Table::PAYMENT;
+
+        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+        $gatewayStatusCodeAttr = $this->manager
+                                      ->wallet
+                                      ->getAttributeWithTableName(WalletEntity::STATUS_CODE);
+
+        $gatewayRefundIdAttr = $this->manager
+                                    ->wallet
+                                    ->getAttributeWithTableName(WalletEntity::REFUND_ID);
+
+        $refundAttributes = $this->getAttributeWithTableName('*');
+
+        $response = $this->newQuery()
+                         ->select($refundAttributes)
+                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                         ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
+                         ->where($paymentGatewayAttr, '=', $gateway)
+                         ->whereNotNull($refundTransactionIdAttr)
+                         ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
+                         ->limit(300)
                          ->get();
 
         return $response;
