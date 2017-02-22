@@ -159,11 +159,6 @@ class EventTrackerClient extends Base\Core
     {
         if (empty($this->events) === true)
         {
-            $this->trace->error(
-                TraceCode::LUMBERJACK_EMPTY_EVENTS,
-                ['payment' => $this->payment->getId()]
-            );
-
             return [];
         }
 
