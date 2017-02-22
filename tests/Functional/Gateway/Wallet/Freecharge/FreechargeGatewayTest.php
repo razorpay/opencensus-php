@@ -35,7 +35,7 @@ class FreechargeGatewayTest extends TestCase
         $this->fixtures->merchant->enableWallet($this->merchantId, self::WALLET);
     }
 
-    public function testPayment()
+    protected function makeAndCapturePayment()
     {
         $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
 
@@ -43,10 +43,30 @@ class FreechargeGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
+        return $payment;
+    }
+
+    public function testPayment()
+    {
+        $payment = $this->makeAndCapturePayment();
+
         $this->assertTestResponse($payment, 'testPayment');
         $this->assertNotEmpty($payment['global_token_id']);
         $this->assertNotEmpty($payment['global_customer_id']);
         $this->assertEquals('passed', $payment['two_factor_auth']);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
+    }
+
+    public function testPaymentWithDealerId()
+    {
+        $directTerminal = $this->fixtures->create('terminal:direct_freecharge_terminal');
+
+        $payment = $this->makeAndCapturePayment();
+
+        $this->assertEquals($directTerminal['id'], $payment['terminal_id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -381,13 +401,9 @@ class FreechargeGatewayTest extends TestCase
 
     public function testRefundPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $payment = $this->makeAndCapturePayment();
 
-        $authPayment = $this->doAuthPayment($payment);
-
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
-
-        $this->refundPayment($capturePayment['id']);
+        $this->refundPayment($payment['id']);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -404,13 +420,9 @@ class FreechargeGatewayTest extends TestCase
 
     public function testPartialRefundPayment()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $payment = $this->makeAndCapturePayment();
 
-        $authPayment = $this->doAuthPayment($payment);
-
-        $capturePayment = $this->capturePayment($authPayment['razorpay_payment_id'], $payment['amount']);
-
-        $this->refundPayment($capturePayment['id'], $capturePayment['amount']/2);
+        $this->refundPayment($payment['id'], $payment['amount']/2);
 
         $wallet = $this->getLastEntity('wallet', true);
 
@@ -452,11 +464,9 @@ class FreechargeGatewayTest extends TestCase
 
     public function testCreateRefundRecord()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $payment = $this->makeAndCapturePayment();
 
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id'], 200);
+        $refund = $this->refundPayment($payment['id'], 200);
 
         // delete the refund gateway payment entity
         $this->deleteGatewayRefundEntity($refund['id']);
@@ -476,11 +486,9 @@ class FreechargeGatewayTest extends TestCase
 
     public function testRefundRecordFailed()
     {
-        $payment = $this->getDefaultWalletPaymentArray(self::WALLET);
+        $payment = $this->makeAndCapturePayment();
 
-        $capturePayment = $this->doAuthAndCapturePayment($payment);
-
-        $refund = $this->refundPayment($capturePayment['id'], 100);
+        $refund = $this->refundPayment($payment['id'], 100);
 
         // Freecharge failed this refund explicitly after initiating it
         $data = [
