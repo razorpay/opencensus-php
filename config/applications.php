@@ -67,8 +67,11 @@ return array(
     ),
 
     'lumberjack' => array(
-        'url'       => env('LUMBERJACK_URL'),
-        'secret'    => env('LUMBERJACK_SECRET')
+        'url'           => env('LUMBERJACK_URL'),
+        'secret'        => env('LUMBERJACK_SECRET'),
+        'key'           => env('LUMBERJACK_KEY'),
+        'is_mock'       => env('LUMBERJACK_MOCK', false),
+        'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
     ),
 
     'elfin' => [
