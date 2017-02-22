@@ -218,7 +218,7 @@ return [
         ]
     ],
 
-    'testCreatePaymentPayoutNotSettled' => [
+    'testCreatePaymentPayoutNotSettledLiveMode' => [
         'request' => [
             'method'  => 'POST',
             'url'     => '/payments/{id}/payout',

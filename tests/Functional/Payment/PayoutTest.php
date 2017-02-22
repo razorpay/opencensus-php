@@ -122,11 +122,16 @@ class PayoutTest extends TestCase
         $this->assertEquals($payment['amount_paidout'], $payout1['amount'] + $payout2['amount']);
     }
 
-    public function testCreatePaymentPayoutNotSettled()
+    public function testCreatePaymentPayoutNotSettledLiveMode()
     {
-        $payment = $this->fixtures->create('payment:captured');
+        $payment = $this->fixtures->on('live')->create('payment:captured');
 
         $this->setPaymentPayoutUrl($payment, $this->testData[__FUNCTION__]['request']);
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
 
         $this->startTest();
     }

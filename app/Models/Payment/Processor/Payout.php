@@ -24,7 +24,7 @@ trait Payout
 
         $payment = $this->retrieve($id);
 
-        $payment->getValidator()->validateForPayout();
+        $payment->getValidator()->validateForPayout($this->mode);
 
         return $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {

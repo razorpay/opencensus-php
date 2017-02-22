@@ -6,6 +6,7 @@ use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
@@ -204,7 +205,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateForPayout()
+    public function validateForPayout(string $mode)
     {
         if ($this->entity->isCaptured() === false)
         {
@@ -212,7 +213,8 @@ class Validator extends Base\Validator
                 ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
         }
 
-        if ($this->entity->transaction->isSettled() === false)
+        if (($mode === MODE::LIVE) and
+            ($this->entity->transaction->isSettled() === false))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
