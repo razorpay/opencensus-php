@@ -34,6 +34,10 @@ class CreatePayoutsTable extends Migration
 
             $table->char(Payout::DESTINATION, Payout::ID_LENGTH);
 
+            $table->char(Payout::TYPE, 20);
+
+            $table->char(Payout::PURPOSE, 30);
+
             $table->integer(Payout::AMOUNT)
                   ->unsigned();
 

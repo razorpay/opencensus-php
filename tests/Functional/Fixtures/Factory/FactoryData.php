@@ -506,6 +506,8 @@ final class FactoryData
             'customer_id' => '100000customer',
             'destination' => '1000000lcustba',
             'method'      => 'fund_transfer',
+            'type'        => 'dummy',
+            'purpose'     => 'refund',
             'amount'      => 100,
             'currency'    => 'INR',
             'merchant_id' => '10000000000000',

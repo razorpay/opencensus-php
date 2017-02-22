@@ -18,6 +18,8 @@ class Entity extends Base\PublicEntity
     const CUSTOMER_ID       = 'customer_id';
     const METHOD            = 'method';
     const DESTINATION       = 'destination';
+    const TYPE              = 'type';
+    const PURPOSE           = 'purpose';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const NOTES             = 'notes';
@@ -98,6 +100,8 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS            => Status::CREATED,
+        self::TYPE              => 'dummy',
+        self::PURPOSE           => 'refund',
         self::NOTES             => [],
     ];
 
