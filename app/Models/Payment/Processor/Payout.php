@@ -24,7 +24,7 @@ trait Payout
 
         $payment = $this->retrieve($id);
 
-        $this->validatePaymentForPayout($payment);
+        $payment->getValidator()->validateForPayout();
 
         return $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
@@ -58,21 +58,6 @@ trait Payout
         $payment->payoutAmount($amount);
 
         $this->repo->saveOrFail($payment);
-    }
-
-    protected function validatePaymentForPayout(Payment\Entity $payment)
-    {
-        if ($payment->isCaptured() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
-        }
-
-        if ($payment->transaction->isSettled() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
-        }
     }
 
     protected function validateAndSetAmount(Payment\Entity $payment, & $input)

@@ -204,6 +204,21 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateForPayout()
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        if ($this->entity->transaction->isSettled() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
+        }
+    }
+
     protected function validateBank($input)
     {
         if ($input['method'] !== Payment\Method::NETBANKING)
