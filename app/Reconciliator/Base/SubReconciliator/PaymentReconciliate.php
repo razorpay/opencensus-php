@@ -427,7 +427,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function getNbCustomerDetails($row)
     {
-        return null;
+        return [];
     }
 
     /**
@@ -547,7 +547,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistGatewayData($rowDetails)
+    protected function persistGatewayData(array $rowDetails)
     {
         $this->persistReferenceNumber($rowDetails);
 
@@ -562,7 +562,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistReferenceNumber($rowDetails)
+    protected function persistReferenceNumber(array $rowDetails)
     {
         if (isset($rowDetails[BaseReconciliate::REFERENCE_NUMBER]) === false)
         {
@@ -579,7 +579,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $rowDetails
      */
-    protected function persistNbCustomerDetails($rowDetails)
+    protected function persistNbCustomerDetails(array $rowDetails)
     {
         $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
 
@@ -604,7 +604,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $customerDetails
      */
-    protected function persistNbCustomerId($customerDetails)
+    protected function persistNbCustomerId(array $customerDetails)
     {
         $customerId = $customerDetails[BaseReconciliate::CUSTOMER_ID];
 
@@ -616,7 +616,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      *
      * @param array $customerDetails
      */
-    protected function persistNbCustomerName($customerDetails)
+    protected function persistNbCustomerName(array $customerDetails)
     {
         $customerName = $customerDetails[BaseReconciliate::CUSTOMER_NAME];
 
