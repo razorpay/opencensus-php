@@ -438,6 +438,14 @@ app.controller('EntitiesCtrl', [
         ],
         wallet: walletList
       },
+      payout: {
+        merchant_id: ['Merchant Id'],
+        customer_id: ['Customer Id'],
+        method: [
+          'all',
+          'fund_transfer'
+        ]
+      },
       paytm: {
         payment_id: ['Payment Id'],
         received: booleanList
@@ -480,7 +488,8 @@ app.controller('EntitiesCtrl', [
           'payment',
           'refund',
           'settlement',
-          'adjustment'
+          'adjustment',
+          'payout'
         ]
       },
       transfer: {
