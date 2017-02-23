@@ -574,7 +574,7 @@ class Core extends Base\Core
 
     protected function generatePdfWithRetry(string $id, int $attempt = 0)
     {
-        ++$attempt;
+        $attempt++;
 
         if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS)
         {
@@ -594,8 +594,7 @@ class Core extends Base\Core
                 [
                     'id'       => $id,
                     'attempts' => $attempt,
-                ]
-            );
+                ]);
 
             $this->generatePdfWithRetry($id, $attempt);
         }
