@@ -8,7 +8,8 @@ class ResponseFields
     const PAYMENT_ID      = 'PRN';
     const AMOUNT          = 'AMT';
     const BANK_PAYMENT_ID = 'BID';
-    const PAID            = 'Y';
+    const PAID            = 'PAID';
     const STATE_FLAG      = 'STATFLG';
     const PAYEE_ID        = 'PID';
+    const STATUS          = 'status';
 }

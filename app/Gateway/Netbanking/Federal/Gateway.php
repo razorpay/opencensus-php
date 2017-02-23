@@ -3,13 +3,9 @@
 namespace RZP\Gateway\Netbanking\Federal;
 
 use RZP\Exception;
-use Carbon\Carbon; //
-use RZP\Models\Payment; //
-use RZP\Constants\Mode; //
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use RZP\Constants\HashAlgo; //
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
@@ -35,6 +31,8 @@ class Gateway extends Base\Gateway
         parent::authorize($input);
 
         $content = $this->getRequestData($input);
+
+        $content[RequestFields::RETURN_URL] = $input['callbackUrl'];
 
         $entityAttributes = $this->getEntityAttributes($input);
 
@@ -92,16 +90,14 @@ class Gateway extends Base\Gateway
                 'response' => $response->body
             ]);
 
-        // TODO: handle response
-
-        // TODO: handle response status and put it into verifyContent
+        $verify->verifyResponseContent = $this->parseVerifyResponse($response->body);
     }
 
     protected function verifyPayment(Verify $verify)
     {
         $content = $verify->verifyResponseContent;
 
-        $status = $this->getVerifyMatchStatus($content);
+        $status = $this->getVerifyMatchStatus($verify);
 
         $verify->status = $status;
 
@@ -111,13 +107,13 @@ class Gateway extends Base\Gateway
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
-    protected function getVerifyMatchStatus(array $content)
+    protected function getVerifyMatchStatus(Verify $verify)
     {
         $status = VerifyResult::STATUS_MISMATCH;
 
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $content);
+        $this->checkGatewaySuccess($verify);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -138,17 +134,24 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkGatewaySuccess(Verify $verify, array $content)
+    protected function checkGatewaySuccess(Verify $verify)
     {
-        // TODO: check for the content if the response contains a success
+        $verify->gatewaySuccess = false;
+
+        $content = $verify->verifyResponseContent;
+
+        // content will contain status as either Y or N
+        if ($content[ResponseFields::STATUS] !== Constants::CONFIRMATION)
+        {
+            $verify->gatewaySuccess = true;
+        }
     }
 
     protected function getVerifyRequestData(array $input)
     {
         $data = $this->getRequestData($input);
 
-        $payment = $this->repo->payment
-                              ->findByPaymentId($input['payment']['id'])
+        $payment = $this->repo->findByPaymentId($input['payment']['id'])
                               ->first();
 
         $data[RequestFields::MODE]            = Constants::VERIFY_MODE;
@@ -173,7 +176,6 @@ class Gateway extends Base\Gateway
             RequestFields::USER_TYPE    => Constants::USER_TYPE,
             RequestFields::APP_TYPE     => Constants::APP_TYPE,
             RequestFields::CONFIRMATION => Constants::CONFIRMATION,
-            RequestFields::RETURN_URL   => $input['callbackUrl']
         ];
 
         return $data;
@@ -220,6 +222,31 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function saveVerifyContent(Verify $verify)
+    {
+        $gatewayPayment = $verify->payment;
+
+        $content = $verify->verifyResponseContent;
+
+        $attributes = [Base\Entity::STATUS => $content[ResponseFields::STATUS]];
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        return $gatewayPayment;
+    }
+
+    protected function parseVerifyResponse(string $body)
+    {
+        $status = (array) simplexml_load_string($body);
+
+        // Verify response is Y or N, so adding a key for the response
+        return [
+            ResponseFields::STATUS => $status['BODY'][1]
+        ];
+    }
+
     protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
@@ -227,6 +254,6 @@ class Gateway extends Base\Gateway
             return $this->getTestMerchantId();
         }
 
-        return $this->LiveMerchantId();
+        return $this->getLiveMerchantId();
     }
 }
