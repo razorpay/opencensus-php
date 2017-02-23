@@ -989,6 +989,37 @@ return [
         ],
     ],
 
+    'testCreateInvoiceAndAssertEsSync' => [
+        'request' => [
+            'url'    => '/invoices',
+            'method' => 'post',
+            'content' => [
+                'customer' => [
+                    'name'    => 'test',
+                    'email'   => 'test@razorpay.com',
+                    'contact' => '1234567890',
+                ],
+                'type' => 'invoice',
+                'line_items' => [
+                    [
+                        'name'   => 'Sample Item',
+                        'amount' => 100,
+                    ]
+                ],
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'receipt'          => null,
+                'status'           => 'issued',
+                'description'      => null,
+                'notes'            => [],
+                'type'             => 'invoice',
+                'payment_id'       => null,
+            ],
+        ]
+    ],
+
     // ------------------------------------------------------------
     // Updation of invoice
     // ------------------------------------------------------------
@@ -1386,6 +1417,46 @@ return [
             'class'               => 'RZP\Exception\ExtraFieldsException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_EXTRA_FIELDS_PROVIDED,
         ],
+    ],
+
+    'testUpdateInvoiceAndAssertEsSync' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'receipt'      => 'inv_receipt_0001',
+                'terms'        => 'Updated terms & conditions',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'receipt'              => 'inv_receipt_0001',
+                'status'               => 'draft',
+                'terms'                => 'Updated terms & conditions',
+                'notes'                => [],
+            ]
+        ]
+    ],
+
+    'testUpdateInvoiceAndAssertEsNoSync' => [
+        'request' => [
+            'url'       => '/invoices/inv_1000000invoice',
+            'method'    => 'patch',
+            'content'   => [
+                'expire_by' => 1594749600,
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'                   => 'inv_1000000invoice',
+                'entity'               => 'invoice',
+                'status'               => 'draft',
+                'expire_by'            => 1594749600,
+                'notes'                => [],
+            ]
+        ]
     ],
 
     'testIssueInvoiceWithAmountAndDesc' => [
@@ -2516,6 +2587,143 @@ return [
                 [
                     '_id' => '1000002invoice',
                 ]
+            ],
+        ],
+    ],
+
+    'expectedCreateIndexParams' => [
+        'index' => 'test_invoice',
+        'body' => [
+            'settings' => [
+                'analysis' => [
+                    'analyzer' => [
+                        'edge_ngram_analyzer' => [
+                            'tokenizer' => 'edge_ngram_tokenizer',
+                            'filter'    => ['lowercase_filter'],
+                        ],
+                    ],
+                    'tokenizer' => [
+                        'edge_ngram_tokenizer' => [
+                            'type'        => 'edge_ngram',
+                            'min_gram'    => 2,
+                            'max_gram'    => 50,
+                            'token_chars' => ['letter', 'digit'],
+                        ],
+                    ],
+                    'filter' => [
+                        'lowercase_filter' => [
+                            'type' => 'lowercase',
+                        ],
+                    ],
+                ],
+            ],
+            'mappings' => [
+                '_default_' => [
+                    'properties' => [
+                        'customer_name' => [
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
+                        ],
+                        'customer_contact' => [
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
+                        ],
+                        'customer_email' => [
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
+                        ],
+                        'description' => [
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
+                        ],
+                        'terms' => [
+                            'type'            => 'text',
+                            'analyzer'        => 'edge_ngram_analyzer',
+                            'search_analyzer' => 'standard',
+                            'index_options'   => 'offsets',
+                        ],
+                        'notes' => [
+                            'type' => 'object',
+                        ],
+                        'id' => [
+                            'type' => 'keyword',
+                        ],
+                        'merchant_id' => [
+                            'type' => 'keyword',
+                        ],
+                        'payment_id' => [
+                            'type' => 'keyword',
+                        ],
+                        'order_id' => [
+                            'type' => 'keyword',
+                        ],
+                        'user_id' => [
+                            'type' => 'keyword',
+                        ],
+                        'receipt' => [
+                            'type' => 'keyword',
+                        ],
+                        'status' => [
+                            'type' => 'keyword',
+                        ],
+                        'type' => [
+                            'type' => 'keyword',
+                        ],
+                    ],
+                    'dynamic_templates' => [
+                        [
+                            'default' => [
+                                'match_mapping_type' => 'string',
+                                'mapping' => [
+                                    'type'            => 'text',
+                                    'analyzer'        => 'edge_ngram_analyzer',
+                                    'search_analyzer' => 'standard',
+                                    'index_options'   => 'offsets',
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'expectedUpsertIndexParams' => [
+        //
+        // Commented fields are dynamic and needs to be asserted in other ways,
+        // but have left here (commented) to denote the presence.
+        //
+        'body' => [
+            [
+                'index' => [
+                    '_index' => 'test_invoice',
+                    '_type'  => 'test_invoice',
+                    // '_id'    => '7KoRT3qkc1KGFb',
+                ],
+            ],
+            [
+                // 'id'               => '7KoRT3qkc1KGFb',
+                'receipt'          => null,
+                // 'order_id'         => '7KoRT8ar0gbHb7',
+                'merchant_id'      => '10000000000000',
+                'status'           => 'issued',
+                'customer_name'    => 'test',
+                'customer_email'   => 'test@razorpay.com',
+                'customer_contact' => '1234567890',
+                'description'      => null,
+                'terms'            => null,
+                'notes'            => [],
+                'type'             => 'invoice',
+                'user_id'          => null,
+                'payment_id'       => null,
             ],
         ],
     ],

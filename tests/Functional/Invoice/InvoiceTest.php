@@ -356,6 +356,47 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceAndAssertEsSync()
+    {
+        $esMock = $this->createEsMock(['indexExists', 'createIndex', 'bulkUpdate']);
+
+        //
+        // For the first time, it will createIndex as indexExists will return false.
+        // Asserting all of it.
+        //
+
+
+        $esMock->expects($this->once())
+               ->method('indexExists')
+               ->with(['index' => 'test_invoice'])
+               ->willReturn(false);
+
+        $expected = $this->testData['expectedCreateIndexParams'];
+
+        $esMock->expects($this->once())
+               ->method('createIndex')
+               ->with($expected);
+
+        $expected = $this->getExpectedUpsertIndexParams();
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            $this->assertNotEmpty($actual['body'][0]['index']['_id']);
+                            $this->assertNotEmpty($actual['body'][1]['id']);
+                            $this->assertNotEmpty($actual['body'][1]['order_id']);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
 
 
     // ------------------------------------------------------------
@@ -496,6 +537,52 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testUpdateInvoiceAndAssertEsSync()
+    {
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $expected = $this->getExpectedUpsertIndexParams(
+            [
+                'id'      => $invoice->getId(),
+                'receipt' => 'inv_receipt_0001',
+                'status'  => 'draft',
+                'terms'   => 'Updated terms & conditions',
+            ]);
+
+        $esMock->expects($this->once())
+               ->method('bulkUpdate')
+               ->with(
+                    $this->callback(
+                        function ($actual) use ($expected)
+                        {
+                            $this->assertArraySelectiveEquals($expected, $actual);
+
+                            return true;
+                        }));
+
+        $this->startTest();
+    }
+
+    public function testUpdateInvoiceAndAssertEsNoSync()
+    {
+        //
+        // Case:
+        // When dirtied fields are not in index, es sync must not happen
+        // unnecessarily.
+        //
+
+        $invoice = $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['bulkUpdate']);
+
+        $esMock->expects($this->never())
+               ->method('bulkUpdate');
+
+        $this->startTest();
+    }
+
     public function testIssueInvoiceWithAmountAndDesc()
     {
         $this->fixtures->create(
@@ -593,6 +680,26 @@ class InvoiceTest extends TestCase
 
         $invoice = $this->getLastEntity('invoice');
         $this->assertNotNull($invoice);
+    }
+
+    public function testDeleteInvoiceAndAssertEsSync()
+    {
+        $this->createDraftInvoice();
+
+        $esMock = $this->createEsMock(['delete']);
+
+        $esMock->expects($this->once())
+               ->method('delete')
+               ->with(
+                    [
+                        'index' => 'test_invoice',
+                        'type'  => 'test_invoice',
+                        'id'    => '1000000invoice',
+                    ]);
+
+        $testData = $this->testData['testDeleteInvoice'];
+
+        $this->startTest($testData);
     }
 
     public function testAddLineItemToInvoice()
@@ -1023,6 +1130,32 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
     }
+
+    // -------------------------------------------------------------------------
+    // Following tests asserts working of es fetch in various cases.
+    //
+
+    public function testGetMultipleInvoicesByOnlyEsParams()
+    {
+    }
+
+    public function testGetMultipleInvoicesByOnlyMysqlParams()
+    {
+    }
+
+    public function testGetMultipleInvoicesByMixedParams()
+    {
+    }
+
+    public function testGetMultipleInvoicesByEsParamsAndHitsOnly()
+    {
+    }
+
+    public function testGetMultipleInvoicesByEsParamsAndFullResults()
+    {
+    }
+
+    // -------------------------------------------------------------------------
 
     public function testGetInvoicesOfCapturedPaymentId()
     {

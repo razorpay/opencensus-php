@@ -93,14 +93,6 @@ class EsClient
             return null;
         }
 
-        /**
-         * TODO:
-         * Get this merged: https://github.com/razorpay/api/pull/2193
-         * It has:
-         * - Fixes for deprecated query
-         * - Clean traces and logging
-         */
-
         $searchResponse = $this->client->search($params);
 
         if ($searchResponse['hits']['total'] === 0)

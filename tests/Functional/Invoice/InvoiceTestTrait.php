@@ -6,7 +6,7 @@ trait InvoiceTestTrait
 {
     protected function createDraftInvoice(array $with = [])
     {
-        $this->fixtures->create(
+        return $this->fixtures->create(
             'invoice',
             array_merge(
                 [
@@ -34,5 +34,26 @@ trait InvoiceTestTrait
                 $with
             )
         );
+    }
+
+    /**
+     * Returns expected upsert index params for ES client method bulkUpsert method.
+     *
+     * @param array $with
+     *
+     * @return array
+     */
+    private function getExpectedUpsertIndexParams($with = [])
+    {
+        $expected = $this->testData['expectedUpsertIndexParams'];
+
+        if (array_key_exists('id', $with))
+        {
+            $expected['body'][0]['index']['_id'] = $with['id'];
+        }
+
+        $expected['body'][1] = array_merge($expected['body'][1], $with);
+
+        return $expected;
     }
 }

@@ -373,9 +373,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PAYMENT_ID);
     }
 
+    public function getReceipt()
+    {
+        return $this->getAttribute(self::RECEIPT);
+    }
+
     public function getReceiptElsePublicId()
     {
-        $receipt = $this->getAttribute(self::RECEIPT);
+        $receipt = $this->getReceipt();
 
         if ($receipt !== null)
         {

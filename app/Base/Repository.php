@@ -405,8 +405,12 @@ class Repository extends \Razorpay\Spine\Repository
             ];
 
             //
-            // TODO:
-            // - Use new queue for es updates
+            // Enhancement:
+            //
+            // - Should use different queue for ES sync.
+            // - Also, add a delay of min. 3 secs for avoiding sync miss. For the
+            //   case when saveOrFail is wrapped in transaction and it commits
+            //   after a few more operations.
             //
 
             $this->queue->push($esRepoClass . '@fireSync', $queueData);

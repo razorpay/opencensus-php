@@ -50,9 +50,11 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        /**
-         * TODO: Fix this!
-         */
+        //
+        // TODO: Fix this!
+        // - Use $app['rzp.mode'] in http flow,
+        //   Also, ensures it's set in cron/async queue flow.
+        //
         $this->mode = 'test';
 
         $this->trace = $app['trace'];
