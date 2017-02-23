@@ -70,7 +70,7 @@ class Service extends Base\Service
             'promoter_address_url'        => 5,
     ];
 
-    const STEP_MAP_ACCOUNTS = [
+    const STEP_MAP_ACCOUNT = [
             'business_type'               => 1,
             'business_name'               => 1,
             'company_pan'                 => 1,
@@ -84,18 +84,26 @@ class Service extends Base\Service
             'address_proof_url'           => 3,
     ];
 
-     const UPLOAD_KEYS = [
-         'business_proof_url'   => 'business_proof',
-         'business_pan_url'     => 'business_pan_proof',
-         'address_proof_url'    => 'address_proof',
-         'promoter_address_url' => 'promoter_address_proof',
+    const UPLOAD_KEYS = [
+        'business_proof_url'   => 'business_proof',
+        'business_pan_url'     => 'business_pan_proof',
+        'address_proof_url'    => 'address_proof',
+        'promoter_address_url' => 'promoter_address_proof',
     ];
 
-    const UPLOAD_DOCUMENTS = [
+    const UPLOAD_KEYS_ACCOUNT = [
+        'address_proof_url'    => 'address_proof',
+    ];
+
+    const UPLOAD_DOCUMENT_ERRORS = [
         'business_proof'         => "Please upload business proof",
         'business_pan_proof'     => "Please upload business pan card scan.",
         'address_proof'          => "Please upload address proof.",
-        'promoter_address_proof' => "Please upload authorised signatory address  proof."
+        'promoter_address_proof' => "Please upload authorised signatory address proof."
+    ];
+
+    const UPLOAD_DOCUMENT_ERRORS_ACCOUNT = [
+        'address_proof'          => "Please upload bank account proof, as specified.",
     ];
 
     const PRE_SIGNUP_FIELDS = [
@@ -118,8 +126,8 @@ class Service extends Base\Service
         'website_pricing'
     ];
 
-    const STEP_FINISHED           = [1, 2, 3, 4, 5];
-    const STEP_FINISHED_ACCOUNTS  = [1, 2, 3];
+    const BANK_STEP           = 4;
+    const BANK_STEP_ACCOUNT   = 2;
 
     public function __construct()
     {
@@ -131,18 +139,15 @@ class Service extends Base\Service
 
             $this->user = $user;
         }
+
+        $this->linked_account = false;
     }
 
     public function fetchDetails($merchantId = null)
     {
         $merchantDetails = $this->getDetailsFromAPI($merchantId);
 
-        $steps = self::STEP_FINISHED;
-
-        if ($this->account === true)
-        {
-            $steps = self::STEP_FINISHED_ACCOUNTS;
-        }
+        $steps = $this->getStepsList();
 
         if ($merchantDetails !== null)
         {
@@ -169,33 +174,22 @@ class Service extends Base\Service
             }
         }
 
-        // Hack: Have to change the submitted and locked to int instead of boolean
-        if (isset($merchantDetails['submitted']))
-        {
-            $merchantDetails['submitted'] = ($merchantDetails['submitted'] === true)? 1 : 0;
-        }
-        if (isset($merchantDetails['locked']))
-        {
-            $merchantDetails['locked'] = ($merchantDetails['locked'] === true) ? 1: 0;
-        }
+        $merchantDetails['submitted'] = (int) $merchantDetails['submitted'] ?? 0;
+
+        $merchantDetails['locked'] = (int) $merchantDetails['locked'] ?? 0;
 
         $merchantDetails['files'] = $this->getFileDetails($merchantDetails);
 
         return $merchantDetails;
     }
 
-    public function submitDetails($merchantId = null)
+    public function submitDetails()
     {
         $input = ['submit' => true];
 
-        if ($merchantId !== null)
-        {
-            $this->checkAndSetAccount($merchantId);
-        }
-
         list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             if ($merchantDetails['can_submit'] === false)
             {
@@ -210,30 +204,32 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function saveDetails(int $step, array $input, $merchantId = null)
+    public function saveDetails(int $step, array $input)
     {
-        $bankStep = 4;
+        $bankStep = $this->getBankStep();
 
-        if ($merchantId !== null)
-        {
-            $this->checkAndSetAccount($merchantId);
-
-            $bankStep = 2;
-        }
-
-        // 4 is the Bank Account Details (2 for marketplace accounts)
+        //
+        // 4 is the Bank Account Details step (2 for marketplace accounts)
         // We disable this because this doesn't edit the Bank Account
         // on the API side, causing confusion. We have a separate
         // method in merchant details to accomplish the same
-        if ($this->merchant->isActive() and ($step === $bankStep))
+        //
+        if (($this->merchant->isActive()) and ($step === $bankStep))
         {
             return ["Bank account updation not allowed after account is updated"];
         }
 
-        $error = (new Entity)->edit($input, 'step' . $step);
+        $operation = 'step' . $step;
+
+        if ($this->isLinkedAccount() === true)
+        {
+            $operation .= '_account';
+        }
+
+        $error = (new Entity)->edit($input, $operation);
 
         // Save the finished steps if there are no errors
-        if (empty($error))
+        if (empty($error) === true)
         {
             list($error, $merchantDetails) = $this->saveDetailsOnAPI($input);
         }
@@ -273,47 +269,44 @@ class Service extends Base\Service
                                     ->merchantDetail
                                     ->getActivationFilesByAdmin($merchantId);
 
-        $fileUrl = [];
-
-        if (empty($error))
-        {
-            foreach (self::UPLOAD_KEYS as $key => $value)
-            {
-                if (isset($files[$key]))
-                {
-                    $fileUrl[$value] = $files[$key];
-                }
-            }
-        }
-        else
+        if (empty($error) === false)
         {
             Trace::debug('MISC_TRACE_CODE', [
                     'error'     => "Error occured while getting activation files from API",
                     'exception' => $error,
             ]);
+
+            return ['files' => []];
         }
 
-        $response['files'] = $fileUrl;
+        $fileUrls = [];
 
-        return $response;
+        $uploadKeys = $this->getUploadDocumentKeys();
+
+        foreach ($uploadKeys as $key => $value)
+        {
+            if (isset($files[$key]) === true)
+            {
+                $fileUrls[$value] = $files[$key];
+            }
+        }
+
+        return ['files' => $fileUrls];
     }
 
-    public function checkUploads($merchantId = null)
+    public function checkUploads()
     {
         $error = [];
-
-        if ($merchantId !== null)
-        {
-            $this->checkAndSetAccount($merchantId);
-        }
 
         $merchantDetails = $this->fetchDetails();
 
         $files = $merchantDetails['files'];
 
-        foreach (self::UPLOAD_DOCUMENTS as $key => $value)
+        $uploadDocumentErrors = $this->getUploadDocumentErrors();
+
+        foreach ($uploadDocumentErrors as $key => $value)
         {
-            if (in_array($key, $files) === false)
+            if (in_array($key, $files, true) === false)
             {
                 $error[] = $value;
             }
@@ -322,13 +315,8 @@ class Service extends Base\Service
         return $error;
     }
 
-    public function saveUploadedFile($input, $merchantId = null)
+    public function saveUploadedFile($input)
     {
-        if ($merchantId !== null)
-        {
-            $this->checkAndSetAccount($merchantId);
-        }
-
         $error = Validator::checkFileUpload($input);
 
         if (empty($error) === true)
@@ -364,7 +352,10 @@ class Service extends Base\Service
 
         $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
 
-        $mailer->confirmActivationSubmission()->queueAndDeliver();
+        if ($this->isLinkedAccount() === false)
+        {
+            $mailer->confirmActivationSubmission()->queueAndDeliver();
+        }
 
         $mailer->notifyActivationSubmission()->queueAndDeliver();
 
@@ -411,19 +402,14 @@ class Service extends Base\Service
 
     public function getDetailsFromAPI($merchantId = null)
     {
-        if ($this->account === true)
-        {
-            $this->checkAndSetAccount($merchantId);
-        }
-
         if ($merchantId === null)
         {
             $merchantId = $this->merchant->id;
         }
 
         Trace::debug('MISC_TRACE_CODE', [
-            'info'     => "Fetching merchant details from API",
-            'merchant' => $merchantId,
+            'info'          => "Fetching merchant details from API",
+            'merchant_id'   => $merchantId,
         ]);
 
         $this->setApiCredentials($merchantId);
@@ -488,6 +474,16 @@ class Service extends Base\Service
         return [$error, $merchantDetails];
     }
 
+    public function getWebsiteUrls(array $merchantDetails)
+    {
+        //
+        // Filter = Remove null values
+        // Intersect + Flip = filter to the required keys
+        //
+        return array_filter(array_intersect_key(
+            $merchantDetails, array_flip(self::WEBSITE_URLS)
+        ));
+    }
 
     protected function uploadFileToAPI(array $input)
     {
@@ -527,7 +523,7 @@ class Service extends Base\Service
             }
         }
 
-        if (isset($input['business_international']))
+        if (isset($input['business_international']) === true)
         {
             // This is boolean, but needs to be passed as 0, 1 to API
             $input['business_international'] = intval($input['business_international']);
@@ -537,7 +533,7 @@ class Service extends Base\Service
 
     }
 
-    protected function calculateSteps(array $response = null)
+    protected function calculateSteps(array $response = null) : array
     {
         $stepFinished = [];
 
@@ -546,32 +542,83 @@ class Service extends Base\Service
             return $stepFinished;
         }
 
-        $stepMap = self::STEP_MAP;
+        $stepMap = $this->getFieldsToStepMap();
 
-        if ($this->account === true)
-        {
-            $stepMap = self::STEP_MAP_ACCOUNTS;
-        }
+        $requiredFields = $response['verification']['required_fields'] ?? [];
 
-        if (isset($response['verification']['required_fields']))
+        foreach ($requiredFields as $key)
         {
-            foreach ($response['verification']['required_fields'] as $key)
+            if (array_key_exists($key, $stepMap) === true)
             {
-                if (array_key_exists($key, $stepMap))
-                {
-                    $stepFinished[] = $stepMap[$key];
-                }
+                $stepFinished[] = $stepMap[$key];
             }
         }
 
         return $stepFinished;
     }
 
+    /**
+     * Returns a map of activation field to their corresponding step numbers
+     * for the current merchant
+     *
+     * @return array
+     */
+    protected function getFieldsToStepMap() : array
+    {
+        return ($this->isLinkedAccount() === true) ? self::STEP_MAP_ACCOUNT : self::STEP_MAP;
+    }
+
+    /**
+     * Array of step numbers for the current merchant activation form
+     * Ex: For parent merchant, returns [1, 2, 3, 4, 5]
+     *
+     * @return array
+     */
+    protected function getStepsList() : array
+    {
+        $stepsList = array_values($this->getFieldsToStepMap());
+
+        return array_unique($stepsList);
+    }
+
+    /**
+     * Returns the step number for the bank details part of the activation form
+     *
+     * @return int
+     */
+    protected function getBankStep() : int
+    {
+        return ($this->isLinkedAccount() === true) ? self::BANK_STEP_ACCOUNT : self::BANK_STEP;
+    }
+
+    /**
+     * Returns an array that maps upload document key types to error messages
+     *
+     * @return array
+     */
+    protected function getUploadDocumentErrors() : array
+    {
+        return ($this->isLinkedAccount() === true) ? self::UPLOAD_DOCUMENT_ERRORS_ACCOUNT : self::UPLOAD_DOCUMENT_ERRORS;
+    }
+
+    /**
+     * Returns an array that maps document upload field names in the DB to the
+     * keys sent in the API response
+     *
+     * @return array
+     */
+    protected function getUploadDocumentKeys() : array
+    {
+        return ($this->isLinkedAccount() === true) ? self::UPLOAD_KEYS_ACCOUNT : self::UPLOAD_KEYS;
+    }
+
     protected function getFileDetails($merchantDetail)
     {
         $fileResponse = [];
 
-        foreach (self::UPLOAD_KEYS as $key => $value)
+        $uploadKeys = $this->getUploadDocumentKeys();
+
+        foreach ($uploadKeys as $key => $value)
         {
             if (empty($merchantDetail[$key]) === false)
             {
@@ -582,37 +629,45 @@ class Service extends Base\Service
         return $fileResponse;
     }
 
-    protected function checkAndSetAccount($accountId)
+    /**
+     * Fetches a marketplace linked account by its ID
+     * Sets the $this->merchant property to the fetched entity
+     *
+     * @param  string $accountId
+     * @return self
+     */
+    public function forAccount(string $accountId)
     {
-        if ($this->account === false)
-        {
-            return $this->merchant->id;
-        }
+        $this->checkAndSetAccountMerchant($accountId);
 
+        return $this;
+    }
+
+    protected function checkAndSetAccountMerchant(string $accountId)
+    {
         $this->setApiCredentials();
 
         $account = $this->api->merchant->fetch($accountId);
 
         if ($account->parent_id !== $this->merchant->id)
         {
-            Trace::debug('MISC_TRACE_CODE', [
+            Trace::debug(
+                'MISC_TRACE_CODE',
+                [
                     'error'     => "Accessing details of unlinked account"
-            ]);
+                ]);
 
             return null;
         }
 
+        // Switch $this->merchant to the linked-account entity
         $this->merchant = Merchant\Entity::findorfail($account->id);
 
-        return $account->id;
+        $this->linked_account = true;
     }
 
-    public function getWebsiteUrls(array $merchantDetails)
+    protected function isLinkedAccount() : bool
     {
-        // Filter = Remove null values
-        // Intersect + Flip = filter to the required keys
-        return array_filter(array_intersect_key(
-            $merchantDetails, array_flip(self::WEBSITE_URLS)
-        ));
+        return $this->linked_account;
     }
 }

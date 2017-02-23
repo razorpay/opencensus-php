@@ -11,8 +11,6 @@ use Auth;
 
 class Service
 {
-    public $account = false;
-
     private function setHeaders()
     {
         ApiRequest::addHeader('X-Dashboard', 'true');
@@ -117,12 +115,5 @@ class Service
         $client = new \Aws\Sdk($config);
 
         return $client->createClient('S3');
-    }
-
-    public function forAccount()
-    {
-        $this->account = true;
-
-        return $this;
     }
 }

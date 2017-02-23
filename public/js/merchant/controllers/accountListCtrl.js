@@ -29,7 +29,7 @@ app.controller('AccountListCtrl', [
       });
     };
 
-    $scope.addAccount = function () {
+    $scope.openAddAccountModal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'addAccountModal.html',
         controller: 'AddAccountCtrl'

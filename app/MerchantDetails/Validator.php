@@ -128,7 +128,7 @@ class Validator extends Base\Validator
         'promoter_address_proof',
     );
 
-    protected  $customAttributes = array(
+    protected $customAttributes = array(
         'contact_name'                  => 'Contact Name',
         'contact_email'                 => 'Email',
         'transaction_report_email'      => 'Transaction Report Email',

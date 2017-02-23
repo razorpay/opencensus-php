@@ -11,7 +11,7 @@
     <div class="panel-heading">
       All Accounts
       <div class='btn-toolbar pull-right'>
-        <button class='btn btn-primary btn-rounded' ng-click="addAccount()">
+        <button class='btn btn-primary btn-rounded' ng-click="openAddAccountModal()">
           <i class='fa fa-plus'></i>
           <span>Add Account</span>
         </button>
@@ -55,9 +55,9 @@
             <th data-toggle="true">Account Id</th>
             <th>Email</th>
             <th data-hide="phone,tablet">Name</th>
+            <th data-hide="phone">Created At</th>
             <th>Activated</th>
             <th>Activated At</th>
-            <th data-hide="phone">Created At</th>
           </tr>
         </thead>
         <tbody>
@@ -67,13 +67,13 @@
             </td>
             <td>{{row.email}}</td>
             <td data-hide="phone,tablet">{{row.name}}</td>
+            <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
             <td class="text-center">
               <span tooltip="{{row.activated == true ? 'Activated' : 'Not Activated'}}">
                 <i class="fa" ng-class="{'fa-check text-success': row.activated == true, 'fa-times text-danger': row.activated== false}"></i>
               </span>
             </td>
             <td>{{row.activated_at && (row.activated_at*1000 | date:'medium') || ''}}</a></td>
-            <td data-hide="phone">{{row.created_at*1000 | date:'medium'}}</td>
           </tr>
           <tr ng-show="entity.count === 0">
             <td colspan="6" class="text-center">

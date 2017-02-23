@@ -80,8 +80,8 @@ app.controller('EntitiesCtrl', [
       'wallet_olamoney',
       'wallet_airtelmoney',
       'wallet_freecharge',
-      'wallet_openwallet',
-      'wallet_jiomoney'
+      'wallet_jiomoney',
+      'wallet_openwallet'
     ];
     var walletList = [
       'all',

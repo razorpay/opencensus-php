@@ -5,6 +5,7 @@ namespace App\Merchant;
 use Auth;
 use Hash;
 use Requests;
+use Queue;
 
 use App\Base;
 use App\Merchant;
@@ -13,28 +14,24 @@ use App\Invitation;
 use App\MerchantDetails;
 use App\Admin;
 use App\Exceptions\EntityNotFoundException;
-
-use Queue;
-
 use Razorpay\Mailers\UserMailer;
 use Razorpay\Api\Errors\BadRequestError;
 use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
-
-    const INVALID_EMAIL_OR_PASSWORD     = 'Email or password is invalid.';
-    const EMAIL_CHANGE_FORBIDDEN        = "Email change forbidden on this account";
-    const NAME_CHANGE_FORBIDDEN         = "Name change forbidden on this account";
-    const INVALID_CONFIRMATION_TOKEN    = 'Invalid confirmation token or the merchant is already confirmed.';
-    const ROLL_KEY_FORBIDDEN            = "Roll key forbidden on this account";
-    const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
-    const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
-    const SUBMERCHANT_NOT_ALLOWED       = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
-    const ACCOUNT_CREATION_NOT_ALLOWED  = "You do have account creation privileges. Please contact support@razorpay.com";
-    const SUBMERCHANT_EMAIL_NOT_UNIQUE  = "Unique email is required to create a new user";
-    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT = "Cannot access merchant";
-    const BANK_ACCOUNT_NOT_FOUND        = "Could not find a Bank Account";
+    const INVALID_EMAIL_OR_PASSWORD             = 'Email or password is invalid.';
+    const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
+    const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
+    const INVALID_CONFIRMATION_TOKEN            = 'Invalid confirmation token or the merchant is already confirmed.';
+    const ROLL_KEY_FORBIDDEN                    = "Roll key forbidden on this account";
+    const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
+    const NO_OWNED_MERCHANT                     = "We couldn't find the merchant that you own.";
+    const SUBMERCHANT_NOT_ALLOWED               = "Your account does not have sub-merchant creation privileges. Please contact support@razorpay.com";
+    const ACCOUNT_CREATION_NOT_ALLOWED          = "You do not have account creation privileges. Please contact support@razorpay.com";
+    const SUBMERCHANT_EMAIL_NOT_UNIQUE          = "Unique email is required to create a new user";
+    const NOT_AUTHORIZED_TO_ACCESS_MERCHANT     = "Cannot access merchant";
+    const BANK_ACCOUNT_NOT_FOUND                = "Could not find a Bank Account";
 
     public function __construct()
     {
@@ -84,9 +81,10 @@ class Service extends Base\Service
      * 2. Adds the original user to the new merchant's team
      *
      * This is one scenario where we don't use currentMerchant
-     * @param  string $merchantId Merchant Id
-     * @param  array  $input      [description]
-     * @return [type]             [description]
+     *
+     * @param  string $merchantId
+     * @param  array  $input
+     * @return array
      */
     public function registerSubMerchant(array $input)
     {
@@ -1017,7 +1015,7 @@ class Service extends Base\Service
 
     /**
      * This one uses Proxy Auth
-     * @return [type] [description]
+     * @return [type]
      */
     public function fetchBankAccount()
     {

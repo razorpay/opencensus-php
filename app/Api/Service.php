@@ -172,15 +172,18 @@ class Service extends Base\Service
 
     /**
      * Sensitive function:
+     * Uses admin auth on merchant dashboard
      *
      * Used to retrieve data for the Markerplace accounts list page
-     * uses internal auth, for API route - GET /merchants; filtered on field: parent_id
+     * with API route - GET /merchants; filtered on field: parent_id
+     * This is temp, until we roll out account APIs.
+     * @todo Move to /account fetch, under private auth
      */
-    protected function fetchCollectionAccounts($input, $mode)
+    public function fetchCollectionForMarketplaceAccounts($input)
     {
         if (isset($this->merchantId) === false)
         {
-            return [null, null];
+            return [['Internal error occurred'], null];
         }
 
         $data = [];

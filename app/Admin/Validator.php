@@ -16,7 +16,7 @@ class Validator extends Base\Validator
     );
 
     protected static $apiCallRules = [
-        'auth'          =>  'required|in:proxy,admin,internal,account',
+        'auth'          =>  'required|in:proxy,admin,internal',
         'mode'          =>  'required|in:test,live',
         'merchant_id'   =>  'sometimes|max:20',
         'content_type'  =>  'sometimes',
@@ -69,13 +69,6 @@ class Validator extends Base\Validator
                 if (!isset($input['merchant_id']))
                 {
                     $this->addError('merchant_id', 'Merchant Id must be specified for Proxy Auth');
-                }
-                break;
-
-            case 'account':
-                if (isset($input['account_id']) === false)
-                {
-                    $this->addError('account_id', 'Account Id must be specified for Account Auth');
                 }
                 break;
 

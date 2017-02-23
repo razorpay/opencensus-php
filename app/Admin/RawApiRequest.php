@@ -89,9 +89,6 @@ class RawApiRequest
             case 'internal':
                 $this->setApiCredentials($input['mode']);
                 break;
-            case 'account':
-                $this->setAccountCredentials($input['mode'], $input['account_id'], $input['merchant_id']);
-                break;
         }
     }
 
@@ -113,13 +110,6 @@ class RawApiRequest
         $secret = Config::get('api.auth_pass');
 
         $this->params['auth'] = [$id, $secret];
-    }
-
-    protected function setAccountCredentials($mode, $accountId, $merchantId = '')
-    {
-        $this->setApiCredentials($mode, $merchantId);
-
-        $this->params['headers']['X-Razorpay-Account'] = $accountId;
     }
 
     /**

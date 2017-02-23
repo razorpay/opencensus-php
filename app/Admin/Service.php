@@ -570,8 +570,8 @@ class Service extends Base\Service
 
         $parentId = $data['parent_id'] ?? null;
 
-        // If parent_id is set, the merchant is a sub-account under Marketplace
-        // Such merchants are marked confirmed, without email confirmation
+        // If parent_id is set, the merchant is a linked account under Marketplace
+        // and are marked confirmed, without email confirmation
         if ($parentId !== null)
         {
             $data['confirmed'] = true;
@@ -598,7 +598,7 @@ class Service extends Base\Service
         // $merchant = Merchant\Entity::findorfail($id);
         // Merchant\Validator::checkAPIMatch($merchant, $response);
 
-        $response = array(
+        $response = [
             'archived_at'         => $merchant['archived_at'],
             'suspended_at'        => $merchant['suspended_at'],
             'steps_finished'      => $merchantDetail['steps_finished'],
@@ -608,7 +608,7 @@ class Service extends Base\Service
             'submitted_at'        => $merchantDetail['submitted_at'],
             'activated_dashboard' => $merchant['activated'],
             'referrer'            => $merchant['referrer'],
-        ) + $data;
+        ] + $data;
 
         return $response;
     }
@@ -1217,10 +1217,12 @@ class Service extends Base\Service
      * Incoming data is what is stored in the merchant details table
      * outgoing is what we store in the bank account itself
      * on the API
-     * @param  array $details
+     *
+     * @param  array    $details
+     * @param  bool     $linkedAccount
      * @return array
      */
-    protected function bankAccountMap($details, $marketplaceAccount = false)
+    protected function getBankAccountMap($details, $linkedAccount = false)
     {
         $data = [
             'ifsc_code'             => $details['bank_branch_ifsc'],
@@ -1238,17 +1240,18 @@ class Service extends Base\Service
             'beneficiary_mobile'    => $details['contact_mobile']
         ];
 
-        // For Marketplace sub-account, some bank fields are not required
-        // Setting dummy values here to pass API checks on adding bank account, for now
-        // Will decide whether to change API+DB to drop contraints around these fields
-        if ($marketplaceAccount === true)
+        //
+        // For Marketplace linked accounts, the bank fields set below are not
+        // required in the activation form but needed for API validation
+        // Setting default values here to overcome this
+        //
+        if ($linkedAccount === true)
         {
-            $data['beneficiary_address1'] = 'NA';
-            $data['beneficiary_city'] = 'NA';
-            $data['beneficiary_state'] = 'NA';
-            $data['beneficiary_pin'] = 560001;
-            $data['beneficiary_email'] = 'dummy@email.com';
-            $data['beneficiary_mobile'] = 9999999999;
+            $data['beneficiary_address1']   = 'NA';
+            $data['beneficiary_city']       = 'NA';
+            $data['beneficiary_state']      = 'NA';
+            $data['beneficiary_pin']        = 560001;
+            $data['beneficiary_mobile']     = 9999999999;
         }
 
         return $data;
@@ -1256,11 +1259,12 @@ class Service extends Base\Service
 
     /**
      * Activates a merchant account
+     *
      * @param  string  $id            Merchant Id
      * @param  boolean $dashboardOnly Only perform the activation on dashboard, not on API
      *                                Useful in certain contexts, when merchant is already activated
      *                                in the API, but now causing issue elsewhere
-     * @return Array Empty array in case of success
+     * @return array   Empty array in case of success
      */
     public function activateMerchant($id, $dashboardOnly = false)
     {
@@ -1270,17 +1274,17 @@ class Service extends Base\Service
 
         $details = $this->fetchMerchantDetails($id);
 
-        if ((int)$details['submitted'] === 0)
+        if ((int) $details['submitted'] === 0)
         {
-            return array('Activation form has not been submitted by merchant yet.');
+            return ['Activation form has not been submitted by merchant yet.'];
         }
 
         $this->setApiCredentials();
 
-        // If merchant is a Marketplace account, bank field mapping is modified
-        $marketplaceAccount = (empty($details['parent_id']) === false);
+        // If parent_id is set here, the merchant is a marketplace linked account
+        $isLinkedAccount = (empty($details['parent_id']) === false);
 
-        $bankAccount = $this->bankAccountMap($details['merchant_details'], $marketplaceAccount);
+        $bankAccount = $this->getBankAccountMap($details['merchant_details'], $isLinkedAccount);
 
         $bankAccountApi = false;
 
@@ -1314,7 +1318,7 @@ class Service extends Base\Service
         }
         catch (\Razorpay\Api\Errors\BadRequestError $e)
         {
-            return array($e->getMessage());
+            return [$e->getMessage()];
         }
 
         try
@@ -1425,14 +1429,15 @@ class Service extends Base\Service
      * Conditions: merchant_details->submitted != null
      *             and merchant_details->locked = true
      *             and merchant->activated = false
-     * @param  [type] $id [description]
-     * @return [type]     [description]
+     *
+     * @param  string $id
+     * @return array
      */
     public function archiveMerchant($id)
     {
         $error = $this->actions($id, 'archive');
 
-        if (empty($error))
+        if (empty($error) === true)
         {
             // For backward compatibility
             $merchant = Merchant\Entity::findOrSoftFail($id);
