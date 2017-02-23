@@ -163,7 +163,7 @@ class Accessor extends Base\Core
     /**
      * Throws Exception if Invalid No of files are found
      *
-     * @param Base\PublicCollection
+     * @param Base\PublicCollection $files
      *
      * @return void
      * @throws Exception\LogicException

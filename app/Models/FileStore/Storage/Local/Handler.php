@@ -5,8 +5,6 @@ namespace RZP\Models\FileStore\Storage\Local;
 use Config;
 use Storage;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
 class Handler extends BaseHandler
@@ -24,11 +22,6 @@ class Handler extends BaseHandler
         return $this->getStorageDir() . $fileName;
     }
 
-    public function getBucketName($type)
-    {
-        return Bucket::getBucketConfigName($type);
-    }
-
     public function saveAs($bucket, $key, $filePath)
     {
         ;
@@ -41,4 +34,3 @@ class Handler extends BaseHandler
         return $path;
     }
 }
-?>

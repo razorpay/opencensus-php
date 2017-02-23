@@ -2,12 +2,12 @@
 
 namespace RZP\Models\FileStore;
 
+use Config;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Account;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
@@ -45,7 +45,7 @@ class Creator extends Base\Core
     protected $content;
 
     /**
-     * @var file entity to be created with given id
+     * @var string file entity to be created with given id
      */
     protected $id;
 
@@ -103,6 +103,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Local file
+     *
+     * @param $file
+     *
      * @return Creator object
      */
     public function localFile($file)
@@ -128,6 +131,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Mime of File Store
+     *
+     * @param $mime
+     *
      * @return Creator object
      */
     public function mime($mime)
@@ -170,8 +176,9 @@ class Creator extends Base\Core
     /**
      * Set the metadata of S3 file entity
      *
-     * @param  string $metadata metadata value
-     * @return Creater object
+     * @param array $metadata metadata value
+     *
+     * @return Creator
      */
     public function metadata(array $metadata)
     {
@@ -184,7 +191,7 @@ class Creator extends Base\Core
      * Set the id of File Store entity
      *
      * @param  string $id id value
-     * @return Creater object
+     * @return Creator object
      */
     public function id(string $id)
     {
@@ -195,6 +202,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Entity of File Store
+     *
+     * @param Base\Entity $entity
+     *
      * @return Creator object
      */
     public function entity(Base\Entity $entity)
@@ -220,6 +230,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Column Format used for creation of file
+     *
+     * @param array $columnFormat
+     *
      * @return Creator object
      */
     public function columnFormat($columnFormat = [])
@@ -259,7 +272,7 @@ class Creator extends Base\Core
         }
         else
         {
-            $this->filePath = $this->localFile->getPathName();
+            $this->filePath = $this->localFile->getPathname();
         }
 
         $this->mime($this->localFile->getMimeType());
@@ -352,7 +365,7 @@ class Creator extends Base\Core
                 break;
 
             case Format::XLSX:
-                \Config::set('excel::export.calculate', true);
+                Config::set('excel::export.calculate', true);
 
             case Format::CSV:
                 $this->writeToExcelFile();

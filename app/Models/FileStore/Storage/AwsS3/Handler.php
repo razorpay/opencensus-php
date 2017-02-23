@@ -2,10 +2,9 @@
 
 namespace RZP\Models\FileStore\Storage\AwsS3;
 
-use AWS;
+use Aws;
 use Config;
 
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
@@ -26,7 +25,7 @@ class Handler extends BaseHandler
 
         $awsConfig['region'] = $awsConfig['bucket_region'];
 
-        $client = new \Aws\Sdk($awsConfig);
+        $client = new Aws\Sdk($awsConfig);
 
         return $client->createClient('s3');
     }
@@ -100,7 +99,7 @@ class Handler extends BaseHandler
                 '+' . $duration . ' minutes'
             );
 
-            $presignedUrl = (string) $request->getUri();
+            $preSignedUrl = (string)$request->getUri();
         }
         catch (\Exception $e)
         {
@@ -109,12 +108,7 @@ class Handler extends BaseHandler
             throw $e;
         }
 
-        return $presignedUrl;
-    }
-
-    public function getBucketName($type)
-    {
-        return Bucket::getBucketConfigName($type);
+        return $preSignedUrl;
     }
 
     protected function getS3SaveObj($bucket, $fileDetails)
