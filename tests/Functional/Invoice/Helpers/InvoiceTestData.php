@@ -2469,4 +2469,56 @@ return [
             ],
         ],
     ],
+
+    // ----------------------------------------------------------------------
+    // Expectations for ES
+
+    'testGetInvoiceByReceiptEsExpectedSearchParams' => [
+        'index' => 'test_invoice',
+        'type'  => 'test_invoice',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'term' => [
+                                'receipt' => [
+                                    'value' =>'00000000000002',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetInvoiceByReceiptEsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000002invoice',
+                ]
+            ],
+        ],
+    ],
+
+    // ----------------------------------------------------------------------
 ];

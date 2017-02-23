@@ -11,6 +11,7 @@ use Mockery;
 
 class InvoiceTest extends TestCase
 {
+    use InvoiceTestTrait;
     use PaymentTrait;
 
     public function setUp()
@@ -942,23 +943,34 @@ class InvoiceTest extends TestCase
 
     public function testGetInvoiceByReceipt()
     {
-        $this->createOrder();
+        $order = $this->fixtures->create('order');
 
-        $this->fixtures->create('invoice');
-        $this->fixtures->create(
-            'invoice',
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000001invoice',
-                'receipt' => '00000000000001',
-            ]
-        );
-        $this->fixtures->create(
-            'invoice',
+                'id'       => '1000001invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000001'
+            ]);
+
+        $order = $this->fixtures->create('order');
+
+        $this->createIssuedInvoice(
             [
-                'id'      => '1000002invoice',
-                'receipt' => '00000000000002',
-            ]
-        );
+                'id'       => '1000002invoice',
+                'order_id' => $order->getId(),
+                'receipt'  => '00000000000002'
+            ]);
+
+
+        $esMock = $this->createEsMock(['search']);
+
+        $expectedSearchParams = $this->testData[__FUNCTION__ . 'EsExpectedSearchParams'];
+        $expectedSearchRes    = $this->testData[__FUNCTION__ . 'EsExpectedSearchResponse'];
+
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
 
         $this->startTest();
     }
@@ -1298,25 +1310,6 @@ class InvoiceTest extends TestCase
         $this->assertEquals($invoice['id'], 'inv_' . $lineItem['entity_id']);
         $this->assertContains('http://dwarf.razorpay.dev/', $invoice['short_url']);
         $this->assertEquals('10000000000000', $invoice['merchant_id']);
-    }
-
-    protected function createDraftInvoice(array $overrideWith = [])
-    {
-        $this->fixtures->create(
-            'invoice',
-            array_merge(
-                [
-                    'type'         => 'invoice',
-                    'status'       => 'draft',
-                    'order_id'     => null,
-                    'short_url'    => null,
-                    'amount'       => null,
-                    'sms_status'   => 'pending',
-                    'email_status' => 'pending',
-                ],
-                $overrideWith
-            )
-        );
     }
 
     protected function createOrder(array $overrideWith = [])
