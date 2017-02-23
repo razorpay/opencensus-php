@@ -23,11 +23,7 @@ class Payment extends Base
     {
         $payment = $this->createCaptured($attributes);
 
-        $txn = $payment->transaction;
-
-        $txn->setSettled();
-
-        $txn->saveOrFail();
+        $this->fixtures->edit('transaction', $payment->getTransactionId(), ['settled' => 1]);
 
         return $payment;
     }
