@@ -1071,13 +1071,7 @@ class InvoiceTest extends TestCase
 
         $esMock = $this->createEsMock(['search']);
 
-        $expectedSearchParams = $this->testData[__FUNCTION__ . 'EsExpectedSearchParams'];
-        $expectedSearchRes    = $this->testData[__FUNCTION__ . 'EsExpectedSearchResponse'];
-
-        $esMock->expects($this->once())
-               ->method('search')
-               ->with($expectedSearchParams)
-               ->willReturn($expectedSearchRes);
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
 
         $this->startTest();
     }
@@ -1135,24 +1129,47 @@ class InvoiceTest extends TestCase
     // Following tests asserts working of es fetch in various cases.
     //
 
-    public function testGetMultipleInvoicesByOnlyEsParams()
+    public function testGetMultipleInvoicesOnlyEsFields()
     {
+        $this->createManyInvoicesForFetchTests();
+
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
     }
 
-    public function testGetMultipleInvoicesByOnlyMysqlParams()
+    public function testGetMultipleInvoicesOnlyMysqlFields()
     {
+        //
+        // Cant test this scenario just now. As every param in fetch rules
+        // for invoice entity is put in ES.
+        //
     }
 
-    public function testGetMultipleInvoicesByMixedParams()
+    public function testGetMultipleInvoicesMixedFields()
     {
+        //
+        // Cant test this scenario just now. As every param in fetch rules
+        // for invoice entity is put in ES.
+        //
     }
 
-    public function testGetMultipleInvoicesByEsParamsAndHitsOnly()
+    public function testGetMultipleInvoicesSearchHitsOnly()
     {
+        $esMock = $this->createEsMock(['search']);
+
+        $this->setEsMockSearchExpectations(__FUNCTION__, $esMock);
+
+        $this->startTest();
     }
 
-    public function testGetMultipleInvoicesByEsParamsAndFullResults()
+    public function testGetMultipleInvoicesWhenEsFails()
     {
+        //
+        // If ES fails should fall back to MySQL
+        //
     }
 
     // -------------------------------------------------------------------------
@@ -1503,5 +1520,69 @@ class InvoiceTest extends TestCase
 
         $this->fixtures->create('item', ['id' => '1000000002item']);
         $this->fixtures->create('line_item', ['id' => '100002lineitem', 'item_id' => '1000000002item']);
+    }
+
+    protected function setEsMockSearchExpectations($callee, $esMock)
+    {
+        $expectedSearchParams = $this->testData["{$callee}ExpectedSearchParams"];
+        $expectedSearchRes    = $this->testData["{$callee}ExpectedSearchResponse"];
+
+        $esMock->expects($this->once())
+               ->method('search')
+               ->with($expectedSearchParams)
+               ->willReturn($expectedSearchRes);
+    }
+
+    protected function createManyInvoicesForFetchTests()
+    {
+        $this->createDraftInvoice(
+            [
+                'id' => '1000000invoice',
+            ]);
+
+        $this->createDraftInvoice(
+            [
+                'id' => '1000001invoice',
+            ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000002invoice',
+        //     ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000003invoice',
+        //     ]);
+
+        $merchant = $this->fixtures->create('merchant');
+
+        $this->createDraftInvoice(
+            [
+                'id'          => '1000004invoice',
+                'merchant_id' => $merchant->getId(),
+            ]);
+
+        // $this->createDraftInvoice(
+        //     [
+        //         'id' => '1000005invoice',
+        //     ]);
+
+        $order = $this->createOrder();
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000006invoice',
+                'order_id' => $order->getId(),
+            ]);
+
+        $order = $this->createOrder(['id' => '100000001order']);
+
+        $this->createIssuedInvoice(
+            [
+                'id'       => '1000007invoice',
+                'order_id' => $order->getId(),
+            ]);
+
     }
 }

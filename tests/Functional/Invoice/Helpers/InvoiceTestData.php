@@ -2316,6 +2316,84 @@ return [
         ],
     ],
 
+    'testGetMultipleInvoicesOnlyEsFields' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'customer_name' => 'tes',
+                'status'        => 'draft',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'       => 'inv_1000000invoice',
+                        'customer' => [
+                            'name'    => 'test',
+                            'email'   => 'test@razorpay.com',
+                            'contact' => '1234567890',
+                        ],
+                        //
+                        // Needs to have few fields which are not in es.
+                        //
+                        'sms_status'   => 'pending',
+                        'email_status' => 'pending',
+                        'amount'       => null,
+                    ],
+                    [
+                        'id' => 'inv_1000001invoice',
+                        'customer' => [
+                            'name'    => 'test',
+                            'email'   => 'test@razorpay.com',
+                            'contact' => '1234567890',
+                        ],
+                        'sms_status'   => 'pending',
+                        'email_status' => 'pending',
+                        'amount'       => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesSearchHitsOnly' => [
+        'request' => [
+            'url'     => '/invoices',
+            'method'  => 'get',
+            'content' => [
+                'customer_name' => 'tes',
+                'status'        => 'draft',
+                'search_hits'   => '1',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'count' => 2,
+                'items' => [
+                    [
+                        'id'       => 'inv_1000000invoice',
+                        'customer' => [
+                            'name'    => 'test',
+                            'email'   => 'test@razorpay.com',
+                            'contact' => '1234567890',
+                        ],
+                    ],
+                    [
+                        'id' => 'inv_1000001invoice',
+                        'customer' => [
+                            'name'    => 'test',
+                            'email'   => 'test@razorpay.com',
+                            'contact' => '1234567890',
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
     'testGetInvoicesOfCapturedPaymentId' => [
         'request' => [
             'url' => '/invoices',
@@ -2544,7 +2622,7 @@ return [
     // ----------------------------------------------------------------------
     // Expectations for ES
 
-    'testGetInvoiceByReceiptEsExpectedSearchParams' => [
+    'testGetInvoiceByReceiptExpectedSearchParams' => [
         'index' => 'test_invoice',
         'type'  => 'test_invoice',
         'body'  => [
@@ -2581,11 +2659,141 @@ return [
         ],
     ],
 
-    'testGetInvoiceByReceiptEsExpectedSearchResponse' => [
+    'testGetInvoiceByReceiptExpectedSearchResponse' => [
         'hits' => [
             'hits' => [
                 [
                     '_id' => '1000002invoice',
+                ]
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchParams' => [
+        'index' => 'test_invoice',
+        'type'  => 'test_invoice',
+        'body'  => [
+            '_source' => false,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'term' => [
+                                'customer_name' => [
+                                    'value' =>'tes',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'status' => [
+                                    'value' =>'draft',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesOnlyEsFieldsExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_id' => '1000000invoice',
+                ],
+                [
+                    '_id' => '1000001invoice',
+                ]
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchParams' => [
+        'index' => 'test_invoice',
+        'type'  => 'test_invoice',
+        'body'  => [
+            '_source' => true,
+            'from'    => 0,
+            'size'    => 10,
+            'query'   => [
+                'bool' => [
+                    'must' => [
+                        [
+                            'term' => [
+                                'customer_name' => [
+                                    'value' =>'tes',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                        [
+                            'term' => [
+                                'status' => [
+                                    'value' =>'draft',
+                                    'boost' => 2,
+                                ],
+                            ],
+                        ],
+                    ],
+                    'filter' => [
+                        'bool' => [
+                            'must' => [
+                                [
+                                    'term' => [
+                                        'merchant_id' => [
+                                            'value' => '10000000000000',
+                                        ],
+                                    ],
+                                ],
+                            ],
+                        ],
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testGetMultipleInvoicesSearchHitsOnlyExpectedSearchResponse' => [
+        'hits' => [
+            'hits' => [
+                [
+                    '_source' => [
+                        'id'               => '1000000invoice',
+                        'customer_email'   => 'test@razorpay.com',
+                        'customer_contact' => '1234567890',
+                        'customer_name'    => 'test',
+                        'receipt'          => null,
+                        'status'           => 'draft',
+                    ],
+                ],
+                [
+                    '_source' => [
+                        'id'               => '1000001invoice',
+                        'customer_email'   => 'test@razorpay.com',
+                        'customer_contact' => '1234567890',
+                        'customer_name'    => 'test',
+                        'receipt'          => null,
+                        'status'           => 'draft',
+                    ],
                 ]
             ],
         ],
