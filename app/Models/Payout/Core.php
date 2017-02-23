@@ -24,7 +24,7 @@ class Core extends Base\Core
         return $payout;
     }
 
-    public  function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
+    public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
     {
         $payout = $this->createPayout($input, $merchant);
 
@@ -35,21 +35,7 @@ class Core extends Base\Core
         return $payout;
     }
 
-    protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
-    {
-        $this->validateMerchantStatus($merchant);
-
-        return $this->repo->transaction(function () use ($input, $merchant)
-        {
-            $payout = $this->createPayoutEntity($input, $merchant);
-
-            $this->updatePayoutWithTxn($payout);
-
-            return $payout;
-        });
-    }
-
-    public function initiatePayouts($input, $channel)
+    public function initiatePayouts(array $input, string $channel) : array
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
@@ -67,6 +53,20 @@ class Core extends Base\Core
 
             return $data;
 
+        });
+    }
+
+    protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
+    {
+        $this->validateMerchantStatus($merchant);
+
+        return $this->repo->transaction(function () use ($input, $merchant)
+        {
+            $payout = $this->createPayoutEntity($input, $merchant);
+
+            $this->updatePayoutWithTxn($payout);
+
+            return $payout;
         });
     }
 
