@@ -8,10 +8,19 @@ use RZP\Gateway\Netbanking\Axis;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
+    protected $netbankingRepo;
+
     const COLUMN_PAYMENT_REF_NO     = 'PRN No';
     const COLUMN_BANK_PAYMENT_ID    = 'BID';
     const COLUMN_BANK_CUSTOMER_ID   = 'User Id';
     const COLUMN_BANK_CUSTOMER_NAME = 'User Name';
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->netbankingRepo = $this->repo->netbanking;
+    }
 
     protected function getPaymentId($row)
     {

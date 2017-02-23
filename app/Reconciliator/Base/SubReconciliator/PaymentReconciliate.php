@@ -35,12 +35,10 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected $iinRepo;
     protected $cardRepo;
     protected $transactionRepo;
-    protected $netbankingRepo;
 
     protected $payment;
     protected $paymentIin;
     protected $paymentTransaction;
-    protected $gatewayPayment;
 
     protected $app;
     protected $repo;
@@ -56,7 +54,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $this->iinRepo         = $this->repo->iin;
         $this->transactionRepo = $this->repo->transaction;
         $this->cardRepo        = $this->repo->card;
-        $this->netbankingRepo  = $this->repo->netbanking;
     }
 
     /**
