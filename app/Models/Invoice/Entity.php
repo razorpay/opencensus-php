@@ -497,7 +497,7 @@ class Entity extends Base\PublicEntity
         $from    = $this->merchant->getBillingLabelElseName();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
 
-        return "Invoice $receipt from $from ($status)";
+        return sanitizeFilename("Invoice $receipt from $from ($status)");
     }
 
     // -------------------------------------- End Getters --------------------------------------
