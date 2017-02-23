@@ -528,6 +528,18 @@ class Gateway extends Base\Gateway
 
             return;
         }
+        catch (Exception\GatewayRequestException $e)
+        {
+            $this->error = true;
+
+            $response['content'] = '';
+
+            $curlErrorMessage = strtolower($e->getData()['message']);
+
+            Hdfc\ErrorHandler::setRequestError($response, $curlErrorMessage);
+
+            return;
+        }
 
         $response['xml'] = $response['response']->body;
 
