@@ -448,6 +448,26 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For invoices (New):   #/app/invoices/{public-id}
+     * Otherwise (Existing): #/app/invoices/{public-id}/details
+     *
+     * @return string
+     */
+    public function getDashboardPath()
+    {
+        $path = '#/app/invoices/' . $this->getPublicId();
+
+        if ($this->isTypeInvoice() === false)
+        {
+            $path .= '/details';
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns string to be used a pdf file path in s3/local store.
      * Format: pdfs/{invoiceId}_{epoch}
      *

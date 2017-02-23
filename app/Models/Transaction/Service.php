@@ -5,6 +5,7 @@ namespace RZP\Models\Transaction;
 use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Report;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
@@ -33,9 +34,9 @@ class Service extends Base\Service
 
     public function getReport($input)
     {
-        $report = new Base\Report;
+        $report = new Report\BasicEntityReport(Constants\Entity::TRANSACTION);
 
-        return $report->getReport($input, 'transaction');
+        return $report->getReport($input);
     }
 
     public function createFeeBreakupForTransaction($input)

@@ -249,6 +249,24 @@ class Entity extends Base\PublicEntity
         return Card\Network::getCode($this->getNetwork());
     }
 
+    public function getFirstName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[0];
+    }
+
+    public function getLastName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[1] ?? '';
+    }
+
     public function getType()
     {
         $type = $this->getAttribute(self::TYPE);

@@ -10,6 +10,7 @@ use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
 use RZP\Constants\MailTags;
 use RZP\Jobs\InvoiceAction;
 
@@ -113,7 +114,7 @@ class Notify
             'customer' => [
                 'from' => 'care',
                 'view' => [
-                    'html' => 'emails.invoice.customer.paid',
+                    'html' => 'emails.invoice.customer.notification',
                 ],
             ],
         ],
@@ -121,7 +122,6 @@ class Notify
             'merchant' => [
                 'view' => [
                     'html' => 'emails.invoice.merchant.captured',
-                    'text' => 'emails.invoice.merchant.captured_text',
                 ]
             ]
         ],
@@ -150,13 +150,13 @@ class Notify
             $this->invoice = $this->payment->invoice;
         }
 
-        $this->refreshTemplate();
-
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
 
         $this->domain = $this->app['config']->get('applications.mailgun.url');
+
+        $this->refreshTemplate();
     }
 
     /**
@@ -470,7 +470,7 @@ class Notify
                 break;
             case self::INVOICE_PAYMENT_AUTHORIZED:
             case self::INVOICE_PAYMENT_CAPTURED:
-                $action = ucwords($this->invoice->getTypeLabel()) . ' Payment';
+                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
                 break;
             default:
                 $action = 'Payment';
@@ -642,27 +642,19 @@ class Notify
         {
             $data['refund'] = [
                 'id'        =>  $this->refund->getId(),
-                'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
+                'amount'    =>  'INR ' . number_format($this->refund->getAmount() / 100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
                 'payment_id'=>  $this->refund->payment->getId(),
                 'public_id' =>  $this->refund->getPublicId(),
             ];
         }
 
-        if ($this->invoice !== null)
+        if ($this->payment->hasInvoice() === true)
         {
-            $data['invoice'] = [
-                'id'         => $this->invoice->getId(),
-                'amount'     => $this->invoice->getFormattedAmountWithCurrency(),
-                'timestamp'  => $this->invoice->getCreatedAt(),
-                'payment_id' => $this->invoice->getPaymentId(),
-                'public_id'  => $this->invoice->getPublicId(),
-                'paid_at'    => $this->invoice->getPaidAt(),
-                'issued_at'  => $this->invoice->getIssuedAt(),
-                'type_label' => ucfirst($this->invoice->getTypeLabel()),
-                'short_url'  => $this->invoice->getShortUrl(),
-                'type'       => $this->invoice->getType(),
-            ];
+            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
+
+            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
         return $data;
