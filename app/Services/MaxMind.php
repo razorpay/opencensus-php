@@ -47,8 +47,8 @@ class MaxMind
 
         if ($this->basicauth->isPrivateAuth() === true)
         {
-            $ua = $payment->getMetadata('ip_address');
-            $ip = $payment->getMetadata('user_agent');
+            $ip = $payment->getMetadata('ip_address');
+            $ua = $payment->getMetadata('user_agent');
         }
 
         // We don't use maxmind if payment doesn't have IP and UserAgent
