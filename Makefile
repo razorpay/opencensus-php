@@ -11,7 +11,8 @@ DOCKER_IMAGES = $(shell docker images -q -a)
 DOCKER_IMAGES_API = $(shell docker images razorpay:api -q -a)
 DOCKER_PS_API = $(shell docker ps|grep "api_api_"|cut -d ' ' -f1)
 DOCKER_PS_API_IMG = $(shell docker ps|grep "api_api_1"|cut -d ' ' -f1)
-DOCKER_PS_API_ALL = $(shell docker ps|grep "api_api_[0-9]\|api_api_db_[0-9]\|api_cache_[0-9]\|razorpay-es"|cut -d ' ' -f1)
+DOCKER_PS_API_ALL = $(shell docker ps|grep "api_api_[0-9]"|cut -d ' ' -f1)
+DOCKER_PS_ALL_API_ALL = $(shell docker ps|grep "api_api_[0-9]\|api_api_db_[0-9]\|api_cache_[0-9]\|razorpay-es"|cut -d ' ' -f1)
 
 #Files used
 DOCKER_DEV_COMPOSE_FILE = docker-compose.dev.yml
@@ -45,6 +46,11 @@ build: clean
 clean:
 	-$(DOCKER_COMPOSE) down --remove-orphans
 	-$(DOCKER_RM) $(DOCKER_PS_API_ALL)
+	-$(DOCKER_RMI) $(DOCKER_IMAGES_API)
+
+clean-all:
+	-$(DOCKER_COMPOSE) down --remove-orphans
+	-$(DOCKER_RM) $(DOCKER_PS_ALL_API_ALL)
 	-$(DOCKER_RMI) $(DOCKER_IMAGES)
 
 up:
