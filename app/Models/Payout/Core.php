@@ -61,7 +61,7 @@ class Core extends Base\Core
 
         $payout->customer()->associate($customer);
 
-        $payout->dest()->associate($destination);
+        $payout->destination()->associate($destination);
 
         return $payout;
     }
