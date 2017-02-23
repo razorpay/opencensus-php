@@ -284,7 +284,6 @@ class Merchant
         $bankTransferAttempt = new BankTransferAttempt\Entity;
 
         $values = [
-            BankTransferAttempt\Entity::ENTITY_TYPE     => BankTransferAttempt\Type::SETTLEMENT,
             BankTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
             BankTransferAttempt\Entity::CHANNEL         => $this->setl->getChannel(),
             BankTransferAttempt\Entity::VERSION         => BankTransferAttempt\Version::V2,
@@ -293,7 +292,7 @@ class Merchant
 
         $bankTransferAttempt->fillAndGenerateId($values);
 
-        $bankTransferAttempt->source()->associate($this->setl);
+        $bankTransferAttempt->sourceAssociate($this->setl);
 
         $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
 

@@ -174,6 +174,13 @@ final class FactoryData
             'return_utr' => null,
         ]);
 
+        $factory(\RZP\Models\BankTransferAttempt\Entity::class, [
+            'id' => $faker->uniqueid,
+            'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'channel' => 'kotak',
+            'version' => 'v2',
+        ]);
+
         $factory(\RZP\Models\Adjustment\Entity::class, [
             'id' => $faker->uniqueid,
             'merchant_id' => 'factory:\RZP\Models\Merchant\Entity',

@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
 
     public function bankTransferAttempts()
     {
-        return $this->hasMany('RZP\Models\BankTransferAttempt');
+        return $this->hasMany('RZP\Models\BankTransferAttempt\Entity');
     }
 
     public function merchant()
@@ -82,9 +82,9 @@ class Entity extends Base\PublicEntity
     public function bankAccount()
     {
         return $this->belongsTo(
-                                'RZP\Models\BankAccount\Entity',
-                                self::BANK_ACCOUNT_ID,
-                                BankAccount\Entity::ID);
+                    'RZP\Models\BankAccount\Entity',
+                    self::BANK_ACCOUNT_ID,
+                    BankAccount\Entity::ID);
     }
 
     public function transaction()

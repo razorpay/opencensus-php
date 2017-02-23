@@ -17,6 +17,8 @@ class ReconciliationTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/ReconciliationTestData.php';
+
         parent::setUp();
     }
 
@@ -44,7 +46,13 @@ class ReconciliationTest extends TestCase
         $this->fetchAndMatchBatchSettlement();
 
         //Validate settlement entity
-        $this->fetchAndMatchSettlements();
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconSuccess');
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
+        $this->assertNotNull($settlementAttempt['utr']);
     }
 
     public function testReconciliationFailure()
@@ -77,7 +85,13 @@ class ReconciliationTest extends TestCase
         $this->fetchAndMatchBatchSettlement();
 
         //Validate settlement entity
-        $this->fetchAndMatchSettlements(true);
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
+        $this->assertNotNull($settlementAttempt['utr']);
 
         // Resetting time
         Carbon::setTestNow();
@@ -208,72 +222,17 @@ class ReconciliationTest extends TestCase
 
     protected function fetchAndMatchBatchSettlement()
     {
-        $content = $this->getEntities('batch_settlement', [], true);
+        $batchSettlement = $this->getLastEntity('batch_settlement', true);
 
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
-                    'entity' => 'batch_settlement',
-                    'date' => Carbon::today('Asia/Kolkata')->timestamp,
-                    'channel' => 'kotak',
-                    'amount' => 4385000,
-                    'fees' => 115000,
-                    'service_tax' => 15000,
-                    'api_fee' => 0,
-                    'gateway_fee' => 0,
-                    'settlement_count' => 1,
-                    'transaction_count' => 10,
-                ],
-            ]
-        );
-
-        $this->assertArraySelectiveEquals($data, $content);
+        $this->assertTestResponse($batchSettlement, 'fetchAndMatchBatchSettlement');
 
         $time = time();
-        $item = $content['items'][0];
-        $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
-        $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
-        $this->assertGreaterThanOrEqual($item['returned_at'], $time);
-    }
 
-    protected function fetchAndMatchSettlements($failed = false)
-    {
-        $content = $this->getEntities('settlement', array(), true);
+        $this->assertGreaterThanOrEqual($batchSettlement['initiated_at'], $time);
+        $this->assertGreaterThanOrEqual($batchSettlement['reconciled_at'], $time);
+        $this->assertGreaterThanOrEqual($batchSettlement['returned_at'], $time);
 
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
-                    'merchant_id' => '10000000000000',
-                    'channel' => 'kotak',
-                    'amount' => 4385000,
-                    'fees' => 115000,
-                    'service_tax' => 15000,
-                    'channel'     => 'kotak',
-                ],
-            ]
-        );
-
-        if ($failed == true)
-        {
-            $data['items'][0]['failure_reason'] = 'Reconciliation';
-            $data['items'][0]['remarks'] =
-                'This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit. This is a string which' .
-                ' test characters count limit. This is a string which test characters count limit.' .
-                ' This is a string which test characters count li';
-            $data['items'][0]['status'] = 'failed';
-        }
-        else
-        {
-            $data['items'][0]['failure_reason'] = null;
-            $data['items'][0]['remarks'] = '';
-        }
-
-        $this->assertArraySelectiveEquals($data, $content);
+        return $batchSettlement;
     }
 
     protected function checkAdjustmentCreated()

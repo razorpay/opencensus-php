@@ -361,6 +361,10 @@ class SettlementTest extends TestCase
 
         $this->assertSame($totalAmount, $setl['amount']);
 
+        $batchSettlement = $this->getLastEntity('batch_settlement', true);
+        $this->assertNotNull($batchSettlement['urls']['kotak_settlement_txt']);
+        $this->assertNotNull($batchSettlement['urls']['kotak_settlement_excel']);
+
         $bta = $this->getLastEntity('bank_transfer_attempt', true);
 
         $this->assertEquals('settlement', $bta['entity_type']);

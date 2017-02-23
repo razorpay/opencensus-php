@@ -24,7 +24,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_transfer_attempt';
 
     protected $fillable = [
-        self::ENTITY_TYPE,
+        // self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::CHANNEL,
         self::VERSION,
@@ -60,8 +60,11 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        // THink about this. this needs to be many and may be belong ttypes
-        return $this->morphTo('source', 'entity_type', 'entity_id');
+        $entityType = $this->getAttribute(self::ENTITY_TYPE);
+
+        Type::validateType($entityType);
+
+        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
     /**
@@ -70,9 +73,9 @@ class Entity extends Base\PublicEntity
      */
     public function sourceAssociate($entity)
     {
-        $this->source()->associate($entity);
+        $this->setEntityType($entity->getEntityName());
 
-        $entity->bankTransferAttempt()->associate($this);
+        $this->source()->associate($entity);
     }
 
     public function bankAccount()
@@ -105,6 +108,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::VERSION);
     }
 
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setRemarks($remarks)
@@ -125,5 +133,47 @@ class Entity extends Base\PublicEntity
     public function setEntityId($id)
     {
         $this->setAttribute(self::ENTITY_ID, $id);
+    }
+
+    public function setStatus($status)
+    {
+        $this->setAttribute(self::STATUS, $status);
+    }
+
+    public function setBankStatusCode($code)
+    {
+        $this->setAttribute(self::BANK_STATUS_CODE, $code);
+    }
+
+    public function setFailureReason($reason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $reason);
+    }
+
+    public function setCmsRefNo($refNo)
+    {
+        $this->setAttribute(self::CMS_REF_NO, $refNo);
+    }
+
+    public function setDateTime($dateTime)
+    {
+        $this->setAttribute(self::DATE_TIME, $dateTime);
+    }
+
+    // ------------------------------ modifiers --------------------------------
+
+    protected function setRemarksAttribute($remarks)
+    {
+        $this->attributes[self::REMARKS] = substr($remarks, 0, 255);
+    }
+
+    protected function setDateTimeAttribute($dateTime)
+    {
+        $this->attributes[self::DATE_TIME] = substr($dateTime, 0, 255);
+    }
+
+    protected function setCmsRefNoAttribute($refNo)
+    {
+        $this->attributes[self::CMS_REF_NO] = substr($refNo, 0, 255);
     }
 }

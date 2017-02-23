@@ -91,7 +91,7 @@ class NodalAccount
 
         $totalAmount = $neftAmount = $iftAmount = 0;
         $neftCount   = $iftCount   = $totalAttemptCount = 0;
-        s(count($setlAttempts));
+
         foreach ($setlAttempts as $attempt)
         {
             $totalAttemptCount++;
@@ -145,7 +145,7 @@ class NodalAccount
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),
                 'Payment Details 3'     => $ba->getId(),
-                'Enrichment_1'          => $settlement->getId(),
+                'Enrichment_1'          => $settlement->getPublicId(),
                 'Enrichment_2'          => $attempt->getVersion(),
             );
 
