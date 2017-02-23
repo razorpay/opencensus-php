@@ -177,7 +177,7 @@ class ReconciliationTest extends TestCase
 
     protected function createPaymentAndRefundEntities()
     {
-        $prEntities = array();
+        $prEntities = [];
 
         $r = range(1,5);
 
@@ -194,8 +194,8 @@ class ReconciliationTest extends TestCase
             $attrs = [
                 'payment' => $payment,
                 'amount' => '100000',
-                 'created_at' => $createdAt + 20,
-                 'updated_at' => $createdAt + 20];
+                'created_at' => $createdAt + 20,
+                'updated_at' => $createdAt + 20];
 
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
 
