@@ -191,7 +191,7 @@ class InvoiceController extends Controller
 
         if ($download === '1')
         {
-            return Response::download($path, $displayName);
+            return Response::download($path, "$displayName.pdf");
         }
 
         return Response::file($path);
