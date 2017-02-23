@@ -114,14 +114,7 @@ class Handler extends BaseHandler
 
     public function getBucketName($type)
     {
-        $bucketType = Bucket::getBucketConfigName($type);
-
-        if ($this->mode === Mode::TEST)
-        {
-            return 'rzp-test-bucket';
-        }
-
-        return $this->config[$bucketType];
+        return Bucket::getBucketConfigName($type);
     }
 
     protected function getS3SaveObj($bucket, $fileDetails)

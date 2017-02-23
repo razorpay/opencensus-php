@@ -26,14 +26,7 @@ class Handler extends BaseHandler
 
     public function getBucketName($type)
     {
-        $bucketType = Bucket::getBucketConfigName($type);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $bucketType = 'rzp-test-bucket';
-        }
-
-        return $bucketType;
+        return Bucket::getBucketConfigName($type);
     }
 
     public function saveAs($bucket, $key, $filePath)
