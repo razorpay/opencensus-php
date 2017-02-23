@@ -142,13 +142,11 @@ class Parser extends Base\Core
     {
         $ua = $ip = $referer = null;
 
-        $metadata = $pa->getMetadata();
-
         if ($this->ba->isPrivateAuth() === true)
         {
-            $ua = $metadata['user_agent'] ?? null;
-            $ip = $metadata['ip_address'] ?? $this->request->getRealClientIp();
-            $referer = $metadata['referer'] ?? null;
+            $ua = $pa->payment->getMetadata('user_agent');
+            $ip = $pa->payment->getMetadata('ip_address', $this->request->getRealClientIp());
+            $referer = $pa->payment->getMetadata('referer');
         }
 
         $pa->setBrowser($this->getBrowser($ua));
