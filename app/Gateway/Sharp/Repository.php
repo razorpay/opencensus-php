@@ -7,17 +7,17 @@ use RZP\Gateway\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'Sharp';
+    protected $entity = 'sharp';
 
-    public function findByPaymentId()
+    public function findByPaymentId($id)
     {
-        assert($this->mode === 'test');
+        assertTrue($this->mode === 'test');
 
         return array();
     }
 
     // Override Base\Repository function since sharp table doesn't exist
-    public function findCapturedPaymentById($paymentId)
+    public function findCapturedPaymentByIdOrFail($paymentId)
     {
         return (new Entity);
     }

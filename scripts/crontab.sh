@@ -1,0 +1,99 @@
+#!/bin/bash
+#
+# Shell script to generate crontab file and install it for local dev.
+#
+# This file is to be used for tracking changes in our cron jobs.
+# You can also use it for setting up crons on your local machine.
+# The script generates a crontab file in /tmp and installs it.
+# Output of the jobs is logged in storage/logs/cron.log
+#
+# Commented-out jobs are currently disabled on prod.
+
+BASE_URL="http://api.razorpay.dev/v1"
+
+TMP_CRONTAB=/tmp/crontab
+
+LIVE_AUTH="rzp_live:RANDOM_CRON_PASSWORD"
+TEST_AUTH="rzp_test:RANDOM_CRON_PASSWORD"
+
+CRON_LOG=`pwd`/storage/logs/cron.log
+
+# Preserve existing crontab
+crontab -l > $TMP_CRONTAB 2>/dev/null
+
+# Comment this out if you'd like to receive emails with cron output
+echo "MAILTO=\"\"" >> $TMP_CRONTAB
+
+add_cron() {
+    exp=$1
+    name=$2
+    action=$3
+    url=$4
+    body=$5
+    auth=$6
+
+    # Expression needs to be written separately, to avoid *-expansion
+    echo -n "$exp " >> $TMP_CRONTAB
+
+    # Explicit linebreak is required because the last-executed curl
+    # command wrote output without a newline
+    logContext="printf \"\n\`date\` $name: \" >> $CRON_LOG"
+
+    curlCommand="curl -X $action '$url' -d '$body' -u '$auth' >> $CRON_LOG"
+
+    line="$logContext && $curlCommand"
+
+    # The line added to crontab has the format: "cronExpression logContext && curlCommand"
+    # logContext writes a timestamp and the name of the cron job to a file
+    # named in CRON_LOG. curlCommand also redirects stdout to the same file.
+
+    echo $line >> $TMP_CRONTAB
+}
+
+#        Expression        CronName (25 chars)         Verb Route                                        Payload                         Auth
+
+add_cron "6 2 * * *"       "payment_auth_notify_prod"  GET  "$BASE_URL/payments/auth/notify"             ""                              $LIVE_AUTH
+add_cron "5 0 * * *"       "mrchnt_daily_report_prod"  POST "$BASE_URL/merchants/report"                 ""                              $LIVE_AUTH
+add_cron "0 14 * * *"      "authorized_reminder_live"  GET  "$BASE_URL/payments/all/reminder"            ""                              $LIVE_AUTH
+add_cron "30 0 * * 1-6"    "beneficiary_gen_live"      POST "$BASE_URL/merchants/beneficiary/file/bank"  ""                              $LIVE_AUTH
+add_cron "0 3 * * *"       "emi_excel_generate"        POST "$BASE_URL/emi/generate/excel"               ""                              $LIVE_AUTH
+add_cron "0 6 * * *"       "scorecard_prod"            POST "$BASE_URL/scorecard"                        ""                              $LIVE_AUTH
+add_cron "0 * * * *"       "prod_international_curren" POST "$BASE_URL/international/USD/rates"          ""                              $LIVE_AUTH
+
+# Settlement
+add_cron "30 3 * * 1-6"    "settlement_prod_live"      POST "$BASE_URL/settlements/initiate/kotak"       ""                              $LIVE_AUTH
+add_cron "1 5-18 * * 1-6"  "settlement_schedule_prod"  POST "$BASE_URL/settlements/initiate2/kotak"      ""                              $LIVE_AUTH
+
+# Verify
+add_cron "* * * * *"       "payment_verify_prod_live"  POST "$BASE_URL/payments/verify/payments_failed"  ""                              $LIVE_AUTH
+add_cron "1-59/2 * * * *"  "pymnt_verify_prod_created" POST "$BASE_URL/payments/verify/payments_created" ""                              $LIVE_AUTH
+# add_cron "2-57/5 * * * *"  "pymnt_verify_prod_failed"  POST "$BASE_URL/payments/verify/verify_failed"    ""                              $LIVE_AUTH
+# add_cron "2-57/5 * * * *"  "pymnt_verify_prod_error"   POST "$BASE_URL/payments/verify/verify_error"     ""                              $LIVE_AUTH
+# add_cron "* * * * *"       "payment_verify_bucket_0"   POST "$BASE_URL/payments/verify/payments_failed"  "bucket=0"                      $LIVE_AUTH
+# add_cron "* * * * *"       "payment_verify_bucket_1"   POST "$BASE_URL/payments/verify/payments_failed"  "bucket=1"                      $LIVE_AUTH
+
+# Timeout
+add_cron "21,51 * * * *"   "payment_timeout_prod_test" POST "$BASE_URL/payments/timeout"                 ""                              $TEST_AUTH
+add_cron "2-57/5 * * * *"  "payment_timeout_prod_live" POST "$BASE_URL/payments/timeout"                 ""                              $LIVE_AUTH
+
+# Holidays
+add_cron "0 18 * * *"      "merch_holiday_add_emails"  POST "$BASE_URL/merchants/notify/holiday"         "action=add_to_list&lists=live" $LIVE_AUTH
+add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants/notify/holiday"         "action=email&lists=live"       $LIVE_AUTH
+
+# Migration
+add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+
+# Refund
+add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH
+add_cron "1-59/10 * * * *"  "authorized_old_refund"          POST "$BASE_URL/payments/refund/authorized"                 ""                              $LIVE_AUTH
+add_cron "0 4 * * *"        "upi_refunds_prod"               POST "$BASE_URL/refunds/excel"                              "method=upi&bank=icici"         $LIVE_AUTH
+add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/orders/payments/refund"                     ""                              $LIVE_AUTH
+add_cron "48 3-21/6 * * *"  "batch_processor_prod"           POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
+add_cron "7 10,22 * * *"    "gateway_create_refund_rec"      POST "$BASE_URL/refunds/billdesk/create_record"             ""                              $LIVE_AUTH
+add_cron "7 10,22 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/refunds/wallet_freecharge/create_record"    ""                              $LIVE_AUTH
+add_cron "7 * * * *"        "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
+add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
+add_cron "*/15 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
+
+# Install the generated crontab
+crontab $TMP_CRONTAB

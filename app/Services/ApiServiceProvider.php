@@ -3,9 +3,17 @@
 namespace RZP\Services;
 
 use Illuminate\Support\ServiceProvider as BaseServiceProvider;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use RZP\Models\Admin as Admin;
+use RZP\Constants as Constants;
 use RZP\Gateway\GatewayManager;
-use CreditCardFraudDetection;
-use RZP\Services;
+use RZP\Models\Adjustment;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
+use RZP\Models\Settlement;
+use RZP\Models\Payout;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -26,6 +34,13 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('mailgun', function($app)
         {
+            $mailgunMock = $app['config']->get('applications.mailgun.mock');
+
+            if ($mailgunMock === true)
+            {
+                return new Mock\Mailgun($app);
+            }
+
             return new Mailgun($app);
         });
 
@@ -55,10 +70,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($tokenexMock === true)
             {
-                return new Services\Mock\TokenEx($app);
+                return new Mock\TokenEx($app);
             }
 
-            return new Services\TokenEx($app);
+            return new TokenEx($app);
         });
 
         $this->app->singleton('raven', function($app)
@@ -76,13 +91,29 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
+        $this->app->singleton('upi.client', function($app)
+        {
+            return new \Razorpay\UPI\Client;
+        });
+
+        $this->app->singleton('segment', function($app)
+        {
+            return new EventTrackerClient($app);
+        });
+
         $this->registerApiMutex();
 
         $this->registerMaxMind();
 
+        $this->registerElfin();
+
+        $this->registerExchange();
+
         $this->registerValidatorResolver();
 
         $this->registerQueueableEntityResolver();
+
+        $this->registerMorphRelationMaps();
     }
 
     /**
@@ -93,17 +124,23 @@ class ApiServiceProvider extends BaseServiceProvider
     public function provides()
     {
         return array(
-            'mailgun',
-            'instance',
+            'api.mutex',
+            'bitly',
+            'card.tokenex',
+            'es',
             'exception.handler',
             'gateway',
-            'webhook.inferno',
-            'card.tokenex',
-            'api.mutex',
+            'instance',
+            'mailgun',
+            'maxmind',
+            'maxmind2',
             'raven',
             'repo',
-            'es',
-            'maxmind'
+            'elfin',
+            'segment',
+            'upi.client',
+            'webhook.inferno',
+            'exchange',
         );
     }
 
@@ -122,10 +159,10 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerValidatorResolver()
     {
-        $this->app['validator']->resolver(function($translator, $data, $rules, $messages)
+        $this->app['validator']->resolver(function($translator, $data, $rules, $messages, $customAttributes)
         {
             return new \RZP\Models\Base\ExtendedValidations(
-                            $translator, $data, $rules, $messages);
+                            $translator, $data, $rules, $messages, $customAttributes);
         });
     }
 
@@ -137,10 +174,52 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($maxmindMock === true)
             {
-                return new Services\Mock\MaxMind($app);
+                return new Mock\MaxMind($app);
             }
 
-            return new Services\MaxMind($app);
+            return new MaxMind($app);
+        });
+
+        $this->app->singleton('maxmind2', function($app)
+        {
+            $maxmindMock = $app['config']->get('applications.maxmind.mock');
+
+            if ($maxmindMock === true)
+            {
+                return new Mock\MaxMind($app);
+            }
+
+            return new MaxMind2($app);
+        });
+    }
+
+    protected function registerElfin()
+    {
+        $this->app->singleton('elfin', function($app)
+        {
+            $mock = $app['config']->get('applications.elfin.mock');
+
+            if ($mock)
+            {
+                return new Elfin\Mock\Service($app['config'], $app['trace']);
+            }
+
+            return new Elfin\Service($app['config'], $app['trace']);
+        });
+    }
+
+    protected function registerExchange()
+    {
+        $this->app->singleton('exchange', function($app)
+        {
+            $exchangeMock = $app['config']->get('applications.exchange.mock');
+
+            if ($exchangeMock === true)
+            {
+                return new Mock\Exchange($app);
+            }
+
+            return new Exchange($app);
         });
     }
 
@@ -152,10 +231,36 @@ class ApiServiceProvider extends BaseServiceProvider
 
             if ($lockMock === true)
             {
-                return new Services\Mock\Mutex($app);
+                return new Mock\Mutex($app);
             }
 
-            return new Services\Mutex($app);
+            return new Mutex($app);
         });
+    }
+
+    protected function registerMorphRelationMaps()
+    {
+        Relation::morphMap([
+            // heimdall
+            'org'             => Admin\Org\Entity::class,
+            'group'           => Admin\Group\Entity::class,
+            'admin'           => Admin\Admin\Entity::class,
+            'role'            => Admin\Role\Entity::class,
+            'permission'      => Admin\Permission\Entity::class,
+
+            // line items
+            'invoice'         => Invoice\Entity::class,
+
+            // file store
+            'merchant'        => Merchant\Entity::class,
+            'merchant_detail' => Merchant\Detail\Entity::class,
+
+            // transaction
+            'adjustment'      => Adjustment\Entity::class,
+            'payment'         => Payment\Entity::class,
+            'refund'          => Payment\Refund\Entity::class,
+            'settlement'      => Settlement\Entity::class,
+            'payout'          => Payout\Entity::class,
+        ]);
     }
 }

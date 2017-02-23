@@ -2,9 +2,8 @@
 
 namespace RZP\Services;
 
-use RZP\Exception;
 use Requests;
-use RZP\Trace\Trace;
+use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class TokenEx
@@ -19,6 +18,8 @@ class TokenEx
     const ERROR             = 'Error';
     const VALID             = 'Valid';
     const VALUE             = 'Value';
+
+    const MAX_RETRY_COUNT = 1;
 
     protected $tokenScheme;
 
@@ -45,16 +46,20 @@ class TokenEx
         $this->tokenScheme = $this->config['scheme'];
 
         $this->baseUrl = $this->config['url'];
+
+        $this->proxy = $app['config']->get('app.proxy_address');
+
+        $this->proxyEnabled = $app['config']->get('app.proxy_enabled');
     }
 
     public function tokenize($data)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::DATA          => $data,
             self::TOKEN_SCHEME  => (int) $this->tokenScheme
-        );
+        ];
 
         $response = $this->sendRequest('REST/Tokenize', 'post', $input);
 
@@ -63,11 +68,11 @@ class TokenEx
 
     public function validateToken($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token
-        );
+        ];
 
         $response = $this->sendRequest('REST/ValidateToken', 'post', $input);
 
@@ -76,11 +81,11 @@ class TokenEx
 
     public function detokenize($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token,
-        );
+        ];
 
         $response = $this->sendRequest('REST/Detokenize', 'post', $input);
 
@@ -89,11 +94,11 @@ class TokenEx
 
     public function deleteToken($token)
     {
-        $input = array(
+        $input = [
             self::API_KEY       => $this->apiKey,
             self::TOKENEX_ID    => $this->tokenExId,
             self::TOKEN         => $token,
-        );
+        ];
 
         $response = $this->sendRequest('REST/DeleteToken', 'post', $input);
 
@@ -108,19 +113,25 @@ class TokenEx
             $data = '';
 
         $headers['Content-Type'] = 'application/json';
+
         $headers['Accept'] = 'application/json';
 
-        $options = array(
-            'proxy' => 'https://splunk.razorpay.com:8888'
-        );
+        $options = [];
 
-        $request = array(
+        $options['timeout'] = 20;
+
+        if ($this->proxyEnabled === true)
+        {
+            $options['proxy'] = $this->proxy;
+        }
+
+        $request = [
             'url' => $url,
             'method' => $method,
             'headers' => $headers,
             'options' => $options,
             'content' => $data
-        );
+        ];
 
         $response = $this->sendTokenExRequest($request);
 
@@ -133,17 +144,42 @@ class TokenEx
     {
         $method = $request['method'];
 
-        try
+        $retryCount = 0;
+
+        while (true)
         {
-            $response = Requests::$method(
-                $request['url'],
-                $request['headers'],
-                json_encode($request['content']),
-                $request['options']);
-        }
-        catch(\Requests_Exception $e)
-        {
-            throw $e;
+            try
+            {
+                $response = Requests::$method(
+                    $request['url'],
+                    $request['headers'],
+                    json_encode($request['content']),
+                    $request['options']);
+
+                break;
+            }
+            catch(\Requests_Exception $e)
+            {
+                // check curl error, increase retry count if timeout
+                // throw the error if retry count reaches max allowed value
+                if (($retryCount < self::MAX_RETRY_COUNT) and
+                    (curl_errno($e->getData()) === CURLE_OPERATION_TIMEDOUT))
+                {
+                    $this->trace->info(
+                        TraceCode::TOKENEX_RETRY,
+                        [
+                            'message' => $e->getMessage(),
+                            'type'    => $e->getType(),
+                            'data'    => $e->getData()
+                        ]);
+
+                    $retryCount++;
+                }
+                else
+                {
+                    throw $e;
+                }
+            }
         }
 
         return $response;
@@ -158,14 +194,18 @@ class TokenEx
         unset($response[self::VALUE]);
 
         $this->trace->info(
-            TraceCode::TOKENEX_REQUEST,
+            TraceCode::TOKENEX_RESPONSE,
             [
                 'response' => $response
             ]);
 
         if ($success === false)
         {
-            throw new Exception\RuntimeException('tokenex request: '. $referenceNumber . ' failed');
+            $data = [
+                'referenceId' => $referenceNumber
+            ];
+
+            throw new Exception\RuntimeException('tokenex request failed', $data);
         }
     }
 }

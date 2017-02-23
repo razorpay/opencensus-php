@@ -2,39 +2,45 @@
 
 namespace RZP\Models\Order;
 
-use DB;
-
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'order';
 
-    protected $appFetchParamRules = array(
+    protected $entityFetchParamRules = [
+        Entity::AUTHORIZED      => 'sometimes|in:0,1',
+        Entity::RECEIPT         => 'sometimes|string|max:40',
+    ];
+
+    protected $proxyFetchParamRules = [
+        Entity::STATUS          => 'sometimes|in:created,attempted,paid',
+    ];
+
+    protected $appFetchParamRules = [
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         Entity::STATUS          => 'sometimes|in:created,attempted,paid',
         Entity::AUTHORIZED      => 'sometimes|in:0,1',
-    );
+        Entity::ACCOUNT_NUMBER  => 'sometimes|string|max:50|min:5',
+    ];
 
-    protected $entityFetchParamRules = array(
-        Entity::AUTHORIZED      => 'sometimes|in:0,1',
-        Entity::RECEIPT         => 'sometimes|string|max:40',
-    );
+    protected $esWhitelistedParams = [
+        Entity::NOTES
+    ];
 
-    public function getOrderForPayment($payment)
+    public function fetchForPayment($payment)
     {
+        if ($payment->hasRelation('order'))
+        {
+            return $payment->order;
+        }
+
         $orderId = $payment->getApiOrderId();
 
-        $order = $this->find($orderId);
+        $order = $this->findOrFail($orderId);
 
-        if ($order !== null)
-        {
-            $payment->order()->associate($order);
-        }
+        $payment->order()->associate($order);
 
         return $order;
     }
@@ -52,14 +58,15 @@ class Repository extends Base\Repository
         // group by `orders`.`id`
         // having count(*) > 1
 
-        $paymentOrderId = Payment\Entity::getAttributeWithTableName(Payment\Entity::ORDER_ID);
-        $paymentStatus = Payment\Entity::getAttributeWithTableName(Payment\Entity::STATUS);
-        $orderId = Entity::getAttributeWithTableName(Entity::ID);
+        $paymentOrderId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ORDER_ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+        $orderId = $this->getAttributeWithTableName(Entity::ID);
         $paymentStatusArray = [Payment\Status::AUTHORIZED, Payment\Status::CAPTURED];
+        $pTable = $this->manager->payment->getTableName();
 
         $results = $this->newQuery()
             ->join(
-                Table::PAYMENT,
+                $pTable,
                 $paymentOrderId, '=', $orderId)
             ->selectRaw('count(*), ' . $orderId)
             ->whereIn($paymentStatus, $paymentStatusArray)

@@ -25,7 +25,7 @@ class CreateWebhooks extends Migration
 
             $table->char(Webhook::MERCHANT_ID, Webhook::ID_LENGTH);
 
-            $table->boolean(Webhook::ACTIVE)
+            $table->tinyInteger(Webhook::ACTIVE)
                   ->default(1);
 
             $table->string(Webhook::URL);
@@ -64,7 +64,7 @@ class CreateWebhooks extends Migration
         Schema::table(Table::WEBHOOK, function($table)
         {
             $table->dropForeign(
-                TABLE::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
+                Table::WEBHOOK.'_'.Webhook::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::WEBHOOK);

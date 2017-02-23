@@ -8,8 +8,13 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
 use RZP\Models\Card;
+use RZP\Models\Currency;
+use RZP\Models\Customer;
 use RZP\Models\Order;
+use RZP\Models\Feature;
+use RZP\Models\Invoice;
 use RZP\Models\Payment;
+use RZP\Models\Pricing;
 use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Refund;
 use RZP\Trace\TraceCode;
@@ -21,10 +26,15 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const AMOUNT                = 'amount';
+    const BASE_AMOUNT           = 'base_amount';
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
+    const BASE_AMOUNT_REFUNDED  = 'base_amount_refunded';
+    const AMOUNT_PAIDOUT        = 'amount_paidout';
     const STATUS                = 'status';
+    const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
+    const INVOICE_ID            = 'invoice_id';
     const INTERNATIONAL         = 'international';
     const METHOD                = 'method';
     const REFUND_STATUS         = 'refund_status';
@@ -34,6 +44,7 @@ class Entity extends Base\PublicEntity
     const ERROR_CODE            = 'error_code';
     const INTERNAL_ERROR_CODE   = 'internal_error_code';
     const ERROR_DESCRIPTION     = 'error_description';
+    const CANCELLATION_REASON   = 'cancellation_reason';
     const CUSTOMER_ID           = 'customer_id';
     const GLOBAL_CUSTOMER_ID    = 'global_customer_id';
     const APP_ID                = 'app_id';
@@ -41,10 +52,12 @@ class Entity extends Base\PublicEntity
     const TOKEN                 = 'token';
     const TOKEN_ID              = 'token_id';
     const GLOBAL_TOKEN_ID       = 'global_token_id';
+    const VPA                   = 'vpa';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const NOTES                 = 'notes';
     const BANK                  = 'bank';
+    const CARD                  = 'card';
     const CARD_ID               = 'card_id';
     const WALLET                = 'wallet';
     const EMI_PLAN_ID           = 'emi_plan_id';
@@ -57,23 +70,31 @@ class Entity extends Base\PublicEntity
     const TERMINAL_ID           = 'terminal_id';
     const SIGNED                = 'signed';
     const VERIFIED              = 'verified';
+    const GATEWAY_CAPTURED      = 'gateway_captured';
+    // This is the bucket for the next verify and not the current verify.
+    const VERIFY_BUCKET         = 'verify_bucket';
     const CALLBACK_URL          = 'callback_url';
     const SERVICE_TAX           = 'service_tax';
     const OTP_ATTEMPTS          = 'otp_attempts';
     const OTP_COUNT             = 'otp_count';
     const FEE                   = 'fee';
+    const RECURRING             = 'recurring';
     const SAVE                  = 'save';
     const LATE_AUTHORIZED       = 'late_authorized';
+    const CONVERT_CURRENCY      = 'convert_currency';
 
-    const CURRENCY_LENGTH       = 3;
-
-    const MIN_PAYMENT_AMOUNT    = 100;
+    // constants and defaults
+    const CURRENCY_LENGTH                   = 3;
+    const MIN_PAYMENT_AMOUNT                = 100;
+    const PAYMENT_TIMEOUT_DEFAULT_OLD       = 720;      // 12 Mins
+    const PAYMENT_TIMEOUT_BILLDESK          = 259200;   // 3 Days
+    const PAYMENT_TIMEOUT_NETBANKING        = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_WALLET            = 4500;     // 75 Mins
+    const PAYMENT_TIMEOUT_DEFAULT           = 2700;     // 45 Mins
 
     protected static $sign      = 'pay';
 
     protected $entity           = 'payment';
-
-    protected $table            = \RZP\Constants\Table::PAYMENT;
 
     protected $metadata         = array();
 
@@ -89,12 +110,14 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::CURRENCY,
         self::DESCRIPTION,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::CALLBACK_URL,
         self::FEE,
         self::SERVICE_TAX,
+        self::RECURRING,
         self::SAVE);
 
     protected $visible = array(
@@ -102,10 +125,14 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
         self::METHOD,
         self::AMOUNT,
+        self::BASE_AMOUNT,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
+        self::BASE_AMOUNT_REFUNDED,
         self::CURRENCY,
+        self::AMOUNT_PAIDOUT,
         self::STATUS,
+        self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -117,12 +144,14 @@ class Entity extends Base\PublicEntity
         self::APP_TOKEN,
         self::TOKEN_ID,
         self::GLOBAL_TOKEN_ID,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
         self::ERROR_CODE,
         self::INTERNAL_ERROR_CODE,
         self::ERROR_DESCRIPTION,
+        self::CANCELLATION_REASON,
         self::AUTHORIZED_AT,
         self::CAPTURED_AT,
         self::GATEWAY,
@@ -132,16 +161,21 @@ class Entity extends Base\PublicEntity
         self::TRANSACTION_ID,
         self::AUTO_CAPTURED,
         self::ORDER_ID,
+        self::INVOICE_ID,
         self::INTERNATIONAL,
         self::SIGNED,
         self::VERIFIED,
+        self::GATEWAY_CAPTURED,
+        self::VERIFY_BUCKET,
         self::CALLBACK_URL,
+        self::RECURRING,
         self::SAVE,
         self::FEE,
         self::SERVICE_TAX,
         self::OTP_ATTEMPTS,
         self::OTP_COUNT,
         self::LATE_AUTHORIZED,
+        self::CONVERT_CURRENCY,
         self::CREATED_AT,
         self::UPDATED_AT);
 
@@ -150,18 +184,25 @@ class Entity extends Base\PublicEntity
         self::ENTITY,
         self::AMOUNT,
         self::CURRENCY,
+        self::BASE_AMOUNT,
         self::STATUS,
         self::ORDER_ID,
+        self::INVOICE_ID,
+        self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
         self::CARD_ID,
         self::BANK,
         self::WALLET,
+        self::VPA,
         self::EMAIL,
         self::CONTACT,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID,
         self::NOTES,
         self::FEE,
         self::SERVICE_TAX,
@@ -169,8 +210,15 @@ class Entity extends Base\PublicEntity
         self::ERROR_DESCRIPTION,
         self::CREATED_AT);
 
-    protected $publicSetters = array(
-        self::ID, self::ENTITY, self::ORDER_ID, self::CARD_ID);
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::ORDER_ID,
+        self::INVOICE_ID,
+        self::CARD_ID,
+        self::CUSTOMER_ID,
+        self::TOKEN_ID
+    ];
 
     protected $guarded = array(self::ID);
 
@@ -184,36 +232,63 @@ class Entity extends Base\PublicEntity
 
     protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
 
-    protected $defaults = array(
-        self::STATUS            => Status::CREATED,
-        self::REFUND_STATUS     => Refund\Status::NULL,
-        self::NOTES             => [],
-        self::AMOUNT_REFUNDED   => 0,
-        self::SIGNED            => 0,
-        self::VERIFIED          => null,
-        self::CAPTURED_AT       => null,
-        self::AUTO_CAPTURED     => 0,
-        self::SAVE              => false,
-        self::FEE               => null,
-        self::SERVICE_TAX       => null,
-        self::OTP_ATTEMPTS      => null,
-        self::OTP_COUNT         => null,
-        self::EMI_PLAN_ID       => null,
-        self::LATE_AUTHORIZED   => null,
-        self::INTERNATIONAL     => null,
-    );
-
-    protected $casts = [
-        self::INTERNATIONAL => 'bool',
+    protected $defaults = [
+        self::STATUS               => Status::CREATED,
+        self::REFUND_STATUS        => Refund\Status::NULL,
+        self::NOTES                => [],
+        self::AMOUNT_REFUNDED      => 0,
+        self::BASE_AMOUNT_REFUNDED => 0,
+        self::AMOUNT_PAIDOUT       => 0,
+        self::SIGNED               => 0,
+        self::GATEWAY              => null,
+        self::VERIFIED             => null,
+        self::GATEWAY_CAPTURED     => null,
+        self::CAPTURED_AT          => null,
+        self::AUTO_CAPTURED        => 0,
+        self::SAVE                 => false,
+        self::FEE                  => null,
+        self::SERVICE_TAX          => null,
+        self::OTP_ATTEMPTS         => null,
+        self::OTP_COUNT            => null,
+        self::EMI_PLAN_ID          => null,
+        self::LATE_AUTHORIZED      => null,
+        self::RECURRING            => false,
+        self::INTERNATIONAL        => null,
+        self::VERIFY_BUCKET        => null,
     ];
 
     protected $amounts = array(
         self::AMOUNT,
+        self::BASE_AMOUNT,
+        self::BASE_AMOUNT_REFUNDED,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_PAIDOUT,
         self::FEE,
         self::SERVICE_TAX
     );
+
+    protected $casts = [
+        self::RECURRING            => 'bool',
+        self::BASE_AMOUNT          => 'int',
+        self::BASE_AMOUNT_REFUNDED => 'int',
+        self::AMOUNT_AUTHORIZED    => 'int',
+        self::AMOUNT_REFUNDED      => 'int',
+        self::AMOUNT_PAIDOUT       => 'int',
+        self::AUTO_CAPTURED        => 'bool',
+        self::SIGNED               => 'bool',
+        self::AMOUNT               => 'int',
+        self::FEE                  => 'int',
+        self::SERVICE_TAX          => 'int',
+        self::SAVE                 => 'bool',
+        self::INTERNATIONAL        => 'bool',
+        self::GATEWAY_CAPTURED     => 'bool',
+        self::LATE_AUTHORIZED      => 'bool',
+        self::CONVERT_CURRENCY     => 'bool',
+    ];
+
+    // window in secs, used to fetch payments with same checkout id
+    const PAYMENT_WINDOW                = 1800;
 
 // --------------------- Generators --------------------------------------------
 
@@ -271,6 +346,11 @@ class Entity extends Base\PublicEntity
         {
             $input['wallet'] = null;
         }
+
+        if ($input['method'] !== Method::UPI)
+        {
+            $input['vpa'] = null;
+        }
     }
 
     protected function modifyConvertEmptyStringsToNull(& $input)
@@ -318,9 +398,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNATIONAL, $isInternational);
     }
 
-    public function setCaptureAmount($amount)
+    public function setBaseAmount($amount)
     {
-        $this->setAttribute(self::AMOUNT, $amount);
+        $this->setAttribute(self::BASE_AMOUNT, $amount);
     }
 
     public function setAmountAuthorized()
@@ -335,6 +415,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::STATUS, $status);
     }
 
+    public function setTwoFactorAuth($status)
+    {
+        $this->setAttribute(self::TWO_FACTOR_AUTH, $status);
+    }
+
     public function setRefundStatus($status)
     {
         $this->setAttribute(self::REFUND_STATUS, $status);
@@ -343,6 +428,16 @@ class Entity extends Base\PublicEntity
     public function setAmountRefunded($amount)
     {
         $this->setAttribute(self::AMOUNT_REFUNDED, $amount);
+    }
+
+    public function setBaseAmountRefunded($amount)
+    {
+        $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $amount);
+    }
+
+    public function setAmountPaidout(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
     /**
@@ -366,12 +461,17 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTERNAL_ERROR_CODE, $internalErrorCode);
     }
 
+    public function setCancellationReason($cancellationReason)
+    {
+        $this->setAttribute(self::CANCELLATION_REASON, $cancellationReason);
+    }
+
     public function setCaptureTimestamp()
     {
         $this->setAttribute(self::CAPTURED_AT, time());
     }
 
-    public function setAuthorizeTimestamp($authTimestamp = NULL)
+    public function setAuthorizeTimestamp($authTimestamp = null)
     {
         if (is_null($authTimestamp))
         {
@@ -381,6 +481,11 @@ class Entity extends Base\PublicEntity
         {
             $this->setAttribute(self::AUTHORIZED_AT, $authTimestamp);
         }
+    }
+
+    public function setAuthorizedAtNull()
+    {
+        $this->setAttribute(self::AUTHORIZED_AT, null);
     }
 
     public function setBank($bank)
@@ -403,9 +508,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AUTO_CAPTURED, $autoCaptured);
     }
 
+    public function setVerifyBucket($verifyBucket = 0)
+    {
+        $this->setAttribute(self::VERIFY_BUCKET, $verifyBucket);
+    }
+
     public function setVerified($verified)
     {
         $this->setAttribute(self::VERIFIED, $verified);
+    }
+
+    public function setGatewayCaptured($gatewayCaptured)
+    {
+        $this->setAttribute(self::GATEWAY_CAPTURED, $gatewayCaptured);
     }
 
     public function setServiceTax($serviceTax)
@@ -416,6 +531,11 @@ class Entity extends Base\PublicEntity
     public function setFee($fee)
     {
         $this->setAttribute(self::FEE, $fee);
+    }
+
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     public function setErrorNull()
@@ -474,6 +594,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::LATE_AUTHORIZED, $lateAuthorized);
     }
 
+    public function setConvertCurrency($convert)
+    {
+        $this->setAttribute(self::CONVERT_CURRENCY, $convert);
+    }
+
 // ----------------------- Setters Ends-----------------------------------------
 
 // ----------------------- Mutator ---------------------------------------------
@@ -485,6 +610,13 @@ class Entity extends Base\PublicEntity
 
     protected function setContactAttribute($contact)
     {
+        if ($contact === null)
+        {
+            $this->attributes[self::CONTACT] = null;
+
+            return;
+        }
+
         $number = new PhoneBook($contact, true);
 
         if ($number->isValidNumber() === true)
@@ -507,43 +639,30 @@ class Entity extends Base\PublicEntity
         }
     }
 
+    protected function setCancellationReasonAttribute(string $reason)
+    {
+        $reason = mb_strtolower($reason);
+
+        $this->attributes[self::CANCELLATION_REASON] = mb_substr($reason, 0, 255);
+    }
+
 // ----------------------- Mutator Ends ----------------------------------------
 
 // ----------------------- Accessor --------------------------------------------
-
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
 
     // TODO: Return a phonebook instance (like carbon) instead of string
     protected function getContactAttribute()
     {
         $contact = $this->attributes[self::CONTACT];
 
+        if ($contact === null)
+        {
+            return null;
+        }
+
         $phoneBook = new PhoneBook($contact, true);
 
         return (string) $phoneBook;
-    }
-
-    protected function getAmountAuthorizedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_AUTHORIZED];
-    }
-
-    protected function getAmountRefundedAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT_REFUNDED];
-    }
-
-    protected function getAutoCapturedAttribute()
-    {
-        return (bool) $this->attributes[self::AUTO_CAPTURED];
-    }
-
-    protected function getSignedAttribute()
-    {
-        return (bool) $this->attributes[self::SIGNED];
     }
 
     protected function getVerifiedAttribute()
@@ -561,26 +680,6 @@ class Entity extends Base\PublicEntity
     protected function getCapturedAttribute()
     {
         return ($this->attributes[self::CAPTURED_AT] !== null);
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
-    protected function getServiceTaxAttribute()
-    {
-        return (int) $this->attributes[self::SERVICE_TAX];
-    }
-
-    protected function getEmiPlanIdAttribute()
-    {
-        return $this->attributes[self::EMI_PLAN_ID];
-    }
-
-    protected function getSaveAttribute()
-    {
-        return (bool) $this->attributes[self::SAVE];
     }
 
     protected function getOtpAttemptsAttribute()
@@ -645,12 +744,32 @@ class Entity extends Base\PublicEntity
 
     public function hasBeenAuthorized()
     {
+        return ($this->isAttributeNotNull(self::AUTHORIZED_AT));
+    }
+
+    public function hasNotBeenAuthorized()
+    {
         return ($this->isAttributeNull(self::AUTHORIZED_AT));
     }
 
     public function hasTransaction()
     {
-        return ($this->isAttributeNull(self::TRANSACTION_ID));
+        return ($this->isAttributeNotNull(self::TRANSACTION_ID));
+    }
+
+    public function hasCard()
+    {
+        return ($this->isAttributeNotNull(self::CARD_ID));
+    }
+
+    public function hasOrder()
+    {
+        return ($this->isAttributeNotNull(self::ORDER_ID));
+    }
+
+    public function hasInvoice()
+    {
+        return ($this->isAttributeNotNull(self::INVOICE_ID));
     }
 
     public function isCaptured()
@@ -699,6 +818,16 @@ class Entity extends Base\PublicEntity
         return ($this->getAttribute(self::CAPTURED_AT) !== null);
     }
 
+    public function isGatewayCaptured()
+    {
+        return ($this->getAttribute(self::GATEWAY_CAPTURED) === true);
+    }
+
+    public function isCard()
+    {
+        return ($this->getAttribute(self::METHOD) === Payment\Method::CARD);
+    }
+
     public function isNetbanking()
     {
         return ($this->getAttribute(self::METHOD) === Payment\Method::NETBANKING);
@@ -737,7 +866,7 @@ class Entity extends Base\PublicEntity
 
     public function isSigned()
     {
-        return ((bool)$this->getAttribute(self::SIGNED) === true);
+        return ($this->getAttribute(self::SIGNED) === true);
     }
 
     public function isInternational()
@@ -750,22 +879,42 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
+    }
+
+    public function getBaseAmount()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT);
     }
 
     public function getAmountRefunded()
     {
-        return (int) $this->getAttribute(self::AMOUNT_REFUNDED);
+        return $this->getAttribute(self::AMOUNT_REFUNDED);
+    }
+
+    public function getBaseAmountRefunded()
+    {
+        return $this->getAttribute(self::BASE_AMOUNT_REFUNDED);
     }
 
     public function getAmountUnrefunded()
     {
-        return (int) $this->getAmount() - $this->getAmountRefunded();
+        return $this->getAmount() - $this->getAmountRefunded();
+    }
+
+    public function getBaseAmountUnrefunded()
+    {
+        return $this->getBaseAmount() - $this->getBaseAmountRefunded();
     }
 
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getAmountPaidout()
+    {
+        return $this->getAttribute(self::AMOUNT_PAIDOUT);
     }
 
     public function getGateway()
@@ -829,6 +978,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMAIL);
     }
 
+    public function getVpa()
+    {
+        return $this->getAttribute(self::VPA);
+    }
+
     public function getContact()
     {
         return $this->getAttribute(self::CONTACT);
@@ -874,6 +1028,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TOKEN_ID);
     }
 
+    public function getGlobalCustomerId()
+    {
+        return $this->getAttribute(self::GLOBAL_CUSTOMER_ID);
+    }
+
     public function getGlobalTokenId()
     {
         return $this->getAttribute(self::GLOBAL_TOKEN_ID);
@@ -891,7 +1050,7 @@ class Entity extends Base\PublicEntity
         $at = $this->getAuthorizeTimestamp();
         $diff = $now - $at;
 
-        return floor($diff / (60*24*24));
+        return floor($diff / (60 * 24 * 24));
     }
 
     public function getEmiPlanId()
@@ -901,12 +1060,12 @@ class Entity extends Base\PublicEntity
 
     public function getSave()
     {
-        return (bool) $this->getAttribute(self::SAVE);
+        return $this->getAttribute(self::SAVE);
     }
 
     public function isRecurring()
     {
-        return false;
+        return $this->getAttribute(self::RECURRING);
     }
 
     public function getCardId()
@@ -914,9 +1073,45 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CARD_ID);
     }
 
+    public function getTwoFactorAuth()
+    {
+        return $this->getAttribute(self::TWO_FACTOR_AUTH);
+    }
     public function getMerchantId()
     {
         return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getOtpCount()
+    {
+        return $this->getAttribute(self::OTP_COUNT);
+    }
+
+    public function getOtpAttempts()
+    {
+        return $this->getAttribute(self::OTP_ATTEMPTS);
+    }
+
+    public function getVerifyBucket()
+    {
+        return $this->getAttribute(self::VERIFY_BUCKET);
+    }
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
+
+    public function isSecondRecurring()
+    {
+        return (($this->isRecurring() === true) and
+                ($this->getTokenId() !== null) and
+                ($this->localToken->isRecurring() === true));
+    }
+
+    public function getConvertCurrency()
+    {
+        return $this->getAttribute(self::CONVERT_CURRENCY);
     }
 
     /**
@@ -943,11 +1138,17 @@ class Entity extends Base\PublicEntity
             case Method::CARD:
                 return [$method, $this->getFormattedCard()];
                 break;
+            case Method::EMI:
+                return [$method, $this->getFormattedCard()];
+                break;
             case Method::NETBANKING:
                 return [$method, $this->getBankName()];
                 break;
             case Method::WALLET:
                 return [$method, ucfirst($this->getWallet())];
+                break;
+            case Method::UPI:
+                return [$method, $this->getVpa()];
                 break;
         }
     }
@@ -967,7 +1168,7 @@ class Entity extends Base\PublicEntity
      * that ends with `_order_id`
      * We will shift to a standard field called `merchant_order_id`
      * as our ecommerce plugins are migrated
-     * @return String order_id for the paymetn
+     * @return String order_id for the payment
      */
     public function getOrderId()
     {
@@ -996,37 +1197,85 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ORDER_ID);
     }
 
+    public function getInvoiceId()
+    {
+        return $this->getAttribute(self::INVOICE_ID);
+    }
+
     public function getGlobalOrLocalTokenEntity()
     {
         $token = null;
 
         if ($this->getTokenId() !== null)
         {
-            $token = $this->token;
+            $token = $this->getRelation('localToken');
         }
         else if ($this->getGlobalTokenId() !== null)
         {
-            $token = $this->globalToken;
+            $token = $this->getRelation('globalToken');
         }
 
         return $token;
     }
 
-    public function setPublicOrderIdAttribute(Array & $array)
+    public function setPublicOrderIdAttribute(array & $array)
     {
         if (isset($array[self::ORDER_ID]))
         {
-            $array[self::ORDER_ID] =
-                Order\Entity::getIdPrefix() . $this->getAttribute(self::ORDER_ID);
+            $array[self::ORDER_ID] = Order\Entity::getSignedId($array[self::ORDER_ID]);
         }
     }
 
-    public function setPublicCardIdAttribute(Array & $array)
+    public function setPublicInvoiceIdAttribute(array & $array)
+    {
+        if (isset($array[self::INVOICE_ID]))
+        {
+            $array[self::INVOICE_ID] = Invoice\Entity::getSignedId($array[self::INVOICE_ID]);
+        }
+    }
+
+    public function getPublicOrderId()
+    {
+        if ($this->hasOrder())
+        {
+            return Order\Entity::getSignedId($this->getApiOrderId());
+        }
+    }
+
+    public function setPublicCardIdAttribute(array & $array)
     {
         if (isset($array[self::CARD_ID]))
         {
             $array[self::CARD_ID] =
                 Card\Entity::getIdPrefix() . $this->getAttribute(self::CARD_ID);
+        }
+    }
+
+    public function setPublicCustomerIdAttribute(array & $array)
+    {
+        if (isset($array[self::CUSTOMER_ID]))
+        {
+            $customerId = $this->getAttribute(self::CUSTOMER_ID);
+
+            $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        }
+        else
+        {
+            unset($array[self::CUSTOMER_ID]);
+        }
+    }
+
+    public function setPublicTokenIdAttribute(array & $array)
+    {
+        if (isset($array[self::TOKEN_ID]))
+        {
+            $tokenId = $this->getAttribute(self::TOKEN_ID);
+
+            $array[self::TOKEN_ID] = Customer\Token\Entity::getSignedId($tokenId);
+        }
+        else
+        {
+            unset($array[self::TOKEN_ID]);
         }
     }
 
@@ -1042,8 +1291,9 @@ class Entity extends Base\PublicEntity
         $this->terminal()->associate($terminal);
 
         $this->setGateway($terminal->getGateway());
-    }
 
+        $this->setRelation('terminal', $terminal);
+    }
 
 // ----------------------- Getters Ends-----------------------------------------
 
@@ -1088,7 +1338,14 @@ class Entity extends Base\PublicEntity
     {
         $data = parent::toArrayReport();
 
+        unset($data[self::CUSTOMER_ID]);
+        unset($data[self::TOKEN_ID]);
+
         $data[self::NOTES] = $this->getNotesJson();
+
+        $data['card_type'] = null;
+        $data['card_network'] = null;
+        $data['invoice_id'] = null;
 
         if ($this->isMethodCardOrEmi())
         {
@@ -1096,9 +1353,28 @@ class Entity extends Base\PublicEntity
             $data['card_network'] = $this->card->getNetwork();
         }
 
+        if ($this->getInvoiceId() !== null)
+        {
+            $data['invoice_id'] = $this->getInvoiceId();
+        }
+
         return $data;
     }
 
+    public function toArrayGateway()
+    {
+        $data = $this->toArray();
+
+        if (($this->isCard()) and
+            ($this->getConvertCurrency() === true))
+        {
+            $data['amount'] = $this->getBaseAmount();
+            $data['currency'] = Currency\Currency::INR;
+            $data['amount_refunded'] = $this->getBaseAmountRefunded();
+        }
+
+        return $data;
+    }
 // --------------- Relation to other entities ----------------------------------
 
     public function card()
@@ -1136,6 +1412,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Order\Entity');
     }
 
+    public function invoice()
+    {
+        return $this->belongsTo('RZP\Models\Invoice\Entity');
+    }
+
+    public function analytics()
+    {
+        return $this->hasOne('RZP\Models\Payment\Analytics\Entity');
+    }
+
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
@@ -1146,7 +1432,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Customer\Entity', self::GLOBAL_CUSTOMER_ID);
     }
 
-    public function token()
+    public function localToken()
     {
         return $this->belongsTo('RZP\Models\Customer\Token\Entity', self::TOKEN_ID);
     }
@@ -1166,17 +1452,31 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Emi\Entity');
     }
 
+    public function netbanking()
+    {
+        return $this->hasOne('RZP\Gateway\Netbanking\Base\Entity');
+    }
+
+    // using hasOne here as we need only the first billdesk entity, actual relation can be one-to-many
+    public function billdesk()
+    {
+        return $this->hasOne('RZP\Gateway\Billdesk\Entity');
+    }
+
 // --------------- Relation to other entity section ends -----------------------
 
-    public function refundAmount($amount)
+    public function refundAmount($amount, $baseAmount)
     {
-        if (is_int($amount) === false)
+        if ((is_int($amount) === false) or
+            (is_int($baseAmount) === false))
         {
             throw new Exception\InvalidArgumentException(
                 'amount should be an integer ' . $amount);
         }
 
         $amount = (int) $amount;
+
+        $baseAmount= (int) $baseAmount;
 
         $amountUnrefunded = $this->getAmountUnrefunded();
 
@@ -1198,7 +1498,37 @@ class Entity extends Base\PublicEntity
 
         $amountRefunded = $this->getAmountRefunded() + $amount;
 
+        $baseAmountRefunded = $this->getBaseAmountRefunded() + $baseAmount;
+
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
+
+        $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $baseAmountRefunded);
+    }
+
+    /**
+     * Updates Payment amount_paidout field
+     *
+     * @param  int    $amount
+     */
+    public function payoutAmount(int $amount)
+    {
+        $amountPaidout = $this->getAmountPaidout() + $amount;
+
+        $paymentAmount = $this->getAmount();
+
+        if ($amountPaidout > $paymentAmount)
+        {
+            throw new Exception\LogicException(
+                'Payment payout: Payout total greater than payment amount',
+                null,
+                [
+                    'payout' => $amount,
+                    'payment_amount'  => $paymentAmount,
+                ]
+            );
+        }
+
+        $this->setAmountPaidout($amountPaidout);
     }
 
     public function toArrayTraceRelevant()
@@ -1217,6 +1547,15 @@ class Entity extends Base\PublicEntity
         return $relevantData;
     }
 
+    public function shouldTimeout(int $now)
+    {
+        $timeoutPeriod = $this->getTimeoutWindow();
+
+        $diff = $now - $this->getCreatedAt();
+
+        return ($diff >= $timeoutPeriod);
+    }
+
 // --------------------- Query scopes section begin ----------------------------
 
     public function scopeStatus($query, $status)
@@ -1224,9 +1563,9 @@ class Entity extends Base\PublicEntity
         return $query->where(Payment\Entity::STATUS, '=', $status);
     }
 
-    public function scopeCreatedAtLessThan($query, $ts)
+    public function scopeStatusSuccess($query)
     {
-        return $query->where(Payment\Entity::CREATED_AT, '<', $ts);
+        return $query->whereNotIn(Entity::STATUS, [Status::FAILED, Status::CREATED]);
     }
 
 // --------------------- Query scopes section ends -----------------------------
@@ -1234,5 +1573,53 @@ class Entity extends Base\PublicEntity
     public function resetOtpAttempts()
     {
         $this->setOtpAttempts(null);
+    }
+
+    /**
+     * List of all features based on various conditions
+     */
+    public function getPricingFeatures()
+    {
+        $features = [];
+
+        if ($this->isRecurring() === true)
+        {
+            $features[] = Pricing\Feature::RECURRING;
+        }
+
+        return $features;
+    }
+
+    protected function getTimeoutWindow()
+    {
+        $gateway = $this->getGateway();
+
+        // default is 9 mins
+        $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT_OLD;
+
+        if ($this->merchant->isFeatureEnabled(Feature\Constants::CREATED_FLOW) === true)
+        {
+            // for new flow, default is 30 mins
+            $timeWindow = self::PAYMENT_TIMEOUT_DEFAULT;
+
+            if ($gateway === Payment\Gateway::BILLDESK)
+            {
+                $timeWindow = self::PAYMENT_TIMEOUT_BILLDESK;
+            }
+            else if ($this->isNetbanking() === true)
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = self::PAYMENT_TIMEOUT_NETBANKING;
+            }
+            else if ($this->isWallet() === true)
+            {
+                // for direct netbanking 1 hour is good enough
+                $timeWindow = self::PAYMENT_TIMEOUT_WALLET;
+            }
+        }
+
+        $autoRefundDelay = $this->merchant->getAutoRefundDelay();
+
+        return min($timeWindow, $autoRefundDelay);
     }
 }

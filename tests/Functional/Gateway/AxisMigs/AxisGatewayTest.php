@@ -3,8 +3,13 @@
 namespace RZP\Tests\Functional\Gateway\AxisMigs;
 
 use Mockery;
+use Carbon\Carbon;
+use RZP\Models\Payment;
+use RZP\Tests\Functional\Fixtures;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Payment\Entity;
+use RZP\Models\Payment\TwoFactorAuth;
 use RZP\Error;
 use RZP\Error\PublicErrorCode;
 
@@ -14,8 +19,6 @@ class AxisGatewayTest extends TestCase
 
     public function setUp()
     {
-        $this->markTestSkipped('Removed');
-
         $this->testDataFilePath = __DIR__.'/AxisGatewayTestData.php';
 
         parent::setUp();
@@ -33,10 +36,17 @@ class AxisGatewayTest extends TestCase
         $payment = $this->doAuthPayment($payment);
 
         $txn = $this->getLastEntity('transaction', true);
-        $this->assertNotNull($txn);
+        $this->assertNull($txn);
 
         $payment = $this->getLastEntity('payment', true);
-        $this->assertNotNull($payment['transaction_id']);
+
+        $this->assertNull($payment['transaction_id']);
+        $this->assertEquals(TwoFactorAuth::PASSED, $payment[Entity::TWO_FACTOR_AUTH]);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentAxisMigsEntity'], $migs);
 
         $payment = $this->capturePayment($payment['public_id'], $payment['amount']);
 
@@ -49,10 +59,10 @@ class AxisGatewayTest extends TestCase
 
         $this->assertTestResponse($payment);
 
-        $payment = $this->getLastEntity('axis_migs', true);
+        $migs = $this->getLastEntity('axis_migs', true);
 
         $this->assertArraySelectiveEquals(
-            $this->testData['testPaymentAxisMigsEntity'], $payment);
+            $this->testData['testPaymentAxisMigsCaptureEntity'], $migs);
     }
 
     public function testMasterCardPayment()
@@ -95,6 +105,30 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($amount, $refund['vpc_amount']);
     }
 
+    public function testAuthorizedPaymentRefund()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $response = $this->doAuthPayment($payment);
+
+        $paymentId = $response['razorpay_payment_id'];
+        $input = ['amount' => $payment['amount']];
+
+        $this->refundAuthorizedPayment($paymentId, $input);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertSame($paymentId, $refund['payment_id']);
+        // $this->assertTestResponse($refund);
+
+        $this->assertEquals(false, $refund['gateway_refunded']);
+        $this->assertNull($refund['transaction_id']);
+
+        $migs = $this->getLastEntity('axis_migs', true);
+
+        $this->assertEquals('voidAuthorisation', $migs['vpc_Command']);
+    }
+
     public function testMaestroOnMigsFailOnLive()
     {
         $payment = $this->getDefaultPaymentArray();
@@ -116,10 +150,35 @@ class AxisGatewayTest extends TestCase
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment();
+        $this->assertEquals($payment['status'], 'captured');
 
         $this->verifyPayment($payment['id']);
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals('pay', $payment['vpc_Command']);
+
+        $this->assertEquals('capture', $payment['vpc_Command']);
+    }
+
+    public function testPaymentVerifyFailed()
+    {
+        $payment = $this->doAuthPayment();
+        $pid = $payment['razorpay_payment_id'];
+
+        $this->fixtures->payment->edit($pid, ['status' => 'failed', 'authorized_at' => null]);
+
+        $server = $this->mockServer()
+                        ->shouldReceive('content')
+                        ->andReturnUsing(function (& $content)
+                        {
+                            $content['vpc_DRExists'] = 'Y';
+                        })->mock();
+
+        $this->setMockServer($server);
+
+        $data = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($data, function() use ($pid)
+        {
+            $this->verifyPayment($pid);
+        });
     }
 
     public function testAuthorizeFailedPayment()
@@ -146,6 +205,7 @@ class AxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('axis_migs', true);
         $pid1 = 'pay_'.$payment['payment_id'];
+        $txnNoNew = $payment['vpc_TransactionNo'];
 
         $this->fixtures->edit('axis_migs', $payment['id'], ['received' => '0']);
 
@@ -157,7 +217,8 @@ class AxisGatewayTest extends TestCase
         $this->assertEquals($payment['status'], 'authorized');
 
         $payment = $this->getLastEntity('axis_migs', true);
-        $this->assertEquals($payment['vpc_TransactionNo'], $txnNo);
+
+        $this->assertEquals($payment['vpc_TransactionNo'], $txnNoNew);
     }
 
     public function testFailureWhen3DSFailsForDomesticMerchant()
@@ -166,12 +227,20 @@ class AxisGatewayTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($testData, function()
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '55553555655655';
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
         {
-	        $payment = $this->getDefaultPaymentArray();
-	        $payment['card']['number'] = '55553555655655';
-	        $payment = $this->doAuthPayment($payment);
-	    });
+            $payment = $this->doAuthPayment($payment);
+        });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals(TwoFactorAuth::FAILED, $payment[Entity::TWO_FACTOR_AUTH]);
+
+        $this->assertEquals($payment['status'], 'failed');
     }
 
     public function testFailureWhen3DSFailsForRiskyMerchant()

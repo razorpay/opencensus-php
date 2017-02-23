@@ -19,8 +19,6 @@ class ReconciliationTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/ReconciliationTestData.php';
-
         parent::setUp();
     }
 
@@ -44,8 +42,87 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate daily settlement entity
-        $this->fetchAndMatchDailySettlement();
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement();
+
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements();
+    }
+
+    public function testReconciliationFailure()
+    {
+        // Mocking time to 22:30 for settlements to get processed
+        Carbon::setTestNow(Carbon::create(2016, 11, 15, 23, 0, 0, 'Asia/Kolkata'));
+
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
+
+        // delete Existing files
+        $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+
+        // Generate settlement reconciliation file
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile(
+            $setlFile,
+            $generateFailedReconciliations);
+
+        // Reconcile settlements
+        $data = $this->reconcileSettlements($setlReconciliationFile);
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement();
+
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements(true);
+
+        // Resetting time
+        Carbon::setTestNow();
+    }
+
+    public function testAsjustmentCreationAgainstSettlement()
+    {
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
+
+        // delete Existing files
+        $this->deleteSetlFiles();
+
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
+
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+
+        $setl = $this->getLastEntity('settlement', true);
+
+        $setlId = $setl['id'];
+
+        $adjustmentData =[
+            'amount'        => 100,
+            'currency'      => 'INR',
+            'description'   => 'random desc',
+            'settlement_id' => $setlId
+        ];
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
+
+        $this->ba->proxyAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $data = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($content, $data);
     }
 
     public function testPayoutReconciliation()
@@ -134,8 +211,8 @@ class ReconciliationTest extends TestCase
 
         $r = range(1,5);
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 10;
 
         foreach ($r as $i)
         {
@@ -181,16 +258,16 @@ class ReconciliationTest extends TestCase
         return $prEntities;
     }
 
-    protected function fetchAndMatchDailySettlement()
+    protected function fetchAndMatchBatchSettlement()
     {
-        $content = $this->getEntities('daily_settlement', [], true);
+        $content = $this->getEntities('batch_settlement', [], true);
 
         $data = array(
             'entity' => 'collection',
             'count' => 1,
             'items' => [
                 [
-                    'entity' => 'daily_settlement',
+                    'entity' => 'batch_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
                     'amount' => 4385000,
@@ -211,7 +288,63 @@ class ReconciliationTest extends TestCase
         $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
         $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
         $this->assertGreaterThanOrEqual($item['returned_at'], $time);
+    }
 
+    protected function fetchAndMatchSettlements($failed = false)
+    {
         $content = $this->getEntities('settlement', array(), true);
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'channel' => 'kotak',
+                    'amount' => 4385000,
+                    'fees' => 115000,
+                    'service_tax' => 15000,
+                    'channel'     => 'kotak',
+                ],
+            ]
+        );
+
+        if ($failed == true)
+        {
+            $data['items'][0]['failure_reason'] = 'Reconciliation';
+            $data['items'][0]['remarks'] =
+                'This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit. This is a string which' .
+                ' test characters count limit. This is a string which test characters count limit.' .
+                ' This is a string which test characters count li';
+            $data['items'][0]['status'] = 'failed';
+        }
+        else
+        {
+            $data['items'][0]['failure_reason'] = null;
+            $data['items'][0]['remarks'] = '';
+        }
+
+        $this->assertArraySelectiveEquals($data, $content);
+    }
+
+    protected function checkAdjustmentCreated()
+    {
+        $setl = $this->getLastEntity('settlement', true);
+        $settlementSign = 'setl_';
+        $setlId = substr($setl['id'], strlen($settlementSign));
+
+        $data = [
+            'merchant_id' => "10000000000000",
+            'amount' => 4385000,
+            'currency' => "INR",
+            'channel' => "kotak",
+            'description' => "Adjustment for failed settlement",
+            'settlement_id' => $setlId
+        ];
+
+        $content = $this->getLastEntity('adjustment', true);
+
+        $this->assertArraySelectiveEquals($data, $content);
     }
 }

@@ -3,26 +3,35 @@
 namespace RZP\Models\Terminal\Filters;
 
 use RZP\Constants\Mode;
-
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-
+use RZP\Models\Card\Network;
+use RZP\Models\Card\Issuer;
+use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Terminal;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment\Method;
-use RZP\Models\Emi\Repository;
 use RZP\Models\Terminal\Shared;
-use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const DISALLOW_EDUCATION_IFSC = [
+        IFSC::ICIC,
+        IFSC::ALLA,
+        IFSC::DBSS,
+        IFSC::IDFB,
+        IFSC::SVCB,
+    ];
+
     protected $properties = [
         'method',
         'network',
+        'currency',
         'international',
         'bank',
+        'education_bank',
+        'amount',
         'maestro',
         'recurring',
     ];
@@ -71,6 +80,22 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+    public function currencyFilter($terminal, $input)
+    {
+        $payment = $input['payment'];
+
+        $paymentCurrency = $payment->getCurrency();
+
+        if ($payment->getConvertCurrency() === true)
+        {
+            $paymentCurrency = Currency::INR;
+        }
+
+        $terminalCurrency = $terminal->getCurrency();
+
+        return ($paymentCurrency === $terminalCurrency);
+    }
+
     public function internationalFilter($terminal, $input)
     {
         if ($input['payment']->isMethodCardOrEmi() === false)
@@ -78,9 +103,9 @@ class TransactionFilter extends Terminal\Filter
             return true;
         }
 
-        $isMerchantInternational = $input['merchant']->isInternational();
+        $isPaymentInternational = $input['payment']->isInternational();
 
-        if (($input['mode'] === Mode::TEST) and ($isMerchantInternational))
+        if (($input['mode'] === Mode::TEST) and ($isPaymentInternational))
         {
             // Allow support for cards on atom for international test
             $testTerminals = array_merge(
@@ -89,7 +114,7 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminal->getGateway(), $testTerminals);
         }
-        else if ($isMerchantInternational)
+        else if ($isPaymentInternational)
         {
             return in_array($terminal->getGateway(), Gateway::$internationalCardGateways);
         }
@@ -115,9 +140,39 @@ class TransactionFilter extends Terminal\Filter
 
             $terminalGateway = $terminal->getGateway();
 
-            $gateways = Gateway::getGatewaysForNetbankingBank($bank);
+            $isTPV = $input['merchant']->isTPVRequired();
+
+            $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+        else if ($input['payment']->isCard())
+        {
+            $issuer = $input['payment']->card->getIssuer();
+
+            if (($issuer === Issuer::ICIC) and
+                ($terminal->getGateway() === Gateway::FIRST_DATA))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function educationBankFilter($terminal, $input)
+    {
+        if (($input['payment']->isNetbanking() === true) and
+            ($input['payment']->getMethod() === Gateway::BILLDESK))
+        {
+            $bank = $input['payment']->getBank();
+
+            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
+            if (($terminal->getId() === '7KORSqVp2oR0GH') and
+                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
+            {
+                return false;
+            }
         }
 
         return true;
@@ -129,9 +184,11 @@ class TransactionFilter extends Terminal\Filter
         {
             $network = $input['payment']->card->getNetworkCode();
 
-            // Only shared terminals support Maestro on Live mode.
+            // For HDFC, only shared terminals support
+            // Maestro cards on Live mode.
             if (($network === Network::MAES) and
-                ($input['mode'] === Mode::LIVE))
+                ($input['mode'] === Mode::LIVE) and
+                ($terminal->getGateway() === Gateway::HDFC))
             {
                 return Shared::isSharedTerminal($terminal);
             }
@@ -140,18 +197,28 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
+
     public function recurringFilter($terminal, $input)
     {
-        $value = Terminal\Recurring::NON_RECURRING;
-
         $payment = $input['payment'];
 
+        $value = Terminal\Recurring::NON_RECURRING;
+
+        // for cybersource, check get the terminal based on recurring type
         if ($payment->isRecurring() === true)
         {
-            $value = Terminal\Recurring::RECURRING_3DS;
+            // for recurring payment, terminal must be cybersource
+            if (($terminal->getGateway() !== Gateway::CYBERSOURCE) or
+                ($terminal->getGatewayAcquirer() !== 'hdfc'))
+            {
+                return false;
+            }
 
-            if (($payment->token !== null) and
-                ($payment->token->isRecurring() === true))
+            $ba = app('basicauth');
+
+            if (($payment->getTokenId() !== null) and
+                ($payment->localToken->isRecurring() === true) and
+                ($ba->isPrivateAuth() === true))
             {
                 $value = Terminal\Recurring::RECURRING_N3DS;
             }
@@ -188,6 +255,22 @@ class TransactionFilter extends Terminal\Filter
         $emiDuration = $input['payment']->emiPlan->getDuration();
 
         return $terminal->isValidEmiTerminal($gateway, $emiDuration);
+    }
 
+    public function amountFilter(Terminal\Entity $terminal, array $input)
+    {
+        $method = $input['payment']->getMethod();
+
+        $gateway = $terminal->getGateway();
+
+        $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
+
+        $category = $terminal->getNetworkCategory();
+
+        $minAmount = Terminal\MinAmount::getMinAmount($method, $gateway, $network, $category);
+
+        $amount = $input['payment']->getAmount();
+
+        return ($amount >= $minAmount);
     }
 }

@@ -9,25 +9,23 @@ use RZP\Models\Merchant\Entity as Merchant;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-class CreateOrders extends Migration {
-
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
-	public function up()
-	{
-		//
+class CreateOrders extends Migration
+{
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
+    public function up()
+    {
         Schema::create(Table::ORDER, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char(Order::ID, 14)
+            $table->char(Order::ID, Order::ID_LENGTH)
                   ->primary();
 
-
-            $table->char(Order::MERCHANT_ID, 14);
+            $table->char(Order::MERCHANT_ID, Order::ID_LENGTH);
 
             $table->integer(Order::AMOUNT)
                   ->unsigned();
@@ -39,7 +37,7 @@ class CreateOrders extends Migration {
 
             $table->string(Order::STATUS, 10);
 
-            $table->boolean(Order::PAYMENT_CAPTURE)
+            $table->tinyInteger(Order::PAYMENT_CAPTURE)
                   ->default(false);
 
             $table->string(Order::RECEIPT, 40);
@@ -58,7 +56,7 @@ class CreateOrders extends Migration {
             $table->tinyInteger(Order::AUTHORIZED)
                   ->nullable();
 
-            $table->char(Order::CUSTOMER_ID, 14)
+            $table->char(Order::CUSTOMER_ID, Order::ID_LENGTH)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -97,32 +95,31 @@ class CreateOrders extends Migration {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->foreign(Payment::ORDER_ID)
-                  ->references(ORDER::ID)
+                  ->references(Order::ID)
                   ->on(Table::ORDER)
                   ->on_delete('restrict');
         });
-	}
+    }
 
-	/**
-	 * Reverse the migrations.
-	 *
-	 * @return void
-	 */
-	public function down()
-	{
+    /**
+     * Reverse the migrations.
+     *
+     * @return void
+     */
+    public function down()
+    {
         Schema::table(Table::PAYMENT, function($table)
         {
             $table->dropForeign(
-                Table::PAYMENT.'_'.Payment::ORDER_ID.'_foreign');
+                Table::PAYMENT . '_' . Payment::ORDER_ID.'_foreign');
         });
 
         Schema::table(Table::ORDER, function($table)
         {
             $table->dropForeign(
-                TABLE::ORDER.'_'.Order::MERCHANT_ID.'_foreign');
+                Table::ORDER . '_' . Order::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::ORDER);
-	}
-
+    }
 }

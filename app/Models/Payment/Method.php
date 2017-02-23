@@ -30,9 +30,14 @@ class Method
         return array_keys(self::$methods);
     }
 
+    public static function isValid($method)
+    {
+        return defined(__CLASS__ . '::' . strtoupper($method));
+    }
+
     public static function validateMethod($method)
     {
-        if (defined(__CLASS__ . '::' . strtoupper($method)) === false)
+        if (self::isValid($method) === false)
         {
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payment method: ' . $method);

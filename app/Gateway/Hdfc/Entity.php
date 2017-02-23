@@ -14,6 +14,7 @@ class Entity extends Base\Entity
         'received',
         'gateway_transaction_id',
         'amount',
+        'currency',
         'enroll_result',
         'status',
         'auth_result',
@@ -34,6 +35,7 @@ class Entity extends Base\Entity
         'action',
         'received',
         'amount',
+        'currency',
         'enroll_result',
         'status',
         'result',
@@ -45,10 +47,6 @@ class Entity extends Base\Entity
         'error_code',
         'error_text',
     );
-
-    protected $table = 'hdfc';
-
-    protected $primaryKey = 'id';
 
     protected $entity = 'hdfc';
 
@@ -84,11 +82,6 @@ class Entity extends Base\Entity
     public function getEnrollResult()
     {
         return $this->getAttribute('enroll_result');
-    }
-
-    public function getReceived()
-    {
-        return $this->getAttribute('received');
     }
 
     public function getReceivedAttribute()
@@ -131,5 +124,10 @@ class Entity extends Base\Entity
     public function getActionAttribute()
     {
         return (int) $this->attributes['action'];
+    }
+
+    public function getAmount()
+    {
+        return (float) $this->getAttribute('amount');
     }
 }

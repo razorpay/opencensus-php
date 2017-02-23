@@ -3,6 +3,7 @@
 namespace RZP\Tests;
 
 use Mailgun\Mailgun;
+use RZP\Http\Route;
 
 class RoutesTest extends TestCase
 {
@@ -21,18 +22,45 @@ class RoutesTest extends TestCase
         // Route::enableFilters();
     }
 
-    public function testJSONPRoute()
+    public function testAuthGroupsAreDisjoint()
     {
-        ;
+        $groups = [
+            Route::$internal,
+            Route::$private,
+            Route::$public,
+            Route::$publicCallback,
+            Route::$proxy,
+            Route::$device,
+            Route::$admin,
+            Route::$direct,
+        ];
+
+        $uniqueRoutes = [];
+
+        // Loop through every route in the auth groups and
+        // add them to a hash set. isset checks if the route
+        // has already been added, in constant time.
+
+        foreach ($groups as $group)
+        {
+            foreach ($group as $route)
+            {
+                $this->assertEquals(
+                    false,
+                    isset($uniqueRoutes[$route]),
+                    "$route route appears in two distinct auth groups"
+                );
+
+                $uniqueRoutes[$route] = true;
+            }
+        }
     }
 
     public function testMailgunRoute()
     {
+        $this->markTestSkipped();
+
         $routes = array(
-            'hdfc_mpr_production_test',
-            'hdfc_mpr_production_live',
-            'hdfc_mpr_beta_test',
-            'hdfc_mpr_beta_live'
         );
 
         $mgConfig = \Config::get('applications.mailgun');
@@ -75,6 +103,7 @@ class RoutesTest extends TestCase
         $scheme = ($https === false) ? 'http://' : 'https://';
         $host = substr($url, strlen($scheme));
 
+        // @todo: Needs to be rewritten.
         $action = "forward('".$scheme . $basicAuth . '@' . $host . "/v1/gateway/mpr/reconcile')";
         $expression = "match_recipient('". $route . '@' . $mg['url']."')";
 

@@ -2,11 +2,10 @@
 
 namespace RZP\Gateway\Billdesk\Mock;
 
+use Requests_Response;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Base;
 use RZP\Gateway\Billdesk;
-use Requests_Response;
 
 class Gateway extends Billdesk\Gateway
 {
@@ -49,5 +48,24 @@ class Gateway extends Billdesk\Gateway
         $txt .= '</form>';
 
         return $txt;
+    }
+
+    protected function getContentAfterChecksumVerification($responseBody)
+    {
+        /**
+         *  Check if Bank is Andhra Bank, if yes make the response invalid
+         */
+        $fieldData = explode('|', $responseBody);
+
+        if ($fieldData[7] === 'ADB')
+        {
+            $responseBody = $this->getInvalidVerifyData();
+        }
+        return parent::getContentAfterChecksumVerification($responseBody);
+    }
+
+    protected function getInvalidVerifyData()
+    {
+        return '<HTML><HEAD><TITLE>Error</TITLE></HEAD><BODY>An error occurred while processing your request.<p>Reference&#32;&#35;97&#46;44367c68&#46;1482720567&#46;ec59760</BODY></HTML>';
     }
 }

@@ -92,15 +92,62 @@ class TerminalTest extends TestCase
         $this->assertNull($t['deleted_at']);
     }
 
+    public function testCopyTerminal()
+    {
+        $this->markTestSkipped();
+        $terminal = $this->fixtures->create('terminal:ebs_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+        $mid = $terminal['merchant_id'];
+
+        $input = ['merchant_ids' => ['100000Razorpay']];
+
+        $response = $this->copyTerminal($tid, $mid, $input);
+
+        $newTerminal = $this->getEntityById('terminal', $response[0]['terminal'], true);
+
+        $oldTerminal = $terminal->toArray();
+
+        $unsetKeys = ['id', 'created_at', 'updated_at', 'merchant_id'];
+        foreach ($unsetKeys as $key)
+        {
+            unset($oldTerminal[$key]);
+        }
+
+        $this->assertEquals('100000Razorpay', $newTerminal['merchant_id']);
+        $this->assertEquals(0, $newTerminal['used_count']);
+        $this->assertArraySelectiveEquals($oldTerminal, $newTerminal);
+    }
+
+    public function testCopySharedTerminal()
+    {
+        $this->markTestSkipped();
+        $terminal = $this->fixtures->create('terminal:shared_axis_terminal', ['used_count' => 2]);
+
+        $tid = $terminal['id'];
+        $mid = $terminal['merchant_id'];
+
+        $input = ['merchant_ids' => ['100000Razorpay']];
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($tid, $mid, $input)
+        {
+            $this->copyTerminal($tid, $mid, $input);
+        });
+    }
+
     public function testEditAxisMigsTerminal()
     {
         $terminal = $this->fixtures->create(
             'terminal:shared_axis_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];
+
         $data = array('gateway_terminal_id' => 'random', 'gateway_terminal_password' => 'random');
 
         $content = $this->editTerminal($tid, $data);
+
         $this->assertEquals($content['gateway_terminal_id'], 'random');
     }
 
@@ -130,6 +177,21 @@ class TerminalTest extends TestCase
         $content = $this->editTerminal($tid, $data);
 
         $this->assertEquals(true, $terminal->reload()->upi);
+    }
+
+    public function testToggleTerminal()
+    {
+        $terminal = $this->fixtures->create(
+            'terminal:shared_axis_terminal', ['used_count' => 2, 'enabled' => '1']);
+
+        $tid = $terminal['id'];
+
+        $url = '/terminals/'.$tid.'/toggle';
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->startTest();
+
     }
 
     public function startTest($testDataToReplace = [])

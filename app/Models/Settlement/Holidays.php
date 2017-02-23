@@ -6,6 +6,10 @@ use Carbon\Carbon;
 
 class Holidays
 {
+    const HOLIDAY_MESSAGE = ['message' => 'Today is a holiday! Happy holidays :)'];
+
+    // Dont't add sundays or non working saturdays as part of this.
+    // These refer to settlement holidays only.
     public static $holidays = [
         2015 => [
             9 => [
@@ -66,10 +70,60 @@ class Holidays
                 31 => 'Diwali (Balipratipada)/Deepavali',
             ],
             11 => [
+                9  => 'Unscheduled Bank Holiday',
                 14 => 'Guru Nanak Jayanti/Kartik Poornima',
             ],
             12 => [
                 12 => 'Id-e-Milad/Eid Milad-un-Nabi',
+            ],
+        ],
+        2017 => [
+            1 => [
+                26 => 'Republic Day',
+            ],
+            2 => [
+                21 => 'BMC Elections 2017',
+                24 => 'Mahashivratri',
+            ],
+            3 => [
+                13 => 'Holi (2nd day)/Yaosang 2nd Day',
+                28 => 'Gudi Padwa',
+            ],
+            4 => [
+                1  => 'Annual closing of Accounts',
+                4  => 'Shree Ram Navami',
+                14 => 'Dr. Babasaheb Ambedkar Jayanti/Cheiraoba/Good Friday/Biju Festival',
+            ],
+            5 => [
+                1  => 'Maharashtra Din/May Day',
+                10 => 'Buddha Pournima',
+            ],
+            6 => [
+                26 => 'Ramzan Id (Id-ul-Fitr)',
+            ],
+            7 => [
+                1  => 'Annual Closing of RBI/Kharchi Puja',
+            ],
+            8 => [
+                15 => 'Independence Day/Janmashtami',
+                17 => 'Parsi New Year (Shahenshahi)',
+                25 => 'Ganesh Chaturthi',
+            ],
+            9 => [
+                2  => 'Bakri Id (Id-ul-Zuha)',
+                30 => 'Durga Puja/Dussehra (Vijaya Dashmi)',
+            ],
+            10 => [
+                2  => 'Mahatma Gandhi Jayanti',
+                19 => 'Diwali Amavasaya (Laxmi Pujan)/Kali Puja',
+                20 => 'Diwali (Balipratipada)',
+            ],
+            11 => [
+                4  => 'Guru Nanak Jayanti',
+            ],
+            12 => [
+                1  => 'Id-e-Milad/Eid Milad-un-Nabi',
+                25 => 'Christmas',
             ],
         ],
     ];
@@ -162,7 +216,7 @@ class Holidays
     public static function getSpecifiedBankHolidaysBetween($fromDate, $toDate)
     {
         // fromDate should be less than or equal to (lte) than toDate
-        assert($fromDate->lte($toDate));
+        assertTrue($fromDate->lte($toDate));
 
         $date = $fromDate->copy();
 
@@ -223,8 +277,69 @@ class Holidays
      */
     public static function isWorkingSaturday($day)
     {
-        assert($day->dayOfWeek === Carbon::SATURDAY);
+        assertTrue($day->dayOfWeek === Carbon::SATURDAY);
 
         return ($day->weekOfMonth % 2 !== 0);
+    }
+
+    /**
+     * Get next settlement holiday after the given day.
+     * The below is not an O(n^3) loop.
+     * It breaks at the first sight of return.
+     * And it is intended to skip most elements.
+     *
+     * @param Carbon\Carbon $date
+     * @return Carbon\Carbon $date
+     */
+    public static function getNextSettlementHoliday($date)
+    {
+        $year = $date->year;
+        $month = $date->month;
+        $day = $date->day;
+
+        foreach (self::$holidays as $holidayYear => $holidaysInYear)
+        {
+            // Compare only based on holidayYear.
+            $compareDate = self::getDateToCompareWith($holidayYear, $month, $day);
+
+            if ($compareDate->lt($date))
+            {
+                continue;
+            }
+
+            foreach ($holidaysInYear as $holidayMonth => $holidayInMonth)
+            {
+                // Compare only based on holidayYear and holidayMonth
+                $compareDate = self::getDateToCompareWith($holidayYear, $holidayMonth, $day);
+
+                if ($compareDate->lt($date))
+                {
+                    continue;
+                }
+
+                foreach ($holidayInMonth as $holidayDay => $holidayReason)
+                {
+                    // Compare based on holidayYear, holidayMonth and holidayDay
+                    $compareDate = self::getDateToCompareWith($holidayYear, $holidayMonth, $holidayDay);
+
+                    if ($compareDate->lt($date))
+                    {
+                        continue;
+                    }
+
+                    // Only the day the has a date with (holidayYear, holidayMonth and holidayDay)
+                    // greater than the current date will be returned.
+                    return $compareDate;
+                }
+            }
+        }
+    }
+
+    protected static function getDateToCompareWith($year, $month, $date)
+    {
+        return Carbon::now('Asia/Kolkata')->setDate($year, $month, $date)
+                                          ->hour(0)
+                                          ->minute(0)
+                                          ->second(0);
     }
 }

@@ -18,20 +18,36 @@ class Service extends Base\Service
         return $terminal->toArrayPublic();
     }
 
-    public function getTerminals($mid)
+    public function copyTerminal($mid, $tid, $input)
     {
+        $terminal = $this->repo->terminal->findByIdAndMerchantId($tid, $mid);
+
+        $terminals = (new Terminal\Core)->copy($input, $terminal);
+
+        return $terminals;
+    }
+
+    public function getTerminals(string $mid, array $input)
+    {
+        $subMerchantFlag = false;
+
+        if (isset($input['sub_merchant']) === true)
+        {
+            $subMerchantFlag = (bool) $input['sub_merchant'];
+        }
+
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
         $terminals = $this->repo->terminal->getByMerchantId($mid);
 
-        return $terminals->toArrayPublic();
+        return $terminals->toArrayPublic($subMerchantFlag);
     }
 
     public function getTerminal($mid, $tid)
     {
         $merchant = $this->repo->merchant->findOrFailPublic($mid);
 
-        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $id);
+        $terminal = $this->repo->terminal->getByIdAndMerchantId($mid, $tid);
 
         return $terminal->toArrayPublic();
     }
@@ -93,6 +109,50 @@ class Service extends Base\Service
         (new Terminal\Core)->validateExistingTerminal($terminal);
 
         $terminal->restore();
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function removeMerchantFromTerminal(string $id, string $merchantId)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $terminal = (new Terminal\Core)->removeMerchantFromTerminal($terminal, $merchantId);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function reassignMerchantForTerminal(string $id, array $input)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $terminal->getValidator()->validateInput('reassign', $input);
+
+        $mid = $input[Entity::MERCHANT_ID];
+
+        $merchant = $this->repo->merchant->findOrFailPublic($mid);
+
+        $terminal = (new Terminal\Core)->reassignMerchantForTerminal($terminal, $merchant);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function addMerchantToTerminal(string $id, string $mid)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $terminal = (new Terminal\Core)->addMerchantToTerminal($terminal, $mid);
+
+        return $terminal->toArrayPublic();
+    }
+
+    public function toggleTerminal($id, $input)
+    {
+        $terminal = $this->repo->terminal->getById($id);
+
+        $toggle = (bool) $input['toggle'];
+
+        (new Terminal\Core)->toggle($terminal, $toggle);
 
         return $terminal->toArrayPublic();
     }

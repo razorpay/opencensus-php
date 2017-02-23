@@ -79,7 +79,7 @@ return [
         'response' => [
             'content' => [
                 'entity' => 'collection',
-                'count' => 14,
+                'count' => 16,
                 'items' => [
                     [
                     ]
@@ -101,9 +101,34 @@ return [
         ],
         'response' => [
             'content' => [
+                'duplicates' => [],
+                'db_conflicts' => [],
+                'network_errors' => [
+                    '497522' => [
+                        8,
+                    ]
+                ],
+                'success' => 5,
+            ],
+        ],
+    ],
+
+    'testImportIinWithIssuer' => [
+        'request' => [
+            'url' => '/iins',
+            'method' => 'post',
+            'files' => [
+                'file' => '',
+            ],
+            'content' => [
+                'network' => 'MasterCard',
+            ],
+        ],
+        'response' => [
+            'content' => [
                 'duplicates'  => [
                 ],
-                'db_conflicts'=> [
+                'db_conflicts' => [
                 ],
                 'network_errors' => [
                     '497522' => [
@@ -111,6 +136,25 @@ return [
                     ]
                 ],
                 'success' => 5,
+            ],
+        ],
+    ],
+
+    'testIinRangeUploadWithType' => [
+        'request' => [
+            'url' => '/iins/range/upload',
+            'method' => 'post',
+            'content' => [
+                'min' => 652850,
+                'max' => 652855,
+                'network' => 'RuPay',
+                'type' => 'credit',
+                'country' => 'IN'
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'success' => 6,
             ],
         ],
     ],

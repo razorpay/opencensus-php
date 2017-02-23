@@ -4,7 +4,6 @@ namespace RZP\Models\Payment\TerminalAnalytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -16,10 +15,9 @@ class Entity extends Base\PublicEntity
     const TERMINAL_STATUS_MSG           = 'terminal_status_msg';
     const PAYMENT_TYPE                  = 'payment_type';
 
-
-    protected $table = Table::TERMINAL_ANALYTICS;
-
     protected $entity = 'terminal_analytics';
+
+    public $incrementing = true;
 
     protected $fillable = array(
         self::PAYMENT_ID,
@@ -47,4 +45,9 @@ class Entity extends Base\PublicEntity
     protected $casts = array(
         self::TERMINAL_RESPONSE_TIME => 'int',
     );
+
+    public function getTerminalId()
+    {
+        return $this->getAttribute(self::TERMINAL_ID);
+    }
 }

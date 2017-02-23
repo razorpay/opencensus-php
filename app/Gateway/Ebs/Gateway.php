@@ -19,9 +19,13 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const HASH_ALGO    = 'SHA512';
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';
+
+    const CHECKSUM_ATTRIBUTE = Resp::SECURE_HASH;
 
     const API          = 'api';
 
@@ -66,7 +70,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment = $this->repo->findByPaymentIdAndAction(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
 
-        assert(($gatewayPayment[Entity::ERROR_CODE] === null) or
+        assertTrue(($gatewayPayment[Entity::ERROR_CODE] === null) or
                ($gatewayPayment[Entity::ERROR_CODE] === '0'));
     }
 
@@ -78,7 +82,9 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             ['gateway' => $input['gateway']]);
 
-        $this->validateCallbackGetSecureHash($input['gateway'], $input['terminal']);
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
+
+        $this->verifySecureHash($input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -113,6 +119,8 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
@@ -271,7 +279,7 @@ class Gateway extends Base\Gateway
 
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
 
-            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect) !== false)
+            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect, true) !== false)
             {
                 // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
                 $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);
@@ -731,22 +739,6 @@ class Gateway extends Base\Gateway
         }
 
         return parent::getUrlDomain();
-    }
-
-    protected function validateCallbackGetSecureHash(array $content, $terminal)
-    {
-        $hash = $content[Resp::SECURE_HASH];
-
-        // Remove secureHash Value to calculate Expected Hash Value
-        unset($content[Resp::SECURE_HASH]);
-
-        $expectedHash = $this->getHashOfArray($content);
-
-        if ($hash !== $expectedHash)
-        {
-            throw new Exception\LogicException(
-                'Checksum verification failed');
-        }
     }
 
     protected function getAuthorizeAttributesForPaymentEntity($content)

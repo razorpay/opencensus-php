@@ -2,15 +2,17 @@
 
 namespace RZP\Models\Terminal;
 
-use RZP\Constants\Mode;
-
 class Options
 {
+    const FAILED = 'failed';
+
     protected $chance;
 
     protected static $testChance;
 
     protected $hasMultiple = false;
+
+    protected $failedTerminals = [];
 
     public function __construct()
     {
@@ -19,9 +21,9 @@ class Options
         $this->setMultiple();
     }
 
-    public function setMultiple()
+    public function setMultiple($multiple = true)
     {
-        $this->hasMultiple = true;
+        $this->hasMultiple = $multiple;
     }
 
     public function getMultiple()
@@ -45,6 +47,16 @@ class Options
         }
 
         $this->chance = $chance;
+    }
+
+    public function setFailedTerminals(array $exclude)
+    {
+        $this->failedTerminals = $exclude;
+    }
+
+    public function getFailedTerminals()
+    {
+        return $this->failedTerminals;
     }
 
     public static function setTestChance($testChance = 0)

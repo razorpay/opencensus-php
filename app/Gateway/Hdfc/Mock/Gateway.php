@@ -49,7 +49,6 @@ class Gateway extends Hdfc\Gateway
         $server->setInput($requestVar['content']);
 
         $response = null;
-
         switch($requestVar['type'])
         {
             case 'enroll':
@@ -98,7 +97,7 @@ class Gateway extends Hdfc\Gateway
 
         $urlSegment = constant('Gateway\Hdfc\Mock\Urls::'.$name);
 
-        $url = \RZP\Http\Route::getUrlWithAuth($urlSegment, 'rzp_test', $secret);
+        $url = $this->route->getUrlWithAuth($urlSegment, 'rzp_test', $secret);
 
         return $url;
     }

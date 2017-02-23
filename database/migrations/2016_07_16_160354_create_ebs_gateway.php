@@ -37,9 +37,9 @@ class CreateEbsGateway extends Migration
 
             $table->string(Ebs::REFUND_ID, UniqueIdEntity::ID_LENGTH)->nullable();
 
-            $table->boolean(Ebs::RECEIVED)->default(0);
+            $table->tinyInteger(Ebs::RECEIVED)->default(0);
 
-            $table->boolean(Ebs::IS_FLAGGED)->default(0);
+            $table->tinyInteger(Ebs::IS_FLAGGED)->default(0);
 
             $table->integer(Ebs::AMOUNT);
 

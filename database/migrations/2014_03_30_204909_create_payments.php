@@ -11,7 +11,7 @@ use RZP\Models\Terminal;
 use RZP\Models\Transaction;
 use RZP\Models\Order;
 
-class CreatePayments  extends Migration
+class CreatePayments extends Migration
 {
 
     /**
@@ -33,14 +33,25 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AMOUNT)
                   ->unsigned();
 
+            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
+
+            $table->integer(Payment::BASE_AMOUNT)
+                  ->unsigned();
+
             $table->string(Payment::METHOD);
 
             $table->string(Payment::STATUS);
 
+            $table->string(Payment::TWO_FACTOR_AUTH, 20)
+                  ->nullable();
+
             $table->char(Payment::ORDER_ID, Payment::ID_LENGTH)
                   ->nullable();
 
-            $table->boolean(Payment::INTERNATIONAL)
+            $table->char(Payment::INVOICE_ID, Payment::ID_LENGTH)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::INTERNATIONAL)
                   ->nullable();
 
             $table->integer(Payment::AMOUNT_AUTHORIZED)
@@ -51,10 +62,16 @@ class CreatePayments  extends Migration
                   ->unsigned()
                   ->default(0);
 
+            $table->integer(Payment::BASE_AMOUNT_REFUNDED)
+                  ->unsigned()
+                  ->default(0);
+
+            $table->integer(Payment::AMOUNT_PAIDOUT)
+                  ->unsigned()
+                  ->default(0);
+
             $table->string(Payment::REFUND_STATUS)
                   ->nullable();
-
-            $table->char(Payment::CURRENCY, Payment::CURRENCY_LENGTH);
 
             $table->string(Payment::DESCRIPTION)
                   ->nullable();
@@ -68,6 +85,9 @@ class CreatePayments  extends Migration
             $table->string(Payment::WALLET, 15)
                   ->nullable();
 
+            $table->string(Payment::VPA, 100)
+                  ->nullable();
+
             $table->char(Payment::EMI_PLAN_ID, 14)
                   ->nullable();
 
@@ -78,6 +98,9 @@ class CreatePayments  extends Migration
                   ->nullable();
 
             $table->string(Payment::ERROR_DESCRIPTION, 255)
+                  ->nullable();
+
+            $table->string(Payment::CANCELLATION_REASON, 255)
                   ->nullable();
 
             $table->string(Payment::CUSTOMER_ID, 14)
@@ -101,7 +124,8 @@ class CreatePayments  extends Migration
             $table->string(Payment::EMAIL, 255)
                   ->nullable();
 
-            $table->string(Payment::CONTACT, 20);
+            $table->string(Payment::CONTACT, 20)
+                  ->nullable();
 
             $table->text(Payment::NOTES);
 
@@ -111,20 +135,28 @@ class CreatePayments  extends Migration
             $table->integer(Payment::AUTHORIZED_AT)
                   ->nullable();
 
-            $table->boolean(Payment::AUTO_CAPTURED)
+            $table->tinyInteger(Payment::AUTO_CAPTURED)
                   ->default(0);
 
             $table->integer(Payment::CAPTURED_AT)
                   ->nullable();
 
-            $table->string(Payment::GATEWAY);
+            $table->string(Payment::GATEWAY)
+                  ->nullable();
 
-            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH);
+            $table->char(Payment::TERMINAL_ID, Payment::ID_LENGTH)
+                  ->nullable();
 
-            $table->boolean(Payment::SIGNED)
+            $table->tinyInteger(Payment::SIGNED)
                   ->default(0);
 
             $table->tinyInteger(Payment::VERIFIED)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::GATEWAY_CAPTURED)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::VERIFY_BUCKET)
                   ->nullable();
 
             $table->text(Payment::CALLBACK_URL)
@@ -148,10 +180,16 @@ class CreatePayments  extends Migration
                   ->nullable()
                   ->default(null);
 
-            $table->boolean(Payment::SAVE)
+            $table->tinyInteger(Payment::RECURRING)
                   ->default(0);
 
-            $table->boolean(Payment::LATE_AUTHORIZED)
+            $table->tinyInteger(Payment::SAVE)
+                  ->default(0);
+
+            $table->tinyInteger(Payment::LATE_AUTHORIZED)
+                  ->nullable();
+
+            $table->tinyInteger(Payment::CONVERT_CURRENCY)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -159,12 +197,18 @@ class CreatePayments  extends Migration
             $table->integer(Payment::UPDATED_AT);
 
             $table->index(Payment::STATUS);
+            $table->index(Payment::TWO_FACTOR_AUTH);
             $table->index(Payment::CREATED_AT);
             $table->index(Payment::AUTO_CAPTURED);
             $table->index(Payment::VERIFIED);
+
+            $table->index(Payment::GATEWAY_CAPTURED);
+            $table->index(Payment::VERIFY_BUCKET);
+            $table->index(Payment::GATEWAY);
             $table->index(Payment::AUTHORIZED_AT);
             $table->index(Payment::EMAIL);
             $table->index(Payment::BANK);
+            $table->index(Payment::AMOUNT);
             $table->index(Payment::LATE_AUTHORIZED);
 
             $table->foreign(Payment::MERCHANT_ID)

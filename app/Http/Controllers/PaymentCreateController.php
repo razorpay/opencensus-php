@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -20,7 +20,7 @@ class PaymentCreateController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     /**
@@ -36,6 +36,22 @@ class PaymentCreateController extends Controller
 
         }
 
+        $ret = $this->createPayment();
+
+        if ((is_array($ret)) and
+            (isset($ret['request']) === false))
+        {
+            return ApiResponse::json($ret);
+        }
+
+        return $ret;
+    }
+
+    /**
+     * Creates an S2S payment
+     */
+    public function postCreateS2SPayment()
+    {
         $ret = $this->createPayment();
 
         if ((is_array($ret)) and
@@ -81,10 +97,9 @@ class PaymentCreateController extends Controller
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
-        else
+        else if ($this->app['basicauth']->isPrivateAuth())
         {
-            // It could be just blank or an empty array. Hence unset it here only.
-            unset($input['callback_url']);
+            $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
 
         $data = $this->payment->process($input);
@@ -149,7 +164,21 @@ class PaymentCreateController extends Controller
             return ApiResponse::json($data);
         }
 
-        assert(false, 'Shouldn\'t reach here');
+        assertTrue(false, 'Shouldn\'t reach here');
+    }
+
+    /**
+     * Creates a upi payment
+     */
+    public function postCreateUpiPayment()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->processUpi($input);
+
+        $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        return ApiResponse::json($response);
     }
 
     /**
@@ -181,7 +210,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
@@ -220,13 +249,6 @@ class PaymentCreateController extends Controller
         $data = $this->payment->topup($id, $input);
 
         return $this->processCoprotoData($data);
-    }
-
-    public function postAutoCapture()
-    {
-        $data = $this->payment->autoCaptureOldAuthorizedPayments();
-
-        return ApiResponse::json($data);
     }
 
     /**
@@ -313,8 +335,13 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'otp')
             {
+                $templateData = [
+                   'data' => $data,
+                   'cdn'  => $this->config->get('url.cdn.production')
+                ];
+
                 return View::make('gateway.gatewayOtpPostForm')
-                           ->with('data', $data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'return')
             {
@@ -322,11 +349,12 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'async')
             {
-                return $data;
+                return View::make('gateway.gatewayAsyncForm')
+                           ->with('data', $data);
             }
             else
             {
-                assert(false, 'Should not reach here');
+                assertTrue(false, 'Should not reach here');
             }
         }
         else

@@ -3,13 +3,13 @@
 namespace RZP\Exception;
 
 use Exception;
-use RZP\Http\ApiResponse;
+use ApiResponse;
 
 class BaseException extends Exception
 {
     protected $error = null;
 
-    protected $data = null;
+    protected $data = [];
 
     /**
      * Constructor for base exception of the
@@ -32,11 +32,6 @@ class BaseException extends Exception
     protected function setError($error)
     {
         $this->error = $error;
-    }
-
-    public function setGatewayErrorCodeAndDesc($code, $desc)
-    {
-        $this->error->setGatewayErrorCodeAndDesc($code, $desc);
     }
 
     public function getError()
@@ -70,6 +65,11 @@ class BaseException extends Exception
     public function getData()
     {
         return $this->data;
+    }
+
+    public function setData($data)
+    {
+        $this->data = $data;
     }
 
     public function getDataAsString()

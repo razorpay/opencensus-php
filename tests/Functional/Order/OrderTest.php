@@ -20,11 +20,7 @@ class OrderTest extends TestCase
 
     public function setUpBillDeskGateway()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
-
-        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
-
-        $this->gateway = 'billdesk';
+        $this->fixtures->create('terminal:shared_billdesk_tpv_terminal');
 
         $this->setMockGatewayTrue();
     }
@@ -45,6 +41,11 @@ class OrderTest extends TestCase
         return $order;
     }
 
+    public function testCreateOrderWithNegativeAmount()
+    {
+        $this->startTest();
+    }
+
     public function testCreateAutoCaptureOrder()
     {
         $order = $this->startTest();
@@ -57,6 +58,11 @@ class OrderTest extends TestCase
         $order = $this->startTest();
 
         return $order;
+    }
+
+    public function testCreateTPVOrderWithInvalidAccountNumber()
+    {
+        $this->startTest();
     }
 
     public function testGetOrder()
@@ -106,8 +112,11 @@ class OrderTest extends TestCase
         $payment['order_id'] = $order['id'];
         $rzpPayment = $this->doAuthPayment($payment);
 
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+
         $payment = $this->getLastEntity('payment');
-        $this->assertEquals($order['id'], $payment['order_id']);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
 
         $order = $this->getLastEntity('order', true);
         $this->assertEquals($order['status'], 'attempted');
@@ -145,6 +154,30 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultPaymentArray();
         $payment['order_id'] = $order['id'];
+        $response = $this->doAuthPayment($payment);
+
+        $this->assertAutoCaptureResponse($response, $payment, $order);
+    }
+
+    public function testAutoCaptureFeeBearerCustomer()
+    {
+        $this->fixtures->merchant->enableConvenienceFeeModel();
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->ba->publicAuth();
+        $feesArray = $this->validateFees($payment);
+
+        $this->ba->privateAuth();
+
+        $amount = $payment['amount'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $order = $this->testCreateAutoCaptureOrder();
+
+        $payment['order_id'] = $order['id'];
+
         $response = $this->doAuthPayment($payment);
 
         $this->assertAutoCaptureResponse($response, $payment, $order);
@@ -202,7 +235,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+        $payment['bank'] = 'UTIB';
 
         // Not adding order_id in payment
 
@@ -250,7 +283,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+        $payment['bank'] = 'UTIB';
 
         $payment['order_id'] = $order['id'];
 
@@ -291,5 +324,19 @@ class OrderTest extends TestCase
         );
 
         return $this->makeRequestAndGetContent($request);
+    }
+
+    protected function validateFees($payment)
+    {
+        $feesArray = $this->createAndGetFeesForPayment($payment);
+
+        if ($payment['amount'] === 50000)
+        {
+            $this->assertEquals(1173, $feesArray['input']['fee']);
+
+            $this->assertEquals(1.49, $feesArray['display']['service_tax']);
+        }
+
+        return $feesArray;
     }
 }

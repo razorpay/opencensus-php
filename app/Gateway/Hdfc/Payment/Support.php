@@ -76,7 +76,6 @@ trait Support
             $this->supportPaymentRequest,
             $this->supportPaymentResponse);
 
-
         $this->verifyAndSaveSupportResponse($type, $input);
     }
 
@@ -136,6 +135,8 @@ trait Support
         }
         catch (\Exception $ex)
         {
+            $this->trace->traceException($ex, null, null, ['payment_id' => $paymentId]);
+
             return false;
         }
     }
@@ -197,7 +198,7 @@ trait Support
 
     protected function setSupportPaymentType($type)
     {
-        assert(($type === 'capture') or
+        assertTrue(($type === 'capture') or
                ($type === 'refund'));
 
         $this->supportPaymentRequest['type'] = $type;
@@ -604,8 +605,8 @@ trait Support
 
     protected function assertPaymentRefundedWithoutCapture($input)
     {
-        assert($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
+        assertTrue($input['payment'][PaymentModel\Entity::STATUS] === PaymentModel\Status::REFUNDED);
 
-        assert($input['payment'][PaymentModel\Entity::CAPTURED] === false);
+        assertTrue($input['payment'][PaymentModel\Entity::CAPTURED] === false);
     }
 }

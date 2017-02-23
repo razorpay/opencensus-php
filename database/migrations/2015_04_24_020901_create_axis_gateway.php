@@ -3,6 +3,8 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Constants\Table;
+
 use RZP\Gateway\AxisMigs;
 use RZP\Models\Base\UniqueIdEntity;
 
@@ -16,7 +18,7 @@ class CreateAxisGateway extends Migration
      */
     public function up()
     {
-        Schema::create('axis', function(Blueprint $table)
+        Schema::create(Table::MIGS, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -24,15 +26,15 @@ class CreateAxisGateway extends Migration
 
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action', 10);
-            $table->boolean('received')->default(0);
-            $table->boolean('genius')->default(0);
-            $table->boolean('amex')->default(0);
+            $table->tinyInteger('received')->default(0);
+            $table->tinyInteger('genius')->default(0);
+            $table->tinyInteger('amex')->default(0);
 
             $table->integer('vpc_Amount');
             $table->string('vpc_AcqResponseCode', 4)->nullable();
             $table->integer('vpc_AuthorisedAmount')->nullable();
             $table->integer('vpc_CapturedAmount')->nullable();
-            $table->char('vpc_Command', 7);
+            $table->char('vpc_Command', 20);
             $table->char('vpc_Currency', 3)->nullable();
             $table->char('vpc_MerchTxnRef', 14)->nullable();
             $table->char('vpc_3DSECI', 2)->nullable();

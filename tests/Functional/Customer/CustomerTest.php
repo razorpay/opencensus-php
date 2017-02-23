@@ -6,7 +6,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
 use Mockery;
-use RZP\Models\Merchant\Features;
 
 class CustomerTest extends TestCase
 {
@@ -18,7 +17,7 @@ class CustomerTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->editFeatures('tokens,cardsaving');
+        $this->fixtures->merchant->addFeatures(['tokens']);
     }
 
     public function testCreateCustomer()
@@ -92,6 +91,13 @@ class CustomerTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateCustomerDuplicateDontFail()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUpdateCustomer()
     {
         $this->ba->privateAuth();
@@ -127,10 +133,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233323');
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233323');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -142,10 +148,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123');
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123');
 
         $this->assertEquals($content['success'], 1);
     }
@@ -157,10 +163,10 @@ class CustomerTest extends TestCase
         $this->mockRaven();
 
         // send OTP
-        $response = $this->sendOtp('1234567890');
+        $response = $this->sendOtp('9988776655');
 
         // verify OTP
-        $content = $this->verifyOtp('1234567890', 'abc@razorpay.com', '233443', '123', true);
+        $content = $this->verifyOtp('9988776655', 'abc@razorpay.com', '233443', '123', true);
 
         $this->assertEquals($content['success'], 1);
 

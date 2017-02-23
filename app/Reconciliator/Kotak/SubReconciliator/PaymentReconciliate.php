@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\Kotak;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -11,15 +10,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
      * Row Header Names
      *******************/
     const COLUMN_INT_PAYMENT_ID = 'int_payment_id';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
 
     protected function getPaymentId($row)
     {

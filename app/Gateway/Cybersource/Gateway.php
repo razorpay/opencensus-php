@@ -5,190 +5,260 @@ namespace RZP\Gateway\Cybersource;
 use Cache;
 use Crypt;
 use Config;
-use Requests;
+use SoapVar;
 use SoapFault;
-use RZP\Error;
+use SoapClient;
+use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Gateway\Utility;
-use RZP\Models\Card;
-use RZP\Trace\Trace;
 use RZP\Gateway\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
+use RZP\Base\JitValidator;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
-
+use RZP\Gateway\Cybersource\Fields as F;
+use RZP\Gateway\Cybersource\Entity as E;
 
 class Gateway extends Base\Gateway
 {
     use Base\AuthorizeFailed;
 
-    const ACCOUNT_NUMBER              = 'accountNumber';
-    const AUTHENTICATION_DATA         = 'authenticationData';
-    const AUTH_REQUEST_ID             = 'authRequestID';
-    const CAPTURE_REQUEST_ID          = 'captureRequestID';
-    const CARD                        = 'card';
-    const CAVV                        = 'cavv';
-    const CC_AUTH_SERVICE             = 'ccAuthService';
-    const CC_CAPTURE_SERVICE          = 'ccCaptureService';
-    const CC_CREDIT_SERVICE           = 'ccCreditService';
-    const COLLECTION_INDICATOR        = 'collectionIndicator';
-    const COMMERCE_INDICATOR          = 'commerceIndicator';
-    const ECI                         = 'eci';
-    const EXPIRATION_MONTH            = 'expirationMonth';
-    const EXPIRATION_YEAR             = 'expirationYear';
-    const GATEWAY                     = 'gateway';
-    const ITEM                        = 'item';
-    const PARES_STATUS                = 'paresStatus';
-    const PAYER_AUTH_ENROLL_REPLY     = 'payerAuthEnrollReply';
-    const PAYER_AUTH_ENROLL_SERVICE   = 'payerAuthEnrollService';
-    const PAYER_AUTH_VALIDATE_REPLY   = 'payerAuthValidateReply';
-    const PAYER_AUTH_VALIDATE_SERVICE = 'payerAuthValidateService';
-    const PA_RES                      = 'PaRes';
-    const REASON_CODE                 = 'reasonCode';
-    const RECONCILIATION_ID           = 'reconciliationID';
-    const REQUEST_ID                  = 'requestID';
-    const RUN                         = 'run';
-    const SIGNED_PARES                = 'signedPARes';
-    const TERMINAL                    = 'terminal';
-    const TEST_MERCHANT_ID            = 'test_merchant_id';
-    const TEST_MERCHANT_SECRET        = 'test_merchant_secret';
-    const TEST_USERNAME               = 'test_username';
-    const TEST_PASSWORD               = 'test_password';
-    const UCAF                        = 'ucaf';
-    const UCAF_AUTHENTICATION_DATA    = 'ucafAuthenticationData';
-    const UCAF_COLLECTION_INDICATOR   = 'ucafCollectionIndicator';
-    const UNIT_PRICE                  = 'unitPrice';
-    const VERES_ENROLLED              = 'veresEnrolled';
-    const TEST_WSDL_FILE              = 'cybstest.wsdl.xml';
-    const LIVE_WSDL_FILE              = 'cybslive.wsdl.xml';
-    const XID                         = 'xid';
-    //soap client timeout in seconds
-    const CONNECTION_TIMEOUT          = 60;
+    const CACHE_KEY = 'cybersource_%s_card_details';
 
-    protected $gateway = Constants\Table::CYBERSOURCE;
+    const CACHE_TTL = 15;
 
-    protected $repo;
+    // Request timeout limit in seconds
+    const TIMEOUT = 60;
 
-    protected $model = null;
+    const TEST_MERCHANT_ID      = 'test_merchant_id';
+    const TEST_MERCHANT_SECRET  = 'test_merchant_secret';
+    const TEST_USERNAME         = 'test_username';
+    const TEST_PASSWORD         = 'test_password';
 
-    protected $enrollRequest;
+    protected $bankAcsResponseRules = [
+        'PaRes'     => 'required',
+        'MD'        => 'required',
+        'PaReq'     => 'sometimes'
+    ];
+
+    protected $gateway = 'cybersource';
+
+    protected $secureCacheDriver;
+
+    protected $eci;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->secureCache = Config::get('cache.secure_default');
+        $this->secureCacheDriver = Config::get('cache.secure_default');
     }
 
     public function authorize(array $input)
     {
         parent::authorize($input);
 
+        if ($this->isRecurringPaymentRequest($input) === true)
+        {
+            return $this->authorizeRecurring($input);
+        }
+
         $response = $this->enroll($input);
 
-        return $this->decideAuthStepAfterEnroll($response, $input);
+        return $this->decideAuthStepAfterEnroll($input, $response);
+    }
+
+    public function capture(array $input)
+    {
+        // We are using action to allow force capture on
+        // already captured payment entity, when they are not
+        // captured on gateway
+        parent::action($input, Action::CAPTURE);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $request = $this->getCaptureRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_CAPTURE_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromCaptureResponse($input, $response);
+
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Payment capture failed');
+        }
+    }
+
+    public function manualGatewayCapture(array $input)
+    {
+        $canManualCapture = $this->canForceCapture($input);
+
+        if ($canManualCapture)
+        {
+            $this->capture($input);
+
+            // Successfully captured on the gateway
+            return true;
+        }
+
+        // Did not capture on the gateway side
+        return false;
+    }
+
+    protected function canForceCapture($input)
+    {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayPaymentEntity = $this->repo->findSuccessfulCapturedEntity($paymentId);
+
+        if (($gatewayPaymentEntity !== null) and
+            ($gatewayPaymentEntity->getAmount() === $input['amount']))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function callback(array $input)
     {
         parent::callback($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->validateCallbackGatewayFields($input);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
 
         $this->setCardNumberAndCvv($input);
 
-        $gatewayPayment = $this->retrieveByPaymentId($input['payment']['id']);
-        $gatewayPayment->fill([Entity::RECEIVED => true]);
-        $gatewayPayment->saveOrFail();
+        $response = $this->validateAuthReply($input, $gatewayPayment);
 
-        $response = $this->postAuthEnrolledRequest($input);
+        $this->authorizeEnrolled($input, $response, $gatewayPayment);
 
-        $this->postEnrollAuthorize($input);
-    }
-
-    public function capture(array $input)
-    {
-        parent::capture($input);
-
-        $gatewayPayment = $this->repo->retrieveCapturedByPaymentId(
-            $input['payment']['id']);
-
-        if (($gatewayPayment !== null) and
-            ($gatewayPayment['amount'] === $input['payment']['amount']))
-        {
-            //
-            // Looks like the payment has already been captured on gateway,
-            // but due to some previous error, this has not been recorded
-            // on api.
-            //
-            // In this case we will silently return implying payment has
-            // been captured on gateway
-            //
-
-            return;
-        }
-
-        $request = $this->createCaptureRequestFields($input);
-
-        $this->traceGatewayRequest(TraceCode::GATEWAY_CAPTURE_REQUEST, $request);
-
-        try
-        {
-            $response = $this->postRequest($request);
-
-            $this->persistAfterCapture($input,  $response, $request);
-        }
-        catch (SoapFault $exception)
-        {
-            $this->handleSoapFault($exception, "Capture request failed");
-        }
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
     {
         parent::refund($input);
 
-        $request = $this->createRefundRequestFields($input);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::CAPTURE);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_REFUND_REQUEST, $request);
+        $request = $this->getRefundRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_REFUND_REQUEST, $request, $input);
 
         try
         {
             $response = $this->postRequest($request);
 
-            $this->persistAfterRefund($input, $response, $request);
+            $this->traceGatewayResponse(TraceCode::GATEWAY_REFUND_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromRefundResponse($input, $response);
+
+            $this->createGatewayRefundEntity($gatewayAttributes, $input);
         }
         catch (SoapFault $exception)
         {
-            $this->handleSoapFault($exception, "Refund request failed");
+            $this->handleSoapFault($exception, 'Refund failed');
         }
+    }
+
+    public function reverse(array $input)
+    {
+        parent::action($input, Action::REVERSE);
+
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+                                $input['payment']['id'], Action::AUTHORIZE);
+
+        $request = $this->getAuthReversalRequestArray($input, $gatewayPayment);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_REVERSE_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_REVERSE_RESPONSE, $response, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromAuthReversalResponse($input, $response);
+
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Reverse failed');
+        }
+    }
+
+    public function verify(array $input)
+    {
+        parent::verify($input);
+
+        // We are adding this condition as Cybersource updates the cache
+        // after sometime (read as 30 seconds). It a payment has been authorized
+        // recently (30 seconds), we skip the verify for that bucket.
+        if (($input['payment']['authorized_at'] !== null) and
+            ($input['payment']['authorized_at'] >= strtotime('-30 seconds')))
+        {
+            return null;
+        }
+
+        $verify = new Verify($this->gateway, $input);
+
+        return $this->runPaymentVerifyFlow($verify);
     }
 
     public function sendPaymentVerifyRequest($verify)
     {
         $input = $verify->input;
-        $payment = $verify->payment;
 
-        $request = $this->getPaymentVerifyRequestContent($input, $payment);
+        $request = $this->getPaymentVerifyRequestContent($input);
 
-        $this->trace->info(
+        $this->traceGatewayRequest(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            $request,
+            $input);
 
         $this->setCybersourceCredentials($request);
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
-            [
-                'content' => $response->body,
-                'gateway' => 'cybersource',
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $this->traceGatewayResponse(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            $response->body,
+            $input);
 
         $this->response = $response;
 
@@ -203,13 +273,23 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    public function verify(array $input)
+    protected function getPaymentVerifyRequestContent(array $input)
     {
-        parent::verify($input);
+        $targetDate = Carbon::createFromTimestamp($input['payment']['created_at'], 'UTC')
+                                ->format('Ymd');
 
-        $verify = new Verify($this->gateway, $input);
+        $content = [
+            F::TYPE                      => 'transaction',
+            F::SUBTYPE                   => 'transactionDetail',
+            F::MERCHANT_ID               => $this->getMerchantID($input['terminal']),
+            F::TARGET_DATE               => $targetDate,
+            F::VERSION_NUMBER            => '1.90',
+            F::MERCHANT_REFERENCE_NUMBER => $input['payment']['id'],
+        ];
 
-        return $this->runPaymentVerifyFlow($verify);
+        $request = $this->getStandardRequestArray($content);
+
+        return $request;
     }
 
     protected function verifyPayment($verify)
@@ -219,24 +299,22 @@ class Gateway extends Base\Gateway
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
-        $authReply = $this->fetchAuthorizeReplyFromContent($content);
+        list($authReply, $requestContent) = $this->fetchAuthorizeReplyFromContent($content);
 
         // Payment is failed when ics_auth is not present
-        if (isset($authReply['RFlag']) === true)
+        if ((isset($authReply[F::R_FLAG]) === false) or
+            ($authReply[F::R_FLAG] !== ReplyFlag::SOK))
         {
-            if ($authReply['RFlag'] !== ReplyFlag::SOK)
-            {
-                $this->verifyNonExistentCase($verify);
-            }
-            else if ($authReply['RFlag'] === ReplyFlag::SOK)
-            {
-                $this->verifyPaymentReconcileWithGatewayResponse($verify);
-
-                $this->getVerifyContentFromResponse($verify);
-            }
+            $this->verifyNonExistentCase($verify);
+        }
+        else if ($authReply[F::R_FLAG] === ReplyFlag::SOK)
+        {
+            $this->verifyPaymentReconcileWithGatewayResponse($verify);
         }
 
-        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH) ? true : false;
+        $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
+
+        $verify->verifyResponseContent = $this->getVerifyContentFromResponse($requestContent);
 
         return $verify->status;
     }
@@ -256,11 +334,11 @@ class Gateway extends Base\Gateway
         }
         else if (($payment['received'] === false) and
                  (($payment['status'] === null) or
-                  ($payment['status'] !== (string) Status::AUTHORIZED)))
+                  ($payment['status'] !== Status::AUTHORIZED)))
         {
             $verify->apiSuccess = false;
         }
-        else if ($payment['status'] === (string) Status::AUTHORIZED)
+        else if ($payment['status'] === Status::AUTHORIZED)
         {
             $verify->status = VerifyResult::STATUS_MISMATCH;
             $verify->apiSuccess = true;
@@ -286,521 +364,934 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function fetchAuthorizeReplyFromContent($content)
+    {
+        $requests = $content[F::REQUESTS][F::REQUEST] ?? null;
+
+        if ($requests !== null)
+        {
+            if ($this->isSequentialArray($requests) === false)
+            {
+                $requests = [$requests];
+            }
+
+            foreach($requests as $request)
+            {
+                $applicationReplies = $request[F::APPLICATION_REPLIES][F::APPLICATION_REPLY];
+
+                if ($this->isSequentialArray($applicationReplies) === false)
+                {
+                    $applicationReplies = [$applicationReplies];
+                }
+
+                foreach($applicationReplies as $applicationReply)
+                {
+                    if ($applicationReply['@attributes'][F::NAME] === 'ics_auth')
+                    {
+                        return [$applicationReply, $request];
+                    }
+                }
+            }
+        }
+
+        return [[], []];
+    }
+
+    /**
+     * Get array content from XML, don't use data from this to save
+     * in verify. Only use this for authorize failed
+     *
+     * @param array $content Parsed XML array
+     * @return array
+     */
+    protected function getVerifyContentFromResponse(array $content)
+    {
+        if (empty($content[F::PAYMENT_DATA]) === false)
+        {
+            $attributes = [
+                E::REF                => $content[F::PAYMENT_DATA][F::PAYMENT_REQUEST_ID],
+                E::AUTHORIZATION_CODE => $content[F::PAYMENT_DATA]['AuthorizationCode'] ?? null,
+                E::AVS_CODE           => $content[F::PAYMENT_DATA][F::AVS_RESULT] ?? null,
+                E::CV_CODE            => $content[F::PAYMENT_DATA][F::CV_RESULT] ?? null,
+                E::STATUS             => Status::AUTHORIZED,
+                E::REASON_CODE        => 100
+            ];
+
+            if (empty($content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO]) === false)
+            {
+                $payerAuthInfo = $content[F::PAYMENT_DATA][F::PAYER_AUTHENTICATION_INFO];
+
+                $attributes[E::ECI]  = $payerAuthInfo['ECI'] ?? null;
+                $attributes[E::CAVV] = $payerAuthInfo['AAV_CAVV'] ?? null;
+                $attributes[E::XID]  = $payerAuthInfo['XID'] ?? null;
+            }
+
+            return $attributes;
+        }
+
+        return $content;
+    }
+
+    protected function decideAuthStepAfterEnroll(array $input, array $response)
+    {
+        switch ($response[F::REASON_CODE])
+        {
+            case Result::ENROLLED:
+                $this->persistCardDetailsTemporarily($input);
+
+                return $this->getFieldsForFormSubmitToBankAcs($input, $response);
+
+            case Result::NOT_ENROLLED:
+
+                $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
+
+                $this->validateAndSetEciValue($input, $this->gatewayPayment, $payerAuthEnrollReply);
+
+                return $this->authorizeNotEnrolled($input, $response);
+        }
+
+        // @codeCoverageIgnoreStart
+        // Adding this as a defensive code, code should never reach here.
+        throw new Exception\LogicException('Unexpected response');
+        // @codeCoverageIgnoreEnd
+    }
+
+    protected function enroll(array $input)
+    {
+        $enrollRequest = $this->getEnrollRequestArray($input);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_ENROLL_REQUEST, $enrollRequest, $input);
+
+        try
+        {
+            $response = $this->postRequest($enrollRequest);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_ENROLL_RESPONSE, $response, $input);
+
+            if (($response[F::DECISION] === Decision::ERROR) or
+                (($response[F::REASON_CODE] !== Result::NOT_ENROLLED) and
+                 ($response[F::REASON_CODE] !== Result::ENROLLED)))
+            {
+                $gatewayAttributes = [
+                    E::REF           => $response[F::REQUEST_ID],
+                    E::STATUS        => Status::ENROLL_FAILED,
+                    E::REASON_CODE   => $response[F::REASON_CODE],
+                    E::RECEIVED      => '1'
+                ];
+
+                $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+
+                $this->checkErrorsAndThrowException($response);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromAuthEnrollResponse($input, $response);
+
+            $gatewayPayment = $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+
+            $this->gatewayPayment = $gatewayPayment;
+
+            return $response;
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, 'Auth Enroll: Server Error occured', true);
+        }
+    }
+
+    protected function authorizeNotEnrolled(array $input, array $response)
+    {
+        $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
+
+        $authRequest = $this->getAuthorizeRequestArray($input, $payerAuthEnrollReply);
+
+        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $authRequest, $input);
+
+        try
+        {
+            $response = $this->postRequest($authRequest);
+
+            $this->traceGatewayResponse(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response, $input);
+
+            $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
+
+            $gatewayPayment = $this->gatewayPayment;
+
+            $gatewayPayment->fill($gatewayAttributes);
+
+            $this->repo->saveOrFail($gatewayPayment);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, "Authorization failed");
+        }
+    }
+
+    protected function authorizeEnrolled(array $input, array $response, Entity $gatewayPayment)
+    {
+        $payerAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
+
+        $authRequest = $this->getAuthorizeEnrolledRequestArray($input, $payerAuthValidateReply, $gatewayPayment);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST, $authRequest, $input);
+
+        try
+        {
+            $response = $this->postRequest($authRequest);
+
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_ENROLLED_AUTH_RESPONSE,$response, $input);
+
+            if (($response[F::DECISION] === Decision::REJECT) or
+                ($response[F::DECISION] === Decision::ERROR))
+            {
+                $gatewayAttributes = [
+                    E::REF                => $response[F::REQUEST_ID],
+                    E::STATUS             => Status::AUTHORIZE_FAILED,
+                    E::REASON_CODE        => $response[F::REASON_CODE],
+                    E::ECI                => $payerAuthValidateReply[F::ECI] ?? null,
+                    E::COMMERCE_INDICATOR => $payerAuthValidateReply[F::COMMERCE_INDICATOR] ?? null,
+                    E::PARES_STATUS       => $payerAuthValidateReply[F::PARES_STATUS] ?? null,
+                    E::RECEIVED           => '1'
+                ];
+
+                if (isset($payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR]) === true)
+                {
+                    $gatewayAttributes[E::ECI] = $payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR];
+                }
+
+                $gatewayPayment->fill($gatewayAttributes);
+                $gatewayPayment->save();
+
+                $desc = $payerAuthValidateReply[F::AUTHENTICATION_STATUS_MESSAGE] ?? null;
+
+                $this->checkErrorsAndThrowException($response, null, $desc);
+            }
+
+            $gatewayAttributes = $this->getAttributeFromAuthorizeEnrolledResponse($input, $response);
+
+            $gatewayPayment->fill($gatewayAttributes);
+            $gatewayPayment->save();
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, "Authorization failed");
+        }
+    }
+
+    protected function authorizeRecurring(array $input)
+    {
+        $authRequest = $this->getAuthorizeRecurringRequestArray($input);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_RECURRING_AUTH_REQUEST, $authRequest, $input);
+
+        try
+        {
+            $response = $this->postRequest($authRequest);
+
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_RECURRING_AUTH_RESPONSE, $response, $input);
+
+            $gatewayAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
+
+            $gatewayAttributes[E::COMMERCE_INDICATOR] = CommerceIndicator::RECURRING;
+
+            $this->createGatewayPaymentEntity($gatewayAttributes, $input);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->checkErrorsAndThrowException($response);
+            }
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, "Authorization failed");
+        }
+    }
+
+    protected function validateAuthReply(array $input, Entity $gatewayPayment)
+    {
+        $request = $this->getValidateAuthRequestArray($input);
+
+        $this->traceGatewayRequest(
+            TraceCode::GATEWAY_VALIDATE_AUTH_REQUEST, $request, $input);
+
+        try
+        {
+            $response = $this->postRequest($request);
+
+            $this->traceGatewayResponse(
+                TraceCode::GATEWAY_VALIDATE_AUTH_RESPONSE, $response, $input);
+
+            $payerAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
+
+            $this->validateXidIfApplicable($gatewayPayment, $payerAuthValidateReply);
+
+            $gatewayAttributes = $this->getAttributeFromAuthValidateResponse($input, $response);
+
+            $gatewayPayment->fill($gatewayAttributes);
+
+            $this->validateAndSetEciValue($input, $gatewayPayment, $payerAuthValidateReply);
+
+            if ($response[F::REASON_CODE] !== Result::SUCCESS)
+            {
+                $this->repo->saveOrFail($gatewayPayment);
+
+                $this->checkErrorsAndThrowException($response);
+            }
+        }
+        catch (SoapFault $exception)
+        {
+            $this->handleSoapFault($exception, "Authorization failed");
+        }
+
+        return $response;
+    }
+
+    protected function validateAndSetEciValue(array $input, Entity $gatewayPayment, array $response)
+    {
+        $networkCode = $input['card']['network_code'];
+
+        switch ($networkCode)
+        {
+            case Card\Network::VISA:
+
+                $eciRaw = $response[F::ECI] ?? '07';
+
+                // NOTE: Make sure PHP return correct int on conversion
+                // Example: '012' should be converted to decimal 12 not octal 12
+                $eci = (int) $eciRaw;
+
+                if ($eci === 7)
+                {
+                    $desc = 'ECI value shouldn\'t be 7.';
+                }
+
+                break;
+
+            case Card\Network::MC:
+                $eciRaw = $response[F::UCAF_COLLECTION_INDICATOR] ?? '07';
+
+                $eci = (int) $eciRaw;
+
+                if (($eci === 7) or ($eci === 0))
+                {
+                    $desc = 'ECI value shouldn\'t be 7 or 0. ECI: ' . $eci;
+                }
+
+                break;
+        }
+
+        if (isset($desc) === true)
+        {
+            $gatewayPayment->setStatus(Status::AUTHORIZE_FAILED);
+            $this->repo->saveOrFail($gatewayPayment);
+
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_PAYMENT_AUTHENTICATION_ERROR, $eciRaw, $desc);
+        }
+
+        $this->eci = $eciRaw;
+    }
+
+    protected function getFieldsForFormSubmitToBankAcs(array $input, array $response)
+    {
+        $content = [
+            'TermUrl' => $input['callbackUrl'],
+            'MD'      => $input['payment']['id'],
+            'PaReq'   => $response[F::PA_ENROLL_REPLY][F::PA_REQ]
+        ];
+
+        $request = [
+            'url'     => $response[F::PA_ENROLL_REPLY][F::ACS_URL],
+            'method'  => 'post',
+            'content' => $content
+        ];
+
+        return $request;
+    }
+
+    protected function persistCardDetailsTemporarily(array $input)
+    {
+        $cvv = $input['card']['cvv'];
+
+        $vaultToken = null;
+
+        if (empty($input['card']['vault_token']) === false)
+        {
+            $vaultToken = $input['card']['vault_token'];
+        }
+        else
+        {
+            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
+        }
+
+        $key = $this->getCacheKey($input['payment']['id']);
+
+        $data = [
+            'cvv'         => Crypt::encrypt($cvv),
+            'vault_token' => $vaultToken
+        ];
+
+        Cache::store($this->secureCacheDriver)->put($key, $data, self::CACHE_TTL);
+    }
+
     protected function setCardNumberAndCvv(&$input)
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
+        $input['card']['number'] = (new Card\Tokenex)->getCardNumber($data['vault_token']);
 
         $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
     }
 
-    protected function enroll($input)
+    protected function getCardDetailsFromCache($input)
     {
-        //TODO: add timeout exception handling here
-        $request = $this->getEnrollRequestObject($input);
+        $key = $this->getCacheKey($input['payment']['id']);
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_ENROLL_REQUEST, $request);
-
-        try
-        {
-            $response = $this->postRequest($request);
-
-            $this->persistAfterEnroll($input, $response, $request);
-
-            return $response;
-        }
-        catch (SoapFault $exception)
-        {
-            $this->handleSoapFault($exception, "Enroll: Server Error occured", true);
-        }
+        return Cache::store($this->secureCacheDriver)->get($key);
     }
 
-    protected function postAuthEnrolledRequest($input)
+    protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
     {
-        assert($this->model->getReasonCode() === Result::ENROLLED);
+        $payerAuthEnrollReply = $response[F::PA_ENROLL_REPLY];
 
-        $request = $this->createAuthEnrolledRequestFields($input);
+        $attributes = [
+            E::REF                  => $response[F::REQUEST_ID],
+            E::REASON_CODE          => $response[F::REASON_CODE],
+            E::XID                  => $payerAuthEnrollReply[F::XID] ?? null,
+            E::VERES_ENROLLED       => $payerAuthEnrollReply[F::VERES_ENROLLED] ?? null,
+            E::COMMERCE_INDICATOR   => $payerAuthEnrollReply[F::COMMERCE_INDICATOR] ?? null,
+            E::STATUS               => Status::CREATED
+        ];
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_VALIDATE_REQUEST, $request);
-
-        try
+        if ($input['card']['network_code'] === Card\Network::MC)
         {
-            $response = $this->postRequest($request);
-
-            $this->persistAfterValidate($input, $response, $request);
-
-            return $response;
+            $attributes[E::ECI] = $payerAuthEnrollReply[F::UCAF_COLLECTION_INDICATOR] ?? null;
         }
-        catch (SoapFault $exception)
+
+        if ($input['card']['network_code'] === Card\Network::VISA)
         {
-            $this->handleSoapFault($exception, "Post Auth Enroll: Validation Request Failed");
+            $attributes[E::ECI] = $payerAuthEnrollReply[F::ECI] ?? null;
         }
+
+        return $attributes;
     }
 
-    protected function postEnrollAuthorize($input)
+    protected function getAttributeFromAuthorizeResponse(array $input, array $response)
     {
-        $request = $this->createAuthorizeRequestFields($input);
+        $ccAuthReply = $response[F::CC_AUTH_REPLY];
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $request);
+        $attributes = [
+            E::REF                      => $response[F::REQUEST_ID],
+            E::REASON_CODE              => $response[F::REASON_CODE],
+            E::RECEIPT_NUMBER           => $response[F::RECEIPT_NUMBER] ?? null,
+            E::AUTHORIZATION_CODE       => $ccAuthReply[F::AUTHORIZATION_CODE] ?? null,
+            E::AVS_CODE                 => $ccAuthReply[F::AVS_CODE] ?? null,
+            E::CARD_CATEGORY            => $ccAuthReply[F::CARD_CATEGORY] ?? null,
+            E::CARD_GROUP               => $ccAuthReply[F::CARD_GROUP] ?? null,
+            E::CV_CODE                  => $ccAuthReply[F::CV_CODE] ?? null,
+            E::MERCHANT_ADVICE_CODE     => $ccAuthReply[F::MERCHANT_ADVICE_CODE] ?? null,
+            E::GATEWAY_TRANSACTION_ID   => $ccAuthReply[F::PAYMENT_NETWORK_TXN_ID],
+            E::PROCESSOR_RESPONSE       => $ccAuthReply[F::PROCESSOR_RESPONSE],
+            E::STATUS                   => Status::AUTHORIZED,
+            E::RECEIVED                 => true
+        ];
 
-        try
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
         {
-            $response = $this->postRequest($request);
+            $attributes[E::STATUS] = Status::AUTHORIZE_FAILED;
+        }
 
-            $this->persistAfterAuthorize($input, $response, $request);
-        }
-        catch (SoapFault $exception)
-        {
-            $this->handleSoapFault($exception, "Post Enroll Authorize: Authorization Failed");
-        }
+        return $attributes;
     }
 
-    protected function postNotEnrolledAuthorize($input, $enrollResponse)
+    protected function getAttributeFromAuthValidateResponse(array $input, array $response)
     {
-        $request = $this->createNotEnrolledAuthorizeRequestFields($input, $enrollResponse);
+        $payerAuthValidateReply = $response[F::PA_VALIDATE_REPLY];
 
-        $this->traceGatewayRequest(TraceCode::GATEWAY_AUTHORIZE_REQUEST, $request);
+        $attributes = [
+            E::REF                      => $response[F::REQUEST_ID],
+            E::REASON_CODE              => $response[F::REASON_CODE],
+            E::CAVV                     => $payerAuthValidateReply[F::CAVV] ?? null,
+            E::XID                      => $payerAuthValidateReply[F::XID] ?? null,
+            E::PARES_STATUS             => $payerAuthValidateReply[F::PARES_STATUS] ?? null,
+            E::COMMERCE_INDICATOR       => $payerAuthValidateReply[F::COMMERCE_INDICATOR] ?? null,
+            E::ECI                      => $payerAuthValidateReply[F::ECI_RAW] ?? null,
+        ];
 
-        try
+        if ($attributes[E::ECI] === null)
         {
-            $response = $this->postRequest($request);
+            if (isset($payerAuthValidateReply[F::ECI]) === true)
+            {
+                $attributes[E::ECI] = $payerAuthValidateReply[F::ECI];
+            }
 
-            $this->persistAfterNotEnrolledAuthorize($input, $response, $request);
+            if (isset($payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR]) === true)
+            {
+                $attributes[E::ECI] = $payerAuthValidateReply[F::UCAF_COLLECTION_INDICATOR];
+            }
         }
-        catch (SoapFault $exception)
+
+        if (isset($payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA]) === true)
         {
-            $this->handleSoapFault($exception, "Post Not Enrolled Authorize: Authorization failed");
+            $attributes[E::AUTH_DATA] = $payerAuthValidateReply[F::UCAF_AUTHENTICATION_DATA];
         }
+
+        if ($response[F::REASON_CODE] !== Result::SUCCESS)
+        {
+            $attributes[E::STATUS] = Status::AUTHORIZE_FAILED;
+        }
+
+        return $attributes;
     }
 
-    protected function persistAfterValidate($input, $response, $request)
+    protected function getAttributeFromAuthorizeEnrolledResponse(array $input, array $response)
     {
-        $gateway = $this->retrieveByPaymentId($input['payment']['id']);
+        // $payerAuthValidateAttributes = $this->getAttributeFromAuthValidateResponse($input, $response);
+        $ccAuthAttributes = $this->getAttributeFromAuthorizeResponse($input, $response);
 
-        $this->trace->info(TraceCode::GATEWAY_VALIDATE_RESPONSE, $response);
+        // $attributes = array_merge($payerAuthValidateAttributes, $ccAuthAttributes);
 
-        $payAuthRep = $response[self::PAYER_AUTH_VALIDATE_REPLY];
-
-        if ($response['reasonCode'] !== Result::SUCCESS)
-        {
-            $attributes = array(
-                Entity::REASON_CODE     => $response['reasonCode'],
-                Entity::PARES_STATUS    => (isset($payAuthRep['paresStatus']) ? $payAuthRep['paresStatus'] : null),
-                Entity::XID             => (isset($payAuthRep['xid']) ? $payAuthRep['xid'] : null)
-            );
-
-            $gateway->fill($attributes);
-
-            $gateway->saveOrFail();
-
-            $this->throwException($response);
-        }
-
-        $attributes = array(
-            Entity::COMMERCE_INDICATOR => $payAuthRep[self::COMMERCE_INDICATOR],
-            Entity::XID                => $payAuthRep[self::XID],
-            Entity::PARES_STATUS       => $payAuthRep[self::PARES_STATUS]
-        );
-
-        $networkCode = $input['card']['network_code'];
-
-        switch ($networkCode)
-        {
-            case Card\Network::VISA:
-                if (isset($payAuthRep[Entity::ECI]) === false)
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                $eci = (int) $payAuthRep[self::ECI];
-
-                if (($eci === 7) or ($eci === 0))
-                {
-                    $message = 'ECI param value is invalid';
-
-                    if (isset($payAuthRep['authenticationStatusMessage']))
-                    {
-                        $message = $payAuthRep['authenticationStatusMessage'];
-                    }
-
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
-                        $response['reasonCode'],
-                        $message);
-                }
-
-                $attributes[Entity::ECI] = $payAuthRep[Entity::ECI];
-                $attributes[Entity::CAVV] = $payAuthRep[self::CAVV];
-                break;
-
-            case Card\Network::MC:
-                if (isset($payAuthRep[self::UCAF_COLLECTION_INDICATOR]) === false)
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                $colInd = (int) $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
-
-                if(($colInd === 0) or ($colInd === 7))
-                {
-                    $message = 'UCAF param value is invalid';
-
-                    if (isset($payAuthRep['authenticationStatusMessage']))
-                    {
-                        $message = $payAuthRep['authenticationStatusMessage'];
-                    }
-
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED,
-                        $response['reasonCode'],
-                        $message);
-                }
-
-                $attributes[Entity::AUTH_DATA] = $payAuthRep[self::UCAF_AUTHENTICATION_DATA];
-                $attributes[Entity::COLLECTION_INDICATOR] = $payAuthRep[self::UCAF_COLLECTION_INDICATOR];
-                break;
-
-            default:
-                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
-                break;
-        }
-
-        $gateway->fill($attributes);
-        $gateway->saveOrFail();
+        return $ccAuthAttributes;
     }
 
-    protected function persistAfterNotEnrolledAuthorize($input, $response, $request)
+    protected function getAttributeFromCaptureResponse(array $input, array $response)
     {
-        $gatewayPayment = $this->retrieveByPaymentId($input['payment']['id']);
+        $attributes = [
+            E::REF           => $response[F::REQUEST_ID],
+            E::REASON_CODE   => $response[F::REASON_CODE],
+            E::STATUS        => Status::CAPTURED,
+            E::RECEIVED      => true
+        ];
 
-        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
+        return $attributes;
+    }
 
-        if ($response['reasonCode'] !== Result::SUCCESS)
+    protected function getAttributeFromRefundResponse(array $input, array $response)
+    {
+        $attributes = [
+            E::REF           => $response[F::REQUEST_ID],
+            E::REASON_CODE   => $response[F::REASON_CODE],
+            E::STATUS        => Status::REFUNDED,
+            E::RECEIVED      => true
+        ];
+
+        return $attributes;
+    }
+
+    protected function getAttributeFromAuthReversalResponse(array $input, array $response)
+    {
+        $ccAuthReversalReply = $response[F::CC_AUTH_REVERSAL_REPLY];
+
+        $attributes = [
+            E::REF                => $response[F::REQUEST_ID],
+            E::REASON_CODE        => $response[F::REASON_CODE],
+            E::STATUS             => Status::REVERSED,
+            E::RECEIVED           => true
+        ];
+
+        return $attributes;
+    }
+
+    protected function getEnrollRequestArray(array $input)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::PA_ENROLL_SERVICE] = [
+            F::RUN => 'true'
+        ];
+
+        $content[F::CARD] = [
+            F::ACCOUNT_NUMBER   => $input['card']['number'],
+            F::EXPIRATION_MONTH => $input['card']['expiry_month'],
+            F::EXPIRATION_YEAR  => $input['card']['expiry_year'],
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getAuthorizeRequestArray(array $input, array $response = null)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CC_AUTH_SERVICE] = [
+            F::RUN => 'true'
+        ];
+
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
+        ];
+
+        $content[F::BUSINESS_RULES] = [
+            F::IGNORE_AVS_RESULT => 'true'
+        ];
+
+        if (isset($this->eci) === true)
         {
-            $attributes = array(
-                Entity::STATUS     => Status::AUTHORIZE_FAILED,
-                Entity::REASON_CODE => $response['reasonCode']
-            );
+            $cardNetwork = $input['card']['network_code'];
 
-            $gatewayPayment->fill($attributes);
+            if ($cardNetwork === Card\Network::VISA)
+            {
+                $content[F::CC_AUTH_SERVICE][F::ECI] = $this->eci;
+            }
 
-            $gatewayPayment->saveOrFail();
-
-            $this->throwException($response);
+            if ($cardNetwork === Card\Network::MC)
+            {
+                $content[F::UCAF][F::COLLECTION_INDICATOR] = $this->eci;
+            }
         }
 
-        $attributes = array(
-            Entity::REF    => $response[self::REQUEST_ID],
-            Entity::STATUS => Status::AUTHORIZED
-        );
+        if ($response !== null)
+        {
+            if (isset($response[F::VERES_ENROLLED]) === true)
+            {
+                $content[F::CC_AUTH_SERVICE][F::VERES_ENROLLED] = $response[F::VERES_ENROLLED];
+            }
+
+            $content[F::CC_AUTH_SERVICE][F::COMMERCE_INDICATOR] = $response[F::COMMERCE_INDICATOR];
+        }
+
+        $content[F::CARD] = [
+            F::ACCOUNT_NUMBER   => $input['card']['number'],
+            F::EXPIRATION_MONTH => $input['card']['expiry_month'],
+            F::EXPIRATION_YEAR  => $input['card']['expiry_year'],
+            F::CVN              => $input['card']['cvv'] ?? null,
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+        ];
+
+        $content[F::BILL_TO] = $this->getBillingInfo($input);
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getAuthorizeRecurringRequestArray(array $input)
+    {
+        $authRequest = $this->getAuthorizeRequestArray($input);
+
+        // Unset CVV number as it's not required in recurring
+        unset($authRequest['content'][F::CARD][F::CVN]);
+
+        // Set commerceIndicator as recurring
+        $authRequest['content'][F::CC_AUTH_SERVICE] = [
+            F::RUN                => 'true',
+            F::COMMERCE_INDICATOR => CommerceIndicator::RECURRING
+        ];
+
+        return $authRequest;
+    }
+
+    protected function getAuthorizeEnrolledRequestArray(
+        array $input,
+        array $payerAuthValidateReply,
+        Entity $gatewayPayment)
+    {
+        $authServiceRequest  = $this->getAuthorizeRequestArray($input, $payerAuthValidateReply);
+
+        $ccAuthService = $authServiceRequest['content'][F::CC_AUTH_SERVICE];
+
+        $ccAuthService = [
+            F::RUN                => 'true',
+            F::XID                => $gatewayPayment->getXid(),
+            F::ECI_RAW            => $gatewayPayment->getEci(),
+            F::PARES_STATUS       => $gatewayPayment->getParesStatus(),
+            F::VERES_ENROLLED     => $gatewayPayment->getVeresEnrolled(),
+            F::COMMERCE_INDICATOR => $gatewayPayment->getCommerceIndicator()
+        ];
+
+        $cardNetwork = $input['card']['network_code'];
+
+        if ($cardNetwork === Card\Network::VISA)
+        {
+            $ccAuthService[F::CAVV] = $gatewayPayment->getCavv();
+        }
+
+        if ($cardNetwork === Card\Network::MC)
+        {
+            $ucafAuthData = $gatewayPayment->getUcafAuthenticationData();
+
+            $authServiceRequest['content'][F::UCAF][F::AUTHENTICATION_DATA] = $ucafAuthData;
+        }
+
+        $authServiceRequest['content'][F::CC_AUTH_SERVICE] = $ccAuthService;
+
+        return $authServiceRequest;
+    }
+
+    protected function getRefundRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CC_CREDIT_SERVICE] = [
+            F::RUN                => 'true',
+            F::CAPTURE_REQUEST_ID => $gatewayPayment->getCaptureRequestId()
+        ];
+
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['refund']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getAuthReversalRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CC_AUTH_REVERSAL_SERVICE] = [
+            F::RUN              => 'true',
+            F::AUTH_REQUEST_ID  => $gatewayPayment->getRequestId()
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getCaptureRequestArray(array $input, Entity $gatewayPayment)
+    {
+        $content = [];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CC_CAPTURE_SERVICE] = [
+            F::RUN => 'true',
+            F::AUTH_REQUEST_ID => $gatewayPayment->getRequestId()
+        ];
+
+        $content[F::INVOICE_HEADER] = [
+            F::MERCHANT_DESCRIPTOR => $this->getDynamicMerchantDescription($input['merchant'])
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency'],
+            F::GRAND_TOTAL_AMOUNT => ($input['payment']['amount'] / 100)
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    protected function getValidateAuthRequestArray(array $input)
+    {
+        $content = [];
+
+        $content[F::PA_VALIDATE_SERVICE] = [
+            F::RUN                => 'true',
+            F::SIGNED_PA_RES      => $input['gateway'][F::PA_RES],
+        ];
+
+        $content[F::MERCHANT_ID] = $this->getMerchantId($input['terminal']);
+        $content[F::MERCHANT_REFERENCE_CODE] = $input['payment']['id'];
+
+        $content[F::CARD] = [
+            F::ACCOUNT_NUMBER   => $input['card']['number'],
+            F::EXPIRATION_MONTH => $input['card']['expiry_month'],
+            F::EXPIRATION_YEAR  => $input['card']['expiry_year'],
+        ];
+
+        $content[F::PURCHASE_TOTALS] = [
+            F::CURRENCY           => $input['payment']['currency']
+        ];
+
+        $request = $this->getStandardSoapRequest($content);
+
+        return $request;
+    }
+
+    /**
+     * Sets dummy billing info as AVS is not
+     * supported in India
+     */
+    protected function getBillingInfo(array $input)
+    {
+        $billingInfo = [
+            F::FIRST_NAME  => 'noreal',
+            F::LAST_NAME   => 'name',
+            F::STREET      => '1295 Charleston Rd',
+            F::CITY        => 'Mountain View',
+            F::STATE       => 'CA',
+            F::POSTAL_CODE => '94043',
+            F::COUNTRY     => 'US',
+            F::EMAIL       => $input['payment']['email']
+        ];
+
+        return $billingInfo;
+    }
+
+
+    // Check for recurring payment
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['terminal']->isNon3DSRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function createGatewayPaymentEntity($attributes, $input)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId = $input['payment']['id'];
+        $amount    = $input['payment']['amount'];
+        $currency  = $input['payment']['currency'];
+        $acquirer  = $input['terminal']->getGatewayAcquirer();
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setAmount($amount);
+
+        $gatewayPayment->setCurrency($currency);
+
+        $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->setAcquirer($acquirer);
+
+        $gatewayPayment->fill($attributes);
+
+        $this->repo->saveOrFail($gatewayPayment);
+
+        $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
+    }
+
+    protected function createGatewayRefundEntity($attributes, $input)
+    {
+        $gatewayPayment = $this->getNewGatewayPaymentEntity();
+
+        $paymentId    = $input['payment']['id'];
+        $refundId     = $input['refund']['id'];
+        $refundAmount = $input['refund']['amount'];
+        $currency     = $input['refund']['currency'];
+        $acquirer  = $input['terminal']->getGatewayAcquirer();
+
+        $gatewayPayment->setPaymentId($paymentId);
+
+        $gatewayPayment->setRefundId($refundId);
+
+        $gatewayPayment->setAmount($refundAmount);
+
+        $gatewayPayment->setCurrency($currency);
+
+        $gatewayPayment->setAction($this->action);
+
+        $gatewayPayment->setAcquirer($acquirer);
 
         $gatewayPayment->fill($attributes);
 
         $gatewayPayment->saveOrFail();
+
+        $this->gatewayPayment = $gatewayPayment;
+
+        return $gatewayPayment;
     }
 
-    protected function persistAfterAuthorize($input, $response, $request)
+    protected function postRequest($request)
     {
-        $gateway = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
+        $soapClient = $this->getSoapClientObject($request);
 
-        $this->trace->info(TraceCode::GATEWAY_AUTHORIZE_RESPONSE, $response);
+        $response = $soapClient->runTransaction($request['content']);
 
-        if ($response['reasonCode'] !== Result::SUCCESS)
-        {
-            $attributes = array(
-                Entity::STATUS      => Status::AUTHORIZE_FAILED,
-                Entity::REASON_CODE => $response['reasonCode']
-            );
-
-            if (isset($response[self::REQUEST_ID]) === true)
-            {
-                $attributes[Entity::REF] = $response[self::REQUEST_ID];
-            }
-
-            $gateway->fill($attributes);
-
-            $gateway->saveOrFail();
-
-            $this->throwException($response);
-        }
-
-        $attributes = array(
-            Entity::REF    => $response[self::REQUEST_ID],
-            Entity::STATUS => Status::AUTHORIZED
-        );
-
-        $gateway->fill($attributes);
-
-        $gateway->saveOrFail();
+        // Hack to convert object to array recursively
+        return json_decode(json_encode($response), true);
     }
 
-    protected function persistAfterEnroll($input, $response, $request)
+    protected function getStandardSoapRequest($content = [])
     {
-        $this->trace->info(TraceCode::GATEWAY_ENROLL_RESPONSE, $response);
-
-        $reasonCode = (int) $response['reasonCode'];
-
-        $attributes = array(
-            Entity::AMOUNT        => $input['payment']['amount'],
-            Entity::REASON_CODE   => $response['reasonCode'],
-            Entity::STATUS        => Status::CREATED,
-            Entity::REF           => $response[self::REQUEST_ID]
-        );
-
-        $this->createGatewayPaymentEntity($attributes, $input);
-
-        if (($reasonCode !== Result::ENROLLED) and
-            ($reasonCode !== Result::SUCCESS))
-        {
-            $this->throwException($response);
-        }
-    }
-
-    protected function persistAfterCapture($input, $response, $request)
-    {
-        $this->trace->info(TraceCode::GATEWAY_CAPTURE_RESPONSE, $response);
-
-        $status = Status::CAPTURED;
-        $reasonCode = (int) $response['reasonCode'];
-
-        if ($reasonCode !== Result::SUCCESS)
-        {
-            $status = Status::CAPTURE_FAILED;
-            $error  = ResponseCode::$reasonCodes[$response['reasonCode']];
-        }
-
-        $attributes = array(
-            Entity::AMOUNT      => $input['payment']['amount'],
-            Entity::RECEIVED    => true,
-            Entity::CAPTURE_REF => $response[self::REQUEST_ID],
-            Entity::STATUS      => $status,
-            Entity::REASON_CODE => $response['reasonCode'],
-        );
-
-        $this->createGatewayPaymentEntity($attributes, $input);
-
-        if ($response['reasonCode'] !== Result::SUCCESS)
-        {
-            $this->throwException($response);
-        }
-    }
-
-    protected function persistAfterRefund($input, $response, $request)
-    {
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $response);
-
-        $reasonCode = (int) $response['reasonCode'];
-
-        $attributes = array(
-            Entity::AMOUNT      => $input['refund']['amount'],
-            Entity::REFUND_ID   => $input['refund']['id'],
-            Entity::REF         => $response['requestID'],
-            Entity::STATUS      => ($reasonCode !== Result::SUCCESS) ? Status::REFUND_FAILED : Status::REFUNDED,
-            Entity::REASON_CODE => $reasonCode,
-            Entity::ACTION      => Base\Action::REFUND,
-            Entity::RECEIVED    => true
-        );
-
-        $this->createGatewayPaymentEntity($attributes, $input);
-
-        if ($reasonCode !== Result::SUCCESS)
-        {
-            $this->throwException($response);
-        }
-    }
-
-    protected function createAuthEnrolledRequestFields($input)
-    {
-        $content = $this->getCommonRequestData($input);
-
-        $content[self::PAYER_AUTH_VALIDATE_SERVICE][self::RUN] = 'true';
-
-        $content[self::PAYER_AUTH_VALIDATE_SERVICE][self::SIGNED_PARES] = $input['gateway'][self::PA_RES];
-
-        $this->setBillingInfo($content, $input);
-        $this->setCardInfo($content, $input);
-        // Unset cvv
-        unset($content['card']['cvNumber']);
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
-    }
-
-    protected function createAuthorizeRequestFields($input)
-    {
-        $content = $this->getCommonRequestData($input);
-
-        $gateway = $this->retrieveByPaymentId($input['payment']['id']);
-
-        $content['ccAuthService'][self::RUN] = 'true';
-        $content['ccAuthService'][self::PARES_STATUS] = $gateway->getParesStatus();
-        $content['ccAuthService'][self::XID] = $gateway->getXid();
-        $content['ccAuthService'][self::COMMERCE_INDICATOR] = $gateway->getCommerceIndicator();
-        $content['ccAuthService'][Entity::ECI] = $gateway->getEci();
-        $content['ccAuthService'][self::RECONCILIATION_ID] = $input['payment']['id'];
-
-        $networkCode = $input['card']['network_code'];
-
-        switch ($networkCode)
-        {
-            case Card\Network::VISA:
-                $content['ccAuthService'][Entity::CAVV] = $gateway->getCavv();
-                break;
-
-            case Card\Network::MC:
-                $content['ucaf'][self::AUTHENTICATION_DATA] = $gateway->getAuthCode();
-                $content['ucaf'][self::COLLECTION_INDICATOR] = $gateway->getCollectionIndicator();
-                break;
-
-            default:
-                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
-                break;
-        }
-
-        $this->setBillingInfo($content, $input);
-        $this->setCardInfo($content, $input);
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
-    }
-
-    protected function createNotEnrolledAuthorizeRequestFields($input, $enrollResponse)
-    {
-        $content = $this->getCommonRequestData($input);
-
-        $content['ccAuthService'] = [
-            'run'               => 'true',
-            'commerceIndicator' => $enrollResponse['payerAuthEnrollReply'][self::COMMERCE_INDICATOR],
-            'veresEnrolled'     => $enrollResponse['payerAuthEnrollReply'][self::VERES_ENROLLED],
-            'reconciliationID'  => $input['payment']['id']
+        $request = [
+            'wsdl'    => $this->getWsdlFile(),
+            'content' => $content,
+            'auth'    => $this->getCredentials(),
+            'options' => [
+                'encoding'           => 'UTF-8',
+                'exception'          => true,
+                'connection_timeout' => self::TIMEOUT
+            ],
         ];
 
-        $networkCode = $input['card']['network_code'];
+        return $request;
+    }
 
-        $payerAuthEnrollReply = $enrollResponse['payerAuthEnrollReply'];
+    protected function getCredentials()
+    {
+        $terminal = $this->terminal;
 
-        switch ($networkCode)
+        $auth = [
+            'username' => $terminal['gateway_terminal_id'],
+            'password' => $terminal['gateway_terminal_password']
+        ];
+
+        if ($this->mode === Mode::TEST)
         {
-            case Card\Network::VISA:
-
-                $eci = (int) $payerAuthEnrollReply[self::ECI];
-
-                if (($eci === 7) or ($eci === 0))
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                $content['ccAuthService']['eci'] = $payerAuthEnrollReply['eci'];
-                break;
-
-            case Card\Network::MC:
-
-                $colInd = (int) $payerAuthEnrollReply[self::UCAF_COLLECTION_INDICATOR];
-
-                if(($colInd === 0) or ($colInd === 7))
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                $content['ucaf']['collectionIndicator'] = $payerAuthEnrollReply['ucafCollectionIndicator'];
-                break;
-
-            default:
-                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
-                break;
+            $auth = [
+                'username' => $this->config[self::TEST_USERNAME],
+                'password' => $this->config[self::TEST_PASSWORD]
+            ];
         }
 
-        $content['card']['accountNumber']   = $input['card']['number'];
-        $content['card']['expirationMonth'] = $input['card']['expiry_month'];
-        $content['card']['expirationYear']  = $input['card']['expiry_year'];
-        $content['card']['cvNumber']        = $input['card']['cvv'];
-
-        $this->setBillingInfo($content, $input);
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
+        return $auth;
     }
 
-    protected function createCaptureRequestFields($input)
+    protected function getMerchantId($terminal)
     {
-        $content = $this->getCommonRequestData($input);
+        $mid = $terminal['gateway_terminal_id'];
 
-        $gatewayPayment = $this->repo->retrieveByPaymentIdOrFail($input['payment']['id']);
+        if ($this->mode === Mode::TEST)
+        {
+            $mid = $this->config[self::TEST_USERNAME];
+        }
 
-        $content['ccCaptureService'] = [
-            self::RUN => 'true',
-            self::AUTH_REQUEST_ID => $gatewayPayment->getRef()
-        ];
-
-        $content['card'] = [
-            'expirationMonth' => $input['card']['expiry_month'],
-            'expirationYear' => $input['card']['expiry_year']
-        ];
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
-    }
-
-    protected function createRefundRequestFields($input)
-    {
-        $content = $this->getCommonRequestData($input);
-
-        $gateway = $this->repo->retrieveByPaymentIdAndStatus($input['payment']['id'], Status::CAPTURED);
-
-        $content['ccCreditService'][self::RUN] = 'true';
-        $content['ccCreditService'][self::CAPTURE_REQUEST_ID] = $gateway->getCaptureRef();
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
-    }
-
-    protected function getEnrollRequestObject($input)
-    {
-        $content = $this->getCommonRequestData($input);
-
-        $content['payerAuthEnrollService'][self::RUN] = 'true';
-
-        $content['card']['accountNumber'] = $input['card']['number'];
-        $content['card']['expirationMonth'] = $input['card']['expiry_month'];
-        $content['card']['expirationYear'] = $input['card']['expiry_year'];
-
-        $request = $this->getStandardSoapRequest($content);
-
-        return $request;
-    }
-
-    protected function getPaymentVerifyRequestContent($input, $payment)
-    {
-        $content = [
-            'type'          => 'transaction',
-            'subtype'       => 'transactionDetail',
-            'merchantID'    => $this->getMerchantID($input['terminal']),
-            'requestID'     => $payment->getRef(),
-            'versionNumber' => '1.90'
-        ];
-
-        $request = $this->getStandardRequestArray($content);
-
-        return $request;
-    }
-
-    protected function getSoapClientObject($request)
-    {
-        $soapClient = new CybersourceSoapClient($request['url'],
-                                                $request['options']['auth'],
-                                                $request['connect_options']);
-
-        return $soapClient;
+        return $mid;
     }
 
     protected function getWsdlFile()
@@ -815,244 +1306,48 @@ class Gateway extends Base\Gateway
         return $file;
     }
 
-    protected function getMerchantID($terminal)
+    /**
+     * @codeCoverageIgnore
+     * Returns SoapClient Object when mock is disabled
+     */
+    protected function getSoapClientObject($request)
     {
-        $mid = $terminal['gateway_terminal_id'];
+        $soapClient = new SoapClient($request['wsdl'], $request['options']);
 
-        if ($this->mode === Mode::TEST)
-        {
-            $mid = $this->config[self::TEST_USERNAME];
-        }
+        $headers = $this->getSoapHeader($request);
+        $soapClient->__setSoapHeaders($headers);
 
-        return $mid;
+        return $soapClient;
     }
 
-    protected function setDebugDetail(&$request)
+    protected function getSoapHeader($request)
     {
-        $request['clientLibrary'] = '';
+        $username = $request['auth']['username'];
+        $password = $request['auth']['password'];
 
-        $request['clientLibraryVersion'] = '';
+        // Must understand should be omitted in case of test cases
+        $mustUnderstand = ! $this->mock;
 
-        $request['clientEnvironment'] = '';
-    }
+        $wsseNs = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-wssecurity-secext-1.0.xsd';
 
-    protected function setBillingInfo(&$content, $input)
-    {
-        $content['billTo'] = [
-            'firstName'     => 'noreal',
-            'lastName'      => 'name',
-            'street1'       => '1295 Charleston Rd',
-            'city'          => 'Mountain View',
-            'state'         => 'CA',
-            'postalCode'    => '94043',
-            'country'       => 'US',
-            'email'         => $input['payment']['email']
-        ];
-    }
+        // $passwordObj->Type = 'http://docs.oasis-open.org/wss/2004/01/oasis-200401-wss-username-token-profile-1.0#PasswordTex';
 
-    protected function getCardDetailsFromCache($input)
-    {
-        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
-
-        return Cache::store($this->secureCache)->pull($key);
-    }
-
-    protected function setCardInfo(&$request, $input)
-    {
-        $request['card'] = [
-            'accountNumber'     => $input['card']['number'],
-            'expirationMonth'   => $input['card']['expiry_month'],
-            'expirationYear'    => $input['card']['expiry_year'],
-            'cvNumber'          => $input['card']['cvv'],
-        ];
-    }
-
-    protected function decideAuthStepAfterEnroll($enrollResponse, $input)
-    {
-        switch ($enrollResponse['reasonCode'])
-        {
-            case Result::ENROLLED:
-                $this->persistCardDetailsTemporarily($input);
-
-                return $this->getFieldsForFormSubmitToBankACS($enrollResponse, $input);
-
-            case Result::NOT_ENROLLED:
-                $this->validateEnrollResponseNotEnrolled($enrollResponse, $input);
-
-                return $this->postNotEnrolledAuthorize($input, $enrollResponse);
-
-            default:
-                throw new Exception\LogicException(TraceCode::GATEWAY_UNSUPPORTED_CARD_NETWORK);
-        }
-    }
-
-    protected function persistCardDetailsTemporarily($input)
-    {
-        $cvv = $input['card']['cvv'];
-
-        $vaultToken = null;
-
-        if (empty($input['card']['vault_token']) === false)
-        {
-            $vaultToken = $input['card']['vault_token'];
-        }
-        else
-        {
-            $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
-        }
-
-        $key = 'cybersource_' . $input['payment']['id'] . '_card_details';
-
-        $data = [
-            'cvv'         => Crypt::encrypt($cvv),
-            'vault_token' => $vaultToken
+        $wsseAuth = [
+            'Username' => (new SoapVar($username, XSD_STRING, null, $wsseNs, null, $wsseNs)),
+            'Password' => (new SoapVar($password, XSD_STRING, null, $wsseNs, null, $wsseNs)),
         ];
 
-        Cache::store($this->secureCache)->put($key, $data, 10);
-    }
-
-    protected function getFieldsForFormSubmitToBankACS($enrollResponse, $input)
-    {
-        $content['TermUrl'] = $input['callbackUrl'];
-        $content['MD']      = $input['payment']['id'];
-        $content['PaReq']   = $enrollResponse['payerAuthEnrollReply']['paReq'];
-
-        $request['content'] = $content;
-        $request['url']     = $enrollResponse['payerAuthEnrollReply']['acsURL'];
-        $request['method']  = 'post';
-
-        return $request;
-    }
-
-    protected function validateEnrollResponseNotEnrolled($enrollResponse, $input)
-    {
-        $payerAuth = $enrollResponse['payerAuthEnrollReply'];
-
-        $networkCode = $input['card']['network_code'];
-
-        switch ($networkCode)
-        {
-            case Card\Network::VISA:
-                if (isset($payerAuth[Entity::ECI]) === false)
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                // NOTE: Make sure PHP return correct int on conversion
-                // Example: '012' should be converted to decimal 12 not octal 12
-                $eci = (int) $payerAuth[Entity::ECI];
-
-                if (in_array($eci, [0, 7], true) === true)
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                break;
-
-            case Card\Network::MC:
-                if (isset($payerAuth[self::UCAF_COLLECTION_INDICATOR]) === false)
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                $ucaf = (int) $payerAuth[self::UCAF_COLLECTION_INDICATOR];
-
-                if (($ucaf === 0) or ($ucaf === 7))
-                {
-                    throw new Exception\GatewayErrorException(
-                        ErrorCode::GATEWAY_ERROR_PROCESSING_DECLINED);
-                }
-
-                break;
-        }
-    }
-
-    protected function postRequest($request)
-    {
-        $soapClient = $this->getSoapClientObject($request);
-
-        $content = json_decode(json_encode($request['content']));
-
-        $response = $soapClient->runTransaction($content);
-
-        return json_decode(json_encode($response), true);;
-    }
-
-    protected function traceGatewayRequest($traceCode, $request)
-    {
-        unset($request['content']['card']);
-        unset($request['card']);
-        unset($request['options']['auth']);
-
-        $this->trace->info($traceCode, $request);
-    }
-
-    protected function getStandardSoapRequest($content = [], $method = 'post')
-    {
-        $request = [
-            'url'     => $this->getWsdlFile(),
-            'method'  => $method,
-            'content' => $content,
-            'options' => [
-                'auth' => $this->getCredentials()
-            ],
-            'connect_options' => [
-                'exception' => true,
-                'connection_timeout' => self::CONNECTION_TIMEOUT
-            ],
+        $wsseToken = [
+            'UsernameToken' => (new SoapVar($wsseAuth, SOAP_ENC_OBJECT, null, $wsseNs, 'UsernameToken', $wsseNs))
         ];
 
-        return $request;
-    }
+        $wsseTokenSoap = new SoapVar($wsseToken, SOAP_ENC_OBJECT, null, $wsseNs, 'UsernameToken', $wsseNs);
 
-    protected function getCommonRequestData($input)
-    {
-        $data = [];
+        $wsseHeaderSoap = new SoapVar($wsseTokenSoap, SOAP_ENC_OBJECT, null, $wsseNs, 'Security', $wsseNs);
 
-        // Merchant data
-        $data['merchantID'] = $this->getMerchantID($input['terminal']);
-        $data['merchantReferenceCode'] = $input['payment']['id'];
+        $objSoapVarWSSEHeader = new \SoapHeader($wsseNs, 'Security', $wsseHeaderSoap, $mustUnderstand);
 
-        // Debug data
-        $data['clientLibrary'] = '';
-        $data['clientLibraryVersion'] = '';
-        $data['clientEnvironment'] = '';
-
-        // Purchase info
-        $data['purchaseTotals']['currency'] = $input['payment']['currency'];
-
-        // Item info
-        $data['item'] = [
-            [
-                'unitPrice' => ($input['payment']['amount']/100),
-                'id'        => '1'
-            ]
-        ];
-
-        return $data;
-    }
-
-    protected function getCredentials()
-    {
-        $terminal = $this->terminal;
-
-        $auth = array(
-            'username' => $terminal['gateway_terminal_id'],
-            'password' => $terminal['gateway_terminal_password']
-        );
-
-        if ($this->mode === Mode::TEST)
-        {
-            $auth = array(
-                'username' => $this->config[self::TEST_USERNAME],
-                'password' => $this->config[self::TEST_PASSWORD]
-            );
-        }
-
-        return $auth;
+        return $objSoapVarWSSEHeader;
     }
 
     protected function setCybersourceCredentials(&$request)
@@ -1075,74 +1370,30 @@ class Gateway extends Base\Gateway
         $request['options']['auth'] = [$auth['username'], $auth['password']];
     }
 
-    protected function retrieveByPaymentId($paymentId)
-    {
-        if ($this->model === null)
-        {
-            $this->model = $this->repo->retrieveByPaymentIdOrFail($paymentId);
-        }
+    // Logging
 
-        return $this->model;
+    protected function traceGatewayRequest($traceCode, $request, $input)
+    {
+        unset($request['content']['card']);
+        unset($request['card']);
+        unset($request['auth']);
+
+        $this->trace->info($traceCode,
+            [
+                'request'    => $request,
+                'gateway'    => 'cybersource',
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
-    protected function createGatewayPaymentEntity($attributes, $input)
+    protected function traceGatewayResponse($traceCode, $response, $input)
     {
-        $payment = $this->getNewGatewayPaymentEntity();
-
-        $paymentId = $input['payment']['id'];
-
-        $payment->setPaymentId($paymentId);
-
-        $payment->setAction($this->action);
-
-        $payment->fill($attributes);
-
-        $payment->saveOrFail();
-
-        $this->model = $payment;
-
-        return $payment;
-    }
-
-    protected function fetchAuthorizeReplyFromContent($content)
-    {
-        $applicationReplies = $content['Requests']['Request']['ApplicationReplies']['ApplicationReply'];
-
-        if ($this->isSequentialArray($applicationReplies) === false)
-        {
-            $applicationReplies = [$applicationReplies];
-        }
-
-        foreach($applicationReplies as $applicationReply)
-        {
-            if ($applicationReply['@attributes']['Name'] === 'ics_auth')
-            {
-                return $applicationReply;
-            }
-        }
-
-        return [];
-    }
-
-
-    protected function getVerifyContentFromResponse($verify)
-    {
-        $content = $verify->verifyResponseContent;
-
-        $paymentData = $content['Requests']['Request']['PaymentData'];
-
-        $paInfo = $paymentData['PayerAuthenticationInfo'];
-
-        $data = [
-            'eci' => str_pad($paInfo['ECI'], 2, '0', STR_PAD_LEFT),
-            'cavv' => $paInfo['AAV_CAVV'],
-            'xid' => $paInfo['XID'],
-            'reason_code' => 100,
-            'action' => Base\Action::AUTHORIZE,
-            'status' => Status::AUTHORIZED
-        ];
-
-        $verify->verifyResponseContent = $data;
+        $this->trace->info($traceCode,
+            [
+                'response'   => $response,
+                'gateway'    => 'cybersource',
+                'payment_id' => $input['payment']['id'],
+            ]);
     }
 
     protected function xmlToArray($data)
@@ -1157,6 +1408,13 @@ class Gateway extends Base\Gateway
         return array_keys($array) === range(0, count($array) - 1);
     }
 
+    protected function getCacheKey($paymentId)
+    {
+        $key = sprintf(self::CACHE_KEY, $paymentId);
+
+        return $key;
+    }
+
     // Exception handling
 
     /**
@@ -1169,40 +1427,105 @@ class Gateway extends Base\Gateway
         if (Utility::checkSoapTimeout($sf) === true)
         {
             throw new Exception\GatewayTimeoutException(
-                                $sf->getMessage(), $sf, $safeRetry);
+                        $sf->getMessage(), $sf, $safeRetry);
         }
 
         throw new Exception\RuntimeException(
             $errMsg, null, $sf);
     }
 
-    /**
-     * @param $response
-     * @throws Exception\BadRequestException
-     * @throws Exception\GatewayErrorException
-     */
-    protected function throwException($response)
+    protected function checkErrorsAndThrowException(array $response, $code = null, $desc = null)
     {
-        if (isset($response['reasonCode']) === false)
+        $reasonCode = $response[F::REASON_CODE];
+
+        $code = $code ?: ResponseCode::getMappedCode($reasonCode);
+        $desc = $desc ?: ResponseCode::getDescription($reasonCode);
+
+        if (ResponseCode::isFatalError($reasonCode) === true)
         {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $reasonCode = $response['reasonCode'];
-
-        $desc = ResponseCode::$reasonCodes[$reasonCode];
-
-        if (ResponseCode::isValidationError($reasonCode))
-        {
-            throw new Exception\BadRequestException(
-                ResponseCode::getMappedCode($reasonCode),
-                $reasonCode);
+            throw new Exception\ServerErrorException(
+                'Server error occured. Please contact admin.', $code);
         }
 
         throw new Exception\GatewayErrorException(
-            ResponseCode::getMappedCode($reasonCode),
-            $reasonCode,
-            $desc);
+                $code, $reasonCode, $desc);
+    }
+
+    protected function validateCallbackGatewayFields(array $input)
+    {
+        try
+        {
+            (new JitValidator)->rules($this->bankAcsResponseRules)
+                              ->input($input['gateway'])
+                              ->strict(false)
+                              ->validate();
+        }
+        catch (Exception\RecoverableException $e)
+        {
+            $this->trace->info(
+                TraceCode::GATEWAY_CALLBACK_EMPTY,
+                [
+                    'gateway'       => 'cybersource',
+                    'gateway_input' => $input['gateway'],
+                    'payment_id'    => $input['payment']['id']
+                ]
+            );
+
+            throw new Exception\GatewayErrorException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
+        }
+    }
+
+    protected function validateXidIfApplicable($gatewayPayment, $payerAuthValidateReply)
+    {
+        $expectedXid = $gatewayPayment->getXid();
+
+        $actualXid = $payerAuthValidateReply[F::XID] ?? null;
+
+        if (($actualXid !== null) and
+            ($actualXid !== $expectedXid))
+        {
+            throw new Exception\LogicException(
+                'Invalid XID given');
+        }
+    }
+
+    protected function getDynamicMerchantDescription($merchant)
+    {
+        $billingLabel = $merchant->getBillingLabel();
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]/', '', $billingLabel);
+
+        if (empty($label) === true)
+        {
+            $label = 'Razorpay Payments';
+        }
+
+        return str_limit($label, 19);
+    }
+
+    /**
+     * @codeCoverageIgnore
+     * @incomplete Optimize callback response verification
+     */
+    protected function validateParesStatus(array $input)
+    {
+        $PaRes = $input['gateway'][F::PA_RES];
+
+        $PaRes = base64_decode($PaRes);
+        $PaRes = gzinflate(substr($PaRes, 2));
+
+        $PaResObject = simplexml_load_string($PaRes);
+        $PaRes = json_decode(json_encode($PaResObject), true);
+
+        if ((isset($PaRes['Message']['PARes']['TX']['status']) === true) and
+            ($PaRes['Message']['PARes']['TX']['status'] === 'Y'))
+        {
+            $this->trace->info(TraceCode::GATEWAY_CALLBACK_PARES,
+                [
+                    'gateway' => 'cybersource',
+                    'PaResStatus' => $PaRes['Message']['PARes']['TX']['status']
+                ]);
+        }
     }
 }

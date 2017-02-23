@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Hdfc\Payment;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Hdfc;
 use RZP\Gateway\Hdfc\Payment;
 use RZP\Trace\Trace;
@@ -86,7 +85,7 @@ trait Authorize
         // Throw exception otherwise.
         //
 
-        assert((int) $this->model->enroll_result === Payment\Result::ENROLLED);
+        assertTrue((int) $this->model->enroll_result === Payment\Result::ENROLLED);
 
         if ($this->model->status !== Status::ENROLLED)
         {
@@ -269,6 +268,8 @@ trait Authorize
 
         $this->authNotEnrolledRequest['url'] = Hdfc\Urls::AUTH_NOT_ENROLLED_URL;
         $this->authNotEnrolledRequest['data'] = $data;
+
+        unset($this->authNotEnrolledRequest['content']);
 
         $this->trace(
             Trace::DEBUG,

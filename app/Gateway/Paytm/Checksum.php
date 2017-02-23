@@ -114,17 +114,7 @@ class Checksum
         $website_hash = hash(HashAlgo::SHA256, $finalString);
         $website_hash .= $salt;
 
-        $validFlag = "FALSE";
-
-        if ($website_hash == $paytm_hash)
-        {
-            return TRUE;
-        }
-        else
-        {
-            return FALSE;
-        }
-
+        return hash_equals($website_hash, $paytm_hash);
     }
 
     public static function getArray2Str($arrayList)
@@ -147,7 +137,7 @@ class Checksum
 
     public static function redirect2PG($paramList, $key)
     {
-        $hashString = self::getchecksumFromArray($paramList);
+        $hashString = self::getChecksumFromArray($paramList);
         $checksum = self::encrypt_e($hashString, $key);
     }
 

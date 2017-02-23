@@ -3,12 +3,12 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Models\Base\UniqueIdEntity;
 use RZP\Gateway\Cybersource\Entity as Cybersource;
 use RZP\Constants\Table;
 
 class CreateCybersourceGateway extends Migration
 {
-
     /**
      * Run the migrations.
      *
@@ -22,41 +22,90 @@ class CreateCybersourceGateway extends Migration
 
             $table->increments(Cybersource::ID);
 
-            $table->char(Cybersource::PAYMENT_ID, Cybersource::ID_LENGTH);
+            $table->char(Cybersource::PAYMENT_ID, UniqueIdEntity::ID_LENGTH);
 
-            $table->char(Cybersource::ACTION, 10)->nullable();
+            $table->string(Cybersource::ACQUIRER, 10)
+                  ->nullable();
 
-            $table->integer(Cybersource::RECEIVED)->default(0);
+            $table->char(Cybersource::ACTION, 10)
+                  ->nullable();
 
-            $table->char(Cybersource::REFUND_ID, Cybersource::ID_LENGTH)->nullable();
+            $table->integer(Cybersource::RECEIVED)
+                  ->default(0);
 
-            $table->char(Cybersource::AUTH_DATA, 40)->nullable();
+            $table->char(Cybersource::REFUND_ID, UniqueIdEntity::ID_LENGTH)
+                  ->nullable();
 
-            $table->char(Cybersource::COMMERCE_INDICATOR, 20)->nullable();
+            $table->char(Cybersource::AUTH_DATA, 40)
+                  ->nullable();
+
+            $table->char(Cybersource::COMMERCE_INDICATOR, 20)
+                  ->nullable();
 
             $table->integer(Cybersource::AMOUNT);
 
-            $table->char(Cybersource::PARES_STATUS, 20)->nullable();
+            $table->string(Cybersource::CURRENCY, 3)
+                  ->nullable();
+
+            $table->char(Cybersource::PARES_STATUS, 2)
+                  ->nullable();
 
             $table->char(Cybersource::STATUS, 20);
 
-            $table->char(Cybersource::XID, 40)->nullable();
+            $table->char(Cybersource::XID, 40)
+                  ->nullable();
 
-            $table->char(Cybersource::ECI, 20)->nullable();
+            $table->char(Cybersource::AVS_CODE, 2)
+                  ->nullable();
 
-            $table->char(Cybersource::CAVV, 40)->nullable();
+            $table->char(Cybersource::CARD_CATEGORY, 2)
+                  ->nullable();
 
-            $table->char(Cybersource::REF, 120)->nullable();
+            $table->char(Cybersource::CARD_GROUP, 2)
+                  ->nullable();
 
-            $table->char(Cybersource::CAPTURE_REF, 30)->nullable();
+            $table->char(Cybersource::CV_CODE, 2)
+                  ->nullable();
 
-            $table->integer(Cybersource::REASON_CODE)->nullable();
+            $table->char(Cybersource::VERES_ENROLLED, 2)
+                  ->nullable();
+
+            $table->char(Cybersource::ECI, 2)
+                  ->nullable();
+
+            $table->char(Cybersource::COLLECTION_INDICATOR, 2)
+                  ->nullable();
+
+            $table->char(Cybersource::CAVV, 40)
+                  ->nullable();
+
+            $table->char(Cybersource::AUTHORIZATION_CODE, 6)
+                  ->nullable();
+
+            $table->char(Cybersource::RECEIPT_NUMBER, 6)
+                  ->nullable();
+
+            $table->char(Cybersource::REF, 40)
+                  ->nullable();
+
+            $table->char(Cybersource::CAPTURE_REF, 40)
+                  ->nullable();
+
+            $table->char(Cybersource::MERCHANT_ADVICE_CODE, 30)
+                  ->nullable();
+
+            $table->char(Cybersource::GATEWAY_TRANSACTION_ID, 30)
+                  ->nullable();
+
+            $table->char(Cybersource::PROCESSOR_RESPONSE, 10)
+                  ->nullable();
+
+            $table->integer(Cybersource::REASON_CODE)
+                  ->nullable();
 
             $table->integer(Cybersource::CREATED_AT);
 
             $table->integer(Cybersource::UPDATED_AT);
-
-            $table->char(Cybersource::COLLECTION_INDICATOR, 20)->nullable();
 
             $table->foreign(Cybersource::PAYMENT_ID)
                   ->references(Cybersource::ID)

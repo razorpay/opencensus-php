@@ -171,3 +171,133 @@ if (! function_exists('flatten_array'))
         return $result;
     }
 }
+
+/**
+ * We do not check for whether this function is defined already
+ * If it is defined already by some other library (like phpunit)
+ * then we want this definition to be the correct one.
+ */
+function assertTrue($assertion, $message = null)
+{
+    if (version_compare(phpversion(), '7.0.0', '<'))
+    {
+        $message = $message ?: '';
+
+        assert($assertion, $message);
+    }
+    else
+    {
+        $e = new RZP\Exception\AssertionException($message);
+
+        assert($assertion, $e);
+    }
+}
+
+function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
+{
+    $uuid = sprintf($format,
+        // 32 bits for "time_low"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_mid"
+        mt_rand( 0, 0xffff ),
+
+        // 16 bits for "time_hi_and_version",
+        // four most significant bits holds version number 4
+        mt_rand( 0, 0x0fff ) | 0x4000,
+
+        // 16 bits, 8 bits for "clk_seq_hi_res",
+        // 8 bits for "clk_seq_low",
+        // two most significant bits holds zero and one for variant DCE1.1
+        mt_rand( 0, 0x3fff ) | 0x8000,
+
+        // 48 bits for "node"
+        mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff ), mt_rand( 0, 0xffff )
+    );
+
+    return $uuid;
+}
+
+function upi_uuid($prefix = true)
+{
+    $uuid = strtoupper(gen_uuid());
+
+    if ($prefix)
+    {
+        $uuid = 'RAZ' . $uuid;
+    }
+
+    return $uuid;
+}
+
+function upi_ts() {
+    return date('c');
+}
+
+/**
+ * This function is adapted from Twig/Core
+ * See original source at https://git.io/vDumO
+ * Twig is licenced under the 3-Clause BSD License
+ * @see goo.gl/8ghQeE (OWASP Escaping Guidelines) for the need
+ * @param  string $str input string
+ * @return string
+ */
+function escape_html_attribute(string $str)
+{
+    return preg_replace_callback('#[^a-zA-Z0-9,\.\-_]#Su', function ($matches)
+    {
+        /**
+         * This function is adapted from code coming from Zend Framework.
+         *
+         * @copyright Copyright (c) 2005-2012 Zend Technologies USA Inc. (http://www.zend.com)
+         * @license   http://framework.zend.com/license/new-bsd New BSD License
+         */
+        /*
+         * While HTML supports far more named entities, the lowest common denominator
+         * has become HTML5's XML Serialisation which is restricted to the those named
+         * entities that XML supports. Using HTML entities would result in this error:
+         *     XML Parsing Error: undefined entity
+         */
+        static $entityMap = [
+            34 => 'quot', /* quotation mark */
+            38 => 'amp',  /* ampersand */
+            60 => 'lt',   /* less-than sign */
+            62 => 'gt',   /* greater-than sign */
+        ];
+
+        $chr = $matches[0];
+        $ord = ord($chr);
+        /*
+         * The following replaces characters undefined in HTML with the
+         * hex entity for the Unicode replacement character.
+         */
+        if (($ord <= 0x1f and $chr != "\t" and $chr != "\n" and $chr != "\r") or ($ord >= 0x7f and $ord <= 0x9f))
+        {
+            return '&#xFFFD;';
+        }
+        /*
+         * Check if the current character to escape has a name entity we should
+         * replace it with while grabbing the hex value of the character.
+         */
+        if (strlen($chr) == 1)
+        {
+            $hex = strtoupper(substr('00'.bin2hex($chr), -2));
+        }
+        else
+        {
+            $chr = iconv($chr, 'UTF-16BE', 'UTF-8');
+            $hex = strtoupper(substr('0000'.bin2hex($chr), -4));
+        }
+        $int = hexdec($hex);
+
+        if (array_key_exists($int, $entityMap))
+        {
+            return sprintf('&%s;', $entityMap[$int]);
+        }
+        /*
+         * Per OWASP recommendations, we'll use hex entities for any other
+         * characters where a named entity does not exist.
+         */
+        return sprintf('&#x%s;', $hex);
+    }, $str);
+}

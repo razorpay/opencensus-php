@@ -2,14 +2,11 @@
 
 namespace RZP\Gateway\Sharp;
 
-use RZP\Constants\Mode;
 use Crypt;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use Requests;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
 use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
@@ -19,6 +16,11 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         parent::authorize($input);
+
+        if ($this->isRecurringPaymentRequest($input))
+        {
+            return;
+        }
 
         $content = array(
             'action'        => 'authorize',
@@ -50,7 +52,7 @@ class Gateway extends Base\Gateway
 
     public function otpGenerate(array $input)
     {
-        ;
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function topup(array $input)
@@ -152,7 +154,7 @@ class Gateway extends Base\Gateway
 
     protected function getRequestArray($content, $input)
     {
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('mock_sharp_payment_post');
+        $url = $this->route->getUrlWithPublicAuth('mock_sharp_payment_post');
 
         $method = 'post';
 
@@ -187,5 +189,17 @@ class Gateway extends Base\Gateway
     protected function decryptCardNumber($encryptedCard)
     {
         return Crypt::decrypt($encryptedCard);
+    }
+
+    protected function isRecurringPaymentRequest($input)
+    {
+        if (($input['payment']['recurring'] === true) and
+            ($input['token'] !== null) and
+            ($input['token']->isRecurring() === true))
+        {
+            return true;
+        }
+
+        return false;
     }
 }

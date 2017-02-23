@@ -5,26 +5,28 @@ namespace RZP\Models\Admin;
 use Carbon\Carbon;
 use cebe\markdown\MarkdownExtra;
 use Config;
-use RZP\Models\Merchant;
 use Mail;
-use Mailgun\Mailgun;
-use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
-use RZP\Trace\Trace;
+use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
+use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 /**
  * Class used for mass mailing
  */
 class Newsletter
 {
+    protected $lists;
+    protected $count;
+    protected $recipient;
     protected $email;
     protected $listName;
     protected $testListMemberAdd;
 
     const WAIT_BEFORE_RETRY = 10;
 
-    function __construct($recipient,
-        $subject = 'Razorpay Newsletter',
+    function __construct(
+        $subject,
         $msg,
         $template = 'newsletter')
     {
@@ -32,21 +34,26 @@ class Newsletter
 
         $this->config = Config::get('applications.mailgun');
 
-        $this->data = $this->setupData($subject, $msg);
+        $this->data = $this->setupData($msg, $subject);
 
         $this->template = $template;
 
-        $this->lists = $recipient;
+        //$this->testListMemberAdd = false;
 
-        $this->testListMemberAdd = false;
+        $this->count = 0;
     }
 
-    protected function setupData($subject, $msg)
+    protected function setupData($msg, $subject = 'Razorpay Newsletter')
     {
         return [
             'subject'   =>  $subject,
             'body'      =>  $this->getBody($msg)
         ];
+    }
+
+    public function setRecipient($recipient)
+    {
+        $this->lists = $recipient;
     }
 
     /**
@@ -56,7 +63,7 @@ class Newsletter
      */
     protected function getEmailList($list)
     {
-        $repo = new Merchant\Repository();
+        $repo = new Merchant\Repository;
         $merchants = [];
 
         switch($list)
@@ -94,7 +101,7 @@ class Newsletter
         return $response;
     }
 
-    protected function encodeMerchantDetails($merchant, &$reposnse)
+    protected function encodeMerchantDetails($merchant, & $response)
     {
         $response[] = json_encode([
                 'address' => $merchant['email'],
@@ -149,24 +156,20 @@ class Newsletter
     }
 
     /**
-     * Creates a new mailing list on mailgun and returns the
-     * generated mailing list address
+     * Gets the mailgun listAddress corresponding to listName
+     * By default uses listName as 'newsletter'
      * @return string generated email address of mailing list
      */
-    protected function createListOnMailgun($listName)
+    protected function getMailgunListAddress()
     {
-        $listAddress = $listName.'@'.$this->config['url'];
+        if (isset($this->listName) === false)
+        {
+            $this->setMailingListName('newsletter');
+        }
+
+        $listAddress = $this->listName.'@'.$this->config['url'];
 
         return $listAddress;
-    }
-
-    protected function createMailgunList($listName)
-    {
-        $relativeUrl = 'lists';
-
-        $this->getMailgunInstance()->post($relativeUrl,[
-            'address'     => $listAddress,
-        ]);
     }
 
     /**
@@ -183,21 +186,33 @@ class Newsletter
      * @param  string $lists list of applied filters in csv
      * @return null
      */
-    protected function createMailingList($lists)
+    public function createMailingListAndGetEmails($lists)
     {
-        if (isset($this->listName) === false)
-        {
-            $this->listName = 'newsletter';
-        }
-
-        $listAddress = $this->createListOnMailgun($this->listName);
-
-        $chunks = $this->getMerchantListChunks($lists);
+        $listAddress = $this->getMailgunListAddress();
 
         if ($this->testListMemberAdd === false)
         {
             return $listAddress;
         }
+
+        $this->addListMembersToMailgun($lists, $listAddress);
+
+        // Don't wait in testing
+        if ($this->app->runningUnitTests() === false)
+        {
+            $this->waitForEmailsToReflect($listAddress);
+        }
+
+        return $listAddress;
+    }
+
+    /**
+     * Adds the members of the given list to the Mailgun List
+     * Address provided.
+     **/
+    protected function addListMembersToMailgun($lists, $listAddress)
+    {
+        $chunks = $this->getMerchantListChunks($lists);
 
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
@@ -218,18 +233,25 @@ class Newsletter
         $this->app['trace']->info(
             TraceCode::MERCHANT_NEWSLETTER_MAILING_LIST_CREATED,
             ['post_upsert_timestamp' => Carbon::now('Asia/Kolkata')->timestamp]);
+    }
 
+    /**
+     * Performs a sleep and waits until the count in the listAddress matches
+     * the count of merchants in the list or a wait of 60 seconds, whichever comes first.
+     * @param $listAddress listAddress against which count is to be checked.
+     * @return void
+     **/
+    protected function waitForEmailsToReflect($listAddress)
+    {
         // Arbit wait time of about 10 for the mail to be sent.
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
 
-        $count = 0;
-
         do{
             $iterations = $iterations + 1;
 
-            $relativeUrl = 'lists/'.$listAddress.'/members';
+            $relativeUrl = 'lists/' . $listAddress . '/members';
 
             $listInfo = $this->getMailgunInstance()->get($relativeUrl, [
                 'skip' => $this->count]);
@@ -246,8 +268,6 @@ class Newsletter
         // Possible that not every email id can be part of mailing list.
         // Number could always be lesser.
         } while (($count < $this->count) and ($iterations < 6));
-
-        return $listAddress;
     }
 
     public function setTestEmail($email)
@@ -271,14 +291,10 @@ class Newsletter
 
     public function send()
     {
-        $data = $this->data;
-
-        $config = $this->config;
-
         if (isset($this->lists))
         {
             // This also sets the count internally
-            $this->email = $this->createMailingList($this->lists);
+            $this->email = $this->createMailingListAndGetEmails($this->lists);
         }
 
         if ($this->testListMemberAdd)
@@ -310,6 +326,10 @@ class Newsletter
             $message->from($from, $config['from_name']);
 
             $message->subject('Razorpay | '.$this->data['subject']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::HOLIDAY_NOTIFICATION);
         });
 
         return [

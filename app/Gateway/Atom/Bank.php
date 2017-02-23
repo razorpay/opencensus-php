@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Atom;
 
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Processor\Netbanking;
 
 class Bank
 {

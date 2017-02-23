@@ -39,7 +39,7 @@ return [
         'balance' => 1048275,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048275,
+//        'escrow_balance' => 1048275,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -59,7 +59,7 @@ return [
         'vpc_amount' => 50000,
 //        'vpc_AcqResponseCode' => '14',
         'vpc_Command' => 'capture',
-        'vpc_Currency' => null,
+        'vpc_Currency' => 'INR',
 //        'vpc_MerchTxnRef' => '3GZ95U9Rss628z',
         'vpc_3DSECI' => null,
 //        'vpc_3DSXID' => null,
@@ -90,7 +90,7 @@ return [
 //        'vpc_Amount' => 50000,
         'vpc_AcqResponseCode' => '00',
         'vpc_Command' => 'refund',
-        'vpc_Currency' => null,
+        'vpc_Currency' => 'INR',
 //        'vpc_MerchTxnRef' => '3dxwY5ZgxBnrQE',
         'vpc_3DSECI' => null,
         'vpc_3DSXID' => null,
@@ -127,7 +127,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED
         ],
     ],
@@ -142,7 +142,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_FOR_AMEX_NOT_PRESENT
         ],
     ],
@@ -158,8 +158,9 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
+            'twoFaError' => true,
         ],
     ],
 
@@ -174,7 +175,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK,
         ],
     ],

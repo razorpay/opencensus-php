@@ -20,11 +20,13 @@ class Entity extends Base\PublicEntity
     const METHOD            = 'method';
     const DESTINATION       = 'destination';
     const TYPE              = 'type';
+    const PURPOSE           = 'purpose';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
     const NOTES             = 'notes';
     const FEE               = 'fee';
     const SERVICE_TAX       = 'service_tax';
+    const PAYMENT_ID        = 'payment_id';
     const TRANSACTION_ID    = 'transaction_id';
     const STATUS            = 'status';
     const CHANNEL           = 'channel';
@@ -40,18 +42,20 @@ class Entity extends Base\PublicEntity
 
     protected static $sign = 'pout';
 
-    protected static $generators = array(self::ID);
+    protected static $generators = [
+        self::ID
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::METHOD,
         self::AMOUNT,
         self::CURRENCY,
         self::STATUS,
         self::NOTES,
-    );
+    ];
 
-    protected $visible = array(
+    protected $visible = [
         self::ID,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
@@ -63,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::FEE,
         self::SERVICE_TAX,
+        self::PAYMENT_ID,
         self::TRANSACTION_ID,
         self::STATUS,
         self::CHANNEL,
@@ -71,9 +76,9 @@ class Entity extends Base\PublicEntity
         self::RETURN_UTR,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::CUSTOMER_ID,
@@ -88,30 +93,33 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::DESTINATION,
-        self::CUSTOMER_ID);
+        self::CUSTOMER_ID,
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::STATUS            => Status::CREATED,
+        self::TYPE              => 'dummy',
+        self::PURPOSE           => 'refund',
         self::NOTES             => [],
-    );
+    ];
 
-    protected $amounts = array(
+    protected $amounts = [
         self::AMOUNT,
         self::FEE,
         self::SERVICE_TAX
-    );
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::AMOUNT      => 'int',
         self::FEE         => 'int',
         self::SERVICE_TAX => 'int',
-    );
+    ];
 
     public function merchant()
     {
@@ -130,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function customer()
     {
         return $this->belongsTo('RZP\Models\Customer\Entity');
+    }
+
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity');
     }
 
     public function transaction()
@@ -187,6 +200,16 @@ class Entity extends Base\PublicEntity
         return $this->isStatusInitiated();
     }
 
+    public function getBaseAmount()
+    {
+        return $this->getAmount();
+    }
+
+    public function getDestination()
+    {
+        return $this->getAttribute(self::DESTINATION);
+    }
+
     public function setChannel($channel)
     {
         $this->setAttribute(self::CHANNEL, $channel);
@@ -227,21 +250,31 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
-    public function setPublicDestinationAttribute(array & $array)
+    public function setRemarks($remarks)
     {
-        $method = $array[self::METHOD];
+        // @todo
+    }
+
+    public function setPublicDestinationAttribute(array & $attributes)
+    {
+        $method = $attributes[self::METHOD];
 
         $entity = Payout\Method::getEntityClass($method);
 
-        $sign = $entity::getIdPrefix();
+        $destination = $this->getDestination();
 
-        $array[self::DESTINATION] = $sign . $array[self::DESTINATION];
+        $attributes[self::DESTINATION] = $entity::getSignedId($destination);
     }
 
-    public function setPublicCustomerIdAttribute(array & $array)
+    public function setPublicCustomerIdAttribute(array & $attributes)
     {
-        $sign = Customer\Entity::getIdPrefix();
+        $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = $sign . $array[self::CUSTOMER_ID];
+        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+    }
+
+    public function getPricingFeatures()
+    {
+        return [];
     }
 }

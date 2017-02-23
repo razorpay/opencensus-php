@@ -23,7 +23,11 @@ The last error message we got was: <br>"{!! $error_message !!}". <br>
 To help you debug this further, here are a few more details about the failure event:<br>
 
 <b>Timestamp:</b> {!! $date !!}<br>
-<b>Event:</b> {!! $event !!}<br><br>
+<b>Event:</b> {!! $event !!}<br>
+@if (isset($entity_id) === true)
+    <b> {!! $field_description !!}:</b> {!! $entity_id !!}<br>
+@endif
+<br>
 
 Note that this is the <b>final</b> failed attempt and we will not be attempting any more retries at this url.<br>
 If you have any further queries, just reply to this mail or reach out to us at support@razorpay.com.<br><br>

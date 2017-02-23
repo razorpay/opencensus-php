@@ -3,11 +3,11 @@
 namespace RZP\Models\Terminal;
 
 use Crypt;
-use RZP\Models\Base;
-use RZP\Models\Payment;
-use RZP\Models\Merchant;
-use RZP\Models\Terminal\Recurring;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Payment;
 
 class Entity extends Base\PublicEntity
 {
@@ -26,6 +26,7 @@ class Entity extends Base\PublicEntity
     const GATEWAY_SECURE_SECRET         = 'gateway_secure_secret';
     const GATEWAY_RECON_PASSWORD        = 'gateway_recon_password';
     const GATEWAY_ACQUIRER              = 'gateway_acquirer';
+    const GATEWAY_CLIENT_CERTIFICATE    = 'gateway_client_certificate';
 
     const CARD                          = 'card';
     const NETBANKING                    = 'netbanking';
@@ -33,26 +34,38 @@ class Entity extends Base\PublicEntity
     const UPI                           = 'upi';
     const EMI_DURATION                  = 'emi_duration';
     const RECURRING                     = 'recurring';
-
+    const TPV                           = 'tpv';
+    const CURRENCY                      = 'currency';
     const SHARED                        = 'shared';
-
+    const ENABLED                       = 'enabled';
     const NETWORK_CATEGORY              = 'network_category';
-
     const DELETED_AT                    = 'deleted_at';
 
     const MAX_TERMINALS_COUNT           = 25;
+    const DEFAULT_CURRENCY              = 'INR';
+
+    /**
+     * Used for column name in merchant terminal pivot table
+     */
+    const TERMINAL_ID                   = 'terminal_id';
+
+    const SUB_MERCHANTS                 = 'sub_merchants';
 
     //const PRIORITY                      = 'priority';
 
-    protected $fillable = array(
+    protected $fillable = [
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::NETWORK_CATEGORY,
         self::UPI,
         self::EMI,
         self::EMI_DURATION,
         self::SHARED,
+        self::RECURRING,
+        self::TPV,
+        self::CURRENCY,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -61,19 +74,24 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_RECON_PASSWORD,
         self::GATEWAY_ACQUIRER,
-    );
+        self::GATEWAY_CLIENT_CERTIFICATE,
+        self::ENABLED
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::MERCHANT_ID,
         self::GATEWAY,
         self::CARD,
         self::CATEGORY,
+        self::NETWORK_CATEGORY,
         self::UPI,
         self::EMI,
         self::EMI_DURATION,
+        self::RECURRING,
         self::SHARED,
+        self::TPV,
         self::GATEWAY_MERCHANT_ID,
         self::GATEWAY_MERCHANT_ID2,
         self::GATEWAY_TERMINAL_ID,
@@ -82,30 +100,28 @@ class Entity extends Base\PublicEntity
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
-    );
+        self::ENABLED,
+        self::SUB_MERCHANTS,
+    ];
 
-    protected $table = 'terminals';
-
-    protected $hidden = array(
+    protected $hidden = [
         self::GATEWAY_TERMINAL_PASSWORD,
         self::GATEWAY_SECURE_SECRET,
         self::GATEWAY_RECON_PASSWORD,
-    );
+        self::GATEWAY_CLIENT_CERTIFICATE,
+    ];
 
     protected $generateIdOnCreate = true;
 
     protected $entity = 'terminal';
 
-    protected static $sign = '';
+    protected static $generators = ['method'];
 
-    protected static $delimiter = '';
+    protected static $modifiers = ['inputRemoveBlanks'];
 
-    protected static $generators = array('method');
-
-    protected static $modifiers = array('inputRemoveBlanks');
-
-    protected $defaults = array(
+    protected $defaults = [
         self::CATEGORY                  => null,
+        self::NETWORK_CATEGORY          => null,
         self::GATEWAY_MERCHANT_ID       => null,
         self::GATEWAY_TERMINAL_ID       => null,
         self::GATEWAY_TERMINAL_PASSWORD => null,
@@ -114,127 +130,30 @@ class Entity extends Base\PublicEntity
         self::GATEWAY_RECON_PASSWORD    => null,
         self::SHARED                    => false,
         self::EMI                       => false,
+        self::TPV                       => false,
+        self::CURRENCY                  => self::DEFAULT_CURRENCY,
         self::EMI_DURATION              => null,
         self::GATEWAY_ACQUIRER          => null,
         self::RECURRING                 => Recurring::NON_RECURRING,
-    );
+        self::ENABLED                   => true,
+    ];
 
-    protected $casts = array(
+    protected $casts = [
         self::CARD                      => 'boolean',
         self::EMI                       => 'boolean',
         self::NETBANKING                => 'boolean',
         self::RECURRING                 => 'int',
         self::SHARED                    => 'boolean',
         self::UPI                       => 'boolean',
-    );
+        self::ENABLED                   => 'boolean',
+        self::TPV                       => 'boolean',
+    ];
 
-    public function generateMethod($input)
-    {
-        $gateway = $input[self::GATEWAY];
-        $methods = array(self::CARD, self::NETBANKING);
-
-        foreach ($methods as $method)
-        {
-            if (Payment\Gateway::isMethodSupported($method, $gateway))
-            {
-                $this->setAttribute($method, 1);
-            }
-            else
-            {
-                $this->setAttribute($method, 0);
-            }
-        }
-    }
-
-    public function edit(array $input = array(), $operation = 'edit')
-    {
-        if ($this->getUsedCount() === 0)
-        {
-            // Essentially we ask for all the input anew and fill it in.
-            // Put the values which are not changing like gateway and merchant_id
-            // by ourselves.
-
-            $input[Entity::GATEWAY] = $this->getGateway();
-            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
-
-            return parent::edit($input, 'create');
-        }
-        else
-        {
-            $this->editUsedTerminal($input);
-        }
-    }
-
-    protected function editUsedTerminal($input)
-    {
-        assert ($this->getUsedCount() !== 0);
-
-        $this->getValidator()->usedTerminalValidator($this, $input);
-
-        $this->fill($input);
-    }
-
-    public function incrementUsedCount()
-    {
-        $usedCount = $this->getUsedCount() + 1;
-
-        $this->setAttribute(self::USED_COUNT, $usedCount);
-    }
+    // ---------------------- GETTERS ----------------------
 
     public function getGatewayMerchantId()
     {
-        return $this->attributes[self::GATEWAY_MERCHANT_ID];
-    }
-
-    protected function setGatewayTerminalPasswordAttribute($password)
-    {
-        if ($password === null)
-            $password = '';
-
-        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
-    }
-
-    protected function setGatewaySecureSecretAttribute($secret)
-    {
-        if ($secret === null)
-        {
-            $secret = '';
-        }
-
-        $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
-    }
-
-    protected function setGatewayReconPasswordAttribute($reconPassword)
-    {
-        if ($reconPassword === null)
-        {
-            // Default value is set to null anyway.
-            return;
-        }
-
-        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
-    }
-
-    protected function getGatewayTerminalPasswordAttribute()
-    {
-        $pwd = $this->attributes[self::GATEWAY_TERMINAL_PASSWORD];
-
-        if ($pwd === null)
-            return $pwd;
-
-        return Crypt::decrypt($pwd);
-    }
-
-    protected function getGatewaySecureSecretAttribute()
-    {
-        $secret = $this->attributes[self::GATEWAY_SECURE_SECRET];
-
-        if ($secret === null)
-        {
-            return $secret;
-        }
-
-        return Crypt::decrypt($secret);
+        return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
     public function getGatewayReconPassword()
@@ -284,6 +203,111 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECURRING);
     }
 
+    public function getEmiDuration()
+    {
+        return $this->getAttribute(self::EMI_DURATION);
+    }
+
+    protected function getSubMerchants()
+    {
+        $subMerchants = $this->merchants()->get();
+
+        $subMerchants->transform(
+            function ($item, $key)
+            {
+                return [
+                    Merchant\Entity::ID            => $item[Merchant\Entity::ID],
+                    Merchant\Entity::NAME          => $item[Merchant\Entity::NAME],
+                    Merchant\Entity::WEBSITE       => $item[Merchant\Entity::WEBSITE],
+                    Merchant\Entity::BILLING_LABEL => $item[Merchant\Entity::BILLING_LABEL]
+                ];
+            });
+
+        return $subMerchants->all();
+    }
+
+    public function isEnabled()
+    {
+        return $this->getAttribute(self::ENABLED);
+    }
+
+    public function getNetworkCategory()
+    {
+        return $this->getAttribute(self::NETWORK_CATEGORY);
+    }
+
+    public function isCardEnabled()
+    {
+        return $this->getAttribute(self::CARD);
+    }
+
+    public function isNetbankingEnabled()
+    {
+        return $this->getAttribute(self::NETBANKING);
+    }
+
+    public function isEmiEnabled()
+    {
+        return (bool) $this->getAttribute(self::EMI);
+    }
+
+    public function isShared()
+    {
+        $merchantId = $this->getAttribute(self::MERCHANT_ID);
+
+        return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
+    }
+
+    public function getCurrency()
+    {
+        return $this->getAttribute(self::CURRENCY);
+    }
+
+    // ---------------------- END GETTERS ----------------------
+
+    // ---------------------- SETTERS ----------------------
+
+    public function setNetworkCategory($category)
+    {
+        $this->setAttribute(self::NETWORK_CATEGORY, $category);
+    }
+
+    public function setEnabled($status)
+    {
+        $this->setAttribute(self::ENABLED, $status);
+    }
+
+    public function setMerchantId($merchantId)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchantId);
+    }
+
+    // ---------------------- END SETTERS ----------------------
+
+    // ---------------------- ACCESSORS ----------------------
+
+    protected function getGatewayTerminalPasswordAttribute()
+    {
+        $pwd = $this->attributes[self::GATEWAY_TERMINAL_PASSWORD];
+
+        if ($pwd === null)
+            return $pwd;
+
+        return Crypt::decrypt($pwd);
+    }
+
+    protected function getGatewaySecureSecretAttribute()
+    {
+        $secret = $this->attributes[self::GATEWAY_SECURE_SECRET];
+
+        if ($secret === null)
+        {
+            return $secret;
+        }
+
+        return Crypt::decrypt($secret);
+    }
+
     protected function getUsedCountAttribute()
     {
         return (int) $this->attributes[self::USED_COUNT];
@@ -301,11 +325,6 @@ class Entity extends Base\PublicEntity
         return $category;
     }
 
-    public function getEmiDuration()
-    {
-        return $this->getAttribute(self::EMI_DURATION);
-    }
-
     protected function getEmiDurationAttribute()
     {
         $emiDuration = $this->attributes[self::EMI_DURATION];
@@ -318,9 +337,124 @@ class Entity extends Base\PublicEntity
         return $emiDuration;
     }
 
+    // ---------------------- END ACCESSORS ----------------------
+
+    // ---------------------- MODIFIERS ----------------------
+
+    protected function setGatewayTerminalPasswordAttribute($password)
+    {
+        if ($password === null)
+            $password = '';
+
+        $this->attributes[self::GATEWAY_TERMINAL_PASSWORD] = Crypt::encrypt($password);
+    }
+
+    protected function setGatewaySecureSecretAttribute($secret)
+    {
+        if ($secret === null)
+        {
+            $secret = '';
+        }
+
+        $this->attributes[self::GATEWAY_SECURE_SECRET] = Crypt::encrypt($secret);
+    }
+
+    protected function setGatewayReconPasswordAttribute($reconPassword)
+    {
+        if ($reconPassword === null)
+        {
+            // Default value is set to null anyway.
+            return;
+        }
+
+        $this->attributes[self::GATEWAY_RECON_PASSWORD] = Crypt::encrypt($reconPassword);
+    }
+
+    protected function setEnabledAttribute($status)
+    {
+        $this->attributes[self::ENABLED] = $status;
+    }
+
+    // ---------------------- END MODIFIERS ----------------------
+
+    // ---------------------- SCOPES ----------------------
+
+    public function scopeEnabled($query)
+    {
+        return $query->where(Entity::ENABLED, '=', '1');
+    }
+
+    public function scopeShared($query)
+    {
+        return $query->where(Entity::SHARED, '=', '1');
+    }
+
+    // ---------------------- END SCOPES ----------------------
+
+    public function generateMethod($input)
+    {
+        $gateway = $input[self::GATEWAY];
+        $methods = [
+            self::CARD,
+            self::NETBANKING
+        ];
+
+        foreach ($methods as $method)
+        {
+            if (Payment\Gateway::isMethodSupported($method, $gateway))
+            {
+                $this->setAttribute($method, 1);
+            }
+            else
+            {
+                $this->setAttribute($method, 0);
+            }
+        }
+    }
+
+    public function edit(array $input = [], $operation = 'edit')
+    {
+        if ($this->getUsedCount() === 0)
+        {
+            // Essentially we ask for all the input anew and fill it in.
+            // Put the values which are not changing like gateway and merchant_id
+            // by ourselves.
+
+            $input[Entity::GATEWAY] = $this->getGateway();
+            $input[Entity::MERCHANT_ID] = $this->getMerchantId();
+
+            return parent::edit($input, 'create');
+        }
+        else
+        {
+            $this->editUsedTerminal($input);
+        }
+    }
+
+    protected function editUsedTerminal(array $input)
+    {
+        assert ($this->getUsedCount() !== 0);
+
+        $this->getValidator()->usedTerminalValidator($this, $input);
+
+        $this->fill($input);
+    }
+
+    public function incrementUsedCount()
+    {
+        $usedCount = $this->getUsedCount() + 1;
+
+        $this->setAttribute(self::USED_COUNT, $usedCount);
+    }
+
     public function merchant()
     {
         return $this->belongsTo('RZP\Models\Merchant\Entity');
+    }
+
+    public function merchants()
+    {
+        return $this->belongsToMany('RZP\Models\Merchant\Entity', Table::MERCHANT_TERMINAL);
     }
 
     public function toArrayWithPassword()
@@ -332,24 +466,9 @@ class Entity extends Base\PublicEntity
         return $terminal;
     }
 
-    public function isCardEnabled()
-    {
-        return $this->getAttribute(self::CARD);
-    }
-
-    public function isNetbankingEnabled()
-    {
-        return $this->getAttribute(self::NETBANKING);
-    }
-
     public function isUpiTerminal()
     {
         return (substr($this->gateway, 0, 3) === 'upi');
-    }
-
-    public function isEmiEnabled()
-    {
-        return (bool) $this->getAttribute(self::EMI);
     }
 
     public function isGateway($gateway)
@@ -360,11 +479,6 @@ class Entity extends Base\PublicEntity
     public function isGatewayAcquirer($acquirer)
     {
         return ($this->getAttribute(self::GATEWAY_ACQUIRER) === $acquirer);
-    }
-
-    public function isShared()
-    {
-        return (bool) $this->getAttribute(self::SHARED);
     }
 
     public function isDeleted()
@@ -379,13 +493,31 @@ class Entity extends Base\PublicEntity
         return ($value === $actualValue);
     }
 
-    public function isTPVTerminal()
+    public function isTpv()
     {
-        if (is_null($this->getCategory()) === false)
-        {
-            $tpvCategories = (new Merchant\Entity)->getTPVCategories();
+        return $this->getAttribute(self::TPV);
+    }
 
-            return in_array($this->getCategory(), $tpvCategories);
+    public function isNotTpv()
+    {
+        return ($this->isTpv() === false);
+    }
+
+    public function isRecurringAuthTerminal()
+    {
+        if ($this->getRecurring() === Recurring::NON_RECURRING)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    public function isRecurringDirectTerminal()
+    {
+        if ($this->getRecurring() === Recurring::RECURRING_N3DS)
+        {
+            return true;
         }
 
         return false;
@@ -403,13 +535,32 @@ class Entity extends Base\PublicEntity
         return false;
     }
 
-    public function getNetworkCategory()
+    public function isNon3DSRecurring()
     {
-        return $this->getAttribute(self::NETWORK_CATEGORY);
+        return ($this->getAttribute(self::RECURRING) === Recurring::RECURRING_N3DS);
     }
 
-    public function setNetworkCategory($category)
+    public function toArrayPublic($subMerchantFlag = false)
     {
-        $this->setAttribute(self::NETWORK_CATEGORY, $category);
+        $terminalData = parent::toArrayPublic();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
+    }
+
+    public function toArrayAdmin($subMerchantFlag = false)
+    {
+        $terminalData = parent::toArrayAdmin();
+
+        if ($subMerchantFlag === true)
+        {
+            $terminalData['sub_merchants'] = $this->getSubMerchants();
+        }
+
+        return $terminalData;
     }
 }

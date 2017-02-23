@@ -2,12 +2,16 @@
 
 namespace RZP\Models\Emi\Banks\Base;
 
-use Str;
+use RZP\Exception;
 use Carbon\Carbon;
 use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base;
+use RZP\Constants\MailTags;
+use Str;
 
-class EmiFile
+class EmiFile extends Base\Core
 {
     use FileHandlerTrait;
 
@@ -18,16 +22,25 @@ class EmiFile
 
     public function __construct()
     {
+        parent::__construct();
+
         $this->mail = \Mail::getFacadeRoot();
-
-        $this->app = \App::getFacadeRoot();
-
-        $this->repo = $this->app['repo'];
     }
 
     public function generate($input)
     {
-        ;
+        $emiData = $this->getEmiData($input);
+
+        $emiFile = $this->writeEmiFile($emiData);
+
+        $this->sendEmiFile($emiFile['path']);
+
+        $this->trace->info(
+            TraceCode::EMI_FILE_SENT,
+            ['bank' => $this->bankName, 'payment_ids' => $input->getIds()]
+        );
+
+        return $emiFile['url'];
     }
 
     protected function getCardNumber($card)
@@ -39,7 +52,7 @@ class EmiFile
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = Card\Tokenex::getCardNumber($cardToken);
+        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
 
         return $cardNumber;
     }
@@ -48,9 +61,17 @@ class EmiFile
     {
         $gateway = $payment->getGateway();
 
-        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentById($payment->getId());
+        $gatewayPayment = $this->repo->$gateway->findCapturedPaymentByIdOrFail($payment->getId());
 
-        return $gatewayPayment->getAuthCode();
+        $authCode = $gatewayPayment->getAuthCode();
+
+        if (empty($authCode) === true)
+        {
+            throw new Exception\LogicException(
+                'Authorization Code cannot be empty.', null, ['auth_code' => $authCode]);
+        }
+
+        return $authCode;
     }
 
     protected function fetchAndSendPassword()
@@ -72,5 +93,83 @@ class EmiFile
         $zipPath = $this->makeZipFile($fileArray, $this->emiFilePassword);
 
         return $zipPath;
+    }
+
+    protected function getEmiAmount($amount, $annualRate, $tenureInMonths)
+    {
+        // $annualRate is a
+        // $monthlyRate is a/12 i.e should be treated as 13/1200
+        // E = P x r x (1+r)^n/((1+r)^n – 1)
+        // tenure in months
+
+        $monthlyRate = $annualRate / 1200;
+
+        $expression = pow((1 + $monthlyRate), $tenureInMonths);
+
+        $num = $amount * $monthlyRate * $expression;
+
+        $den = $expression - 1;
+
+        return floor($num / $den);
+    }
+
+    protected function sendEmiFile($fullPath)
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $this->fetchAndSendPassword();
+
+        $zipFile = $this->getZippedFile($fullPath);
+
+        $data['file'] = $zipFile;
+
+        $data['body'] = 'Please process the attached EMI file';
+
+        $data['from'] = $this->bankName . ' Emi File';
+
+        $data['emails'] = array_merge($this->emailIdsToSendTo, ['settlements@razorpay.com']);
+
+        $data['subject'] = $this->bankName . ' Emi File for ' . $today;
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($data)
+        {
+            $message->from('emifiles@razorpay.com', $data['from']);
+
+            $message->subject($data['subject']);
+
+            $message->to($data['emails']);
+
+            $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
+        });
+    }
+
+    protected function sendEmiPassword()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $data['body'] = $this->bankName . ' Emi File Password for ' . $today . " is " . $this->emiFilePassword;
+
+        $data['from'] = $this->bankName . ' Emi File Password';
+
+        $data['emails'] = $this->emailIdsToSendTo;
+
+        $data['subject'] = $this->bankName . ' Emi File Password for ' . $today;
+
+        $this->mail->queue('emails.message', $data, function ($message) use ($data, $today)
+        {
+            $message->from('emifiles@razorpay.com', $data['from']);
+
+            $message->subject($data['subject']);
+
+            $message->to($data['emails']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
+        });
     }
 }

@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Terminal\Shared;
+use RZP\Models\Base\UniqueIdEntity;
 
 class Terminal extends Base
 {
@@ -13,13 +14,16 @@ class Terminal extends Base
         $this->createSharedAxisTerminal();
         $this->createSharedBilldeskTerminal();
         $this->createSharedAxisGeniusTerminal();
-        $this->createSharedKotakTerminal();
         $this->createSharedPaytmTerminal();
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingAirtelTerminal();
+        $this->createSharedNetbankingAxisTerminal();
         $this->createSharedCybersourceHdfcTerminal();
+        $this->createSharedCybersourceHdfcRecurringTerminals();
         $this->createSharedCybersourceAxisTerminal();
+        $this->createSharedFirstDataTerminal();
         $this->createSharedEbsTerminal();
     }
 
@@ -51,9 +55,9 @@ class Terminal extends Base
                                          'shared' => 1]);
     }
 
-    public function createAtomTerminal(array $attributes = array())
+    public function createAtomTerminal(array $attributes = [])
     {
-        $attributes = array(
+        $attributes = [
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'atom',
             'gateway_merchant_id'       => 'abcd',
@@ -61,7 +65,7 @@ class Terminal extends Base
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
             'netbanking'                => 1,
-        );
+        ];
 
         return parent::create($attributes);
     }
@@ -74,38 +78,40 @@ class Terminal extends Base
         return $term;
     }
 
-    public function createEbsTerminal(array $attributes = array())
+    public function createEbsTerminal(array $attributes = [])
     {
-        $attributes = array(
+        $attributes = [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'ebs',
             'gateway_merchant_id'   => 'abcd',
             'gateway_secure_secret' => 'secret',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0);
+            'shared'                => 0
+        ];
 
         return parent::create($attributes);
     }
 
-    public function createBilldeskTerminal(array $attributes = array())
+    public function createBilldeskTerminal(array $attributes = [])
     {
-        $attributes = array(
+        $attributes = [
             'merchant_id'           => '10000000000000',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
-            'shared'                => 0);
+            'shared'                => 0
+        ];
 
         return parent::create($attributes);
     }
 
-    public function createAxisGeniusTerminal(array $attributes = array())
+    public function createAxisGeniusTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'axis_genius',
@@ -113,7 +119,7 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay axis_genius',
             'gateway_terminal_id'       => 'razorpay_axis_genius_terminal',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -124,16 +130,16 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
+            'merchant_id'           => '100000Razorpay',
             'gateway'               => 'atom',
             'card'                  => 1,
             'netbanking'            => 1,
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -142,9 +148,9 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::ATOM_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
+            'merchant_id'           => '100000Razorpay',
             'gateway'               => 'atom',
             // 'card'                  => 1,
             'netbanking'            => 1,
@@ -152,37 +158,55 @@ class Terminal extends Base
             'gateway_merchant_id'   => 'razorpay',
             'gateway_terminal_id'   => 'nodal account',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedAxisTerminal(array $attributes = array())
+    public function createSharedAxisTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::AXIS_MIGS_RAZORPAY_TERMINAL;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'axis_migs',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay axis_migs',
             'gateway_terminal_id'       => 'nodal account axis_migs',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedPayzappTerminal(array $attributes = array())
+    public function createSharedFirstDataTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'first_data',
+            'card'                      => 1,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedPayzappTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::PAYZAPP_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_payzapp',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -193,18 +217,18 @@ class Terminal extends Base
             'gateway_terminal_password' => 'S9DFIU9S8DFU98SD',
             'gateway_access_code'       => '2938',
             'gateway_secure_secret'     => '102983092182309128123',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedPayumoneyTerminal(array $attributes = array())
+    public function createSharedPayumoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::PAYUMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_payumoney',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -215,18 +239,18 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => '293823',
             'gateway_secure_secret'     => 'secret',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedOlamoneyTerminal(array $attributes = array())
+    public function createSharedOlamoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::OLAMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_olamoney',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -237,18 +261,38 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
-            );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedAirtelmoneyTerminal(array $attributes = array())
+    public function createSharedFreechargeTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::FREECHARGE_RAZORPAY_TERMINAL;
+
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'wallet_freecharge',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'random_id',
+            'gateway_terminal_id'       => 'freecharge_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedAirtelmoneyTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::AIRTELMONEY_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'wallet_airtelmoney',
             'card'                      => 0,
             'netbanking'                => 0,
@@ -259,72 +303,145 @@ class Terminal extends Base
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_access_code'       => 'random_access_code',
             'gateway_secure_secret'     => 'secret',
-        );
+        ];
 
         return parent::create($attributes);
     }
 
-    public function createSharedCybersourceHdfcTerminal(array $attributes = array())
+    public function createSharedJiomoneyTerminal(array $attributes = [])
     {
-        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
-        $attributes = array(
+        $termId = \RZP\Models\Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL;
+
+        $attributes = [
             'id'                        => $termId,
             'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_jiomoney',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_merchant_id'       => 'jiomoney_merchant',
+            'gateway_access_code'       => 'random_access_code',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedCybersourceHdfcTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL;
+        $defaultValues = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'merchant_id',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
-        );
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedCybersourceAxisTerminal(array $attributes = array())
+    public function createDynamicSharedCybersourceHdfcTerminal(array $attributes = [])
     {
-        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
-        $attributes = array(
-            'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+        $defaultValues = [
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'cybersource',
             'card'                      => 1,
             'netbanking'                => 0,
             'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceHdfcRecurringTerminals(array $attributes = [])
+    {
+        $attributes = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'hdfc',
+            'gateway_merchant_id'       => 'merchant_id',
+            'gateway_terminal_id'       => 'cybersource',
+            'gateway_terminal_password' => 'cybersource',
+            'gateway_access_code'       => '111111',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        // Add recurring 3ds terminal;
+        $attributes['id'] = '1RecurringTerm';
+        $attributes['recurring'] = 1;
+
+        $this->createEntityInTestAndLive('terminal', $attributes);
+
+        // Add recurring 3ds
+        $attributes['id'] = '2RecurringTerm';
+        $attributes['recurring'] = 2;
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createSharedCybersourceAxisTerminal(array $attributes = [])
+    {
+        $termId = \RZP\Models\Terminal\Shared::CYBERSOURCE_AXIS_TERMINAL;
+        $attributes = [
+            'id'                        => $termId,
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'cybersource',
+            'card'                      => 1,
+            'netbanking'                => 0,
+            'shared'                    => 1,
+            'gateway_acquirer'          => 'axis',
             'gateway_merchant_id'       => 'cybersource',
             'gateway_terminal_id'       => 'cybersource',
             'gateway_terminal_password' => 'cybersource',
             'gateway_access_code'       => '111111',
             'gateway_secure_secret'     => 'secret',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedEbsTerminal(array $attributes = array())
+    public function createSharedEbsTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::EBS_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
+            'merchant_id'           => '100000Razorpay',
             'gateway'               => 'ebs',
             'gateway_merchant_id'   => 'abcd',
             'gateway_secure_secret' => 'secret',
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,
-        );
+        ];
+
         return parent::create($attributes);
     }
 
-
-    public function createDirectBilldeskTerminal(array $attributes = array())
+    public function createDirectBilldeskTerminal(array $attributes = [])
     {
-        $defaultValues = array(
+        $defaultValues = [
             'id'                    => '10BillDirTrmnl',
             'merchant_id'           => '10000000000000',
             'gateway'               => 'billdesk',
@@ -332,43 +449,52 @@ class Terminal extends Base
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 0,
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
-    public function createSharedBilldeskTerminal(array $attributes = array())
+
+    public function createSharedBilldeskTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
             'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
+            'merchant_id'           => $sharedMerchantAccount,
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,
-        );
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
 
-    public function createSharedBilldeskTpvTerminal(array $attributes = array())
+    public function createSharedBilldeskTpvTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::BILLDESK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $defaultValues = [
             'id'                    => $termId,
-            'merchant_id'           => '1MercShareTerm',
+            'merchant_id'           => '100000Razorpay',
             'gateway'               => 'billdesk',
             'gateway_merchant_id'   => 'abcd',
             'card'                  => 0,
             'netbanking'            => 1,
             'shared'                => 1,
-            'category'              => 9999,
-        );
+            'category'              => 0,
+            'tpv'                   => 1,
+            'network_category'      => 'securities',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -377,9 +503,9 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'axis_genius',
             'card'                      => 1,
             'netbanking'                => 0,
@@ -387,24 +513,7 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'razorpay axis_genius',
             'gateway_terminal_id'       => 'nodal account axis_genius',
             'gateway_terminal_password' => 'razorpay_password',
-        );
-
-        return $this->createEntityInTestAndLive('terminal', $attributes);
-    }
-
-    public function createSharedKotakTerminal()
-    {
-        $termId = \RZP\Models\Terminal\Shared::KOTAK_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
-            'gateway'                   => 'kotak',
-            'card'                      => 1,
-            'gateway_merchant_id'       => 'razorpay kotak',
-            'gateway_terminal_id'       => 'nodal account kotak',
-            'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
@@ -413,23 +522,23 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::PAYTM_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'paytm',
             'card'                      => 1,
             'netbanking'                => 1,
             'gateway_merchant_id'       => 'razorpay paytm',
             'gateway_terminal_id'       => 'nodal account paytm',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createNetbankingHdfcTerminal(array $attributes = array())
+    public function createNetbankingHdfcTerminal(array $attributes = [])
     {
-        $attributes = array(
+        $attributes = [
             'merchant_id'               => '10000000000000',
             'card'                      => 0,
             'netbanking'                => 1,
@@ -437,39 +546,42 @@ class Terminal extends Base
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
-            'card'                      => 1);
+            'card'                      => 1
+        ];
 
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingHdfcTerminal(array $attributes = array())
+    public function createSharedNetbankingHdfcTerminal(array $attributes = [])
     {
-        $attributes = array(
+        $attributes = [
             'id'                        => Shared::NETBANKING_HDFC_TERMINAL,
             'card'                      => 0,
             'netbanking'                => 1,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'netbanking_hdfc',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
-            'gateway_terminal_password' => 'abcdef');
+            'gateway_terminal_password' => 'abcdef'
+        ];
 
         return parent::create($attributes);
     }
 
-    public function createSharedSharpTerminal(array $attributes = array())
+    public function createSharedSharpTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::SHARP_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'sharp',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
-            'emi'                       => 1);
+            'emi'                       => 1
+        ];
 
         return parent::create($attributes);
     }
@@ -478,17 +590,19 @@ class Terminal extends Base
     {
         $sharedMerchantAccount = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => 'ShrdHdfcEmiTrm',
             'merchant_id'               => $sharedMerchantAccount,
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 1,
             'emi'                       => 1,
             'emi_duration'              => 9,
-            'shared'                    => 1);
+            'shared'                    => 1
+        ];
 
         return parent::create($attributes);
     }
@@ -497,93 +611,147 @@ class Terminal extends Base
     {
         $termId = \RZP\Models\Terminal\Shared::MOBIKWIK_RAZORPAY_TERMINAL;
 
-        $attributes = array(
+        $attributes = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'mobikwik',
             'card'                      => 0,
             'gateway_merchant_id'       => 'razorpay paytm',
             'gateway_terminal_id'       => 'nodal account paytm',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createSharedSbiepayTerminal(array $attributes = array())
-    {
-        $termId = \RZP\Models\Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL;
-
-        $attributes = array(
-            'id'                    => $termId,
-            'merchant_id'           => '10000000000000',
-            'gateway'               => 'sbiepay',
-            'gateway_merchant_id'   => 'abcd',
-            'card'                  => 0);
-
-        return parent::create($attributes);
-    }
-
-    public function createSharedHdfcTerminal(array $attributes = array())
+    public function createSharedHdfcTerminal(array $attributes = [])
     {
         $termId = \RZP\Models\Terminal\Shared::HDFC_RAZORPAY_TERMINAL;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
             'card'                      => 1,
             'gateway_merchant_id'       => 'razorpay hdfc',
             'gateway_terminal_id'       => 'account hdfc',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
-    public function createNetbankingKotakTerminal(array $attributes = array())
+    public function createDynamicSharedHdfcTerminal(array $attributes = [])
     {
-        $defaultValues = array(
+        $defaultValues = [
+            'merchant_id'               => '100000Razorpay',
+            'gateway'                   => 'hdfc',
+            'gateway_acquirer'          => 'hdfc',
+            'card'                      => 1,
+            'gateway_merchant_id'       => 'razorpay hdfc',
+            'gateway_terminal_id'       => 'account hdfc',
+            'gateway_terminal_password' => 'razorpay_password',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createNetbankingKotakTerminal(array $attributes = [])
+    {
+        $defaultValues = [
             'merchant_id'               => '10000000000000',
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'gateway_terminal_password' => 'abcdef',
             'card'                      => 0,
-            'netbanking'                => 1,);
+            'netbanking'                => 1,
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
 
-    public function createSharedNetbankingKotakTerminal(array $attributes = array())
+    public function createSharedNetbankingKotakTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => Shared::NETBANKING_KOTAK_TERMINAL,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_kotak',
             'gateway_merchant_id'       => 'abcd',
             'gateway_terminal_id'       => 'abcde',
             'netbanking'                => 1,
-            'shared'                    => 1);
+            'shared'                    => 1
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
     }
 
-    public function createSharedAmexTerminal(array $attributes = array())
+    public function createSharedNetbankingAirtelTerminal(array $attributes= [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_AIRTEL_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_airtel',
+            'gateway_merchant_id'       => 'test_merchant_id',
+            'gateway_secure_secret'     => 'test_salt',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAxisTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_AXIS_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_axis',
+            'gateway_merchant_id'       => 'test_pid',
+            'gateway_secure_secret'     => 'test_masterkey',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingAxisTPVTerminal(array $attributes = [])
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_AXIS_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        $this->createSharedNetbankingAxisTerminal($attributes);
+    }
+
+    public function createSharedAmexTerminal(array $attributes = [])
     {
         $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
 
         $termId = \RZP\Models\Terminal\Shared::AMEX_RAZORPAY_TERMINAL;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => $termId,
             'merchant_id'               => $merchantId,
             'gateway'                   => 'amex',
@@ -592,7 +760,7 @@ class Terminal extends Base
             'gateway_terminal_id'       => 'nodal account amex',
             'gateway_terminal_password' => 'razorpay_password',
             'shared'                    => 1,
-        );
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -621,14 +789,56 @@ class Terminal extends Base
     {
         $termId = Shared::UPI_ICICI_RAZORPAY_TERMINAL;
 
-        $defaultValues = array(
+        $defaultValues = [
             'id'                        => $termId,
-            'merchant_id'               => '1MercShareTerm',
+            'merchant_id'               => '100000Razorpay',
             'gateway'                   => 'upi_icici',
             'gateway_merchant_id'       => 'razorpay upi',
             'gateway_terminal_id'       => 'nodal account upi icici',
             'gateway_terminal_password' => 'razorpay_password',
-        );
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
+    public function createDirectTerminalForNonTestMerchant(array $attributes)
+    {
+        $defaultValues = [
+            'id'                    => '10BillDirTrmn2',
+            'merchant_id'           => '1MercShareTerm',
+            'gateway'               => 'billdesk',
+            'gateway_merchant_id'   => 'abcd',
+            'card'                  => 0,
+            'netbanking'            => 1,
+            'shared'                => 0,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createDirectFreechargeTerminal(array $attributes)
+    {
+        //
+        // adding a new direct terminal for freecharge to test
+        // dealer integration
+        //
+        $defaultValues = [
+            'id'                        => '101FrchrgeTmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'wallet_freecharge',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'random_id',
+            'gateway_merchant_id2'      => 'freecharge_dealer',
+            'gateway_terminal_id'       => 'freecharge_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_secure_secret'     => 'secret',
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 

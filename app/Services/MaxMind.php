@@ -3,10 +3,9 @@
 namespace RZP\Services;
 
 use CreditCardFraudDetection;
-use RZP\Trace\TraceCode;
 use RZP\Constants\Mode;
-use RZP\Trace\Trace;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 
 class MaxMind
 {
@@ -34,12 +33,15 @@ class MaxMind
 
         $this->licenseKey = $this->config['secret'];
 
+        $this->basicauth = $app['basicauth'];
+
         $this->maxmind = new CreditCardFraudDetection;
     }
 
     public function query($payment)
     {
-        if ($this->mode === Mode::TEST)
+        if (($this->mode === Mode::TEST) or
+            ($this->basicauth->isPrivateAuth() === true))
         {
             return;
         }
@@ -56,6 +58,7 @@ class MaxMind
             'emailMD5'          => md5($payment->getEmail()),
             'bin'               => $payment->card->getIin(),
             'txnID'             => $payment->getId(),
+            'shopID'            => $payment->getMerchantId(),
             'order_amount'      => $this->getFormattedAmount($payment),
             'order_currency'    => $payment->getCurrency(),
             'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),

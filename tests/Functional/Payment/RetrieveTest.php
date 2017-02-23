@@ -102,7 +102,23 @@ class PaymentRetrieveTest extends TestCase
         //WHEN
         $payment = $this->makeRequestAndGetContent($request);
 
+        $this->assertEquals(1, $payment['count']);
         $this->assertEquals($email, $payment['items'][0]['email']);
+    }
+
+    public function testRetrievePaymentHavingNullContact()
+    {
+        $payment = $this->fixtures->create('payment:captured', ['contact' => null]);
+
+        $id = $payment->getPublicId();
+
+        $request = $this->request;
+        $request['url'] .= '/' . $id;
+
+        $payment = $this->makeRequestAndGetContent($request);
+
+        $this->assertEquals($id, $payment['id']);
+        $this->assertNull($payment['contact']);
     }
 
     public function testRetrievePaymentWithCardIIN()
@@ -235,25 +251,26 @@ class PaymentRetrieveTest extends TestCase
 
     public function testMoreThan100InPrivateAuth()
     {
+        $data = $this->testData[__FUNCTION__];
+
         $e = null;
 
-        try
+        $this->runRequestResponseFlow($data, function()
         {
             $content = $this->getEntities('payment', ['count' => 1000]);
-        }
-        catch (\Exception $e)
-        {
-            ;
-        }
-
-        $this->assertEquals('RZP\Exception\BadRequestValidationFailureException', get_class($e));
+        });
     }
 
     public function testSearchEsForNotes()
     {
         $this->ba->proxyAuth();
 
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $payment = $this->fixtures->create('payment:authorized', [
+            'notes' => [
+                'order_id' => 'es_random_1'
+            ]
+        ]);
+
         $paymentId = $payment->getId();
 
         $mockEs = $this->mockEsClient();
@@ -300,7 +317,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -313,7 +330,7 @@ class PaymentRetrieveTest extends TestCase
 
     public function testSearchEsForNotesOnAdminAuth()
     {
-        $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes'=>['order_id' => 'es_random_1']]);
+        $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         foreach ($payments as $payment)
         {
@@ -374,7 +391,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -392,7 +409,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -407,7 +424,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 

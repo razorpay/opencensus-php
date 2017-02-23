@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Payment;
 
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -37,9 +38,9 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         if ($payment['amount'] === 50000)
         {
-            assert($feesArray['input']['fee'] === 1173);
+            $this->assertEquals($feesArray['input']['fee'], 1173);
 
-            assert($feesArray['display']['service_tax'] === 1.49);
+            $this->assertEquals($feesArray['display']['service_tax'], 1.49);
         }
 
         return $feesArray;
@@ -64,14 +65,71 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment = $this->getLastPayment();
 
-        assert($payment['fee'] === 1150);
+        $this->assertEquals($payment['fee'], 1150);
 
-        assert($payment['service_tax'] === 150);
+        $this->assertEquals($payment['service_tax'], 150);
+    }
+
+    public function testInvalidCaptureAmount()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->testFees($payment);
+
+        $amount = $payment['amount'];
+
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+
+        // Fee is correct
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        // Amount is wrong
+        $invalidCaptureAmount = $amount + $payment['fee'] * 2;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment, $invalidCaptureAmount)
+            {
+                $this->doAuthAndCapturePayment($payment, $invalidCaptureAmount);
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount'], $amount + $payment['fee']);
+    }
+
+    public function testCaptureAmountWithFees()
+    {
+        $data = $this->testData['testInvalidCaptureAmount'];
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $feesArray = $this->testFees($payment);
+
+        $amount = $payment['amount'];
+
+        // Amount is incorrect, it contains fees also.
+        $payment['amount'] = $payment['amount'] + $feesArray['input']['fee'];
+
+        $payment['fee'] = $feesArray['input']['fee'];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment, $amount)
+            {
+                $this->doAuthAndCapturePayment($payment, ($amount + $payment['fee']));
+            });
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['amount'], $amount + $payment['fee']);
     }
 
     public function testAmountMismatch()
     {
-        $payment           = $this->getDefaultPaymentArray();
+        $payment = $this->getDefaultPaymentArray();
 
         $feesArray = $this->testFees($payment);
 
@@ -81,17 +139,14 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment['fee']    = $feesArray['input']['fee'];
 
-        try
-        {
-            $this->doAuthAndCapturePayment($payment);
-        }
-        catch (\Exception $e)
-        {
-            // assert($e->getError()->internal_error_code
-            //                 === 'BAD_REQUEST_VALIDATION_FAILURE');
-            assert($e->getMessage()
-                === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
-        }
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->doAuthAndCapturePayment($payment);
+            });
     }
 
     // TODO Add tests for create with order
@@ -121,11 +176,11 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment = $this->getLastPayment();
 
-        assert($payment['order_id'] === $order['id']);
+        $this->assertEquals($payment['order_id'], $order['id']);
 
-        assert($payment['fee'] === 1150);
+        $this->assertEquals($payment['fee'], 1150);
 
-        assert($payment['service_tax'] === 150);
+        $this->assertEquals($payment['service_tax'], 150);
     }
 
     // TODO Fail tests for create with order
@@ -136,6 +191,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
         $this->ba->privateAuth();
 
         $order = $this->runRequestResponseFlow($orderInput);
+
+        $data = $this->testData['testAmountMismatch'];
 
         $this->ba->publicAuth();
 
@@ -151,16 +208,8 @@ class PaymentCreateConvenienceFeeTest extends TestCase
 
         $payment['fee']    = $feesArray['input']['fee'] + 100;
 
-        try
-        {
+        $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->doAuthAndCapturePayment($payment);
-        }
-        catch (\Exception $e)
-        {
-            // assert($e->getError()->internal_error_code
-            //     === 'BAD_REQUEST_VALIDATION_FAILURE');
-            assert($e->getMessage()
-                === ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED);
-        }
+        });
     }
 }

@@ -4,28 +4,47 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Address;
+use RZP\Models\Device;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Payment;
+use RZP\Models\BankAccount;
+use RZP\Models\Upi;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
 {
-    public function createLocalCustomer($input, $merchant)
+    /**
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     * @param bool            $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createLocalCustomer(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
-        return $this->create($input, $merchant);
+        return $this->create($input, $merchant, $failOnDuplicate);
     }
 
-    public function createGlobalCustomer($input)
+    /**
+     * @param      $input
+     * @param bool $failOnDuplicate
+     *
+     * @return Entity
+     * @throws Exception\LogicException
+     */
+    public function createGlobalCustomer($input, $failOnDuplicate = true)
     {
-        assert(isset($input[Customer\Entity::CONTACT]));
+        assertTrue(isset($input[Customer\Entity::CONTACT]));
 
-        return $this->create($input, $this->getSharedAccount());
+        return $this->create($input, $this->getSharedAccount(), $failOnDuplicate);
     }
 
-    protected function create($input, $merchant, $failOnDuplicate = true)
+    protected function create(array $input, Merchant\Entity $merchant, $failOnDuplicate = true)
     {
         $customer = (new Customer\Entity)->build($input);
 
@@ -37,19 +56,56 @@ class Core extends Base\Core
         {
             if ($failOnDuplicate === false)
             {
-                $existingCustomer->merchant->associate($merchant);
+                $existingCustomer->merchant()->associate($merchant);
+
                 return $existingCustomer;
             }
             else
             {
                 throw new Exception\LogicException(
-                    'Should not reach here');
+                    'Customer already exists.', null, ['customer_id' => $existingCustomer->getId()]);
             }
         }
 
-        $this->repo->saveOrFail($customer);
+        $this->repo->transaction(function() use ($customer, $merchant, $input)
+        {
+            // This needs to happen here because address create associates itself with the customer.
+            // Hence, it's required that the customer is saved.
+            $this->repo->saveOrFail($customer);
+
+            $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
+
+        });
 
         return $customer;
+    }
+
+    /**
+     * Creates customer addresses if address input keys has been sent as part of
+     * create customer request.
+     *
+     * @param Entity $customer
+     * @param array  $input
+     *
+     * @return null
+     */
+    protected function createCustomerAddressesIfValuesSetInInput(Entity $customer, array $input)
+    {
+        $addressCore = new Address\Core;
+
+        $addressKeys = Address\Type::getValidTypes(Address\Type::CUSTOMER);
+
+        foreach ($addressKeys as $addressKey)
+        {
+            if (empty($input[$addressKey]) === true)
+            {
+                continue;
+            }
+
+            $input[$addressKey][Address\Entity::TYPE] = $addressKey;
+
+            $addressCore->create($customer, Address\Type::CUSTOMER, $input[$addressKey]);
+        }
     }
 
     public function edit($customer, $input)
@@ -157,8 +213,10 @@ class Core extends Base\Core
 
     /**
      * Gets global customer from db or create one.
-     * @param  string $contact customer's phone number
-     * @return Customer\Entity $contact
+     *
+     * @param $input
+     *
+     * @return Entity $contact
      */
     protected function getOrCreateGlobalCustomer($input)
     {
@@ -183,43 +241,37 @@ class Core extends Base\Core
         return $customer;
     }
 
-    public function getCustomerAndApp($input, $merchant)
+    public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
-        $merchantId = null;
         $customer = null;
         $appToken = null;
-        $appToken = null;
 
-        if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+        if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
-            $appToken = $input[Payment\Entity::APP_TOKEN];
+            $customerId = $input[Payment\Entity::CUSTOMER_ID];
 
-            Customer\AppToken\Entity::verifyIdAndStripSign($appToken);
+            Customer\Entity::verifyIdAndStripSign($customerId);
+        }
+        else if (empty($input[Payment\Entity::APP_TOKEN]) === false)
+        {
+            $appTokenId = $input[Payment\Entity::APP_TOKEN];
 
-            $appToken = (new Customer\AppToken\Core)->getAppByAppToken(
-                $appToken,
-                $merchant);
+            Customer\AppToken\Entity::verifyIdAndStripSign($appTokenId);
+
+            $appToken = (new Customer\AppToken\Core)->getAppByAppTokenId($appTokenId, $merchant);
 
             if ($appToken !== null)
             {
                 $customerId = $appToken->getCustomerId();
 
-                $merchantId = Account::SHARED_ACCOUNT;
+                $merchant = $this->repo->merchant->getSharedAccount();
             }
-        }
-        else if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
-        {
-            $merchantId = $merchant->getId();
-
-            $customerId = $input[Payment\Entity::CUSTOMER_ID];
-
-            Customer\Entity::verifyIdAndStripSign($customerId);
         }
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
         }
 
         $this->trace->info(
@@ -253,10 +305,8 @@ class Core extends Base\Core
             ]);
     }
 
-    protected function verifyUniqueCustomer($customer, $failOnDuplicate = true)
+    protected function verifyUniqueCustomer(Customer\Entity $customer, $failOnDuplicate = true)
     {
-        $customers = null;
-
         if ($customer->merchant->isShared() === true)
         {
             $customer = $this->repo->customer->findByContactAndMerchant(
@@ -284,5 +334,41 @@ class Core extends Base\Core
     protected function getSharedAccount()
     {
         return $this->repo->merchant->getSharedAccount();
+    }
+
+    public function sendSetMpinRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $params = [
+            'method'    =>  'ReqRegMob',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
+    }
+
+    public function sendResetMpinRequestToGateway(
+        Device\Entity $device, Entity $customer, BankAccount\Entity $bankAccount, array $input)
+    {
+        $gatewayInput['device'] = $device->toArray();
+        $gatewayInput['customer'] = $customer->toArrayPublic();
+        $gatewayInput['bank_account'] = $bankAccount->toArray();
+        $gatewayInput['input'] = $input;
+
+        $params = [
+            'method'    =>  'ReqSetCre',
+            'params'    =>  $gatewayInput
+        ];
+
+        $response = (new Upi\Core)->callUpiGateway('makeRequest', $params);
+
+        return $response;
     }
 }

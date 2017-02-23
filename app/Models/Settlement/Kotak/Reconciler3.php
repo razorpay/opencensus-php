@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement\Kotak;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use Excel;
 use Mail;
 use RZP\Trace;
@@ -12,7 +13,9 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payout;
+use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -33,6 +36,16 @@ class Reconciler3
         'DateTime',
         'Int.ref no.',
         'Dummy');
+
+    const SUCCESS_STATUS = [
+        'Beneficiary Account Credited',
+        'Account Debited',
+        'Presented and Paid',
+    ];
+
+    const MUTEX_RESOURCE        = 'SETTLEMENT_RECONCILIATION_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 300;
 
     /**
      * All payments in the current mpr
@@ -56,37 +69,62 @@ class Reconciler3
         $this->repo = $this->app['repo'];
 
         $this->trace = $this->app['trace'];
+
+        $this->mutex = $this->app['api.mutex'];
     }
 
     public function process($input)
+    {
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input)
+            {
+                return $this->processReconciliation($input);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS);
+
+        return $data;
+    }
+
+    public function processReconciliation($input)
     {
         $reconcileFile = $this->getReconcilationFile($input);
 
         if ($reconcileFile === null)
         {
             $this->trace->info(
-                TraceCode::MISC_TRACE_CODE, ['message' => 'No file present']);
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message' => 'No file present'
+                ]);
 
             return new Base\PublicCollection;
         }
 
         $data = $this->parseTextFile($reconcileFile);
 
-        if (count($data) === 0)
+        $response = null;
+
+        if (empty($data) === true)
         {
-            return "No rows to process";
+            $response =  [
+                'message' => 'no records to reconcile'
+            ];
         }
+        else
+        {
+            $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
 
-        $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
+            // update the format so that recon mail is appended to settlement mail
+            $date = $date->format('d-m-Y');
 
-        // update the format so that recon mail is appended to settlement mail
-        $date = $date->format('d-m-Y');
+            $response = $this->reconcile($data);
 
-        $response = $this->reconcile($data);
+            $this->storeReconciledFile($reconcileFile);
 
-        $this->storeReconciledFile($reconcileFile);
-
-        $this->sendReconciliationMail($date, $response);
+            $this->sendReconciliationMail($date, $response);
+        }
 
         return $response;
     }
@@ -132,7 +170,6 @@ class Reconciler3
         ];
 
         (new SlackNotification)->success('setl_reconciliation', $response);
-
         return $response;
     }
 
@@ -147,25 +184,57 @@ class Reconciler3
 
     protected function processEntityStatus($entity, $row)
     {
+        // get reconciliation data
         $utr = null;
-        $failureReason = null;
+
         $type = $entity->getEntity();
+
         $class = '\\RZP\\Models\\' . ucfirst($type) . '\\Status';
 
-        // get status
         $status = $row['Status Of transaction'];
+
+        $remarks = substr($row['Reject Reason'], 0, 255);
+
+        $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $tenPm = $recordDate->hour(22)->timestamp;
+
+        $failureReason = null;
 
         if ($status === 'P')
         {
-            $status =  $class::PROCESSED;
+            $utr = trim($row['UTR number']);
 
-            $utr = $row['UTR number'];
+            if (empty($utr) === true)
+            {
+                $utr = null;
+            }
+
+            // If current time is before 10 pm, dont mark the settlement as
+            // processed and update only the utr
+            if ($now < $tenPm)
+            {
+                $status = Settlement\Status::CREATED;
+            }
+            else if ((empty($remarks) === true) or
+                (in_array($remarks, self::SUCCESS_STATUS) === true))
+            {
+                $status = Settlement\Status::PROCESSED;
+            }
+            else
+            {
+                $status = Settlement\Status::FAILED;
+
+                $failureReason = 'Reconciliation';
+            }
         }
         else
         {
             $status = $class::FAILED;
 
-            $failureReason = 'Reconciliation: ' . $failureReason;
+            $failureReason = 'Reconciliation';
         }
 
         // if already processed
@@ -184,13 +253,18 @@ class Reconciler3
         else
         {
             $entity->setUtr($utr);
+
             $entity->setStatus($status);
+
             $entity->setFailureReason($failureReason);
 
-            $this->repo->save($entity);
+            $entity->setRemarks($remarks);
+
+            $this->repo->saveOrFail($entity);
 
             $entity->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->save($entity->transaction);
+
+            $this->repo->saveOrFail($entity->transaction);
         }
 
         return $entity;
@@ -272,10 +346,14 @@ class Reconciler3
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 
-    protected static function getHeadings()
+    public static function getHeadings()
     {
         $headings = Kotak\NodalAccount::getHeadings();
 
@@ -301,5 +379,18 @@ class Reconciler3
         }
 
         return $reconcileFile;
+    }
+
+    protected function parseTextRowWithHeadingMismatch($headings, $values, $ix)
+    {
+        $count = count($values);
+
+        assert(($count === 54) or ($count === 55));
+
+        $headings = array_slice($headings, 0, $count);
+
+        $values = array_combine($headings, $values);
+
+        return $values;
     }
 }

@@ -3,7 +3,6 @@
 use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
-use RZP\Error\PublicErrorDescription;
 
 return [
     'testCreateCustomer' => [
@@ -18,6 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'  => 'customer',
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
@@ -83,14 +83,14 @@ return [
             'content' => [
                 'name'    => 'testc',
                 'email'   => 'test11@razorpay.com',
-                'contact' => '1234567890'
+                'contact' => '9988776655'
             ],
         ],
         'response' => [
             'content' => [
                 'name'    => 'testc',
                 'email'   => 'test11@razorpay.com',
-                'contact' => '1234567890'
+                'contact' => '9988776655'
             ],
         ],
     ],
@@ -136,6 +136,27 @@ return [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_CUSTOMER_ALREADY_EXISTS,
         ],
+    ],
+
+    'testCreateCustomerDuplicateDontFail' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name' => 'testc',
+                'email' => 'test@razorpay.com',
+                'contact' => '1234567890',
+                'fail_existing' => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'cust_100000customer',
+                'name' => 'test',
+                'contact' => '1234567890',
+                'email' => 'test@razorpay.com'
+            ]
+        ]
     ],
 
     'testUpdateCustomer' => [
@@ -233,9 +254,40 @@ return [
         ],
     ],
 
+    'testUpdateCustomerToken' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/token_1000custwallet',
+            'method' => 'put',
+            'content' => [
+                'recurring' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => "token_1000custwallet",
+                'entity' => "token",
+                'wallet' => "paytm",
+                'method' => "wallet",
+            ],
+        ],
+    ],
+
     'testDeleteCustomerToken' => [
         'request' => [
             'url' => '/customers/cust_100000customer/tokens/100wallettoken',
+            'method' => 'delete',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
+
+    'testDeleteCustomerTokenById' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/token_1000custwallet',
             'method' => 'delete',
             'content' => [
             ],
@@ -251,7 +303,7 @@ return [
             'url' => '/customers/cust_100000customer/tokens',
             'method' => 'post',
             'content' => [
-                'method' => 'card',
+                'method'  => 'card',
                 'card_id' => '10000savedcard',
             ],
         ],
@@ -329,7 +381,7 @@ return [
 
     'testFetchSavedTokensStatusSaved'   => [
         'request' => [
-                'url' => '/customers/status/1234567890',
+                'url' => '/customers/status/9988776655',
                 'method' => 'get',
                 'content' => [
                 ],
@@ -343,7 +395,7 @@ return [
 
     'testFetchSavedCustomerStatusWithDeviceToken'   => [
         'request' => [
-                'url' => '/customers/status/1234567890',
+                'url' => '/customers/status/9988776655',
                 'method' => 'get',
                 'content' => [
                     'device_token' => '1000custdevice'
@@ -381,7 +433,7 @@ return [
                 'url' => '/devices/1000custdevice/verify',
                 'method' => 'post',
                 'content' => [
-                    'contact' => 1234567890
+                    'contact' => '9988776655',
                 ],
             ],
             'response' => [

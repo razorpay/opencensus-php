@@ -2,29 +2,6 @@
 
 use RZP\Exception;
 
-if (! function_exists('validate'))
-{
-    function validate($rules, $data, $strict = true)
-    {
-        $invalid_keys = array_keys(array_diff_key($data, $rules));
-
-        if ((count($invalid_keys) !== 0) and
-            ($strict === true))
-        {
-            throw new Exception\ExtraFieldsException($invalid_keys);
-        }
-
-        $validation = Validator::make($data, $rules);
-
-        if ($validation->fails())
-        {
-            $messages = implode('\n', $validation->messages()->all());
-
-            throw new Exception\BadRequestValidationFailureException($messages);
-        }
-    }
-}
-
 if (! function_exists('validate_keys'))
 {
     function validate_keys($data, $rules)
@@ -134,5 +111,63 @@ if (! function_exists('utf8_json_encode'))
 
         return $json;
 
+    }
+}
+
+if (! function_exists('get_rgb_components'))
+{
+    /**
+     * Returns rgb components of given hex color code
+     *
+     * @param string $hexColor - Hex color code, eg. #ff9900
+     *
+     * @return array
+     */
+    function get_rgb_components($hexColor = '')
+    {
+        $hexColor = ltrim($hexColor, '#');
+
+        list($r, $g, $b) = sscanf($hexColor, "%02x%02x%02x");
+
+        return ['r' => $r, 'g' => $g, 'b' => $b];
+    }
+}
+
+if (! function_exists('get_rgb_value'))
+{
+    /**
+     * Get string rgb value
+     *
+     * @param string $hexColor
+     *
+     * @return string
+     */
+    function get_rgb_value($hexColor = '')
+    {
+        $rgb = get_rgb_components($hexColor);
+
+        return 'rgb(' . implode(',', $rgb) . ')';
+    }
+}
+
+if (! function_exists('get_brand_text_color'))
+{
+    /**
+     * Gets branch text color (which will be used over the theme color) based on
+     * the hex color code (brand theme) of merchant.
+     *
+     * @param string $hexColor
+     *
+     * @return
+     */
+    function get_brand_text_color($hexColor)
+    {
+        $threshold = 75;
+
+        $rgb = get_rgb_components($hexColor);
+
+        $backgroundDelta = ($rgb['r'] * 0.299) + ($rgb['g'] * 0.587) + ($rgb['b'] * 0.114);
+
+        return ((255 - $backgroundDelta) < $threshold) ? "#000000" : "#ffffff";
     }
 }

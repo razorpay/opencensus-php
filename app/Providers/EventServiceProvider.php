@@ -20,6 +20,12 @@ class EventServiceProvider extends ServiceProvider
         'RZP\Listeners\ApiEventSubscriber',
     ];
 
+    protected $listen = [
+        'RZP\Events\AuditLogEntry' => [
+            'RZP\Listeners\AuditLogListener',
+        ],
+    ];
+
     /**
      * Register any other events for your application.
      *

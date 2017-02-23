@@ -2,15 +2,17 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Constants\Mode;
-use RZP\Http\ApiResponse;
+use ApiResponse;
+use Request;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
+use RZP\Constants\Entity as E;
+use RZP\Models\Key;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
+use RZP\Models\Merchant\Detail;
 use RZP\Models\Terminal;
-use RZP\Models\Key;
-use Request;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Report;
 
 class MerchantController extends Controller
 {
@@ -144,6 +146,24 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function assignSettlementSchedule($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->assignSettlementSchedule($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function migrateToSchedules()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->migrateMerchantToSettlementSchedules($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getPricingPlan($id)
     {
         $data = (new Merchant\Service)->getPricingPlan($id);
@@ -160,9 +180,20 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postCopyTerminal($mid, $tid)
+    {
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->copyTerminal($mid, $tid, $input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getTerminals($mid)
     {
-        $data = (new Terminal\Service)->getTerminals($mid);
+        $input = Request::all();
+
+        $data = (new Terminal\Service)->getTerminals($mid, $input);
 
         return ApiResponse::json($data);
     }
@@ -181,45 +212,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function deleteTerminal2($id)
-    {
-        $data = (new Terminal\Service)->deleteTerminal2($id);
-
-        return ApiResponse::json($data);
-    }
-
     public function putTerminal($mid, $tid)
     {
         $input = Request::all();
 
         $data = (new Terminal\Service)->modifyTerminal($mid, $tid, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function putTerminal2($tid)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->editTerminal($tid, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function restoreTerminal($tid)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->restoreTerminal($tid);
-
-        return ApiResponse::json($data);
-    }
-
-    public function postCheckTerminalEncryptedValue($id)
-    {
-        $input = Request::all();
-
-        $data = (new Terminal\Service)->checkTerminalEncryptedValue($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -241,6 +238,15 @@ class MerchantController extends Controller
     public function postLiveDisable($id)
     {
         $data = (new Merchant\Service)->liveDisable($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function putAction($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->action($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -308,13 +314,6 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function putBanksForAllMerchants()
-    {
-        $input = Request::all();
-
-        $data = (new Merchant\Service)->setBanksForAllMerchants($input);
-    }
-
     public function getBalance($id)
     {
         $data = (new Merchant\Service)->fetchBalance($id);
@@ -337,11 +336,11 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postFreeCredits($id)
+    public function postAmountCredits($id)
     {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->editFreeCredits($id, $input);
+        $data = (new Merchant\Service)->editAmountCredits($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -423,7 +422,7 @@ class MerchantController extends Controller
 
         $prefs = (new Merchant\Service)->getCheckoutPreferences($input);
 
-        $data = $this->getCheckoutCommon();
+        $data = $this->getCheckoutCommon($input);
 
         $data['preferences'] = $prefs;
 
@@ -432,61 +431,55 @@ class MerchantController extends Controller
 
     public function getCheckoutPublic()
     {
-        $data = $this->getCheckoutCommon();
-
-        return \View::make('checkout.checkout-public')
-                    ->with($data);
-    }
-
-    protected function getCheckoutCommon()
-    {
         $input = Request::all();
 
-        $app = \App::getFacadeRoot();
+        $data = $this->getCheckoutCommon($input);
 
-        $context = $app['config']->get('app.context');
-
-        $url = $app['config']->get('app.checkout');
-
-        $urlMap = array(
-            'production'    => 'https://checkout.razorpay.com',
-            'beta'          => 'https://betacheckout.razorpay.com');
-
-        $framejs = '/v1/checkout-frame.js';
-        $css = '/v1/css/checkout.css';
-
-        $data = [];
-
-        if (in_array($context, array_keys($urlMap)))
-        {
-            $url = $urlMap[$context];
-        }
-
-        else if (isset($input['checkout']))
-        {
-            $url = $input['checkout'];
-        }
-
-        $data['checkout'] = $url;
-        $data['framejs'] = $url . $framejs;
-        $data['css'] = $url . $css;
-        $data['font'] = 'https://cdn.razorpay.com/lato';
-
-        return $data;
+        return \View::make('checkout.checkout')
+                    ->with($data);
     }
 
     public function getPublicEntityReport($entity)
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\Report)->getReport($input, $entity);
+        $report = new Report\BasicEntityReport($entity);
+
+        return $report->getReport($input);
+    }
+
+    public function getPublicEntityReportUrl($entity)
+    {
+        $input = Request::all();
+
+        $report = new Report\BasicEntityReport($entity);
+
+        $data = $report->getReportUrl($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getBrokerTransactionReport()
+    {
+        $input = Request::all();
+
+        $report = new Report\BrokerTransactionReport(E::TRANSACTION);
+
+        return $report->getReport($input);
     }
 
     public function getInvoiceReport()
     {
         $input = Request::all();
 
-        return (new \RZP\Models\Base\Report)->getInvoice($input);
+        return (new Report\InvoiceReport)->getInvoice($input);
+    }
+
+    public function getInvoiceReportV2()
+    {
+        $input = Request::all();
+
+        return (new Report\InvoiceReport)->getInvoiceV2($input);
     }
 
     /**
@@ -495,41 +488,11 @@ class MerchantController extends Controller
      */
     public function sendDailyReport()
     {
-        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants();
-        return ApiResponse::json($response);
-    }
-
-    /**
-    * Gets the list of beta fetures enabled for merchant
-    * @param  string $id merchant id
-    * @return array      array of feature names
-    */
-    public function getMerchantFeatures($id)
-    {
-        $data = (new Merchant\Service)->getMerchantFeatures($id);
-
-        return ApiResponse::json($data);
-    }
-
-    /**
-     * Adds or updated the list of beta fetures for an merchant
-     * @param  string     $id     merchant id
-     * @return merchant           updated entity
-     */
-    public function postMerchantFeatures($id)
-    {
         $input = Request::all();
 
-        $data = (new Merchant\Service)->addOrUpdateMerchantFeatures($id, $input);
+        $response = (new \RZP\Models\Merchant\Service)->sendDailyReportForAllMerchants($input);
 
-        return ApiResponse::json($data);
-    }
-
-    public function getAllFeatures()
-    {
-        $data = Merchant\Features::$allowedFeatures;
-
-        return ApiResponse::json($data);
+        return ApiResponse::json($response);
     }
 
     public function getDummyFeatures()
@@ -548,7 +511,39 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
-// --------------------- Credits API Handlers -----------------------------------------
+    public function updateMethodsForMultipleMerchants()
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->updateMethodsForMultipleMerchants($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getOffers(string $mid)
+    {
+        $data = (new Merchant\Service)->getOffers($mid);
+
+        return ApiResponse::json($data);
+    }
+
+    public function updateMerchantFeatures($id)
+    {
+        $input = Request::all();
+
+        $data = (new Merchant\Service)->addOrRemoveMerchantFeatures($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getMerchantFeatures($id)
+    {
+        $data = (new Merchant\Service)->getMerchantFeatures();
+
+        return ApiResponse::json($data);
+    }
+
+    // --------------------- Credits API Handlers -----------------------------------------
 
     public function postCreateCreditsLog(Credits\Service $service, $id)
     {
@@ -592,4 +587,57 @@ class MerchantController extends Controller
     }
 
 // --------------------- End Credits API Handlers -----------------------------------------
+
+
+    // Activation Form Handlers
+    public function getActivationDetails()
+    {
+        $response = (new Detail\Service)->fetchMerchantDetails();
+
+        return ApiResponse::json($response);
+    }
+
+    public function postUploadActivationFile()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->uploadActivationFile($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function getActivationFiles(string $id)
+    {
+        $response = (new Detail\Service)->fetchActivationFiles($id);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postSaveActivationDetails()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->saveMerchantDetails($input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function putEditMerchantDetailsAfterLock($id)
+    {
+        $input = Request::all();
+
+        $response = (new Detail\Service)->editMerchantDetails($id, $input);
+
+        return ApiResponse::json($response);
+    }
+
+    public function postMerchantDetailMigrate()
+    {
+        $input = Request::all();
+
+        $response = (new Detail\FileMigration)->migrateMerchantDocuments($input);
+
+        return ApiResponse::json($response);
+    }
+    // == / Activation Form Handlers ==
 }

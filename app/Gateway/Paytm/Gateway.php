@@ -9,7 +9,6 @@ use RZP\Gateway\Base;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Paytm;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
@@ -40,7 +39,7 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
-        $this->verifySecureHash($input);
+        $this->verifySecureHash($input['gateway']);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway']['ORDERID'], Action::AUTHORIZE);
@@ -213,7 +212,7 @@ class Gateway extends Base\Gateway
             '309');
 
         if (($payment['received'] === false) and
-            (in_array($content['RESPCODE'], $invalidOrderIdRespCode) === false))
+            (in_array($content['RESPCODE'], $invalidOrderIdRespCode, true) === false))
         {
             $contentToStore = [];
 
@@ -303,7 +302,6 @@ class Gateway extends Base\Gateway
         }
 
         $mobileNo = $this->getMobileNumber($input['payment']['contact']);
-        $email = $this->getFormattedEmail($input['payment']['email']);
 
         $content = array(
             'REQUEST_TYPE'              => $type,
@@ -406,27 +404,27 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function verifySecureHash($input)
+    protected function verifySecureHash(array $content)
     {
         $res = false;
 
-        if (isset($input['gateway']['CHECKSUMHASH']) === false)
+        if (isset($content['CHECKSUMHASH']) === false)
         {
-            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $input['gateway']);
+            $this->trace->error(TraceCode::GATEWAY_PAYMENT_ERROR, $content);
 
-            if ($input['gateway']['STATUS'] === Status::FAILURE)
+            if ($content['STATUS'] === Status::FAILURE)
             {
                 return;
             }
         }
         else
         {
-            $checksum = $input['gateway']['CHECKSUMHASH'];
-            unset($input['gateway']['CHECKSUMHASH']);
+            $checksum = $content['CHECKSUMHASH'];
+            unset($content['CHECKSUMHASH']);
 
             $secret = $this->getSecret();
 
-            $res = Checksum::verifychecksum_e($input['gateway'], $secret, $checksum);
+            $res = Checksum::verifychecksum_e($content, $secret, $checksum);
         }
 
         if ($res === false)

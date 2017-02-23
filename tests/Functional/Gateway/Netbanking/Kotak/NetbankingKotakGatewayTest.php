@@ -26,13 +26,27 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $this->fixtures->on('test')->create('terminal:shared_netbanking_kotak_terminal');
+        $terminalAttrs = [
+            'id'               => 'DrctNbKtkTrmnl',
+        ];
+
+        $this->fixtures->create(
+                        'terminal:netbanking_kotak_terminal',
+                        $terminalAttrs);
+
+        $terminalAttrs = [
+            'id'               => 'TpvNbKotakTmnl',
+            'network_category' => 'securities',
+            'tpv'      => 1,
+        ];
+
+        $terminal = $this->fixtures->create(
+                        'terminal:shared_netbanking_kotak_terminal',
+                        $terminalAttrs);
     }
 
     public function testPayment()
     {
-        $terminal = $this->fixtures->create('terminal:netbanking_kotak_terminal');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -48,10 +62,53 @@ class NetbankingKotakGatewayTest extends TestCase
         $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
     }
 
+    public function testTpvPayment()
+    {
+        $this->fixtures->merchant->enableTPV();
+
+        $order = $this->createTpvOrderForBank('KKBK');
+
+        $payment = $this->doNetbankingKotakAuthAndCapturePayment($order);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentTpvNetbankingEntity'], $payment);
+
+        $this->assertArrayHasKey('bank_payment_id', $payment);
+        $this->assertTrue(filter_var($payment['bank_payment_id'], FILTER_VALIDATE_INT) !== false);
+
+        $this->fixtures->merchant->disableTPV();
+    }
+
+    protected function createTpvOrderForBank($bank)
+    {
+        $request = [
+            'content' => [
+                'amount'         => 50000,
+                'currency'       => 'INR',
+                'receipt'        => 'rcptid42',
+                'method'         => 'netbanking',
+                'account_number' => '0040304030403040',
+                'bank'           => $bank,
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ];
+
+        $this->ba->privateAuth();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->ba->publicAuth();
+
+        return $content;
+    }
+
     public function testPaymentVerify()
     {
-        $terminal = $this->fixtures->create('terminal:netbanking_kotak_terminal');
-
         $payment = $this->doNetbankingKotakAuthAndCapturePayment();
 
         $payment = $this->getLastEntity('payment', true);
@@ -63,55 +120,50 @@ class NetbankingKotakGatewayTest extends TestCase
 
     public function testRefundsFileGeneration()
     {
-        // Make 3 test payments
-        $this->testPayment();
+        // Make 6 payments
+        foreach (range(0,2) as $value)
+        {
+            // 3 tpv payments
+            $this->testPayment();
 
-        $this->testPayment();
-
-        $this->testPayment();
+            // 3 nonTpv payments
+            $this->testTpvPayment();
+        }
 
         $payments = $this->getEntities('payment', [], true);
 
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+        $this->movePaymentsToYesterday($payments);
 
-        // Set payment dates to yesterday
-        foreach ($payments['items'] as $payment)
+        $this->setPaymentsReconciledAtToday();
+
+        list($tpvPayments, $nonTpvPayments) = $this->getTpvAndNonTpvPayments($payments);
+
+        // Refund a tpv and a non tpv payment
+        foreach ([$tpvPayments[0], $nonTpvPayments[0]] as $payment)
         {
-            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $createdAt,
-                                                              'authorized_at' => $createdAt + 10,
-                                                              'captured_at' => $createdAt + 20]);
+            $refundPayment = $this->refundPayment($payment['id'], 100);
+
+            $refundPayment = $this->refundPayment($payment['id']);
         }
 
-        // Set the transactions to be reconciled today
-        $transactions = $this->getEntities('transaction', [], true);
+        $this->moveRefundsToYesteday();
 
-        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+        $this->setUpMailMock();
 
-        foreach ($transactions['items'] as $transaction)
+        $content = $this->generateRefundsExcelForNB('KKBK');
+
+        foreach (['tpv', 'nonTpv'] as $fileType)
         {
-            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+            $this->checkDailyFilesContent($content, $fileType);
         }
 
-        // Refund a payment
-        $lastPayment = $payments['items'][2];
+    }
 
-        $refundPayment = $this->refundPayment($lastPayment['id'], 100);
-
-        $refundPayment = $this->refundPayment($lastPayment['id']);
-
-        $refunds = $this->getEntities('refund', [], true);
-
-        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(45)->timestamp;
-
-        // Mark refunds as created yesterday
-        foreach ($refunds['items'] as $refund)
-        {
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-
+    protected function setUpMailMock()
+    {
         // Mail catch with amount and refund everywhere
         Mail::shouldReceive('queue')
-              ->once()
+              ->twice()
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
@@ -132,13 +184,13 @@ class NetbankingKotakGatewayTest extends TestCase
                         }),
                     Mockery::any()
                 );
+    }
 
+    protected function checkDailyFilesContent($content, $fileType)
+    {
+        $refundsFileUrl = $content['netbanking_kotak']['refunds'][$fileType];
 
-        $content = $this->generateRefundsExcelForKkbkNB();
-
-        $refundsFileUrl = $content['netbanking_kotak'][0];
-
-        $claimsFileUrl = $content['netbanking_kotak'][1];
+        $claimsFileUrl = $content['netbanking_kotak']['claims'][$fileType];
 
         $claimsFileContents = file($claimsFileUrl);
 
@@ -148,7 +200,6 @@ class NetbankingKotakGatewayTest extends TestCase
         assert(count($claimsFileContents) === 3);
 
         assert(count($refundsFileContents) === 3);
-
 
         $refundsFileName = explode('/', $refundsFileUrl);
 
@@ -169,27 +220,73 @@ class NetbankingKotakGatewayTest extends TestCase
         assert(count($refundsFileLine1) === 6);
     }
 
-    protected function generateRefundsExcelForKkbkNB()
-    {
-        $this->ba->appAuth();
-
-        $request = array(
-            'url' => '/refunds/netbanking/excel',
-            'method' => 'post',
-            'content' => [
-                'bank'   => 'KKBK'
-            ],
-        );
-
-        return $this->makeRequestAndGetContent($request);
-    }
-
-    protected function doNetbankingKotakAuthAndCapturePayment()
+    protected function doNetbankingKotakAuthAndCapturePayment($order = [])
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment['bank'] = 'KKBK';
+
+        if (empty($order) === false)
+        {
+            $payment['order_id'] = $order['id'];
+        }
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         return $payment;
+    }
+
+    protected function movePaymentsToYesterday($payments)
+    {
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(30)->timestamp;
+
+        // Set payment dates to yesterday
+        foreach ($payments['items'] as $payment)
+        {
+            $this->fixtures->edit('payment', $payment['id'], ['created_at' => $createdAt,
+                                                              'authorized_at' => $createdAt + 10,
+                                                              'captured_at' => $createdAt + 20]);
+        }
+    }
+
+    protected function setPaymentsReconciledAtToday()
+    {
+        // Set the transactions to be reconciled today
+        $transactions = $this->getEntities('transaction', [], true);
+
+        $reconciledAt = Carbon::today('Asia/Kolkata')->addHours(5)->addMinutes(13)->timestamp;
+
+        foreach ($transactions['items'] as $transaction)
+        {
+            $this->fixtures->edit('transaction', $transaction['id'], ['reconciled_at' => $reconciledAt]);
+        }
+    }
+
+    protected function getTpvAndNonTpvPayments($payments)
+    {
+        $tpvPayments = array_filter($payments['items'], function($payment)
+                        { return $payment['terminal_id'] === 'TpvNbKotakTmnl'; });
+
+        $nonTpvPayments = array_filter($payments['items'], function($payment)
+                        { return $payment['terminal_id'] === 'DrctNbKtkTrmnl'; });
+
+        $tpvPayments = array_values($tpvPayments);
+
+        $nonTpvPayments = array_values($nonTpvPayments);
+
+        return [$tpvPayments, $nonTpvPayments];
+    }
+
+    protected function moveRefundsToYesteday()
+    {
+        $refunds = $this->getEntities('refund', [], true);
+
+        $createdAt = Carbon::yesterday('Asia/Kolkata')->addHours(10)->addMinutes(45)->timestamp;
+
+        // Mark refunds as created yesterday
+        foreach ($refunds['items'] as $refund)
+        {
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
     }
 }

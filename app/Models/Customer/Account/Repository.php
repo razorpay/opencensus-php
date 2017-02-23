@@ -4,14 +4,11 @@ namespace RZP\Models\Customer;
 
 use RZP\Models\Base;
 use RZP\Models\Customer;
-use RZP\Models\Merchant\Account;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
     protected $entity = 'customer';
 
     protected $appFetchParamRules = array(
@@ -21,7 +18,34 @@ class Repository extends Base\Repository
         Entity::CONTACT         => 'sometimes'
     );
 
-    public function findByContactAndMerchant($contact, $merchant)
+    public function getGlobalCustomerForPayment($payment)
+    {
+        if ($payment->getGlobalCustomerId() !== null)
+        {
+            $customer = $this->findOrFail($payment->getGlobalCustomerId());
+            $payment->globalCustomer()->associate($customer);
+
+            return $customer;
+        }
+    }
+
+    public function fetchByAppToken($appToken)
+    {
+        if ($appToken->hasRelation('customer'))
+        {
+            return $appToken->customer;
+        }
+
+        $custId = $appToken->getCustomerId();
+
+        $customer = $this->findOrFail($custId);
+
+        $appToken->customer()->associate($customer);
+
+        return $customer;
+    }
+
+    public function findByContactAndMerchant($contact, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Customer\Entity::CONTACT, '=', $contact)
@@ -29,12 +53,27 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function findByContactEmailAndMerchant($contact, $email, $merchant)
+    public function fetchWithVpasBankAcnts($id, $columns = ['*'])
+    {
+        return $this->newQuery()
+                    ->select($columns)
+                    ->with(['vpas', 'bank_accounts'])
+                    ->find($id);
+    }
+
+    public function findByContactEmailAndMerchant($contact, $email, Merchant\Entity $merchant)
     {
         return $this->newQuery()
                     ->where(Customer\Entity::CONTACT, '=', $contact)
                     ->where(Customer\Entity::EMAIL, '=', $email)
                     ->where(Customer\Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->first();
+    }
+
+    public function fetchByMerchantId($merchantId)
+    {
+        return $this->newQuery()
+                    ->where(Customer\Entity::MERCHANT_ID, '=', $merchantId)
+                    ->get();
     }
 }

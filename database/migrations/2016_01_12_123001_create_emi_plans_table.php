@@ -8,11 +8,11 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreateEmiPlansTable extends Migration {
 
-	/**
-	 * Run the migrations.
-	 *
-	 * @return void
-	 */
+    /**
+     * Run the migrations.
+     *
+     * @return void
+     */
     /**
      * Make changes to the database.
      *
@@ -38,9 +38,12 @@ class CreateEmiPlansTable extends Migration {
             $table->tinyInteger(Emi\Entity::DURATION);
 
             $table->string(Emi\Entity::METHODS)
-            	    ->nullable();
+                  ->nullable();
 
             $table->integer(Emi\Entity::MIN_AMOUNT);
+
+            $table->string(Emi\Entity::ISSUER_PLAN_ID)
+                  ->nullable();
 
             $table->integer(Emi\Entity::CREATED_AT);
 

@@ -2,9 +2,10 @@
 
 namespace RZP\Tests\Functional\Payment;
 
+use Str;
 use File;
-use Carbon\Carbon;
 use ZipArchive;
+use Carbon\Carbon;
 
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
@@ -73,25 +74,16 @@ class EmiPaymentTest extends TestCase
         $this->ba->publicAuth();
 
         //Kotak Card
-        $this->makeEmiPaymentOnCard('4280951000002433', 9, 1, 'capp_1000000custapp');
-        $payment = $this->getLastEntity('payment', true);
-
-        $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'  => $yesterdayAtTen - 2,
-            'authorized_at' => $yesterdayAtTen,
-            'captured_at' => $yesterdayAtTen + 2,
-            'updated_at' => $yesterdayAtTen + 2,
-        ]);
+        $this->makeEmiPaymentOnCard('4280951000002433', 9, $yesterdayAtTen, 1, 'capp_1000000custapp');
 
         //Axis Card
-        $this->makeEmiPaymentOnCard('4111460212312338', 3);
-        $payment = $this->getLastEntity('payment', true);
-        $this->fixtures->edit('payment', $payment['id'], [
-            'created_at'  => $yesterdayAtTen - 2,
-            'authorized_at' => $yesterdayAtTen,
-            'captured_at' => $yesterdayAtTen + 2,
-            'updated_at' => $yesterdayAtTen + 2,
-        ]);
+        $this->makeEmiPaymentOnCard('4111460212312338', 3, $yesterdayAtTen);
+
+        //IndusInd Card
+        $this->makeEmiPaymentOnCard('4147720000000009', 9, $yesterdayAtTen);
+
+        //RBL Card
+        $this->makeEmiPaymentOnCard('5243730000000008', 9, $yesterdayAtTen);
 
         $request = array(
             'method' => 'POST',
@@ -102,20 +94,41 @@ class EmiPaymentTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals(count($content), 3);
-        $this->assertEquals(File::exists($this->zipFileName($content['KKBK'])), true);
-        $this->assertEquals(File::exists($this->zipFileName($content['UTIB'])), true);
+        $this->assertEquals(count($content), 4);
+
+        $this->assertEquals(true, File::exists($this->zipFileName($content['KKBK'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['UTIB'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['INDB'])));
+        $this->assertEquals(true, File::exists($this->zipFileName($content['RATN'])));
 
         $this->checkPasswordProtectedZip($this->zipFileName($content['KKBK']));
         $this->checkPasswordProtectedZip($this->zipFileName($content['UTIB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['INDB']));
+        $this->checkPasswordProtectedZip($this->zipFileName($content['RATN']));
 
         $this->fixtures->merchant->disableEmi();
+
+        $this->deleteAlltheGenerateFiles($content);
     }
 
     private function zipFileName($filePath)
     {
         $pathinfo = pathinfo($filePath);
+
         return $pathinfo['dirname'] . '/' . $pathinfo['filename'] . '.zip';
+    }
+
+    private function deleteAlltheGenerateFiles($content)
+    {
+        foreach ($content as $file)
+        {
+            $zipFile = $this->zipFileName($file);
+
+            if (file_exists($zipFile) === true)
+            {
+                unlink($zipFile);
+            }
+        }
     }
 
     private function checkPasswordProtectedZip($filePath)
@@ -126,19 +139,22 @@ class EmiPaymentTest extends TestCase
         $pathinfo = pathinfo($filePath);
 
         // Extraction fails, unset password
-        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->assertEquals(false, $zip->extractTo($pathinfo['dirname']));
         $this->deleteExtractedFile($pathinfo);
 
-        $zip->setPassword('incorrect_password');
+        $zip->setPassword(Str::quickRandom(10));
         // Extraction fails, incorrect password
-        $this->assertEquals($zip->extractTo($pathinfo['dirname']), false);
+        $this->assertEquals(false, $zip->extractTo($pathinfo['dirname']));
         $this->deleteExtractedFile($pathinfo);
+
+        $zip->close();
     }
 
     protected function deleteExtractedFile($pathinfo)
     {
         $excelFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.xlsx';
         $txtFileName = $pathinfo['dirname'].'/'.$pathinfo['filename'].'.txt';
+
         if (file_exists($excelFileName) === true)
         {
             unlink($excelFileName);
@@ -149,7 +165,7 @@ class EmiPaymentTest extends TestCase
         }
     }
 
-    protected function makeEmiPaymentOnCard($card, $emiDuration, $save = 0, $appToken = null, $customerId =  null)
+    protected function makeEmiPaymentOnCard($card, $emiDuration, $paymentTime, $save = 0, $appToken = null, $customerId = null)
     {
         $this->payment['amount'] = 500000;
         $this->payment['method'] = 'emi';
@@ -160,6 +176,17 @@ class EmiPaymentTest extends TestCase
         $this->payment['customer_id'] = $customerId;
 
         $this->doAuthAndCapturePayment($this->payment);
+
+        // Set Payment Time
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->fixtures->edit('payment', $payment['id'], [
+            'created_at'  => $paymentTime - 2,
+            'authorized_at' => $paymentTime,
+            'captured_at' => $paymentTime + 2,
+            'updated_at' => $paymentTime + 2,
+        ]);
+
     }
 
     public function testEmiPaymentEmiNotSupported()

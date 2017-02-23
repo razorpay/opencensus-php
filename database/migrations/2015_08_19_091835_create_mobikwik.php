@@ -22,7 +22,7 @@ class CreateMobikwik extends Migration
             $table->char('payment_id', UniqueIdEntity::ID_LENGTH);
             $table->string('action');
             $table->string('method');
-            $table->boolean('received')->default(0);
+            $table->tinyInteger('received')->default(0);
 // request params
             $table->string('email');
             $table->string('amount');

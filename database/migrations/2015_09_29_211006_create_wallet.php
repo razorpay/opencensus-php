@@ -24,7 +24,7 @@ class CreateWallet extends Migration {
             $table->string('action');
             $table->string('amount');
             $table->string('wallet');
-            $table->boolean('received')->default(0);
+            $table->tinyInteger('received')->default(0);
             $table->string('email')->nullable();
             $table->string('contact')->nullable();
             $table->string('gateway_merchant_id')->nullable();

@@ -10,6 +10,13 @@ use RZP\Exception;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Token\Core;
+    }
+
     /**
      * Note that this is on internal auth and not private auth
      * Adds token for a customer
@@ -18,11 +25,9 @@ class Service extends Base\Service
      */
     public function add($id, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $token = (new Token\Core)->create($customer, $input);
+        $token = $this->core->create($customer, $input);
 
         return $token->toArrayPublic();
     }
@@ -34,15 +39,13 @@ class Service extends Base\Service
      * @param  array  token edit params
      * @return array  edited token
      */
-    public function edit($id, $token, $input)
+    public function edit($id, $tokenId, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $id);
-
-        $token = (new Token\Core)->edit($token, $input);
+        $token = $this->core->edit($token, $input);
 
         return $token->toArrayPublic();
     }
@@ -54,13 +57,11 @@ class Service extends Base\Service
      * @param  string token id
      * @return entity token
      */
-    public function fetch($id, $token)
+    public function fetch($id, $tokenId)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);
 
         return $token->toArrayPublic();
     }
@@ -70,36 +71,33 @@ class Service extends Base\Service
      * @param  string $customerId
      * @return entity tokens
      */
-    public function fetchMultiple($customerId)
+    public function fetchMultiple($id)
     {
-        Customer\Entity::verifyIdAndStripSign($customerId);
-
         // This is needed to ensure that the merchant is getting only HIS customer's details
-        $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $tokens = $this->repo->token->getByCustomerId($customerId);
+        $tokens = $this->repo->token->getByCustomer($customer);
 
         return $tokens->toArrayPublic();
     }
 
     /**
      * fetch tokens for an app_token (global customer)
-     * @param  string app_token
      * @return entity tokens
      */
     public function fetchTokensForGlobalCustomer()
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
         $tokens = new Base\PublicCollection;
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appToken);
+            AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
-            $app = (new AppToken\Core)->getAppByAppToken($appToken, $this->merchant);
+            $app = (new AppToken\Core)->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $tokens = (new Customer\Token\Core)->fetchTokensByCustomer($app->customer);
+            $tokens = $this->core->fetchTokensByCustomer($app->customer);
         }
 
         return $tokens->toArrayPublic();
@@ -110,9 +108,7 @@ class Service extends Base\Service
      */
     public function deleteTokenForLocalCustomer($id, $token)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $this->deleteTokenForCustomer($token, $customer);
     }
@@ -128,7 +124,7 @@ class Service extends Base\Service
         {
             AppToken\Entity::verifyIdAndStripSign($appToken);
 
-            $app = (new AppToken\Core)->getAppByAppToken($appToken, $this->merchant);
+            $app = (new AppToken\Core)->getAppByAppTokenId($appToken, $this->merchant);
 
             return $this->deleteTokenForCustomer($token, $app->customer);
         }
@@ -136,9 +132,9 @@ class Service extends Base\Service
         return null;
     }
 
-    protected function deleteTokenForCustomer($token, $customer)
+    protected function deleteTokenForCustomer($tokenId, $customer)
     {
-        $token = $this->repo->token->getByTokenAndCustomerId($token, $customer->getId());
+        $token = $this->core->getByTokenIdAndCustomer($tokenId, $customer);;
 
         if ($token === null)
         {

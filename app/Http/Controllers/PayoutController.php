@@ -2,16 +2,23 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Payout;
+use ApiResponse;
 use Request;
+
+use RZP\Models\Payout;
 
 class PayoutController extends Controller
 {
-    public function getPayout($id)
+    public function __construct()
     {
-        $data = (new Payout\Service)->getPayout($id);
+        parent::__construct();
+
+        $this->service = new Payout\Service;
+    }
+
+    public function getPayout(string $id)
+    {
+        $data = $this->service->fetch($id);
 
         return ApiResponse::json($data);
     }
@@ -20,7 +27,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Payout\Service)->getPayouts($input);
+        $data = $this->service->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -29,7 +36,7 @@ class PayoutController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Payout\Service)->postPayout($input);
+        $data = $this->service->create($input);
 
         return ApiResponse::json($data);
     }

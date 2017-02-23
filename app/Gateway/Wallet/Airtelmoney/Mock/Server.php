@@ -5,13 +5,9 @@ namespace RZP\Gateway\Wallet\Airtelmoney\Mock;
 use Carbon\Carbon;
 
 use RZP\Constants\HashAlgo;
-use RZP\Http\Route;
 use RZP\Gateway\Base;
 use RZP\Exception;
 use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Airtelmoney;
 use RZP\Gateway\Wallet\Airtelmoney\TestAmount;
 use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
@@ -37,7 +33,7 @@ class Server extends Base\Mock\Server
             $redirectUrl = $input[RequestFields::FU];
 
             $queryArray = [
-                Responsefields::STATUS     => Status::FAILED,
+                ResponseFields::STATUS     => Status::FAILED,
                 ResponseFields::CODE       => '902',
                 ResponseFields::MSG        => ResponseCode::getResponseMessage('902'),
                 ResponseFields::TXN_REF_NO => $input[RequestFields::TXN_REF_NO],
@@ -147,7 +143,7 @@ class Server extends Base\Mock\Server
 
         $hash = $this->getHashOfString($hashString);
 
-        assert($hash === $content['HASH']);
+        assertTrue(hash_equals($hash, $content['HASH']));
     }
 
     protected function getHashOfString($hashString)

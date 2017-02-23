@@ -4,7 +4,6 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
-use RZP\Models\Pricing\Feature;
 use RZP\Models\Pricing\Entity as Pricing;
 
 class CreatePricing extends Migration
@@ -43,10 +42,10 @@ class CreatePricing extends Migration
             $table->string(Pricing::PAYMENT_ISSUER)
                   ->nullable();
 
-            $table->boolean(Pricing::INTERNATIONAL)
+            $table->tinyInteger(Pricing::INTERNATIONAL)
                   ->default(0);
 
-            $table->boolean(Pricing::AMOUNT_RANGE_ACTIVE)
+            $table->tinyInteger(Pricing::AMOUNT_RANGE_ACTIVE)
                   ->default(0);
 
             $table->integer(Pricing::AMOUNT_RANGE_MIN)

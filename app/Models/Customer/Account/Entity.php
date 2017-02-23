@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Customer;
 
+use App;
 use RZP\Models\Base;
-use RZP\Constants\Table;
+use RZP\Models\Address;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Base\Traits\NotesTrait;
 
@@ -21,11 +22,20 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
+    const FAIL_EXISTING         = 'fail_existing';
+
+    const VPAS                  = 'vpas';
+    const BANK_ACCOUNTS         = 'bank_accounts';
+
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
 
-    protected $table            = Table::CUSTOMER;
+    //
+    // Additional input keys. Not attributes of entity.
+    //
+    const BILLING_ADDRESS       = 'billing_address';
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected $generateIdOnCreate = true;
 
@@ -46,20 +56,26 @@ class Entity extends Base\PublicEntity
         self::NOTES,
         self::ACTIVE,
         self::CONTACT,
-        self::NOTES,
+        self::SHIPPING_ADDRESS,
         self::MERCHANT_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
         self::DELETED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $public = array(
         self::ID,
+        self::ENTITY,
         self::NAME,
         self::EMAIL,
         self::CONTACT,
         self::NOTES,
+        self::SHIPPING_ADDRESS,
         self::CREATED_AT,
+        self::VPAS,
+        self::BANK_ACCOUNTS,
     );
 
     protected $defaults = array(
@@ -67,14 +83,24 @@ class Entity extends Base\PublicEntity
         self::NOTES     => [],
     );
 
-    public function merchant()
+    protected $appends = array(
+        self::SHIPPING_ADDRESS);
+
+    protected $publicSetters = array(
+        self::ID,
+        self::ENTITY,
+        self::SHIPPING_ADDRESS);
+
+    // ----------------------------------- GETTERS -----------------------------------
+
+    public function isLocal()
     {
-        return $this->belongsTo('RZP\Models\Merchant\Entity');
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
-    public function tokens()
+    public function invoices()
     {
-        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+        return $this->hasMany('RZP\Models\Invoice\Entity');
     }
 
     public function getName()
@@ -94,13 +120,49 @@ class Entity extends Base\PublicEntity
 
     public function isActive()
     {
-        return (bool)$this->getAttribute(self::ACTIVE);
+        return $this->getAttribute(self::ACTIVE);
     }
+
+    // ----------------------------------- END GETTERS -----------------------------------
+
+    // ----------------------------------- ACCESSORS -----------------------------------
 
     protected function getActiveAttribute()
     {
-        return (bool)$this->attributes[self::ACTIVE];
+        return (bool) $this->attributes[self::ACTIVE];
     }
+
+    protected function getShippingAddressAttribute()
+    {
+        $input[Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
+
+        $app = App::getFacadeRoot();
+
+        $shippingAddresses = $app['repo']->address->fetchAddressesForEntity($this, $input);
+
+        if ($shippingAddresses->count() === 0)
+        {
+            return null;
+        }
+
+        return $shippingAddresses->toArrayPublicEmbedded();
+    }
+
+    // ----------------------------------- END ACCESSORS -----------------------------------
+
+    // ----------------------------------- PUBLIC SETTERS -----------------------------------
+
+    public function setPublicShippingAddressAttribute(array & $array)
+    {
+        if (empty($array[self::SHIPPING_ADDRESS]) === true)
+        {
+            unset($array[self::SHIPPING_ADDRESS]);
+        }
+    }
+
+    // ----------------------------------- END PUBLIC SETTERS -----------------------------------
+
+    // ----------------------------------- MUTATORS -----------------------------------
 
     protected function setEmailAttribute($email)
     {
@@ -108,8 +170,29 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::EMAIL] = mb_strtolower($email);
     }
 
-    public function isLocal()
+    // ----------------------------------- END MUTATORS -----------------------------------
+
+    // ----------------------------------- RELATIONS -----------------------------------
+
+    public function merchant()
     {
-        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
+        return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
+
+    public function tokens()
+    {
+        return $this->hasMany('RZP\Models\Customer\Token\Entity');
+    }
+
+    public function vpas()
+    {
+        return $this->hasMany('RZP\Models\Upi\Vpa\Entity');
+    }
+
+    public function bank_accounts()
+    {
+        return $this->hasMany('RZP\Models\BankAccount\Entity', 'entity_id');
+    }
+
+    // ----------------------------------- END RELATIONS -----------------------------------
 }

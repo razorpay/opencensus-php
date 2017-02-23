@@ -78,7 +78,8 @@ class CardTest extends TestCase
             ['5555 5555 5555 4444',     'MasterCard'],
             ['4000401234561233',        'Visa'],
             ['42 4242 42 4242 4242',    'Visa'],
-//            ['5021653933333338',        'Maestro'] // hdfc not giving error on maestro currently
+            ['6078020203525771',        'RuPay'],
+            ['5021653933333338',        'Maestro']
         );
 
         foreach ($supportedCards as $cardData)
@@ -106,6 +107,31 @@ class CardTest extends TestCase
         }
     }
 
+    public function testBlankExpiryForMaestro()
+    {
+        $maestroNumber = '5021653933333338';
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = $maestroNumber;
+        $payment['card']['expiry_month'] = "";
+        $payment['card']['expiry_year'] = "";
+        $payment['card']['cvv'] = "";
+
+        $payment = $this->doAuthAndGetPayment($payment);
+
+        $cardInfo = [
+            'iin' => substr($maestroNumber, 0, 6),
+            'last4' => substr($maestroNumber, -4),
+            'network' => 'Maestro',
+        ];
+
+        $card = $this->getLastEntity('card', true);
+
+        $this->assertArraySelectiveEquals($cardInfo, $card);
+        $this->assertArrayNotHasKey('number', $card);
+    }
+
     public function testCardWhenNotEnabledOnLive()
     {
         $this->fixtures->merchant->disableCard('10000000000000');
@@ -118,6 +144,25 @@ class CardTest extends TestCase
         $testData['request']['content'] = $payment;
 
         $content = $this->startTest($testData);
+    }
+
+    public function testCreditCardNotEnabledOnLive()
+    {
+        $this->fixtures->merchant->disableCreditCard('10000000000000');
+        $this->fixtures->merchant->enableDebitCard('10000000000000');
+        $this->fixtures->merchant->activate('10000000000000');
+
+        $this->ba->publicLiveAuth();
+
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment['card']['number'] = '4111111111111111';
+
+        $testData['request']['content'] = $payment;
+
+        $content = $this->startTest($testData);
+
+        $this->fixtures->merchant->enableCreditCard('10000000000000');
     }
 
     public function startTest($testDataToReplace = [])

@@ -6,9 +6,7 @@ use RZP\Exception\ReconciliationException;
 use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 use RZP\Models\Bank\IFSC;
-use RZP\Models\Bank\Name;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -23,15 +21,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_FEE         = 'msf';
     const COLUMN_CARD_TRIVIA = 'card_type';
     const COLUMN_ISSUER      = 'arn_no';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
 
     protected function getPaymentId($row)
     {

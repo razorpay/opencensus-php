@@ -6,9 +6,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Key';
+    protected $entity = 'key';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
@@ -18,7 +16,10 @@ class Repository extends Base\Repository
     {
         $query = $this->newQuery()->merchantId($merchantId);
 
-        $query = ($expired === true) ?: $query->notExpired();
+        if ($expired === false)
+        {
+            $query->notExpired();
+        }
 
         return $query->get();
     }

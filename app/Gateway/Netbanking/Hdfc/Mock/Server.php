@@ -2,10 +2,9 @@
 
 namespace RZP\Gateway\Netbanking\Hdfc\Mock;
 
-use Carbon\Carbon;
-use RZP\Gateway\Paytm;
 use RZP\Gateway\Base;
 use RZP\Gateway\Netbanking;
+use RZP\Gateway\Paytm;
 
 class Server extends Base\Mock\Server
 {
@@ -99,8 +98,6 @@ class Server extends Base\Mock\Server
             'Message',
         );
 
-        $str = '';
-
         $data = [];
 
         foreach ($paramsOrder as $param)
@@ -114,10 +111,18 @@ class Server extends Base\Mock\Server
         return $this->generateHash($data);
     }
 
+    protected function getHostname($url)
+    {
+        return parse_url($url, PHP_URL_HOST);
+    }
+
     protected function prepareVerifyResponseHtml($content)
     {
         $content = http_build_query($content);
-        $redirectUrl = 'api.razorpay.com' . '?' . $content;
+
+        $appUrl = $this->app['config']->get('app.url');
+
+        $redirectUrl = $this->getHostname($appUrl) . '?' . $content;
 
         ob_start();
 

@@ -37,14 +37,14 @@ class CreateIins extends Migration {
             $table->string(IIN\Entity::ISSUER_NAME)
                   ->nullable();
 
-            $table->boolean(IIN\Entity::EMI)
+            $table->tinyInteger(IIN\Entity::EMI)
                   ->default(0);
 
             $table->integer(IIN\Entity::CREATED_AT);
 
             $table->integer(IIN\Entity::UPDATED_AT);
 
-            $table->boolean(IIN\Entity::OTP_READ)
+            $table->tinyInteger(IIN\Entity::OTP_READ)
                   ->default(0);
 
             $table->string(IIN\Entity::TRIVIA)

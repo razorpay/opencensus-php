@@ -24,7 +24,7 @@ class CreateNetbanking extends Migration
             $table->string('action');
             $table->string('amount');
             $table->string('bank');
-            $table->boolean('received')->default(0);
+            $table->tinyInteger('received')->default(0);
             $table->string('client_code')->nullable();
             $table->string('merchant_code')->nullable();
             $table->string('bank_payment_id')->nullable();
@@ -33,6 +33,7 @@ class CreateNetbanking extends Migration
             $table->string('error_message')->nullable();
             $table->string('reference1')->nullable();
             $table->string('date')->nullable();
+            $table->string('account_number')->nullable();
 
             $table->char('refund_id', UniqueIdEntity::ID_LENGTH)->nullable();
             $table->char('caps_payment_id', UniqueIdEntity::ID_LENGTH);

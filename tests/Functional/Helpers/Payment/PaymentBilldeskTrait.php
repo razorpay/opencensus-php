@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Helpers\Payment;
 
 use Config;
 use Requests;
+use RZP\Exception;
 use Symfony\Component\DomCrawler\Crawler;
 use RZP\Tests\Functional\TestCase;
 

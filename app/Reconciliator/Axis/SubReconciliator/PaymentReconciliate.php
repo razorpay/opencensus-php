@@ -2,11 +2,12 @@
 
 namespace RZP\Reconciliator\Axis;
 
+use Carbon\Carbon;
+
 use RZP\Exception\ReconciliationException;
 use RZP\Models\Bank\IFSC;
 use RZP\Reconciliator\Base;
 use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\Payment\Service as PaymentService;
@@ -27,39 +28,33 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_RRN           = 'rrn_no';
     const COLUMN_CARD_LOCALE   = 'lofo';
     const COLUMN_ISSUER        = 'transaction_category';
+    const COLUMN_SETTLED_AT    = 'settlement_date';
 
-    protected $messenger;
+    const POSSIBLE_DATE_FORMATS = [
+        'd-M-y',
+        'Y-m-d h:i:s'
+    ];
+
     protected $axisMigsRepo;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->messenger = new Messenger();
-
         $this->axisMigsRepo = $this->repo->axis_migs;
     }
 
     protected function getPaymentId($row)
     {
-        $columnPaymentId = null;
-
-        foreach(self::COLUMN_PAYMENT_ID as $cpi)
+        foreach (self::COLUMN_PAYMENT_ID as $cpi)
         {
             if (isset($row[$cpi]) === true)
             {
-                $columnPaymentId = $cpi;
-                break;
+                return $row[$cpi];
             }
         }
 
-        if ($columnPaymentId === null)
-        {
-            return null;
-        }
-
-        $paymentId = $row[$columnPaymentId];
-        return $paymentId;
+        return null;
     }
 
     protected function getGatewayServiceTax($row)
@@ -119,7 +114,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
         $columnCardType = strtolower($row[self::COLUMN_CARD_TYPE]);
         $columnCardTrivia = $this->getColumnCardTrivia($row);
-        $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
+        $columnCardLocale = $this->getColumnCardLocale($row);
 
         $cardType = $this->getCardType($columnCardType, $row);
         $cardLocale = $this->getCardLocale($columnCardLocale, $row);
@@ -147,8 +142,20 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         {
             return IFSC::UTIB;
         }
-        
+
         return null;
+    }
+
+    protected function getColumnCardLocale($row)
+    {
+        $columnCardLocale = null;
+
+        if (isset($row[self::COLUMN_CARD_LOCALE]) === true)
+        {
+            $columnCardLocale = strtolower($row[self::COLUMN_CARD_LOCALE]);
+        }
+
+        return $columnCardLocale;
     }
 
     protected function getColumnCardTrivia($row)
@@ -253,7 +260,8 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             ]
         );
 
-        if ((empty($response['status']) === false) and ($response['status'] === PaymentStatus::AUTHORIZED))
+        if ((empty($response['status']) === false) and 
+            ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;
         }
@@ -263,6 +271,22 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getCardLocale($cardLocale, $row)
     {
+        if (empty($cardLocale) === true)
+        {
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
+                [
+                    'message'           => 'Unable to get the card locale. This is unexpected.',
+                    'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'recon_card_trivia' => $cardLocale,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
+
+            return null;
+        }
+
         if (($cardLocale === 'l') or ($cardLocale === 'local'))
         {
             $cardType = BaseReconciliate::DOMESTIC;
@@ -273,19 +297,48 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
         else
         {
-            $this->messenger->raiseReconAlert(
+            $this->app['trace']->info(
+                TraceCode::RECON_INFO_ALERT,
                 [
-                    'trace_code'      => TraceCode::RECON_PARSE_ERROR,
-                    'message'         => 'Unable to figure out the card locale (domestic/international).',
-                    'recon_card_type' => $cardLocale,
-                    'row'             => $row,
-                    'gateway'         => get_class()
-                ]);
+                    'message'           => 'Unable to get the card locale. This is unexpected.',
+                    'info_code'         => 'CARD_LOCALE_ABSENT',
+                    'recon_card_trivia' => $cardLocale,
+                    'row'               => $row,
+                    'gateway'           => get_class()
+                ]
+            );
 
             // It's as good as no card locale present in the row.
             return null;
         }
 
         return $cardType;
+    }
+
+    protected function getGatewaySettledAt($row)
+    {
+        if (empty($row[self::COLUMN_SETTLED_AT]) === true)
+        {
+            return null;
+        }
+
+        $columnSettledAt = strtolower($row[self::COLUMN_SETTLED_AT]);
+
+        $gatewaySettledAt = null;
+
+        foreach (self::POSSIBLE_DATE_FORMATS as $possibleDateFormat)
+        {
+            try
+            {
+                $gatewaySettledAt = Carbon::createFromFormat($possibleDateFormat, $columnSettledAt, 'Asia/Kolkata');
+                $gatewaySettledAt = $gatewaySettledAt->timestamp;
+            }
+            catch (\Exception $ex)
+            {
+                continue;
+            }
+        }
+
+        return $gatewaySettledAt;
     }
 }

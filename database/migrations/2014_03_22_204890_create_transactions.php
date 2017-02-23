@@ -6,8 +6,12 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\FeeModel;
+
 
 class CreateTransactions extends Migration
 {
@@ -32,7 +36,7 @@ class CreateTransactions extends Migration
 
             $table->char(Transaction::MERCHANT_ID, Transaction::ID_LENGTH);
 
-            $table->integer(Transaction::AMOUNT)
+            $table->bigInteger(Transaction::AMOUNT)
                   ->unsigned();
 
             $table->integer(Transaction::FEE)
@@ -45,15 +49,19 @@ class CreateTransactions extends Migration
             $table->char(Transaction::PRICING_RULE_ID, Transaction::ID_LENGTH)
                   ->nullable();
 
-            $table->integer(Transaction::DEBIT)
+            $table->bigInteger(Transaction::DEBIT)
                   ->unsigned();
 
-            $table->integer(Transaction::CREDIT)
+            $table->bigInteger(Transaction::CREDIT)
                   ->unsigned();
 
             $table->char(Transaction::CURRENCY, 3);
 
-            $table->integer(Transaction::BALANCE)
+            $table->bigInteger(Transaction::BALANCE)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Transaction::GATEWAY_AMOUNT)
                   ->unsigned()
                   ->nullable();
 
@@ -68,7 +76,11 @@ class CreateTransactions extends Migration
             $table->integer(Transaction::API_FEE)
                   ->nullable();
 
-            $table->boolean(Transaction::GRATIS)
+            $table->tinyInteger(Transaction::GRATIS)
+                  ->default(0);
+
+            $table->integer(Transaction::FEE_CREDITS)
+                  ->unsigned()
                   ->default(0);
 
             $table->bigInteger(Transaction::ESCROW_BALANCE)
@@ -76,7 +88,16 @@ class CreateTransactions extends Migration
 
             $table->string(Transaction::CHANNEL, 8);
 
-            $table->boolean(Transaction::SETTLED)
+            $table->tinyInteger(Transaction::FEE_BEARER)
+                  ->default(FeeBearer::getValueForBearerString(FeeBearer::NA));
+
+            $table->tinyInteger(Transaction::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::NA));
+
+            $table->string(Transaction::CREDIT_TYPE, 25)
+                  ->default(CreditType::DEFAULT);
+
+            $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
 
             $table->integer(Transaction::SETTLED_AT)
@@ -88,6 +109,9 @@ class CreateTransactions extends Migration
                   ->nullable();
 
             $table->integer(Transaction::RECONCILED_AT)
+                  ->nullable();
+
+            $table->integer(Transaction::GATEWAY_SETTLED_AT)
                   ->nullable();
 
             // Adds created_at and updated_at columns to the table
@@ -103,6 +127,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::SETTLED);
 
             $table->index(Transaction::RECONCILED_AT);
+
+            $table->index(Transaction::GATEWAY_SETTLED_AT);
 
             $table->index(Transaction::CHANNEL);
 
@@ -127,7 +153,7 @@ class CreateTransactions extends Migration
         Schema::table(Table::TRANSACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
+                Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

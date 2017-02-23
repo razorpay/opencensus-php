@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Models\Pricing;
+use ApiResponse;
 use Request;
+use RZP\Models\Pricing;
 
 class PricingController extends Controller
 {
@@ -75,11 +75,6 @@ class PricingController extends Controller
         $data = (new Pricing\Service)->deletePricingPlanRuleForce($planId, $ruleId);
 
         return ApiResponse::json($data);
-    }
-
-    public function deletePricingPlan($id)
-    {
-        ;
     }
 
     public function getSupportedNetworks()

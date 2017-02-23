@@ -5,7 +5,7 @@ namespace RZP\Models\Customer\AppToken;
 use RZP\Models\Base;
 use RZP\Models\Customer\AppToken;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -47,17 +47,15 @@ class Core extends Base\Core
         return [];
     }
 
-    public function getAppByAppToken($appToken, $merchant)
+    public function getAppByAppTokenId($appTokenId, Merchant\Entity $merchant)
     {
-        $app = $this->getAppByAppTokenAndMerchantId(
-            $appToken,
-            $this->repo->merchant->getSharedAccount()->getId());
+        $sharedMerchant = $this->repo->merchant->getSharedAccount();
+
+        $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $sharedMerchant);
 
         if ($app === null)
         {
-            $app = $this->getAppByAppTokenAndMerchantId(
-                $appToken,
-                $merchant->getId());
+            $app = $this->getAppByAppTokenIdAndMerchant($appTokenId, $merchant);
         }
 
         return $app;
@@ -73,27 +71,29 @@ class Core extends Base\Core
             return null;
         }
 
-        assert(($apps->count() > 1) === false);
+        assertTrue(($apps->count() > 1) === false);
 
         return $apps[0];
     }
 
-    protected function getAppByAppTokenAndMerchantId($appToken, $merchantId)
+    protected function getAppByAppTokenIdAndMerchant($appTokenId, Merchant\Entity $merchant)
     {
-        $app = null;
+        $appToken = null;
 
         try
         {
-            $app = $this->repo->app_token->findByIdAndMerchantId(
-                $appToken,
-                $merchantId);
+            $appToken = $this->repo->app_token->findByIdAndMerchant(
+                                            $appTokenId, $merchant);
+
+            // Fetches customer and associates with app token
+            $customer = $this->repo->customer->fetchByAppToken($appToken);
         }
         catch (Exception\BadRequestException $ex)
         {
             // ignore the exception, not tracing it as well as we are always trying
-            // 2 merchant acounts and one will always fail so it will be noisy
+            // 2 merchant accounts and one will always fail so it will be noisy
         }
 
-        return $app;
+        return $appToken;
     }
 }

@@ -2,9 +2,7 @@
 
 namespace RZP\Gateway\Upi\Icici\Mock;
 
-use EE\Exception;
-use EE\Error\ErrorCode;
-use RZP\Http\Route;
+use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Icici;
 
@@ -36,10 +34,8 @@ class Gateway extends Icici\Gateway
 
     protected function getUrl($type = 'authorize')
     {
-        $url = parent::getUrl($type);
-
-        $url = Route::getUrlWithPublicAuth('mock_upi_icici_payment',
-                                            ['bank' => 'icici']);
+        $url = $this->route->getUrlWithPublicAuth(
+                        'mock_upi_icici_payment', ['bank' => 'icici']);
         return $url;
     }
 }

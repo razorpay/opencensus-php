@@ -25,7 +25,7 @@ class CreateAtomGateway extends Migration
 
             $table->char('token', 75);
 
-            $table->boolean('success')
+            $table->tinyInteger('success')
                   ->nullable();
 
             $table->string('bank_code')

@@ -3,12 +3,13 @@
 namespace RZP\Gateway\Base\Mock;
 
 use App;
-use RZP\Constants\Mode;
 use RZP\Exception;
-use Request;
-use Requests_Response;
+use RZP\Models\Base;
+use RZP\Models\Payment;
+use RZP\Constants\Mode;
+use RZP\Gateway\Base\Action;
 
-class Server
+class Server extends Base\Core
 {
     protected $request;
 
@@ -16,7 +17,12 @@ class Server
 
     protected $mockRequest;
 
-    protected $app;
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
 
     /**
      * Namespace of the current gateway server
@@ -26,35 +32,44 @@ class Server
 
     public function __construct()
     {
-        $this->request = Request::getFacadeRoot();
+        parent::__construct();
 
-        $this->app     = App::getFacadeRoot();
+        $this->request = $this->app['request'];
+
+        $this->route = $this->app['api.route'];
     }
 
     protected function authorize($input)
     {
-        $this->action = 'authorize';
+        $this->action = Action::AUTHORIZE;
 
         $this->input = $input;
     }
 
     protected function capture($input)
     {
-        $this->action = 'capture';
+        $this->action = Action::CAPTURE;
 
         $this->input = $input;
     }
 
     protected function refund($input)
     {
-        $this->action = 'refund';
+        $this->action = Action::REFUND;
+
+        $this->input = $input;
+    }
+
+    protected function reverse($input)
+    {
+        $this->action = Action::REVERSE;
 
         $this->input = $input;
     }
 
     protected function verify($input)
     {
-        $this->action = 'verify';
+        $this->action = Action::VERIFY;
 
         $this->input = $input;
     }
@@ -149,6 +164,16 @@ class Server
         return $this->validator;
     }
 
+    public function processSoap($input, $location, $action)
+    {
+        $wsdlFile = $this->getWsdlFile();
+
+        $server = new SoapServer($wsdlFile);
+        $server->setObject($this);
+
+        return $server->handle($input);
+    }
+
     protected function getRepo()
     {
         $class = $this->getGatewayNamespace() . '\Repository';
@@ -203,6 +228,11 @@ class Server
         return $content;
     }
 
+    public function request(& $content)
+    {
+        return $content;
+    }
+
     protected function makeResponse($msg)
     {
         $response = \Response::make($msg);
@@ -241,5 +271,10 @@ class Server
         $response->headers->set('Cache-Control', 'no-cache');
 
         return $response;
+    }
+
+    protected function getSignedPaymentId($pid)
+    {
+        return Payment\Entity::getSignedId($pid);
     }
 }

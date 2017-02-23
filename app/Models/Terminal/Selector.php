@@ -4,13 +4,11 @@ namespace RZP\Models\Terminal;
 
 use App;
 use RZP\Constants\Mode;
-use RZP\Models\Card\Network;
-use RZP\Models\Payment;
-
-use RZP\Trace;
 use RZP\Exception;
-use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 use RZP\Models\Terminal;
+use RZP\Trace;
+use RZP\Trace\TraceCode;
 
 class Selector
 {
@@ -24,7 +22,6 @@ class Selector
     protected static $filters = [
         Filters\TransactionFilter::class,
         Filters\MerchantFilter::class,
-        Filters\MiscFilter::class,
     ];
 
     /**
@@ -32,11 +29,13 @@ class Selector
      * @var array
      */
     protected static $sorters = [
-        Sorters\ExclusivitySorter::class,
         Sorters\CardSorter::class,
         Sorters\NetbankingSorter::class,
+        Sorters\ExclusivitySorter::class,
         Sorters\MerchantSorter::class,
         Sorters\InternationalCardSorter::class,
+        Sorters\TerminalLoadSorter::class,
+        Sorters\FailedTerminalsSorter::class,
     ];
 
     public function __construct(Payment\Entity $payment, $mode)
@@ -94,7 +93,7 @@ class Selector
             $this->traceTerminals($filteredTerminals, 'Terminals after ' . $filter, $verbose);
         }
 
-        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', $verbose);
+        $this->traceTerminals($filteredTerminals, 'Terminals after filtration', true);
 
         //
         // Sorting is done on the final list of filtered terminals.
@@ -102,13 +101,23 @@ class Selector
         //
         $sortedTerminals = $filteredTerminals;
 
+        // In case there are failed terminals, this comes in as an exclusion list from the
+        // payment. We want to now place the excluded terminals at the bottom of the sorted
+        // list thereby hoping a successful payment through the non failed terminals
+        $failedTerminals = $options->getFailedTerminals();
+
+        if ((count($failedTerminals) > 0))
+        {
+            $this->input['failed_terminals'] = $failedTerminals;
+        }
+
         foreach (self::$sorters as $sorter)
         {
-            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose);
+            $sortedTerminals = (new $sorter)->sort($sortedTerminals, $this->input, $verbose, $options);
             $this->traceTerminals($sortedTerminals, 'Terminals after ' . $sorter, $verbose);
         }
 
-        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', $verbose);
+        $this->traceTerminals($sortedTerminals, 'Terminals after sorting', true);
 
         $terminal = null;
 
@@ -129,19 +138,6 @@ class Selector
                     ['payment' => $this->payment->toArrayAdmin()]);
             }
         }
-        // if binning is enabled, make the binned terminal the top most one
-        // add other terminals in case of failing binned terminal
-        if ($options and $options->getChance() > 0)
-        {
-            $terminal = (new Binning)->select($sortedTerminals[0], $options->getChance(), $this->input, $terminals);
-
-            array_unshift($sortedTerminals, $terminal);
-
-            $sortedTerminals = array_unique($sortedTerminals, SORT_REGULAR);
-
-            // array unique removes index. We need to renumber it.
-            $sortedTerminals = array_values($sortedTerminals);
-        }
 
         $terminal = $sortedTerminals[0];
 
@@ -158,11 +154,6 @@ class Selector
 
     protected function traceTerminals($terminals, $msg, $verbose = false)
     {
-        if ($this->merchant->getId() === '4izmfM9TFCAgFN')
-        {
-            $verbose = true;
-        }
-
         if (($verbose === true) and (empty($terminals) === false))
         {
             $terminalIds = [];
@@ -178,16 +169,36 @@ class Selector
         }
     }
 
-
     /**
      * Methods selects a list of terminals for payment. We are
      * selecting a list here since, we want to iterate through
      * a bunch of terminals, in case the terminal fails
+     *
+     * @param array $opts
      * @return Entity
+     * @throws Exception\RuntimeException
      */
-    public function selectTerminals()
+    public function selectTerminals($opts = [])
     {
-        $options = new Terminal\Options();
+        $options = new Terminal\Options;
+
+        if ((isset($opts[Options::FAILED]) === true) and
+            (is_array($opts[Options::FAILED]) === true))
+        {
+            $options->setFailedTerminals($opts[Options::FAILED]);
+        }
+
+        // Disabling rotation in case of netbanking. This is with the
+        // understanding that the terminal that is selected is the only
+        // relevant terminal that should be used.
+        //
+        // Also removes failed terminals from exclusion list. This will
+        // ensure the terminal is not rotated below the original terminals
+        if ($this->payment->isNetbanking())
+        {
+            $options->setMultiple(false);
+            $options->setFailedTerminals([]);
+        }
 
         $terminalsSelected = $this->select($options);
 

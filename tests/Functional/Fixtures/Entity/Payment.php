@@ -2,6 +2,8 @@
 
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
+use RZP\Models\Base\PublicCollection;
+
 class Payment extends Base
 {
     use TransactionTrait;
@@ -15,6 +17,19 @@ class Payment extends Base
         }
 
         return $this->fixtures->create('payment:card_captured', $attributes);
+    }
+
+    public function createSettled(array $attributes = [])
+    {
+        $payment = $this->createCaptured($attributes);
+
+        $txn = $payment->transaction;
+
+        $txn->setSettled();
+
+        $txn->saveOrFail();
+
+        return $payment;
     }
 
     public function createStatusCreated(array $attributes = array())
@@ -32,22 +47,35 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
+        if (isset($attributes['amount']))
+        {
+            $attributes['base_amount'] = $attributes['amount'];
+        }
+
         return parent::create($attributes);
     }
 
     public function createCardCaptured(array $attributes = array())
     {
-        $defaultValues = array(
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
+        $time = time();
+
+        $createdAt = $time - 10;
+        $updatedAt = $time + 10;
+
+        $defaultValues = [
+            'authorized_at' => $createdAt + 1,
+            'captured_at'   => $updatedAt,
+            'created_at'    => $createdAt,
+            'updated_at'    => $updatedAt
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->createCardAuthorized($attributes);
 
         $payment['status'] = 'captured';
-        $payment['authorized_at'] = $attributes['created_at'];
-        $payment['captured_at'] = $attributes['created_at'] + 10;
+        $payment['authorized_at'] = $attributes['authorized_at'];
+        $payment['captured_at'] = $attributes['captured_at'];
 
         $hdfcAttrArray = array(
             'payment_id' => $payment->getKey(),
@@ -102,8 +130,31 @@ class Payment extends Base
 
         $payment->saveOrFail();
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
         $txn->saveOrFail();
+
+        $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    public function createNetbankingCreated(array $attributes = array())
+    {
+        $defaultValues = [
+            'bank'           => 'HDFC',
+            'status'         => 'created',
+            'gateway'        => 'billdesk',
+            'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
+            'transaction_id' => null,
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->build('payment', $attributes);
 
         $payment->saveOrFail();
 
@@ -112,15 +163,17 @@ class Payment extends Base
 
     public function createNetbankingFailed(array $attributes = array())
     {
-        $defaultValues = array(
-            'bank'  => 'HDFC',
-            'status' => 'failed',
-            'gateway' => 'billdesk',
-            'method' => 'netbanking',
-            'terminal_id' => '1n25f6uN5S1Z5a',
+        $defaultValues = [
+            'bank'           => 'HDFC',
+            'status'         => 'failed',
+            'gateway'        => 'billdesk',
+            'method'         => 'netbanking',
+            'terminal_id'    => '1n25f6uN5S1Z5a',
             'transaction_id' => null,
-            'created_at' => time() - 10,
-            'updated_at' => time() - 5);
+            'verify_bucket'  => 0,
+            'created_at'     => time() - 10,
+            'updated_at'     => time() - 5
+        ];
 
         $attributes = array_merge($defaultValues, $attributes);
 
@@ -145,6 +198,7 @@ class Payment extends Base
         $card = $this->fixtures->create('card');
 
         $defaultValues = array(
+            'merchant_id' => '10000000000000',
             'authorized_at' => time(),
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
@@ -154,7 +208,11 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
+        $merchant = (new \RZP\Models\Merchant\Repository)->find($attributes['merchant_id']);
+
+        $payment->merchant()->associate($merchant);
+        $payment->setRelation('card', $card);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(
@@ -164,7 +222,8 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
         $txn->saveOrFail();
 
         $payment->saveOrFail();
@@ -175,9 +234,9 @@ class Payment extends Base
     public function createPurchased(array $attributes = array())
     {
         $cardAttributes = [
-            'iin'               =>  '502165',
-            'last4'             =>  '1111',
-            'network'           =>  'Maestro'
+            'iin'       => '502165',
+            'last4'     => '1111',
+            'network'   => 'Maestro'
         ];
 
         $card = $this->fixtures->create('card', $cardAttributes);
@@ -192,7 +251,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         $hdfcPayment = $this->fixtures->create('hdfc:purchased',
             array(
@@ -202,10 +261,26 @@ class Payment extends Base
                 'updated_at' => $payment->created_at,
             ));
 
-        $txn = $this->createTransactionForPaymentAuthorized($payment);
+        list($txn, $feesSplit) = $this->createTransactionForPaymentAuthorized($payment);
+
         $txn->saveOrFail();
 
         $payment->saveOrFail();
+
+        return $payment;
+    }
+
+    public function createCreated(array $attributes = array())
+    {
+        $defaultValues = array(
+            'status' => 'created',
+            'terminal_id' => '1n25f6uN5S1Z5a',
+            'card_id' => '12345678901234',
+        );
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->create($attributes);
 
         return $payment;
     }
@@ -220,7 +295,7 @@ class Payment extends Base
 
         $attributes = array_merge($defaultValues, $attributes);
 
-        $payment = parent::create($attributes);
+        $payment = $this->create($attributes);
 
         return $payment;
     }

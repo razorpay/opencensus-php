@@ -5,39 +5,48 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\BankAccount;
 use RZP\Models\Base;
-use RZP\Models\Customer;
 use RZP\Models\Merchant;
-use RZP\Models\Payout;
-use RZP\Models\Payout\Entity;
-use RZP\Models\Payout\Method;
+use RZP\Models\Customer;
+use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
-    public function createPayout($input, $merchant)
+    public function directPayout(array $input, Merchant\Entity $merchant)
     {
-        $this->repo->payout->beginTransaction();
+        $payout = $this->createPayout($input, $merchant);
 
-        try
+        $this->repo->saveOrFail($payout);
+
+        return $payout;
+    }
+
+    public  function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
+    {
+        $payout = $this->createPayout($input, $merchant);
+
+        $payout->payment()->associate($payment);
+
+        $this->repo->saveOrFail($payout);
+
+        return $payout;
+    }
+
+    protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
+    {
+        $this->validateMerchantStatus($merchant);
+
+        return $this->repo->transaction(function () use ($input, $merchant)
         {
             $payout = $this->createPayoutEntity($input, $merchant);
 
             $this->updatePayoutWithTxn($payout);
 
-            $this->repo->payout->commit();
-
             return $payout;
-        }
-        catch (\Exception $e)
-        {
-            $this->repo->payout->rollback();
-
-            throw $e;
-        }
+        });
     }
 
     public function initiatePayouts($input, $channel)
@@ -85,7 +94,7 @@ class Core extends Base\Core
     {
         foreach ($payouts as $payout)
         {
-            $payout->setStatus(Payout\Status::INITIATED);
+            $payout->setStatus(Status::INITIATED);
         }
     }
 
@@ -97,16 +106,18 @@ class Core extends Base\Core
         }
     }
 
-    protected function createPayoutEntity($input, $merchant)
+    protected function createPayoutEntity(array $input, Merchant\Entity $merchant) : Entity
     {
+        $payout = (new Entity)->build($input);
+
         $customer = $this->getCustomer($input, $merchant);
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        $type = Payout\Method::getEntityName($input[Payout\Entity::METHOD]);
+        $type = Method::getEntityName($input[Entity::METHOD]);
 
         //create payout entity
-        $payout = (new Payout\Entity)->build($input);
+        $payout = (new Entity)->build($input);
 
         $payout->setChannel(Settlement\Channel::KOTAK);
 
@@ -122,32 +133,24 @@ class Core extends Base\Core
         return $payout;
     }
 
-    // check if valid customer for merchant and return
-    protected function getCustomer(& $input, $merchant)
+    protected function getCustomer(array $input, Merchant\Entity $merchant) : Customer\Entity
     {
         $customerId = $input[Entity::CUSTOMER_ID];
 
-        Customer\Entity::verifyIdAndStripSign($customerId);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchant->getId());
-
-        unset($input[Entity::CUSTOMER_ID]);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($customerId, $merchant);
 
         return $customer;
     }
 
-    protected function getPayoutDestination(& $input, $merchant, $customer)
+    protected function getPayoutDestination(array $input, Merchant\Entity $merchant, Customer\Entity $customer)
     {
-        //check if valid bank account for merchant
         $destId = $input[Entity::DESTINATION];
 
-        if ($input[Payout\Entity::METHOD] === Payout\Method::FUND_TRANSFER)
+        if ($input[Entity::METHOD] === Method::FUND_TRANSFER)
         {
-            BankAccount\Entity::verifyIdAndStripSign($destId);
+            $destination = $this->repo->bank_account->findByPublicIdAndMerchant($destId, $merchant);
 
-            $destination = $this->repo->bank_account->findByIdAndMerchantId($destId, $merchant->getId());
-
-            //check if valid destination for customer
+            // Check if the bank account destination is linked to the customer
             if ($destination->getEntityId() !== $customer->getId())
             {
                 throw new Exception\BadRequestValidationFailureException(
@@ -155,17 +158,32 @@ class Core extends Base\Core
             }
         }
 
-        unset($input[Entity::DESTINATION]);
-
         return $destination;
     }
 
-    protected function validateMerchantBalance($payout)
+    protected function updatePayoutWithTxn(Entity $payout)
+    {
+        $txnCore = new Transaction\Core;
+
+        $txn = $txnCore->createFromPayout($payout);
+
+        $payout->setFee($txn->getFee());
+
+        $payout->setServiceTax($txn->getServiceTax());
+
+        $this->validateMerchantBalance($payout);
+
+        $txnCore->updateBalances($txn, true);
+
+        $this->repo->saveOrFail($txn);
+    }
+
+    protected function validateMerchantBalance(Entity $payout)
     {
         $debitAmount = $payout->getAmount() + $payout->getFee();
 
-        $hasBalance = (new Merchant\Balance\Core)->checkMerchantBalance(
-            $payout->merchant, $debitAmount);
+        $hasBalance = (new Merchant\Balance\Core)
+                           ->checkMerchantBalance($payout->merchant, $debitAmount);
 
         if ($hasBalance === false)
         {
@@ -174,22 +192,14 @@ class Core extends Base\Core
         }
     }
 
-    protected function updatePayoutWithTxn($payout)
+    protected function validateMerchantStatus(Merchant\Entity $merchant)
     {
-        $txn = (new Transaction\Core)->createFromPayout($payout);
+        $onHold = $merchant->holdFunds();
 
-        $payout->setFee($txn->getFee());
-
-        $payout->setServiceTax($txn->getServiceTax());
-
-        $this->validateMerchantBalance($payout);
-
-        (new Transaction\Core)->updateBalances($txn, true);
-
-        $this->repo->saveOrFail($txn);
-
-        $this->repo->saveOrFail($payout);
-
-        return $payout;
+        if ($onHold === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD);
+        }
     }
 }

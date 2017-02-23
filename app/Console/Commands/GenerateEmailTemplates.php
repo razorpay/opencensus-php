@@ -47,6 +47,7 @@ class GenerateEmailTemplates extends Command {
             'emails/merchant/daily_report',
             'emails/merchant/daily_report_debug',
             'emails/merchant/newsletter',
+            'emails/merchant/holiday_notification',
             'emails/merchant/payzapp',
             'emails/merchant/welcome',
 
@@ -60,6 +61,12 @@ class GenerateEmailTemplates extends Command {
             'emails/payment/merchant',
 
             'emails/refund/common',
+
+            'emails/admin/user',
+
+            'emails/invoice/notification',
+            'emails/invoice/customer/notification',
+            'emails/invoice/merchant/captured',
         ];
 
         $view_directory = app_path().'/../resources/views/';

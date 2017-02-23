@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\FileStore\Storage\AwsS3\Handler;
 use RZP\Models\Merchant;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
@@ -45,8 +46,8 @@ class Logo
             'extension'  => $extension,
             'mime_type'  => $mimeType,
             'size'       => $logoImage->getClientSize(),
-            'width'      => getimagesize($logoImage)[0],
-            'height'     => getimagesize($logoImage)[1],
+            'width'      => \getimagesize($logoImage)[0],
+            'height'     => \getimagesize($logoImage)[1],
             'file_path'  => $destinationPath . '/' . $fileName,
         ];
 
@@ -104,27 +105,27 @@ class Logo
             $filePath = $this->getLogoFilePath($baseFilePath, $size);
 
             // Creates the new image
-            $tmp = imagecreatetruecolor($newWidth, $newHeight);
+            $tmp = \imagecreatetruecolor($newWidth, $newHeight);
 
             // Keeps the background transparent
-            imagealphablending($tmp, false );
-            imagesavealpha($tmp, true );
+            \imagealphablending($tmp, false );
+            \imagesavealpha($tmp, true );
 
-            imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+            \imagecopyresampled($tmp, $src, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
 
             if (($extension === self::JPG_EXTENSION) or ($extension === self::JPEG_EXTENSION))
             {
-                imagejpeg($tmp, $filePath, 100);
+                \imagejpeg($tmp, $filePath, 100);
             }
             else
             {
-                imagepng($tmp, $filePath);
+                \imagepng($tmp, $filePath);
             }
         }
 
         // Delete the temporary files created.
-        imagedestroy($src);
-        imagedestroy($tmp);
+        \imagedestroy($src);
+        \imagedestroy($tmp);
     }
 
     protected function createImageObject($imageDetails)
@@ -136,11 +137,11 @@ class Logo
 
         if (($extension === self::JPG_EXTENSION) or ($extension === self::JPEG_EXTENSION))
         {
-            return imagecreatefromjpeg($baseFilePath);
+            return \imagecreatefromjpeg($baseFilePath);
         }
         else
         {
-            return imagecreatefrompng($baseFilePath);
+            return \imagecreatefrompng($baseFilePath);
         }
     }
 
@@ -196,7 +197,7 @@ class Logo
             return $mockFileName;
         }
 
-        $s3 = AWS::createClient('s3');
+        $s3 = Handler::getClient();
 
         $logoDimensions = $this->getLogoDimensionsArray();
 
@@ -227,13 +228,13 @@ class Logo
                 // The method which will upload to s3.
                 $result = $s3->putObject($s3Obj);
             }
-            catch (\Exception $e)
+            catch (\Aws\S3\Exception\S3Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,
                     ErrorCode::SERVER_ERROR_AWS_FAILURE, null, $e);
             }
-            catch (\Aws\S3\Exception\S3Exception $e)
+            catch (\Exception $e)
             {
                 throw new Exception\ServerErrorException(
                     'Failed to upload file: ' . $awsFileName,

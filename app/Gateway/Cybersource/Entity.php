@@ -7,79 +7,101 @@ use RZP\Constants;
 
 class Entity extends Base\Entity
 {
-    const ID                   = 'id';
-    const COMMERCE_INDICATOR   = 'commerce_indicator';
-    const COLLECTION_INDICATOR = 'collection_indicator';
-    const AMOUNT               = 'amount';
-    const STATUS               = 'status';
-    const ECI                  = 'eci';
-    const CAVV                 = 'cavv';
-    const AUTH_DATA            = 'auth_data';
-    const REF                  = 'ref';
-    const CAPTURE_REF          = 'capture_ref';
-    const XID                  = 'xid';
-    const PARES_STATUS         = 'pares_status';
-    const REASON_CODE          = 'reason_code';
-    const CREATED_AT           = 'created_at';
-    const UPDATED_AT           = 'updated_at';
+    const ID                     = 'id';
+    const ACQUIRER               = 'acquirer';
+    const VERES_ENROLLED         = 'veresEnrolled';
+    const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
+    const STATUS                 = 'status';
+    const CAVV                   = 'cavv';
+    const ECI                    = 'eci';
+    const COLLECTION_INDICATOR   = 'collection_indicator';
+    const PARES_STATUS           = 'pares_status';
+    const AVS_CODE               = 'avsCode';
+    const CARD_CATEGORY          = 'cardCategory';
+    const CARD_GROUP             = 'cardGroup';
+    const CV_CODE                = 'cvCode';
+    const MERCHANT_ADVICE_CODE   = 'merchantAdviceCode';
+    const GATEWAY_TRANSACTION_ID = 'gatewayTransactionId';
+    const PROCESSOR_RESPONSE     = 'processorResponse';
+    const AUTH_DATA              = 'auth_data';
+    const AUTHORIZATION_CODE     = 'authorizationCode';
+    const RECEIPT_NUMBER         = 'receiptNumber';
+    const COMMERCE_INDICATOR     = 'commerce_indicator';
+    const REF                    = 'ref';
+    const CAPTURE_REF            = 'capture_ref';
+    const XID                    = 'xid';
+    const REASON_CODE            = 'reason_code';
 
-    protected $fields = array(
+    protected $fields = [
         self::ID,
-        self::PAYMENT_ID,
-        self::RECEIVED,
-        self::REFUND_ID,
-        self::ACTION,
+        self::VERES_ENROLLED,
         self::AMOUNT,
+        self::CURRENCY,
         self::STATUS,
         self::ECI,
+        self::PARES_STATUS,
+        self::AVS_CODE,
+        self::CARD_CATEGORY,
+        self::CARD_GROUP,
+        self::CV_CODE,
         self::CAVV,
+        self::MERCHANT_ADVICE_CODE,
+        self::GATEWAY_TRANSACTION_ID,
+        self::PROCESSOR_RESPONSE,
         self::AUTH_DATA,
+        self::AUTHORIZATION_CODE,
+        self::RECEIPT_NUMBER,
+        self::COMMERCE_INDICATOR,
         self::REF,
         self::CAPTURE_REF,
-        self::COMMERCE_INDICATOR,
-        self::COLLECTION_INDICATOR,
         self::XID,
-        self::PARES_STATUS,
         self::REASON_CODE,
         self::CREATED_AT,
-        self::UPDATED_AT,
-    );
+        self::UPDATED_AT
+    ];
 
-    protected $fillable = array(
-        self::PAYMENT_ID,
-        self::RECEIVED,
-        self::REFUND_ID,
-        self::ACTION,
-        self::AMOUNT,
-        self::STATUS,
+    protected $fillable = [
+        self::VERES_ENROLLED,
         self::ECI,
+        self::PARES_STATUS,
+        self::AVS_CODE,
+        self::CARD_CATEGORY,
+        self::CARD_GROUP,
+        self::CV_CODE,
         self::CAVV,
         self::AUTH_DATA,
-        self::REF,
-        self::CAPTURE_REF,
         self::COMMERCE_INDICATOR,
-        self::XID,
+        self::MERCHANT_ADVICE_CODE,
+        self::GATEWAY_TRANSACTION_ID,
+        self::PROCESSOR_RESPONSE,
+        self::AUTHORIZATION_CODE,
+        self::RECEIPT_NUMBER,
         self::PARES_STATUS,
         self::REASON_CODE,
-        self::COLLECTION_INDICATOR,
-    );
+        self::REF,
+        self::XID,
+        self::STATUS,
+        self::RECEIVED
+    ];
 
     protected $casts = [
         self::REASON_CODE => 'int',
         self::AMOUNT      => 'int'
     ];
 
-    protected $table = Constants\Table::CYBERSOURCE;
-
-    protected $primaryKey = self::ID;
-
-    protected $entity = Constants\Table::CYBERSOURCE;
+    protected $entity = Constants\Entity::CYBERSOURCE;
 
     public $incrementing = true;
 
     public function payment()
     {
         return $this->belongsTo('RZP\Models\Payment\Entity', self::PAYMENT_ID, self::ID);
+    }
+
+    public function refund()
+    {
+        return $this->belongsTo('RZP\Models\Refund\Entity', self::REFUND_ID, self::ID);
     }
 
     public function getId()
@@ -92,9 +114,9 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::COMMERCE_INDICATOR);
     }
 
-    public function getCollectionIndicator()
+    public function getUcafAuthenticationData()
     {
-        return $this->getAttribute(self::COLLECTION_INDICATOR);
+        return $this->getAttribute(self::AUTH_DATA);
     }
 
     public function getAmount()
@@ -117,19 +139,21 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::CAVV);
     }
 
-    public function getAuthCode()
-    {
-        return $this->getAttribute(self::AUTH_DATA);
-    }
-
-    public function getRef()
+    public function getRequestId()
     {
         return $this->getAttribute(self::REF);
     }
 
-    public function getCaptureRef()
+    public function getCaptureRequestId()
     {
-        return $this->getAttribute(self::CAPTURE_REF);
+        $captureRef = $this->getAttribute(self::CAPTURE_REF);
+
+        if ($captureRef === null)
+        {
+            return $this->getAttribute(self::REF);
+        }
+
+        return $captureRef;
     }
 
     public function getXid()
@@ -142,9 +166,19 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::PARES_STATUS);
     }
 
+    public function getVeresEnrolled()
+    {
+        return $this->getAttribute(self::VERES_ENROLLED);
+    }
+
     public function getReasonCode()
     {
         return $this->getAttribute(self::REASON_CODE);
+    }
+
+    public function getAuthCode()
+    {
+        return $this->getAttribute(self::AUTHORIZATION_CODE);
     }
 
     public function setStatus($status)
@@ -155,5 +189,20 @@ class Entity extends Base\Entity
     public function setAction($action)
     {
         $this->setAttribute(self::ACTION, $action);
+    }
+
+    public function setAmount($amount)
+    {
+        $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setCurrency($currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
+    }
+
+    public function setAcquirer($acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
     }
 }

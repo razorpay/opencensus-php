@@ -5,82 +5,89 @@ namespace RZP\Models\Admin;
 use RZP\Constants\Entity;
 use RZP\Models\Base;
 use RZP\Models;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
-use Gateway;
 
 class Service extends Base\Service
 {
     public function fetchEntityById($entity, $id)
     {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin();
+    }
+
+    public function fetchTerminalEntityByIdWithFlag($entity, $id, $subMerchantFlag = false)
+    {
+        $entity = $this->fetchEntityByNameAndId($entity, $id);
+
+        return $entity->toArrayAdmin($subMerchantFlag);
+    }
+
+    protected function fetchEntityByNameAndId($entity, $id)
+    {
         Entity::validateEntityOrFailPublic($entity);
 
         $entityClass = Entity::getEntityClass($entity);
 
-        $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        $entityObject = new $entityClass;
 
-        $repo = Entity::getEntityRepository($entity);
+        if ($entityObject->getIncrementing() === false)
+        {
+            $id = $entityClass::verifyIdAndSilentlyStripSign($id);
+        }
 
-        $entity = (new $repo)->findOrFailPublic($id);
+        $entity = $this->repo->$entity->findOrFailPublic($id);
 
-        return $entity->toArrayAdmin();
+        return $entity;
     }
 
     public function fetchMultipleEntities($entity, $input)
     {
         Entity::validateEntityOrFailPublic($entity);
 
-        $repo = Entity::getEntityRepository($entity);
-
-        $repo = new $repo;
-
-        $entities = $repo->fetch($input);
+        $entities = $this->repo->$entity->fetch($input);
 
         return $entities->toArrayAdmin();
     }
 
     public function sendTestNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_test_newsletter', $input);
+        (new Validator)->validateInput('send_test_newsletter', $input);
 
-        if (empty($errors))
-        {
-            //
-            // Now we send the newsletter
-            //
-            $mailer = new Newsletter(
-                $input['email'],
-                $input['subject'],
-                $input['msg'],
-                $input['template'],
-                true // Test Email to self
-            );
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        $mailer->setTestEmail($input['email']);
+
+        return $mailer->send();
     }
 
     public function sendNewsletter($input)
     {
-        $errors = (new Validator)->validateInput('send_newsletter', $input);
+        (new Validator)->validateInput('send_newsletter', $input);
 
-        if (empty($errors))
-        {
-            $mailer = new Newsletter(
-                $input['lists'],
-                $input['subject'],
-                $input['msg'],
-                $input['template']);
+        $mailer = new Newsletter(
+            $input['subject'],
+            $input['msg'],
+            $input['template']
+        );
 
-            return $mailer->send();
-        }
-        else
-        {
-            return $errors;
-        }
+        $mailer->setRecipient($input['lists']);
+
+        return $mailer->send();
+    }
+
+    public function processMailgunCallback($type, $input)
+    {
+        $validator = new Validator;
+
+        $validator->setStrictFalse();
+
+        $validator->validateInput('mailgun_webhook', $input);
+
+        return (new Mailgun)->processCallback($type, $input);
     }
 }

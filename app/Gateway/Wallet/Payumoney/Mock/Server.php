@@ -2,15 +2,11 @@
 
 namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
-use RZP\Http\Route;
-use RZP\Gateway\Base;
 use RZP\Exception;
-use Carbon\Carbon;
-use RZP\Models\Payment;
-use RZP\Error\ErrorCode;
-use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base;
 use RZP\Gateway\Wallet\Base\Otp;
 use RZP\Gateway\Wallet\Payumoney;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -85,15 +81,11 @@ class Server extends Base\Mock\Server
             'net_amount_debit'      => '1000'
         );
 
-        $payment = (new Payment\Repository)->find($paymentId);
+        $this->content($content);
 
-        $secret = $this->app->config->get('app.key');
+        $publicId = $this->getSignedPaymentId($paymentId);
 
-        $publicId = $payment->getPublicId();
-
-        $hash = hash_hmac('sha1', $publicId, $secret);
-
-        $url = Route::getUrlWithPublicCallbackAuth(['id' => $publicId, 'hash' => $hash]);
+        $url = $this->route->getPublicCallbackUrlWithHash($publicId);
 
         $url .= '?' . http_build_query($content);
 
@@ -122,6 +114,8 @@ class Server extends Base\Mock\Server
             'errorCode' => null
         );
 
+        $this->content($response, 'verify');
+
         return $this->makeResponse($response);
     }
 
@@ -131,17 +125,21 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $refundResponse = array(
+        $this->content($input, 'validateRefund');
+
+        $response = array(
             'status'    => 0,
             'rows'      => 0,
             'message'   => 'Refund Initiated',
-            'result'    => 13797,
+            'result'    => $this->getPayuRefundId(),
             'guid'      => null,
             'sessionId' => null,
             'errorCode' => null
         );
 
-        return $this->makeResponse($refundResponse);
+        $this->content($response, 'refund');
+
+        return $this->makeResponse($response);
     }
 
     public function otpGenerate($input)
@@ -158,6 +156,8 @@ class Server extends Base\Mock\Server
             'result' => null,
             'userVaultDTO' => null
         );
+
+        $this->content($response, 'otpGenerate');
 
         return $this->makeResponse($response);
     }
@@ -180,7 +180,7 @@ class Server extends Base\Mock\Server
             'mode' => 'test'
         );
 
-        $this->content($response);
+        $this->content($response, 'getBalance');
 
         return $this->makeResponse($response);
     }
@@ -294,6 +294,8 @@ class Server extends Base\Mock\Server
                 'result'        => 1110562955,
                 'userVaultDTO'  => null
             );
+
+            $this->content($response, 'debit');
 
             return $this->makeResponse($response);
         }

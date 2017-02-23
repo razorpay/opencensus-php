@@ -3,7 +3,6 @@
 namespace RZP\Trace;
 
 use App;
-use RZP\Http\Route;
 use Request;
 use RZP\Exception;
 
@@ -33,7 +32,7 @@ class CardNumberScrubProcessor extends \Monolog\Processor\WebProcessor
 
     /**
      * @param  array $record
-     * @throws RZP\Exception\CardNumberTraceException
+     * @throws Exception\CardNumberTraceException
      * @return array
      */
     public function __invoke(array $record)

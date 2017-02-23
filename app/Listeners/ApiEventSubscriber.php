@@ -8,16 +8,16 @@ use Illuminate\Events\Dispatcher;
 use App;
 use RZP\Constants;
 use RZP\Jobs\WebHook;
+use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payment;
-use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
+use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
-class ApiEventSubscriber
+class ApiEventSubscriber extends Base\Core
 {
     // Used to push jobs to queues
     use DispatchesJobs;
-
-    protected $app;
 
     /**
      * Event being fired
@@ -33,16 +33,22 @@ class ApiEventSubscriber
 
     protected $queue;
 
-    protected $trace;
-
     protected $params;
+
+    protected $webhookEnabledForEvent = false;
+
+    // Events for which only webhook needs to be triggered
+    protected static $webhookOnlyEvents = [
+        WebhookEvent::PAYMENT_AUTHORIZED,
+        WebhookEvent::PAYMENT_FAILED,
+        WebhookEvent::ORDER_PAID,
+    ];
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
 
         $this->event = $this->app['events'];
-        $this->trace = $this->app['trace'];
         $this->queue = $this->app['queue'];
     }
 
@@ -55,7 +61,13 @@ class ApiEventSubscriber
     {
         $event = $this->getFiringEvent();
 
-        if ($this->isWebhookEnabledForEvent($params) === false)
+        $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
+
+        // Returns if:
+        // - Event is web-hook only event,
+        // - Merchant doesn't have web-hook enabled
+        if (in_array($event, self::$webhookOnlyEvents, true) and
+            ($this->webhookEnabledForEvent === false))
         {
             return;
         }
@@ -113,14 +125,122 @@ class ApiEventSubscriber
         $this->prepareAndDispatchWebhook($payload);
     }
 
+    protected function onInvoicePaid($payment)
+    {
+        $invCore = new Invoice\Core;
+        $invCore->setCustomerDetailsFromPaymentIfAbsent($payment);
+
+        if ($this->webhookEnabledForEvent === false)
+        {
+            return;
+        }
+
+        // WebHook specific statements
+        $payload = $this->getInvoicePayload($payment);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onVpaEdited($vpa)
+    {
+        $payload = $this->getVpaPayload($vpa);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pCreated($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pRejected($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function onP2pTransferred($p2p)
+    {
+        $payload = $this->getP2pPayload($p2p);
+
+        $this->prepareAndDispatchWebhook($payload);
+    }
+
+    protected function getP2pPayload($p2p)
+    {
+        $source = $p2p->source;
+
+        $sink = $p2p->sink;
+
+        $partialPayload[Constants\Entity::P2P] = [
+            'entity' => $p2p->toArrayPublic()
+        ];
+
+        $partialPayload['source'] = [
+            'entity' => $source->toArrayPublic()
+        ];
+
+        $partialPayload['sink'] = [
+            'entity' => $sink->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getVpaPayload($vpa)
+    {
+        $customer = $vpa->customer;
+
+        $bankAccount = $vpa->bankAccount;
+
+        $partialPayload[Constants\Entity::VPA] = [
+            'entity' => $vpa->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::CUSTOMER] = [
+            'entity' => $customer->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::BANK_ACCOUNT] = [
+            'entity' => $bankAccount->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
     protected function getOrderPayload($payment)
     {
         $order = $payment->order;
 
-        $partialPayload = $this->getPaymentPayload($payment);
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
 
         $partialPayload[Constants\Entity::ORDER] = [
             'entity' => $order->toArrayPublic()
+        ];
+
+        return $partialPayload;
+    }
+
+    protected function getInvoicePayload($payment)
+    {
+        $order = $payment->order;
+        $invoice = $order->invoice;
+
+        $partialPayload[Constants\Entity::PAYMENT] = [
+            'entity' => $payment->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::ORDER] = [
+            'entity' => $order->toArrayPublic()
+        ];
+
+        $partialPayload[Constants\Entity::INVOICE] = [
+            'entity' => $invoice->toArrayPublic()
         ];
 
         return $partialPayload;
@@ -173,7 +293,7 @@ class ApiEventSubscriber
 
     protected function isWebhookEnabledForEvent($params)
     {
-        $webhook = $params->merchant->webhook;
+        $webhook = $this->repo->webhook->findByMerchant($params->merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and

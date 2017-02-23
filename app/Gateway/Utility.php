@@ -2,15 +2,17 @@
 
 namespace RZP\Gateway;
 
+use Requests_Exception;
+
 class Utility
 {
     /**
      * Checks whether the requests exception that we caught
      * is actually because of timeout in the network call.
      *
-     * @param  Requests_Exception $e The caught requests exception
+     * @param Requests_Exception $e The caught requests exception
      *
-     * @return boolean               true/false
+     * @return boolean              true/false
      */
     public static function checkTimeout(\Requests_Exception $e)
     {
@@ -18,9 +20,9 @@ class Utility
         $msg = strtolower($msg);
 
         //
-        // check if timeout has occured
+        // check if timeout has occurred
         //
-        if ((strpos($msg, 'operation timed out')  !== false) or
+        if ((strpos($msg, 'operation timed out') !== false) or
             (strpos($msg, 'network is unreachable') !==false) or
             (strpos($msg, 'name or service not known') !== false) or
             (strpos($msg, 'failed to connect') !== false) or
@@ -31,10 +33,24 @@ class Utility
         {
             return true;
         }
-        else
+
+        return false;
+    }
+
+    public static function checkActualTimeout(\Requests_Exception $e)
+    {
+        $msg = $e->getMessage();
+        $msg = strtolower($msg);
+
+        //
+        // check if timeout has occurred
+        //
+        if (strpos($msg, 'operation timed out') !== false)
         {
-            return false;
+            return true;
         }
+
+        return false;
     }
 
     /**

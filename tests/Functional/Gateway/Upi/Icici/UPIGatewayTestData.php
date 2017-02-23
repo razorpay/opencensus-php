@@ -3,6 +3,7 @@
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Gateway\Upi\Base\ProviderCode;
 
 return [
     'testPayment' => [
@@ -29,12 +30,12 @@ return [
         'entity' => 'payment',
     ],
 
-    'testLongVPA'   =>  [
+    'testLongVPA'   => [
         'response'  => [
             'content'     => [
                 'error' => [
                     'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'The vpa may not be greater than 50 characters.'
+                    'description' => 'The vpa may not be greater than 100 characters.'
                 ],
             ],
             'status_code' => 400,
@@ -45,7 +46,7 @@ return [
         ],
     ],
 
-    'testInvalidVPA'   =>  [
+    'testInvalidVPA'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -61,7 +62,7 @@ return [
         ],
     ],
 
-    'testPhonePeVPA'   =>  [
+    'testUpiVPA'   => [
         'response'  => [
             'content'     => [
                 'error' => [
@@ -74,6 +75,22 @@ return [
         'exception' => [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED
+        ],
+    ],
+
+    'testInvalidVPAError'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA
         ],
     ],
 
@@ -105,6 +122,38 @@ return [
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
+    'testRejectedPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\GatewayErrorException::class,
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
+        ],
+    ],
+
+    'testStatusRejectPayment'   => [
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_FAILED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ],
     ],
@@ -144,13 +193,65 @@ return [
     'testPaymentUpiEntity' => [
         'action'                => 'authorize',
         'amount'                => 50000,
-        'bank'                  => 'icici',
+        'bank'                  => ProviderCode::getBankCode('hdfcbank'),
+        'acquirer'              => 'icici',
         'received'              => true,
         'email'                 => null,
         'contact'               => null,
         'gateway_merchant_id'   => '123456',
         'status_code'           => '0',
-        'vpa'                   => 'shk@hdfc',
+        'vpa'                   => 'shk@hdfcbank',
+        'provider'              => 'hdfcbank',
         'entity'                => 'upi',
+    ],
+
+    'testUpiEntityMigrationUnknownProviderCode' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'bank'                  => null,
+        'acquirer'              => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '92',
+        'vpa'                   => 'handle@unknownprovider',
+        'provider'              => 'unknownprovider',
+        'entity'                => 'upi',
+    ],
+
+    'testUpiEntityMigrationKnownProviderCode' => [
+        'action'                => 'authorize',
+        'amount'                => 50000,
+        'bank'                  => ProviderCode::getBankCode('hdfcbank'),
+        'acquirer'              => 'icici',
+        'received'              => true,
+        'email'                 => null,
+        'contact'               => null,
+        'gateway_merchant_id'   => '123456',
+        'status_code'           => '92',
+        'vpa'                   => 'handle@hdfcbank',
+        'provider'              => 'hdfcbank',
+        'entity'                => 'upi',
+    ],
+
+    'testCreateAutoCaptureOrder' => [
+        'request' => [
+            'content' => [
+                'amount'          => 50000,
+                'currency'        => 'INR',
+                'receipt'         => 'rcptid42',
+                'payment_capture' => '1',
+            ],
+            'method'    => 'POST',
+            'url'       => '/orders',
+        ],
+        'response' => [
+            'content' => [
+                'amount'        => 50000,
+                'currency'      => 'INR',
+                'receipt'       => 'rcptid42',
+            ],
+        ],
     ],
 ];

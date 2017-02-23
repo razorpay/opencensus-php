@@ -27,9 +27,7 @@ trait Topup
         }
         catch (Exception\BaseException $e)
         {
-            $this->updatePaymentFailed(
-                    $e->getError(),
-                    TraceCode::PAYMENT_TOPUP_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_TOPUP_FAILURE);
 
             throw $e;
         }
@@ -46,7 +44,7 @@ trait Topup
             return $this->getPaymentGatewayRequestData($request, $payment);
         }
 
-        assert(false, 'Should not reach here.');
+        assertTrue(false, 'Should not reach here.');
     }
 
     protected function validateTopupFlow($payment, $input)
@@ -65,7 +63,7 @@ trait Topup
             $this->checkForRecentFailedPayment($payment);
 
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCCESSED);
+                ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED);
         }
 
         //
@@ -76,17 +74,23 @@ trait Topup
 
         if (($gateway !== Payment\Gateway::SHARP) and
             ($payment->getWallet() !== Wallet::MOBIKWIK) and
-            ($payment->globalCustomer === null))
+            ($payment->getGlobalCustomerId() === null))
         {
             throw new Exception\LogicException(
                 'Customer does not exist', null, $input);
+        }
+
+        if (($gateway !== Payment\Gateway::SHARP) and
+            ($payment->getWallet() !== Wallet::MOBIKWIK) and
+            ($payment->getGlobalTokenId() === null))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_TOPUP_INVALID_WALLET_TOKEN);
         }
     }
 
     protected function fillTopupGatewayInput($payment, $input, array & $gatewayInput)
     {
-        $gateway = $payment->getGateway();
-
         //
         // Call gateway input
         //
@@ -95,6 +99,18 @@ trait Topup
         $gatewayInput['payment']  = $payment->toArray();
 
         $gatewayInput['customer'] = $payment->globalCustomer;
+
+        if ($payment->getGlobalTokenId() !== null)
+        {
+            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+            $gatewayInput['token'] = $token->toArray();
+        }
+
+        if ($payment->analytics !== null)
+        {
+            $gatewayInput['analytics'] = $payment->analytics->toArray();
+        }
 
         $gatewayInput['callbackUrl'] = $this->getCallbackUrl();
     }

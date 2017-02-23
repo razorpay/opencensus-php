@@ -3,6 +3,8 @@
 namespace RZP\Models\Customer\Token;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant\Account;
+
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -20,6 +22,7 @@ class Entity extends Base\PublicEntity
     const WALLET                = 'wallet';
     const GATEWAY_TOKEN         = 'gateway_token';
     const GATEWAY_TOKEN2        = 'gateway_token2';
+    const RECURRING             = 'recurring';
     const USED_COUNT            = 'used_count';
     const USED_AT               = 'used_at';
     const EXPIRED_AT            = 'expired_at';
@@ -31,8 +34,6 @@ class Entity extends Base\PublicEntity
 
     protected $entity           = 'token';
 
-    protected $table            = \RZP\Constants\Table::TOKEN;
-
     protected $generateIdOnCreate = true;
 
     protected $fillable = array(
@@ -43,6 +44,7 @@ class Entity extends Base\PublicEntity
         self::TOKEN,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
         self::EXPIRED_AT,
     );
 
@@ -59,6 +61,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID,
         self::GATEWAY_TOKEN,
         self::GATEWAY_TOKEN2,
+        self::RECURRING,
         self::USED_COUNT,
         self::USED_AT,
         self::EXPIRED_AT,
@@ -74,23 +77,30 @@ class Entity extends Base\PublicEntity
         self::WALLET,
         self::METHOD,
         self::CARD,
+        self::RECURRING,
         self::USED_AT,
     );
 
     protected $defaults = array(
-        self::WALLET            => null,
-        self::BANK              => null,
-        self::CARD_ID           => null,
-        self::GATEWAY_TOKEN2    => null,
-        self::USED_AT           => null,
-        self::USED_COUNT        => 0,
-        self::EXPIRED_AT        => null,
+        self::WALLET         => null,
+        self::BANK           => null,
+        self::CARD_ID        => null,
+        self::GATEWAY_TOKEN2 => null,
+        self::RECURRING      => false,
+        self::USED_AT        => null,
+        self::USED_COUNT     => 0,
+        self::EXPIRED_AT     => null,
     );
 
     protected $publicSetters = array(
         self::ID,
         self::ENTITY,
-        self::CARD);
+        self::CARD,
+        self::RECURRING);
+
+    protected $casts = array(
+        self::RECURRING     => 'bool',
+    );
 
     protected static $generators = array(
         self::TOKEN
@@ -114,6 +124,11 @@ class Entity extends Base\PublicEntity
     public function terminal()
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity');
+    }
+
+    public function hasCard()
+    {
+        return $this->isAttributeNotNull(self::CARD_ID);
     }
 
     public function getBank()
@@ -146,19 +161,39 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_TOKEN2);
     }
 
+    public function isRecurring()
+    {
+        return $this->getAttribute(self::RECURRING);
+    }
+
     public function getUsedAt()
     {
         return $this->getAttribute(self::USED_AT);
     }
 
-    public function isRecurring()
-    {
-        return false;
-    }
-
     public function getExpiredAt()
     {
         return $this->getAttribute(self::EXPIRED_AT);
+    }
+
+    public function getMerchantId()
+    {
+        return $this->getAttribute(self::MERCHANT_ID);
+    }
+
+    public function getCardId()
+    {
+        return $this->getAttribute(self::CARD_ID);
+    }
+
+    public function getCustomerId()
+    {
+        return $this->getAttribute(self::CUSTOMER_ID);
+    }
+
+    public function isLocal()
+    {
+        return ($this->getMerchantId() !== Account::SHARED_ACCOUNT);
     }
 
     public function isExpired()
@@ -171,6 +206,11 @@ class Entity extends Base\PublicEntity
         }
 
         return ($expiredAt <= time());
+    }
+
+    public function setRecurring($recurring)
+    {
+        $this->setAttribute(self::RECURRING, $recurring);
     }
 
     public function setUsedAt($time)
@@ -195,9 +235,17 @@ class Entity extends Base\PublicEntity
 
     protected function setPublicCardAttribute(array & $array)
     {
-        if ($this->card !== null)
+        if ($this->hasCard())
         {
             $array[self::CARD] = $this->card->toArrayToken();
+        }
+    }
+
+    protected function setPublicRecurringAttribute(array & $array)
+    {
+        if ($this->isRecurring() === false)
+        {
+            unset($array[self::RECURRING]);
         }
     }
 

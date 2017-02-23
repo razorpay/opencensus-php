@@ -11,9 +11,8 @@ use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Netbanking\Base;
-use Symfony\Component\DomCrawler\Crawler;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment;
 
 class Gateway extends Base\Gateway
 {
@@ -23,9 +22,11 @@ class Gateway extends Base\Gateway
 
     protected $bank = 'hdfc';
 
+    protected $tpv;
+
     protected $sortRequestContent = false;
 
-    protected $fields = array(
+    protected $fields = [
         'ClientCode',
         'MerchantCode',
         'TxnCurrency',
@@ -35,9 +36,9 @@ class Gateway extends Base\Gateway
         'SuccessStatifFlag',
         'FailureStaticFlag',
         'Date',
-    );
+    ];
 
-    protected $map = array(
+    protected $map = [
         'ClientCode'    => 'client_code',
         'MerchantCode'  => 'merchant_code',
         'TxnAmount'     => 'amount',
@@ -45,11 +46,12 @@ class Gateway extends Base\Gateway
         'BankRefNo'     => 'bank_payment_id',
         'fldSessionNbr' => 'reference1',
         'Date'          => 'date',
-    );
+    ];
 
     /**
-     * @param  array  $input
-     * @return void
+     * @param  array $input
+     *
+     * @return array
      */
     public function authorize(array $input)
     {
@@ -57,7 +59,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $payment = $this->createGatewayPaymentEntity($content);
+        $gatewayPayment = $this->createGatewayPaymentEntity($content);
 
         $request = array(
             'url' => $this->getUrl('pay'),
@@ -78,13 +80,20 @@ class Gateway extends Base\Gateway
      * We recieve callback from atom after bank net-banking
      * transaction is complete
      *
-     * @param  array    $input
+     * @param  array $input
+     *
+     * @return array
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\GatewayErrorException
      */
     public function callback(array $input)
     {
         parent::callback($input);
 
         $this->validateCallbackChecksum($input);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['MerchRefNo']);
+
         unset($input['gateway']['CheckSum']);
 
         // Unset date because format of date returned is different than what we sent
@@ -94,17 +103,19 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             $input['gateway']);
 
-        $payment = $this->repo->findByPaymentIdAndActionOrFail(
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment']['id'], Action::AUTHORIZE);
 
         $bankRefNo = $input['gateway']['BankRefNo'];
         $message = $input['gateway']['Message'];
+        $message = $input['gateway']['Message'] = substr($message, 0, 255);
 
         $attrs = $this->getMappedAttributes($input['gateway']);
         $attrs['received'] = true;
 
-        $payment->fill($attrs);
-        $payment->saveOrFail();
+        $gatewayPayment->fill($attrs);
+
+        $this->repo->saveOrFail($gatewayPayment);
 
         if (($bankRefNo === '') or
             ($message !== ''))
@@ -115,6 +126,8 @@ class Gateway extends Base\Gateway
                     '',
                     $message);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function verify(array $input)
@@ -124,11 +137,6 @@ class Gateway extends Base\Gateway
         $verify = new Verify($this->gateway, $input);
 
         return $this->runPaymentVerifyFlow($verify);
-    }
-
-    public function reconcileRefunds($excel, $input)
-    {
-        return (new RefundExcel)->reconcile($excel, $input);
     }
 
     protected function validateCallbackChecksum($input)
@@ -160,15 +168,26 @@ class Gateway extends Base\Gateway
             'SuccessStaticFlag' => 'N',
             'FailureStaticFlag' => 'N',
             'Date'              => $date,
-            'DynamicUrl'        => $input['callbackUrl'],
         );
 
         if ($this->mode === Mode::TEST)
         {
             $data['MerchantCode'] = 'RAZORPAY';
-//            $data['ClientCode'] = random_alpha_string(10);
         }
 
+        if ($input['merchant']->isTPVRequired())
+        {
+            $data['ClientAccNum'] = $input['order']['account_number'];
+
+            if ($this->mode === Mode::TEST)
+            {
+                $data['MerchantCode'] = 'RAZORPAY1';
+            }
+        }
+
+        // Moving this as the HDFC TPV requires the ClientAccCode to
+        // be moved in between the Date and the DynamicUrl
+        $data['DynamicUrl'] = $input['callbackUrl'];
         $data['CheckSum'] = $this->generateHash($data);
 
         return $data;
@@ -235,12 +254,12 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
         $input = $verify->input;
 
-        $days = (time() - $input['payment']['created_at']) / (24*60*60);
+        $days = (time() - $input['payment']['created_at']) / (24 * 60 * 60);
 
         $status = VerifyResult::STATUS_MATCH;
 
         //
-        // In HDFC netbnaking, the bank only stores the payment data for
+        // In HDFC netbanking, the bank only stores the payment data for
         // 45 days! So for verification requests after 45 days, we simply
         // treat it as successful and return.
         //
@@ -252,22 +271,21 @@ class Gateway extends Base\Gateway
 
             $this->trace->info(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['message' =>
-                    'In HDFC netbnaking, the bank only stores the payment data for
-                    45 days! Since it has been more than 45 days, we simply
-                    treat it as successful and return.',
-                 'payment_id' => $input['payment']['id']]);
+                [
+                    'message' => 'In HDFC netbanking, the bank only stores the payment data for 45 days!' .
+                        ' Since it has been more than 45 days, we simply treat it as successful and return.',
+                    'payment_id' => $input['payment']['id']
+                ]);
 
             return $status;
         }
 
-        $verify->apiSuccess = (($input['payment']['status'] === 'authorized') or
-                               ($input['payment']['status'] === 'captured'));
+        $verify->apiSuccess = (($input['payment']['status'] !== Payment\Status::CREATED) and
+                               ($input['payment']['status'] !== Payment\Status::FAILED));
 
         $verify->gatewaySuccess = ($content['flgSuccess'] === 'S');
 
-        if (($verify->apiSuccess === false) and
-            ($verify->gatewaySuccess === true))
+        if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
             $status = VerifyResult::STATUS_MISMATCH;
         }
@@ -287,7 +305,7 @@ class Gateway extends Base\Gateway
     protected function processContentFromPaymentVerifyResponse($response, $request)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [$response->body]);
 
         $url = null;
@@ -299,6 +317,11 @@ class Gateway extends Base\Gateway
         $content = [];
         $parts = parse_url($url);
         parse_str($parts['query'], $content);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT,
+            [$content]
+        );
 
         return $content;
     }
@@ -372,18 +395,42 @@ class Gateway extends Base\Gateway
         return (string) crc32($str . $secret);
     }
 
-    protected function getTestSecret()
-    {
-        assert ($this->mode === Mode::TEST);
-
-        return '123456';
-    }
-
     protected function getLiveSecret()
     {
         assert ($this->mode === Mode::LIVE);
 
+        if ($this->tpv === true)
+        {
+            return $this->config['live_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['live_hash_secret_cug'];
+            }
+        }
+
         return $this->config['live_hash_secret'];
+    }
+
+    protected function getTestSecret()
+    {
+        assert ($this->mode === Mode::TEST);
+
+        if ($this->tpv === true)
+        {
+            return $this->config['test_hash_secret_cug'];
+        }
+        else if (isset($this->input['merchant']))
+        {
+            if ($this->input['merchant']->isTPVRequired())
+            {
+                return $this->config['test_hash_secret_cug'];
+            }
+        }
+
+        return $this->config['test_hash_secret'];
     }
 
     protected function buildQueryString($data)

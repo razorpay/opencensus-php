@@ -3,13 +3,15 @@
 namespace RZP\Gateway\Netbanking\Hdfc;
 
 use Carbon\Carbon;
-use RZP\Gateway\Netbanking\Base;
+use RZP\Gateway\Base;
+use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
     protected static $fileToWriteName = 'HDFC_Netbanking_Refunds';
 
-    protected static $headers = array(
+    protected static $headers = [
         'Sr No',
         'Transaction date',
         'Bank reference #',
@@ -17,29 +19,41 @@ class RefundFile extends Base\RefundFile
         'Order Amount',
         'Refund Amount',
         'Merchant Code',
-    );
+    ];
+
+    const EMAIL_BODY = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
 
     public function generate($input)
     {
         $data = $this->getRefundData($input);
 
-        $urlExcel = $this->writeToExcelFile($data, $this->getFileToWriteNameWithoutExt());
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $this->sendHdfcNbRefundEmail();
+        $urlExcel = $this->writeToExcelFile($data, $fileName);
+
+        $creator = $this->createFile(
+            FileStore\Format::XLSX,
+            $data,
+            $fileName,
+            FileStore\Type::HDFC_NETBANKING_REFUND);
+
+        $fileData = [
+            'file_path' => $this->getExcelFullFilePath(),
+            'body' => self::EMAIL_BODY,
+        ];
+
+        $this->sendRefundEmail($fileData);
 
         return $urlExcel;
     }
 
-    protected function sendHdfcNbRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
         $fullpath = $this->getExcelFullFilePath();
 
-        $data['file'] = $fullpath;
-        $data['body'] = 'Please forward the HDFC Netbanking refunds file to: Directpay.Refunds@hdfcbank.com';
-
-        $this->mail->queue('emails.message', $data, function ($message) use ($data)
+        $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = ['Directpay.Refunds@hdfcbank.com','settlements@razorpay.com'];
 
             $message->from('refunds@razorpay.com', 'Hdfc Netbanking refunds');
 
@@ -49,7 +63,11 @@ class RefundFile extends Base\RefundFile
 
             $message->to($emails);
 
-            $message->attach($data['file']);
+            $message->attach($fileData['file_path']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
         });
     }
 
@@ -62,7 +80,7 @@ class RefundFile extends Base\RefundFile
             $date = Carbon::createFromTimestamp(
                 $row['payment']['authorized_at'], 'Asia/Kolkata')->format('d/m/Y');
 
-            $data[] = array(
+            $data[] = [
                 'Sr No'            => $i++,
                 'Transaction date' => $date,
                 'Bank reference #' => $row['gateway']['bank_payment_id'],
@@ -70,7 +88,7 @@ class RefundFile extends Base\RefundFile
                 'Order Amount'     => $row['payment']['amount'] / 100,
                 'Refund Amount'    => $row['refund']['amount'] / 100,
                 'Merchant Code'    => $row['terminal']['gateway_merchant_id'],
-            );
+            ];
         }
 
         return $data;

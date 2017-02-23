@@ -22,9 +22,7 @@ trait FraudDetector
             $e = new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_PAYMENT_POSSIBLE_FRAUD);
 
-            $this->updatePaymentFailed(
-                $e->getError(),
-                TraceCode::PAYMENT_AUTH_FAILURE);
+            $this->updatePaymentFailed($e, TraceCode::PAYMENT_AUTH_FAILURE);
 
             throw $e;
         }
@@ -36,7 +34,14 @@ trait FraudDetector
 
         try
         {
-            $response = $this->app['maxmind']->query($payment);
+            if ($payment->getMerchantId() === '6ZJzxyLFWrGs74')
+            {
+                $response = $this->app['maxmind2']->query($payment);
+            }
+            else
+            {
+                $response = $this->app['maxmind']->query($payment);
+            }
         }
         catch (\Exception $e)
         {

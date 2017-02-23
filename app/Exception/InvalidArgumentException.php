@@ -2,12 +2,10 @@
 
 namespace RZP\Exception;
 
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
 class InvalidArgumentException extends ServerErrorException
 {
-
     public function __construct(
         $message = null,
         $data = null,

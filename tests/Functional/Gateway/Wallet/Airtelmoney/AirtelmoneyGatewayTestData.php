@@ -10,6 +10,7 @@ return [
         'amount'            => 50000,
         'method'            => 'wallet',
         'status'            => 'captured',
+        'two_factor_auth'   => 'passed',
         'amount_authorized' => 50000,
         'amount_refunded'   => 0,
         'refund_status'     => null,
@@ -43,7 +44,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ],
     ],
@@ -86,7 +87,7 @@ return [
             'status_code' => 502,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\GatewayErrorException',
+            'class'               => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_PAYMENT_CREDIT_LESS_THAN_DEBIT,
         ],
     ],
@@ -102,7 +103,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class'               => 'RZP\Exception\PaymentVerificationException',
+            'class'               => RZP\Exception\PaymentVerificationException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_VERIFICATION_FAILED
         ],
     ],
@@ -112,6 +113,18 @@ return [
         'wallet'                => 'airtelmoney',
         'email'                 => 'a@b.com',
         'amount'                => 50000,
+        'contact'               => '9918899029',
+        'gateway_merchant_id'   => 'random_id',
+        'response_description'  => 'SUCCESS',
+        'status_code'           => 'SUC',
+        'entity'                => 'wallet',
+    ],
+
+    'testPartialRefundPayment'       => [
+        'action'                => 'refund',
+        'wallet'                => 'airtelmoney',
+        'email'                 => 'a@b.com',
+        'amount'                => 25000,
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
         'response_description'  => 'SUCCESS',

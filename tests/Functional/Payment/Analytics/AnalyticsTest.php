@@ -5,8 +5,10 @@ namespace RZP\Tests\Functional\Payment\Analytics;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Analytics\Entity as AnalyticsEntity;
+use RZP\Models\Payment\Analytics\Metadata;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class AnalyticsTest extends TestCase
 {
@@ -23,26 +25,27 @@ class AnalyticsTest extends TestCase
         $this->payment = $this->getDefaultPaymentArray();
     }
 
-    public function testAttempts()
+    public function testAttemptsWithCheckoutId()
     {
         $payment = $this->getDefaultPaymentArray();
 
         $checkoutId = UniqueIdEntity::generateUniqueIdWithCheckDigit();
 
-        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertEquals($checkoutId, $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+        $this->assertEquals($checkoutId,
+            $paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
 
         $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
 
-        // ------------------------------------------------------------------ //
+        // ------------------------------------------------------------------//
 
         $payment = $this->getDefaultPaymentArray();
-        $payment['_'][AnalyticsEntity::CHECKOUT_ID] = $checkoutId;
+        $payment['_']['checkout_id'] = $checkoutId;
 
         $payment = $this->doAuthPayment($payment);
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
@@ -52,37 +55,110 @@ class AnalyticsTest extends TestCase
         $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
     }
 
+    public function testAttemptsWithOrderId()
+    {
+        // First payment attempt
+        $order = $this->createOrder();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $payment = $this->getLastEntity('payment');
+        $this->assertEquals($order['id'], $payment['order_id']);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+
+        // // -------------------------------------------------------------- //
+        // // TODO: Find a way to fail the first attempt
+        // // Second payment attempt
+        // $payment = $this->getDefaultPaymentArray();
+        // $payment['order_id'] = $order['id'];
+        // $rzpPayment = $this->doAuthPayment($payment);
+
+        // $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+        // $this->assertEquals(2, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
+    public function testAttemptsWithoutCheckoutIdOrOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
+    public function testAttemptsWithoutCheckoutIdOrderId()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $payment = $this->doAuthPayment($payment);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::CHECKOUT_ID]);
+
+        $this->assertEquals(1, $paymentAnalytic[AnalyticsEntity::ATTEMPTS]);
+    }
+
     public function testHttpRequestDataForNonOtpBasedPayment()
     {
         $payment = $this->getDefaultPaymentArray();
 
+        // @codingStandardsIgnoreStart
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
+        // @codingStandardsIgnoreEnd
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+        $payment['_']['library'] = 'checkoutjs';
 
-        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+        $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'browser';
+        $payment['_']['platform'] = 'browser';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '52.0.2743.116';
+        $payment['_']['platform_version'] = '52.0.2743.116';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'woo_commerce';
+        $payment['_']['integration'] = 'woo_commerce';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '0.1.2';
+        $payment['_']['integration_version'] = '0.1.2';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic, 'testPaymentAnalytics');
+        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForNonOtpBasedPayment');
+    }
+
+    public function testHttpRequestDataForS2sPayments()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer = ['HTTP_USER_AGENT' => null];
+
+        $payment['_']['library'] = 'direct';
+
+        $payment['_']['device'] = 'desktop';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertTestResponse($paymentAnalytic,
+            'testHttpRequestDataForS2sPayments');
     }
 
     public function testHttpRequestDataForOtpBasedPayment()
     {
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_mobikwik_terminal');
+        $this->sharedTerminal = $this->fixtures->create(
+            'terminal:shared_mobikwik_terminal');
 
         $this->fixtures->create('terminal:disable_default_hdfc_terminal');
 
@@ -94,22 +170,24 @@ class AnalyticsTest extends TestCase
 
         $payment = $this->getDefaultWalletPaymentArray('mobikwik');
 
+        // @codingStandardsIgnoreStart
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                            'HTTP_REFERER'      => 'https://razorpay.com/demo'
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
+        // @codingStandardsIgnoreEnd
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'checkoutjs';
+        $payment['_']['library'] = 'checkoutjs';
 
-        $payment['_'][AnalyticsEntity::LIBRARY_VERSION] = '3846fgjb';
+        $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'mobile_sdk';
+        $payment['_']['platform'] = 'mobile_sdk';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '0.4.12';
+        $payment['_']['platform_version'] = '0.4.12';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'magento';
+        $payment['_']['integration'] = 'magento';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION_VERSION] = '3.1.2';
+        $payment['_']['integration_version'] = '3.1.2';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -122,19 +200,22 @@ class AnalyticsTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
+        // @codingStandardsIgnoreStart
         $requestServer = [
-                            'HTTP_USER_AGENT'   => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-                        ];
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+            'HTTP_REFERER'    => 'https://api.razorpay.com/demo'
+        ];
+        // @codingStandardsIgnoreEnd
 
-        $payment['_'][AnalyticsEntity::BROWSER] = 'safari';
+        $payment['_']['platform_version'] = '537.36';
 
-        $payment['_'][AnalyticsEntity::PLATFORM_VERSION] = '537.36';
+        $payment['_']['os'] = 'ios';
 
-        $payment['_'][AnalyticsEntity::OS] = 'ios';
+        $payment['_']['os_version'] = '11.0';
 
-        $payment['_'][AnalyticsEntity::OS_VERSION] = '11.0';
+        $payment['_']['device'] = 'mobile';
 
-        $payment['_'][AnalyticsEntity::DEVICE] = 'mobile';
+        $payment['_']['referer'] = 'http://a.com';
 
         $payment = $this->doAuthPayment($payment, $requestServer);
 
@@ -147,22 +228,114 @@ class AnalyticsTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $payment['_'][AnalyticsEntity::LIBRARY] = 'unknown_library';
+        $payment['_']['library'] = 'unknown_library';
 
-        $payment['_'][AnalyticsEntity::PLATFORM] = 'unknown_platform';
+        $payment['_']['platform'] = 'unknown_platform';
 
-        $payment['_'][AnalyticsEntity::INTEGRATION] = 'unknown_integration';
+        $payment['_']['integration'] = 'unknown_integration';
 
-        $payment['_'][AnalyticsEntity::BROWSER] = 'unknown_browser';
+        $payment['_']['os'] = 'unknown_os';
 
-        $payment['_'][AnalyticsEntity::OS] = 'unknown_os';
+        $payment['_']['device'] = 'unknown_device';
 
-        $payment['_'][AnalyticsEntity::DEVICE] = 'unknown_device';
-
-        $payment = $this->doAuthPayment($payment);//, $requestServer);
+        $payment = $this->doAuthPayment($payment);
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
         $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForInvalidData');
+    }
+
+    public function testOs1()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        // @codingStandardsIgnoreStart
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (Macintosh; Intel Mac androidos 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+        ];
+        // @codingStandardsIgnoreEnd
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals(Metadata::ANDROID,
+            $paymentAnalytic[AnalyticsEntity::OS]);
+    }
+
+    public function testOs2()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        // @codingStandardsIgnoreStart
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:46.0) Gecko/20100101 Firefox/46.0',
+        ];
+        // @codingStandardsIgnoreEnd
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals(Metadata::UBUNTU,
+            $paymentAnalytic[AnalyticsEntity::OS]);
+    }
+
+    public function testMozilla()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        // @codingStandardsIgnoreStart
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Mozilla/5.0 (iPhone; CPU iPhone OS 10_2 like Mac OS X) AppleWebKit/602.3.12 (KHTML, like Gecko) Firefox/46.0',
+        ];
+        // @codingStandardsIgnoreEnd
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals(Metadata::FIREFOX, $paymentAnalytic[AnalyticsEntity::BROWSER]);
+
+        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::PLATFORM_VERSION]);
+    }
+
+    public function testHttpRefer1()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://api.razorpay.com/demo';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::REFERER]);
+    }
+
+    public function testHttpRefer2()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://razorpay.com/demo';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertNull($paymentAnalytic[AnalyticsEntity::REFERER]);
+    }
+
+    public function testHttpRefer3()
+    {
+        $payment = $this->getDefaultPaymentArray();
+
+        $requestServer['HTTP_REFERER'] = 'https://hello.com';
+
+        $payment = $this->doAuthPayment($payment, $requestServer);
+
+        $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
+
+        $this->assertEquals('https://hello.com', $paymentAnalytic[AnalyticsEntity::REFERER]);
     }
 }

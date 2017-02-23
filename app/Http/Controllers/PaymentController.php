@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -12,14 +12,12 @@ use View;
 class PaymentController extends Controller
 {
     protected $payment;
-    protected $refund;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
-        $this->refund = new Payment\Refund\Service();
+        $this->payment = new Payment\Service;
     }
 
     public function getPayment($id)
@@ -50,6 +48,7 @@ class PaymentController extends Controller
 
     /**
      * Refund a payment.
+     * @param $id
      */
     public function postRefund($id)
     {
@@ -67,6 +66,15 @@ class PaymentController extends Controller
         $payment = $this->payment->refundAuthorized($id, $input);
 
         return ApiResponse::json($payment);
+    }
+
+    public function postRefundAuthorizedInBulk()
+    {
+        $input = Request::all();
+
+        $summary = $this->payment->refundAuthorizedInBulk($input);
+
+        return ApiResponse::json($summary);
     }
 
     public function postForceAuthorize($id)
@@ -92,6 +100,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postFixAuthorizedAt()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->fixAuthorizeAt($input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * Captures an authorized payment
      *
@@ -104,16 +121,6 @@ class PaymentController extends Controller
         $payment = $this->payment->capture($id, $input);
 
         return ApiResponse::json($payment);
-    }
-
-    /**
-     * Creates transactions for all refunds if not present.
-     */
-    public function postRefundsTransactions()
-    {
-        $summary = $this->refund->createMissingTransactions();
-
-        return ApiResponse::json($summary);
     }
 
     public function getPaymentStatusForAsyncPayments($id)
@@ -132,6 +139,19 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayout(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->payout($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * @deprecated
+     * @return mixed
+     */
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -153,22 +173,6 @@ class PaymentController extends Controller
         return ApiResponse::json($refunds);
     }
 
-    public function getRefund($id)
-    {
-        $refunds = $this->refund->fetch($id);
-
-        return ApiResponse::json($refunds);
-    }
-
-    public function getRefunds()
-    {
-        $input = Request::all();
-
-        $refunds = $this->refund->fetchMultiple($input);
-
-        return ApiResponse::json($refunds);
-    }
-
     public function getRefundByRefundAndPaymentId($paymentId, $rfndId)
     {
         $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
@@ -176,25 +180,11 @@ class PaymentController extends Controller
         return ApiResponse::json($refunds);
     }
 
-    public function generateNetbankingRefunds()
+    public function getTransactionForPayment($paymentId)
     {
-        $input = Request::all();
-        // Just a hack, will be shifted to the /refunds/excel route
-        // once properly deployed
-        $input['method'] = 'netbanking';
+        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
 
-        $refundExcel = $this->refund->getRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
-    }
-
-    public function generateRefunds()
-    {
-        $input = Request::all();
-
-        $refundExcel = $this->refund->getRefundsFile($input);
-
-        return ApiResponse::json($refundExcel);
+        return ApiResponse::json($transaction);
     }
 
     public function postTimeout()
@@ -234,16 +224,11 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments($filter)
+    public function postVerifyPayments($filter)
     {
-        $data = $this->payment->verifyMultiplePayments($filter);
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
-    {
-        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
+        $data = $this->payment->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }
@@ -278,13 +263,6 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postRefundVerify($ids)
-    {
-        $data = $this->refund->verify($ids);
-
-        return ApiResponse::json($data);
-    }
-
     public function postCaptureVerify($id)
     {
         $data = $this->payment->verifyCapture($id);
@@ -292,16 +270,23 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postManualGatewayRefund($refundIds)
+    public function postManualGatewayCapture($id)
     {
-        $data = $this->refund->manualGatewayRefund($refundIds);
+        $data = $this->payment->manualGatewayCapture($id);
 
         return ApiResponse::json($data);
     }
-    
+
     public function postRefundMultipleAuthorizedPaymentsForOrders()
     {
         $data = $this->payment->refundMultipleAuthorizedPaymentsForOrders();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postAuthorizeLockTimeOut($paymentIds)
+    {
+        $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
 
         return ApiResponse::json($data);
     }

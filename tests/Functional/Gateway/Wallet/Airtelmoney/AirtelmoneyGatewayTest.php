@@ -56,6 +56,10 @@ class AirtelmoneyGatewayTest extends TestCase
             $this->doAuthPayment($payment);
         });
 
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals('unknown', $payment['two_factor_auth']);
+
         $wallet = $this->getLastEntity('wallet', true);
 
         $this->assertTestResponse($wallet, 'testFailedPaymentWalletEntity');
@@ -103,6 +107,46 @@ class AirtelmoneyGatewayTest extends TestCase
         $this->assertTestResponse($wallet, 'testPaymentWalletEntity');
     }
 
+    public function testVerifyLateAuthorizedPayment()
+    {
+        $this->ba->publicAuth();
+
+
+        $payment = $this->fixtures->create(
+            'payment',
+            [
+                'email'           => 'a@b.com',
+                'amount'          => 50000,
+                'contact'         => '9918899029',
+                'status'          => 'authorized',
+                'method'          => 'wallet',
+                'wallet'          => 'airtelmoney',
+                'gateway'         => 'wallet_airtelmoney',
+                'card_id'         => null,
+                'terminal_id'     => $this->sharedTerminal->id,
+                'late_authorized' => 1,
+            ]);
+
+        $wallet = $this->fixtures->create('wallet', [
+            'payment_id'         => $payment->getId(),
+            'amount'             => $payment->getAmount(),
+            'wallet'             => 'airtelmoney',
+            'action'             => 'authorize',
+            'gateway_payment_id' => null,
+            'reference1'         => null,
+        ]);
+
+        $id = $payment->getPublicId();
+
+        $this->verifyPayment($id);
+
+        $wallet = $this->getLastEntity('wallet', true);
+
+        $this->assertNotNull($wallet['gateway_payment_id']);
+
+        $this->assertNotNull($wallet['reference1']);
+    }
+
     public function testRefundPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
@@ -110,6 +154,20 @@ class AirtelmoneyGatewayTest extends TestCase
         $capturePayment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($capturePayment['id']);
+
+        $refund = $this->getLastEntity('wallet', true);
+
+        $this->assertTestResponse($refund);
+    }
+
+    public function testPartialRefundPayment()
+    {
+        $payment = $this->getDefaultWalletPaymentArray('airtelmoney');
+
+        $capturePayment = $this->doAuthAndCapturePayment($payment);
+
+        // Refund half the amount
+        $this->refundPayment($capturePayment['id'], $payment['amount']/2);
 
         $refund = $this->getLastEntity('wallet', true);
 

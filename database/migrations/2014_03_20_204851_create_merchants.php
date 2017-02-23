@@ -7,10 +7,10 @@ use RZP\Constants\Table;
 
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\FeeModel;
 
 class CreateMerchants extends Migration
 {
-
     /**
      * Make changes to the database.
      *
@@ -26,20 +26,30 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ID, Merchant::ID_LENGTH)
                   ->primary();
 
-            $table->string(Merchant::NAME);
+            $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
+                  ->nullable();
+
+            $table->string(Merchant::NAME)
+                  ->nullable();
 
             $table->string(Merchant::EMAIL, 255);
 
-            $table->boolean(Merchant::ACTIVATED)
+            $table->tinyInteger(Merchant::ACTIVATED)
                   ->default(0);
 
             $table->integer(Merchant::ACTIVATED_AT)
                   ->nullable();
 
-            $table->boolean(Merchant::LIVE)
+            $table->integer(Merchant::ARCHIVED_AT)
+                  ->nullable();
+
+            $table->integer(Merchant::SUSPENDED_AT)
+                  ->nullable();
+
+            $table->tinyInteger(Merchant::LIVE)
                   ->default(0);
 
-            $table->boolean(Merchant::HOLD_FUNDS)
+            $table->tinyInteger(Merchant::HOLD_FUNDS)
                   ->default(0);
 
             $table->char(Merchant::PRICING_PLAN_ID, Merchant::ID_LENGTH)
@@ -51,7 +61,7 @@ class CreateMerchants extends Migration
             $table->char(Merchant::CATEGORY, 4)
                   ->nullable();
 
-            $table->boolean(Merchant::INTERNATIONAL)
+            $table->tinyInteger(Merchant::INTERNATIONAL)
                   ->default(0);
 
             $table->string(Merchant::BILLING_LABEL)
@@ -62,11 +72,11 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(Merchant::FEATURES)
-                  ->nullable();
-
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
+
+            $table->tinyInteger(Merchant::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::PREPAID));
 
             $table->char(Merchant::BRAND_COLOR, 6)
                   ->nullable();
@@ -76,10 +86,21 @@ class CreateMerchants extends Migration
 
             $table->tinyInteger(Merchant::RISK_RATING);
 
-            $table->boolean(Merchant::RECEIPT_EMAIL_ENABLED)
+            $table->tinyInteger(Merchant::RECEIPT_EMAIL_ENABLED)
                   ->default(1);
 
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
+            $table->integer(Merchant::AUTO_REFUND_DELAY)
+                  ->nullable()
+                  ->default(null);
+
+            $table->tinyInteger(Merchant::AUTO_CAPTURE_LATE_AUTH)
+                  ->default(0);
+
+            $table->tinyInteger(Merchant::CONVERT_CURRENCY)
                   ->nullable();
 
             // Columns for Method and Gateway Based Categories
@@ -99,6 +120,7 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+            $table->index(Merchant::AUTO_REFUND_DELAY);
         });
     }
 

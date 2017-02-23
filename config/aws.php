@@ -18,14 +18,17 @@ return [
     */
 
     'region' => env('AWS_REGION', 'us-east-1'),
+    'bucket_region' => env('AWS_BUCKET_REGION', 'us-east-1'),
     'version' => 'latest',
     'ua_append' => [
         'L5MOD/' . AwsServiceProvider::VERSION,
     ],
 
-    'settlement_bucket' => env('AWS_S3_SETTLEMENT_BUCKET'),
-    'logo_bucket' => env('AWS_S3_LOGO_BUCKET'),
-    'h2h_bucket'  => env('AWS_H2H_BUCKET'),
+    'settlement_bucket'     => env('AWS_S3_SETTLEMENT_BUCKET'),
+    'logo_bucket'           => env('AWS_S3_LOGO_BUCKET'),
+    'h2h_bucket'            => env('AWS_H2H_BUCKET'),
+    'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
+    'invoice_bucket'        => env('AWS_INVOICE_BUCKET'),
 
     'mock' => env('AWS_S3_MOCK')
 ];

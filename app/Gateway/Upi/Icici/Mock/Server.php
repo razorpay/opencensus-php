@@ -4,13 +4,11 @@ namespace RZP\Gateway\Upi\Icici\Mock;
 
 use App;
 use Carbon\Carbon;
-use Gateway\Upi\Icici;
+use RZP\Gateway\Upi\Icici;
+use RZP\Models\Payment;
 use phpseclib\Crypt\RSA;
 use RZP\Gateway\Base;
 use RZP\Gateway\Utility;
-use RZP\Gateway\Base\Action;
-use RZP\Gateway\Upi\Base\Entity as UPIEntity;
-use Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -49,8 +47,8 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
-        $content = array(
-            'response'          => $this->getResponseCode(),
+        $content = [
+            'response'          => $this->getAuthorizeResponseCode(),
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => isset($input['subMerchantId']) ? $input['subMerchantId'] : null,
             'terminalId'        => isset($input['terminalId']) ? $input['terminalId'] : null,
@@ -58,7 +56,7 @@ class Server extends Base\Mock\Server
             'message'           => 'Transaction initiated',
             'merchantTranId'    => $input['merchantTranId'],
             'BankRRN'           => '1234567',
-        );
+        ];
 
         $dontEncrypt = ($this->input['payerVa'] === 'dontencrypt@icici');
 
@@ -96,21 +94,44 @@ class Server extends Base\Mock\Server
             }
         }
 
-        $response = array(
-            'response'          => '0',
+        $responseCode = $this->getVerifyResponseCode($payment['vpa']);
+
+        $response = [
+            'response'          => $responseCode,
             'merchantId'        => $input['merchantId'],
             'subMerchantId'     => '1234',
             'terminalId'        => '1234',
-            'success'           => 'true',
+            'success'           => $this->getSuccess($responseCode),
             'message'           => $message,
             'merchantTranId'    => $input['merchantTranId'],
             'OriginalBankRRN'   => (string) mt_rand(1111111, 9999999),
             'status'            => $status
-        );
+        ];
 
         $encrypt = (isset($payment['notes']['encrypt']) and ($payment['notes']['encrypt'] === 'true'));
 
         return $this->makeResponse($response, $encrypt);
+    }
+
+    protected function getSuccess($responseCode)
+    {
+        if ($responseCode === '0')
+        {
+            return 'true';
+        }
+
+        return 'false';
+    }
+
+    protected function getVerifyResponseCode($vpa)
+    {
+        switch($vpa)
+        {
+            case 'missingpayment@icici':
+                return '5006';
+            default:
+                return '0';
+        }
     }
 
     /**
@@ -121,16 +142,22 @@ class Server extends Base\Mock\Server
      *
      * >All other values of response codes = Transaction has failed
      */
-    protected function getResponseCode()
+    protected function getAuthorizeResponseCode()
     {
         switch($this->input['payerVa'])
         {
             // Just make sure that this doesn't return 92
             case 'unknownresponse@icici':
-                return mt_rand(93, 500);
-                break;
+                // Always return 93 error code
+                return '93';
+            case 'invalidvpa@icici':
+                return '5007';
+            case 'user@invalidbank':
+                return '5008';
+            case 'serverdown@icici':
+                return '5009';
             default:
-                return 92;
+                return '92';
         }
     }
 
@@ -150,7 +177,7 @@ class Server extends Base\Mock\Server
         if ($dontEncrypt === true)
         {
             $encryptedData = $this->encrypt($content);
-            assert($encryptedData !== false);
+            assertTrue($encryptedData !== false);
 
             $content = base64_encode($encryptedData);
         }
@@ -167,6 +194,7 @@ class Server extends Base\Mock\Server
     protected function parseInput($input)
     {
         $input = base64_decode($input);
+
         $input = $this->decrypt($input);
 
         return json_decode($input, true);
@@ -175,7 +203,8 @@ class Server extends Base\Mock\Server
     protected function decrypt($ciphertext)
     {
         $rsa = $this->getRSAInstance('request');
-        return  $rsa->decrypt($ciphertext);
+
+        return $rsa->decrypt($ciphertext);
     }
 
     protected function encrypt($plaintext)
@@ -208,36 +237,40 @@ class Server extends Base\Mock\Server
         return $rsa;
     }
 
-    public function makeS2SRequest(array $upiEntity, array $payment)
+    public function getAsyncCallbackContent(array $upiEntity, array $payment)
     {
-        $data = $this->S2SRequestContent($upiEntity, $payment);
+        $content = $this->S2SRequestContent($upiEntity, $payment);
 
-        $json = json_encode($data, JSON_PRETTY_PRINT);
+        $json = json_encode($content, JSON_PRETTY_PRINT);
 
         $encrypted = $this->encrypt($json);
 
         return base64_encode($encrypted);
     }
 
-    protected function S2SRequestContent(array $entity, array $payment)
+    protected function S2SRequestContent(array $upiEntity, array $payment)
     {
         // Format is 20160830152240
-        $initDate = Carbon::createFromTimestampUTC($entity['created_at'], 'Asia/Kolkata');
+        $initDate = Carbon::createFromTimestampUTC($upiEntity['created_at']);
         $completeDate = $initDate->copy()->addMinutes(1);
 
-        return [
-            'merchantId'        => $entity['gateway_merchant_id'],
-            'subMerchantId'     => $payment['merchant_id'],
-            'terminalId'        => "1234",
-            'BankRRN'           => $entity['gateway_payment_id'],
-            'merchantTranId'    => $entity['payment_id'],
-            'PayerName'         => "payer name not available",
+        $response = [
+            'merchantId'        => $upiEntity['gateway_merchant_id'],
+            'subMerchantId'     => '1234',
+            'terminalId'        => '1234',
+            'BankRRN'           => $upiEntity['gateway_payment_id'],
+            'merchantTranId'    => $upiEntity['payment_id'],
+            'PayerName'         => 'payer name not available',
             'PayerMobile'       => $payment['contact'],
-            'PayerVA'           => $entity['vpa'],
-            'PayerAmount'       => number_format($payment['amount']/100, 2),
-            'TxnStatus'         => "SUCCESS",
+            'PayerVA'           => $upiEntity['vpa'],
+            'PayerAmount'       => number_format($payment['amount'] / 100, 2, '.', ''),
+            'TxnStatus'         => 'SUCCESS',
             'TxnInitDate'       => $initDate->format('Ymdhis'),
             'TxnCompletionDate' => $completeDate->format('Ymdhis'),
         ];
+
+        $this->content($response);
+
+        return $response;
     }
 }

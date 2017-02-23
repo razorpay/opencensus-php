@@ -2,10 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Airtelmoney\Mock;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Gateway\Wallet\Airtelmoney\DateFormat;
 use RZP\Gateway\Wallet\Airtelmoney\RequestFields;
-use RZP\Gateway\Wallet\Airtelmoney\ResponseFields;
 
 class Validator extends Base\Validator
 {

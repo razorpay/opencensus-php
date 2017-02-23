@@ -2,10 +2,7 @@
 
 namespace RZP\Reconciliator\PayZapp;
 
-use RZP\Trace\TraceCode;
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Base\Reconciliate as BaseReconciliate;
-use RZP\Reconciliator\Messenger;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -19,15 +16,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_KK_CESS     = 'KRISHI KALYAN CESS';
     const COLUMN_EDU_CESS    = 'EDUCESS';
     const COLUMN_FEE         = 'COMMISSION AMT';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
 
     protected function getPaymentId($row)
     {

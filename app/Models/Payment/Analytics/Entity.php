@@ -4,12 +4,12 @@ namespace RZP\Models\Payment\Analytics;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
-use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
     const ID                            = 'id';
     const PAYMENT_ID                    = 'payment_id';
+    const MERCHANT_ID                   = 'merchant_id';
     const CHECKOUT_ID                   = 'checkout_id';
     const ATTEMPTS                      = 'attempts';
     const LIBRARY                       = 'library';
@@ -25,23 +25,16 @@ class Entity extends Base\PublicEntity
     const IP                            = 'ip';
     const REFERER                       = 'referer';
     const USER_AGENT                    = 'user_agent';
-    const TERMINAL_ID                   = 'terminal_id';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
-    // window in secs, used to fetch payments with same checkout id
-    const PAYMENT_WINDOW                = 1800;
-
-    protected $table = Table::PAYMENT_ANALYTICS;
-
     protected $entity = 'payment_analytics';
 
-    protected static $sign = '';
+    public $incrementing = true;
 
-    protected static $delimiter = '';
-
-    protected $fillable = array(
+    protected $fillable = [
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
         self::ATTEMPTS,
         self::LIBRARY,
@@ -57,14 +50,13 @@ class Entity extends Base\PublicEntity
         self::INTEGRATION_VERSION,
         self::REFERER,
         self::USER_AGENT,
-        self::TERMINAL_ID,
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::PAYMENT_ID,
+        self::MERCHANT_ID,
         self::CHECKOUT_ID,
-        self::TERMINAL_ID,
         self::ATTEMPTS,
         self::LIBRARY,
         self::LIBRARY_VERSION,
@@ -81,17 +73,43 @@ class Entity extends Base\PublicEntity
         self::USER_AGENT,
         self::CREATED_AT,
         self::UPDATED_AT
-    );
+    ];
 
-    protected static $modifiers = array(
+    protected $visible = [
+        self::ID,
+        self::PAYMENT_ID,
+        self::MERCHANT_ID,
+        self::CHECKOUT_ID,
+        self::ATTEMPTS,
+        self::LIBRARY,
+        self::LIBRARY_VERSION,
+        self::BROWSER,
         self::OS,
-    );
+        self::OS_VERSION,
+        self::DEVICE,
+        self::PLATFORM,
+        self::PLATFORM_VERSION,
+        self::IP,
+        self::INTEGRATION,
+        self::INTEGRATION_VERSION,
+        self::REFERER,
+        self::USER_AGENT,
+        self::CREATED_AT,
+        self::UPDATED_AT
+    ];
 
-    protected $casts = array(
-        self::ATTEMPTS               => 'int',
-    );
+    protected $casts = [
+        self::ATTEMPTS  => 'int',
+    ];
 
-    // ----------------------- Getters ---------------------------------------------
+    // ----------------------- Relations ---------------------------------------
+
+    public function payment()
+    {
+        return $this->belongsTo('RZP\Models\Payment\Entity');
+    }
+
+    // ----------------------- Getters -----------------------------------------
 
     public function getPaymentId()
     {
@@ -101,11 +119,6 @@ class Entity extends Base\PublicEntity
     public function getCheckoutId()
     {
         return $this->getAttribute(self::CHECKOUT_ID);
-    }
-
-    public function getTerminalId()
-    {
-        return $this->getAttribute(self::TERMINAL_ID);
     }
 
     public function getAttempts()
@@ -173,9 +186,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTEGRATION_VERSION);
     }
 
-    // ----------------------- Getters End ---------------------------------------------
+    public function getUserAgent()
+    {
+        return $this->getAttribute(self::USER_AGENT);
+    }
 
-    // ----------------------- Setters ---------------------------------------------
+    // ----------------------- Getters End -------------------------------------
+
+    // ----------------------- Setters -----------------------------------------
 
     public function setAttempts($attempts)
     {
@@ -207,9 +225,60 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::INTEGRATION_VERSION, $integrationVersion);
     }
 
-    // ----------------------- Setters End---------------------------------------------
+    public function setIntegration($integration)
+    {
+        $this->setAttribute(self::INTEGRATION, $integration);
+    }
 
-    // ----------------------- Mutator ---------------------------------------------
+    public function setLibrary($library)
+    {
+        $this->setAttribute(self::LIBRARY, $library);
+    }
+
+    public function setBrowser($browser)
+    {
+        $this->setAttribute(self::BROWSER, $browser);
+    }
+
+    public function setPlatform($platform)
+    {
+        $this->setAttribute(self::PLATFORM, $platform);
+    }
+
+    public function setOs($os)
+    {
+        $this->setAttribute(self::OS, $os);
+    }
+
+    public function setDevice($device)
+    {
+        $this->setAttribute(self::DEVICE, $device);
+    }
+
+    public function setIp($ip)
+    {
+        $this->setAttribute(self::IP, $ip);
+    }
+
+    public function setReferer($referer)
+    {
+        $this->setAttribute(self::REFERER, $referer);
+    }
+
+    public function setUserAgent($ua)
+    {
+        $this->setAttribute(self::USER_AGENT, $ua);
+    }
+
+    public function setMerchantId($merchant_id)
+    {
+        $this->setAttribute(self::MERCHANT_ID, $merchant_id);
+    }
+
+
+    // ----------------------- Setters End--------------------------------------
+
+    // ----------------------- Mutator -----------------------------------------
     //
 
     protected function getLibraryAttribute()
@@ -299,16 +368,5 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::REFERER] = $referer;
     }
 
-    // ----------------------- Mutator Ends ----------------------------------------
-
-    // ----------------------- Modifiers ------------------------------------------
-
-    protected function modifyOs(& $input)
-    {
-        if ((isset($input[self::OS])) and
-            (strtolower($input[self::OS]) === 'os x'))
-        {
-            $input[self::OS] = Metadata::MACOS;
-        }
-    }
+    // ----------------------- Mutator Ends ------------------------------------
 }

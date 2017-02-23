@@ -3,6 +3,7 @@
 namespace RZP\Gateway\Base\Mock;
 
 use Requests_Response;
+use Requests_Response_Headers;
 
 trait GatewayTrait
 {
@@ -23,7 +24,7 @@ trait GatewayTrait
         $gateway = $this->gateway;
         $route = 'mock_'.$gateway.'_payment';
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth($route);
+        $url = $this->route->getUrlWithPublicAuth($route);
 
         if ($request['method'] === 'get')
         {
@@ -51,7 +52,7 @@ trait GatewayTrait
 
     protected function callGatewayRequestFunctionInternally($request)
     {
-        $server = \App::getFacadeRoot()['gateway']->server($this->gateway);
+        $server = $this->app['gateway']->server($this->gateway);
 
         $input = [];
 
@@ -86,11 +87,12 @@ trait GatewayTrait
     {
         $response = new Requests_Response();
 
-        $response->headers = $serverResponse->headers->all();
+        $headers = $serverResponse->headers->all();
+        $response->headers = new Requests_Response_Headers();
 
-        foreach ($response->headers as $key => &$value)
+        foreach ($headers as $key => $value)
         {
-            $value = implode(';', $value);
+            $response->headers[$key] = $value[0];
         }
 
         $response->body = $serverResponse->getContent();

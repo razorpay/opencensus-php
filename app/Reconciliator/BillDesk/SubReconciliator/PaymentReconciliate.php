@@ -3,7 +3,6 @@
 namespace RZP\Reconciliator\BillDesk;
 
 use RZP\Reconciliator\Base;
-use RZP\Reconciliator\Messenger;
 
 class PaymentReconciliate extends Base\PaymentReconciliate
 {
@@ -13,15 +12,6 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     const COLUMN_PAYMENT_ID  = 'Ref. 1';
     const COLUMN_SERVICE_TAX = 'S Tax (Rs Ps)';
     const COLUMN_FEE         = 'Charges (Rs.Ps)';
-
-    protected $messenger;
-
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->messenger = new Messenger();
-    }
 
     protected function getPaymentId($row)
     {

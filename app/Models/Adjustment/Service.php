@@ -11,11 +11,9 @@ class Service extends Base\Service
 {
     public function getAdjustment($id)
     {
-        Adjustment\Entity::verifyIdAndStripSign($id);
+        $adj = $this->repo->adjustment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $setl = $this->repo->adjustment->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        return $setl->toArrayPublic();
+        return $adj->toArrayPublic();
     }
 
     public function getAdjustments($input)
@@ -32,5 +30,48 @@ class Service extends Base\Service
         $adj = (new Adjustment\Core)->createAdjustment($input, $merchant);
 
         return $adj->toArrayPublic();
+    }
+
+    public function postReverseAdjustments($input)
+    {
+        $adjustmentIds = $input['ids'];
+
+        $success = 0;
+        $failed = 0;
+        $failedIds = [];
+
+        foreach ($adjustmentIds as $adjustmentId)
+        {
+            $adjustment = null;
+
+            try
+            {
+                Adjustment\Entity::verifyIdAndStripSign($adjustmentId);
+
+                $adjustment = $this->repo->adjustment->findOrFail($adjustmentId);
+
+                $request = [
+                    Entity::AMOUNT      => -1 * $adjustment->getAmount(),
+                    Entity::CURRENCY    => 'INR',
+                    Entity::DESCRIPTION => 'Reverse adjustment for '. $adjustment->getId()
+                ];
+
+                $revAdj = (new Adjustment\Core)->createAdjustment($request, $adjustment->merchant);
+
+                $success++;
+            }
+            catch (\Exception $ex)
+            {
+                $failed++;
+
+                $failedIds[] = $adjustment->getId();
+            }
+
+            $response['success'] = $success;
+            $response['failed'] = $failed;
+            $response['failedIds'] = $failedIds;
+        }
+
+        return $response;
     }
 }

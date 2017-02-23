@@ -2,14 +2,11 @@
 
 namespace RZP\Models\Payment;
 
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
-use RZP\Models\Transaction;
 use RZP\Models\Payment;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {

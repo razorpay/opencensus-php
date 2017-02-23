@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Models\Payment;
+
 class Wallet
 {
     const PAYTM       = 'paytm';
@@ -10,6 +14,8 @@ class Wallet
     const PAYUMONEY   = 'payumoney';
     const OLAMONEY    = 'olamoney';
     const AIRTELMONEY = 'airtelmoney';
+    const FREECHARGE  = 'freecharge';
+    const JIOMONEY    = 'jiomoney';
 
     public static $fullName = array(
         self::MOBIKWIK      => 'Mobikwik',
@@ -18,6 +24,8 @@ class Wallet
         self::PAYUMONEY     => 'Payumoney',
         self::PAYZAPP       => 'Payzapp',
         self::AIRTELMONEY   => 'Airtelmoney',
+        self::FREECHARGE    => 'Freecharge',
+        self::JIOMONEY      => 'JioMoney',
     );
 
     public static function exists($wallet)
@@ -25,8 +33,24 @@ class Wallet
         return defined(get_class().'::'.strtoupper($wallet));
     }
 
+    public static function validateExists($wallet)
+    {
+        if (self::exists($wallet) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED,
+                Payment\Entity::WALLET);
+        }
+    }
+
     public static function getWalletNetworkNamesMap()
     {
-    	return self::$fullName;
+        return self::$fullName;
     }
+
+    public static function getName($wallet)
+    {
+        return self::$fullName[$wallet];
+    }
+
 }

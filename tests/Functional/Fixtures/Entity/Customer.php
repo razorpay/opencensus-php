@@ -25,7 +25,7 @@ class Customer extends Base
             'id'            => '10000gcustomer',
             'name'          => 'test',
             'email'         => 'test@razorpay.com',
-            'contact'       => '+911234567890',
+            'contact'       => '+919988776655',
             'merchant_id'   => '100000Razorpay'
         ),
     );

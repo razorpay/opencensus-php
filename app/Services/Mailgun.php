@@ -2,10 +2,9 @@
 
 namespace RZP\Services;
 
-use RZP\Exception;
-use Requests;
-use Mailgun\Mailgun as MgClient;
 use Http\Adapter\Guzzle6\Client as GuzzleClient;
+use Mailgun\Mailgun as MgClient;
+use RZP\Exception;
 
 class Mailgun
 {
@@ -67,6 +66,11 @@ class Mailgun
         }
 
         return $res;
+    }
+
+    public function setMailgunInstance($instance)
+    {
+        $this->mgClient = $instance;
     }
 
     protected function getMode()

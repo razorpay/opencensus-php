@@ -2,11 +2,15 @@
 
 namespace RZP\Models\Base;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 
-class Entity extends EloquentEx
+class Entity extends \RZP\Base\EloquentEx
 {
+    /**
+     * Keeps the current action value here to be set by the entity updater
+     */
+    protected $auditAction = [];
+
     protected function asDateTime($value)
     {
         //
@@ -64,18 +68,6 @@ class Entity extends EloquentEx
     public function getEntityName()
     {
         return $this->entity;
-        // $class = get_class($this);
-
-        // $segments = explode('\\',$class);
-
-        // if (end($segments) === 'Entity')
-        // {
-        //     return prev($segments);
-        // }
-        // else
-        // {
-        //     return class_basename($this);
-        // }
     }
 
     public function getCreatedAt()
@@ -118,5 +110,20 @@ class Entity extends EloquentEx
     public function getUpdatedAtAttribute()
     {
         return (int) $this->attributes[self::UPDATED_AT];
+    }
+
+    public function setAuditAction(array $action)
+    {
+        $this->auditAction = $action;
+    }
+
+    public function getAuditAction()
+    {
+        return $this->auditAction;
+    }
+
+    public function resetAuditAction()
+    {
+        $this->auditAction = [];
     }
 }
