@@ -10,9 +10,13 @@ class Service extends Base\Service
 {
     protected $core;
 
+    protected  $userId = null;
+
     public function __construct()
     {
         parent::__construct();
+
+        $this->setUserId();
 
         $this->core = new Core();
     }
@@ -26,8 +30,10 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
 
         return $invoice->toArrayPublic();
@@ -35,6 +41,16 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
+        //
+        // Fetches invoice after applying additional filter of user_id
+        // if it's set.
+        //
+
+        if ($this->userId !== null)
+        {
+            $input[Entity::USER_ID] = $this->userId;
+        }
+
         $invoices = $this->repo->invoice
                                ->fetch($input, $this->merchant->getId());
 
@@ -43,8 +59,10 @@ class Service extends Base\Service
 
     public function update(string $id, array $input)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $invoice = $this->core->update($invoice, $input, $this->merchant);
 
@@ -53,8 +71,10 @@ class Service extends Base\Service
 
     public function issue(string $id)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $invoice = $this->core->issue($invoice, $this->merchant);
 
@@ -63,8 +83,10 @@ class Service extends Base\Service
 
     public function delete(string $id)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $invoice = $this->core->delete($invoice);
 
@@ -78,8 +100,10 @@ class Service extends Base\Service
 
     public function addLineItems(string $id, array $input)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $invoice = $this->core->addLineItems($invoice, $input, $this->merchant);
 
@@ -88,8 +112,10 @@ class Service extends Base\Service
 
     public function updateLineItem(string $id, string $lineItemId, array $input)
     {
-        $invoice  = $this->repo->invoice
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $lineItem = $this->repo->line_item
                                ->findByPublicIdAndMorphEntity(
@@ -109,8 +135,10 @@ class Service extends Base\Service
 
     public function removeLineItem(string $id, string $lineItemId)
     {
-        $invoice  = $this->repo->invoice
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $lineItem = $this->repo->line_item
                                ->findByPublicIdAndMorphEntity(
@@ -125,8 +153,10 @@ class Service extends Base\Service
 
     public function removeManyLineItems(string $id, array $input)
     {
-        $invoice  = $this->repo->invoice
-                               ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice  = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         (new LineItem\Validator)->validateInput('remove_many', $input);
 
@@ -143,7 +173,10 @@ class Service extends Base\Service
 
     public function sendNotification($id, $medium)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $data = $this->core->sendNotification($invoice, $medium);
 
@@ -152,8 +185,10 @@ class Service extends Base\Service
 
     public function expireInvoice($id)
     {
-        $invoice = $this->repo->invoice
-                              ->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $invoice = $this->core->expireInvoice($invoice);
 
@@ -172,7 +207,10 @@ class Service extends Base\Service
 
     public function fetchStatus($id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $data = $this->core->fetchStatus($invoice);
 
@@ -204,12 +242,33 @@ class Service extends Base\Service
 
     public function getInvoicePdf(string $id)
     {
-        $invoice = $this->repo->invoice->findByPublicIdAndMerchant($id, $this->merchant);
+        $invoice = $this->repo->invoice->findByPublicIdAndMerchantAndUserId(
+                                            $id,
+                                            $this->merchant,
+                                            $this->userId);
 
         $displayName = $invoice->getPdfDisplayName();
 
         $path = $this->core->getInvoicePdfIfExistsOrCreate($invoice);
 
         return [$displayName, $path];
+    }
+
+    /**
+     * Ref: https://github.com/razorpay/api/issues/2397
+     *
+     * @return null
+     */
+    protected function setUserId()
+    {
+        $dashboardHeaders = $this->app['basicauth']->getDashboardHeaders();
+
+        $userRole = $dashboardHeaders['user_role'] ?? null;
+        $userId   = $dashboardHeaders['user_id'] ?? null;
+
+        if ($userRole === 'sellerapp')
+        {
+            $this->userId = $userId;
+        }
     }
 }

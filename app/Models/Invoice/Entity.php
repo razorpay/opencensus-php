@@ -225,8 +225,10 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         // self::DUE_BY,
         // self::SCHEDULED_AT,
+        self::EXPIRE_BY,
         self::ISSUED_AT,
         self::PAID_AT,
+        self::EXPIRED_AT,
         self::SMS_STATUS,
         self::EMAIL_STATUS,
         self::DATE,
@@ -348,6 +350,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CURRENCY);
     }
 
+    public function getUserId()
+    {
+        return $this->getAttribute(self::USER_ID);
+    }
+
     public function getDescription()
     {
         return $this->getAttribute(self::DESCRIPTION);
@@ -438,6 +445,26 @@ class Entity extends Base\PublicEntity
     public function isTypeInvoice()
     {
         return ($this->getType() === Type::INVOICE);
+    }
+
+    /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For invoices (New):   #/app/invoices/{public-id}
+     * Otherwise (Existing): #/app/invoices/{public-id}/details
+     *
+     * @return string
+     */
+    public function getDashboardPath()
+    {
+        $path = '#/app/invoices/' . $this->getPublicId();
+
+        if ($this->isTypeInvoice() === false)
+        {
+            $path .= '/details';
+        }
+
+        return $path;
     }
 
     /**

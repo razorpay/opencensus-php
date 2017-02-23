@@ -604,7 +604,7 @@ class FeeCalculator
             $totalTaxPercentage += $taxPercentage;
         }
 
-        $totalTaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+        $totalTaxes = (int) round(($fee * $totalTaxPercentage) / 10000);
 
         foreach ($taxComponents as $name => $percentage)
         {

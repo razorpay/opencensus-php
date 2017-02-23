@@ -274,7 +274,7 @@ class Processor extends Base\Core
             $balance = $merchant->balance->getBalance();
 
             if (($setlAmount <= 100) or
-                ($setlAmount >= $balance))
+                ($setlAmount > $balance))
             {
                 $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                     [

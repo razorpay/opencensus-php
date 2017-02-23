@@ -5,7 +5,7 @@ namespace RZP\Http\Middleware;
 use Closure;
 use Illuminate\Foundation\Application;
 
-class Segment
+class EventTracker
 {
     /**
      * Handle an incoming request.
@@ -53,10 +53,7 @@ class Segment
      */
     public function terminate($request, $response)
     {
-        //
         // send the in-memory segment events to lumberjack
-        //
-
         try
         {
             $this->app['segment']->buildRequestAndSend();

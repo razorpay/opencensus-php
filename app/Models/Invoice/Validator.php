@@ -48,7 +48,7 @@ class Validator extends Base\Validator
 
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
@@ -83,7 +83,7 @@ class Validator extends Base\Validator
 
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
@@ -105,7 +105,7 @@ class Validator extends Base\Validator
     protected static $createIssuedRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
@@ -127,7 +127,7 @@ class Validator extends Base\Validator
     protected static $editDraftRules  = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
         Entity::COMMENT             => 'sometimes|string|max:2048',
