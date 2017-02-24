@@ -316,8 +316,7 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
-        if ((empty($bankPaymentId) === true) and
-            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
+        if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
         {
             $attributes = $this->getVerifyAttributes($content);
 

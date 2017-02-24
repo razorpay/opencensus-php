@@ -186,6 +186,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment){
             $this->verifyPayment($payment['id']);
         });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['status'], 'S');
     }
 
     protected function createPaymentsToClaim()
@@ -241,28 +245,28 @@ class NetbankingAxisGatewayTest extends TestCase
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
-                        {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                            // Amounts are in rupees
-                            $testData = array(
-                                'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims'  => 1500,
-                                    'refunds' => 500,
-                                    'total'   => 1000,
-                                ],
-                                'count'   => [
-                                    'claims'  => 3,
-                                    'refunds' => 2,
-                                    'total'   => 5
-                                ]
-                            );
+                        // Amounts are in rupees
+                        $testData = array(
+                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                            'amount' => [
+                                'claims'  => 1500,
+                                'refunds' => 500,
+                                'total'   => 1000,
+                            ],
+                            'count'   => [
+                                'claims'  => 3,
+                                'refunds' => 2,
+                                'total'   => 5
+                            ]
+                        );
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+                        $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }),
+                        return true;
+                    }),
                     Mockery::any()
                 );
     }
@@ -274,28 +278,28 @@ class NetbankingAxisGatewayTest extends TestCase
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
-                        {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                            // Amounts are in rupees
-                            $testData = array(
-                                'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims'  => 1500,
-                                    'refunds' => 0,
-                                    'total'   => 1500,
-                                ],
-                                'count'   => [
-                                    'claims'  => 3,
-                                    'refunds' => 0,
-                                    'total'   => 3
-                                ]
-                            );
+                        // Amounts are in rupees
+                        $testData = array(
+                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                            'amount' => [
+                                'claims'  => 1500,
+                                'refunds' => 0,
+                                'total'   => 1500,
+                            ],
+                            'count'   => [
+                                'claims'  => 3,
+                                'refunds' => 0,
+                                'total'   => 3
+                            ]
+                        );
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+                        $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }),
+                        return true;
+                    }),
                     Mockery::any()
                 );
     }
