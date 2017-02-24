@@ -34,6 +34,7 @@ class Entity extends Base\PublicEntity
     const UTR               = 'utr';
     const FAILURE_REASON    = 'failure_reason';
     const RETURN_UTR        = 'return_utr';
+    const REMARKS           = 'remarks';
 
     // Public attribute
     const DESTINATION       = 'destination';
@@ -214,11 +215,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::CHANNEL, $channel);
     }
 
-    public function setType($type)
-    {
-        $this->setAttribute(self::TYPE, $type);
-    }
-
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
@@ -249,9 +245,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FAILURE_REASON, $reason);
     }
 
-    public function setRemarks($remarks)
+    public function setRemarks(string $remarks)
     {
-        // @todo
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function setPublicDestinationAttribute(array & $attributes)

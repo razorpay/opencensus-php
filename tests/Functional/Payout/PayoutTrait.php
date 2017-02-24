@@ -3,7 +3,6 @@
 namespace RZP\Tests\Functional\Payout;
 
 use Symfony\Component\HttpFoundation\File\UploadedFile;
-use AWS;
 
 trait PayoutTrait
 {
@@ -17,9 +16,9 @@ trait PayoutTrait
         }
 
         $request = [
-            'url' => '/payouts/initiate/'.$channel,
-            'method' => 'POST',
-            'content' => $content,
+            'url'       => '/payouts/initiate/' . $channel,
+            'method'    => 'POST',
+            'content'   => $content,
         ];
 
         $this->ba->appAuthMode();
@@ -34,8 +33,8 @@ trait PayoutTrait
         $uploadedFile = $this->createUploadedFile($setlFile);
 
         $request = [
-            'url' => '/payouts/reconcile/generate',
-            'files' => [
+            'url'       => '/payouts/reconcile/generate',
+            'files'     => [
                 'file' => $uploadedFile,
             ],
         ];
@@ -45,8 +44,6 @@ trait PayoutTrait
         $content = $this->makeRequestAndGetContent($request);
 
         $this->assertArrayHasKey('payoutReconciliationFile', $content);
-
-        // $this->assertFileNotExists($setlFile);
 
         return $content['payoutReconciliationFile'];
     }
@@ -78,13 +75,13 @@ trait PayoutTrait
         foreach ($items as $item)
         {
             $content[] = [
-                'id' => 'pout_' . $item['id'],
+                'id'        => 'pout_' . $item['id'],
                 'refer_utr' => '1'
             ];
         }
 
         $request = [
-            'url' => '/payouts/return/generate',
+            'url'     => '/payouts/return/generate',
             'content' => $content,
         ];
 

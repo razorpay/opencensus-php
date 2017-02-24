@@ -179,9 +179,9 @@ class NodalAccount
         return [$urlText, $urlExcel];
     }
 
-    public function getPayoutsFile($payouts)
+    public function getPayoutsFile(Base\PublicCollection $payouts)
     {
-        $textData = array();
+        $textData = [];
 
         $totalAmount = 0;
 
@@ -189,13 +189,13 @@ class NodalAccount
         {
             $merchant = $payout->merchant;
 
-            $ba = $payout->dest;
+            $ba = $payout->destination;
 
             $amount = $payout->getAmount() / 100;
 
             $totalAmount += $amount;
 
-            $array = array(
+            $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'REFUND',
                 'Payment_Ref_No.'       => $payout->getPublicId(),
@@ -210,13 +210,13 @@ class NodalAccount
                 'Payment Details 1'     => 'RAZORPAY PAYOUTS',
                 'Payment Details 2'     => $merchant->getPublicId(),
                 'Payment Details 3'     => $ba->getId()
-            );
+            ];
 
             $array = $this->getAllFields($array);
 
             $textDataArray = $array;
 
-            array_push($textData, $textDataArray);
+            $textData[] = $textDataArray;
         }
 
         $amounts['total'] = $totalAmount;

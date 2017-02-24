@@ -77,6 +77,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->string(Payout::REMARKS)
+                  ->nullable();
+
             $table->integer(Payout::CREATED_AT);
 
             $table->integer(Payout::UPDATED_AT);

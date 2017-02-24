@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use Carbon\Carbon;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
@@ -15,6 +16,24 @@ use RZP\Models\Transaction;
 
 class Core extends Base\Core
 {
+    const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
+
+    const MUTEX_LOCK_TIMEOUT    = 900;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Create a direct payout - source from merchant balance
+     *
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     * @return Payout\Entity
+     */
     public function directPayout(array $input, Merchant\Entity $merchant)
     {
         $payout = $this->createPayout($input, $merchant);
@@ -24,6 +43,14 @@ class Core extends Base\Core
         return $payout;
     }
 
+    /**
+     * Create a payment payout - from a source payment
+     *
+     * @param  array           $input
+     * @param  Payment\Entity  $payment
+     * @param  Merchant\Entity $merchant
+     * @return Payout\Entity
+     */
     public function paymentPayout(array $input, Payment\Entity $payment, Merchant\Entity $merchant)
     {
         $payout = $this->createPayout($input, $merchant);
@@ -35,25 +62,23 @@ class Core extends Base\Core
         return $payout;
     }
 
+    /**
+     * Initiate settlements for payouts
+     *
+     * @param  array  $input
+     * @param  string $channel
+     * @return array
+     */
     public function initiatePayouts(array $input, string $channel) : array
     {
-        return $this->repo->transaction(function() use ($input, $channel)
-        {
-            $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
-
-            $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
-
-            $payouts = $this->repo->payout->fetchAssociatedRelations($payouts, 'dest', 'destination', 'type');
-
-            $this->updatePayoutStatus($payouts);
-
-            $data['kotak'] = $this->processBankPayoutsForKotak($payouts);
-
-            $this->saveEntitiesToDb($payouts);
-
-            return $data;
-
-        });
+        return $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function() use($input, $channel)
+            {
+                return $this->processBankPayouts($input, $channel);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_PAYOUT_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
@@ -70,35 +95,52 @@ class Core extends Base\Core
         });
     }
 
-    protected function processBankPayoutsForKotak($payouts)
+    protected function processBankPayouts(array $input, string $channel) : array
+    {
+        return $this->repo->transaction(function() use ($input, $channel)
+        {
+            $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
+            $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
+
+            $this->updatePayoutStatus($payouts, Status::INITIATED);
+
+            $method = 'processBankPayoutsFor' . ucfirst($channel);
+
+            $data[$channel] = $this->$method($payouts);
+
+            $this->saveEntitiesToDb($payouts);
+
+            return $data;
+        });
+    }
+
+    protected function processBankPayoutsForKotak(Base\PublicCollection $payouts) : array
     {
         $data['channel'] = 'kotak';
 
         $data['count'] = $payouts->count();
 
-        if ($payouts->count() > 0)
+        if ($payouts->count() === 0)
         {
-            $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);
+            $data['message'] = 'No payouts to process';
 
-            $data['payout_text_file'] = $urlText;
+            return $data;
         }
-        else
-        {
-            $data['message'] = 'no payout to process';
-        }
+
+        $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);
+
+        $data['payout_text_file'] = $urlText;
 
         return $data;
     }
 
-    protected function updatePayoutStatus($payouts)
+    protected function updatePayoutStatus(Base\PublicCollection $payouts, string $status)
     {
-        foreach ($payouts as $payout)
-        {
-            $payout->setStatus(Status::INITIATED);
-        }
+        $this->repo->payout->updateStatus($payouts, $status);
     }
 
-    protected function saveEntitiesToDb($payouts)
+    protected function saveEntitiesToDb(Base\PublicCollection $payouts)
     {
         foreach ($payouts as $payout)
         {
@@ -114,14 +156,10 @@ class Core extends Base\Core
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        $type = Method::getEntityName($input[Entity::METHOD]);
-
         //create payout entity
         $payout = (new Entity)->build($input);
 
         $payout->setChannel(Settlement\Channel::KOTAK);
-
-        $payout->setType($type);
 
         //set relations
         $payout->merchant()->associate($merchant);

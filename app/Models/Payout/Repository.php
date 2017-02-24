@@ -3,7 +3,6 @@
 namespace RZP\Models\Payout;
 
 use RZP\Models\Base;
-use RZP\Models\Payout;
 
 class Repository extends Base\Repository
 {
@@ -19,10 +18,38 @@ class Repository extends Base\Repository
     public function fetchCreatedPayouts($timestamp, $method)
     {
         return $this->newQuery()
-                    ->where(Payout\Entity::CREATED_AT, '<', $timestamp)
-                    ->where(Payout\Entity::STATUS, '=', Payout\Status::CREATED)
-                    ->where(Payout\Entity::METHOD, '=', $method)
-                    ->orderBy(Payout\Entity::ID)
+                    ->with('destination')
+                    ->where(Entity::CREATED_AT, '<', $timestamp)
+                    ->where(Entity::STATUS, '=', Status::CREATED)
+                    ->where(Entity::METHOD, '=', $method)
+                    ->orderBy(Entity::ID)
                     ->get();
+    }
+
+    public function updateStatus(Base\PublicCollection $payouts, string $status)
+    {
+        if ($payouts->count() === 0)
+        {
+            return;
+        }
+
+        $IdsToUpdate = $payouts->getIds();
+
+        $updatedCount = $this->newQuery()
+                             ->whereIn(Entity::ID, $IdsToUpdate)
+                             ->update([
+                                    Entity::STATUS  => $status
+                                ]);
+
+        $expectedCount = count($IdsToUpdate);
+
+        if ($updatedCount !== $expectedCount)
+        {
+            throw new Exception\LogicException(
+                'Failed to update expected number of payout records. \n' .
+                'Expected: ' . $expectedCount . ' Updated: ' . $updatedCount);
+        }
+
+        return $updatedCount;
     }
 }
