@@ -1,3 +1,4 @@
+"use strict";
 //Signin Controller
 app.controller('AuthCtrl', [
   '$scope',
@@ -14,23 +15,23 @@ app.controller('AuthCtrl', [
   '$window',
   '$cookies',
   function ($scope, $timeout, $http, $state, $stateParams, $location, alertsFactory, user,
-    organization, transformRequestAsFormPost, $analytics, $window, $cookies) {
+    organization, transformRequestAsFormPost, $analytics, $window) {
     $scope.toArray = function (obj) {
       if (!obj) {
         return [];
       }
       return Object.keys(obj);
-    }
+    };
     $scope.data = {};
     $scope.alerts = alertsFactory.getHandler();
     $scope.rightLayout = false; // login layout ? right is true : right is false
     $scope.lockme = false; // only turns true for lockme route
-    
+
     $scope.organization = {};
-    $scope.isOrgCheckDone = false; 
+    $scope.isOrgCheckDone = false;
     organization.fetchCurrentOrg().then(function (data) {
-      $scope.login_logo = data.login_logo_url || 'img/logo_full.png'; 
-      $scope.isOrgCheckDone = true; 
+      $scope.login_logo = data.login_logo_url || 'img/logo_full.png';
+      $scope.isOrgCheckDone = true;
       $scope.organization = data;
     });
     $scope.forms = {};
@@ -98,21 +99,21 @@ app.controller('AuthCtrl', [
         },
       },
       showMore: false,
-    }
+    };
 
     $scope.goToSignupStep = function (step, subStep) {
       $scope.signup.currentStep = step;
       if (subStep !== undefined) {
         $scope.signup.currentSubStep = subStep;
       }
-    }
+    };
 
     $scope.goToLoginStep = function (step, subStep) {
       $scope.login.currentStep = step;
       if (subStep !== undefined) {
         $scope.login.currentSubStep = subStep;
       }
-    }
+    };
 
     // Referrer is set only if present
     if ($location.search().ref) {
@@ -164,11 +165,11 @@ app.controller('AuthCtrl', [
         return true;
       }
 
-      pushToDrip()
+      pushToDrip();
 
-      if (window.location.hostname !== 'dashboard.razorpay.com'
-          && window.location.hostname !== 'betadashboard.razorpay.com'
-          && !$scope.signup.data.captcha) {
+      if ((window.location.hostname !== 'dashboard.razorpay.com') &&
+          (window.location.hostname !== 'betadashboard.razorpay.com') &&
+          (!$scope.signup.data.captcha)) {
         $scope.signup.data.captcha = 'Faked';
       }
 
@@ -177,44 +178,44 @@ app.controller('AuthCtrl', [
         url: '/user/register',
         transformRequest: transformRequestAsFormPost,
         data: $scope.signup.data
-      }
+      };
 
-      payload.data.password_confirmation = payload.data.password
-      payload.data.business_name = payload.data.business_name || ''
+      payload.data.password_confirmation = payload.data.password;
+      payload.data.business_name = payload.data.business_name || '';
 
-      $scope.alerts.resetAlerts()
+      $scope.alerts.resetAlerts();
       var request = $http(payload);
-      showSpinner()
+      showSpinner();
       request.success(function (data) {
         if (data.success) {
           $scope.isLoggedIn = true;
-          user.identity(true).then(function(userDetails) {
-            hideSpinner()
+          user.identity(true).then(function() {
+            hideSpinner();
             $state.transitionTo('access.pre_signup', {}, {
               notify: false,
             });
 
             if ($scope.signup.data.invitation) {
-              $('.auth-step-questions').hide()
+              $('.auth-step-questions').hide();
             }
 
-            $scope.goToSignupStep(1)
-          })
+            $scope.goToSignupStep(1);
+          });
         } else {
-          hideSpinner()  
-          angular.forEach(data.errors, function (value, key) {
+          hideSpinner();
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      })
-    }
+      });
+    };
 
     function showSpinner() {
-      $('.loading-animation').addClass('active')
+      $('.loading-animation').addClass('active');
     }
 
     function hideSpinner() {
-      $('.loading-animation').removeClass('active')
+      $('.loading-animation').removeClass('active');
     }
 
     $scope.goToDashboard = function (role) {
@@ -228,87 +229,90 @@ app.controller('AuthCtrl', [
         default:
           $state.go('app.dashboard');
       }
-    }
+    };
 
     $scope.sendDetails = function () {
+      pushToDrip();
       var payload = {
         method: 'post',
         url: '/user/pre_signup',
         transformRequest: transformRequestAsFormPost,
         data: $scope.signup.merchantData
-      }
+      };
+
       var request = $http(payload);
       $scope.alerts.resetAlerts();
-      showSpinner()
+      showSpinner();
+
       request.success(function (data) {
-        hideSpinner()
+        hideSpinner();
         if (data.success) {
           pushToDrip()
           if ($scope.signup.currentSubStep == 4) {
-            goToVerification()
+            goToVerification();
           } else {
-            $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1)
+            $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1);
           }
         } else {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      })
-    }
+      });
+    };
 
     $scope.quickSendDetails = function (detailField, key) {
       $scope.signup.merchantData[detailField] = key;
-      pushToDrip()
+      pushToDrip();
       var payload = {
         method: 'post',
         url: '/user/pre_signup',
         transformRequest: transformRequestAsFormPost,
         data: $scope.signup.merchantData
-      }
+      };
+
       var request = $http(payload);
       $scope.alerts.resetAlerts();
+
       $timeout(function() {
-        $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1)
-      }, 200)
+        $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1);
+      }, 200);
       request.success(function (data) {
         if (!data.success) {
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
         $('.business-type-substep').scrollTop(0);
         $timeout(function() {
           $scope.signup.showMore = false;
-        }, 200)
-      })
-    }
+        }, 200);
+      });
+    };
 
     function goToVerification() {
       if (!$scope.rightLayout) {
-        $scope.goToSignupStep(2)
+        $scope.goToSignupStep(2);
       } else {
-        $scope.goToLoginStep(3)
+        $scope.goToLoginStep(3);
       }
     }
 
     var pushToDrip = (function () {
       var dataSent = {};
 
-      return function (merchantData) {
+      return function () {
         var data = {};
         var payload = {};
-        var keys = ['business_type','transaction_volume','role','department','business_name','contact_mobile','contact_name']
+        var keys = ['business_type','transaction_volume','role','department','business_name','contact_mobile','contact_name'];
         keys.forEach(function (key){
           if ($scope.signup.merchantData[key]) {
-            data[key] = $scope.signup.details[key]
-            // multi select field
-            ? $scope.signup.details[key][$scope.signup.merchantData[key]]
-            // string field
-            : $scope.signup.merchantData[key]
+            data[key] = $scope.signup.details[key] ?
+              $scope.signup.details[key][$scope.signup.merchantData[key]] :
+              $scope.signup.merchantData[key];
           }
-        })
-        data.source = $location.search().utm_source || document.referrer
+        });
+        data.source = $location.search().utm_source || document.referrer;
 
         for (var key in data) {
           if (data[key] !== dataSent[key]) {
@@ -316,43 +320,44 @@ app.controller('AuthCtrl', [
             dataSent[key] = data[key];
           }
         }
-        payload.email = $scope.signup.data.email
+        payload.email = $scope.signup.data.email;
         if (!payload.email) {
           return;
         }
         try {
+          /* global _dcq */
           // try-catch, since there could be tracker blocking scripts
           _dcq.push(["identify", payload]);
         } catch (e) {}
-      }
-    })()
+      };
+    })();
 
     // creates Drip lead if email present in params
-    pushToDrip()
+    pushToDrip();
 
     $scope.goToSigninLayout = function () {
       $scope.goToSignupStep(0); // reset signup step
       $scope.goToLoginStep(1); // reset login step
       $scope.rightLayout = true;
-      $scope.login.data.email = $scope.signup.data.email
+      $scope.login.data.email = $scope.signup.data.email;
       $scope.alerts.resetAlerts();
       var toRoute = 'access.signin';
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
-    }
+    };
 
     $scope.goToSignupLayout = function () {
       $scope.goToSignupStep(0); // reset signup step
       $scope.goToLoginStep(1); // reset login step
       $scope.rightLayout = false;
-      $scope.signup.data.email = $scope.login.data.email 
+      $scope.signup.data.email = $scope.login.data.email;
       $scope.alerts.resetAlerts();
       var toRoute = 'access.signup';
       $state.transitionTo(toRoute, {}, {
         notify: false,
       });
-    }
+    };
 
     // login state container
     $scope.login = {
@@ -362,7 +367,7 @@ app.controller('AuthCtrl', [
       },
       currentStep: 1, // 2 -> verification, 1 -> login, 0 -> forgotpwd
       currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
-    }
+    };
 
     if (['access.signin', 'access.forgotpwd', 'access.pre_signup', 'access.lockme'].indexOf($state.current.name) !== -1) {
       $scope.rightLayout = true;
@@ -371,12 +376,12 @@ app.controller('AuthCtrl', [
           $scope.login.currentStep = 1;
           if ($state.current.name === 'access.lockme') {
             $scope.lockme = true;
-            $scope.login.data.email = $stateParams.email
+            $scope.login.data.email = $stateParams.email;
           }
         } else {
-          var userDetails = user.getIdentity()
+          var userDetails = user.getIdentity();
           var role = userDetails.merchants[userDetails.id].pivot.role;
-          $scope.goToDashboard(role)
+          $scope.goToDashboard(role);
         }
       } else if ($state.current.name === 'access.forgotpwd') {
         $scope.login.currentStep = 0;
@@ -388,7 +393,7 @@ app.controller('AuthCtrl', [
           $scope.login.currentStep = 1;
         } else {
           $scope.isLoggedIn = true;
-          $scope.login.data.email = (user.getIdentity() && user.getIdentity().email)
+          $scope.login.data.email = (user.getIdentity() && user.getIdentity().email);
           $scope.login.currentStep = 2;
         }
       }
@@ -399,7 +404,7 @@ app.controller('AuthCtrl', [
         });
         $scope.rightLayout = true;
         $scope.isLoggedIn = true;
-        $scope.login.data.email = (user.getIdentity() && user.getIdentity().email)
+        $scope.login.data.email = (user.getIdentity() && user.getIdentity().email);
         $scope.login.currentStep = 2;
       }
     }
@@ -410,7 +415,7 @@ app.controller('AuthCtrl', [
         notify: false,
       });
       $scope.login.currentStep = 0;
-    }
+    };
 
     $scope.sendLoginCredentials = function ($valid) {
       if (!$valid) {
@@ -423,26 +428,26 @@ app.controller('AuthCtrl', [
         url: '/user/signin',
         transformRequest: transformRequestAsFormPost,
         data: $scope.login.data
-      }
+      };
 
       var request = $http(payload);
-      showSpinner()
+      showSpinner();
       $scope.alerts.resetAlerts();
       request.success(function (data) {
         if (data.success) {
           // check questions have been answered or not
           user.identity(true).then(function(userDetails) {
             var role = userDetails.merchants && userDetails.merchants[userDetails.id].pivot.role;
-            $scope.goToDashboard(role)
+            $scope.goToDashboard(role);
           });
         } else {
-          hideSpinner()
-          angular.forEach(data.errors, function (value, key) {
+          hideSpinner();
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      })
-    }
+      });
+    };
 
     $scope.forgotPwdSubmit = function ($valid) {
       if (!$valid) {
@@ -458,7 +463,7 @@ app.controller('AuthCtrl', [
         data: {
           email: $scope.login.data.email
         }
-      }
+      };
 
       var request = $http(payload);
       request.success(function (data) {
@@ -466,12 +471,12 @@ app.controller('AuthCtrl', [
           $scope.alerts.addAlert('success', 'Reset request sent. Please check your inbox for verification email from Razorpay.');
         } else {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
+          angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
           });
         }
-      })
-    }
+      });
+    };
 
     $scope.logoutAndGoToLogin = function () {
       var request = $http({
@@ -487,11 +492,11 @@ app.controller('AuthCtrl', [
         });
 
         // reset scope variables
-        $scope.alerts.resetAlerts()
+        $scope.alerts.resetAlerts();
         $scope.isLoggedIn = false;
         $scope.lockme = false;
-        $scope.login.currentStep = 1; 
-        $scope.login.data.email = $scope.signup.data.email
+        $scope.login.currentStep = 1;
+        $scope.login.data.email = $scope.signup.data.email;
         $scope.signup.currentStep = 0;
         $scope.signup.currentSubStep = 0;
         $scope.signup.data.email = '';
@@ -508,11 +513,11 @@ app.controller('AuthCtrl', [
         $scope.forms.detailsForm.$setPristine();
       });
       return request;
-    }
+    };
 
   }
-]).directive('overrideTab', ['$window', function ($window) {
-    return function (scope, element, attrs) {
+]).directive('overrideTab', ['$window', function () {
+    return function (scope, element) {
       element.bind('keydown', function (e) {
         var keyCode = e.keyCode || e.which;
         if (keyCode == 9) {
