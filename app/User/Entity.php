@@ -48,7 +48,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      *
      * @var array
      */
-    protected $fillable = array('name','email','password');
+    protected $fillable = ['name','email','password', 'contact_mobile'];
 
     /**
      * The attributes that must be auto-generated.
@@ -83,7 +83,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function merchants($suspendedAlso = false)
     {
         $query = $this->belongsToMany(Merchant\Entity::class, 'merchant_users', 'user_id', 'merchant_id')
-            ->withPivot(['role']);
+                      ->withPivot(['role']);
 
         if ($suspendedAlso === false)
         {
@@ -177,10 +177,10 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function getOwnerMerchant()
     {
         $merchant = $this->merchants()
-            ->where('user_id', $this->id)
-            ->where('merchant_id', $this->currentMerchant()->id)
-            ->where('role', 'owner')
-            ->first();
+                         ->where('user_id', $this->id)
+                         ->where('merchant_id', $this->currentMerchant()->id)
+                         ->where('role', 'owner')
+                         ->first();
 
         return $merchant;
     }
@@ -216,9 +216,10 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      */
     public function ownsMerchant($merchant)
     {
-        $merchant = $this->merchants()->where('email',$merchant['email'])
-                                       ->where('role','owner')
-                                       ->first();
+        $merchant = $this->merchants()
+                         ->where('email',$merchant['email'])
+                         ->where('role','owner')
+                         ->first();
 
         return is_null($merchant) ? false : true;
     }

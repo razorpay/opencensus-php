@@ -115,7 +115,7 @@ app.controller('UserCtrl', [
         // Does the user have an associated merchant account
         for(var i in data.user.merchants) {
           var merchant = data.user.merchants[i];
-          if (merchant.email === data.user.email) {
+          if (merchant.email.toLowerCase() === data.user.email.toLowerCase()) {
             $scope.hasMerchant = true;
           }
         }

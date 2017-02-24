@@ -6,45 +6,47 @@ import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
 import Alert from 'rzp/ui/Forms/Alert'
 import { isBlank } from 'rzp/utils/rzp-utils'
-import { createInvoice, appendInvoiceToList } from 'merchant/modules/invoices/list'
+import { saveInvoice } from 'merchant/modules/invoices/list'
+import { required, phone, email } from 'rzp/utils/validators'
 
 function validate(values) {
   let errors = {}
   let customer = values.customer
-  let item = values.line_items ? values.line_items[0] : null
-  let lineItemError = {}
+  let isNewForm = isBlank(values.line_items)
 
-  if (isBlank(customer) || (isBlank(customer.contact) && isBlank(customer.email))) {
-    errors.customer = {
-      contact: 'Please provide contact or email'
+  if (!isNewForm) {
+    if (isBlank(customer) || (isBlank(customer.contact) && isBlank(customer.email))) {
+      errors.customer = {
+        contact: 'Please provide contact or email'
+      }
     }
   }
 
-  if (isBlank(item) || isBlank(item.amount)) {
-    lineItemError.amount = 'Please provide the amount'
+  if (values.sms_notify && (isBlank(customer) || isBlank(customer.contact))) {
+    errors.customer = {
+      contact: 'Please provide contact'
+    }
   }
 
-  if (isBlank(item) || isBlank(item.name)) {
-    lineItemError.name = 'Please provide product/service name'
+  if (values.email_notify && (isBlank(customer) || isBlank(customer.email))) {
+    errors.customer = {
+      email: 'Please provide email'
+    }
   }
 
-  errors.line_items = [lineItemError]
   return errors
 }
 
 @connect(
-  null,
-  { createInvoice, appendInvoiceToList }
+  (state) => state.session,
+  { saveInvoice }
 )
 @reduxForm({
   form: 'newPaymentLink',
-  validate,
   initialValues: {
-    currency: 'INR',
-    date: Math.ceil(new Date().getTime()/1000),
-    sms_notify: true,
-    email_notify: true
-  }
+    type: 'link'
+  },
+  validate
 })
 export default class CreatePaymentLink extends Component {
   static contextTypes = {
@@ -53,27 +55,21 @@ export default class CreatePaymentLink extends Component {
 
   constructor() {
     super(...arguments)
-    this.create = ::this.create
+    this.save = ::this.save
     this.state = {
       errors: null
     }
   }
 
-  create(fieldProps) {
-    let { line_items, ...props } = fieldProps
-    let item = line_items[0]
+  componentWillMount() {
+    if (this.props.invoice) {
+      this.props.initialize(this.props.invoice)
+    }
+  }
 
-    props.sms_notify = fieldProps.sms_notify ? 1 : 0
-    props.email_notify = fieldProps.email_notify ? 1 : 0
-    props.line_items = []
-    props.line_items.push({
-      name: item.name,
-      amount: item.amount * 100
-    })
-    props.type = 'link'
-    return this.props.createInvoice(props).then((response) => {
-      this.props.appendInvoiceToList(response.data)
-      this.props.onSave(response.data)
+  save(props) {
+    return this.props.saveInvoice(props).then((invoice) => {
+      this.props.onSave(invoice)
       this.props.closeModal()
     }).catch(({ errors }) => {
       this.setState({
@@ -83,12 +79,15 @@ export default class CreatePaymentLink extends Component {
   }
 
   render() {
-    const { handleSubmit } = this.props
+    const { handleSubmit, invoice } = this.props
+    let isLiveMode = this.props.mode === 'live'
+    let isNewForm =  !(invoice && !isBlank(invoice.line_items))
+    let isEdit = !!invoice
 
     return (
       <div>
         <ModalHeader
-          title='Create Payment Link'
+          title={isEdit ? 'Edit Payment Link' : 'Create Payment Link'}
           onCloseClick={this.props.closeModal}
         />
 
@@ -97,8 +96,60 @@ export default class CreatePaymentLink extends Component {
           message={this.state.errors}
         />
 
-        <form class='form-horizontal payment-link-form'>
+        <form class='form-horizontal payment-link-form' onSubmit={handleSubmit(this.save)}>
           <div class='modal-body'>
+            {
+              isNewForm &&
+              <div>
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label label-required'>
+                    <div>Amount</div>
+                    <small>(in INR)</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='amountInINR'
+                      component={InputField}
+                      class='form-control'
+                      autoFocus={true}
+                      validate={required('Please provide the amount')}
+                      disabled={isEdit}
+                    />
+                  </div>
+                </div>
+
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label label-required'>
+                    Summary
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='description'
+                      component={InputField}
+                      tagName='textarea'
+                      type='textarea'
+                      class='form-control'
+                      validate={required('Please provide the description')}
+                      disabled={isEdit}
+                    />
+                  </div>
+                </div>
+
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    Receipt No.
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='receipt'
+                      component='input'
+                      class='form-control'
+                    />
+                  </div>
+                </div>
+              </div>
+            }
+
             <div class='form-group customer'>
               <label class='col-md-3 control-label'>Customer</label>
               <div class='col-md-4'>
@@ -107,7 +158,8 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                   placeholder='Customer phone'
-                  autoFocus={true}
+                  validate={phone('Please provide valid contact number')}
+                  disabled={isEdit}
                 />
               </div>
 
@@ -117,48 +169,61 @@ export default class CreatePaymentLink extends Component {
                   component={InputField}
                   class='form-control'
                   placeholder='Customer email'
+                  validate={email('Please provide valid email')}
+                  disabled={isEdit}
                 />
               </div>
             </div>
 
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>
-                <div>Item Name</div>
-                <small>Product/Service</small>
-              </label>
-              <div class='col-md-8'>
-                <Field
-                  name='line_items[0][name]'
-                  component={InputField}
-                  class='form-control'
-                />
-              </div>
-            </div>
+            {
+              !isNewForm &&
+              <div>
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    <div>Item Name</div>
+                    <small>Product/Service</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='line_items[0][name]'
+                      component={InputField}
+                      class='form-control'
+                      validate={required('Please provide product/service name')}
+                      disabled={isEdit}
+                    />
+                  </div>
+                </div>
 
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>
-                <div>Amount</div>
-                <small>(in INR)</small>
-              </label>
-              <div class='col-md-8'>
-                <Field
-                  name='line_items[0][amount]'
-                  component={InputField}
-                  class='form-control'
-                />
-              </div>
-            </div>
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    <div>Amount</div>
+                    <small>(in INR)</small>
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='line_items[0][amount]'
+                      component={InputField}
+                      class='form-control'
+                      validate={required('Please provide the amount')}
+                      disabled={isEdit}
+                    />
+                  </div>
+                </div>
 
-            <div class='form-group'>
-              <label class='col-md-3 control-label help-label'>Receipt</label>
-              <div class='col-md-8'>
-                <Field
-                  name='receipt'
-                  component={InputField}
-                  class='form-control'
-                />
+                <div class='form-group'>
+                  <label class='col-md-3 control-label help-label'>
+                    Receipt No.
+                  </label>
+                  <div class='col-md-8'>
+                    <Field
+                      name='receipt'
+                      component='input'
+                      class='form-control'
+                    />
+                  </div>
+                </div>
               </div>
-            </div>
+            }
 
             <div class='form-group'>
               <label class='col-md-3 control-label'>Notify Customer</label>
@@ -168,6 +233,7 @@ export default class CreatePaymentLink extends Component {
                     name='sms_notify'
                     component='input'
                     type='checkbox'
+                    disabled={isEdit}
                   />
                   SMS
                 </label>
@@ -176,13 +242,14 @@ export default class CreatePaymentLink extends Component {
                     name='email_notify'
                     component='input'
                     type='checkbox'
+                    disabled={isEdit}
                   />
                   Email
                 </label>
               </div>
             </div>
             {
-              !this.context.session.isLiveMode &&
+              !isLiveMode &&
               <div class='row'>
                 <div class='col-md-8 col-md-offset-3'>
                   <div class='alert-sm alert-warning'>
@@ -203,11 +270,11 @@ export default class CreatePaymentLink extends Component {
             </button>
 
             <AsyncButton
-              type='button'
+              type='submit'
               class='btn btn-primary btn-rounded'
               text='Save'
               pendingText='Saving...'
-              onClick={handleSubmit(this.create)}
+              onClick={handleSubmit(this.save)}
             />
           </div>
         </form>

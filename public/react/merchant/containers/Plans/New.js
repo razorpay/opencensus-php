@@ -4,7 +4,6 @@ import { Field, reduxForm, formValueSelector } from 'redux-form'
 import AsyncButton from 'react-async-button'
 import InputField from 'rzp/ui/Forms/InputField'
 import ModalHeader from 'rzp/ui/ModalHeader'
-import validator from 'rzp/utils/validator'
 import * as PlanActions from 'merchant/modules/plans'
 
 const selector = formValueSelector('newPlan')
@@ -22,15 +21,7 @@ const selector = formValueSelector('newPlan')
   initialValues: {
     interval_count: 1,
     interval: 'monthly'
-  },
-  validate: validator({
-    name: {
-      presence: true
-    },
-    amount: {
-      presence: true
-    }
-  })
+  }
 })
 export default class AddPlan extends Component {
   constructor() {

@@ -5,6 +5,7 @@ namespace App\Exceptions;
 use App\Trace\Trace;
 use Exception;
 use Response;
+use App\Exceptions\EntityNotFoundException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
@@ -101,7 +102,10 @@ class Handler extends ExceptionHandler
         {
             return redirect('/');
         }
-
+        else if ($e instanceof EntityNotFoundException)
+        {
+            $response = Response::json(self::RESPONSE_404, 404);
+        }
         else
         {
             if ($this->isDebug())

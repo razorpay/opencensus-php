@@ -14,7 +14,7 @@ class MerchantMailer extends Mailer
      *
      * @param \App\Merchant\Entity $merchant
      */
-    public function __construct(MerchantEntity $merchant)
+    public function __construct(MerchantEntity $merchant, array $merchantDetails)
     {
         if (is_object($merchant) === false)
         {
@@ -24,8 +24,9 @@ class MerchantMailer extends Mailer
         $this->to = $merchant->name;
         $this->email = $merchant->email;
         $this->data = $merchant->toArray();
+        $this->data['merchant_details'] = $merchantDetails;
 
-        $this->data['merchant_details'] = $merchant->merchantDetails->toArray();
+        $this->merchantDetails = $merchantDetails;
     }
 
     /**
@@ -35,12 +36,10 @@ class MerchantMailer extends Mailer
      */
     public function confirmActivationSubmission()
     {
-        $details = $this->data['merchant_details'];
+        $this->subject = 'Razorpay | Account pending approval for ' . $this->merchantDetails['business_name'];
 
-        $this->subject = 'Razorpay | Account pending approval for ' . $details['business_name'];
-
-        $this->to = $details['contact_name'];
-        $this->email = $details['contact_email'];
+        $this->to = $this->merchantDetails['contact_name'];
+        $this->email = $this->merchantDetails['contact_email'];
         $this->view = 'emails.submission';
 
         return $this;
@@ -53,7 +52,7 @@ class MerchantMailer extends Mailer
      */
     public function notifyActivationSubmission()
     {
-        $this->subject = "New activation form submitted for {$this->data['merchant_details']['business_name']}";
+        $this->subject = "New activation form submitted for {$this->merchantDetails['business_name']}";
 
         $this->to = 'Razorpay Activations Team';
         $this->email = $this->getEmailFor('activations');
