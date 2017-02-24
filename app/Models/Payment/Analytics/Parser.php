@@ -145,7 +145,7 @@ class Parser extends Base\Core
         if ($this->ba->isPrivateAuth() === true)
         {
             $ua = $pa->payment->getMetadata('user_agent');
-            $ip = $pa->payment->getMetadata('ip_address', $this->request->getRealClientIp());
+            $ip = $pa->payment->getMetadata('ip', $this->request->getRealClientIp());
             $referer = $pa->payment->getMetadata('referer');
         }
 
