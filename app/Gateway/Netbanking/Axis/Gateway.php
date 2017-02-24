@@ -301,10 +301,11 @@ class Gateway extends Base\Gateway
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
 
-        $attributes = $this->getVerifyAttributes($content);
-
-        if (empty($bankPaymentId) === true)
+        if ((empty($bankPaymentId) === true) and
+            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
         {
+            $attributes = $this->getVerifyAttributes($content);
+
             $gatewayPayment->fill($attributes);
 
             $this->repo->saveOrFail($gatewayPayment);
@@ -316,10 +317,10 @@ class Gateway extends Base\Gateway
     protected function getVerifyAttributes(array $content)
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMT],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::PAYMENT_STATUS],
+            Base\Entity::AMOUNT          => $content[ResponseFields::VERIFY_RESPONSE_AMT],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 
