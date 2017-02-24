@@ -10,34 +10,16 @@ cd /app/ && chmod 777 -R storage
 # Copy config
 echo "$date Configuring App"
 cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf && \
-
 cp environment/.env.sample environment/.env.docker && \
-cp environment/env.sample.php environment/env.php && \
+cp environment/env.sample.php environment/env.php
 
 # Change env to dev_docker
 sed -i 's/dev/dev_docker/g' environment/env.php
 
 # Common changes for the app, db and redis hosts, cache drivers
+#
 sed -i 's/^APP_URL="https://api.razorpay.com"/#APP_URL="https://api.razorpay.com"/' environment/.env.docker
 sed -i 's/^APP_HOST="api.razorpay.com"/#APP_HOST="api.razorpay.com"/' environment/.env.docker
-sed -i 's/^DB_LIVE_HOST=localhost/#DB_LIVE_HOST=localhost/' environment/.env.docker
-sed -i 's/^DB_TEST_HOST=localhost/#DB_TEST_HOST=localhost/' environment/.env.docker
-sed -i 's/^SLAVE_DB_LIVE_HOST=localhost/#SLAVE_DB_LIVE_HOST=localhost/' environment/.env.docker
-sed -i 's/^SLAVE_DB_TEST_HOST=localhost/#SLAVE_DB_TEST_HOST=localhost/' environment/.env.docker
-sed -i 's/^CACHE_DRIVER=file/CACHE_DRIVER=redis/' environment/.env.docker
-sed -i 's/^SECURE_CACHE_DRIVER=file/SECURE_CACHE_DRIVER=redis/' environment/.env.docker
-sed -i 's/^REDIS_HOST=127.0.0.1/#REDIS_HOST=127.0.0.1/' environment/.env.docker
-sed -i 's/^MUTEX_MOCK=(true)/MUTEX_MOCK=false/' environment/.env.docker
-
-# Set DB credentials for .env.docker
-sed -i 's/^DB_LIVE_USERNAME=user/DB_LIVE_USERNAME=api_user/' environment/.env.docker
-sed -i 's/^DB_LIVE_PASSWORD=password/DB_LIVE_PASSWORD=123/' environment/.env.docker
-sed -i 's/^DB_TEST_USERNAME=user/DB_TEST_USERNAME=api_user/' environment/.env.docker
-sed -i 's/^DB_TEST_PASSWORD=password/DB_TEST_PASSWORD=123/' environment/.env.docker
-sed -i 's/^SLAVE_DB_LIVE_USERNAME=user/SLAVE_DB_LIVE_USERNAME=api_user/' environment/.env.docker
-sed -i 's/^SLAVE_DB_LIVE_PASSWORD=password/SLAVE_DB_LIVE_PASSWORD=123/' environment/.env.docker
-sed -i 's/^SLAVE_DB_TEST_USERNAME=user/SLAVE_DB_TEST_USERNAME=api_user/' environment/.env.docker
-sed -i 's/^SLAVE_DB_TEST_PASSWORD=password/SLAVE_DB_TEST_PASSWORD=123/' environment/.env.docker
 
 # Now create dev_docker and testing_docker
 cp environment/.env.docker environment/.env.dev_docker && \
