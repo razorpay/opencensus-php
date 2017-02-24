@@ -138,6 +138,7 @@ class TraceCode
     const TERMINAL_FAIL_SORT                        = 'TERMINAL_FAIL_SORT';
     const TERMINAL_BOOST_INVALID                    = 'TERMINAL_BOOST_INVALID';
     const TERMINAL_USED_BEFORE                      = 'TERMINAL_USED_BEFORE';
+    const FILE_STORE_MKDIR_FAILED                   = 'FILE_STORE_MKDIR_FAILED';
 
     const CARD_NETWORK_INVALID                      = 'CARD_NETWORK_INVALID';
 

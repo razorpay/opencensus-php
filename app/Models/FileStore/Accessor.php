@@ -6,6 +6,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
+use RZP\Trace\TraceCode;
 
 class Accessor extends Base\Core
 {
@@ -121,7 +122,17 @@ class Accessor extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            mkdir($dir, 0777, true);
+            $result = mkdir($dir, 0777, true);
+
+            if ($result === false)
+            {
+                $this->trace->warning(
+                    TraceCode::FILE_STORE_MKDIR_FAILED,
+                    [
+                        'dir'  => $dir,
+                        'path' => $filePath,
+                    ]);
+            }
         }
 
         $storageHandler->saveAs($file->bucket, $file->location, $filePath);

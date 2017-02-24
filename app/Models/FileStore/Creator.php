@@ -58,7 +58,7 @@ class Creator extends Base\Core
     /**
      * Pre-assigned Id of entity
      *
-     * @var file entity to be created with given id
+     * @var string file entity to be created with given id
      */
     protected $id;
 
@@ -72,16 +72,13 @@ class Creator extends Base\Core
     /**
      * Store the environment value
      *
-     * @var Environament
+     * @var string Environment
      */
     protected $env;
 
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
 
-    /**
-     * Constructor of class
-     */
     public function __construct()
     {
         parent::__construct();
@@ -95,8 +92,6 @@ class Creator extends Base\Core
 
     /**
      * Set the default Value for store and metadata
-     *
-     * @return None
      */
     public function setDefaults()
     {
@@ -224,7 +219,7 @@ class Creator extends Base\Core
      *
      * @param string $id id value
      *
-     * @return Creater object
+     * @return Creator object
      */
     public function id(string $id)
     {
@@ -339,8 +334,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Content before saving
-     *
-     * @return None
      */
     protected function validateBeforeSave()
     {
@@ -351,8 +344,6 @@ class Creator extends Base\Core
 
     /**
      * Validates the Mime and Extension before uploading
-     *
-     * @return None
      */
     protected function validateBeforeUpload()
     {
@@ -371,8 +362,8 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        // For S3 We get Bucket Name
-        // For othre drivers we get Directory name and store as Bucket
+        // For S3, we get Bucket Name
+        // For other drivers we get Directory name and store as Bucket
         if ($this->file->getStore() === Store::S3)
         {
             $bucket = $this->storageHandler->getBucketName($this->file->getType(), $this->env);
@@ -431,9 +422,7 @@ class Creator extends Base\Core
 
     /**
      * Write to Text File
-     *
-     * @return None
-    */
+     */
     protected function writeTextFile()
     {
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
@@ -453,7 +442,12 @@ class Creator extends Base\Core
 
         try
         {
-            $result = chmod($fullPath, 0777);  // keep it 0777. This step is important
+            //
+            // This step is important because file can be created
+            // via different users (www-data or ubuntu (via queue))
+            //
+            $result = chmod($fullPath, 0777);
+
             if ($result === false)
             {
                 $this->trace->warning(

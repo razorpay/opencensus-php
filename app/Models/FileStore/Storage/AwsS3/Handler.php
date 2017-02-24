@@ -99,7 +99,7 @@ class Handler extends BaseHandler
                 '+' . $duration . ' minutes'
             );
 
-            $preSignedUrl = (string)$request->getUri();
+            $preSignedUrl = (string) $request->getUri();
         }
         catch (\Exception $e)
         {
