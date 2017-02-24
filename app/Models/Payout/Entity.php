@@ -5,6 +5,7 @@ namespace RZP\Models\Payout;
 use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Customer;
 use RZP\Models\Payout;
@@ -18,8 +19,8 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID       = 'merchant_id';
     const CUSTOMER_ID       = 'customer_id';
     const METHOD            = 'method';
-    const DESTINATION       = 'destination';
-    const TYPE              = 'type';
+    const DESTINATION_ID    = 'destination_id';
+    const DESTINATION_TYPE  = 'destination_type';
     const PURPOSE           = 'purpose';
     const AMOUNT            = 'amount';
     const CURRENCY          = 'currency';
@@ -33,6 +34,9 @@ class Entity extends Base\PublicEntity
     const UTR               = 'utr';
     const FAILURE_REASON    = 'failure_reason';
     const RETURN_UTR        = 'return_utr';
+
+    // Public attribute
+    const DESTINATION       = 'destination';
 
     protected $entity = 'payout';
 
@@ -59,8 +63,8 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
-        self::DESTINATION,
-        self::TYPE,
+        self::DESTINATION_ID,
+        self::DESTINATION_TYPE,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -104,7 +108,6 @@ class Entity extends Base\PublicEntity
 
     protected $defaults = [
         self::STATUS            => Status::CREATED,
-        self::TYPE              => 'dummy',
         self::PURPOSE           => 'refund',
         self::NOTES             => [],
     ];
@@ -126,13 +129,9 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
-    public function dest()
+    public function destination()
     {
-        $method = $this->getAttribute(self::METHOD);
-
-        $class = Payout\Method::getEntityClass($method);
-
-        return $this->belongsTo($class, self::DESTINATION);
+        return $this->morphTo();
     }
 
     public function customer()
@@ -205,9 +204,9 @@ class Entity extends Base\PublicEntity
         return $this->getAmount();
     }
 
-    public function getDestination()
+    public function getDestinationId()
     {
-        return $this->getAttribute(self::DESTINATION);
+        return $this->getAttribute(self::DESTINATION_ID);
     }
 
     public function setChannel($channel)
@@ -257,13 +256,13 @@ class Entity extends Base\PublicEntity
 
     public function setPublicDestinationAttribute(array & $attributes)
     {
-        $method = $attributes[self::METHOD];
+        $type = $this->getAttribute(self::DESTINATION_TYPE);
 
-        $entity = Payout\Method::getEntityClass($method);
+        $entity = Constants\Entity::getEntityClass($type);
 
-        $destination = $this->getDestination();
+        $id = $this->getDestinationId();
 
-        $attributes[self::DESTINATION] = $entity::getSignedId($destination);
+        $attributes[self::DESTINATION] = $entity::getSignedId($id);
     }
 
     public function setPublicCustomerIdAttribute(array & $attributes)

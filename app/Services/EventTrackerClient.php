@@ -191,7 +191,7 @@ class EventTrackerClient extends Base\Core
         }
         catch (Exception $e)
         {
-            $this->trace->error($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
+            $this->trace->traceException($e, Trace::ERROR, TraceCode::LUMBERJACK_CONTEXT_FETCH_FAILED);
         }
 
         return [];

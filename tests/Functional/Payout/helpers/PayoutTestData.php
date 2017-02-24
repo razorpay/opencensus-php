@@ -26,7 +26,7 @@ return [
                 'amount'      => 1000,
                 'currency'    => 'INR',
                 'customer_id' => 'cust_100000customer',
-                'destination' => 'fund_transfer',
+                'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
                 'service_tax' => 77,
                 'fee'         => 587,
