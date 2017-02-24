@@ -132,6 +132,43 @@ class CardTest extends TestCase
         $this->assertArrayNotHasKey('number', $card);
     }
 
+    public function testUpdateSavedCard()
+    {
+        // Create card with missing fields
+        $card = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => null,
+                    'country' => null,
+                    'network' => 'MC',
+                    'emi'     => false,
+                ]);
+
+        // Create IIN with missing info relating to card
+        $iin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => 'ICIC',
+                    'country' => 'IN',
+                    'network' => 'Visa',
+                    'emi'     => true,
+                ]);
+
+        $this->ba->appAuthTest();
+
+        $this->startTest();
+
+        $card = $this->getEntityById('card', $card->getId(), true);
+
+        // Assert that card info has been populated
+        $this->assertEquals($iin->getIssuer(), $card['issuer']);
+        $this->assertEquals($iin->getCountry(), $card['country']);
+        $this->assertEquals($iin->getNetwork(), $card['network']);
+        $this->assertEquals($iin->isEmiAvailable(), $card['emi']);
+    }
+
     public function testCardWhenNotEnabledOnLive()
     {
         $this->fixtures->merchant->disableCard('10000000000000');
