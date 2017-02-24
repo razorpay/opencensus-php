@@ -93,7 +93,6 @@ class Repository extends Base\Repository
                         vault IS NOT NULL AND
                         (
                             cards.issuer  != iins.issuer OR
-                            cards.issuer  != iins.issuer OR
                             cards.country != iins.country OR
                             cards.emi     != iins.emi OR
                             cards.network != iins.network
