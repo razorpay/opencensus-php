@@ -18,7 +18,7 @@ class Accessor extends Base\Core
      * Id for which entity has to be fetched
      */
     protected $id = null;
-    
+
     protected $merchantId;
 
     /**
@@ -116,6 +116,13 @@ class Accessor extends Base\Core
         $storageHandler = Store::getHandler($file->store);
 
         $filePath = $this->createFullFilePath($file->location);
+
+        $dir = dirname($filePath);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir, 0777, true);
+        }
 
         $storageHandler->saveAs($file->bucket, $file->location, $filePath);
 
