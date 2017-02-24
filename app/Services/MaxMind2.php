@@ -58,7 +58,7 @@ class MaxMind2
             'time'             => Carbon::now()->toIso8601String(),
             'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
         ])->withEmail([
-            'email'            => md5($payment->getEmail()),
+            'address'          => md5($payment->getEmail()),
             'domain'           => $this->getEmailDomain($payment)
         ])->withBilling([
             'first_name'       => $card->getFirstName(),
