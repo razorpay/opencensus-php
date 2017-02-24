@@ -1,0 +1,54 @@
+<?php
+
+namespace RZP\Models\Admin\AdminLead;
+
+use RZP\Exception;
+use RZP\Models\Admin\Admin;
+use RZP\Models\Base;
+
+class Core extends Base\Core
+{
+    public function createInviteAndSendEmail(
+        Admin\Entity $admin,
+        array $inviteData)
+    {
+        $invitation = $this->saveLead($admin, $inviteData);
+
+        $this->sendInvitationEmail($admin, $invitation);
+    }
+
+    public function saveLead(Admin\Entity $admin, array $inviteData)
+    {
+        $formData = json_encode($inviteData);
+
+        $lead = (new Entity)->generateId();
+
+        $entityData = [
+            'admin_id'   => $admin->getId(),
+            'org_id'     => $admin->org_id,
+            'email'      => $inviteData['contact_email'],
+            'token'      => str_random(40),
+            'form_data'  => $formData,
+        ];
+
+        $lead->build($entityData);
+
+        $this->repo->saveOrFail($lead);
+
+        $lead->admin()->associate($admin);
+
+        $lead->org()->associate($admin->org);
+
+        return $lead->toArrayPublic();
+    }
+
+    protected function sendInvitationEmail(Admin\Entity $admin, $invitation)
+    {
+        // TODO use queue mailers
+        $mailer = new MiscMailer();
+
+        $mailer
+            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+            ->queueAndDeliver();
+    }
+}

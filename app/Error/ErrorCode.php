@@ -439,6 +439,7 @@ class ErrorCode
     const BAD_REQUEST_AUTH_VALIDATION_FAILED                                        = 'BAD_REQUEST_AUTH_VALIDATION_FAILED';
 
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                    = 'BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED';
+    const BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED                                  = 'BAD_REQUEST_ADMIN_SELF_INVITE_PROHIBITED';
     const BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE                                  = 'BAD_REQUEST_SUPERADMIN_ROLE_NOT_EDITABLE';
     const BAD_REQUEST_ORG_ID_REQUIRED                                               = 'BAD_REQUEST_ORG_ID_REQUIRED';
     const BAD_REQUEST_INVALID_PERMISSIONS_USAGE                                     = 'BAD_REQUEST_INVALID_PERMISSIONS_USAGE';

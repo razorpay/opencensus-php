@@ -6,6 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Admin\AdminLead\Entity as AdminLead;
 use RZP\Models\Admin\Admin\Entity as Admin;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateAdminLeadsTable extends Migration
 {
@@ -24,6 +25,8 @@ class CreateAdminLeadsTable extends Migration
 
             $table->char(AdminLead::ADMIN_ID, AdminLead::ID_LENGTH);
 
+            $table->char(AdminLead::ORG_ID, AdminLead::ID_LENGTH);
+
             $table->string(AdminLead::TOKEN, 250)->unique();
 
             $table->string(AdminLead::EMAIL, 250);
@@ -38,6 +41,10 @@ class CreateAdminLeadsTable extends Migration
             $table->foreign(AdminLead::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN);
+
+            $table->foreign(AdminLead::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG);
         });
     }
 
@@ -48,6 +55,16 @@ class CreateAdminLeadsTable extends Migration
      */
     public function down()
     {
+
+        Schema::table(Table::ADMIN_LEAD, function($table)
+        {
+            $table->dropForeign(
+                Table::ADMIN_LEAD . '_' . AdminLead::ORG_ID . '_foreign');
+
+            $table->dropForeign(
+                Table::ADMIN_LEAD . '_' . AdminLead::ADMIN_ID . '_foreign');
+        });
+
         Schema::drop(Table::ADMIN_LEAD);
     }
 }
