@@ -135,4 +135,13 @@ class Handler extends BaseHandler
 
         return $s3Obj;
     }
+
+    public function getBucketName($type, $env)
+    {
+        $bucketType = Bucket::getBucketConfigName($type, $env);
+
+        $bucketName = $this->config[$bucketType];
+
+        return $bucketName;
+    }
 }
