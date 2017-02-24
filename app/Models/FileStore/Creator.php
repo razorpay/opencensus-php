@@ -433,7 +433,17 @@ class Creator extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            mkdir($dir, 0777, true);
+            $result = mkdir($dir, 0777, true);
+
+            if ($result === false)
+            {
+                $this->trace->warning(
+                    TraceCode::FILE_STORE_MKDIR_FAILED,
+                    [
+                        'dir'  => $dir,
+                        'path' => $fullPath,
+                    ]);
+            }
         }
 
         $file = fopen($fullPath, 'w');
