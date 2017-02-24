@@ -383,7 +383,15 @@ class Creator extends Base\Core
 
         try
         {
-            chmod($fullPath, 0777);  // keep it 0777. This step is important
+            $result = chmod($fullPath, 0777);  // keep it 0777. This step is important
+            if ($result === false)
+            {
+                $this->trace->warning(
+                    TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                    [
+                        'path' => $fullPath
+                    ]);
+            }
         }
         catch (\Exception $e)
         {
