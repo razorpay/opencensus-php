@@ -122,7 +122,11 @@ class Accessor extends Base\Core
 
         if (file_exists($dir) === false)
         {
+            $oldmask = umask(0);
+
             $result = mkdir($dir, 0777, true);
+
+            umask($oldmask);
 
             if ($result === false)
             {

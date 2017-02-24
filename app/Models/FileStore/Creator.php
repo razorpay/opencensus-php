@@ -425,6 +425,8 @@ class Creator extends Base\Core
      */
     protected function writeTextFile()
     {
+        $oldmask = umask(0);
+
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fullPath = $this->getFullFilePath();
@@ -477,6 +479,8 @@ class Creator extends Base\Core
                     'path' => $fullPath
                 ]);
         }
+
+        umask($oldmask);
 
         $this->createUploadedFile($fullPath, $fileName);
     }
