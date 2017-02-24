@@ -15,7 +15,7 @@ use RZP\Models\FileStore;
 
 class Entity extends Base\PublicEntity
 {
-    const PDF_PREFIX = 'pdfs_v2/';
+    const PDF_PREFIX = 'pdfs/';
 
     use NotesTrait;
 
