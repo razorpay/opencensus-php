@@ -32,6 +32,7 @@ class TraceCode
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
     const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
+    const PAYMENT_PAYOUT_REQUEST                    = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                       = 'PAYMENT_AUTO_REFUND';
@@ -240,6 +241,8 @@ class TraceCode
     const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
 
+    const PAYMENT_UPDATE_AMOUNT_PAIDOUT             = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
+
     /*
      * Gateway component error messages
      */
@@ -392,6 +395,8 @@ class TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+
+    const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
     const MERCHANT_ARCHIVE                          = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
