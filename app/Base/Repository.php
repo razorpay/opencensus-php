@@ -225,7 +225,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $entities;
     }
 
-    public function fetchBetweenTimestamp($merchantId, $from, $to, $relations = [])
+    public function fetchBetweenTimestamp($merchantId, $from, $to)
     {
         return $this->getFetchBetweenTimestampQuery($merchantId, $from, $to)
                     ->get();

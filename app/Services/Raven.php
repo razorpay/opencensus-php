@@ -146,7 +146,7 @@ class Raven
 
         $decodedResponse = json_decode($response->body, true);
 
-        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse);
+        $this->trace->info(TraceCode::RAVEN_RESPONSE, $decodedResponse ?? []);
 
         $this->checkErrors($decodedResponse);
 

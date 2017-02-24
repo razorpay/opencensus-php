@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant\Account;
@@ -229,6 +230,20 @@ class Creator extends Base\Core
     }
 
     /**
+     * Sets merchant which is used for association later.
+     *
+     * @param Merchant\Entity $merchant
+     *
+     * @return Creator
+     */
+    public function merchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
+
+        return $this;
+    }
+
+    /**
      * Creates a local file instance,
      * upload it to service specified and creates file store entity
      *
@@ -368,7 +383,15 @@ class Creator extends Base\Core
 
         try
         {
-            chmod($fullPath, 0777);  // keep it 0777. This step is important
+            $result = chmod($fullPath, 0777);  // keep it 0777. This step is important
+            if ($result === false)
+            {
+                $this->trace->warning(
+                    TraceCode::FILE_PERMISSION_CHANGE_FAILED,
+                    [
+                        'path' => $fullPath
+                    ]);
+            }
         }
         catch (\Exception $e)
         {

@@ -6,6 +6,9 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Models\Merchant;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
@@ -30,17 +33,28 @@ class Repository extends Base\Repository
         Entity::ORDER_ID    => 'sometimes|string|max:20',
     ];
 
-    public function fetchForOrder($order)
+    /**
+     * - Fetches invoice entity for given public id and merchant.
+     * - Follows by a check if the invoice's user id is same as the passed user
+     *   id, failing which it throws a 403.
+     *
+     * @param string          $id
+     * @param Merchant\Entity $merchant
+     * @param string|null     $userId
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     */
+    public function findByPublicIdAndMerchantAndUserId(
+        string $id,
+        Merchant\Entity $merchant,
+        string $userId = null)
     {
-        $invoice = $this->newQuery()
-                        ->where(Entity::ORDER_ID, '=', $order->getId())
-                        ->first();
+        $invoice = $this->findByPublicIdAndMerchant($id, $merchant);
 
-        if ($invoice !== null)
+        if (($userId !== null) and ($invoice->getUserId() !== $userId))
         {
-            $order->setRelation('invoice', $invoice);
-
-            $invoice->order()->associate($order);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_FORBIDDEN);
         }
 
         return $invoice;

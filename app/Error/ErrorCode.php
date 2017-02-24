@@ -95,6 +95,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
+    const BAD_REQUEST_FORBIDDEN                                                     = 'BAD_REQUEST_FORBIDDEN';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
@@ -144,6 +145,10 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
+    const BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT                              = 'BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT';
+    const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED                   = 'BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED';
+    const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                    = 'BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING';
+    const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                         = 'BAD_REQUEST_PAYMENT_FULLY_PAIDOUT';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                        = 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED';
     const BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED                          = 'BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED';
@@ -286,6 +291,9 @@ class ErrorCode
 
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
+
+    const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
+    const BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD                                 = 'BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD';
 
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
