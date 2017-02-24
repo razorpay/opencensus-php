@@ -9,18 +9,34 @@ services:
       - .:/app
     links:
       - api_db
+      - cache
+      - es
     ports:
       - 28080:80
     depends_on:
       - api_db
+      - cache
+      - es
     environment:
-      DB_LIVE_HOST: api_db
-      DB_TEST_HOST: api_db
-      SLAVE_DB_LIVE_HOST: api_db
-      SLAVE_DB_TEST_HOST: api_db
-      REDIS_HOST: cache
-      SECURE_REDIS_HOST: cache
-      QUEUE_REDIS_HOST: cache
+    DB_LIVE_HOST: api_db
+    DB_LIVE_USERNAME: api_user
+    DB_LIVE_PASSWORD: 123
+    SLAVE_DB_LIVE_HOST: api_db
+    SLAVE_DB_LIVE_USERNAME: api_user
+    SLAVE_DB_LIVE_PASSWORD: 123
+    DB_TEST_HOST: api_db
+    DB_TEST_USERNAME: api_user
+    DB_TEST_PASSWORD: 123
+    SLAVE_DB_TEST_HOST: api_db
+    SLAVE_DB_TEST_USERNAME: api_user
+    SLAVE_DB_TEST_PASSWORD: 123
+    REDIS_HOST: cache
+    SECURE_REDIS_HOST: cache
+    QUEUE_REDIS_HOST: cache
+    CACHE_DRIVER: redis
+    SECURE_CACHE_DRIVER: redis
+    ES_HOST: es
+    MUTEX_MOCK: "false"
   api_db:
     image: mysql:5.6
     ports:
@@ -53,4 +69,4 @@ services:
     cap_add:
       - IPC_LOCK
     ports:
-      - 9200:9200
+      - 29200:9200
