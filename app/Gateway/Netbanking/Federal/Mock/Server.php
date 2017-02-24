@@ -2,6 +2,8 @@
 
 namespace RZP\Gateway\Netbanking\Federal\Mock;
 
+use RZP\Gateway\Base;
+use RZP\Gateway\Netbanking\Federal\Constants;
 use RZP\Gateway\Netbanking\Federal\RequestFields;
 use RZP\Gateway\Netbanking\Federal\ResponseFields;
 
@@ -10,6 +12,8 @@ class Server extends Base\Mock\Server
     public function authorize($input)
     {
         parent::authorize($input);
+
+        $this->validateAuthorizeInput($input);
 
         $response = $this->getCallbackResponseData($input);
 
@@ -25,14 +29,16 @@ class Server extends Base\Mock\Server
     {
         parent::verify($input);
 
-        $response = $this->getVerifyResponseData($request);
+        $this->validateActionInput($input, 'verify');
+
+        $response = $this->getVerifyResponseData();
 
         $this->content($response);
 
         return $this->makeResponse($response);
     }
 
-    protected function getCallbackResponseData($input)
+    protected function getCallbackResponseData(array $input)
     {
         return [
             ResponseFields::AMOUNT          => $input[RequestFields::AMOUNT],
@@ -45,8 +51,11 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function getVerifyResponseData($input)
+    protected function getVerifyResponseData()
     {
-
+        return
+        "<HTML>
+            <BODY> Y </BODY>
+        </HTML>";
     }
 }

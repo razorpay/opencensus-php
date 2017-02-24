@@ -7,6 +7,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Gateway\Base\Verify;
+use RZP\Models\Payment\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -103,7 +104,6 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
-        // TODO: add this method below
         $verify->payment = $this->saveVerifyContent($verify);
     }
 
@@ -115,7 +115,7 @@ class Gateway extends Base\Gateway
 
         $this->checkGatewaySuccess($verify);
 
-        if ($verify->gatewaySuccess !== $verify->apiSuccess)
+        if ($verify->gatewaySuccess === $verify->apiSuccess)
         {
             $status = VerifyResult::STATUS_MATCH;
         }
@@ -141,7 +141,7 @@ class Gateway extends Base\Gateway
         $content = $verify->verifyResponseContent;
 
         // content will contain status as either Y or N
-        if ($content[ResponseFields::STATUS] !== Constants::CONFIRMATION)
+        if ($content[ResponseFields::STATUS] === Constants::CONFIRMATION)
         {
             $verify->gatewaySuccess = true;
         }
@@ -195,6 +195,7 @@ class Gateway extends Base\Gateway
     protected function saveCallbackResponse(array $content)
     {
         $attributes = [
+            Base\Entity::RECEIVED        => true,
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID],
             Base\Entity::STATUS          => $content[ResponseFields::PAID],
         ];
@@ -243,7 +244,7 @@ class Gateway extends Base\Gateway
 
         // Verify response is Y or N, so adding a key for the response
         return [
-            ResponseFields::STATUS => $status['BODY'][1]
+            ResponseFields::STATUS => trim($status[ResponseFields::VERIFY_BODY])
         ];
     }
 

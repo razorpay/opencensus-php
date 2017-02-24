@@ -12,4 +12,5 @@ class ResponseFields
     const STATE_FLAG      = 'STATFLG';
     const PAYEE_ID        = 'PID';
     const STATUS          = 'status';
+    const VERIFY_BODY     = 'BODY';
 }
