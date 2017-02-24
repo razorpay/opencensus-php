@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Payout;
 
+use RZP\Constants\Table;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Constants;
@@ -33,17 +34,18 @@ class Entity extends Base\PublicEntity
     const UTR               = 'utr';
     const FAILURE_REASON    = 'failure_reason';
     const RETURN_UTR        = 'return_utr';
+    const REMARKS           = 'remarks';
 
     // Public attribute
     const DESTINATION       = 'destination';
 
     protected $entity = 'payout';
 
-    protected $table  = \RZP\Constants\Table::PAYOUT;
+    protected $table  = Table::PAYOUT;
 
     protected $generateIdOnCreate = true;
 
-    protected static $sign        = 'pout';
+    protected static $sign = 'pout';
 
     protected static $generators = [
         self::ID
@@ -77,6 +79,8 @@ class Entity extends Base\PublicEntity
         self::UTR,
         self::FAILURE_REASON,
         self::RETURN_UTR,
+        self::CREATED_AT,
+        self::UPDATED_AT
     ];
 
     protected $public = [
@@ -166,6 +170,36 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::METHOD);
     }
 
+    public function getTransactionId()
+    {
+        return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function isStatusCreated()
+    {
+        return ($this->getStatus() === Status::CREATED);
+    }
+
+    public function isStatusFailed()
+    {
+        return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isStatusInitiated()
+    {
+        return ($this->getStatus() === Status::INITIATED);
+    }
+
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusInitiated();
+    }
+
     public function getBaseAmount()
     {
         return $this->getAmount();
@@ -204,6 +238,16 @@ class Entity extends Base\PublicEntity
     public function setUtr($utr)
     {
         $this->setAttribute(self::UTR, $utr);
+    }
+
+    public function setFailureReason($reason)
+    {
+        $this->setAttribute(self::FAILURE_REASON, $reason);
+    }
+
+    public function setRemarks(string $remarks)
+    {
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function setPublicDestinationAttribute(array & $attributes)
