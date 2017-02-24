@@ -55,7 +55,7 @@ class MaxMind2
         ])->withEvent([
             'transaction_id'   => $payment->getId(),
             'shop_id'          => $payment->getMerchantId(),
-            'time'             => Carbon::createFromTimestamp($payment->getCreatedAt())->toIso8601String(),
+            'time'             => Carbon::now()->toIso8601String(),
             'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
         ])->withEmail([
             'email'            => md5($payment->getEmail()),
