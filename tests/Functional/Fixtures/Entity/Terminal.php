@@ -278,7 +278,7 @@ class Terminal extends Base
             'card'                      => 0,
             'netbanking'                => 0,
             'shared'                    => 1,
-            'gateway_merchant_id'       => 'freecharge_merchant',
+            'gateway_merchant_id'       => 'random_id',
             'gateway_terminal_id'       => 'freecharge_terminal',
             'gateway_terminal_password' => 'razorpay_password',
             'gateway_secure_secret'     => 'secret',
@@ -837,5 +837,30 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createDirectFreechargeTerminal(array $attributes)
+    {
+        //
+        // adding a new direct terminal for freecharge to test
+        // dealer integration
+        //
+        $defaultValues = [
+            'id'                        => '101FrchrgeTmnl',
+            'merchant_id'               => '10000000000000',
+            'gateway'                   => 'wallet_freecharge',
+            'card'                      => 0,
+            'netbanking'                => 0,
+            'shared'                    => 0,
+            'gateway_merchant_id'       => 'random_id',
+            'gateway_merchant_id2'      => 'freecharge_dealer',
+            'gateway_terminal_id'       => 'freecharge_terminal',
+            'gateway_terminal_password' => 'razorpay_password',
+            'gateway_secure_secret'     => 'secret',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 }
