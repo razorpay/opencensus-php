@@ -20,6 +20,7 @@ class Validator extends Base\Validator
         'id'                    => 'required|alpha_num',
         'password'              => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation' => 'required|between:7,50',
+        'email'                 => 'required|email|unique:users',
     );
 
     protected static $unsetCreateInput = array(

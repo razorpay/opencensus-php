@@ -4,6 +4,7 @@ namespace App\Admin;
 
 use Auth;
 use App\Merchant\Entity as MerchantEntity;
+use App\MerchantDetails;
 
 trait Logger
 {
@@ -22,11 +23,19 @@ trait Logger
     protected function getMerchantDashboardSlackText($merchant)
     {
         $id = $merchant->id;
+
+        $label = $this->getBillingLabel($id);
+
         $link = "https://dashboard.razorpay.com/admin#/app/merchants/$id/detail";
 
-        $label = $merchant->merchantDetails->getBillingLabel();
-
         return "<$link|$label> ($id)";
+    }
+
+    protected function getBillingLabel($merchantId)
+    {
+        $merchantDetails = (new MerchantDetails\Service)->fetchDetails($merchantId);
+
+        return $merchantDetails['business_dba'];
     }
 
     protected function logActionToSlack($merchant, $action, $data = [])
@@ -44,6 +53,7 @@ trait Logger
         $adminId = Auth::guard('api')->user()->username;
 
         $text = $this->getMerchantDashboardSlackText($merchant);
+
         $text .= " $action by $adminId";
 
         $channel = $this->getChannel($action);
@@ -82,6 +92,7 @@ trait Logger
     public function logSlackQuery($user, $entity, $channel)
     {
         $label = "{$entity['entity']}:{$entity['id']}";
+
         $linkText = Slack::getFormattedLinkForSlack($entity['entity'], $entity['id'], $label);
 
         $text = "@$user queried $linkText in #$channel";

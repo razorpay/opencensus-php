@@ -69,6 +69,8 @@ app.controller('EntitiesCtrl', [
       'netbanking_hdfc',
       'netbanking_kotak',
       'netbanking_axis',
+      'netbanking_icici',
+      'netbanking_airtel',
       'paytm',
       'sharp',
       'upi_icici',
@@ -425,6 +427,7 @@ app.controller('EntitiesCtrl', [
         ],
         save: booleanList,
         status: statusList,
+        terminal_id: ['Terminal ID'],
         token_id: ['Token Id'],
         verified: [
           'all',
@@ -434,6 +437,15 @@ app.controller('EntitiesCtrl', [
           2
         ],
         wallet: walletList
+      },
+      payout: {
+        merchant_id: ['Merchant Id'],
+        customer_id: ['Customer Id'],
+        destination_id: ['Bank Account Id'],
+        method: [
+          'all',
+          'fund_transfer'
+        ]
       },
       paytm: {
         payment_id: ['Payment Id'],
@@ -477,7 +489,8 @@ app.controller('EntitiesCtrl', [
           'payment',
           'refund',
           'settlement',
-          'adjustment'
+          'adjustment',
+          'payout'
         ]
       },
       transfer: {

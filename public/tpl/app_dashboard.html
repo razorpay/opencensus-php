@@ -41,16 +41,16 @@
     <div class="wrapper-md" >
       <!-- stats -->
       <div class="row" >
-        <div class="col-md-5" ng-controller="DashboardAggregationsCtrl">
+        <div class="col-md-12 col-lg-6" ng-controller="DashboardAggregationsCtrl">
           <div class="row row-sm text-center">
-            <div class="col-xs-6">
+            <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6">
               <div class="panel padder-v item">
                 <div class="font-thin h1">{{aggregations.data.settlements}}</div>
                 <span class="text-muted text-xs">Total Settlements</span>
               </div>
             </div>
 
-            <div class="col-xs-6 fake_hide_till_loaded">
+            <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4 col-lg-6 fake_hide_till_loaded">
               <div class="panel padder-v item">
                 <div class="font-thin h1" ng-show="aggregations.data.updated_at != 0">{{aggregations.data.updated_at*1000 | fromNow}}</div>
                  <div class="font-thin h1" ng-show="aggregations.data.updated_at == 0">Never</div>
@@ -58,25 +58,25 @@
               </div>
             </div>
 
-            <div class="col-xs-6">
+            <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4  col-lg-6">
               <div class="block panel padder-v bg-info item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.payments}}</span>
                 <span class="text-muted text-xs">Total Payments</span>
               </div>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xxs-12 col-xs-6 col-sm-6 col-md-4  col-lg-6">
               <div href class="block panel padder-v bg-primary item">
                 <span class="text-white font-thin h1 block">{{aggregations.data.refunds}}</span>
                 <span class="text-muted text-xs">Total Refunds</span>
               </div>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xxs-12 col-xs-6 col-sm-6  col-md-4 col-lg-6">
               <div href class="block panel padder-v item">
                 <span class="text-primary-dk font-thin h1 block">{{aggregations.data.amount | rupee}}</span>
                 <span class="text-muted text-xs">Total Volume</span>
               </div>
             </div>
-            <div class="col-xs-6">
+            <div class="col-xxs-12 col-xs-6 col-sm-6  col-md-4 col-lg-6">
               <div href class="block panel padder-v item">
                 <span class="font-thin h1 block">{{balance/100 | rupee}}</span>
                 <span class="text-muted text-xs">Current Balance</span>
@@ -84,7 +84,7 @@
             </div>
           </div>
         </div>
-        <div class="col-md-7">
+        <div class="col-md-12 col-lg-6">
           <div class="panel wrapper">
             <h4 class="font-thin m-t-none m-b text-muted">Successful Transactions</h4>
                 <!-- lines: { show: true, lineWidth: 1, fill:true, fillColor: { colors: [{opacity: 0.2}, {opacity: 0.8}] } } -->

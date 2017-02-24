@@ -1,0 +1,68 @@
+import { Component } from 'react'
+
+class Notification extends Component {
+  constructor() {
+    super(...arguments)
+    this.close = ::this.close
+  }
+
+  componentDidMount() {
+    setTimeout(() => {
+      $(this.notificationEle).addClass('Notification__show')
+    }, 0)
+
+    this.timerId = setTimeout(() => {
+      this.close()
+    }, this.props.closeTimeout)
+  }
+
+  componentWillUnmount() {
+    this.close()
+  }
+
+  close() {
+    if (this.isClosed) {
+      return
+    }
+
+    $(this.notificationEle).removeClass('Notification__show')
+    this.isClosed = true
+    clearTimeout(this.timerId)
+
+    setTimeout(() => {
+      this.props.onClose()
+    }, this.props.transitionTimeout)
+  }
+
+  render() {
+    let { type, message, showClose } = this.props
+    return (
+      <div
+        ref={(notificationEle) => { this.notificationEle = notificationEle }}
+        class={`Notification ${type === 'success' ? 'Notification--success' : 'Notification--error'}`}>
+        {
+          typeof message === 'function' ?
+            message() : Array.isArray(message) ?
+              <ul class='list-unstyled'>
+                {
+                  message.map((msg) => <li key={+new Date()}>{msg}</li>)
+                }
+              </ul> : message
+        }
+        {
+          showClose && <i class='fa fa-close' onClick={this.close}></i>
+        }
+      </div>
+    )
+  }
+}
+
+Notification.defaultProps = {
+  type: 'success',
+  showClose: true,
+  closeTimeout: 5000,
+  transitionTimeout: 300,
+  onClose: () => {}
+}
+
+export default Notification

@@ -7,6 +7,7 @@ use App\Base;
 class Validator extends Base\Validator
 {
     const DISABLE_CAPTCHA_SECRET = 'DISABLE_THE_CAPTCHA_YOU_SHALL';
+
     public static $createRules = array(
         // Individual Name
         'name'                  => 'sometimes|alpha_space|max:200',
@@ -29,7 +30,6 @@ class Validator extends Base\Validator
         'business_name'         =>  'required|min:4|alpha_space|max:200'
     ];
 
-
     protected static $createValidators = ['captcha'];
 
     protected static $unsetCreateInput = [
@@ -49,6 +49,11 @@ class Validator extends Base\Validator
         'old_password'              => 'required',
         'password'                  => 'required|between:7,50|confirmed|numbers|letters',
         'password_confirmation'     => 'required|between:7,50'
+    ];
+
+    protected static $preSignupRules = [
+        'name'                  => 'sometimes|alpha_space|max:200',
+        'contact_mobile'        => 'sometimes|numeric|digits_between:8,11',
     ];
 
     protected static $changePasswordValidators = ['changePassword'];

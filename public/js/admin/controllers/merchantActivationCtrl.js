@@ -60,6 +60,7 @@ app.controller('MerchantActivationCtrl', [
             $scope.files[key] = value;
           });
           $scope.merchant = data.data.merchant;
+          $scope.locked = $scope.data['locked'];
         } else {
           $scope.alerts.addAlert('danger');
         }

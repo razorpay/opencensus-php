@@ -131,7 +131,6 @@ class Service extends Base\Service
             (new Merchant\Service)->createMerchantOnApi($data['id']);
         }
 
-
         // We would never really reach this with an error because we are using exceptions here
         return [$error, $data];
     }
@@ -273,17 +272,22 @@ class Service extends Base\Service
      */
     protected function buildUserEntity(array $input)
     {
+        $input['email'] = strtolower($input['email']);
+
         // Now we can build a new user using the entire input
         $user = new User\Entity;
+
         $error = $user->build($input);
 
         if (! empty($error))
         {
             $error = array_values($error);
+
             throw new RecoverableException($error[0]);
         }
 
         $user->password = Hash::make($user->password);
+
         $user->save();
 
         return $user;
@@ -311,6 +315,7 @@ class Service extends Base\Service
         if ($user->getConfirmToken() != NULL)
         {
             $user->token = $user->getConfirmToken();
+
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
 

@@ -76,6 +76,7 @@ app.controller('ActivationCtrl', [
         });
         if (data.data.submitted === 1) {
           user.identity().then(function (data) {
+            $scope.data.activated = data.activated;
             if (data.activated == 1) {
               $scope.formAlerts.addAlert('info', 'Your account is already activated');
             } else
