@@ -23,6 +23,11 @@ class EcollectTest extends TestCase
         $this->startTest();
     }
 
+    public function testEcollectValidateRazorp()
+    {
+        $this->startTest();
+    }
+
     public function testEcollectValidateFalse()
     {
         $this->startTest();
