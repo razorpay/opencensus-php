@@ -104,6 +104,7 @@ class Merchant
             SetlDetails\Component::PAYMENT,
             SetlDetails\Component::REFUND,
             SetlDetails\Component::ADJUSTMENT,
+            SetlDetails\Component::PAYOUT,
         );
 
         $details = [];
@@ -137,6 +138,10 @@ class Merchant
                 $details[$componentType]['amount'] += $txn->getCredit();
 
                 $details[$componentType]['amount'] -= $txn->getDebit();
+            }
+            else if ($txn->getType() === Transaction\Type::PAYOUT)
+            {
+                $details[$componentType]['amount'] -= $txn->getAmount();
             }
 
             $totalServiceTax += $txn->getServiceTax();

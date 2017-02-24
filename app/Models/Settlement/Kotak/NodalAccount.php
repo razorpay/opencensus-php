@@ -167,7 +167,9 @@ class NodalAccount
 
         if ($h2h === true)
         {
-            $urlText = $this->writeToTextFileH2H($txt);
+            $name = $this->getH2HFileName();
+
+            $urlText = $this->writeToTextFileH2H($name, $txt);
         }
 
         $urlText = $this->writeToTextFile($txt);
@@ -175,6 +177,61 @@ class NodalAccount
         $this->sendKotakSettlementMail($count, $amounts);
 
         return [$urlText, $urlExcel];
+    }
+
+    public function getPayoutsFile(Base\PublicCollection $payouts)
+    {
+        $textData = [];
+
+        $totalAmount = 0;
+
+        foreach ($payouts as $payout)
+        {
+            $merchant = $payout->merchant;
+
+            $ba = $payout->destination;
+
+            $amount = $payout->getAmount() / 100;
+
+            $totalAmount += $amount;
+
+            $array = [
+                'Client_Code'           => 'RAZORNODAL',
+                'Product_Code'          => 'REFUND',
+                'Payment_Ref_No.'       => $payout->getPublicId(),
+                'Payment_Date'          => $this->date,
+                'Dr_Ac_No'              => static::$nodalAccountNumber,
+                'Amount'                => (string) $amount,
+                'Bank_Code_Indicator'   => 'M',
+                'Beneficiary_Name'      => $ba->getBeneficiaryName(),
+                'IFSC Code'             => $ba->getIfscCode(),
+                'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
+                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
+                'Payment Details 1'     => 'RAZORPAY PAYOUTS',
+                'Payment Details 2'     => $merchant->getPublicId(),
+                'Payment Details 3'     => $ba->getId()
+            ];
+
+            $array = $this->getAllFields($array);
+
+            $textDataArray = $array;
+
+            $textData[] = $textDataArray;
+        }
+
+        $amounts['total'] = $totalAmount;
+
+        $count['total'] = $payouts->count();
+
+        $txt = $this->generateText($textData);
+
+        $name = $this->getH2HFileName();
+
+        $urlText = $this->writeToTextFileH2H($name, $txt);
+
+        $this->sendKotakRefundsMail($count, $amounts);
+
+        return $urlText;
     }
 
     protected function getEmptyArray()
@@ -232,5 +289,46 @@ class NodalAccount
 
             $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
         });
+    }
+
+        protected function sendKotakRefundsMail($count, $amounts)
+    {
+        $amounts['total'] = sprintf('%.2f', $amounts['total']);
+
+        $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        $subject = "Kotak IMPS refund files for $today";
+
+        $data = compact('amounts', 'count', 'subject');
+
+        $fileName = $this->getH2HFileName();
+
+        $path = $this->getStorageDir();
+
+        $fullpath = $path . '/'. $fileName;
+
+        $data['file'] = $fullpath;
+
+        Mail::send('emails.admin.refund', $data, function($message) use ($data)
+        {
+            $emails = ['settlements@razorpay.com'];
+
+            $message->from('settlement@razorpay.com', 'Kotak Payouts');
+
+            $message->subject($data['subject']);
+
+            $message->to($emails);
+
+            $file = $data['file'];
+
+            $message->attach($file);
+        });
+    }
+
+    protected function getH2HFileName()
+    {
+        $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
+
+        return $name;
     }
 }
