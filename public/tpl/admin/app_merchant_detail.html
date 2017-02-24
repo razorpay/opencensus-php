@@ -691,6 +691,9 @@
     <span class="text-danger"><strong>
     Warning: The terminal once assigned can not be changed.
     </strong></span>
+    <div class="text-center m-t">
+      <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>
+    </div>
     <form class="form-horizontal" enctype="multipart/form-data">
       <div class="form-group">
         <label class="col-lg-3 control-label">Mode:</label>
