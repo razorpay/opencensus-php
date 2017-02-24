@@ -373,7 +373,7 @@ class Creator extends Base\Core
     {
         // For S3 We get Bucket Name
         // For othre drivers we get Directory name and store as Bucket
-        if ($this->getStore() === 's3')
+        if ($this->file->getStore() === 's3')
         {
             $bucket = $this->storageHandler->getBucketName($this->file->getType(), $this->env);
         }
