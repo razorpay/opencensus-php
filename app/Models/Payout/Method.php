@@ -38,8 +38,15 @@ class Method
 
     public static function getEntityClass($method)
     {
-        $class = Constants\Entity::getEntityClass(self::$methodToEntityMap[$method]);
+        $name = self::getEntityName($method);
+
+        $class = Constants\Entity::getEntityClass($name);
 
         return $class;
+    }
+
+    public static function getEntityName($method)
+    {
+        return self::$methodToEntityMap[$method];
     }
 }

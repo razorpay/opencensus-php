@@ -432,6 +432,7 @@ final class Route
         'payout_fetch_by_id'                      => ['get',      'payouts/{id}',                                   'PayoutController@getPayout'                                        ],
         'payout_fetch_multiple'                   => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_create'                           => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
+        'payout_initiate'                         => ['post',     'payouts/initiate/{channel?}',                    'PayoutController@postPayoutInitiate'                               ],
     );
 
     public static $public = array(
@@ -625,6 +626,7 @@ final class Route
         'pricing_delete_plan_rule',
         'pricing_delete_plan_rule_force',
         'setl_initiate',
+        'payout_initiate',
         'setl_initiate_schedule',
         'setl_file_generate',
         'setl_reconcile',
@@ -915,6 +917,7 @@ final class Route
 
         'cron' => array(
             'setl_initiate',
+            'payout_initiate',
             'setl_initiate_schedule',
             'setl_reconcile_generate',
             'setl_return_generate',
