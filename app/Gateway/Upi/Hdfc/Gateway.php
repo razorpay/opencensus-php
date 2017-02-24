@@ -2,17 +2,17 @@
 
 namespace RZP\Gateway\Upi\Hdfc;
 
-use Carbon\Carbon;
-use phpseclib\Crypt\AES;
 use Request;
+use Carbon\Carbon;
 use RZP\Exception;
 use ErrorException;
+use RZP\Trace\Trace;
 use Requests_Response;
 use RZP\Constants\Mode;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use phpseclib\Crypt\AES;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Utility;
+use RZP\Trace\TraceCode;
 use RZP\Gateway\Upi\Base;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Upi\Base\Entity;
@@ -92,9 +92,8 @@ class Gateway extends Base\Gateway
     {
         $attrs = [
             Entity::GATEWAY_MERCHANT_ID => $this->getMerchantId(),
-            Entity::VPA     => $input['payment']['vpa'],
-            Entity::ACTION  => $action,
-            // Entity::AMOUNT  => $amount,
+            Entity::VPA                 => $input['payment']['vpa'],
+            Entity::ACTION              => $action,
         ];
 
         if ($action === Action::REFUND)
@@ -125,6 +124,13 @@ class Gateway extends Base\Gateway
      */
     protected function parseGatewayResponse($responseBody, $type = Action::COLLECT)
     {
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'body'              => $responseBody,
+            'encrypted'         => true,
+            'gateway'           => $this->gateway,
+            'type'              => $type
+        ]);
+
         $response = $this->decrypt($responseBody);
 
         $type = strtoupper($type);
@@ -140,15 +146,13 @@ class Gateway extends Base\Gateway
             $result[$key]     =   $values[$index];
         }
 
-        $this->trace->info(
-            TraceCode::GATEWAY_RESPONSE,
-            [
-                'body'              => $responseBody,
-                'decrypted'         => $response,
-                'parsed'            => $result,
-                'gateway'           => $this->gateway,
-                'type'              => $type
-            ]);
+        $this->trace->info(TraceCode::GATEWAY_RESPONSE, [
+            'body'              => $responseBody,
+            'decrypted'         => $response,
+            'parsed'            => $result,
+            'gateway'           => $this->gateway,
+            'type'              => $type
+        ]);
 
         return $result;
     }
@@ -166,9 +170,7 @@ class Gateway extends Base\Gateway
 
         $status = $content[ResponseFields::STATUS];
 
-        $repo = $this->getRepository();
-
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
 
         assertTrue($content[ResponseFields::UPI_TXN_ID] === $gatewayPayment->getGatewayPaymentId());
 
@@ -466,9 +468,11 @@ class Gateway extends Base\Gateway
 
     protected function getRefundRequestArray(array $input): array
     {
-        $repo = $this->getRepository();
 
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
 
         // The order is defined in the docs
         // See README.md
@@ -509,9 +513,10 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyRequestArray($input)
     {
-        $repo = $this->getRepository();
-
-        $gatewayPayment = $repo->findByPaymentIdAndActionOrFail($input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
+            $input['payment']['id'],
+            Action::AUTHORIZE
+        );
 
         $data = [
             $this->getMerchantId(),
