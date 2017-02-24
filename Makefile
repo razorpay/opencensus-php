@@ -33,7 +33,7 @@ build: clean
 	@echo "Building docker containers"
 	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) up -d --build
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
-	@echo "Seeing elasticsearch indexes"
+	@echo "Seeding elasticsearch indexes"
 	@echo "===================="
 	curl -X PUT "http://localhost:9200/api_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
 	curl -X PUT "http://localhost:9200/api_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
