@@ -3,11 +3,15 @@
 .env
 .env.*
 !environment/.env.wercker
-!environment/.env.docker
 !environment/.env.defaults
 !environment/.env.production
 !environment/.env.beta
 !environment/.env.alpha
+
+# ignore generated docker conf
+environment/.env.dev_docker
+environment/.env.testing_docker
+
 .DS_Store
 Thumbs.db
 /public/test/config.php
