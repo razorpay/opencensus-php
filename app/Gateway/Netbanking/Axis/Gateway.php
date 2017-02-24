@@ -98,29 +98,26 @@ class Gateway extends Base\Gateway
 
     public function verifyPayment(Verify $verify)
     {
-        // Response XML
-        $content = $verify->verifyResponseContent;
-
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $content);
 
-        $this->getVerifyStatus($verify, $content);
+        $this->setVerifyStatus($verify);
 
         $this->saveVerifyResponseIfNeeded($verify, $content);
     }
 
-    protected function getVerifyStatus(Verify $verify, array $response)
+    protected function setVerifyStatus(Verify $verify, array $content)
     {
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify);
 
         $status = VerifyResult::STATUS_MATCH;
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $status = VerifyResult::STATUS_MISMATCH;
+            $status = $this->returnVerifyStatusOrThrowException($verify);
         }
 
         $verify->status = $status;
@@ -141,8 +138,10 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkGatewaySuccess(Verify $verify, array $response)
+    protected function checkGatewaySuccess(Verify $verify)
     {
+        $response = $verify->verifyResponseContent;
+
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
@@ -150,6 +149,20 @@ class Gateway extends Base\Gateway
         {
             $verify->gatewaySuccess = true;
         }
+    }
+
+    protected function returnVerifyStatusOrThrowException(Verify $verify)
+    {
+        // In this case, there's a bug in the code
+        // The payment is getting incorrectly authorized
+        if (($verify->apiSuccess === true) and
+            ($verify->gatewaySuccess === false))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
+        }
+
+        return VerifyResult::STATUS_MISMATCH;
     }
 
     protected function getPaymentVerifyData(Verify $verify)
