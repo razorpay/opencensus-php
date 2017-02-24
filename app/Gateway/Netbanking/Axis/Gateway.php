@@ -100,14 +100,14 @@ class Gateway extends Base\Gateway
     {
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $content);
+            $verify->verifyResponseContent);
 
         $this->setVerifyStatus($verify);
 
-        $this->saveVerifyResponseIfNeeded($verify, $content);
+        $this->saveVerifyResponseIfNeeded($verify);
     }
 
-    protected function setVerifyStatus(Verify $verify, array $content)
+    protected function setVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
 
@@ -308,8 +308,10 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function saveVerifyResponseIfNeeded(Verify $verify, array $content)
+    protected function saveVerifyResponseIfNeeded(Verify $verify)
     {
+        $content = $verify->verifyResponseContent;
+
         $gatewayPayment = $verify->payment;
 
         $bankPaymentId = $gatewayPayment->getBankPaymentId();
