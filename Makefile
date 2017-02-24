@@ -44,14 +44,28 @@ build: clean
 	docker ps
 
 clean:
+	@echo "Remove orphan containers"
 	-$(DOCKER_COMPOSE) down --remove-orphans
+	@echo "Remove api containers if available"
+ifdef $(DOCKER_PS_API_ALL)
 	-$(DOCKER_RM) $(DOCKER_PS_API_ALL)
+endif
+	@echo "Remove api images containers if available"
+ifdef $(DOCKER_IMAGES_API)
 	-$(DOCKER_RMI) $(DOCKER_IMAGES_API)
+endif
 
 clean-all:
+	@echo "Remove orphan containers"
 	-$(DOCKER_COMPOSE) down --remove-orphans
+	@echo "Remove api and service containers if available"
+ifdef $(DOCKER_PS_ALL_API_ALL)
 	-$(DOCKER_RM) $(DOCKER_PS_ALL_API_ALL)
+endif
+	@echo "Remove unused images if available"
+ifdef $(DOCKER_IMAGES)
 	-$(DOCKER_RMI) $(DOCKER_IMAGES)
+endif
 
 up:
 	$(DOCKER_COMPOSE) -f $(DOCKER_DEV_COMPOSE_FILE) unpause

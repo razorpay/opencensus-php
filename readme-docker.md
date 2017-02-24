@@ -96,15 +96,21 @@ $ make down
 $ make up
 ```
 
-#### Cleaning up all the container images
+#### Cleaning up api container images
 
 ```
 $ make clean
 ```
 
+#### Cleaning up all container images
+
+```
+$ make clean-all
+```
+
 #### Running unit tests using dockerized containers
 ```
-$ docker exec api_api_1 /app/phpunit --debug
+$ make test
 ```
 
 Note: the name api_api_1 can be got from `docker ps` command

@@ -35,8 +35,8 @@ class TestCase extends IlluminateTestCase
     {
         $unitTesting = true;
 
-        # By default testing is set by IlluminateTestCase
-        # Now uses what mode is passed from command line.
+        // By default testing is set by IlluminateTestCase
+        // Now uses what mode is passed from command line.
         $testEnvironment = $_SERVER['APP_ENV'] ?? 'testing';
 
         putenv('APP_ENV='.$testEnvironment);
