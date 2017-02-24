@@ -2,43 +2,62 @@
 
 namespace RZP\Models\Offer;
 
-use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Card\IIN;
 use RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
-    public function create(array $input, Merchant\Entity $merchant)
+    public function create(array $input)
     {
-        // Check to see if there are any offers with same values for the set of attributes
-        // required to uniquely define an offer
+        $merchant = $this->merchant;
 
         $offer = (new Entity)->build($input);
 
-        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $merchant->getId());
-
-        if ($existingOffers->count() > 0)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
-        }
+        $this->checkIfOfferCreateValid($offer, $merchant);
 
         $offer->merchant()->associate($merchant);
 
         $this->repo->saveOrFail($offer);
+
+        $this->traceNonExistingIins($offer, $merchant);
 
         return $offer;
     }
 
     public function update(Entity $offer, array $input)
     {
+        $merchant = $this->merchant;
+
         $offer->edit($input);
 
         $this->repo->saveOrFail($offer);
 
+        $this->traceNonExistingIins($offer, $merchant);
+
         return $offer;
+    }
+
+    public function deactivate()
+    {
+        $activeExpiredOffers = $this->repo->offer->fetchActiveExpiredOffers();
+
+        $response = [];
+
+        foreach ($activeExpiredOffers as $offer)
+        {
+            $offer->deactivate();
+
+            $this->repo->saveOrFail($offer);
+
+            $response[] = $offer->getPublicId();
+        }
+
+        return $response;
     }
 
     public function validateOfferApplicableOnPayment(Payment\Entity $payment)
@@ -70,7 +89,7 @@ class Core extends Base\Core
             if ($appliedOffer->failPaymentIfOfferInapplicable() === true)
             {
                 throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
+                    ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
             }
 
             return;
@@ -105,39 +124,34 @@ class Core extends Base\Core
         return $offers;
     }
 
-    public function addIins(Entity $offer, array $newIins)
+    protected function checkIfOfferCreateValid(Entity $offer, Merchant\Entity $merchant)
     {
-        $offer->addIins($newIins);
+        // Check to see if there are any offers with same values for the set of attributes
+        // required to uniquely define an offer
+        $existingOffers = $this->repo->offer->fetchExistingOffers($offer, $merchant->getId());
 
-        $this->repo->saveOrFail($offer);
-
-        return $offer;
-    }
-
-    public function deactivate(Entity $offer)
-    {
-        if ($offer->isActive() === false)
+        if ($existingOffers->count() > 0)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_OFFER_ALREADY_DEACTIVATED);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_ALREADY_EXISTS);
         }
-
-        $offer->deactivate();
-
-        $this->repo->saveOrFail($offer);
-
-        return $offer;
     }
 
-    public function bulkDeactivate()
+    protected function traceNonExistingIins(Entity $offer, Merchant\Entity $merchant)
     {
-        $activeExpiredOffers = $this->repo->offer->fetchActiveExpiredOffers();
-
-        $activeExpiredOffers->each(function ($offer)
+        if (isset($offer[Entity::IINS]) === true)
         {
-            $this->deactivate($offer);
-        });
+            $iins = $offer[Entity::IINS];
 
-        return $activeExpiredOffers;
+            $existingIins = $this->repo->iin->fetchIins($iins)->toArrayPublic()['items'];
+
+            $existingIins = array_column($existingIins, 'iin');
+
+            $nonExistingIins = array_diff($iins, $existingIins);
+
+            $this->trace->info(TraceCode::OFFER_IIN_DOES_NOT_EXISTS, [
+                'merchant_id'       => $merchant->getId(),
+                'non_existing_iins' => array_values($nonExistingIins),
+            ]);
+        }
     }
 }

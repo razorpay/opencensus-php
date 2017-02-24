@@ -340,11 +340,9 @@ final class Route
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
         'offer_update'                            => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
-        'offer_fetch'                             => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
+        'offer_fetch_multiple'                    => ['get',      'offers',                                         'OfferController@fetchOffers'                                       ],
         'offer_fetch_by_id'                       => ['get',      'offers/{id}',                                    'OfferController@fetchOfferById'                                    ],
-        'offer_iins_add'                          => ['patch',    'offers/{id}/iins/add',                           'OfferController@addIins'                                           ],
-        'offer_deactivate'                        => ['patch',    'offers/{id}/deactivate',                         'OfferController@deactivateOffer'                                   ],
-        'offer_bulk_deactivate'                   => ['patch',    'offers/deactivate',                              'OfferController@bulkDeactivateOffers'                              ],
+        'offer_deactivate'                        => ['patch',    'offers/deactivate',                              'OfferController@deactivateOffers'                                  ],
         'refund_create_gateway_record'            => ['post',     'refunds/{gateway}/create_record',                'RefundController@postGatewayRefundRecord'                          ],
         'currency_update_rates'                   => ['post',     'currency/{currency}/rates',                      'CurrencyController@postCurrencyRates'                              ],
         'currency_fetch_rates'                    => ['get',      'currency/{currency}/rates',                      'CurrencyController@getCurrencyRates'                               ],
@@ -559,10 +557,8 @@ final class Route
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
         'offer_create',
-        'offer_iins_add',
-        'offer_deactivate',
         'offer_update',
-        'offer_fetch',
+        'offer_fetch_multiple',
         'offer_fetch_by_id',
     );
 
@@ -734,7 +730,7 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
-        'offer_bulk_deactivate'
+        'offer_deactivate'
     );
 
     public static $proxy = array(
@@ -938,7 +934,7 @@ final class Route
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
-            'offer_bulk_deactivate'
+            'offer_deactivate'
         ),
 
         'kotak' => array(

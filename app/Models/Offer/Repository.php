@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Offer;
 
-use Carbon\Carbon;
 use DB;
-
-use RZP\Constants\Table;
+use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Constants\Table;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Account;
 
@@ -43,8 +42,8 @@ class Repository extends Base\Repository
         $query = $this->buildQuery($newOffer, $merchantId);
 
         $query->where(Entity::ACTIVE, '=', true)
-                ->where(Entity::STARTS_AT, '<=', $newOffer->getAttribute(Entity::ENDS_AT))
-                ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
+              ->where(Entity::STARTS_AT, '<=', $newOffer->getAttribute(Entity::ENDS_AT))
+              ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
 
         return $query->get();
     }
@@ -53,11 +52,12 @@ class Repository extends Base\Repository
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        return $this->newQuery()->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
-                        ->where(Entity::ACTIVE, '=', true)
-                        ->where(Entity::STARTS_AT, '<=', $now)
-                        ->where(Entity::ENDS_AT, '>=', $now)
-                        ->get();
+        return $this->newQuery()
+                    ->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
+                    ->where(Entity::ACTIVE, '=', true)
+                    ->where(Entity::STARTS_AT, '<=', $now)
+                    ->where(Entity::ENDS_AT, '>=', $now)
+                    ->get();
     }
 
     public function fetchActiveExpiredOffers()
@@ -72,7 +72,8 @@ class Repository extends Base\Repository
 
     protected function buildQuery(Entity $newOffer, string $merchantId)
     {
-        $query = $this->newQuery()->where(Entity::MERCHANT_ID, '=', $merchantId);
+        $query = $this->newQuery()
+                      ->where(Entity::MERCHANT_ID, '=', $merchantId);
 
         foreach ($this->offerFetchAttributes as $attribute)
         {

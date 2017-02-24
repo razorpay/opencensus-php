@@ -2,17 +2,14 @@
 
 namespace RZP\Models\Offer;
 
-use Carbon\Carbon;
-
 use RZP\Base;
-use RZP\Error\ErrorCode;
+use Carbon\Carbon;
 use RZP\Exception;
-use RZP\Models\Bank\IFSC;
 use RZP\Models\Card;
-use RZP\Models\Card\Network;
-use RZP\Models\Offer;
-use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Error\ErrorCode;
+use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
@@ -20,14 +17,18 @@ class Validator extends Base\Validator
     const CASHBACK_CRITERIA = 'cashback_criteria';
     const OFFER_PERIOD      = 'offer_period';
 
-    protected $payment;
+    const CASHBACK_CRITERIA_PARAMS = [
+        Entity::PERCENT_RATE,
+        Entity::MAX_CASHBACK,
+        Entity::FLAT_CASHBACK,
+    ];
 
     protected static $createRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
         Entity::PAYMENT_METHOD            => 'required|alpha|custom',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|in:debit,credit',
-        ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha',
+        Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
+        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha|custom',
         Entity::IINS                      => 'sometimes_if:payment_method,card|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
@@ -46,10 +47,13 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
+        Entity::IINS                      => 'sometimes|array',
+        Entity::ACTIVE                    => 'sometimes|in:0',
         Entity::FAIL_PAYMENT              => 'sometimes|boolean',
         Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
         Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
+        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50',
+
     ];
 
     protected static $createValidators = [
@@ -57,12 +61,11 @@ class Validator extends Base\Validator
         self::OFFER_PERIOD,
         Entity::FLAT_CASHBACK,
         Entity::PAYMENT_NETWORK,
+        Entity::IINS,
     ];
 
-    protected $cashbackCriteriaParams = [
-        Entity::PERCENT_RATE,
-        Entity::MAX_CASHBACK,
-        Entity::FLAT_CASHBACK,
+    protected static $editValidators = [
+        Entity::IINS,
     ];
 
     protected function validatePaymentNetwork(array $input)
@@ -79,15 +82,19 @@ class Validator extends Base\Validator
             case Payment\Method::CARD:
                 $this->validateCardNetwork($input);
                 break;
+
             case Payment\Method::WALLET:
                 Wallet::validateExists($input[Entity::PAYMENT_NETWORK]);
                 break;
+
             case Payment\Method::NETBANKING:
                 $this->validateNetbanking($input);
                 break;
+
             case Payment\Method::EMI:
                 $this->validateCardNetwork($input);
                 break;
+
             default:
                 throw new Exception\BadRequestException("Invalid payment method used");
                 break;
@@ -105,7 +112,7 @@ class Validator extends Base\Validator
 
     protected function cashbackCriteriaPresent(array $input)
     {
-        foreach ($this->cashbackCriteriaParams as $param)
+        foreach (self::CASHBACK_CRITERIA_PARAMS as $param)
         {
             if (isset($input[$param]) === true)
             {
@@ -142,14 +149,12 @@ class Validator extends Base\Validator
 
     protected function validateFlatCashback(array $input)
     {
-        if (empty($input[Entity::FLAT_CASHBACK]) === false)
+        if ((isset($input[Entity::FLAT_CASHBACK]) === true) and
+            ((isset($input[Entity::PERCENT_RATE]) === true) or
+                    (isset($input[Entity::MAX_CASHBACK]) === true)))
         {
-            if ((empty($input[Entity::PERCENT_RATE]) === false) or
-                    (empty($input[Entity::MAX_CASHBACK]) === false))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
         }
     }
 
@@ -160,7 +165,8 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestValidationFailureException(
                 'Payment network for card should be a valid card network');
         }
-        else if (Network::isUnsupportedNetwork($input[Entity::PAYMENT_NETWORK]) === true)
+
+        if (Network::isUnsupportedNetwork($input[Entity::PAYMENT_NETWORK]) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'This card payment network is not supported');
@@ -176,9 +182,27 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIins(array $iins)
+    protected function validateIssuer(string $attribute, string $value)
     {
-        if ($this->entity->getPaymentMethod() !== Payment\Method::CARD)
+        if (IFSC::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Issuer name : '. $value);
+        }
+    }
+
+    public function validateIins(array $input)
+    {
+        if (isset($input[Entity::IINS]) === false)
+        {
+            return;
+        }
+
+        $iins = $input[Entity::IINS];
+
+        $paymentMethod = $this->entity->getPaymentMethod() ? $this->entity->getPaymentMethod() : $input[Entity::PAYMENT_METHOD];
+
+        if ($paymentMethod !== Payment\Method::CARD)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER);
         }

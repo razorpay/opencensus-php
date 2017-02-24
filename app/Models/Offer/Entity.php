@@ -3,10 +3,10 @@
 namespace RZP\Models\Offer;
 
 use Carbon\Carbon;
-use RZP\Constants\Table;
 use RZP\Models\Base;
 use RZP\Models\Order;
 use RZP\Models\Payment;
+use RZP\Constants\Table;
 
 class Entity extends Base\PublicEntity
 {
@@ -298,18 +298,18 @@ class Entity extends Base\PublicEntity
         $this->attributes[self::PAYMENT_NETWORK] = $paymentNetwork;
     }
 
-    public function addIins(array $newIins)
+    protected function setIinsAttribute(array $iins)
     {
-        $this->getValidator()->validateIins($newIins);
-
         $existingIins = $this->getAttribute(self::IINS);
 
-        if ($this->iins !== null)
+        $mergedIins = $iins;
+
+        if ($existingIins !== null)
         {
-            $this->iins = array_unique(array_merge($existingIins, $newIins));
+            $mergedIins = array_unique(array_merge($existingIins, $iins));
         }
 
-        $this->iins = $newIins;
+        $this->attributes[self::IINS] = json_encode(array_values($mergedIins));
     }
 
 // -----------------------Mutators end------------------------------------------

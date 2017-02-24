@@ -2,9 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
+use Request;
 use ApiResponse;
 use RZP\Models\Offer;
-use Request;
 
 class OfferController extends Controller
 {
@@ -12,7 +12,7 @@ class OfferController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Offer\Service)->createOffer($input);
+        $data = (new Offer\Service)->create($input);
 
         return ApiResponse::json($data);
     }
@@ -21,7 +21,7 @@ class OfferController extends Controller
     {
         $input = Request::all();
 
-        $data = (new Offer\Service)->updateOffer($id, $input);
+        $data = (new Offer\Service)->update($id, $input);
 
         return ApiResponse::json($data);
     }
@@ -42,25 +42,9 @@ class OfferController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function addIins(string $id)
+    public function deactivateOffers()
     {
-        $input = Request::all();
-
-        $data = (new Offer\Service)->addIins($id, $input);
-
-        return ApiResponse::json($data);
-    }
-
-    public function deactivateOffer(string $id)
-    {
-        $data = (new Offer\Service)->deactivate($id);
-
-        return ApiResponse::json($data);
-    }
-
-    public function bulkDeactivateOffers()
-    {
-        $data = (new Offer\Service)->bulkDeactivate();
+        $data = (new Offer\Service)->deactivate();
 
         return ApiResponse::json($data);
     }

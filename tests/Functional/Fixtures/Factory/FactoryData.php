@@ -460,7 +460,8 @@ final class FactoryData
         ]);
 
         $factory(\RZP\Models\Offer\Entity::class, [
-            'id'    => $faker->uniqueid,
+            'id'        => $faker->uniqueid,
+            'active'    => true,
         ]);
 
         $factory(\RZP\Models\Device\Entity::class, [
