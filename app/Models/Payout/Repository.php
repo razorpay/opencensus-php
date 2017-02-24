@@ -3,6 +3,7 @@
 namespace RZP\Models\Payout;
 
 use RZP\Models\Base;
+use RZP\Exception;
 
 class Repository extends Base\Repository
 {

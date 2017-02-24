@@ -63,7 +63,7 @@ class Core extends Base\Core
     }
 
     /**
-     * Initiate settlements for payouts
+     * Initiate bank transfers for payouts
      *
      * @param  array  $input
      * @param  string $channel
@@ -78,7 +78,7 @@ class Core extends Base\Core
                 return $this->processBankPayouts($input, $channel);
             },
             self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_PAYOUT_TRANSFER_ANOTHER_OPERATION_IN_PROGRESS);
+            ErrorCode::BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS);
     }
 
     protected function createPayout(array $input, Merchant\Entity $merchant) : Entity
@@ -99,7 +99,7 @@ class Core extends Base\Core
     {
         return $this->repo->transaction(function() use ($input, $channel)
         {
-            $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+            $timestamp = Carbon::now('Asia/Kolkata')->timestamp;
 
             $payouts = $this->repo->payout->fetchCreatedPayouts($timestamp, Method::FUND_TRANSFER);
 
@@ -107,6 +107,7 @@ class Core extends Base\Core
 
             $method = 'processBankPayoutsFor' . ucfirst($channel);
 
+            // Calls $this->processBankPayoutsForKotak()
             $data[$channel] = $this->$method($payouts);
 
             $this->saveEntitiesToDb($payouts);
@@ -156,12 +157,8 @@ class Core extends Base\Core
 
         $destination = $this->getPayoutDestination($input, $merchant, $customer);
 
-        //create payout entity
-        $payout = (new Entity)->build($input);
-
         $payout->setChannel(Settlement\Channel::KOTAK);
 
-        //set relations
         $payout->merchant()->associate($merchant);
 
         $payout->customer()->associate($customer);
@@ -192,7 +189,7 @@ class Core extends Base\Core
             if ($destination->getEntityId() !== $customer->getId())
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    "Invalid destination id" . $destination->getPublicId());
+                    "Invalid destination_id: " . $destination->getPublicId());
             }
         }
 
