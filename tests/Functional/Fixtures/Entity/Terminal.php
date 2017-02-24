@@ -1038,8 +1038,8 @@ class Terminal extends Base
             'merchant_id'               => '1MercShareTerm',
             'gateway'                   => 'upi_hdfc',
             'gateway_merchant_id'       => 'razorpay upi hdfc',
-            'gateway_terminal_id'       => 'nodal account upi icici',
-            'gateway_merchant_id2'      => 'razorpay@hdfbank',
+            'gateway_terminal_id'       => 'nodal account upi hdfc',
+            'gateway_merchant_id2'      => 'razorpay@hdfcbank',
             'gateway_terminal_password' => 'razorpay_password',
             'shared'                    => 1,
         ];

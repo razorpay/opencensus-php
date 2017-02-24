@@ -34,6 +34,12 @@ class Gateway extends Base\Gateway
 
     const ACQUIRER = 'icici';
 
+    /**
+     * This is what shows up as the payee
+     * on the notification to the customer
+     */
+    const DEFAULT_PAYEE_VPA = 'razorpay@icici';
+
     protected $map = [
         Entity::VPA                       => Entity::VPA,
         Entity::PROVIDER                  => Entity::PROVIDER,
@@ -108,7 +114,13 @@ class Gateway extends Base\Gateway
                 ResponseCode::getResponseMessage($status));
         }
 
-        return true;
+        $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
+
+        return [
+            'data'   => [
+                'vpa'   => $vpa
+            ]
+        ];
     }
 
     /**
@@ -311,8 +323,6 @@ class Gateway extends Base\Gateway
         $collectByTimestamp = Carbon::now('Asia/Kolkata')->addMinutes(5)->format('d/m/Y h:i A');
 
         $data = [
-            // Amount and note are lowercase
-            // despite being uppercase in docs
             Fields::AMOUNT           => $this->formatAmount($payment['amount']),
             Fields::COLLECT_BY_DATE  => $collectByTimestamp,
             Fields::BILL_NUMBER      => '1234',

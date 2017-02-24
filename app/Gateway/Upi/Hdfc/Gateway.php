@@ -29,6 +29,12 @@ class Gateway extends Base\Gateway
 
     const BANK = 'hdfc';
 
+    /**
+     * This is what shows up as the payee
+     * on the notification to the customer
+     */
+    const DEFAULT_PAYEE_VPA = 'razorpay@hdfcbank';
+
     // Transaction Types
     const P2P = 'P2P';
     const P2M = 'P2M';
@@ -79,7 +85,13 @@ class Gateway extends Base\Gateway
                 ResponseCode::getResponseMessage($status));
         }
 
-        return true;
+        $vpa = $this->terminal->getGatewayMerchantId2() ?? self::DEFAULT_PAYEE_VPA;
+
+        return [
+            'data'   => [
+                'vpa'   => $vpa
+            ]
+        ];
     }
 
     /**

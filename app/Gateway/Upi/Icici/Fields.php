@@ -4,6 +4,8 @@ namespace RZP\Gateway\Upi\Icici;
 
 class Fields
 {
+    // Amount and note are lowercase
+    // despite being uppercase in docs
     const BANK_RRN                  = 'BankRRN';
     const MERCHANT_ID               = 'merchantId';
     const MERCHANT_TRAN_ID          = 'merchantTranId';
