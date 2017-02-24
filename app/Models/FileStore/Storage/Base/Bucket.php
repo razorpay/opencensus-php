@@ -22,7 +22,7 @@ class Bucket
         Type::BATCH_OUTPUT              => 'batch_bucket',
     ];
 
-    public static function getBucketConfigName($type, $mode = Mode::LIVE)
+    public static function getBucketConfigName($type, $env = 'production')
     {
         $bucketConfigName = static::DEFAULT_CONFIG_NAME;
 
@@ -31,7 +31,7 @@ class Bucket
             $bucketConfigName = static::BUCKET_MAP[$type];
         }
 
-        if ($mode === Mode::TEST)
+        if ($env !== 'production')
         {
             $bucketConfigName = static::TEST_BUCKET_NAME;
         }

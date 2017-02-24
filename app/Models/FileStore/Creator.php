@@ -14,58 +14,90 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 class Creator extends Base\Core
 {
     /**
+     * Entity Instance
+     *
      * @var Entity
      */
     protected $file;
 
     /**
      * Local file instance
+     *
      * @var UploadedFile
      */
     protected $localFile;
 
     /**
-     * @var string delimiter used in file
+     * Delimiter used in file
+     *
+     * @var string delimiter
      */
     protected $delimiter;
 
     /**
-     * @var array column Formatter used in file
+     * Column Formatter used in file
+     *
+     * @var array columnFormat
      */
     protected $columnFormat = [];
 
     /**
-     * @var string file Path of local file
+     * File Path of Local File
+     *
+     * @var string filePath
      */
     protected $filePath;
 
     /**
-     * @var string content to be used for file
+     * Content of File
+     *
+     * @var string content
      */
     protected $content;
 
     /**
-     * @var string file entity to be created with given id
+     * Pre-assigned Id of entity
+     *
+     * @var file entity to be created with given id
      */
     protected $id;
 
     /**
+     * Storage Handler instance
+     *
      * @var Store Handler
      */
     protected $storageHandler;
 
+    /**
+     * Store the environment value
+     *
+     * @var Environament
+     */
+    protected $env;
+
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
 
+    /**
+     * Constructor of class
+     */
     public function __construct()
     {
         parent::__construct();
 
         $this->file = new Entity;
 
+        $this->env = $this->app->environment();
+
         $this->setDefaults();
     }
 
+    /**
+     * Set the default Value for store and metadata
+     *
+     * @return None
+     */
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
@@ -104,7 +136,7 @@ class Creator extends Base\Core
     /**
      * Set the Local file
      *
-     * @param $file
+     * @param UploadedFile $file Local File Instance
      *
      * @return Creator object
      */
@@ -190,8 +222,9 @@ class Creator extends Base\Core
     /**
      * Set the id of File Store entity
      *
-     * @param  string $id id value
-     * @return Creator object
+     * @param string $id id value
+     *
+     * @return Creater object
      */
     public function id(string $id)
     {
@@ -203,7 +236,7 @@ class Creator extends Base\Core
     /**
      * Set the Entity of File Store
      *
-     * @param Base\Entity $entity
+     * @param Base\Entity $entity entity object
      *
      * @return Creator object
      */
@@ -231,7 +264,7 @@ class Creator extends Base\Core
     /**
      * Set the Column Format used for creation of file
      *
-     * @param array $columnFormat
+     * @param array $columnFormat format of column
      *
      * @return Creator object
      */
@@ -245,7 +278,7 @@ class Creator extends Base\Core
     /**
      * Sets merchant which is used for association later.
      *
-     * @param Merchant\Entity $merchant
+     * @param Merchant\Entity $merchant Merchant Entity
      *
      * @return Creator
      */
@@ -304,6 +337,11 @@ class Creator extends Base\Core
         return $data;
     }
 
+    /**
+     * Validates the Content before saving
+     *
+     * @return None
+     */
     protected function validateBeforeSave()
     {
         Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
@@ -311,6 +349,11 @@ class Creator extends Base\Core
         Type::validateType($this->file->getType());
     }
 
+    /**
+     * Validates the Mime and Extension before uploading
+     *
+     * @return None
+     */
     protected function validateBeforeUpload()
     {
         $extension = $this->file->getExtension();
@@ -328,7 +371,16 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        $bucket = $this->storageHandler->getBucketName($this->file->getType());
+        // For S3 We get Bucket Name
+        // For othre drivers we get Directory name and store as Bucket
+        if ($this->getStore() === 's3')
+        {
+            $bucket = $this->storageHandler->getBucketName($this->file->getType(), $this->env);
+        }
+        else
+        {
+            $bucket = $this->storageHandler->getSubDirectory($this->file->getType(), $this->env);
+        }
 
         $this->file->setBucket($bucket);
 
@@ -377,6 +429,11 @@ class Creator extends Base\Core
         }
     }
 
+    /**
+     * Write to Text File
+     *
+     * @return None
+    */
     protected function writeTextFile()
     {
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
