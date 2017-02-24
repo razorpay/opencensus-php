@@ -450,7 +450,7 @@ class Notifier extends Base\Core
 
             if ($sent === true)
             {
-                ++$totalSent;
+                $totalSent++;
             }
         }
 

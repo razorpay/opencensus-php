@@ -7,6 +7,7 @@ use RZP\Exception;
 class Type
 {
     const REFUND        = 'refund';
+    const PAYOUT        = 'payout';
     const PAYMENT       = 'payment';
     const ADJUSTMENT    = 'adjustment';
     const SETTLEMENT    = 'settlement';
