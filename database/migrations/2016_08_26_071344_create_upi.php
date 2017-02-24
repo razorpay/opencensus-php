@@ -3,7 +3,6 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
-use RZP\Models\Base\UniqueIdEntity;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Gateway\Upi\Base\Entity as Upi;
 use RZP\Constants\Table;
@@ -68,7 +67,7 @@ class CreateUpi extends Migration
             $table->string(Upi::NPCI_REFERENCE_ID)
                   ->nullable();
 
-            $table->char(Upi::REFUND_ID, UniqueIdEntity::ID_LENGTH)
+            $table->char(Upi::REFUND_ID, Upi::ID_LENGTH)
                 ->nullable();
 
             $table->integer(Upi::CREATED_AT);

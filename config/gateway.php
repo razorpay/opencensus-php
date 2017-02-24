@@ -163,7 +163,7 @@ return array(
         'test_hash_secret'  => env('PAYTM_GATEWAY_TEST_HASH_SECRET'),
     ),
 
-    'upi_icici' => array(
+    'upi_icici' => [
         'test_merchant_id'       => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_public_key'        => env('UPI_ICICI_TEST_PUBLIC_KEY'),
         'test_private_key'       => env('UPI_ICICI_TEST_PRIVATE_KEY'),
@@ -176,17 +176,20 @@ return array(
     ],
 
     'upi_idfc' => [
+    ],
+
+    'upi_idfc'  => [
         'test_kek'               => env('UPI_IDFC_TEST_KEK'),
         'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
 
     'upi_npci' => [
-        'test_decryption_key'     => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
-        'test_signing_key'        => env('UPI_NPCI_TEST_SIGNING_KEY'),
-        'test_signing_public_key' => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
+        'test_decryption_key'       => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
+        'test_signing_key'          => env('UPI_NPCI_TEST_SIGNING_KEY'),
+        'test_signing_public_key'   => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
     ],
 
-    'upi_hdfc' =>  [
+    'upi_hdfc' => [
         'test_merchant_id'       => env('UPI_HDFC_TEST_MERCHANT_ID'),
         'test_merchant_key'      => env('UPI_HDFC_TEST_MERCHANT_KEY'),
     ],
@@ -202,11 +205,11 @@ return array(
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
     ),
 
-    'wallet_olamoney' => array(
+    'wallet_olamoney'  => [
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
-    ),
+    ],
 
     'wallet_payumoney' => array(
         'test_hash_secret'      => env('PAYUMONEY_WALLET_TEST_HASH_SECRET'),

@@ -17,7 +17,7 @@ class Server extends Base\Mock\Server
     /**
      * How many legit (not "NA") fields
      * are expected to be parsed from the
-     * incoming request
+     * actual incoming request
      */
     const REQUEST_FIELD_COUNT = [
         Action::COLLECT     => 7,
@@ -125,7 +125,7 @@ class Server extends Base\Mock\Server
     {
         $this->action = Action::CALLBACK;
 
-        $content = $this->S2SRequestContent($upiEntity, $payment);
+        $content = $this->callbackResponseContent($upiEntity, $payment);
 
         $response = $this->makeResponse($content);
 
@@ -134,7 +134,7 @@ class Server extends Base\Mock\Server
         ];
     }
 
-    protected function S2SRequestContent(array $upiEntity, array $payment)
+    protected function callbackResponseContent(array $upiEntity, array $payment)
     {
         $status = 'SUCCESS';
 
@@ -171,26 +171,6 @@ class Server extends Base\Mock\Server
         return number_format($amount / 100 ,2, '.', '');
     }
 
-    protected function getDefaultVerifyResponse(array $input, $payment): array
-    {
-        return [
-            'status'        => 'SUCCESS',
-            'message'       => 'Transaction success',
-            'resp_code'     => '00',
-            'npci_txn_id'   => random_int(100000000000, 999999999999),
-            'cust_ref_id'   => random_int(100000000000, 999999999999),
-            'payment_id'    => $input[1],
-            'txn_id'        => $input[2],
-            'payer_va'      => $payment['vpa'],
-            'approval_num'  => random_int(100000, 999999),
-            // "2017:01:19 01:39:03" am/pm is not specified
-            // The date is actually not the date of authorization, but the
-            // timestamp when the collect request was raised
-            'auth_time'     => date('Y:m:d h:i:s', $payment['created_at']),
-            'amount'        => ($payment['amount'] / 100),
-        ];
-    }
-
     public function verify($input)
     {
         $input = $this->parseInput($input, Action::VERIFY);
@@ -223,6 +203,26 @@ class Server extends Base\Mock\Server
         ];
 
         return $this->makeResponse($res, Action::VERIFY);
+    }
+
+    protected function getDefaultVerifyResponse(array $input, $payment): array
+    {
+        return [
+            'status'        => 'SUCCESS',
+            'message'       => 'Transaction success',
+            'resp_code'     => '00',
+            'npci_txn_id'   => random_int(100000000000, 999999999999),
+            'cust_ref_id'   => random_int(100000000000, 999999999999),
+            'payment_id'    => $input[1],
+            'txn_id'        => $input[2],
+            'payer_va'      => $payment['vpa'],
+            'approval_num'  => random_int(100000, 999999),
+            // "2017:01:19 01:39:03" am/pm is not specified
+            // The date is actually not the date of authorization, but the
+            // timestamp when the collect request was raised
+            'auth_time'     => date('Y:m:d h:i:s', $payment['created_at']),
+            'amount'        => ($payment['amount'] / 100),
+        ];
     }
 
     public function refund($input)

@@ -17,7 +17,7 @@ class UpiHdfcGatewayTest extends TestCase
 
         parent::setUp();
 
-        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_terminal', [
+        $this->sharedTerminal = $this->fixtures->create('terminal:shared_upi_hdfc_terminal', [
             'gateway'   => 'upi_hdfc'
         ]);
 
