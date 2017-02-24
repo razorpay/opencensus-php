@@ -161,6 +161,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo($class, self::ENTITY_ID);
     }
 
+    public function payouts()
+    {
+        return $this->morphMany('RZP\Models\Payout\Entity', 'destination');
+    }
+
     public function getMpinSetAttribute()
     {
         return ($this->getAttribute(self::MPIN) !== null);
