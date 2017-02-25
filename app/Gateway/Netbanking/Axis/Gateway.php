@@ -312,13 +312,9 @@ class Gateway extends Base\Gateway
     {
         $content = $verify->verifyResponseContent;
 
-        $gatewayPayment = $verify->payment;
-
-        $bankPaymentId = $gatewayPayment->getBankPaymentId();
-
         if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
         {
-            $attributes = $this->getVerifyAttributes($content);
+            list($gatewayPayment, $attributes) = $this->getGatewayPaymentAndVerifyAttributes($verify);
 
             $gatewayPayment->fill($attributes);
 
@@ -328,14 +324,26 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes(array $content)
+    protected function getGatewayPaymentAndVerifyAttributes(Verify $verify)
     {
-        return [
-            Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::PAYMENT_STATUS],
-            Base\Entity::AMOUNT          => $content[ResponseFields::VERIFY_RESPONSE_AMT],
-            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID],
+        $content = $verify->verifyResponseContent;
+
+        $gatewayPayment = $verify->payment;
+
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
+        $attributes = [
+            Base\Entity::RECEIVED => true,
+            Base\Entity::STATUS   => $content[ResponseFields::PAYMENT_STATUS],
+            Base\Entity::AMOUNT   => $content[ResponseFields::VERIFY_RESPONSE_AMT],
         ];
+
+        if (empty($bankPaymentId) === true)
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REFERENCE_ID];
+        }
+
+        return [$gatewayPayment, $attributes];
     }
 
     protected function parseResponseXml(string $response)
