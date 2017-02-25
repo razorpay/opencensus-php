@@ -229,7 +229,7 @@ class NodalAccount
 
         $urlText = $this->writeToTextFileH2H($name, $txt);
 
-        $this->sendKotakRefundsMail($count, $amounts);
+        $this->sendKotakPayoutsMail($count, $amounts);
 
         return $urlText;
     }
@@ -291,25 +291,17 @@ class NodalAccount
         });
     }
 
-        protected function sendKotakRefundsMail($count, $amounts)
+    protected function sendKotakPayoutsMail($count, $amounts)
     {
         $amounts['total'] = sprintf('%.2f', $amounts['total']);
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
 
-        $subject = "Kotak IMPS refund files for $today";
+        $subject = "Kotak IMPS payouts files for $today";
 
         $data = compact('amounts', 'count', 'subject');
 
-        $fileName = $this->getH2HFileName();
-
-        $path = $this->getStorageDir();
-
-        $fullpath = $path . '/'. $fileName;
-
-        $data['file'] = $fullpath;
-
-        Mail::send('emails.admin.refund', $data, function($message) use ($data)
+        Mail::send('emails.admin.payout', $data, function($message) use ($data)
         {
             $emails = ['settlements@razorpay.com'];
 
@@ -319,16 +311,18 @@ class NodalAccount
 
             $message->to($emails);
 
-            $file = $data['file'];
+            $headers = $message->getHeaders();
 
-            $message->attach($file);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_PAYOUT_SUMMARY);
         });
     }
 
+    // @codingStandardsIgnoreStart
     protected function getH2HFileName()
     {
         $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
 
         return $name;
     }
+    // @codingStandardsIgnoreEnd
 }
