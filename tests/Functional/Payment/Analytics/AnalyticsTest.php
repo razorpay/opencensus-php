@@ -141,7 +141,10 @@ class AnalyticsTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
-        $requestServer = ['HTTP_USER_AGENT' => null];
+        $requestServer = [
+            'HTTP_USER_AGENT' => 'Razorpay UA',
+            'HTTP_REFERER'    => 'https://pay.com/demo'
+        ];
 
         $payment['_']['library'] = 'direct';
 

@@ -42,8 +42,8 @@ class MaxMind
     {
         $card = $payment->card;
 
-        $ua = $this->request->getRealClientIp();
-        $ip = $this->request->header('User-Agent');
+        $ip = $this->request->getRealClientIp();
+        $ua = $this->request->header('User-Agent');
 
         if ($this->basicauth->isPrivateAuth() === true)
         {

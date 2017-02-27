@@ -15,6 +15,7 @@ return [
         'platform_version' => '52.0.2743.116',
         'integration' => 'woo_commerce',
         'integration_version' => '0.1.2',
+        'ip' => '10.0.123.123'
     ],
 
     'testHttpRequestDataForNonOtpBasedPayment' => [
@@ -29,10 +30,12 @@ return [
         'platform_version' => '52.0.2743.116',
         'integration' => 'woo_commerce',
         'integration_version' => '0.1.2',
+        'ip' => '10.0.123.123'
     ],
 
     'testHttpRequestDataForS2sPayments' => [
-        'user_agent' => null,
+        'user_agent' => 'Razorpay UA',
+        'referer' => 'https://pay.com/demo',
         'browser' => null,
         'os' => null,
         'device' => 'desktop',
@@ -42,6 +45,7 @@ return [
         'platform_version' => null,
         'integration' => null,
         'integration_version' => null,
+        'ip' => '10.0.123.123',
     ],
 
     'testAnalyticsForS2sPayments' => [

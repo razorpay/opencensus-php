@@ -140,13 +140,11 @@ class Parser extends Base\Core
      */
     protected function setHttpRequestData(Entity $pa)
     {
-        $ua = $ip = $referer = null;
+        $ua = null;
 
         if ($this->ba->isPrivateAuth() === true)
         {
             $ua = $pa->payment->getMetadata('user_agent');
-            $ip = $pa->payment->getMetadata('ip', $this->request->getRealClientIp());
-            $referer = $pa->payment->getMetadata('referer');
         }
 
         $pa->setBrowser($this->getBrowser($ua));
@@ -162,9 +160,9 @@ class Parser extends Base\Core
 
         $pa->setDevice($this->getDeviceValue($ua));
 
-        $pa->setIp($ip);
+        $pa->setIp($this->getIp($pa));
 
-        $pa->setReferer($this->getRefererUrl($referer));
+        $pa->setReferer($this->getRefererUrl($pa));
 
         $ua = $ua ?: $this->request->header(RequestHeader::USER_AGENT);
 
@@ -226,9 +224,14 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getRefererUrl($referer)
+    protected function getRefererUrl($pa)
     {
-        $reqReferer = $referer ?: $this->request->header(RequestHeader::REFERER);
+        $reqReferer = $this->request->header(RequestHeader::REFERER);
+
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $reqReferer = $pa->payment->getMetadata('referer', $reqReferer);
+        }
 
         if ($reqReferer === null)
         {
@@ -257,6 +260,18 @@ class Parser extends Base\Core
         }
 
         return ((strtolower($domain) !== 'razorpay.com') ? $reqReferer : null);
+    }
+
+    protected function getIp($pa)
+    {
+        $ip = $this->request->getRealClientIp();
+
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            return $pa->payment->getMetadata('ip', $ip);
+        }
+
+        return $ip;
     }
 
     /**
