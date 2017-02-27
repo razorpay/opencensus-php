@@ -60,6 +60,8 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::CUSTOMER_ID,
+        self::ENTITY,
+        self::MONTHLY_USAGE,
     ];
 
     protected $casts = [
@@ -187,11 +189,11 @@ class Entity extends Base\PublicEntity
         return (int) $balance;
     }
 
-    protected function setPublicMonthlyUsageAttribute(array & $array)
+    protected function setPublicMonthlyUsageAttribute(array & $attributes)
     {
-        $monthlyUsage = $this->getAttribute(self::MONTHLY_USAGE);
+        $monthlyUsage = $this->getMonthlyUsage();
 
-        $lastTxnTime = $balance->getLastLoadedAt();
+        $lastTxnTime = $this->getLastLoadedAt();
 
         $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
 
@@ -199,15 +201,16 @@ class Entity extends Base\PublicEntity
 
         if ($lastTxnTime->month !== $now->month)
         {
-            $resetMonth = true;
+            $monthlyUsage = 0;
         }
 
+        $attributes[self::MONTHLY_USAGE] = $monthlyUsage;
     }
 
-    protected function setPublicCustomerIdAttribute(array & $array)
+    protected function setPublicCustomerIdAttribute(array & $attributes)
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 }
