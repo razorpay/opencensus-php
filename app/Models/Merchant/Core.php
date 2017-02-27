@@ -114,6 +114,13 @@ class Core extends Base\Core
 
         $this->saveAndNotify($merchant);
 
+        if (empty($input['groups']) === false)
+        {
+            $merchant = $this->repo
+                             ->merchant
+                             ->findOrFailPublicWithRelations($merchant->getId(), ['groups']);
+        }
+
         $this->trace->info(
             TraceCode::MERCHANT_EDIT,
             $input);

@@ -48,6 +48,16 @@ class Repository extends Base\Repository
         return $this->sharedMerchant;
     }
 
+    public function findOrFailPublicWithRelations(
+        string $id,
+        array $relations = [])
+    {
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $id)
+                    ->with($relations)
+                    ->firstOrFailPublic();
+    }
+
     public function getPricingPlanOrFailPublic($merchant)
     {
         $pricing = $merchant->getPricingPlanId();
