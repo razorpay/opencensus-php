@@ -8,6 +8,7 @@ use Config;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 use RZP\Models\FileStore\Storage\Base\Bucket;
+use RZP\Models\FileStore\Utility;
 
 class Handler extends BaseHandler
 {
@@ -74,6 +75,8 @@ class Handler extends BaseHandler
             $s3Obj['SaveAs'] = $filePath;
 
             $result = $s3->getObject($s3Obj);
+
+            Utility::call_file_operation('chmod', [$filePath, 0777]);
 
             $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }
