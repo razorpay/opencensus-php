@@ -17,7 +17,7 @@ class EsDao
 
     protected $mode;
 
-    // Logically seperated instance for heimdall
+    // Logically separated instance for heimdall
     protected $esHeimdall;
 
     public function __construct($mode = null)
