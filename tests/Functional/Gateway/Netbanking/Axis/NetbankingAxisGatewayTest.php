@@ -121,9 +121,12 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $refund = $this->refundPayment($payment['id'], 100000);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $refund = $this->refundPayment($payment['id'], 100000);
+            });
     }
 
     public function testDailyFileGeneration()
@@ -156,9 +159,12 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
-            $this->doAuthPayment($this->payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     public function testVerifyMismatch()
@@ -169,9 +175,12 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockVerifyStatusFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['razorpay_payment_id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['razorpay_payment_id']);
+            });
     }
 
     // Auth fails but verify shows success
@@ -183,13 +192,16 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
-        $this->assertEquals($gatewayPayment['status'], 'S');
+        $this->assertEquals($gatewayPayment['status'], 'Y');
     }
 
     protected function createPaymentsToClaim()
@@ -350,27 +362,30 @@ class NetbankingAxisGatewayTest extends TestCase
 
     protected function mockPaymentFailure()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $content['PAID'] = 'N';
-        });
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content['PAID'] = 'N';
+            });
     }
 
     protected function mockVerifyStatusFailure()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $content['PaymentStatus'] = 'F';
-        });
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content['PaymentStatus'] = 'F';
+            });
     }
 
     protected function mockSetBankPaymentId()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $gatewayEntity = $this->getLastEntity('netbanking', true);
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-            $content['BID'] = $gatewayEntity['bank_payment_id'];
-        });
+                $content['BID'] = $gatewayEntity['bank_payment_id'];
+            });
     }
 }
