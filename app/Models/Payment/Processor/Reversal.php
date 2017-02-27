@@ -3,6 +3,7 @@
 namespace RZP\Models\Payment\Processor;
 
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
@@ -28,8 +29,11 @@ trait Reversal
                                     $transfer->getId(), $transfer->getToId());
 
         // Refund the transfer payment - this debits the account balance
-        (new Processor($transferPayment->merchant))
-            ->refundTransferPayment($transferPayment, $amount);
+        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($amount, $transferPayment)
+        {
+            (new Processor($transferPayment->merchant))
+                ->refundTransferPayment($transferPayment, $amount);
+        });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
@@ -58,10 +62,6 @@ trait Reversal
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);
 
-        $this->refund = $refund;
-
-        $this->payment = $payment;
-
         $refund->merchant()->associate($this->merchant);
 
         $refund->setBaseAmount();
@@ -69,6 +69,18 @@ trait Reversal
         $txn = (new Transaction\Core)->createFromRefund($refund);
 
         $this->repo->saveOrFail($txn);
+
+        $amount = $refund->getAmount();
+
+        $baseAmount = $refund->getBaseAmount();
+
+        $payment = $this->repo->payment->lockForUpdate($payment->getKey());
+
+        $payment->refundAmount($amount, $baseAmount);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->repo->saveOrFail($refund);
     }
 
     /**
@@ -157,7 +169,7 @@ trait Reversal
             $this->implicitAddReversalsForFullRefund($transfers, $input);
         }
 
-        return true;
+        return $reverseAll;
     }
 
     /**

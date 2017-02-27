@@ -84,6 +84,12 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->checkReversalsSingle($transfers['items']);
 
+        $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($transferId, $transferPayment['transfer_id']);
+
+        $this->assertEquals(1000, $transferPayment['amount_refunded']);
+
         $paymentEntity = $this->getEntityById('payment', explode('_', $this->payment['id'])[1], true);
 
         $paymentAmountRefunded = $paymentEntity['amount_refunded'];
