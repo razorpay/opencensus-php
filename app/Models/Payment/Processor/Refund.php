@@ -19,7 +19,6 @@ use RZP\Trace\Trace;
 use RZP\Models\Transfer;
 use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
-use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
@@ -236,12 +235,11 @@ trait Refund
     /**
      * Process refund on a payment that has Marketplace transfers
      *
-     * @param Payment\Entity $payment
      * @param array $input
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function processRefundWithTransfers(Payment\Entity $payment, array $input)
+    public function processRefundWithTransfers(array $input)
     {
         if (isset($input['reversals']) === false)
         {
@@ -349,14 +347,16 @@ trait Refund
      * Get the type of refund being processed - FULL / PARTIAL,
      * based on the refund amount and amount already refunded
      *
+     * @param array $input
+     *
      * @return string
      */
-    protected function getPaymentRefundType(Payment\Entity $payment, array $input)
+    protected function getPaymentRefundType(array $input)
     {
         $type = Payment\Refund\Status::PARTIAL;
 
         if ((isset($input['amount']) === false) or
-           ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
+            ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
         {
             $type = Payment\Refund\Status::FULL;
         }
@@ -785,7 +785,7 @@ trait Refund
 
         if ($processReversals === true)
         {
-            $this->processRefundWithTransfers($payment, $input);
+            $this->processRefundWithTransfers($input);
         }
 
         return $this->refund($payment, $input, $batch);
