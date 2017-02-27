@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
@@ -256,6 +257,11 @@ class MerchantFilter extends Terminal\Filter
             if (in_array($network, [Network::VISA, Network::MC], true) === true)
             {
                 return false;
+            }
+            elseif (in_array($network, [Network::RUPAY, Network::MAESTRO], true) === true)
+            {
+                throw new Exception\BadRequestException(
+                    Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
             }
         }
 
