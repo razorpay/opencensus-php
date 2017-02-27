@@ -230,6 +230,12 @@ class NodalAccount
 
         $urlText = $this->writeToTextFileH2H($name, $txt);
 
+        self::$fileToWriteName = 'Kotak_Payout';
+
+        $name = $this->getFileToWriteName();
+
+        $fullpath = $this->saveLocally($name, $txt);
+
         $this->sendKotakPayoutsMail($name, $count, $amounts);
 
         return $urlText;
