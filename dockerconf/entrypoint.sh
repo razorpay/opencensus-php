@@ -4,11 +4,11 @@
 sleep 30
 
 # Fix permissions
-echo  "$date Fix permissions"
+echo  "$(date) Fix permissions"
 cd /app/ && chmod 777 -R storage
 
 # Copy config
-echo "$date Configuring App"
+echo "$(date) Configuring App"
 cp dockerconf/api.docker.conf /etc/apache2/conf.d/api.conf && \
 cp environment/.env.sample environment/.env.docker && \
 cp environment/env.sample.php environment/env.php
@@ -34,24 +34,24 @@ sed -i 's/^SLAVE_DB_TEST_DATABASE=api_test/SLAVE_DB_TEST_DATABASE=api_testing_te
 # Remove temp file
 rm environment/.env.docker
 # Fix memory limit
-echo "$date Memory Limit"
+echo "$(date) Memory Limit"
 ## This is a bad workaround for increasing php's memory to to 3G enable running tests locally
 ## Mac's sed idiosyncrasies :(
 echo 'memory_limit = 128M' | sed -E 's/memory_limit\s*=\s*\d*M/memory_limit = 3048M/g' /etc/php7/php.ini > /tmp/php.ini
 mv /tmp/php.ini /etc/php7/php.ini
 
 # DB Migrate
-echo  "$date DB Migrate"
-echo "$date Seeding live database"
+echo  "$(date) DB Migrate"
+echo "$(date) Seeding live database"
 cd /app/ && \
 php artisan rzp:dbr --install --seed
-echo "$date Seeding Test database"
+echo "$(date) Seeding Test database"
 APP_ENV=testing_docker php artisan rzp:dbr --install
-echo "$date Starting Apache"
+echo "$(date) Starting Apache"
 export PATH=$PATH:/app/:/app/vendor/bin/
 
 # start httpd
-echo "$date Apache"
+echo "$(date) Apache"
 mkdir /tmp/run
 chown 0775 /tmp/run/
 /usr/sbin/httpd -D FOREGROUND
