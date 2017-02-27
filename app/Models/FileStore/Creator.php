@@ -362,11 +362,8 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        $bucketConfig = $this->storageHandler->getBucketConfig($this->file->getType(), $this->env);
-
-        $this->file->setBucket($bucketConfig['name']);
-
-        $this->file->setRegion($bucketConfig['region']);
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
 
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
@@ -380,6 +377,10 @@ class Creator extends Base\Core
         $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
+
+        $this->file->setBucket($bucketConfig['name']);
+
+        $this->file->setRegion($bucketConfig['region']);
     }
 
     /**

@@ -243,7 +243,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BUCKET);
     }
 
-    public function getResion()
+    public function getRegion()
     {
         return $this->getAttribute(self::REGION);
     }

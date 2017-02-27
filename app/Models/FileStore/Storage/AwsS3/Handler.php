@@ -20,11 +20,16 @@ class Handler extends BaseHandler
         $this->config = $this->app['config']->get('filestore.aws');
     }
 
-    public static function getClient()
+    public static function getClient($region = null)
     {
         $awsConfig = Config::get('aws');
 
-        $awsConfig['region'] = $awsConfig['bucket_region'];
+        if ($region === null)
+        {
+            $region = $awsConfig['bucket_region'];
+        }
+
+        $awsConfig['region'] = $region;
 
         $client = new Aws\Sdk($awsConfig);
 
