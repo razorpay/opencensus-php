@@ -223,7 +223,7 @@ class Service extends Base\Service
 
         $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        if ($merchantDetails->merchant->isAccount() === true)
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
         {
             $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
         }

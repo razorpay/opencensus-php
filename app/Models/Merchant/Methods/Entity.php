@@ -263,7 +263,7 @@ class Entity extends Base\PublicEntity
 
     public function isTransferEnabled()
     {
-        return $this->merchant->isAccount();
+        return $this->merchant->isLinkedAccount();
     }
 
     public function isMethodEnabled($method)

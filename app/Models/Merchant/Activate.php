@@ -95,7 +95,7 @@ class Activate extends Base\Core
         $config = $this->app->config->get('applications.mailgun');
 
         // For marketplace accounts, send this email to the parent merchant
-        if ($merchant->isAccount() === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             $data['merchant']['email'] = $merchant->parent->getEmail();
         }

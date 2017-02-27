@@ -32,7 +32,7 @@ class Core extends Base\Core
 
         $balance->merchant()->associate($merchant);
 
-        $balance->build();
+        $balance->generate([]);
 
         $this->repo->saveOrFail($balance);
 
@@ -74,8 +74,10 @@ class Core extends Base\Core
 
         $balance->addBalance($amount);
 
+        //
         // For all credits to the wallet, other than refunds,
         // update daily/weekly/month usage values
+        //
         if ($isRefund === false)
         {
             $this->updateUsages($balance, $amount);

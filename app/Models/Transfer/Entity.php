@@ -200,8 +200,13 @@ class Entity extends Base\PublicEntity
 
         if ($amount > $amountUnreversed)
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Transfer reversal amount should be less than or equal to amount not refunded yet');
+            throw new Exception\LogicException(
+                'Transfer reversal amount should be less than or equal to amount not refunded yet',
+                'amount_reversed',
+                [
+                    'amount'                => $amount,
+                    'amount_unreversed'     => $amountUnreversed,
+                ]);
         }
 
         $amountReversed = $this->getAmountReversed() + $amount;

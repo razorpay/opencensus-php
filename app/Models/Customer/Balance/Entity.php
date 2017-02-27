@@ -181,8 +181,7 @@ class Entity extends Base\PublicEntity
     {
         $balance = $this->attributes[self::MAX_BALANCE];
 
-        if (($balance === null) or
-            ($balance === '0'))
+        if ($balance === null)
         {
             $balance = self::MAX_BALANCE_DEFAULT;
         }

@@ -93,9 +93,16 @@ trait Reversal
     {
         foreach ($reversals as $reversal)
         {
-            $transfer = $this->repo
-                             ->transfer
-                             ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
+            if ($reversal['transfer'] instanceof Transfer\Entity)
+            {
+                $transfer = $reversal['transfer'];
+            }
+            else
+            {
+                $transfer = $this->repo
+                                 ->transfer
+                                 ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
+            }
 
             $this->mutex->acquireAndRelease(
                 $transfer->getId(),
@@ -145,6 +152,13 @@ trait Reversal
 
         $transfers = null;
 
+        $validator = new Payment\Refund\Validator;
+
+        $validator->setPayment($payment);
+
+        // Validating here to verify reversal attributes in the refund request
+        $validator->validateInput('create', $input);
+
         //
         // @todo: Commenting this block of code for now, in favor of the reverse_all
         // flag, will be added back in later - after discussions
@@ -167,7 +181,7 @@ trait Reversal
 
             $refundType = $this->getPaymentRefundType($input);
 
-            (new Payment\Refund\Validator)->validateReverseAll($refundType, $transfers);
+            $validator->validateReverseAll($refundType, $transfers);
 
             $this->implicitAddReversalsForFullRefund($transfers, $input);
         }
@@ -289,7 +303,7 @@ trait Reversal
             }
 
             $reversals[] = [
-                'transfer'  => $transfer->getPublicId(),
+                'transfer'  => $transfer,
                 'amount'    => $amountToReverse,
             ];
         }

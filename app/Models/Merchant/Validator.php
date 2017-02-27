@@ -149,7 +149,7 @@ class Validator extends Base\Validator
     public function validateMerchantForMarketplaceTransfer($account, $mode)
     {
         if (($account === null) or
-            ($account->isAccount() === false) or
+            ($account->isLinkedAccount() === false) or
             ($account->getParentId() !== $this->entity->getId()))
         {
             throw new Exception\BadRequestException(
@@ -190,7 +190,7 @@ class Validator extends Base\Validator
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
         // Dont validate these attributes for Marketplace accounts
-        if ($merchant->isAccount() === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             return;
         }

@@ -231,8 +231,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a sub-account under Marketplace
-    public function isAccount()
+    // Is the merchant a linked-account under Marketplace
+    public function isLinkedAccount()
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
     }

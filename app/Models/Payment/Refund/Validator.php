@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         'notes'                 => 'sometimes|notes',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
-        'reversals.*.transfer'  => 'required|string|size:18',
+        'reversals.*.transfer'  => 'required',
         'reversals.*.amount'    => 'required|integer|min:100',
     ];
 
@@ -161,7 +161,12 @@ class Validator extends Base\Validator
             ($refundType === Payment\Refund\Status::PARTIAL))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'The reverse_all parameter is not supported for this refund');
+                'The reverse_all parameter is not supported for this refund',
+                'reverse_all',
+                [
+                    'transfer_count' => $transferCount,
+                    'refund_type'    => $refundType,
+                ]);
         }
     }
 }

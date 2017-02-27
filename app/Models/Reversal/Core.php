@@ -46,7 +46,7 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($transfer);
 
-        $reversal = $this->createEntity($amount, $transfer->getCurrency());
+        $reversal = $this->create($amount, $transfer->getCurrency());
 
         $reversal->transfer()->associate($transfer);
 
@@ -106,7 +106,7 @@ class Core extends Base\Core
         });
     }
 
-    protected function createEntity(int $amount, string $currency) : Entity
+    protected function create(int $amount, string $currency) : Entity
     {
         $data = [
             'amount'    => $amount,

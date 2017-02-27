@@ -16,14 +16,13 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
-use RZP\Models\Transfer;
-use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
 
 trait Refund
 {
     /**
      * Refunds a payment
+     *
      * @param  Payment\Entity   $payment     Payment Id
      * @param  array            $input  Refund input params
      * @param  Batch\Entity     $batch
@@ -252,6 +251,8 @@ trait Refund
         $this->repo->transaction(function () use ($input)
         {
             $this->processReversals($input['reversals']);
+
+            unset($input['reversals']);
         });
     }
 
@@ -774,19 +775,16 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        if ($payment->isTransfer() === true)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
-        }
+            // Determine if transfer reversals should be processed along with the refund
+            $processReversals = $this->shouldProcessReversals($payment, $input);
 
-        // Determine if transfer reversals should be processed along with the refund
-        $processReversals = $this->shouldProcessReversals($payment, $input);
-
-        if ($processReversals === true)
-        {
-            $this->processRefundWithTransfers($input);
-        }
+            if ($processReversals === true)
+            {
+                $this->processRefundWithTransfers($input);
+            }
+        });
 
         return $this->refund($payment, $input, $batch);
     }
