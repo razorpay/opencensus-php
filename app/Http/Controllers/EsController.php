@@ -38,7 +38,7 @@ class EsController extends Controller
     {
         parent::__construct();
 
-        $this->esDao = new EsDao();
+        $this->esDao = new EsDao;
     }
 
     /**
@@ -48,6 +48,7 @@ class EsController extends Controller
      * @param string $method
      *
      * @return ApiResponse
+     * @throws BadRequestException
      */
     public function debug(string $method)
     {
