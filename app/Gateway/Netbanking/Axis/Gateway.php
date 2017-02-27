@@ -259,7 +259,7 @@ class Gateway extends Base\Gateway
 
     protected function checkDecryptionFailure(string $encryptedString, array $content)
     {
-        if (empty($content) ===  true)
+        if (empty($content) === true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString,
@@ -303,7 +303,7 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getVerifyAttributes($content);
 
-        if ($bankPaymentId === null)
+        if (empty($bankPaymentId) === true)
         {
             $gatewayPayment->fill($attributes);
 

@@ -175,6 +175,7 @@ class TraceCode
     const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                    = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                = 'INVOICE_PDF_GEN_TIME_TAKEN';
+    const INVOICE_PDF_GEN_SYNC                      = 'INVOICE_PDF_GEN_SYNC';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';

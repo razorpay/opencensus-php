@@ -1713,3 +1713,7 @@ ALTER TABLE netbanking
 # payouts related fields
 ALTER TABLE payments
     ADD COLUMN amount_paidout INTEGER UNSIGNED DEFAULT 0 AFTER base_amount_refunded;
+
+# payout reconcilation remarks
+ALTER TABLE payouts
+    ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;

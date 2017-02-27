@@ -40,4 +40,13 @@ class PayoutController extends Controller
 
         return ApiResponse::json($data);
     }
+
+    public function postPayoutInitiate(string $channel)
+    {
+        $input = Request::all();
+
+        $data = $this->service->initiatePayouts($input, $channel);
+
+        return ApiResponse::json($data);
+    }
 }
