@@ -7,16 +7,6 @@ use RZP\Gateway\Hdfc;
 
 class ErrorHandler
 {
-    public static function unknownError()
-    {
-        return static::$invalidErrorCode;
-    }
-
-    public static function getInvalidError()
-    {
-        return self::getErrorDetailsHdfc(ErrorCode::$invalidErrorCode);
-    }
-
     public static function getErrorMessage($code)
     {
         return Hdfc\ErrorCode::$errorMessages[$code];
@@ -76,6 +66,13 @@ class ErrorHandler
         {
             $code = Hdfc\ErrorCode::RP00013;
         }
+
+        return self::getErrorDetails($code);
+    }
+
+    public static function setRequestError()
+    {
+        $code = Hdfc\ErrorCode::RP00014;
 
         return self::getErrorDetails($code);
     }

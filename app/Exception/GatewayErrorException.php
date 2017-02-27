@@ -2,7 +2,6 @@
 
 namespace RZP\Exception;
 
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 
 class GatewayErrorException extends RecoverableException
@@ -22,22 +21,11 @@ class GatewayErrorException extends RecoverableException
         $gatewayErrorDesc = null,
         \Exception $previous = null)
     {
-        Error::checkErrorCode($code);
-
-        $error = new Error($code);
-
-        $this->setError($error);
+        $this->initError($code);
 
         $this->setGatewayErrorCodeAndDesc(
             $gatewayErrorCode,
             $gatewayErrorDesc);
-
-        $desc = $error->getDescription();
-
-        $desc .= PHP_EOL . 'Gateway Error Code: ' . $gatewayErrorCode .
-                 PHP_EOL . 'Gateway Error Desc: ' . $gatewayErrorDesc;
-
-        $this->message = $desc;
     }
 
     public function markTwoFaError()
@@ -67,6 +55,13 @@ class GatewayErrorException extends RecoverableException
     public function setGatewayErrorCodeAndDesc($code, $desc)
     {
         $this->error->setGatewayErrorCodeAndDesc($code, $desc);
+
+        $desc = $this->error->getDescription();
+
+        $desc .= PHP_EOL . 'Gateway Error Code: ' . $code .
+                 PHP_EOL . 'Gateway Error Desc: ' . $desc;
+
+        $this->message = $desc;
     }
 
     protected function isTwoFaError($errorCode)

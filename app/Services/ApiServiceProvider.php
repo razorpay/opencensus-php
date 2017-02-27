@@ -13,6 +13,8 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
+use RZP\Models\Payout;
+use RZP\Models\BankAccount;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -259,6 +261,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'payment'         => Payment\Entity::class,
             'refund'          => Payment\Refund\Entity::class,
             'settlement'      => Settlement\Entity::class,
+            'payout'          => Payout\Entity::class,
+
+            'bank_account'    => BankAccount\Entity::class,
         ]);
     }
 }
