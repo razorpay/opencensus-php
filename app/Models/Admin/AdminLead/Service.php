@@ -43,4 +43,14 @@ class Service extends Base\Service
 
         return ['success' => true];
     }
+
+    public function getInvitations()
+    {
+        $admin = $this->app['basicauth']->getAdmin();
+        $orgId = $admin->getPublicOrgId();
+
+        $invitations = $this->repo->admin_lead->fetchByOrgId($orgId);
+
+        return $invitations->toArrayPublic();
+    }
 }

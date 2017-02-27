@@ -125,6 +125,22 @@ class OrganizationController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postAdminLead()
+    {
+        $input = Request::all();
+
+        $data = (new Admin\AdminLead\Service)->sendInvitation($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getAdminLeadMultiple()
+    {
+        $data = (new Admin\AdminLead\Service)->getInvitations();
+
+        return ApiResponse::json($data);
+    }
+
 // --------------------- END CRUD for Admins   ---------------------------------------
 
 // --------------------- CRUD for roles  -----------------------------------------

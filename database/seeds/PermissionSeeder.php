@@ -9,8 +9,10 @@ class PermissionSeeder extends Seeder
 {
     protected static $permissions = [
         PermissionCategory::MERCHANT => [
-            Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
-            Permission::VIEW_MERCHANT         => 'View a particular merchant details',
+            Permission::VIEW_ALL_MERCHANTS     => 'View all merchants in merchant lists',
+            Permission::VIEW_MERCHANT          => 'View a particular merchant details',
+            Permission::CREATE_MERCHANT_INVITE => 'Create an invite for merchant',
+            Permission::VIEW_MERCHANT_INVITE   => 'View merchant invites',
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [
@@ -169,8 +171,10 @@ class PermissionSeeder extends Seeder
     // This array must be a **strict** subset of the one above
     protected static $trimmedDownPermissions = [
         PermissionCategory::MERCHANT => [
-            Permission::VIEW_ALL_MERCHANTS    => 'View all merchants in merchant lists',
-            Permission::VIEW_MERCHANT         => 'View a particular merchant details',
+            Permission::VIEW_ALL_MERCHANTS     => 'View all merchants in merchant lists',
+            Permission::VIEW_MERCHANT          => 'View a particular merchant details',
+            Permission::CREATE_MERCHANT_INVITE => 'Create an invite for merchant',
+            Permission::VIEW_MERCHANT_INVITE   => 'View merchant invites',
         ],
 
         PermissionCategory::MERCHANT_DETAIL => [

@@ -376,6 +376,8 @@ final class Route
         'admin_fetch_merchant_ids'                => ['get',      'orgs/{orgId}/admins/{id}/merchant_ids',          'OrganizationController@getMerchantIds'                             ],
         'admin_fetch_merchants'                   => ['get',      'orgs/{orgId}/admins/{id}/merchants',             'OrganizationController@getMerchants'                               ],
         'admin_delete'                            => ['delete',   'orgs/{orgId}/admins/{id}',                       'OrganizationController@deleteAdmin'                                ],
+        'admin_lead_create'                       => ['post',     'orgs/{orgId}/admin-lead/',                       'OrganizationController@postAdminLead'                              ],
+        'admin_lead_get_multiple'                 => ['get',      'orgs/{orgId}/admin-lead/',                       'OrganizationController@getAdminLeadMultiple'                       ],
         'admin_authentication'                    => ['post',     'orgs/{orgId}/admin/authenticate',                'OrganizationController@postAuthenticate'                           ],
         'admin_oauth_authenticate'                => ['post',     'orgs/{orgId}/admin/oauth_login',                 'OrganizationController@oAuthLogin'                                 ],
         'admin_forgot_password'                   => ['post',     'orgs/{orgId}/admin/forgot_password',             'OrganizationController@postForgotPassword'                         ],
@@ -834,6 +836,8 @@ final class Route
         'admin_get',
         'admin_edit',
         'admin_delete',
+        'admin_lead_create',
+        'admin_lead_get_multiple',
         'group_create',
         'group_edit',
         'group_delete',
@@ -888,6 +892,8 @@ final class Route
         'org_fieldmap_get'               => [Permission::GET_ORG_FIELDMAP],
         'org_fieldmap_edit'              => [Permission::EDIT_ORG_FIELDMAP],
         'org_fieldmap_delete'            => [Permission::DELETE_ORG_FIELDMAP],
+        'admin_lead_create'              => [Permission::CREATE_MERCHANT_INVITE],
+        'admin_lead_get_multiple'        => [Permission::VIEW_MERCHANT_INVITE],
     ];
 
     public static $direct = array(

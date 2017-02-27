@@ -134,7 +134,7 @@ class RoleTest extends TestCase
 
         $expectedPermissionCount =
 
-        $this->assertEquals(114, count($result['permissions']));
+        $this->assertEquals(116, count($result['permissions']));
     }
 
     public function testDeleteRole()
