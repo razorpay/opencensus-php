@@ -122,21 +122,7 @@ class Accessor extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            $oldmask = umask(0);
-
-            $result = mkdir($dir, 0777, true);
-
-            umask($oldmask);
-
-            if ($result === false)
-            {
-                $this->trace->warning(
-                    TraceCode::FILE_STORE_MKDIR_FAILED,
-                    [
-                        'dir'  => $dir,
-                        'path' => $filePath,
-                    ]);
-            }
+            Utility::call_file_operation('mkdir', [$dir, 0777, true]);
         }
 
         $bucketConfig = [

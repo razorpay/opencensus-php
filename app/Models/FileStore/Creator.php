@@ -419,8 +419,6 @@ class Creator extends Base\Core
      */
     protected function writeTextFile()
     {
-        $oldmask = umask(0);
-
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fullPath = $this->getFullFilePath();
@@ -429,17 +427,7 @@ class Creator extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            $result = mkdir($dir, 0777, true);
-
-            if ($result === false)
-            {
-                $this->trace->warning(
-                    TraceCode::FILE_STORE_MKDIR_FAILED,
-                    [
-                        'dir'  => $dir,
-                        'path' => $fullPath,
-                    ]);
-            }
+            Utility::call_file_operation('mkdir', [$dir, 0777, true]);
         }
 
         $file = fopen($fullPath, 'w');
@@ -452,16 +440,7 @@ class Creator extends Base\Core
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            $result = chmod($fullPath, 0777);
-
-            if ($result === false)
-            {
-                $this->trace->warning(
-                    TraceCode::FILE_PERMISSION_CHANGE_FAILED,
-                    [
-                        'path' => $fullPath
-                    ]);
-            }
+            Utility::call_file_operation('chmod', [$fullPath, 0777]);
         }
         catch (\Exception $e)
         {
@@ -473,8 +452,6 @@ class Creator extends Base\Core
                     'path' => $fullPath
                 ]);
         }
-
-        umask($oldmask);
 
         $this->createUploadedFile($fullPath, $fileName);
     }
