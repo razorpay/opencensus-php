@@ -12,7 +12,12 @@ class Service extends Base\Service
         $errors = [];
         $data = null;
 
-        $validation = (new Validator)->validateInput('sendInvitation', $input);
+        $admin = $this->app['basicauth']->getAdmin();
+
+        $customCode = $admin->getCustomCode();
+
+        $validation = (new Validator)->validateOrgSpecificInput(
+            'sendInvitation', $input, $customCode);
 
         if ($validation->fails())
         {

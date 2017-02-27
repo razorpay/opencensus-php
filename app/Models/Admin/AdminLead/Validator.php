@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\AdminLead;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 
 class Validator extends Base\Validator
 {
@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::FORM_DATA => 'required|string',
     ];
 
-    protected static $sendInvitationRules = [
+    protected static $sendInvitationRulesForHdfcBank = [
         'contact_email' => 'required|max:255|email',
         'channel_code'  => 'required',
         'crm_next_no'   => 'required',
