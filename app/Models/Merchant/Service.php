@@ -112,16 +112,7 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
-        if (empty($input['groups']) === false)
-        {
-            $merchant = $this->repo
-                             ->merchant
-                             ->findOrFailPublicWithRelations($id, ['groups']);
-        }
-        else
-        {
-            $merchant = $this->repo->merchant->findOrFailPublic($id);
-        }
+        $merchant = $this->repo->merchant->findOrFailPublic($id);
 
         if (isset($input['groups']) === true)
         {

@@ -114,6 +114,8 @@ class Core extends Base\Core
 
         $this->saveAndNotify($merchant);
 
+        // If groups has been edited, fetch the entity again with relations.
+        // Simple entity edit does not contain updated relations
         if (empty($input['groups']) === false)
         {
             $merchant = $this->repo
