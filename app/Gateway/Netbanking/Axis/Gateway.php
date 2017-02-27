@@ -4,9 +4,9 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -131,8 +131,8 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        if ($input['payment']['status'] === 'failed' or
-            $input['payment']['status'] === 'created')
+        if (($input['payment']['status'] === Payment\Status::FAILED) or
+            ($input['payment']['status'] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
@@ -153,8 +153,10 @@ class Gateway extends Base\Gateway
 
     protected function returnVerifyStatusOrThrowException(Verify $verify)
     {
+        //
         // In this case, there's a bug in the code
-        // The payment is getting incorrectly authorized
+        // The payment was incorrectly marked as authorized.
+        //
         if (($verify->apiSuccess === true) and
             ($verify->gatewaySuccess === false))
         {
