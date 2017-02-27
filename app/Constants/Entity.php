@@ -68,6 +68,7 @@ class Entity
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const OFFER                 = 'offer';
     const COUPON                = 'coupon';
+    const PAYOUT                = 'payout';
 
     //
     // Gateway entities

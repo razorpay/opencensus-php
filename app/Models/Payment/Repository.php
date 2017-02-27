@@ -434,10 +434,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, $count, $skip, ['card']);
+                        $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)

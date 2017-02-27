@@ -80,6 +80,8 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'dashboard'     => $this->request->headers->get('X-Dashboard'),
             'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
             'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
+            'user_id'       => $this->request->headers->get('X-Dashboard-User-Id'),
+            'user_role'     => $this->request->headers->get('X-Dashboard-User-Role'),
         );
 
         $serverData = array_merge($serverData, $userData);

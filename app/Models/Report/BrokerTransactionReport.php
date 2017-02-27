@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Base;
+namespace RZP\Models\Report;
 
 use Carbon\Carbon;
 
@@ -12,8 +12,25 @@ use RZP\Models\Transaction\FeeBreakup;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
 
-class BrokerTransactionReport extends Report
+class BrokerTransactionReport extends BasicEntityReport
 {
+    // Maps the transaction source to the entities to be fetched for it
+    protected $entityToRelationFetchMap = [
+        E::TRANSACTION => [
+            E::PAYMENT  => [
+                E::NETBANKING,
+                E::BILLDESK,
+                E::ORDER
+            ],
+            E::REFUND   => [
+                E::PAYMENT,
+                E::PAYMENT . '.' . E::ORDER,
+                E::PAYMENT . '.' . E::NETBANKING,
+                E::PAYMENT . '.' . E::BILLDESK
+            ]
+        ]
+    ];
+
     const MERCHANT_NAME     = 'Merchant Name';
     const MERCHANT_ID       = 'Merchant ID';
     const TXN_ID            = 'Txn Id';
@@ -44,14 +61,23 @@ class BrokerTransactionReport extends Report
         E::TRANSACTION
     ];
 
-    protected function fetchEntitiesForReport($merchantId, $entity, $from, $to, $count, $skip)
+    protected function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
     {
+        $entity = $this->entity;
+
         $repo = $this->repo->$entity;
 
-        return $repo->fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip);
+        return $repo->fetchEntitiesForBrokerReport(
+                        $merchantId,
+                        $from,
+                        $to,
+                        $count,
+                        $skip,
+                        $this->relationsToFetch
+        );
     }
 
-    protected function fetchFormattedDataForReport($entities)
+    protected function fetchFormattedDataForReport($entities): array
     {
         $data = [];
 
@@ -221,7 +247,7 @@ class BrokerTransactionReport extends Report
      * For broker report we need to show the fees as 0.0 although actual fees
      * are applied to the txn amount
      */
-    protected function getFeesBreakupDetails($txn)
+    protected function getFeesBreakupDetails($txn): array
     {
         $fees = [
             'Txn Charges'        => 0,
