@@ -198,6 +198,7 @@ class NodalAccount
             $array = [
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'REFUND',
+                'Payment_Type'          => 'IMPS',
                 'Payment_Ref_No.'       => $payout->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
