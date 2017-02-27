@@ -35,10 +35,10 @@ build: clean
 	$(SHELL) $(DOCKER_STATUS_CHECKER)
 	@echo "Seeding elasticsearch indexes"
 	@echo "===================="
-	curl -X PUT "http://localhost:9200/api_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
-	curl -X PUT "http://localhost:9200/api_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
-	curl -X PUT "http://localhost:9200/audit_logs_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
-	curl -X PUT "http://localhost:9200/audit_logs_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
+	curl -X PUT "http://localhost:29200/api_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
+	curl -X PUT "http://localhost:29200/api_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_API_NOTES_JSON)
+	curl -X PUT "http://localhost:29200/audit_logs_live" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
+	curl -X PUT "http://localhost:29200/audit_logs_test" -H 'Content-Type: application/json' -d @$(DOCKER_ES_AUDIT_LOGS_JSON)
 	@echo "\n===================="
 	@echo "Container build Setup Complete. You may now execute 'docker ps' to see if things are up"
 	docker ps
