@@ -366,7 +366,7 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
-    $scope.assignTerminal = function (terminal) {
+    $scope.assignTerminal = function(terminal, modalInstance, alerts) {
       var requestData = {
         method: 'post',
         url: '/admin/merchant/' + $scope.merchant.id + '/terminal',
@@ -378,21 +378,22 @@ app.controller('MerchantDetailCtrl', [
       var request = $upload.upload(requestData);
       request.success(function (data) {
         if (data.success) {
-          $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
           terminal.id = data.data.id;
           terminal.created_at = data.data.created_at;
           $scope.merchant.terminals.items.push(terminal);
           $scope.merchant.terminals.count = $scope.merchant.terminals.count + 1;
+          modalInstance.close();
         } else {
-          $scope.alerts.resetAlerts();
+          alerts.resetAlerts();
           angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
+            alerts.addAlert('danger', value);
           });
         }
       }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+        alerts.addAlert('danger', null, true);
       });
     };
+
     $scope.assignBanks = function (bankdata) {
       var data = { banks: [] };
       angular.forEach(bankdata, function (i, e) {
@@ -725,10 +726,15 @@ app.controller('MerchantDetailCtrl', [
     $scope.openAssignTerminal = function () {
       var modalInstance = $modal.open({
         templateUrl: 'assignTerminalModalContent.html',
-        controller: 'assignTerminalModalCtrl'
+        controller: 'assignTerminalModalCtrl',
+        resolve: {
+          assignTerminal: function () {
+            return $scope.assignTerminal;
+          }
+        }
       });
-      modalInstance.result.then(function (terminal) {
-        $scope.assignTerminal(terminal);
+      modalInstance.result.then(function () {
+        $scope.alerts.addAlert('success', 'Terminal Assigned successfully', true);
       }, $.noop);
     };
     $scope.openEditMethods = function () {
@@ -1164,7 +1170,10 @@ app.controller('MerchantDetailCtrl', [
 ]).controller('assignTerminalModalCtrl', [
   '$scope',
   '$modalInstance',
-  function ($scope, $modalInstance) {
+  'alertsFactory',
+  'assignTerminal',
+  function ($scope, $modalInstance, alertsFactory, assignTerminal) {
+    $scope.alerts = alertsFactory.getHandler();
     $scope.terminal = {gateway:'hdfc', mode:'live', card:1};
     $scope.onFileSelect = function ($files) {
       var file = $files[0];
@@ -1175,10 +1184,10 @@ app.controller('MerchantDetailCtrl', [
       $scope.terminal.gateway_client_certificate = file;
     };
     $scope.ok = function () {
-      $modalInstance.close($scope.terminal);
+      assignTerminal($scope.terminal, $modalInstance, $scope.alerts);
     };
     $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
+      $modalInstance.dismiss();
     };
   }
 ]).controller('assignBanksModalCtrl', [

@@ -119,6 +119,7 @@ app.controller('UserCtrl', [
             $scope.hasMerchant = true;
           }
         }
+
         Rollbar.configure({
           payload: {
             person: {
@@ -146,7 +147,9 @@ app.controller('UserCtrl', [
                   activated: data.activated,
                   locked: data.locked,
                   submitted: data.submitted,
-                  role: $scope.role
+                  role: $scope.role,
+                  userEmail: data.user.email,
+                  dashboardLink: location.origin + '/admin#/app/merchants/' + data.id + '/detail'
                 }
               });
             };
