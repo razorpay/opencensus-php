@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -25,6 +26,12 @@ class Service extends Base\Service
     public function updateSavedCards()
     {
         $count = $this->repo->card->updateSavedCardsWithIins();
+
+        $this->trace->info(
+            TraceCode::SAVED_CARDS_UPDATED_WITH_IIN,
+            [
+                'count' => $count,
+            ]);
 
         return [
             'updated_cards' => $count,
