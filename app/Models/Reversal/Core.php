@@ -28,7 +28,7 @@ class Core extends Base\Core
      * @param  Transfer\Entity              $transfer
      * @param  Merchant\Entity              $merchant
      * @param  int                          $amount
-     * @return Reversal\Entity
+     * @return Entity
      */
     public function createForMarketplaceRefund(
         Transfer\Entity $transfer,
@@ -68,10 +68,12 @@ class Core extends Base\Core
     /**
      * Create and process a reversal on a transfer
      *
-     * @param  Transfer\Entity  $transfer
-     * @param  array            $input
-     * @param  Merchant\Entity  $merchant
-     * @return Reversal\Entity
+     * @param  Transfer\Entity $transfer
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\LogicException
      */
     public function reverse(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
     {

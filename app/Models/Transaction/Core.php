@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -668,7 +669,7 @@ class Core extends Base\Core
         $data = [
             Transaction\Entity::DEBIT         => 0,
             Transaction\Entity::CREDIT        => $amount,
-            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::CURRENCY      => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => $nowTimestamp,

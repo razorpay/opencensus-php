@@ -142,6 +142,17 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * If there is only one transfer, we support reversals, irrespective
+     * of whether the refund is partial or full.
+     * If there are multiple transfers, we support reversals ONLY IF
+     * it's a full refund.
+     *
+     * @param string           $refundType
+     * @param PublicCollection $transfers
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateReverseAll(string $refundType, PublicCollection $transfers)
     {
         $transferCount = $transfers->count();
@@ -150,7 +161,7 @@ class Validator extends Base\Validator
             ($refundType === Payment\Refund\Status::PARTIAL))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'The reverse_all parameter is not supported for this refund');
+                'The reverse_all parameter is not supported for this refund');
         }
     }
 }
