@@ -46,7 +46,7 @@ $ ln -s /usr/local/bin/phpunit-5.6.phar phpunit
 
 ##### Mac users
 * Please use `Docker for Mac` and do not use `Docker Toolbox for the Mac`
-* Increase Docker memory to 6GB and number of cpus to 4
+* Set the Docker memory to 4GB and number of cpus to 3
 
 ##### Linux users
 * sudo apt-get install docker
