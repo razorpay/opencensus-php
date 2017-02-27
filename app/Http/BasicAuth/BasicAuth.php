@@ -40,8 +40,6 @@ class BasicAuth
 
     const HMAC_ALGO = 'sha256';
 
-    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
-
     /**
      * The application instance.
      *
@@ -58,7 +56,6 @@ class BasicAuth
         'key'           => '',
         'public_key'    => '',
         'secret'        => '',
-        'account_key'   => '',
     ];
 
     /**
@@ -199,8 +196,6 @@ class BasicAuth
 
         $secret = $this->request->getPassword();
 
-        $linkedAccId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
-
         if (($key === null) and
             ($secret === null))
         {
@@ -211,14 +206,7 @@ class BasicAuth
 
         $this->creds['public_key'] = $key;
 
-        $keyError = $this->checkAndSetKeyId($key);
-
-        if ($keyError !== null)
-        {
-            return $keyError;
-        }
-
-        return $this->checkAndSetAccountKey($linkedAccId);
+        return $this->checkAndSetKeyId($key);
     }
 
     public function checkAndSetKeyId($key)
@@ -239,31 +227,6 @@ class BasicAuth
         }
 
         $this->creds['key'] = $keyId;
-    }
-
-    /**
-     * Validate and store if an account_id was sent in the request
-     *
-     * @param  mixed                $accountKey
-     * @return null|ApiResponse
-     */
-    protected function checkAndSetAccountKey($accountKey)
-    {
-        if ($accountKey === null)
-        {
-            $this->creds['account_key'] = '';
-
-            return null;
-        }
-
-        if ($this->verifyAccountKey($accountKey) === false)
-        {
-            return $this->invalidAccountKey();
-        }
-
-        $this->creds['account_key'] = $accountKey;
-
-        return null;
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -662,31 +625,6 @@ class BasicAuth
 
         $this->fetchMerchantOfKey($keyEntity);
 
-        //
-        // For Marketplace account auth:
-        // We accept account_id in a customer header - X-Razorpay-Account
-        // The account ID is used in private auth requests from Marketplace
-        // merchants to allow them to use their key-secret to access APIs as
-        // the linked account
-        //
-        $accountKey = $this->getAccountKey();
-
-        //
-        // If account_id was sent, fetch the entity that corresponds to the
-        // account_id provided and set that as the merchant for the request.
-        // This validates that the account is a child of the Merchant whose
-        // key-secret was sent in the request
-        //
-        if ($accountKey !== '')
-        {
-            $account = $this->fetchAccountForMerchant($accountKey, $this->merchant);
-
-            if ($account !== null)
-            {
-                return $this->invalidAccountKey();
-            }
-        }
-
         return true;
     }
 
@@ -884,11 +822,6 @@ class BasicAuth
         return $this->creds['secret'];
     }
 
-    protected function getAccountKey()
-    {
-        return $this->creds['account_key'];
-    }
-
     public function getMode()
     {
         return $this->mode;
@@ -1076,25 +1009,6 @@ class BasicAuth
         return $this->merchant;
     }
 
-    /**
-     * Used in account auth: Fetches a Marketplace account and sets it as the
-     * Merchant for the scope of the current request.
-     *
-     * @param  string          $accountId
-     * @param  Merchant\Entity $merchant
-     */
-    protected function fetchAccountForMerchant(string $accountId, Merchant\Entity $merchant)
-    {
-        $merchant = $this->repo->merchant->fetchByAccountIdAndMerchant($accountId, $merchant);
-
-        if ($merchant === null)
-        {
-            return $this->invalidAccountKey();
-        }
-
-        $this->merchant = $merchant;
-    }
-
     protected function fetchAdminToken($token)
     {
         $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
@@ -1125,18 +1039,6 @@ class BasicAuth
 
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-    }
-
-    protected function invalidAccountKey()
-    {
-        $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER, [
-                'key_id' => $this->getKey(),
-                'account_id' => $this->getAccountKey()
-            ]);
-
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT_ID);
     }
 
     protected function isKeyBlank()

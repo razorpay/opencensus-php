@@ -192,26 +192,6 @@ class BasicAuthTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
     }
 
-    public function testAccountAuth()
-    {
-        $this->fixtures->create('merchant:marketplace_account');
-
-        $payment = $this->fixtures->on('test')->create('payment:authorized', ['merchant_id' => '10000000000001']);
-
-        $this->ba->addAccountAuth();
-
-        $this->startTest();
-    }
-
-    public function testAccountAuthInvalid()
-    {
-        $this->fixtures->create('merchant:marketplace_account');
-
-        $this->ba->addAccountAuth('acc_10000000000002');
-
-        $this->startTest();
-    }
-
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);

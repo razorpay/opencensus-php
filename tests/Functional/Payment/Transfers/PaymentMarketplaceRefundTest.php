@@ -36,6 +36,8 @@ class PaymentMarketplaceRefundTest extends TestCase
      */
     public function testRefundTransferPayment()
     {
+        $this->markTestSkipped('Account auth disbaled temporarily');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 1000,
