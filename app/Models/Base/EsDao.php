@@ -17,7 +17,7 @@ class EsDao
 
     protected $mode;
 
-    // Logically seperated instance for heimdall
+    // Logically separated instance for heimdall
     protected $esHeimdall;
 
     public function __construct($mode = null)
@@ -188,6 +188,13 @@ class EsDao
         ];
 
         $entityIds = $this->es->searchNotes($params);
+
+        $this->app['trace']->debug(
+            TraceCode::ES_GET_NOTES_QUERY_AND_RESPONSE,
+            [
+                'es_search_params'     => $params,
+                'es_search_result_ids' => $entityIds,
+            ]);
 
         return $entityIds;
     }

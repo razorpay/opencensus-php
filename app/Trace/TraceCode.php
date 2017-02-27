@@ -448,6 +448,9 @@ class TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
+    const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
+    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
     const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';

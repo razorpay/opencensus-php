@@ -38,7 +38,7 @@ class EsController extends Controller
     {
         parent::__construct();
 
-        $this->esDao = new EsDao();
+        $this->esDao = new EsDao;
     }
 
     /**
@@ -48,13 +48,14 @@ class EsController extends Controller
      * @param string $method
      *
      * @return ApiResponse
+     * @throws BadRequestException
      */
     public function debug(string $method)
     {
         if (in_array($method, self::$allowedDebugMethods, true) === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID,
                 null,
                 [
                     'method' => $method
