@@ -502,6 +502,7 @@ class Service extends Base\Service
             'can_submit', 'bank_account_number_confirmation', 'locked', 'activation_progress',
             'agree_terms', 'files', 'business_proof_url', 'business_operation_proof_url',
             'business_pan_url', 'address_proof_url', 'promoter_proof_url', 'promoter_pan_url', 'promoter_address_url',
+            'activated'
         ];
 
         $dropIfEmpty = [
