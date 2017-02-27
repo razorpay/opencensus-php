@@ -188,6 +188,13 @@ class EsDao
 
         $entityIds = $this->es->searchNotes($params);
 
+        $this->app['trace']->debug(
+            TraceCode::ES_GET_NOTES_QUERY_AND_RESPONSE,
+            [
+                'es_search_params'     => $params,
+                'es_search_result_ids' => $entityIds,
+            ]);
+
         return $entityIds;
     }
 

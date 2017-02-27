@@ -52,30 +52,30 @@ class EsClient
 
     public function search(array $params)
     {
-        $this->trace->debug(TraceCode::ES_SEARCH_PARAMS, $params);
-
         return $this->client->search($params);
     }
 
     public function explain(array $params)
     {
-        $this->trace->debug(TraceCode::ES_EXPLAIN_PARAMS, $params);
-
         return $this->client->explain($params);
     }
 
     public function getMapping(array $params)
     {
-        $this->trace->debug(TraceCode::ES_GET_MAPPING_PARAMS, $params);
+        $mapping = $this->client->indices()->getMapping($params);
 
-        return $this->client->indices()->getMapping($params);
+        $this->trace->debug(TraceCode::ES_MAPPING_RESPONSE, $mapping);
+
+        return $mapping;
     }
 
     public function getSettings(array $params)
     {
-        $this->trace->debug(TraceCode::ES_GET_SETTINGS_PARAMS, $params);
+        $settings = $this->client->indices()->getSettings();
 
-        return $this->client->indices()->getSettings();
+        $this->trace->debug(TraceCode::ES_SETTINGS_RESPONSE, $settings);
+
+        return $settings;
     }
 
     public function update($params)
