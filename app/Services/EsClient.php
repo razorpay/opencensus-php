@@ -3,6 +3,7 @@
 namespace RZP\Services;
 
 use Elasticsearch\ClientBuilder;
+use RZP\Exception\InvalidArgumentException;
 
 class EsClient
 {
@@ -41,6 +42,26 @@ class EsClient
             $this->heimdallClient = ClientBuilder::create()
                                         ->setHosts($hosts)->build();
         }
+    }
+
+    public function search(array $params)
+    {
+        return $this->client->search($params);
+    }
+
+    public function explain(array $params)
+    {
+        return $this->client->explain($params);
+    }
+
+    public function getMapping(array $params)
+    {
+        return $this->client->indices()->getMapping($params);
+    }
+
+    public function getSettings(array $params)
+    {
+        return $this->client->indices()->getSettings();
     }
 
     public function update($params)

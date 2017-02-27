@@ -21,6 +21,7 @@ class PublicErrorDescription
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                        = 'Razorpay API is only available over HTTPS.';
     const BAD_REQUEST_FORBIDDEN                                                 = 'Access forbidden for requested resource';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                   = 'The current http method is not supported';
+    const BAD_REQUEST_ERROR                                                     = 'Bad request error';
     const BAD_REQUEST_INVALID_ID                                                = 'The id provided does not exist';
     const BAD_REQUEST_INVALID_IDS                                               = 'One or more of the ids provided does not exist';
     const BAD_REQUEST_NO_RECORDS_FOUND                                          = 'No db records found.';

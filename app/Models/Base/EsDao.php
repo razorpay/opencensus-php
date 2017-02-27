@@ -68,6 +68,16 @@ class EsDao
         $this->indexName = $this->config->get('database.es_index')[$mode];
     }
 
+    /**
+     * Returns the EsClient instance.
+     *
+     * @return \RZP\Services\EsClient
+     */
+    public function getEsClient()
+    {
+        return $this->es;
+    }
+
     // If a document with entity ID is already present, only the notes key is updated.
     // Otherwise, creates a new document.
     // Currently storing only notes and merchant id of the entity.
