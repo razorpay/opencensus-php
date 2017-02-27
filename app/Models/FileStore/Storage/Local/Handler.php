@@ -6,6 +6,7 @@ use Config;
 use Storage;
 
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 
 class Handler extends BaseHandler
 {
@@ -32,12 +33,5 @@ class Handler extends BaseHandler
         $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();
 
         return $path;
-    }
-
-    public function getSubDirectory($type, $env = 'production')
-    {
-        $bucketName = Bucket::getBucketConfigName($type, $env);
-
-        return $bucketName;
     }
 }

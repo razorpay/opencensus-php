@@ -7,6 +7,7 @@ use Config;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
+use RZP\Models\FileStore\Storage\Base\Bucket;
 
 class Handler extends BaseHandler
 {
@@ -30,18 +31,18 @@ class Handler extends BaseHandler
         return $client->createClient('s3');
     }
 
-    public function save($bucket, $fileDetails)
+    public function save($bucketConfig, $fileDetails)
     {
         if ($this->config['mock'] === true)
         {
             return $fileDetails['path'];
         }
 
-        $s3 = self::getClient();
+        $s3 = self::getClient($bucketConfig['region']);
 
         try
         {
-            $s3Obj = $this->getS3SaveObj($bucket, $fileDetails);
+            $s3Obj = $this->getS3SaveObj($bucketConfig['bucket'], $fileDetails);
 
             $result = $s3->putObject($s3Obj);
 
@@ -57,13 +58,13 @@ class Handler extends BaseHandler
         return $result['ObjectURL'];
     }
 
-    public function saveAs($bucket, $key, $filePath)
+    public function saveAs($bucketConfig, $key, $filePath)
     {
-        $s3 = self::getClient();
+        $s3 = self::getClient($bucketConfig['region']);
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucket, $key);
+            $s3Obj = $this->getS3FetchObj($bucketConfig['bucket'], $key);
 
             $s3Obj['SaveAs'] = $filePath;
 
@@ -79,18 +80,18 @@ class Handler extends BaseHandler
         }
     }
 
-    public function getSignedUrl($bucket, $key, $duration = '15')
+    public function getSignedUrl($bucketConfig, $key, $duration = '15')
     {
         if ($this->config['mock'] === true)
         {
             return $key;
         }
 
-        $s3 = self::getClient();
+        $s3 = self::getClient($bucketConfig['region']);
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucket, $key);
+            $s3Obj = $this->getS3FetchObj($bucketConfig['bucket'], $key);
 
             $command = $s3->getCommand('GetObject', $s3Obj);
 
@@ -134,14 +135,5 @@ class Handler extends BaseHandler
         ];
 
         return $s3Obj;
-    }
-
-    public function getBucketName($type, $env)
-    {
-        $bucketType = Bucket::getBucketConfigName($type, $env);
-
-        $bucketName = $this->config[$bucketType];
-
-        return $bucketName;
     }
 }

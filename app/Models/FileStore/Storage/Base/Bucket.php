@@ -4,6 +4,7 @@ namespace RZP\Models\FileStore\Storage\Base;
 
 use RZP\Constants\Mode;
 use RZP\Models\FileStore\Type;
+use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Bucket
 {
@@ -12,14 +13,23 @@ class Bucket
     const TEST_BUCKET_NAME = 'test_bucket';
 
     const BUCKET_MAP = [
-        Type::KOTAK_NETBANKING_REFUND   => 'settlement_bucket',
-        Type::HDFC_NETBANKING_REFUND    => 'settlement_bucket',
-        Type::AIRTELMONEY_WALLET_REFUND => 'settlement_bucket',
-        Type::PAYUMONEY_WALLET_REFUND   => 'settlement_bucket',
-        Type::ICICI_UPI_REFUND          => 'settlement_bucket',
-        Type::ICICI_NODAL_TRANSFER      => 'h2h_bucket',
-        Type::BATCH_INPUT               => 'batch_bucket',
-        Type::BATCH_OUTPUT              => 'batch_bucket',
+        Type::KOTAK_NETBANKING_REFUND                => 'settlement_bucket_config',
+        Type::HDFC_NETBANKING_REFUND                 => 'settlement_bucket_config',
+        Type::AXIS_NETBANKING_REFUND                 => 'settlement_bucket_config',
+        Type::AIRTELMONEY_WALLET_REFUND              => 'settlement_bucket_config',
+        Type::PAYUMONEY_WALLET_REFUND                => 'settlement_bucket_config',
+        Type::ICICI_UPI_REFUND                       => 'settlement_bucket_config',
+        Type::BATCH_INPUT                            => 'batch_bucket_config',
+        Type::BATCH_OUTPUT                           => 'batch_bucket_config',
+        Type::INVOICE_PDF                            => 'invoice_bucket_config',
+
+        MerchantDetail::BUSINESS_PROOF_URL           => 'activation_bucket_config',
+        MerchantDetail::BUSINESS_OPERATION_PROOF_URL => 'activation_bucket_config',
+        MerchantDetail::BUSINESS_PAN_URL             => 'activation_bucket_config',
+        MerchantDetail::ADDRESS_PROOF_URL            => 'activation_bucket_config',
+        MerchantDetail::PROMOTER_PROOF_URL           => 'activation_bucket_config',
+        MerchantDetail::PROMOTER_PAN_URL             => 'activation_bucket_config',
+        MerchantDetail::PROMOTER_ADDRESS_URL         => 'activation_bucket_config',
     ];
 
     public static function getBucketConfigName($type, $env = 'production')

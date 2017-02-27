@@ -362,18 +362,9 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        // For S3, we get Bucket Name
-        // For other drivers we get Directory name and store as Bucket
-        if ($this->file->getStore() === Store::S3)
-        {
-            $bucket = $this->storageHandler->getBucketName($this->file->getType(), $this->env);
-        }
-        else
-        {
-            $bucket = $this->storageHandler->getSubDirectory($this->file->getType(), $this->env);
-        }
+        $bucketConfig = $this->storageHandler->getBucketConfig($this->file->getType(), $this->env);
 
-        $this->file->setBucket($bucket);
+        $this->file->setBucket($bucketConfig[0]);
 
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
@@ -384,7 +375,7 @@ class Creator extends Base\Core
             'metadata'  => $this->file->getMetadata(),
         ];
 
-        $location = $this->storageHandler->save($bucket, $fileDetails);
+        $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
     }

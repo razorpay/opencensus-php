@@ -139,7 +139,12 @@ class Accessor extends Base\Core
             }
         }
 
-        $storageHandler->saveAs($file->bucket, $file->location, $filePath);
+        $bucketConfig = [
+            'name'   => $file->getBucket(),
+            'region' => $file->getRegion(),
+        ];
+
+        $storageHandler->saveAs($bucketConfig, $file->location, $filePath);
 
         return $filePath;
     }
@@ -167,7 +172,12 @@ class Accessor extends Base\Core
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
 
-        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+        $bucketConfig = [
+            'name'   => $fileStore->getBucket(),
+            'region' => $fileStore->getRegion(),
+        ];
+
+        $url = $storageHandler->getSignedUrl($bucketConfig, $fileStore->getLocation());
 
         return $url;
     }

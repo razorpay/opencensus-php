@@ -10,4 +10,13 @@ abstract class Handler extends Core
     abstract public function save($bucket, $fileDetails);
 
     abstract public function saveAs($bucket, $key, $filePath);
+
+    public function getBucketConfig($type, $env)
+    {
+        $bucketType = Bucket::getBucketConfigName($type, $env);
+
+        $bucketConfig = $this->config[$bucketType];
+
+        return $bucketConfig;
+    }
 }
