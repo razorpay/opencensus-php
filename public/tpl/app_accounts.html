@@ -29,7 +29,7 @@
             <div class="form-group filter-item-container">
               <div class="filter-item">
                 <label for="email">Email:</label>
-                <input id="email" type="email" class="form-control input-sm" ng-model="query.email" placeholder="Account Email" name="email" ng-enter="regenerate();" />
+                <input id="email" type="email" class="form-control inline input-sm" ng-model="query.email" placeholder="Account Email" name="email" ng-enter="regenerate();" />
               </div>
             </div>
           </div>
@@ -119,10 +119,12 @@
         <label class="col-lg-3 control-label">Account Name</label>
         <div class="col-lg-7">
           <input id="merchant_name" class="form-control" ng-model="account.name" placeholder="Acme Inc.">
+          <span class="help-block">The business/individual name for the account, which will appear on all reports</span>
         </div>
         <label class="col-lg-3 control-label">Account Email</label>
         <div class="col-lg-7">
           <input id="merchant_email" class="form-control" ng-model="account.email" placeholder="">
+          <span class="help-block">Optional - Contact email for the linked account. Razorpay will not communicate to this email directly.</span>
         </div>
       </div>
     </form>
