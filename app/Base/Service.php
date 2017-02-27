@@ -50,13 +50,6 @@ class Service
         $this->api = new Api($key, null);
     }
 
-    public function setApiCredentialsForAccountAuth($accountId, $merchantId = null, $mode = 'live')
-    {
-        ApiRequest::addHeader('X-Razorpay-Account', $accountId);
-
-        $this->setApiCredentials($merchantId, $mode);
-    }
-
     public function slackPost($headline, $postdata, $channel, $pretext = '', $color = 'good')
     {
         if (config('slack.enable'))

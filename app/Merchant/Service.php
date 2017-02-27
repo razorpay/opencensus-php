@@ -82,7 +82,6 @@ class Service extends Base\Service
      *
      * This is one scenario where we don't use currentMerchant
      *
-     * @param  string $merchantId
      * @param  array  $input
      * @return array
      */
@@ -92,7 +91,7 @@ class Service extends Base\Service
 
         $isAccount = \Input::get('account') ?? false;
 
-        if ($isAccount === true)
+        if ($isLinkedAccount === true)
         {
             if ($currentMerchant->isMarketplace() === false)
             {
@@ -121,7 +120,7 @@ class Service extends Base\Service
                 $email = $currentMerchant->email;
             }
 
-            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email, $isAccount);
+            $merchant = Entity::createFromMerchant($currentMerchant, $businessName, $email, $isLinkedAccount);
 
             try
             {
@@ -134,7 +133,7 @@ class Service extends Base\Service
 
             $merchant->save();
 
-            if ($isAccount === false)
+            if ($isLinkedAccount === false)
             {
                 // Finally attach the current user to the new user's team
                 $this->currentUser->joinMerchantByIdWithRole($merchant->id, 'owner');

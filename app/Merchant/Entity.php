@@ -104,7 +104,7 @@ class Entity extends Base\Entity
      * @param  string          $businessName   Merchant Business Name
      * @return App\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isAccount = false)
+    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isLinkedAccount = false)
     {
         $merchant = new static();
 
@@ -118,7 +118,7 @@ class Entity extends Base\Entity
         // Logins run on top of User\password.
         $merchant->password = "invalid_password";
 
-        if ($isAccount === false)
+        if ($isLinkedAccount === false)
         {
             // We tag the merchant as referred from the original merchant as well
             $merchant->tag("ref-{$aggregator->id}");

@@ -186,8 +186,6 @@ class Service extends Base\Service
             return [['Internal error occurred'], null];
         }
 
-        $data = [];
-
         $error = (new Validator)->validateInput('fetch', $input)->messages();
 
         if (empty($error) === false)
@@ -213,7 +211,7 @@ class Service extends Base\Service
             $error[] = $e->getMessage();
         }
 
-        return array($error, $collection);
+        return [$error, $collection];
     }
 
     public function fetchPaymentRefunds($id, $mode)
