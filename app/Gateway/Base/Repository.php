@@ -42,12 +42,12 @@ class Repository extends Base\Repository
 
     public function findByPaymentIdActionAndStatus(string $paymentId,
                                                    string $action,
-                                                   string $status)
+                                                   array $statuses)
     {
         return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->where('action', '=', $action)
-                    ->where('status', '=', $status)
+                    ->whereIn('status', $statuses)
                     ->firstOrFail();
     }
 
@@ -81,7 +81,7 @@ class Repository extends Base\Repository
 
         if ($ix !== false)
         {
-            $paymentId = substr($paymentId, $ix+1);
+            $paymentId = substr($paymentId, $ix + 1);
         }
 
         $query->where(Entity::PAYMENT_ID, '=', $paymentId);
