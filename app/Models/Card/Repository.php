@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use DB;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -80,26 +81,50 @@ class Repository extends Base\Repository
 
     public function updateSavedCardsWithIins()
     {
-        $count = $this->db->update('
-                    UPDATE cards
-                    INNER JOIN iins
-                        ON cards.iin = iins.iin
-                    SET
-                        cards.issuer     = iins.issuer,
-                        cards.country    = iins.country,
-                        cards.emi        = iins.emi,
-                        cards.network    = iins.network
-                    WHERE
-                        vault IS NOT NULL AND
-                        (
-                            cards.issuer  != iins.issuer OR
-                            cards.country != iins.country OR
-                            cards.emi     != iins.emi OR
-                            cards.network != iins.network
-                        );
-                    ');
+        $count = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
+                      ->where('cards.network', '!=', 'American Express')
+                      ->where(function ($q)
+                      {
+                         $q->where('cards.issuer', '!=', 'iins.issuer')
+                           ->orWhere('cards.network', '!=', 'iins.network')
+                           ->orWhere('cards.type', '!=', 'iins.type')
+                           ->orWhere('cards.country', '!=', 'iins.country');
+                      })
+                      ->update([
+                         'cards.issuer'  => DB::raw('iins.issuer'),
+                         'cards.type'    => DB::raw('iins.type'),
+                         'cards.network' => DB::raw('iins.network'),
+                         'cards.country' => DB::raw('iins.country'),
+                      ]);
 
-        return $count;
+        $amexCount = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
+                      ->where('cards.network', '=', 'American Express')
+                      ->where(function ($q)
+                      {
+                         $q->where('cards.issuer', '!=', 'iins.issuer')
+                           ->orWhere('cards.network', '!=', 'iins.network')
+                           ->orWhere('cards.type', '!=', 'iins.type');
+                      })
+                      ->update([
+                         'cards.issuer'  => DB::raw('iins.issuer'),
+                         'cards.network' => DB::raw('iins.network'),
+                         'cards.type'    => DB::raw('iins.type'),
+                      ]);
+
+        return $count + $amexCount;
+    }
+
+    public function newQueryWithoutTimestamps()
+    {
+        $entity = $this->getEntityObject();
+
+        $entity->timestamps = false;
+
+        return $entity->setConnection($this->connection)->newQuery();
     }
 
     protected function addQueryParamInternational($query, $params)

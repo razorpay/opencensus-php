@@ -142,7 +142,6 @@ class CardTest extends TestCase
                     'issuer'  => null,
                     'country' => null,
                     'network' => 'MC',
-                    'emi'     => false,
                 ]);
 
         // Create IIN with missing info relating to card
@@ -153,7 +152,22 @@ class CardTest extends TestCase
                     'issuer'  => 'ICIC',
                     'country' => 'IN',
                     'network' => 'Visa',
-                    'emi'     => true,
+                ]);
+
+        $amexCard = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '553212',
+                    'country' => null,
+                    'network' => 'American Express',
+                ]);
+
+        $amexIin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '553212',
+                    'country' => 'IN',
+                    'network' => 'American Express',
                 ]);
 
         $this->ba->appAuthTest();
@@ -163,10 +177,13 @@ class CardTest extends TestCase
         $card = $this->getEntityById('card', $card->getId(), true);
 
         // Assert that card info has been populated
-        $this->assertEquals($iin->getIssuer(), $card['issuer']);
         $this->assertEquals($iin->getCountry(), $card['country']);
         $this->assertEquals($iin->getNetwork(), $card['network']);
-        $this->assertEquals($iin->isEmiAvailable(), $card['emi']);
+
+        $amexCard = $this->getEntityById('card', $amexCard->getId(), true);
+
+        // Assert that Amex country did not get updated
+        $this->assertNull($amexCard['country']);
     }
 
     public function testCardWhenNotEnabledOnLive()
