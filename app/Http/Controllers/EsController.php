@@ -54,7 +54,7 @@ class EsController extends Controller
         if (in_array($method, self::$allowedDebugMethods, true) === false)
         {
             throw new BadRequestException(
-                ErrorCode::BAD_REQUEST_ERROR,
+                ErrorCode::BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID,
                 null,
                 [
                     'method' => $method
