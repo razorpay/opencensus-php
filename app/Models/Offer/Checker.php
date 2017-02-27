@@ -41,7 +41,9 @@ class Checker extends Base\Core
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
-        return (($validOrderAmount === true) and ($offerActive === true) and ($validOfferPeriod === true));
+        return (($validOrderAmount === true) and
+                ($offerActive === true) and
+                ($validOfferPeriod === true));
     }
 
     public function checkOfferApplicableOnPayment(Payment\Entity $payment)
@@ -244,7 +246,8 @@ class Checker extends Base\Core
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $result = (($now >= $this->offer->getStartsAt()) and ($now <= $this->offer->getEndsAt()));
+        $result = (($now >= $this->offer->getStartsAt()) and
+                    ($now <= $this->offer->getEndsAt()));
 
         $this->traceCheckResult(TraceCode::OFFER_PERIOD_CHECK, [
             'result' => $result
