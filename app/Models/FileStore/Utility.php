@@ -2,13 +2,20 @@
 
 namespace RZP\Models\FileStore;
 
+use App;
+use RZP\Trace\Trace;
+use RZP\Trace\TraceCode;
+
 class Utility
 {
-    public static function call_file_operation($method, $params)
+    public static function callFileOperation($method, $params)
     {
+        $app = App::getFacadeRoot();
+
+        $trace = $app['trace'];
         //
         // umask can vary on system level, need to reset for doing file operations
-        // and after file opertaion are done, restore umask value to default
+        // and after file operation are done, restore umask value to default
         //
         $oldmask = umask(0);
 
@@ -20,7 +27,7 @@ class Utility
             {
                 $params['method'] = $method;
 
-                $this->trace->warning(
+                $trace->warning(
                     TraceCode::FILE_OPERATION_FAILED,
                     $params
                 );
@@ -28,6 +35,15 @@ class Utility
         }
         catch (\Exception $e)
         {
+            $params['method'] = $method;
+
+            $trace->traceException(
+                $e,
+                Trace::WARNING,
+                TraceCode::FILE_OPERATION_FAILED,
+                $params
+            );
+
             throw $e;
         }
         finally

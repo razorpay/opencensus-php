@@ -1696,3 +1696,6 @@ ALTER TABLE payments
 # payout reconcilation remarks
 ALTER TABLE payouts
     ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;
+
+ALTER TABLE files
+    ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;

@@ -122,7 +122,7 @@ class Accessor extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            Utility::call_file_operation('mkdir', [$dir, 0777, true]);
+            Utility::callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
         $bucketConfig = [

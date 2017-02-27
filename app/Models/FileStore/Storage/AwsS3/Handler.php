@@ -76,7 +76,7 @@ class Handler extends BaseHandler
 
             $result = $s3->getObject($s3Obj);
 
-            Utility::call_file_operation('chmod', [$filePath, 0777]);
+            Utility::callFileOperation('chmod', [$filePath, 0777]);
 
             $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }
