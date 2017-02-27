@@ -51,3 +51,9 @@ UPDATE terminals
     SET gateway_acquirer='hdfc'
     WHERE gateway='cybersource'
         AND gateway_acquirer is null;
+
+# Delete duplicate Billdesk txns
+delete from transactions where id in ('53RrhAM3nM6rUl', '53wE4kQZKrJ0HM', '57VxC2mxdshLTe', '5BBItEdZ1PnPqY',
+'5BPVrFedAc6scN', '5BwmvfKSBkJjxg', '5CHRFrVEKa7tKp', '5EKoSPRa3SDByh', '5FNMoQ0VSduHs7', '5Fndf4enJJ3mUR',
+'5GJ7n1lbBlkfPg', '5HQQucXhBtJRTh', '5HSmgYxnlKra6Z', '5IDOpgagGylzz1', '5IVhKjLddcLQld', '5L7mF51bI9OjzY',
+'5RFUoxT5cGbh3T', '5GJ7k9qmEwPLDH');
