@@ -8,9 +8,9 @@ use RZP\Models\Merchant\Detail\Entity as MerchantDetail;
 
 class Bucket
 {
-    const DEFAULT_CONFIG_NAME = 'settlement_bucket';
+    const DEFAULT_CONFIG_NAME = 'settlement_bucket_config';
 
-    const TEST_BUCKET_NAME = 'test_bucket';
+    const TEST_BUCKET_NAME = 'test_bucket_config';
 
     const BUCKET_MAP = [
         Type::KOTAK_NETBANKING_REFUND                => 'settlement_bucket_config',

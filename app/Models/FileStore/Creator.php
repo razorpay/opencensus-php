@@ -364,7 +364,9 @@ class Creator extends Base\Core
     {
         $bucketConfig = $this->storageHandler->getBucketConfig($this->file->getType(), $this->env);
 
-        $this->file->setBucket($bucketConfig[0]);
+        $this->file->setBucket($bucketConfig['name']);
+
+        $this->file->setRegion($bucketConfig['region']);
 
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 

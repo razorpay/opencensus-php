@@ -17,7 +17,7 @@ class Handler extends BaseHandler
     {
         parent::__construct();
 
-        $this->config = $this->app['config']->get('aws');
+        $this->config = $this->app['config']->get('filestore.aws');
     }
 
     public static function getClient()
