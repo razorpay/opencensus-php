@@ -229,7 +229,7 @@ class NodalAccount
 
         $urlText = $this->writeToTextFileH2H($name, $txt);
 
-        $this->sendKotakPayoutsMail($count, $amounts);
+        $this->sendKotakPayoutsMail($name, $count, $amounts);
 
         return $urlText;
     }
@@ -291,7 +291,7 @@ class NodalAccount
         });
     }
 
-    protected function sendKotakPayoutsMail($count, $amounts)
+    protected function sendKotakPayoutsMail($fileName, $count, $amounts)
     {
         $amounts['total'] = sprintf('%.2f', $amounts['total']);
 
@@ -300,6 +300,8 @@ class NodalAccount
         $subject = "Kotak IMPS payouts files for $today";
 
         $data = compact('amounts', 'count', 'subject');
+
+        $data['file'] = $this->getFullFilePath($fileName);
 
         Mail::send('emails.admin.payout', $data, function($message) use ($data)
         {
@@ -310,6 +312,8 @@ class NodalAccount
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $message->attach($data['file']);
 
             $headers = $message->getHeaders();
 
