@@ -259,7 +259,7 @@ return [
         ],
     ],
 
-    'testCreateOrderWithInApplicableOffer' => [
+    'testCreateOrderWithNotApplicableOffer' => [
         'request' => [
             'content' => [
                 'amount'        => 900,

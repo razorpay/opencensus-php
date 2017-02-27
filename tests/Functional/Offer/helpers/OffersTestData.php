@@ -515,7 +515,7 @@ return [
     'testAddIinsToCardOffer' => [
         'request' => [
             'content' => [
-                "iins" => [411111]
+                "iins" => ["411111"]
             ],
             'url' => '',
             'method' => 'PATCH'
@@ -531,7 +531,7 @@ return [
                 'payment_method_type'       => 'credit',
                 'payment_network'           => 'VISA',
                 'issuer'                    => 'HDFC',
-                'iins'                      => [123456, 411111],
+                'iins'                      => ["123456", "411111"],
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,

@@ -5,29 +5,34 @@ use Carbon\Carbon;
 
 class Offer extends Base
 {
-    public function createCard()
+    public function createCard(array $attributes = [])
     {
         $cardAttributes = [
             'payment_method'      => 'card',
             'payment_method_type' => 'credit',
             'payment_network'     => 'VISA',
             'issuer'              => 'HDFC',
-            'iins'                => [123456],
+            'iins'                => ["123456"],
+
         ];
 
-        $offer = $this->fixtures->create('offer', $cardAttributes);
+        $attributes = array_merge($cardAttributes, $attributes);
+
+        $offer = $this->fixtures->create('offer', $attributes);
 
         return $offer;
     }
 
-    public function createWallet()
+    public function createWallet(array $attributes = [])
     {
-        $cardAttributes = [
+        $walletAttributes = [
             'payment_method'      => 'wallet',
             'payment_network'     => 'olamoney',
         ];
 
-        $offer = $this->fixtures->create('offer', $cardAttributes);
+        $attributes = array_merge($walletAttributes, $attributes);
+
+        $offer = $this->fixtures->create('offer', $attributes);
 
         return $offer;
     }
@@ -43,6 +48,15 @@ class Offer extends Base
         $offer->saveOrFail();
 
         return $offer;
+    }
+
+    public function createLiveCard(array $attributes = [])
+    {
+        $startDate = ['starts_at' => Carbon::now('Asia/Kolkata')->subMonth()->timestamp];
+
+        $attributes = array_merge($startDate, $attributes);
+
+        return $this->fixtures->create('offer:card', $attributes);
     }
 
     public function create(array $attributes = [])

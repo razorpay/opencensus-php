@@ -317,7 +317,7 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithOffer()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -326,9 +326,9 @@ class OrderTest extends TestCase
         $this->startTest();
     }
 
-    public function testCreateOrderWithInApplicableOffer()
+    public function testCreateOrderWithNotApplicableOffer()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -337,7 +337,7 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithExpiredOffer()
     {
-        $offer = $this->fixtures->offer->createExpiredOffer();
+        $offer = $this->fixtures->create('offer:expired');
 
         $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
 
@@ -391,7 +391,7 @@ class OrderTest extends TestCase
 
     public function testPaymentWithFailedOfferCheckAllowedOnOrder()
     {
-        $offer = $this->fixtures->offer->createCardOffer();
+        $offer = $this->fixtures->create('offer:card');
 
         $offer['fail_payment'] = false;
 
