@@ -633,6 +633,7 @@ class Entity extends Base\PublicEntity
         else if ($this->isTypeRefund())
         {
             $refund = $this->source;
+
             $payment = $refund->payment;
 
             // Skip if the payment was not captured.

@@ -23,6 +23,8 @@ class Service extends Base\Service
 
     public function create($input)
     {
+        $this->appendUserIdToInput($input);
+
         $invoice = $this->core->create($input, $this->merchant);
 
         return $invoice->toArrayPublic();
@@ -41,15 +43,7 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        //
-        // Fetches invoice after applying additional filter of user_id
-        // if it's set.
-        //
-
-        if ($this->userId !== null)
-        {
-            $input[Entity::USER_ID] = $this->userId;
-        }
+        $this->appendUserIdToInput($input);
 
         $invoices = $this->repo->invoice
                                ->fetch($input, $this->merchant->getId());
@@ -249,7 +243,7 @@ class Service extends Base\Service
 
         $displayName = $invoice->getPdfDisplayName();
 
-        $path = $this->core->getInvoicePdfIfExistsOrCreate($invoice);
+        $path = $this->core->getFreshInvoicePdf($invoice);
 
         return [$displayName, $path];
     }
@@ -269,6 +263,24 @@ class Service extends Base\Service
         if ($userRole === 'sellerapp')
         {
             $this->userId = $userId;
+        }
+    }
+
+    /**
+     * If user id is sent in headers from dashboard then we do this for two cases:
+     * - In create: To have user_id in db too.
+     * - In list (fetch multiple): To filter invoices based on user_id, restricts
+     *   visibility.
+     *
+     * @param array $input
+     *
+     * @return null
+     */
+    protected function appendUserIdToInput(array & $input)
+    {
+        if ($this->userId !== null)
+        {
+            $input[Entity::USER_ID] = $this->userId;
         }
     }
 }

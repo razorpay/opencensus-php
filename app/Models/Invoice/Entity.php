@@ -241,7 +241,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::VIEW_LESS,
         self::TYPE,
-        // self::USER_ID,
+        self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
@@ -448,6 +448,26 @@ class Entity extends Base\PublicEntity
     }
 
     /**
+     * Returns the path component of Dashboard view url.
+     *
+     * For invoices (New):   #/app/invoices/{public-id}
+     * Otherwise (Existing): #/app/invoices/{public-id}/details
+     *
+     * @return string
+     */
+    public function getDashboardPath()
+    {
+        $path = '#/app/invoices/' . $this->getPublicId();
+
+        if ($this->isTypeInvoice() === false)
+        {
+            $path .= '/details';
+        }
+
+        return $path;
+    }
+
+    /**
      * Returns string to be used a pdf file path in s3/local store.
      * Format: pdfs/{invoiceId}_{epoch}
      *
@@ -469,7 +489,7 @@ class Entity extends Base\PublicEntity
         $from    = $this->merchant->getBillingLabelElseName();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
 
-        return "Invoice $receipt from $from ($status)";
+        return sanitizeFilename("Invoice $receipt from $from ($status)");
     }
 
     // -------------------------------------- End Getters --------------------------------------

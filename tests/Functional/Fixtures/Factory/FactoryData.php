@@ -525,7 +525,23 @@ final class FactoryData
             'updated_at'         => $faker->timestamp,
         ]);
 
-         $factory(\RZP\Models\Transfer\Entity::class, [
+        $factory(\RZP\Models\Payout\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'customer_id'        => '100000customer',
+            'method'             => 'fund_transfer',
+            'destination_id'     => '1000000lcustba',
+            'destination_type'   => 'dummy',
+            'purpose'            => 'refund',
+            'amount'             => 100,
+            'currency'           => 'INR',
+            'merchant_id'        => '10000000000000',
+            'status'             => 'created',
+            'channel'            => 'kotak',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Transfer\Entity::class, [
             'id'                 => $faker->uniqueid,
             'source_type'        => 'payment',
             'to_type'            => 'merchant',

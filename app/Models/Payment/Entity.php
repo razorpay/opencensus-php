@@ -31,6 +31,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const BASE_AMOUNT_REFUNDED  = 'base_amount_refunded';
     const AMOUNT_TRANSFERRED    = 'amount_transferred';
+    const AMOUNT_PAIDOUT        = 'amount_paidout';
     const STATUS                = 'status';
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
@@ -137,6 +138,7 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
         self::CURRENCY,
+        self::AMOUNT_PAIDOUT,
         self::STATUS,
         self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
@@ -202,6 +204,7 @@ class Entity extends Base\PublicEntity
         self::METHOD,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
+        self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -250,6 +253,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
         self::AMOUNT_TRANSFERRED   => 0,
+        self::AMOUNT_PAIDOUT       => 0,
         self::SIGNED               => 0,
         self::GATEWAY              => null,
         self::VERIFIED             => null,
@@ -279,6 +283,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
         self::AMOUNT_TRANSFERRED,
+        self::AMOUNT_PAIDOUT,
         self::FEE,
         self::SERVICE_TAX,
     ];
@@ -290,6 +295,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_TRANSFERRED   => 'int',
         self::AMOUNT_AUTHORIZED    => 'int',
         self::AMOUNT_REFUNDED      => 'int',
+        self::AMOUNT_PAIDOUT       => 'int',
         self::AUTO_CAPTURED        => 'bool',
         self::ON_HOLD              => 'bool',
         self::ON_HOLD_UNTIL        => 'int',
@@ -450,6 +456,11 @@ class Entity extends Base\PublicEntity
     public function setBaseAmountRefunded($amount)
     {
         $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $amount);
+    }
+
+    public function setAmountPaidout(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
     /**
@@ -987,6 +998,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getAmountPaidout()
+    {
+        return $this->getAttribute(self::AMOUNT_PAIDOUT);
     }
 
     public function getGateway()
@@ -1613,6 +1629,32 @@ class Entity extends Base\PublicEntity
         $amountTransferred = $this->getAmountTransferred() + $amount;
 
         $this->setAttribute(self::AMOUNT_TRANSFERRED, $amountTransferred);
+    }
+
+    /**
+     * Updates Payment amount_paidout field
+     *
+     * @param  int    $amount
+     */
+    public function payoutAmount(int $amount)
+    {
+        $amountPaidout = $this->getAmountPaidout() + $amount;
+
+        $paymentAmount = $this->getAmount();
+
+        if ($amountPaidout > $paymentAmount)
+        {
+            throw new Exception\LogicException(
+                'Payment payout: Payout total greater than payment amount',
+                null,
+                [
+                    'payout' => $amount,
+                    'payment_amount'  => $paymentAmount,
+                ]
+            );
+        }
+
+        $this->setAmountPaidout($amountPaidout);
     }
 
     public function toArrayTraceRelevant()

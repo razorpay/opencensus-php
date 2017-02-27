@@ -114,7 +114,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap = [])
     {
         $setls = (new Settlement\Repository)->fetchBetweenTimestamp($merchantId, $from, $to);
 
@@ -132,20 +132,24 @@ class Repository extends Base\Repository
                             $query->orWhereIn(Entity::SETTLEMENT_ID, $setlIds);
                         }
                       })
-                      ->with('source')
                       ->take($count)
                       ->skip($skip)
                       ->latest()
                       ->get();
 
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
+
         $this->trace->info(
             TraceCode::MERCHANT_REPORT_GENERATION,
-            ['time' => time()]);
+            [
+                'method'    => __METHOD__,
+                'time'      => time(),
+            ]);
 
         return $txns;
     }
 
-    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForBrokerReport($merchantId, $from, $to, $count, $skip, $entityToRelationFetchMap)
     {
         $txns = $this->newQuery()
                      ->merchantId($merchantId)
@@ -159,20 +163,37 @@ class Repository extends Base\Repository
             TraceCode::MERCHANT_REPORT_GENERATION,
             ['time' => time()]);
 
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source');
+        $txns = $this->fetchAssociatedRelationsWithLoadedEntities($txns, 'source', $entityToRelationFetchMap);
 
         return $txns;
     }
 
+    /**
+     * Fetches and associates with Transaction entity
+     *
+     * @param $entities - Array of Transaction entities
+     * @param  $relation - Relation
+     * @param $entityToRelationFetchMap - Array of Arrays. Each subarray is a key-value pair.
+     *          Key - String - Name of the entity that led to the creation of the transaction
+     *                          i.e. value of `type` column in Transactions table
+     *          Value - Array - of relationships to fetch for the given Key
+     *      For example ['x' => ['y', 'z'], ['a'] => ['b']]
+     *      This means that when the `type` of transaction is 'x', fetch relations 'y', and 'z'
+     *      And when the `type` of transaction is `y`, fetch relations 'b'
+     * @param $type - String - The name of the column that has the `source` of the transaction
+     * @param $idCol - String - The name of the column that has the  `id` of the `source` of the transaction
+     */
     public function fetchAssociatedRelationsWithLoadedEntities(
         $entities,
         $relation,
+        $entityToRelationFetchMap = [],
         $idCol = 'entity_id',
         $typeCol = 'type')
     {
-        $relationships = array();
-        $objects = array();
+        $relationships = [];
+        $objects = [];
 
+        // Collects in a map -- ids of different types
         foreach ($entities as $entity)
         {
             $relationships[$entity->$typeCol][] = $entity->$idCol;
@@ -180,25 +201,20 @@ class Repository extends Base\Repository
 
         foreach ($relationships as $type => $ids)
         {
-            $eagerLoadRelations = [];
+            // Finds the list of relations to eager load for the given $type
+            $eagerLoadRelations = $entityToRelationFetchMap[$type] ?? [];
 
-            if ($type === 'payment')
-            {
-                $eagerLoadRelations = ['netbanking', 'billdesk', 'order'];
-            }
-            else if ($type === 'refund')
-            {
-                $eagerLoadRelations = ['payment', 'payment.netbanking', 'payment.billdesk'];
-            }
-
+            // Queries to eager load the ids of the $type, and also the required relations
             $typeEntities = $this->manager->$type->findManyWithRelations($ids, $eagerLoadRelations);
 
+            // Creates an id to entity map of the above queried entities
             foreach ($typeEntities as $entity)
             {
                 $objects[$entity->getId()] = $entity;
             }
         }
 
+        // Associates, as per the $relation, the above queried relations with the $entity
         foreach ($entities as $entity)
         {
             $typeEntity = $objects[$entity->$idCol];

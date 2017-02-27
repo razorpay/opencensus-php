@@ -139,6 +139,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayout(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->payout($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * @deprecated
      * @return mixed

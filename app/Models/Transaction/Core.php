@@ -9,6 +9,7 @@ use RZP\Models\Card;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
@@ -687,6 +688,45 @@ class Core extends Base\Core
         $txn->sourceAssociate($reversal);
 
         $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromPayout(Payout\Entity $payout)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $payout->getAmount();
+
+        list($fee, $serviceTax, $feesSplit) =
+            (new Pricing\Fee)->calculateMerchantFees($payout, false);
+
+        $settledAt = time();
+
+        $payoutAmount = abs($amount + $fee);
+
+        $values = array(
+            Transaction\Entity::DEBIT               => $payoutAmount,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::CURRENCY            => 'INR',
+            Transaction\Entity::GATEWAY_FEE         => 0,
+            Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
+            Transaction\Entity::API_FEE             => $fee,
+            Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::SETTLED             => 0,
+            Transaction\Entity::SETTLED_AT          => $settledAt,
+            Transaction\Entity::FEE                 => $fee,
+            Transaction\Entity::SERVICE_TAX         => $serviceTax,
+            Transaction\Entity::AMOUNT              => $payoutAmount,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+        );
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($payout->merchant);
+
+        $txn->sourceAssociate($payout);
 
         return $txn;
     }

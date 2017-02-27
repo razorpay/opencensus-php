@@ -23,6 +23,7 @@ class Constants
     const BROKING_REPORT      = 'broking_report';
     const PAYMENT_EMAIL_FETCH = 'payment_email_fetch';
     const CREATED_FLOW        = 'created_flow';
+    const PAYOUT              = 'payout';
     const OPENWALLET          = 'openwallet';
     const MARKETPLACE         = 'marketplace';
 
@@ -44,6 +45,7 @@ class Constants
         self::BROKING_REPORT      => true,
         self::PAYMENT_EMAIL_FETCH => true,
         self::CREATED_FLOW        => true,
+        self::PAYOUT              => true,
         self::OPENWALLET          => true,
         self::MARKETPLACE         => true,
     ];

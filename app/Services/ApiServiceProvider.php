@@ -16,6 +16,8 @@ use RZP\Models\Customer;
 use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
+use RZP\Models\Payout;
+use RZP\Models\BankAccount;
 use RZP;
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -93,14 +95,14 @@ class ApiServiceProvider extends BaseServiceProvider
             return new \RZP\Base\RepositoryManager($app);
         });
 
-        $this->app->singleton('segment', function($app)
-        {
-            return new SegmentClient($app);
-        });
-
         $this->app->singleton('upi.client', function($app)
         {
             return new \Razorpay\UPI\Client;
+        });
+
+        $this->app->singleton('segment', function($app)
+        {
+            return new EventTrackerClient($app);
         });
 
         $this->registerApiMutex();
@@ -135,6 +137,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'instance',
             'mailgun',
             'maxmind',
+            'maxmind2',
             'raven',
             'repo',
             'elfin',
@@ -179,6 +182,18 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new MaxMind($app);
+        });
+
+        $this->app->singleton('maxmind2', function($app)
+        {
+            $maxmindMock = $app['config']->get('applications.maxmind.mock');
+
+            if ($maxmindMock === true)
+            {
+                return new Mock\MaxMind($app);
+            }
+
+            return new MaxMind2($app);
         });
     }
 
@@ -254,6 +269,9 @@ class ApiServiceProvider extends BaseServiceProvider
             'payment'         => Payment\Entity::class,
             'refund'          => Payment\Refund\Entity::class,
             'settlement'      => Settlement\Entity::class,
+            'payout'          => Payout\Entity::class,
+
+            'bank_account'    => BankAccount\Entity::class,
         ]);
     }
 }

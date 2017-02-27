@@ -100,13 +100,14 @@ class Merchant
 
     protected function createSettlementDetailsEntities()
     {
-        $entityTypes = array(
+        $entityTypes = [
             SetlDetails\Component::PAYMENT,
             SetlDetails\Component::REFUND,
             SetlDetails\Component::ADJUSTMENT,
+            SetlDetails\Component::PAYOUT,
             SetlDetails\Component::TRANSFER,
             SetlDetails\Component::REVERSAL,
-        );
+        ];
 
         $details = [];
         $totalServiceTax = 0;
@@ -147,6 +148,10 @@ class Merchant
             else if ($txn->getType() === Transaction\Type::REVERSAL)
             {
                 $details[$componentType]['amount'] += $txn->getAmount();
+            }
+            else if ($txn->getType() === Transaction\Type::PAYOUT)
+            {
+                $details[$componentType]['amount'] -= $txn->getAmount();
             }
 
             $totalServiceTax += $txn->getServiceTax();

@@ -127,6 +127,18 @@ class Pricing extends Base
                         'fixed_rate'          => 0,
                     ),
                     array(
+                        'id'                  => '1zE3CYqf1zhyaE',
+                        'plan_id'             => '1hDYlICobzOCYt',
+                        'plan_name'           => 'testDefaultPlan',
+                        'feature'             => 'payout',
+                        'payment_method'      => 'fund_transfer',
+                        'payment_method_type' => null,
+                        'payment_network'     => null,
+                        'payment_issuer'      => null,
+                        'percent_rate'        => 100,
+                        'fixed_rate'          => 500,
+                    ),
+                    array(
                         'id'                  => '1zE3CYf21zbybG',
                         'plan_id'             => '1hDYlICobzOCYt',
                         'plan_name'           => 'testDefaultPlan',

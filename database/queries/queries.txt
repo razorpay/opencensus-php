@@ -1685,7 +1685,19 @@ ALTER TABLE cybersource
 ALTER TABLE first_data
     ADD COLUMN currency VARCHAR(3) AFTER amount;
 
-# --- TODO : Marketplace + Openwallet ---
+ALTER TABLE netbanking
+    ADD COLUMN customer_id VARCHAR(255) AFTER merchant_code,
+    ADD COLUMN customer_name VARCHAR(255) AFTER customer_id;
+
+# payouts related fields
+ALTER TABLE payments
+    ADD COLUMN amount_paidout INTEGER UNSIGNED DEFAULT 0 AFTER base_amount_refunded;
+
+# payout reconcilation remarks
+ALTER TABLE payouts
+    ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;
+
+# --- Marketplace + Openwallet ---
 
 ALTER TABLE merchant_banks
     ADD COLUMN openwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
