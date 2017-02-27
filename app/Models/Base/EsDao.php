@@ -153,6 +153,12 @@ class EsDao
             $skip = (int) $params['skip'];
         }
 
+        $filter = [];
+        if ($merchantId !== null)
+        {
+            $filter = ['term' => ['merchant_id' => $merchantId]];
+        }
+
         $params = [
             'index' => $this->indexName,
             'type'  => $typeName,
@@ -160,15 +166,15 @@ class EsDao
                 'size'  => $count,
                 'from'  => $skip,
                 'query' => [
-                    'filtered'  => [
-                        'query' => [
+                    'bool'  => [
+                        'must' => [
                             'multi_match'   => [
                                 'query'     => $searchString,
                                 'type'      => 'cross_fields',
                                 'fields'    => ['notes.*']
                             ]
                         ],
-                        'filter'    => [],
+                        'filter'    => $filter,
                     ]
                 ],
                 'sort'  => [
@@ -180,11 +186,6 @@ class EsDao
                 ]
             ]
         ];
-
-        if ($merchantId !== null)
-        {
-            $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
-        }
 
         $entityIds = $this->es->searchNotes($params);
 
