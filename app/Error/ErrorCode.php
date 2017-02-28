@@ -43,6 +43,7 @@ class ErrorCode
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
     const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
+    const GATEWAY_ERROR_FALSE_AUTHORIZE                                             = 'GATEWAY_ERROR_FALSE_AUTHORIZE';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
     const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
