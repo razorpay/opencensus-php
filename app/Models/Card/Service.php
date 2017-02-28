@@ -33,7 +33,8 @@ class Service extends Base\Service
         $data['recurring'] = false;
 
         if (($iinEntity != null) and
-            ($iinEntity->getType() === Card\Type::CREDIT))
+            ($iinEntity->getType() === Card\Type::CREDIT) and
+            (in_array($iinEntity->getNetworkCode(), Card\Network::$recurringNetworks, true)))
         {
             $data['recurring'] = true;
         }
