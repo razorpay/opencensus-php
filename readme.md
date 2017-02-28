@@ -8,6 +8,12 @@
 
 * Install [composer](https://getcomposer.org/download/) PHP package manager
 
+
+### (Docker)
+
+* [Refer Docker](readme-docker.md)
+
+
 ### ( Vagrant / Homestead )
 
 * Install Virtualbox & Vagrant
@@ -17,6 +23,7 @@
 * Map api.razorpay.dev to /path/to/api/public in sites [ ~/.homestead/Homestead.yaml ]
 * Follow Common Instructions
 * Follow Common Test Setup Instructions
+
 
 ### ( Ubuntu )
 

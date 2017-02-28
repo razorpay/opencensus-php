@@ -1129,14 +1129,16 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
 
-        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+        $url = $this->getUrl($route, $parameters, $key);
+
+        return $url;
     }
 
     public function getPublicCallbackUrlWithHash($pid, $key = '')
@@ -1162,7 +1164,7 @@ final class Route
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        list($schema, $host) = $this->getSchemaAndHost();
+        list($schema, $host, $port) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -1178,6 +1180,11 @@ final class Route
 
         $url = $schema . $auth . $host;
 
+        if ((int)$port !== 80)
+        {
+            $url .= ':' . $port;
+        }
+
         return $url;
     }
 
@@ -1186,9 +1193,12 @@ final class Route
         $request = \Request::getFacadeRoot();
 
         $schema = $request->getScheme() . '://';
+
         $host = $request->getHost();
 
-        return [$schema, $host];
+        $port = $request->getPort();
+
+        return [$schema, $host, $port];
     }
 
     // @codingStandardsIgnoreStart
