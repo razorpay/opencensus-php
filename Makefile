@@ -9,10 +9,9 @@ DOCKER_COMPOSE = docker-compose
 #Variables populated from shell
 DOCKER_IMAGES = $(shell docker images -q -a)
 DOCKER_IMAGES_API = $(shell docker images razorpay:api -q -a)
-DOCKER_PS_API = $(shell docker ps|grep "apidocker_api_"|cut -d ' ' -f1)
-DOCKER_PS_API_IMG = $(shell docker ps|grep "apidocker_api_1"|cut -d ' ' -f1)
-DOCKER_PS_API_ALL = $(shell docker ps|grep "apidocker_api_[0-9]"|cut -d ' ' -f1)
-DOCKER_PS_ALL_API_ALL = $(shell docker ps|grep "apidocker_api_[0-9]\|apidocker_api_db_[0-9]\|apidocker_cache_[0-9]\|razorpay-es"|cut -d ' ' -f1)
+DOCKER_PS_API_IMG = $(shell docker ps|grep "razorpay:api"|head -n 1|cut -d ' ' -f1)
+DOCKER_PS_API_ALL = $(shell docker ps|grep "razorpay:api"|cut -d ' ' -f1)
+DOCKER_PS_ALL_API_ALL = $(shell docker ps|grep "razorpay:api\|mysql\|redis\|elasticsearch"|cut -d ' ' -f1)
 
 #Files used
 DOCKER_DEV_COMPOSE_FILE = docker-compose.dev.yml
