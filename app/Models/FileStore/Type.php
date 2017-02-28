@@ -100,7 +100,7 @@ class Type
      * Bucket Config Mapping for file types
      */
     const BUCKET_CONFIG_TYPE_MAPPING = [
-        slef::SETTLEMENT_BUCKET_CONFIG => [
+        self::SETTLEMENT_BUCKET_CONFIG => [
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
