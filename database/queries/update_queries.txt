@@ -70,3 +70,6 @@ delete from fees_breakup where id in ('6ehOVBvjfuslSF','6ehOVCBNcL46LZ','6ehOVCQ
 
 # update billdesk refund entity with gateway's txn id
 update billdesk set refundId = 'HICI5095780548' where id = 967024
+
+# capture had timed out. it was actually successful
+update payments set gateway_captured = 1 where id = '7MkcS3XRIUhb5y'
