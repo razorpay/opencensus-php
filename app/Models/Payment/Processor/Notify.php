@@ -2,20 +2,29 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
+use RZP\Constants\MailTags;
+use RZP\Jobs\InvoiceAction;
 
 class Notify
 {
-    const AUTHORIZED = 'authorized';
-    const CARD_SAVED = 'card_saved';
-    const CAPTURED   = 'captured';
-    const REFUNDED   = 'refunded';
-    const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
+    use DispatchesJobs;
+
+    const AUTHORIZED                 = 'authorized';
+    const CARD_SAVED                 = 'card_saved';
+    const CAPTURED                   = 'captured';
+    const REFUNDED                   = 'refunded';
+    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
+    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
+    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -41,6 +50,15 @@ class Notify
         self::AUTHORIZED,
         self::REFUNDED,
         self::FAILED_TO_AUTHORIZED
+    ];
+
+    const MAIL_TAG_MAP = [
+        self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
+        self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
+        self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
+        self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
+        self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
+        self::CARD_SAVED                 => MailTags::CARD_SAVING,
     ];
 
     // TODO: Shift to constants once we update PHP
@@ -91,16 +109,34 @@ class Notify
                 'from' => 'care',
                 'view' => 'emails.payment.cardsaving',
             ]
-        ]
+        ],
+        self::INVOICE_PAYMENT_AUTHORIZED => [
+            'customer' => [
+                'from' => 'care',
+                'view' => [
+                    'html' => 'emails.invoice.customer.notification',
+                ],
+            ],
+        ],
+        self::INVOICE_PAYMENT_CAPTURED => [
+            'merchant' => [
+                'view' => [
+                    'html' => 'emails.invoice.merchant.captured',
+                ]
+            ]
+        ],
     ];
 
     protected $payment;
     protected $refund;
     protected $mode;
     protected $trace;
+    protected $template;
+    protected $invoice = null;
 
     /**
      * Creates a new Notify instance
+     *
      * @param Payment\Entity $payment The payment associated with the Notify
      */
     function __construct(Payment\Entity $payment)
@@ -108,13 +144,19 @@ class Notify
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
-        $this->refreshTemplate();
+
+        if ($this->payment->hasInvoice())
+        {
+            $this->invoice = $this->payment->invoice;
+        }
 
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
 
         $this->domain = $this->app['config']->get('applications.mailgun.url');
+
+        $this->refreshTemplate();
     }
 
     /**
@@ -139,22 +181,26 @@ class Notify
     /**
      * Sends out a mail given the view, subject and email address
      * Uses Mail::queue to queue emails
+     *
      * @param  string $view    array or string of mail views to use
      * @param  string $subject Subject of email
      * @param  string $to      Email address to send to
+     * @param string  $from
+     *
      * @return null
      */
-    protected function sendMail($view, $subject, $to, $from = 'reports')
+    protected function sendMail($view, $subject, $label, $to, $from = 'reports')
     {
         $from       = $this->getCompleteEmail($from);
         $replyTo    = $this->getCompleteEmail('support');
         $domain     = $this->domain;
         $fromHeader = 'Team Razorpay';
+        $paymentId  = $this->payment->getPublicId();
 
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId, $label)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -163,6 +209,12 @@ class Notify
                 {
                     $from = "reports@$domain";
                 }
+
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader(MailTags::HEADER, $paymentId);
+
+                $headers->addTextHeader(MailTags::HEADER, $label);
 
                 // to might be an array
                 if (is_array($to))
@@ -217,16 +269,18 @@ class Notify
 
             $from = (isset($struct['from'])) ? $struct['from'] : null;
 
+            $label = $this->getLabel($event);
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
                 if ($from !== null)
                 {
-                    $this->sendMail($view, $subject, $to, $from);
+                    $this->sendMail($view, $subject, $label, $to, $from);
                 }
                 else
                 {
-                    $this->sendMail($view, $subject, $to);
+                    $this->sendMail($view, $subject, $label, $to);
                 }
 
             }
@@ -293,6 +347,8 @@ class Notify
 
         $riskRating = $this->template['payment']['risk'];
 
+        $amount = $this->template['payment']['raw_amount'];
+
         // The priority order is important here
         if ($riskRating == self::MAX_HIGH_RISK_RATING)
         {
@@ -301,6 +357,11 @@ class Notify
         else if ($riskRating === self::HIGH_RISK_RATING)
         {
             $channel = $config->get('slack.channels.high_4');
+        }
+        else if (($riskRating === self::MIN_HIGH_RISK_RATING) and
+                ($amount <= 1000))
+        {
+            $channel = $config->get('slack.channels.lt_10');
         }
         else if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
@@ -321,6 +382,11 @@ class Notify
      */
     public function trigger($event)
     {
+        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        {
+            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::AUTHORIZED, $this->invoice->getId()));
+        }
+
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -350,14 +416,14 @@ class Notify
         }
     }
 
+    protected function getLabel($event)
+    {
+        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
+    }
+
     protected function getSubject($event, $merchant = true)
     {
-        $action = 'Payment';
-
-        if ($event === self::REFUNDED)
-        {
-            $action = 'Refund';
-        }
+        $action = $this->getAction($event);
 
         /**
          * The reason we have a fallback to the amount here is because
@@ -393,6 +459,25 @@ class Notify
         }
 
         return $subject;
+    }
+
+    protected function getAction($event)
+    {
+        switch ($event)
+        {
+            case self::REFUNDED:
+                $action = 'Refund';
+                break;
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
+                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
+                break;
+            default:
+                $action = 'Payment';
+                break;
+        }
+
+        return $action;
     }
 
     protected function getMerchantForSlack()
@@ -462,6 +547,11 @@ class Notify
                 $data = $this->template['payment'];
                 break;
 
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
+                $data = $this->template['invoice'];
+                break;
+
             case self::REFUNDED:
                 $data = $this->template['refund'];
                 $data['id'] = $this->getRefundLinkForSlack($data['id']);
@@ -513,7 +603,7 @@ class Notify
                 'phone' =>  $this->payment->getContact()
             ],
             'merchant'  =>  [
-                'billing_label' =>  $this->payment->merchant->getBillingLabel(),
+                'billing_label' =>  $this->payment->merchant->getBillingLabelElseName(),
                 'website'       =>  $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
                 'email'         =>  $this->payment->merchant->getTransactionReportEmail(),
@@ -523,6 +613,7 @@ class Notify
                 'id'        =>  $this->payment->getId(),
                 'public_id' =>  $this->payment->getPublicId(),
                 'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
+                'raw_amount' =>  $this->payment['amount'],
                 'timestamp' =>  $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
 
@@ -530,10 +621,10 @@ class Notify
                 'method'    =>  $this->payment->getMethodWithDetail(),
                 'orderId'   =>  $this->payment->getOrderId(),
                 'risk'      =>  $this->payment->merchant->getRiskRating()
-            ]
+            ],
         ];
 
-        if ($this->payment->card !== null)
+        if ($this->payment->hasCard())
         {
             $card = $this->payment->card;
 
@@ -551,11 +642,19 @@ class Notify
         {
             $data['refund'] = [
                 'id'        =>  $this->refund->getId(),
-                'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
+                'amount'    =>  'INR ' . number_format($this->refund->getAmount() / 100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
                 'payment_id'=>  $this->refund->payment->getId(),
                 'public_id' =>  $this->refund->getPublicId(),
             ];
+        }
+
+        if ($this->payment->hasInvoice() === true)
+        {
+            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
+
+            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
         return $data;
@@ -603,7 +702,7 @@ class Notify
             // Convert timestamps to readable versions
             if ($this->isTimestamp($key, $value))
             {
-                $data[$key] = Carbon::createFromTimeStamp($value, "Asia/Kolkata")->format('j M Y h:i a');
+                $data[$key] = Carbon::createFromTimestamp($value, "Asia/Kolkata")->format('j M Y h:i a');
             }
         }
 

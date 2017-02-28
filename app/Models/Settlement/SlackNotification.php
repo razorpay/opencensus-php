@@ -3,18 +3,15 @@
 namespace RZP\Models\Settlement;
 
 use Queue;
+use Config;
 
 class SlackNotification
 {
     protected $operations = array(
-        'mpr_generation',
-        'mpr_reconciliation',
         'setl_initiate',
         'setl_reconciled');
 
     protected $messages = array(
-        'mpr_generation'        => 'Mpr file generated. ',
-        'mpr_reconciliation'    => 'Mpr file reconciled. ',
         'setl_initiate'         => 'Settlements initiated.',
         'setl_reconciliation'   => 'Settlements reconciled. ',
         'setl_return'           => 'Settlements returns occurred. ');
@@ -53,7 +50,7 @@ class SlackNotification
             $message,
             $data,
             [
-                'channel'   => '#settlements',
+                'channel'   => Config::get('slack.channels.settlements'),
                 'username'  => 'settlements',
                 'color'     => $color
             ]);

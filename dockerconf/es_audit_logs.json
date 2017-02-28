@@ -1,0 +1,93 @@
+{
+  "settings": {
+    
+  },
+  "mappings": {
+    "audit_log": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "admin": {
+          "properties": {
+            "id": {
+              "type": "text"
+            },
+            "username": {
+              "type": "text"
+            },
+            "email": {
+              "type": "text"
+            },
+            "name": {
+              "type": "text"
+            },
+            "org_id": {
+              "type": "text"
+            },
+            "employee_code": {
+              "type": "text"
+            },
+            "branch_code": {
+              "type": "text"
+            },
+            "department_code": {
+              "type": "text"
+            },
+            "supervisor_code": {
+              "type": "text"
+            },
+            "location_code": {
+              "type": "text"
+            },
+            "roles": {
+              "type": "text"
+            },
+            "groups": {
+              "type": "text"
+            }
+          }
+        },
+        "category": {
+          "type": "text"
+        },
+        "label": {
+          "type": "text"
+        },
+        "action": {
+          "type": "text"
+        },
+        "description": {
+          "type": "text"
+        },
+        "entity": {
+          "type": "object",
+          "enabled": false
+        },
+        "user_agent": {
+          "type": "text"
+        },
+        "ip_address": {
+          "type": "text"
+        },
+        "created_at": {
+          "type": "long"
+        },
+        "extra": {
+          "properties": {
+            "org_id": {
+              "type": "text"
+            }
+          }
+        },
+        "internal": {
+          "properties": {
+            "event": {
+              "type": "text"
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -7,9 +7,10 @@ use Validator;
 trait CustomAssertions
 {
     public function assertExceptionClass($e, $class)
-    {// sd(get_class($e), $class);
+    {
         if (($e instanceof $class) === false)
         {
+            echo PHP_EOL . 'Exception of class ' . $class . ' expected but not caught' . PHP_EOL;
             throw $e;
         }
 
@@ -17,7 +18,7 @@ trait CustomAssertions
     }
 
     public function assertArraySelectiveEquals(array $expected, array $actual)
-    {//sd($expected, $actual);
+    {
         if ((isset($actual['entity'])) and (is_string($actual['entity'])))
         {
             $this->validateEntity($actual);

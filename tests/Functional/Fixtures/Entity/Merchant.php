@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Merchant\Account;
+use RZP\Models\Merchant\Credits;
 use RZP\Models\Merchant\Methods\Entity as MerchantMethodEntity;
 
 class Merchant extends Base
@@ -134,7 +135,7 @@ class Merchant extends Base
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
 
-    public function holdFunds($id, $hold = true)
+    public function holdFunds($id = '10000000000000', $hold = true)
     {
         return $this->edit($id, ['hold_funds' => $hold]);
     }
@@ -176,12 +177,27 @@ class Merchant extends Base
 
     public function enableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => true]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true, 'credit_card' => true]);
     }
 
     public function disableCard($id = '10000000000000')
     {
-        return $this->fixtures->edit('methods', $id, ['card' => false]);
+        return $this->fixtures->edit('methods', $id, ['debit_card' => false, 'credit_card' => false]);
+    }
+
+    public function disableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => false]);
+    }
+
+    public function enableDebitCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['debit_card' => true]);
+    }
+
+    public function enableCreditCard($id = '10000000000000')
+    {
+        return $this->fixtures->edit('methods', $id, ['credit_card' => true]);
     }
 
     public function enableNetbanking($id = '10000000000000')
@@ -219,9 +235,21 @@ class Merchant extends Base
         return $this->fixtures->edit('balance', $id, ['credits' => $credits]);
     }
 
-    public function editCreditsforNodalAccount($credits)
+    public function editFeeCredits($credits, $id = '10000000000000')
     {
-        return $this->editCredits($credits, '10NodalAccount');
+        return $this->fixtures->edit('balance', $id, ['fee_credits' => $credits]);
+    }
+
+    public function editCreditsforNodalAccount($credits, $type = Credits\Type::AMOUNT)
+    {
+        if ($type === Credits\Type::AMOUNT)
+        {
+            return $this->editCredits($credits, '10NodalAccount');
+        }
+        else if ($type === Credits\Type::FEE)
+        {
+            return $this->editFeeCredits($credits, '10NodalAccount');
+        }
     }
 
     public function enableConvenienceFeeModel($id = '10000000000000')
@@ -244,9 +272,29 @@ class Merchant extends Base
         return $this->edit($id, ['international' => '0']);
     }
 
+    public function addFeatures($featureNames, $id = '10000000000000')
+    {
+        $features = collect();
+
+        foreach ((array) $featureNames as $featureName) {
+            $attributes = [
+                'name'      => $featureName,
+                'entity_id' => $id
+            ];
+            $features->push($this->fixtures->create('feature', $attributes));
+        }
+
+        return $features;
+    }
+
     public function editFeatures($features, $id = '10000000000000')
     {
         return $this->edit($id, ['features' => $features]);
+    }
+
+    public function editAutoRefundDelay($delay, $id = '10000000000000')
+    {
+        return $this->edit($id, ['auto_refund_delay' => $delay]);
     }
 
     public function setCategory($category, $id = '10000000000000')
@@ -266,12 +314,12 @@ class Merchant extends Base
 
     public function enableTPV($id = '10000000000000')
     {
-        return $this->edit($id, ['category' => 9999]);
+        return $this->editCategory2('securities', $id);
     }
 
     public function disableTPV($id = '10000000000000')
     {
-        return $this->edit($id, ['category' => 9990]);
+        return $this->editCategory2('ecommerce', $id);
     }
 
     public function disableAllMethods($id = '10000000000000')

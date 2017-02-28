@@ -45,7 +45,7 @@ class HdfcGatewayAuthTest extends TestCase
 
         $hdfc = $this->getLastEntity('hdfc', true);
 
-        $this->assertEquals($hdfc['error_code'], 'RP00003');
+        $this->assertEquals('RP00013', $hdfc['error_code']);
     }
 
     public function testCreditCardSuccess()
@@ -104,11 +104,13 @@ class HdfcGatewayAuthTest extends TestCase
 
     public function testCreditCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 
     public function testDebitCardAuthNotApproved()
     {
+        // is this not enrolled??
         $this->startTest();
     }
 

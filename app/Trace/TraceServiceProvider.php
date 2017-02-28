@@ -32,7 +32,11 @@ class TraceServiceProvider extends BaseServiceProvider
 
         $this->app->singleton('trace', function($app)
         {
-            return new Trace($app);
+            $trace = new Trace($app);
+
+            $trace->init();
+
+            return $trace;
         });
     }
 
@@ -64,11 +68,20 @@ class TraceServiceProvider extends BaseServiceProvider
 
     protected function registerRequestGetIdMacro()
     {
-        $this->app['request']->macro('getId', function()
+        $request = $this->app['request'];
+
+        $request->macro('generateId', function()
+        {
+            $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+
+            return $this->requestId;
+        });
+
+        $request->macro('getId', function() use($request)
         {
             if ($this->requestId === null)
             {
-                $this->requestId = bin2hex(openssl_random_pseudo_bytes(16));
+                $this->requestId = $request->generateId();
             }
 
             return $this->requestId;

@@ -19,6 +19,8 @@ use Symfony\Component\DomCrawler\Crawler;
 
 class Gateway extends Base\Gateway
 {
+    use Base\AuthorizeFailed;
+
     const HASH_ALGO    = 'SHA512';
     const MERCHANT_ID  = 'test_merchant_id';
     const HASH_SECRET  = 'test_hash_secret';
@@ -80,6 +82,8 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_CALLBACK,
             ['gateway' => $input['gateway']]);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][Resp::MERCHANT_REF_NO]);
+
         $this->verifySecureHash($input['gateway']);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
@@ -115,6 +119,8 @@ class Gateway extends Base\Gateway
                 $responseCode,
                 $desc);
         }
+
+        return $this->getCallbackResponseData($input);
     }
 
     public function refund(array $input)
@@ -273,7 +279,7 @@ class Gateway extends Base\Gateway
 
             $lastRedirectRequest = $this->getRequestFromFormPostResponse($secondRedirectRequest, $secondRedirectResponse);
 
-            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect) !== false)
+            if (in_array($input['payment'][Payment\Entity::BANK], BankCodes::$bank302Redirect, true) !== false)
             {
                 // Makes the last redirect request before the request to bank's ACS url is made by the checkout.
                 $lastRedirectResponse = $this->sendThirdGatewayRequestForEbsAuthorize($lastRedirectRequest);

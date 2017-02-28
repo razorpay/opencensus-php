@@ -2,23 +2,34 @@
 
 namespace RZP\Models\Payment\Refund;
 
-use RZP\Models\Base;
+use RZP\Base;
 use RZP\Models\Payment;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         'amount'        => 'sometimes|integer|min:100',
         'notes'         => 'sometimes|notes'
-    );
+    ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'paymentStatus',
         'paymentRefundStatus',
         'refundAmount'
-    );
+    ];
+
+    protected static $directRules = [
+        'payment_id'    => 'required',
+        'amount'        => 'sometimes|integer|min:100',
+        'notes'         => 'sometimes|notes'
+    ];
+
+    protected static $verifyRefundGateways = [
+            Payment\Gateway::HDFC,
+            Payment\Gateway::AXIS_MIGS
+    ];
 
     protected $payment;
 
@@ -64,11 +75,12 @@ class Validator extends Base\Validator
                 'amount');
         }
 
-        if (ctype_digit($amountToRefund) === false)
+        if ((ctype_digit($amountToRefund) === false) and
+            (is_int($amountToRefund) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Amount should only have digits',
-                'amount');
+                'Amount should be in paise and only have digits',
+                Entity::AMOUNT);
         }
 
         $amountCaptured = $payment->getAmount();
@@ -86,6 +98,14 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_REFUND_AMOUNT_GREATER_THAN_UNREFUNDED);
+        }
+    }
+
+    public static function validateVerifyRefundAllowed(string $gateway)
+    {
+        if (in_array($gateway, self::$verifyRefundGateways, true) === false)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_GATEWAY);
         }
     }
 }

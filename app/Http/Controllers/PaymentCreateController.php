@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -20,7 +20,7 @@ class PaymentCreateController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     /**
@@ -168,6 +168,20 @@ class PaymentCreateController extends Controller
     }
 
     /**
+     * Creates a upi payment
+     */
+    public function postCreateUpiPayment()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->processUpi($input);
+
+        $response = ['razorpay_payment_id' => $data['payment_id']];
+
+        return ApiResponse::json($response);
+    }
+
+    /**
      * Creates a dummy payment and
      * returns corresponding fees and service_tax
      * Used where customer is the fee-bearer and the
@@ -196,7 +210,7 @@ class PaymentCreateController extends Controller
             return ApiResponse::json(['input' => $input,'display' => $data]);
         }
 
-        $url = \RZP\Http\Route::getUrlWithPublicAuth('payment_create_checkout');
+        $url = $this->route->getUrlWithPublicAuth('payment_create_checkout');
 
         return $this->returnConvenienceFeesView($input, $data, $url);
     }
@@ -235,13 +249,6 @@ class PaymentCreateController extends Controller
         $data = $this->payment->topup($id, $input);
 
         return $this->processCoprotoData($data);
-    }
-
-    public function postAutoCapture()
-    {
-        $data = $this->payment->autoCaptureOldAuthorizedPayments();
-
-        return ApiResponse::json($data);
     }
 
     /**
@@ -328,8 +335,13 @@ class PaymentCreateController extends Controller
             }
             else if ($data['type'] === 'otp')
             {
+                $templateData = [
+                   'data' => $data,
+                   'cdn'  => $this->config->get('url.cdn.production')
+                ];
+
                 return View::make('gateway.gatewayOtpPostForm')
-                           ->with('data', $data);
+                           ->with('data', $templateData);
             }
             else if ($data['type'] === 'return')
             {

@@ -2,7 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
+use ApiResponse;
 use RZP\Models\Payment;
 use RZP\Models\Card;
 use RZP\Trace\TraceCode;
@@ -17,7 +17,7 @@ class PaymentController extends Controller
     {
         parent::__construct();
 
-        $this->payment = new Payment\Service();
+        $this->payment = new Payment\Service;
     }
 
     public function getPayment($id)
@@ -68,6 +68,15 @@ class PaymentController extends Controller
         return ApiResponse::json($payment);
     }
 
+    public function postRefundAuthorizedInBulk()
+    {
+        $input = Request::all();
+
+        $summary = $this->payment->refundAuthorizedInBulk($input);
+
+        return ApiResponse::json($summary);
+    }
+
     public function postForceAuthorize($id)
     {
         $input = Request::all();
@@ -87,6 +96,15 @@ class PaymentController extends Controller
     public function postAuthorizeFailedPayment($id)
     {
         $data = $this->payment->authorizeFailed($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postFixAuthorizedAt()
+    {
+        $input = Request::all();
+
+        $data = $this->payment->fixAuthorizeAt($input);
 
         return ApiResponse::json($data);
     }
@@ -121,6 +139,19 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayout(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->payout($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    /**
+     * @deprecated
+     * @return mixed
+     */
     public function postAutoCapture()
     {
         $data = $this->payment->autoCaptureOldAuthorizedPayments();
@@ -147,6 +178,13 @@ class PaymentController extends Controller
         $refunds = $this->payment->retrieveRefundByIdAndPaymentId($paymentId, $rfndId);
 
         return ApiResponse::json($refunds);
+    }
+
+    public function getTransactionForPayment($paymentId)
+    {
+        $transaction = $this->payment->fetchTransactionByPaymentId($paymentId);
+
+        return ApiResponse::json($transaction);
     }
 
     public function postTimeout()
@@ -195,16 +233,11 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function getVerifyPayments($filter)
+    public function postVerifyPayments($filter)
     {
-        $data = $this->payment->verifyMultiplePayments($filter);
+        $input = Request::all();
 
-        return ApiResponse::json($data);
-    }
-
-    public function getVerifyPaymentsWithPreviousVerifyResultFailed()
-    {
-        $data = $this->payment->verifyPaymentsWithFailedVerifyResult();
+        $data = $this->payment->verifyMultiplePayments($filter, $input);
 
         return ApiResponse::json($data);
     }
@@ -242,6 +275,13 @@ class PaymentController extends Controller
     public function postCaptureVerify($id)
     {
         $data = $this->payment->verifyCapture($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postManualGatewayCapture($id)
+    {
+        $data = $this->payment->manualGatewayCapture($id);
 
         return ApiResponse::json($data);
     }

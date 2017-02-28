@@ -2,8 +2,12 @@
 
 namespace RZP\Models\Transaction;
 
-use Carbon\Carbon;
+use RZP\Constants;
+use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Report;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Refund;
 use RZP\Models\Transaction;
 
 class Service extends Base\Service
@@ -30,8 +34,34 @@ class Service extends Base\Service
 
     public function getReport($input)
     {
-        $report = new Base\Report;
+        $report = new Report\BasicEntityReport(Constants\Entity::TRANSACTION);
 
-        return $report->getReport($input, 'transaction');
+        return $report->getReport($input);
+    }
+
+    public function createFeeBreakupForTransaction($input)
+    {
+        return (new Transaction\DataMigration())->createFeeBreakupForTransaction($input);
+    }
+
+    public function getEntityTransaction($entity, $id)
+    {
+        if ($entity === Constants\Entity::PAYMENT)
+        {
+            Payment\Entity::verifyIdAndStripSign($id);
+        }
+        else if ($entity === Constants\Entity::REFUND)
+        {
+            Refund\Entity::verifyIdAndStripSign($id);
+        }
+        else
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                "invalid entity, entity should be either payment or refund");
+        }
+
+        $txn = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
+
+        return $txn->toArrayPublic();
     }
 }

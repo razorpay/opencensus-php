@@ -2,11 +2,10 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Payment;
-use RZP\Models\Card;
+use ApiResponse;
 use Request;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 
 class CardController extends Controller
 {
@@ -57,6 +56,7 @@ class CardController extends Controller
 
         return ApiResponse::json($data);
     }
+
     public function uploadIin()
     {
         $input = Request::all();
@@ -78,6 +78,16 @@ class CardController extends Controller
         }
         return ApiResponse::json($data);
     }
+
+    public function rangeUploadIin(Card\IIN\Service $iinService)
+    {
+        $input = Request::all();
+
+        $data = $iinService->addIinRange($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function editIin($id)
     {
         $input = Request::all();

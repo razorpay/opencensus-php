@@ -37,14 +37,14 @@ return [
         'merchant_id' => '10000000000000',
         'amount' => 50000,
         'fee' => 1150,
-        'pricing_rule_id' => '1nvp2XPMmaRLxb',
+        'pricing_rule_id' => null,
         'debit' => 0,
         'credit' => 48850,
         'currency' => 'INR',
         'balance' => 0,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048850,
+//        'escrow_balance' => 1048850,
         'channel' => 'kotak',
         'settled' => false,
         'settled_at' => null,
@@ -65,7 +65,7 @@ return [
         'balance' => 1048850,
         'gateway_fee' => 0,
         'api_fee' => 0,
-        'escrow_balance' => 1048850,
+//        'escrow_balance' => 1048850,
         'channel' => 'kotak',
         'settled' => false,
 //        'settled_at' => 1437589800,
@@ -162,7 +162,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\GatewayErrorException',
+            'class' => RZP\Exception\GatewayErrorException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED,
             'gateway_error_code'  => null
         ],
@@ -184,7 +184,7 @@ return [
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
+            'class' => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_ENALBED_FOR_MERCHANT
         ],
     ],

@@ -6,6 +6,7 @@ use Excel;
 use Config;
 
 use RZP\Exception;
+use RZP\Reconciliator\Base;
 
 class Converter
 {
@@ -27,7 +28,7 @@ class Converter
         'ref'  => 'reference',
     ];
 
-    const MAX_SHEETS_ALLOWED = 10;
+    const MAX_SHEETS_ALLOWED = 3;
     const ROW_CHUNK_SIZE = 500;
 
     protected $dataArray;
@@ -90,7 +91,7 @@ class Converter
 
         foreach (range(0, self::MAX_SHEETS_ALLOWED) as $index)
         {
-            $randomSheetName = '';
+            $randomSheetName = 'sheet' . $index;
             $allSheetsContent[$randomSheetName] = [];
 
             Excel::filter('chunk')->selectSheetsByIndex($index)->load($filePath)->chunk(
@@ -168,13 +169,17 @@ class Converter
         return $rows;
     }
 
-    public function convertCsvToArray($fileDetails, $columnHeaders = [])
+    public function convertCsvToArray($fileDetails, $columnHeaders = [], array $linesToSkip = [])
     {
         $filePath = $fileDetails[FileProcessor::FILE_PATH];
 
         $data = [];
 
         $columnHeadersCount = count($columnHeaders);
+
+        $totalLinesToRead = $this->getTotalLinesToRead($filePath, $linesToSkip);
+        $linesToSkipFromTop = $linesToSkip[FileProcessor::LINES_FROM_TOP] ?? 0;
+        $currentLineNumber = 0;
 
         $handle = fopen($filePath, 'r');
 
@@ -188,11 +193,29 @@ class Converter
         {
             while (($row = fgetcsv($handle)) !== false)
             {
+                //
+                // Skip the first few ($linesToSkipFromTop) rows
+                // Or jump right over it if it's an empty row.
+                //
+                if (($currentLineNumber < $linesToSkipFromTop) or
+                    (empty(array_filter($row))))
+                {
+                    $currentLineNumber++;
+
+                    continue;
+                }
+
+                // Skip the last few ($totalLinesToRead) rows
+                if (($totalLinesToRead !== null) and
+                    ($currentLineNumber >= $totalLinesToRead))
+                {
+                    break;
+                }
+
                 // If headers are empty, get headers from the first row.
                 if (empty($columnHeaders) === true)
                 {
                     $columnHeaders = array_map('trim', $row);
-
                     $columnHeadersCount = count($columnHeaders);
                 }
                 else
@@ -208,6 +231,8 @@ class Converter
                     // Combines the columnHeaders(keys) with the row(values).
                     $data[] = array_combine($columnHeaders, $row);
                 }
+
+                $currentLineNumber++;
             }
         }
         finally
@@ -216,5 +241,23 @@ class Converter
         }
 
         return $data;
+    }
+
+    protected function getTotalLinesToRead(string $filePath, array $linesToSkip)
+    {
+        $totalLinesToRead = null;
+
+        $linesFromBottom = $linesToSkip[FileProcessor::LINES_FROM_BOTTOM] ?? 0;
+
+        if ($linesFromBottom > 0)
+        {
+            // Loads the file into memory to get the number of lines to read
+            $fileContent = file($filePath);
+            $fileLinesCount = count($fileContent);
+
+            $totalLinesToRead = $fileLinesCount - $linesFromBottom;
+        }
+
+        return $totalLinesToRead;
     }
 }

@@ -2,11 +2,8 @@
 
 namespace RZP\Models\Card\IIN;
 
-use RZP\Models\Base;
-use RZP\Models\Card\IIN;
 use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Trace\TraceCode;
+use RZP\Models\Base;
 
 class Service extends Base\Service
 {
@@ -42,6 +39,13 @@ class Service extends Base\Service
         $this->repo->saveOrFail($iin);
 
         return $iin->toArrayPublic();
+    }
+
+    public function addIinRange($input)
+    {
+        $result = (new Import\RangeImporter)->import($input);
+
+        return $result;
     }
 
     public function importIin($input)

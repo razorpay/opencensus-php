@@ -2,26 +2,27 @@
 
 namespace RZP\Gateway\Wallet\Olamoney;
 
-use RZP\Trace\Trace;
-use RZP\Exception;
+use Carbon\Carbon;
+use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
-use RZP\Models\Customer\Token;
-use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
-use RZP\Gateway\Wallet\Base;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Action;
 use RZP\Gateway\Wallet\Base\Entity;
-use RZP\Http\Route;
+use RZP\Models\Customer\Token;
 use RZP\Models\Payment\Status as PaymentStatus;
-use RZP\Constants\HashAlgo;
-use Carbon\Carbon;
+use RZP\Models\Payment\Processor;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
     use AuthorizeFailed;
+
+    const BALANCE_CACHE_KEY = 'olamoney_balance_%s';
 
     // 8 hours - 8 * 60 * 60 = 28
     const WALLET_ACCESS_TOKEN_EXPIRY = 28800;
@@ -30,16 +31,14 @@ class Gateway extends Base\Gateway
 
     protected $topup = true;
 
-    protected $accessToken;
-
-    protected $map = array(
+    protected $map = [
         Entity::EMAIL                   => Entity::EMAIL,
         Entity::CONTACT                 => Entity::CONTACT,
         ResponseFields::STATUS          => Entity::STATUS_CODE,
         ResponseFields::AMOUNT          => Entity::AMOUNT,
         Entity::RECEIVED                => Entity::RECEIVED,
         ResponseFields::TRANSACTION_ID  => Entity::GATEWAY_PAYMENT_ID,
-    );
+    ];
 
     // Not used in power-wallet flow
     // Used only for topup which is via a redirect flow
@@ -69,11 +68,18 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
+        $request['headers'] = $this->getRequestHeaders();
+
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $this->createWalletRefundEntity($content, $input);
 
@@ -88,6 +94,44 @@ class Gateway extends Base\Gateway
         }
     }
 
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $refundedEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Processor\Wallet::OLAMONEY);
+
+        if ($refundedEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $refundEntity = $refundedEntities->first();
+
+        $refundEntityPaymentId = $refundEntity->getPaymentId();
+        $refundEntityRefundAmount = $refundEntity->getAmount();
+        $refundEntityStatusCode = $refundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $refundEntityPaymentId,
+                'gateway_refund_amount' => $refundEntityRefundAmount,
+                'status_code'           => $refundEntityStatusCode,
+            ]);
+
+        if (($refundEntityPaymentId !== $paymentId) or
+            ($refundEntityRefundAmount !== $refundAmount) or
+            ($refundEntityStatusCode !== ResponseFields::REFUND_SUCCESS_STATUS))
+        {
+            return false;
+        }
+
+        return true;
+    }
+
     public function verify(array $input)
     {
         parent::verify($input);
@@ -97,18 +141,25 @@ class Gateway extends Base\Gateway
         return $this->runPaymentVerifyFlow($verify);
     }
 
-    public function getPaymentIdFromServerCallback($input)
+    public function getPaymentIdFromServerCallback(array $input)
     {
         return $input['merchantBillId'];
     }
 
-    public function otpGenerate($input)
+    public function otpGenerate(array $input)
     {
         $this->action($input, Action::OTP_GENERATE);
 
         $request = $this->getOtpGenerateRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $response = $this->sendGatewayRequest($request);
 
@@ -121,22 +172,31 @@ class Gateway extends Base\Gateway
                 ErrorCode::BAD_REQUEST_MAXIMUM_SMS_LIMIT_REACHED);
         }
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $code = $content['status'];
 
         // Payment fails, throw exception
         if ($code !== Status::SUCCESS)
         {
-            $message = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
+            $message = $content[ResponseFields::MESSAGE] ?? null;
+
+            $errorCode = ResponseCode::getApiErrorCode($message);
 
             throw new Exception\GatewayErrorException(
-                ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
+                $errorCode,
                 $code,
                 $message);
         }
+
+        return $this->getOtpSubmitRequest($input);
     }
 
     public function callbackOtpSubmit(array $input)
@@ -147,11 +207,18 @@ class Gateway extends Base\Gateway
 
         $request = $this->getOtpSubmitRequestArray($input);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
+
+        $request['headers'] = $this->getRequestHeaders();
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
         $data = [];
 
@@ -159,13 +226,16 @@ class Gateway extends Base\Gateway
         {
             $data['token'] = $this->getTokenAttributes($content);
 
-            $this->accessToken = $content[ResponseFields::ACCESS_TOKEN];
-
             $content[ResponseFields::ACCESS_TOKEN] = '';
             $content[ResponseFields::REFRESH_TOKEN] = '';
         }
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE,
+            [
+                'content' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         // Payment fails, throw exception
         if (($content[ResponseFields::STATUS] !== Status::SUCCESS) or
@@ -181,47 +251,63 @@ class Gateway extends Base\Gateway
                 $message);
         }
 
-        return $data;
+        $callbackResponse = $this->getCallbackResponseData($input);
+
+        $callbackResponse = array_merge($callbackResponse, $data);
+
+        return $callbackResponse;
     }
 
     public function checkBalance(array $input)
     {
         $this->action($input, Action::GET_BALANCE);
 
-        $content[RequestFields::USER_ACCESS_TOKEN] = $this->accessToken;
+        $content[RequestFields::USER_ACCESS_TOKEN] = $input['token']['gateway_token'];
 
         $request = $this->getStandardRequestArray();
 
-        $request['headers'] = $this->getRequestHeaders();
+        $this->trace->info(
+            TraceCode::GATEWAY_CHECK_BALANCE_REQUEST,
+            [
+                'request' => $request,
+                'payment_id' => $input['payment']['id']
+            ]);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $request['headers'] = $this->getRequestHeaders();
 
         $request['content'] = json_encode($content);
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         $userBalance = 0;
 
         if (($content[ResponseFields::STATUS] === Status::SUCCESS) and
             (isset($content[ResponseFields::AMOUNT]) === true))
         {
-            $userBalance = (int) ($content[ResponseFields::AMOUNT]) * 100;
+            $userBalance = (int) (($content[ResponseFields::AMOUNT]) * 100);
+
+            $key = $this->getBalanceKeyForCache($input['payment']);
+
+            $this->app['cache']->put($key, $userBalance, self::PAYMENT_TTL);
         }
 
         if ($input['payment']['amount'] > $userBalance)
         {
-            $input['payment']['amount'] = $input['payment']['amount'] - $userBalance;
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
     }
 
-    public function topup($input)
+    public function topup(array $input)
     {
         return $this->authorize($input);
     }
@@ -234,9 +320,14 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE,
+            [
+                'response' => $content,
+                'payment_id' => $input['payment']['id']
+            ]);
 
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -264,34 +355,43 @@ class Gateway extends Base\Gateway
         $this->createGatewayPaymentEntity($gatewayPaymentAttrs, Action::AUTHORIZE);
     }
 
-    protected function getDebitRequestArray($input)
+    protected function getDebitRequestArray(array $input)
     {
         $content = $this->getDebitRequestAttributes($input);
-        $content = json_encode($content);
+
+        $traceContent = $content;
 
         $request = $this->getStandardRequestArray();
 
+        $traceContent[RequestFields::ACCESS_TOKEN] = '';
+        $traceContent[RequestFields::HASH] = '';
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST,
+            [
+                'request' => $request,
+                'content' => $traceContent
+            ]);
+
         $request['headers'] = $this->getRequestHeaders();
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
-
-        $request['content'] = $content;
+        $request['content'] = json_encode($content);
 
         return $request;
     }
 
-    protected function getDebitRequestAttributes($input)
+    protected function getDebitRequestAttributes(array $input)
     {
         $amount = number_format($input['payment']['amount'] / 100, 2, '.', '');
 
-        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
-        $notificationUrl = Route::getUrlWithPublicAuth(
-                            'gateway_payment_callback_post', ['gateway' => 'wallet_olamoney']
-                        );
+        $notificationUrl = $this->route->getUrlWithPublicAuth(
+                                'gateway_payment_callback_post',
+                                ['gateway' => 'wallet_olamoney']);
 
-        $content = array(
+        $content = [
             RequestFields::COMMAND              => Command::DEBIT,
             RequestFields::ACCESS_TOKEN         => $this->getAccessToken($input['terminal']),
             RequestFields::UNIQUE_ID            => $input['payment']['id'],
@@ -302,18 +402,18 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT               => $amount,
             RequestFields::CURRENCY             => $input['payment']['currency'],
             RequestFields::COUPON_CODE          => 'NA',
-            RequestFields::USER_ACCESS_TOKEN    => $this->accessToken,
-        );
+            RequestFields::USER_ACCESS_TOKEN    => $input['token']['gateway_token'],
+        ];
 
         $content[RequestFields::HASH] = $this->getHashForDebit($content);
 
         return $content;
     }
 
-    protected function callbackTopupFlow($input)
+    protected function callbackTopupFlow(array $input)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            TraceCode::GATEWAY_PAYMENT_TOPUP_CALLBACK,
             [
                 'request'       => $input['gateway'],
                 'gateway'       => $this->gateway,
@@ -329,34 +429,23 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED, $responseStatus);
         }
-
-        // verify hash - when ola starts sending hash value
-
-        $token = $this->getValidWalletToken($input);
-
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
-
-        $this->accessToken = $token->getGatewayToken();
     }
 
-    protected function getCreateWalletAttributes($input, $content)
+    protected function getCreateWalletAttributes(array $input, array $content)
     {
-        $contentToSave = array(
+        $contentToSave = [
             ResponseFields::AMOUNT          => $input['payment']['amount'],
             Entity::RECEIVED                => true,
             Entity::EMAIL                   => $input['payment']['email'],
             Entity::CONTACT                 => $this->getFormattedContact($input['payment']['contact']),
             ResponseFields::STATUS          => $content[ResponseFields::STATUS],
             ResponseFields::TRANSACTION_ID  => $content[ResponseFields::TRANSACTION_ID],
-        );
+        ];
 
         return $contentToSave;
     }
 
-    protected function verifyPaymentCallbackResponse($input)
+    protected function verifyPaymentCallbackResponse(array $input)
     {
         $content = $input['gateway'];
 
@@ -373,7 +462,7 @@ class Gateway extends Base\Gateway
 
     protected function verifySecureHash(array $content)
     {
-        $fieldsInOrder = array(
+        $fieldsInOrder = [
             ResponseFields::TYPE,
             ResponseFields::STATUS,
             ResponseFields::MERCHANT_BILL_ID,
@@ -384,7 +473,7 @@ class Gateway extends Base\Gateway
             ResponseFields::IS_CASHBACK_ATTEMPTED,
             ResponseFields::IS_CASHBACK_SUCCESSFUL,
             ResponseFields::TIMESTAMP,
-        );
+        ];
 
         $actual = $content[ResponseFields::HASH];
 
@@ -395,38 +484,50 @@ class Gateway extends Base\Gateway
         $this->compareHashes($actual, $generated);
     }
 
-    protected function getBillGeneratorRequest($input)
+    protected function getBillGeneratorRequest(array $input)
     {
         $content = $this->getBillGeneratorAttributes($input);
 
-        $query = http_build_query($content);
-
-        $request = [
-            'method'  => 'get',
-            'url'     => $this->getUrl(). '?' . $query,
-            'content' => [],
+        $requestContent = [
+            RequestFields::BILL => base64_encode(json_encode($content)),
+            RequestFields::PHONE => $this->getFormattedContact($input['payment']['contact'])
         ];
+
+        $request = $this->getStandardRequestArray([], 'get');
+
+        $content[RequestFields::USER_ACCESS_TOKEN] = '';
+        $content[RequestFields::ACCESS_TOKEN] = '';
+        $content[RequestFields::HASH] = '';
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST,
+            [
+                'request' => $request,
+                'content' => $content
+            ]);
+
+        $query = http_build_query($requestContent);
+
+        $request['url'] = $request['url'] . '?' . $query;
 
         return $request;
     }
 
-    protected function getBillGeneratorAttributes($input)
+    protected function getBillGeneratorAttributes(array $input)
     {
-        $token = $this->getValidWalletToken($input);
+        $key = $this->getBalanceKeyForCache($input['payment']);
 
-        if ($token === null)
-        {
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
-        }
+        // Wallet Balance is in paise
+        $walletBalance = $this->app['cache']->get($key, 0);
 
-        $this->accessToken = $token->getGatewayToken();
+        $topupAmount = ($input['payment']['amount'] - $walletBalance);
 
-        $amount = (string) number_format($input['payment']['amount'] / 100, 2, '.', '');
+        $formattedAmount = number_format($topupAmount / 100, 2, '.', '');
 
-        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getBillingLabelElseName()];
+        $udf = [RequestFields::MERCHANT_DISPLAY_NAME => $input['merchant']->getFilteredDba()];
         $udf = json_encode($udf);
 
-        $content = array(
+        $content = [
             RequestFields::COMMAND                  => Command::CREDIT,
             RequestFields::ACCESS_TOKEN             => $this->getAccessToken($input['terminal']),
             RequestFields::MERCHANT_REFERENCE_ID    => $input['payment']['id'],
@@ -434,62 +535,50 @@ class Gateway extends Base\Gateway
             RequestFields::UDF                      => $udf,
             RequestFields::RETURN_URL               => $input['callbackUrl'],
             RequestFields::NOTIFICATION_URL         => 'NA',
-            RequestFields::AMOUNT                   => $amount,
-            RequestFields::USER_ACCESS_TOKEN        => $this->accessToken,
+            RequestFields::AMOUNT                   => $formattedAmount,
+            RequestFields::USER_ACCESS_TOKEN        => $input['token']['gateway_token'],
             RequestFields::CURRENCY                 => $input['payment']['currency'],
             RequestFields::BALANCE_TYPE             => 'cash',
             RequestFields::BALANCE_NAME             => 'cash',
-        );
+        ];
 
         $content[RequestFields::HASH] = $this->getHashForBill($content);
 
-        $requestContent[RequestFields::BILL] = base64_encode(json_encode($content));
-
-        return $requestContent;
+        return $content;
     }
 
-    protected function getOtpGenerateRequestArray($input)
+    protected function getOtpGenerateRequestArray(array $input)
     {
         $payment = $input['payment'];
 
-        $queryArray = array(
+        $queryArray = [
             RequestFields::PHONE    => $this->getFormattedContact($payment['contact']),
             RequestFields::EMAIL    => $payment['email'],
-        );
+        ];
+
+        $request = $this->getStandardRequestArray($queryArray);
 
         $query = http_build_query($queryArray);
 
-        $url = $this->getUrl();
-
-        $request = [
-            'method'  => 'post',
-            'content' => $queryArray,
-            'url'     => $url . '?' . $query,
-            'headers' => $this->getRequestHeaders(),
-        ];
+        $request['url'] = $request['url'] . '?' . $query;
 
         return $request;
     }
 
-    protected function getOtpSubmitRequestArray($input)
+    protected function getOtpSubmitRequestArray(array $input)
     {
         $payment = $input['payment'];
 
-        $queryArray = array(
+        $queryArray = [
             RequestFields::PHONE    => $this->getFormattedContact($payment['contact']),
             RequestFields::OTP      => $input['gateway']['otp'],
-        );
+        ];
+
+        $request = $this->getStandardRequestArray($queryArray);
 
         $query = http_build_query($queryArray);
 
-        $url = $this->getUrl();
-
-        $request = [
-            'method'  => 'post',
-            'content' => $queryArray,
-            'url'     => $url . '?' . $query,
-            'headers' => $this->getRequestHeaders(),
-        ];
+        $request['url'] = $request['url'] . '?' . $query;
 
         return $request;
     }
@@ -527,7 +616,7 @@ class Gateway extends Base\Gateway
         return $verify->status;
     }
 
-    protected function checkVerifyStatusOnGatewayFail($gatewayPayment, $input, $verify)
+    protected function checkVerifyStatusOnGatewayFail($gatewayPayment, array $input, $verify)
     {
         $verify->gatewaySuccess = false;
 
@@ -570,7 +659,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function checkVerifyStatusOnGatewaySuccess($gatewayPayment, $input, $verify)
+    protected function checkVerifyStatusOnGatewaySuccess($gatewayPayment, array $input, $verify)
     {
         $verify->gatewaySuccess = true;
 
@@ -640,18 +729,18 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyWalletCreateAttributes($verifyResponse)
+    protected function getVerifyWalletCreateAttributes(array $verifyResponse)
     {
         $payment = $this->input['payment'];
 
-        $contentToSave = array(
+        $contentToSave = [
             ResponseFields::AMOUNT          => $payment['amount'],
             Entity::RECEIVED                => true,
             Entity::EMAIL                   => $payment['email'],
             Entity::CONTACT                 => $this->getFormattedContact($payment['contact']),
             ResponseFields::STATUS          => Status::SUCCESS,
             ResponseFields::TRANSACTION_ID  => $verifyResponse[ResponseFields::UNIQUE_BILL_ID],
-        );
+        ];
 
         return $contentToSave;
     }
@@ -666,7 +755,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $content = $this->jsonToArray($response->body);
+        $content = $this->parseResponseBody($response);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
@@ -685,13 +774,13 @@ class Gateway extends Base\Gateway
         return $content;
     }
 
-    protected function getVerifyRequestArray($input)
+    protected function getVerifyRequestArray(array $input)
     {
-        $content = array(
+        $content = [
             RequestFields::UNIQUE_BILL_ID   => $input['payment']['id'],
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
             RequestFields::TIMESTAMP        => Carbon::now('Asia/Kolkata')->format('Y-m-d H:i:s'),
-        );
+        ];
 
         $content[RequestFields::HASH] = $this->getHashForVerifyRequest($content);
 
@@ -700,7 +789,7 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    protected function getHashForVerifyRequest($content)
+    protected function getHashForVerifyRequest(array $content)
     {
         $str = $content[RequestFields::ACCESS_TOKEN] . '|';
         $str .= $content[RequestFields::UNIQUE_BILL_ID] . '||';
@@ -715,14 +804,14 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function createWalletRefundEntity($content, $input)
+    protected function createWalletRefundEntity(array $content, array $input)
     {
         $refundAttributes = $this->getRefundEntityAttributesFromRefundResponse($content, $input);
 
         return $this->createGatewayRefundEntity($refundAttributes);
     }
 
-    protected function getRefundEntityAttributesFromRefundResponse($content, $input)
+    protected function getRefundEntityAttributesFromRefundResponse(array $content, array $input)
     {
         $gatewayRefundId = null;
 
@@ -735,7 +824,7 @@ class Gateway extends Base\Gateway
 
         $errorMessage = isset($content[ResponseFields::MESSAGE]) ? $content[ResponseFields::MESSAGE] : null;
 
-        $refundAttributes = array(
+        $refundAttributes = [
             Entity::PAYMENT_ID              => $input['payment']['id'],
             Entity::ACTION                  => $this->action,
             Entity::AMOUNT                  => $input['refund']['amount'],
@@ -748,14 +837,14 @@ class Gateway extends Base\Gateway
             Entity::RESPONSE_CODE           => $responseCode,
             Entity::STATUS_CODE             => $content[ResponseFields::STATUS],
             Entity::ERROR_MESSAGE           => $errorMessage,
-        );
+        ];
 
         return $refundAttributes;
     }
 
     protected function getRefundRequest($input)
     {
-        $content = array(
+        $content = [
             RequestFields::COMMAND          => Command::REFUND,
             RequestFields::ACCESS_TOKEN     => $this->getAccessToken($input['terminal']),
             RequestFields::UNIQUE_ID        => $input['refund']['id'],
@@ -768,20 +857,18 @@ class Gateway extends Base\Gateway
             RequestFields::BALANCE_NAME     => 'cash',
             RequestFields::SALE_ID          => $input['payment']['id'],
             RequestFields::CURRENCY         => $input['payment']['currency'],
-        );
+        ];
 
         $content[RequestFields::HASH] = $this->getHashForRefundRequest($content);
 
         $request = $this->getStandardRequestArray(json_encode($content));
-
-        $request['headers'] = $this->getRequestHeaders();
 
         return $request;
     }
 
     protected function getHashForRefundRequest(array $content)
     {
-        $fieldsInOrder = array(
+        $fieldsInOrder = [
             RequestFields::ACCESS_TOKEN,
             RequestFields::UNIQUE_ID,
             RequestFields::COMMENTS,
@@ -793,7 +880,7 @@ class Gateway extends Base\Gateway
             RequestFields::BALANCE_TYPE,
             RequestFields::BALANCE_NAME,
             RequestFields::SALE_ID,
-        );
+        ];
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -810,9 +897,9 @@ class Gateway extends Base\Gateway
         return $terminal['gateway_access_code'];
     }
 
-    protected function getHashForDebit($content)
+    protected function getHashForDebit(array $content)
     {
-        $fieldsInOrder = array(
+        $fieldsInOrder = [
             RequestFields::ACCESS_TOKEN,
             RequestFields::UNIQUE_ID,
             RequestFields::COMMENTS,
@@ -823,16 +910,16 @@ class Gateway extends Base\Gateway
             RequestFields::AMOUNT,
             RequestFields::USER_ACCESS_TOKEN,
             RequestFields::COUPON_CODE,
-        );
+        ];
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
         return $this->getHashOfArray($orderedData);
     }
 
-    protected function getHashForBill($content)
+    protected function getHashForBill(array $content)
     {
-        $fieldsInOrder = array(
+        $fieldsInOrder = [
             RequestFields::ACCESS_TOKEN,
             RequestFields::MERCHANT_REFERENCE_ID,
             RequestFields::COMMENTS,
@@ -842,44 +929,7 @@ class Gateway extends Base\Gateway
             RequestFields::CURRENCY,
             RequestFields::AMOUNT,
             RequestFields::USER_ACCESS_TOKEN,
-        );
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($orderedData);
-    }
-
-    protected function getHashForOtpGenerate($content)
-    {
-        $fieldsInOrder = array(
-            RequestFields::ACCESS_TOKEN,
-            RequestFields::UNIQUE_ID,
-            RequestFields::COMMENTS,
-            RequestFields::UDF,
-            RequestFields::RETURN_URL,
-            RequestFields::NOTIFICATION_URL,
-            RequestFields::CURRENCY,
-            RequestFields::AMOUNT,
-            RequestFields::COUPON_CODE,
-        );
-
-        $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
-
-        return $this->getHashOfArray($orderedData);
-    }
-
-    protected function getHashForOtpSubmit($content)
-    {
-        $fieldsInOrder = array(
-            RequestFields::ACCESS_TOKEN,
-            RequestFields::COMMAND,
-            RequestFields::COMMENTS,
-            RequestFields::NOTIFICATION_URL,
-            RequestFields::OTP,
-            RequestFields::RETURN_URL,
-            RequestFields::UDF,
-            RequestFields::UNIQUE_ID,
-        );
+        ];
 
         $orderedData = $this->getDataWithFieldsInOrder($content, $fieldsInOrder);
 
@@ -929,7 +979,7 @@ class Gateway extends Base\Gateway
         return $this->input['terminal']['gateway_terminal_password'];
     }
 
-    protected function getValidWalletToken($input)
+    protected function getValidWalletToken(array $input)
     {
         $token = (new Token\Repository)
                         ->getByWalletTerminalAndCustomerId(
@@ -943,19 +993,39 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getTokenAttributes($content)
+    protected function getTokenAttributes(array $content)
     {
         $input = $this->input;
 
-        $attributes = array(
+        $attributes = [
             Token\Entity::METHOD           => 'wallet',
             Token\Entity::WALLET           => $input['payment']['wallet'],
             Token\Entity::TERMINAL_ID      => $input['terminal']['id'],
             Token\Entity::GATEWAY_TOKEN    => $content[ResponseFields::ACCESS_TOKEN],
             Token\Entity::GATEWAY_TOKEN2   => $content[ResponseFields::REFRESH_TOKEN],
             Token\Entity::EXPIRED_AT       => time() + self::WALLET_ACCESS_TOKEN_EXPIRY,
-        );
+        ];
 
         return $attributes;
+    }
+
+    protected function parseResponseBody(\Requests_Response $response)
+    {
+        if ($response->body === '')
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+                '',
+                'Invalid JSON in Response Body');
+        }
+
+        $content = $this->jsonToArray($response->body);
+
+        return $content;
+    }
+
+    protected function getBalanceKeyForCache($payment)
+    {
+        return sprintf(self::BALANCE_CACHE_KEY, $payment['id']);
     }
 }

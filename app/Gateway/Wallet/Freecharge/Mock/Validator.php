@@ -2,8 +2,9 @@
 
 namespace RZP\Gateway\Wallet\Freecharge\Mock;
 
+use RZP\Base;
+use RZP\Exception;
 use RZP\Gateway\Wallet\Freecharge\ResponseCodeMap;
-use RZP\Models\Base;
 
 class Validator extends Base\Validator
 {
@@ -24,6 +25,7 @@ class Validator extends Base\Validator
         'currency'              => 'required|string',
         'merchantTxnId'         => 'required|string',
         'channel'               => 'required|string|custom',
+        'dealerId'              => 'sometimes|string',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"'
     );
 
@@ -76,7 +78,7 @@ class Validator extends Base\Validator
     {
         $channels = ['WEB', 'ANDROID', 'WINDOWS', 'IOS', 'WAP'];
 
-        if(in_array($value, $channels) === false)
+        if(in_array($value, $channels, true) === false)
         {
             throw new Exception\BadRequestException(
                 ResponseCodeMap::getApiErrorCode('E023'));

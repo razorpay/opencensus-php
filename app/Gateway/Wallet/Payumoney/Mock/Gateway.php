@@ -2,10 +2,8 @@
 
 namespace RZP\Gateway\Wallet\Payumoney\Mock;
 
-use RZP\Http\Route;
 use RZP\Exception;
 use RZP\Gateway\Base;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Payumoney;
 
 class Gateway extends Payumoney\Gateway
@@ -16,7 +14,7 @@ class Gateway extends Payumoney\Gateway
     {
         $request = parent::topup($input);
 
-        $url = Route::getUrlWithPublicAuth(
+        $url = $this->route->getUrlWithPublicAuth(
                     'mock_wallet_payment_with_paymentid',
                     ['wallet' => $input['payment']['wallet'],
                      'paymentId' => $input['payment']['id']]);

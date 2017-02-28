@@ -2,7 +2,6 @@
 
 namespace RZP\Models\Settlement;
 
-use RZP\Error\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception\ServerErrorException;
 

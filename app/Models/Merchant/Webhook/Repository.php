@@ -7,20 +7,45 @@ use RZP\Models\Merchant;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Webhook';
+    protected $entity = 'webhook';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID => 'sometimes|alpha_num|size:14',
         Entity::ACTIVE      => 'sometimes|in:0,1',
     );
 
-    public function findByMerchant($merchant)
+    public function getMethodsForMerchant(Merchant\Entity $merchant)
+    {
+        $methods = $this->find($merchant->getId());
+
+        $methods->merchant()->associate($merchant);
+
+        $merchant->setRelation('methods', $methods);
+
+        return $methods;
+    }
+
+    public function findMultipleByMerchant($merchant)
     {
         return $this->newQuery()
                     ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
                     ->get();
+    }
+
+    public function findByMerchant($merchant)
+    {
+        $webhook = $this->newQuery()
+                        ->where(Entity::MERCHANT_ID, '=', $merchant->getId())
+                        ->first();
+
+        if ($webhook !== null)
+        {
+            $merchant->setRelation('webhook', $webhook);
+
+            $webhook->merchant()->associate($merchant);
+        }
+
+        return $webhook;
     }
 
     public function bumpFailureCount($webhook)

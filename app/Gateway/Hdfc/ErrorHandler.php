@@ -2,7 +2,6 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use RZP\Error\Error;
 use RZP\Exception;
 use RZP\Gateway\Hdfc;
 
@@ -75,11 +74,25 @@ class ErrorHandler
         $response['error'] = self::getErrorDetails($code);
     }
 
-    public static function setTimeoutError(array & $response)
+    public static function setTimeoutError(array & $response, $curlMessage = null)
     {
         $code = Hdfc\ErrorCode::RP00003;
 
+        if ((empty($curlMessage) === false) and
+            (strpos($curlMessage, 'operation timed out') !== false))
+        {
+            $code = Hdfc\ErrorCode::RP00013;
+        }
+
         $response['error'] = self::getErrorDetails($code);
+    }
+
+    public static function setRequestError(array & $response, $curlMessage = null)
+    {
+        $code = Hdfc\ErrorCode::RP00014;
+
+        $response['error'] = self::getErrorDetails($code);
+        $response['text'] = $curlMessage;
     }
 
     public static function setGatewayWrongStatusCode(array & $response, $status_code)

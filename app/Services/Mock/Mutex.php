@@ -10,7 +10,7 @@ class Mutex extends BaseLock
 
     public function __construct($app)
     {
-        $this->requestId = $app['request']->getId();
+        parent::__construct($app);
 
         $this->cache = $app['cache'];
     }
@@ -30,7 +30,9 @@ class Mutex extends BaseLock
             return false;
         }
 
-        return $this->cache->store('file')->put($resource, $this->requestId, $ttl);
+        $this->cache->store('file')->put($resource, $this->requestId, $ttl);
+
+        return true;
     }
 
     /**
@@ -42,9 +44,9 @@ class Mutex extends BaseLock
      */
     public function release($resource)
     {
-        if ($this->cache->get($resource) === $this->requestId)
+        if ($this->cache->store('file')->get($resource) === $this->requestId)
         {
-            return $this->cache->forget($resource);
+            return $this->cache->store('file')->forget($resource);
         }
 
         return false;

@@ -7,14 +7,15 @@ use RZP\Models\Settlement;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
-
-    protected $entity = 'Settlement';
+    protected $entity = 'settlement';
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
-        Entity::STATUS          => 'sometimes|in:created,processed,failed',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
+        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|max:14',
+        Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num|max:14',
+        Entity::TRANSACTION_ID      => 'sometimes|alpha_num|max:14',
+        Entity::STATUS              => 'sometimes|in:created,processed,failed',
+        Entity::UTR                 => 'sometimes|alpha_num',
     );
 
     public function getSettlementWithFeesAsNullOrZero()
@@ -31,6 +32,31 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::SERVICE_TAX, '=', '0')
                     ->orWhereNull(Entity::SERVICE_TAX)
+                    ->get();
+    }
+
+    public function getSettlementsByBatchSettlementId($batchSettlementId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::BATCH_SETTLEMENT_ID, '=', $batchSettlementId)
+                    ->get();
+    }
+
+    public function getSettlementsBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->get();
+    }
+
+    public function fetchSettlementSummaryBetweenTimestamp($from, $to)
+    {
+        return $this->newQuery()
+                    ->whereBetween(Entity::CREATED_AT, [$from, $to])
+                    ->groupBy(Entity::MERCHANT_ID)
+                    ->selectRaw(Entity::MERCHANT_ID . ','.
+                       'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
+                       'COUNT(*) AS count')
                     ->get();
     }
 

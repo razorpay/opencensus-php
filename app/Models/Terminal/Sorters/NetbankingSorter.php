@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Terminal\Sorters;
 
-use RZP\Models\Terminal;
-use RZP\Models\Bank\IFSC;
-use RZP\Models\Payment\Method;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Models\Payment\Gateway;
+use RZP\Models\Payment\Method;
+use RZP\Models\Terminal;
 
 class NetbankingSorter extends Terminal\Sorter
 {
@@ -30,7 +30,8 @@ class NetbankingSorter extends Terminal\Sorter
 
         $gatewaysForBank = Gateway::getGatewaysForNetbankingBankIndexed($bank);
 
-        $gatewaysPriority = Gateway::getGatewaysPriority($method, $input['mode']);
+        $gatewaysPriority = (new GatewayPriority\Core)
+                            ->getGatewaysForMethod($method);
 
         $this->arrangePriorityByMerchantAndBank($gatewaysPriority, $input['merchant']->getId(), $bank);
 
@@ -79,9 +80,8 @@ class NetbankingSorter extends Terminal\Sorter
     }
 
     /**
-     * Remove 'direct' for non harshil and kotak
-     * If the bank is kotak and the merchant is not harshil
-     * REMOVE once netbanking kotak is available for everyone
+     * Arrange the priority of netbanking gateways based on merchant and bank.
+     * This is used for testing out new gateways.
      *
      * @param  array &$gatewaysPriority
      * @param  string $merchant
@@ -90,16 +90,6 @@ class NetbankingSorter extends Terminal\Sorter
      */
     protected function arrangePriorityByMerchantAndBank(&$gatewaysPriority, $merchant, $bank)
     {
-        if ($bank === IFSC::KKBK)
-        {
-            $merchantsWithNetbankingKotakEnabled = ['2aTeFCKTYWwfrF', '10000000000000'];
-
-            if (in_array($merchant, $merchantsWithNetbankingKotakEnabled) === false)
-            {
-                unset($gatewaysPriority[0]);
-            }
-        }
-
         //TODO Remove this extra code after testing
         if ($merchant === '4izmfM9TFCAgFN')
         {

@@ -54,6 +54,20 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testAdminAuth()
+    {
+        $this->ba->adminAuth('test');
+
+        $this->startTest();
+    }
+
+     public function testPrivateAuthOnAdminRoute()
+    {
+        $this->ba->privateAuth();
+
+        $this->startTest();
+    }
+
     public function testUnauthorizedOnJsonpRoute()
     {
         $this->ba->publicAuth('rzp_test_TheTestAusdKey');
@@ -128,7 +142,7 @@ class BasicAuthTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $internalRoutes = \RZP\Http\Route::getApiRouteInCategory('internal');
+        $internalRoutes = $this->app['api.route']->getApiRouteInCategory('internal');
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {
@@ -143,7 +157,7 @@ class BasicAuthTest extends TestCase
     {
         $this->ba->privateAuth(null, '=');
 
-        $internalRoutes = \RZP\Http\Route::getApiRouteInCategory('internal');
+        $internalRoutes = $this->app['api.route']->getApiRouteInCategory('internal');
 
         foreach ($internalRoutes as $routeName => $routeInfo)
         {

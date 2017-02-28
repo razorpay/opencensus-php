@@ -42,18 +42,19 @@ class DailyReportTest extends TestCase
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
-                        {
-                            $testData = array(
-                                'captured' => ['payments' => ['count' => 4], 'sum' => 4000000],
-                                'authorized' => ['payments' => ['count' => 4], 'sum' => 4000000],
-                                'refunds' => ['refunds' => ['count' => 2], 'sum' => 200000],
-                                'settlement' => ['merchant_id' => '10000000000000', 'amount' => 3508000],
-                                'merchant' => ['id' => '10000000000000', 'activated' => true],
-                            );
-                            $this->assertArraySelectiveEquals($testData, $data);
+                    {
+                        $testData = array(
+                            'captured'    => ['count' => '4', 'sum' => '4000000'],
+                            'authorized'  => ['count' => '4', 'sum' => '4000000'],
+                            'refunds'     => ['count' => '2', 'sum' => '200000'],
+                            'settlements' => ['count' => '1', 'sum' => '3708000'],
+                            'email'       => ['test@razorpay.com'],
+                        );
 
-                            return true;
-                        }),
+                        $this->assertArraySelectiveEquals($testData, $data);
+
+                        return true;
+                    }),
                     Mockery::any());
 
         $this->generateDailyReport();

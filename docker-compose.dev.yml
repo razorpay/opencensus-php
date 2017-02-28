@@ -1,0 +1,72 @@
+version: '2'
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    image: razorpay:api
+    volumes:
+      - .:/app
+    links:
+      - api_db
+      - cache
+      - es
+    ports:
+      - 28080:80
+    depends_on:
+      - api_db
+      - cache
+      - es
+    environment:
+      DB_LIVE_HOST: api_db
+      DB_LIVE_USERNAME: api_user
+      DB_LIVE_PASSWORD: 123
+      SLAVE_DB_LIVE_HOST: api_db
+      SLAVE_DB_LIVE_USERNAME: api_user
+      SLAVE_DB_LIVE_PASSWORD: 123
+      DB_TEST_HOST: api_db
+      DB_TEST_USERNAME: api_user
+      DB_TEST_PASSWORD: 123
+      SLAVE_DB_TEST_HOST: api_db
+      SLAVE_DB_TEST_USERNAME: api_user
+      SLAVE_DB_TEST_PASSWORD: 123
+      REDIS_HOST: cache
+      SECURE_REDIS_HOST: cache
+      QUEUE_REDIS_HOST: cache
+      CACHE_DRIVER: redis
+      SECURE_CACHE_DRIVER: redis
+      ES_HOST: es
+      MUTEX_MOCK: "false"
+  api_db:
+    image: mysql:5.6
+    ports:
+      - 23306:3306
+    environment:
+      MYSQL_ROOT_PASSWORD: 123
+      MYSQL_USER: api_user
+      MYSQL_PASSWORD: 123
+    volumes:
+      - ./dockerconf/api_db.sql:/docker-entrypoint-initdb.d/init.sql
+  cache:
+    image: redis:2.8
+    ports:
+      - 26379:6379
+  es:
+    image: elasticsearch:5.2-alpine
+    container_name: razorpay-es
+    environment:
+      - cluster.name=docker-cluster
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms512m -Xmx512m"
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+      nofile:
+        soft: 65536
+        hard: 65536
+    mem_limit: 1g
+    cap_add:
+      - IPC_LOCK
+    ports:
+      - 29200:9200

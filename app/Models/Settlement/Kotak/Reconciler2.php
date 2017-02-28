@@ -12,6 +12,7 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -52,7 +53,7 @@ class Reconciler2
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->dailySetlRepo = new Settlement\Daily\Repository;
+        $this->batchSetlRepo = new Settlement\Batch\Repository;
         $this->trace = \App::make('trace');
     }
 
@@ -68,15 +69,15 @@ class Reconciler2
             return new Base\PublicCollection;
         }
 
-//        $this->dailySettlement = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
+//        $this->batchSettlement = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 
-//        $this->dailySettlement->addUrl('kotak_reconcile_txt', $url);
+//        $this->batchSettlement->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseReturnFile($reconcileFile);
 
-//        $this->dailySettlement->addUrl('kotak_reconcile_excel', $url);
+//        $this->batchSettlement->addUrl('kotak_reconcile_excel', $url);
 
         //
         // In excel, dates are displayed properly, but in reality, are stored as
@@ -157,8 +158,8 @@ class Reconciler2
                 }
             }
 
-//            $this->dailySettlement->reconciled_at = $this->reconciledAt;
-//            $this->dailySettlement->saveOrFail();
+//            $this->batchSettlement->reconciled_at = $this->reconciledAt;
+//            $this->batchSettlement->saveOrFail();
 
             $this->setlRepo->commit();
         }
@@ -283,30 +284,6 @@ class Reconciler2
         return $setl;
     }
 
-    protected function getSetlReconciliationFile($input)
-    {
-        // if (isset($input['setlReconciliationFile']))
-        // {
-        //     return $input['setlReconciliationFile']->;
-        // }
-
-        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-        $path = storage_path('files/settlement');
-
-        $name = 'Kotak_Settlement_Reconciliation';
-
-        $fullpath = $path . '/' . $name.'_'.$time.'.txt';
-
-        if (file_exists($fullpath) === false)
-        {
-            // @todo: trace here
-            return null;
-        }
-
-        return $fullpath;
-    }
-
     protected function sendReconciliationMail($date, $failures)
     {
         $msg = 'UTR File reconciled.' . PHP_EOL;
@@ -331,6 +308,10 @@ class Reconciler2
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_SETTLEMENT_FILES);
         });
     }
 

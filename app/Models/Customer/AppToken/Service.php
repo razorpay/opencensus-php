@@ -9,19 +9,24 @@ class Service extends Base\Service
 {
     public function deleteAppTokensForGlobalCustomer($input)
     {
-        $appToken = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
+        $appTokenId = AppToken\SessionHelper::getAppTokenFromSession($this->mode);
 
-        if ($appToken !== null)
+        if ($appTokenId !== null)
         {
-            AppToken\Entity::verifyIdAndStripSign($appToken);
+            AppToken\Entity::verifyIdAndStripSign($appTokenId);
 
             $appCore = new AppToken\Core;
 
-            $app = $appCore->getAppByAppToken($appToken, $this->merchant);
+            $appToken = $appCore->getAppByAppTokenId($appTokenId, $this->merchant);
 
-            $data = $appCore->deleteAppTokens($app, $input);
+            if ($appToken !== null)
+            {
+                $data = $appCore->deleteAppTokens($appToken, $input);
 
-            return $data;
+                return $data;
+            }
         }
+
+        return [];
     }
 }

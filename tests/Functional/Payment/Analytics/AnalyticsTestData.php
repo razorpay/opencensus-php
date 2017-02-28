@@ -1,5 +1,6 @@
 <?php
 
+// @codingStandardsIgnoreStart
 return [
 
     'testPaymentAnalytics' => [
@@ -14,6 +15,33 @@ return [
         'platform_version' => '52.0.2743.116',
         'integration' => 'woo_commerce',
         'integration_version' => '0.1.2',
+    ],
+
+    'testHttpRequestDataForNonOtpBasedPayment' => [
+        'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
+        'referer' => 'https://pay.com/demo',
+        'browser' => 'chrome',
+        'os' => 'windows',
+        'device' => 'desktop',
+        'library' => 'checkoutjs',
+        'library_version' => '3846fgjb',
+        'platform' => 'browser',
+        'platform_version' => '52.0.2743.116',
+        'integration' => 'woo_commerce',
+        'integration_version' => '0.1.2',
+    ],
+
+    'testHttpRequestDataForS2sPayments' => [
+        'user_agent' => null,
+        'browser' => null,
+        'os' => null,
+        'device' => 'desktop',
+        'library' => 'direct',
+        'library_version' => null,
+        'platform' => null,
+        'platform_version' => null,
+        'integration' => null,
+        'integration_version' => null,
     ],
 
     'testPaymentAnalyticsOtp' => [
@@ -32,15 +60,16 @@ return [
 
     'testDataForUserAgentAnomaly' => [
         'user_agent' => 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_11_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
-        'browser' => 'safari',
+        'browser' => 'chrome',
         'platform_version' => '537.36',
         'os' => 'ios',
         'os_version' => '11.0',
         'device' => 'mobile',
+        'referer' => 'http://a.com',
     ],
 
     'testHttpRequestDataForInvalidData' => [
-        'browser' => 'others',
+        'browser' => null,
         'os' => 'others',
         'device' => 'others',
         'library' => 'others',
@@ -48,3 +77,4 @@ return [
         'integration' => 'others',
     ]
 ];
+// @codingStandardsIgnoreEnd

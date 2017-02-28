@@ -40,7 +40,7 @@ class Error extends Support\Fluent
 
         $this->setClass($code);
 
-        $this->setPublicErrorDetails($code);
+        $this->setPublicErrorDetails();
 
         $this->setDesc($desc);
 
@@ -151,7 +151,6 @@ class Error extends Support\Fluent
     protected function setPublicErrorDetails()
     {
         $class = $this->getAttribute(self::ERROR_CLASS);
-        $internalCode = $this->getInternalErrorCode();
 
         switch ($class)
         {
@@ -230,6 +229,7 @@ class Error extends Support\Fluent
                 $httpStatusCode = 401;
                 break;
             case ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED:
+            case ErrorCode::BAD_REQUEST_FORBIDDEN:
                 $httpStatusCode = 403;
                 break;
         }

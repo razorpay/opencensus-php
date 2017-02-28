@@ -4,6 +4,7 @@ use RZP\Gateway\Hdfc;
 use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
+use RZP\Models\Payment\TwoFactorAuth;
 
 return [
     'testCardTimeout' => [
@@ -26,7 +27,7 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\GatewayTimeoutException',
             'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
-            'gateway_error_code'  => Hdfc\ErrorCode::RP00003,
+            'gateway_error_code'  => Hdfc\ErrorCode::RP00013,
         ],
     ],
 
@@ -41,6 +42,7 @@ return [
         'response' => [
             'content' => [
                 'status' => 'authorized',
+                'two_factor_auth' => TwoFactorAuth::NOT_APPLICABLE,
                 'captured' => false,
                 'fee' => null,
                 'service_tax' => null,
@@ -67,7 +69,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -91,7 +93,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -237,7 +239,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],
@@ -261,7 +263,7 @@ return [
         ],
         'exception' => [
             'class' => 'RZP\Exception\GatewayErrorException',
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_AUTHENTICATION_NOT_AVAILABLE,
+            'internal_error_code' => ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
             'gateway_error_code'  => Hdfc\ErrorCode::FSS0001,
         ],
     ],

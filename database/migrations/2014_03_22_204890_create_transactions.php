@@ -6,8 +6,12 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction\Entity as Transaction;
+use RZP\Models\Transaction\CreditType;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Merchant\FeeBearer;
+use RZP\Models\Merchant\FeeModel;
+
 
 class CreateTransactions extends Migration
 {
@@ -57,6 +61,10 @@ class CreateTransactions extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Transaction::GATEWAY_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Transaction::GATEWAY_FEE)
                   ->unsigned()
                   ->nullable();
@@ -71,10 +79,23 @@ class CreateTransactions extends Migration
             $table->tinyInteger(Transaction::GRATIS)
                   ->default(0);
 
+            $table->integer(Transaction::FEE_CREDITS)
+                  ->unsigned()
+                  ->default(0);
+
             $table->bigInteger(Transaction::ESCROW_BALANCE)
                   ->nullable();
 
             $table->string(Transaction::CHANNEL, 8);
+
+            $table->tinyInteger(Transaction::FEE_BEARER)
+                  ->default(FeeBearer::getValueForBearerString(FeeBearer::NA));
+
+            $table->tinyInteger(Transaction::FEE_MODEL)
+                  ->default(FeeModel::getValueForFeeModelString(FeeModel::NA));
+
+            $table->string(Transaction::CREDIT_TYPE, 25)
+                  ->default(CreditType::DEFAULT);
 
             $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
@@ -132,7 +153,7 @@ class CreateTransactions extends Migration
         Schema::table(Table::TRANSACTION, function($table)
         {
             $table->dropForeign(
-                TABLE::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
+                Table::TRANSACTION.'_'.Transaction::MERCHANT_ID.'_foreign');
         });
 
         Schema::drop(Table::TRANSACTION);

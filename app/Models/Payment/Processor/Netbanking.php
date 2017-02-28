@@ -24,15 +24,22 @@ class Netbanking
         self::LAVB_R => 'Lakshmi Vilas Bank - Retail Banking',
     );
 
-    protected static $self = array(
-        IFSC::HDFC);
+    const ACCOUNT_NUMBER_LENGTHS = [
+        IFSC::UTIB => 15,
+    ];
 
-    /**
-     * Additional net-banking banks that we are in the process of integrating
-     * @var array
-     */
-    protected static $selfInTest = array(
-        IFSC::KKBK);
+    protected static $self = [
+        IFSC::HDFC,
+        IFSC::UTIB,
+        IFSC::KKBK,
+        IFSC::AIRP
+    ];
+
+    protected static $selfTPV = [
+        IFSC::HDFC,
+        IFSC::KKBK,
+        IFSC::UTIB,
+    ];
 
     protected static $paytm = array(
         IFSC::CITI,
@@ -51,12 +58,12 @@ class Netbanking
         IFSC::UBIN,
         IFSC::UTIB,
         IFSC::VIJB,
-        IFSC::VYSA,
         IFSC::YESB,
     );
 
+    protected static $paytmTPV = [];
+
     protected static $billdesk = array(
-        IFSC::ABNA,
         IFSC::ALLA,
         IFSC::ANDB,
         IFSC::BBKM,
@@ -138,50 +145,6 @@ class Netbanking
         IFSC::SBTR,
     );
 
-    protected static $sbiepay = array(
-        IFSC::SBTR,
-        IFSC::CSBK,
-        IFSC::JAKA,
-        IFSC::MAHB,
-        IFSC::DEUT,
-        IFSC::VIJB,
-        IFSC::PSIB,
-        IFSC::SIBL,
-        IFSC::BKID,
-        IFSC::SBBJ,
-        IFSC::SBHY,
-        IFSC::SBMY,
-        IFSC::STBP,
-        IFSC::UTBI,
-        IFSC::IDIB,
-        IFSC::CIUB,
-        IFSC::DLXB,
-        IFSC::ICIC,
-        IFSC::YESB,
-        IFSC::KVBL,
-        IFSC::FDRL,
-        IFSC::ORBC,
-        IFSC::CORP,
-        IFSC::INDB,
-        IFSC::HDFC,
-        IFSC::BBKM,
-        IFSC::KARB,
-        IFSC::ANDB,
-        IFSC::CNRB,
-        IFSC::RATN,
-        IFSC::UBIN,
-        IFSC::CBIN,
-        IFSC::PUNB,
-        IFSC::IOBA,
-        IFSC::SBIN,
-        IFSC::IBKL,
-        IFSC::BKDN,
-        IFSC::DCBL,
-        IFSC::TMBL,
-        IFSC::SYNB,
-        IFSC::CITI,
-        IFSC::LAVB);
-
     protected static $atom = array(
         IFSC::UTIB,
         IFSC::BKID,
@@ -219,6 +182,8 @@ class Netbanking
         IFSC::VIJB,
         IFSC::YESB,
     );
+
+    protected static $atomTPV = [];
 
     protected static $ebs = array(
         IFSC::ANDB,
@@ -261,6 +226,8 @@ class Netbanking
         */
     );
 
+    protected static $ebsTPV = [];
+
     public static function isSupportedBank($bank)
     {
         return (in_array($bank, self::getAllBanks()));
@@ -277,7 +244,7 @@ class Netbanking
         // Merge paytm and billdesk supported banks and remove
         // duplicate values
         //
-        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, [IFSC::KKBK]));
+        return array_unique(array_merge(self::$paytm, self::$billdesk, self::$ebs, self::$self));
     }
 
     public static function getDisabledBanks($banks)
@@ -330,21 +297,18 @@ class Netbanking
         return self::$ebs;
     }
 
-    public static function getSupportedBanks($mode = Mode::LIVE, $isTPVRequired = false)
+    public static function getDirectlyNetbankingBanks()
+    {
+        return self::$self;
+    }
+
+    public static function getSupportedBanks($isTPVRequired = false)
     {
         $banks = self::getSupportedBanksInLiveMode();
 
-        if ($mode === Mode::TEST)
-        {
-            $banks = self::getSupportedBanksInLiveMode();
-
-            $banks = array_merge($banks, self::$selfInTest);
-            $banks = array_merge($banks, self::$sbiepay);
-        }
-
         if ($isTPVRequired)
         {
-            $banks = self::$billdeskTPV;
+            $banks = self::getSupportedBanksForTPV();
         }
 
         return array_unique($banks);
@@ -355,19 +319,25 @@ class Netbanking
         return array_unique(array_merge(self::$billdesk, self::$ebs, self::$self));
     }
 
-    public static function getSbiepaySupportedBanks()
-    {
-        return self::$sbiepay;
-    }
-
     public static function getSupportedBanksForTPV()
     {
-        return self::$billdeskTPV;
+        return array_unique(array_merge(self::$billdeskTPV, self::$selfTPV));
     }
 
-    public static function isBankSupportedByGateway($bank, $gateway)
+    public static function isBankSupportedByGateway($bank, $gateway, $isTPV = false)
     {
+        if ($isTPV === true)
+        {
+            return self::isBankSupportedByGatewayForTPV($bank, $gateway);
+        }
+
         return in_array($bank, self::$$gateway);
+    }
+
+    public static function isBankSupportedByGatewayForTPV($bank, $gateway)
+    {
+        // Direct gateways are handled seperately
+        return in_array($bank, self::${$gateway.'TPV'});
     }
 
     public static function isPaytmSupportedBank($bank)
@@ -385,8 +355,8 @@ class Netbanking
         return in_array($bank, self::$billdesk);
     }
 
-    public static function isSbiepaySupportedBank($bank)
+    public static function getAccountNumberLengths()
     {
-        return in_array($bank, self::$sbiepay);
+        return self::ACCOUNT_NUMBER_LENGTHS;
     }
 }

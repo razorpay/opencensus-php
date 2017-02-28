@@ -11,24 +11,29 @@ class Entity extends Base\PublicEntity
 {
     use SoftDeletes;
 
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const ENTITY_ID             = 'entity_id';
-    const TYPE                  = 'type';
-    const IFSC_CODE             = 'ifsc_code';
-    const ACCOUNT_NUMBER        = 'account_number';
-    const BENEFICIARY_NAME      = 'beneficiary_name';
-    const BENEFICIARY_ADDRESS1  = 'beneficiary_address1';
-    const BENEFICIARY_ADDRESS2  = 'beneficiary_address2';
-    const BENEFICIARY_ADDRESS3  = 'beneficiary_address3';
-    const BENEFICIARY_ADDRESS4  = 'beneficiary_address4';
-    const BENEFICIARY_EMAIL     = 'beneficiary_email';
-    const BENEFICIARY_MOBILE    = 'beneficiary_mobile';
-    const BENEFICIARY_PIN       = 'beneficiary_pin';
-    const BENEFICIARY_CITY      = 'beneficiary_city';
-    const BENEFICIARY_STATE     = 'beneficiary_state';
-    const BENEFICIARY_COUNTRY   = 'beneficiary_country';
-    const DELETED_AT            = 'deleted_at';
+    const ID                        = 'id';
+    const MERCHANT_ID               = 'merchant_id';
+    const ENTITY_ID                 = 'entity_id';
+    const TYPE                      = 'type';
+    const IFSC_CODE                 = 'ifsc_code';
+    const ACCOUNT_NUMBER            = 'account_number';
+    const BENEFICIARY_NAME          = 'beneficiary_name';
+    const BENEFICIARY_ADDRESS1      = 'beneficiary_address1';
+    const BENEFICIARY_ADDRESS2      = 'beneficiary_address2';
+    const BENEFICIARY_ADDRESS3      = 'beneficiary_address3';
+    const BENEFICIARY_ADDRESS4      = 'beneficiary_address4';
+    const BENEFICIARY_EMAIL         = 'beneficiary_email';
+    const BENEFICIARY_MOBILE        = 'beneficiary_mobile';
+    const BENEFICIARY_PIN           = 'beneficiary_pin';
+    const BENEFICIARY_CITY          = 'beneficiary_city';
+    const BENEFICIARY_STATE         = 'beneficiary_state';
+    const BENEFICIARY_COUNTRY       = 'beneficiary_country';
+    const DELETED_AT                = 'deleted_at';
+    const MOBILE_BANKING_ENABLED    = 'mobile_banking_enabled';
+    const MPIN                      = 'mpin';
+
+    // Mobile Banking Enabled
+    const MPIN_SET              = 'mpin_set';
 
     const IFSC_CODE_LENGTH      = 11;
 
@@ -38,8 +43,6 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::ID;
 
-    protected $table = \RZP\Constants\Table::BANK_ACCOUNT;
-
     protected $entity = 'bank_account';
 
     protected $fillable = array(
@@ -47,6 +50,7 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::TYPE,
         self::IFSC_CODE,
+        self::MOBILE_BANKING_ENABLED,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
@@ -65,6 +69,9 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
+        self::MPIN_SET,
+        self::MPIN,
+        self::MOBILE_BANKING_ENABLED,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -82,9 +89,11 @@ class Entity extends Base\PublicEntity
     );
 
     protected $public = array(
+        self::ID,
         self::ENTITY,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
+        self::MPIN_SET,
         self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
@@ -98,11 +107,19 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_PIN,
     );
 
+    protected $appends = [
+        self::MPIN_SET
+    ];
+
     protected $guarded = array(self::ID);
 
     protected static $generators = array(
         self::ID,
         self::BENEFICIARY_COUNTRY,
+    );
+
+    protected $casts = array(
+        self::MOBILE_BANKING_ENABLED => 'bool',
     );
 
     protected $generateIdOnCreate = true;
@@ -128,15 +145,42 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    public function vpa()
+    {
+        return $this->hasOne('RZP\Models\Upi\Vpa\Entity');
+    }
+
     public function source()
     {
         $type = $this->getAttribute(self::TYPE);
 
-        BankAccount\Type::validateType($type);
+        Type::validateType($type);
 
-        $class = BankAccount\Type::getEntityClass($type);
+        $class = Type::getEntityClass($type);
 
         return $this->belongsTo($class, self::ENTITY_ID);
+    }
+
+    public function payouts()
+    {
+        return $this->morphMany('RZP\Models\Payout\Entity', 'destination');
+    }
+
+    public function getMpinSetAttribute()
+    {
+        return ($this->getAttribute(self::MPIN) !== null);
+    }
+
+    protected function getMpinAttribute()
+    {
+        if (isset($this->attributes[self::MPIN]) === false)
+        {
+            return null;
+        }
+
+        $mpin = $this->attributes[self::MPIN];
+
+        return Crypt::decrypt($mpin);
     }
 
     public function settlements()
@@ -164,9 +208,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
+    public function getMpin()
+    {
+        return $this->getAttribute(self::MPIN);
+    }
+
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getMobileBankingEnabled()
+    {
+        return $this->getAttribute(self::MOBILE_BANKING_ENABLED);
+    }
+
+    public function setMobileBankingEnabled($mobileBankingEnabled)
+    {
+        return $this->setAttribute(self::MOBILE_BANKING_ENABLED, $mobileBankingEnabled);
+    }
+
+    public function setMpin($mpin)
+    {
+        return $this->setAttribute(self::MPIN, $mpin);
     }
 
     protected function setIfscCodeAttribute($code)
@@ -174,6 +238,16 @@ class Entity extends Base\PublicEntity
         $code = strtoupper($code);
 
         $this->attributes[self::IFSC_CODE] = $code;
+    }
+
+    protected function setMpinAttribute($mpin)
+    {
+        if ($mpin === null)
+        {
+            $mpin = '';
+        }
+
+        $this->attributes[self::MPIN] = Crypt::encrypt($mpin);
     }
 
     protected function getIfscCodeAttribute($code)

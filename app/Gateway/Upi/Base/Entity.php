@@ -3,7 +3,6 @@
 namespace RZP\Gateway\Upi\Base;
 
 use RZP\Gateway\Base;
-use RZP\Constants\Table;
 
 class Entity extends Base\Entity
 {
@@ -11,7 +10,9 @@ class Entity extends Base\Entity
     const ACTION                = 'action';
     const NAME                  = 'name';
     const AMOUNT                = 'amount';
+    const ACQUIRER              = 'acquirer';
     const BANK                  = 'bank';
+    const PROVIDER              = 'provider';
     const EMAIL                 = 'email';
     const CONTACT               = 'contact';
     const GATEWAY_MERCHANT_ID   = 'gateway_merchant_id';
@@ -21,8 +22,6 @@ class Entity extends Base\Entity
     const STATUS_CODE           = 'status_code';
     const VPA                   = 'vpa';
 
-    protected $table = Table::UPI;
-
     public $incrementing = true;
 
     protected $entity = 'upi';
@@ -31,7 +30,9 @@ class Entity extends Base\Entity
         self::ID,
         self::ACTION,
         self::AMOUNT,
+        self::ACQUIRER,
         self::BANK,
+        self::PROVIDER,
         self::CONTACT,
         self::EMAIL,
         self::NAME,
@@ -46,7 +47,9 @@ class Entity extends Base\Entity
     protected $fillable = array(
         self::ACTION,
         self::AMOUNT,
+        self::ACQUIRER,
         self::BANK,
+        self::PROVIDER,
         self::CONTACT,
         self::EMAIL,
         self::NAME,
@@ -62,9 +65,24 @@ class Entity extends Base\Entity
         'amount'  =>  'int'
     );
 
+    protected static $generators = [
+        self::PROVIDER,
+        self::BANK,
+    ];
+
+    public function setAcquirer($acquirer)
+    {
+        $this->setAttribute(self::ACQUIRER, $acquirer);
+    }
+
     public function setBank($bank)
     {
         $this->setAttribute(self::BANK, $bank);
+    }
+
+    public function setProvider($provider)
+    {
+        $this->setAttribute(self::PROVIDER, $provider);
     }
 
     public function setAmount($amount)
@@ -82,8 +100,37 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::GATEWAY_PAYMENT_ID);
     }
 
+    public function extractProviderFromVpa()
+    {
+        $vpa = $this->getAttribute(self::VPA);
+
+        $vpaParts = explode('@', $vpa);
+
+        return $vpaParts[1] ?? null;
+    }
+
     public function getMerchantId()
     {
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
+    }
+
+    protected function generateProvider(& $input)
+    {
+        $vpa = $input[self::VPA];
+
+        $vpaParts = explode('@', $vpa);
+
+        $provider = $vpaParts[1];
+
+        $this->setAttribute(self::PROVIDER, $provider);
+    }
+
+    protected function generateBank($input)
+    {
+        $provider = $this->getAttribute(self::PROVIDER);
+
+        $bank = ProviderCode::getBankCode($provider);
+
+        $this->setAttribute(self::BANK, $bank);
     }
 }

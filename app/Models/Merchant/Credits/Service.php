@@ -2,16 +2,11 @@
 
 namespace RZP\Models\Merchant\Credits;
 
-use Carbon\Carbon;
 use Mail;
-
-use RZP\Constants\Mode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Credits;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
-use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {

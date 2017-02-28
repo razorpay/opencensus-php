@@ -2,21 +2,21 @@
 
 namespace RZP\Models\Merchant;
 
+use Closure;
+use RZP\Constants\Table;
 use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Merchant\Account;
 use RZP\Models\Merchant\Balance;
 use RZP\Models\Pricing;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Repository extends Base\Repository
 {
     use Base\RepositoryUpdateTestAndLive;
-    use Base\RepositoryFetch;
 
-    protected $entity = 'Merchant';
+    protected $entity = 'merchant';
 
     protected $sharedMerchant = null;
 
@@ -30,6 +30,10 @@ class Repository extends Base\Repository
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
         Entity::METHODS                 => 'sometimes|string',
         Entity::PRICING_PLAN_ID         => 'sometimes|string',
+        Entity::FEE_BEARER              => 'sometimes|in:platform,customer',
+        Entity::FEE_MODEL               => 'sometimes|in:prepaid,postpaid',
+        Entity::HOLD_FUNDS              => 'sometimes|in:0,1',
+        Entity::RISK_RATING             => 'sometimes|integer|max:5|min:1',
     );
 
     public function getSharedAccount()
@@ -37,7 +41,7 @@ class Repository extends Base\Repository
         if ($this->sharedMerchant === null)
         {
             $this->sharedMerchant = $this->newQuery()
-                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->where(Entity::ID, '=', Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 
@@ -81,6 +85,26 @@ class Repository extends Base\Repository
         return $this->newQuery()->whereBetween(Entity::CREATED_AT, [$start, $today]);
     }
 
+    public function fetchBySettlementScheduleId($settlementScheduleIds)
+    {
+        if (is_array($settlementScheduleIds) === false)
+        {
+            $settlementScheduleIds = [$settlementScheduleIds];
+        }
+
+        return $this->newQuery()
+                    ->whereNotNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->whereIn(Entity::SETTLEMENT_SCHEDULE_ID, $settlementScheduleIds)
+                    ->get();
+    }
+
+    public function fetchMerchantsWithSettlementScheduleIdNull()
+    {
+        return $this->newQuery()
+                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->get();
+    }
+
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()
@@ -91,11 +115,11 @@ class Repository extends Base\Repository
     public function addQueryParamMethods($query, $params)
     {
         $query->join(
-            Methods\Entity::getTableName(),
+            $this->manager->methods->getTableName(),
             function ($join) use ($params)
             {
-                $merchantId = Merchant\Entity::getAttributeWithTableName(Merchant\Entity::ID);
-                $methodsMerchantId = Methods\Entity::getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
+                $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
+                $methodsMerchantId = $this->manager->methods->getAttributeWithTableName(Methods\Entity::MERCHANT_ID);
 
                 $methods = json_decode($params[Entity::METHODS], true);
 
@@ -117,6 +141,21 @@ class Repository extends Base\Repository
         $query->select($query->getModel()->getTable().'.*');
     }
 
+    protected function addQueryParamFeeBearer($query, $params)
+    {
+        $feeBearer = $this->getAttributeWithTableName(Entity::FEE_BEARER);
+
+        $query->where($feeBearer, '=', FeeBearer::getValueForBearerString($params[Entity::FEE_BEARER]));
+    }
+
+    protected function addQueryParamFeeModel($query, $params)
+    {
+        $feeModel = $this->getAttributeWithTableName(Entity::FEE_MODEL);
+
+        $query->where($feeModel, '=', FeeModel::getValueForFeeModelString($params[Entity::FEE_MODEL]));
+    }
+
+
     /**
      * Returns all the emails and names for all Merchants
      * No limits
@@ -130,9 +169,7 @@ class Repository extends Base\Repository
 
     public function fetchMerchantWhereTestBankIsNull()
     {
-        $repo = $this->repo;
-
-        return $repo::setConnection(Mode::TEST)
+        return $this->newQueryWithConnection(Mode::TEST)
                     ->has('bankAccount', '<', 1)
                     ->get();
     }
@@ -143,8 +180,13 @@ class Repository extends Base\Repository
                     ->where(Entity::LIVE, '=', 1);
     }
 
-    public function getMerchantFromEntity($entity)
+    public function fetchMerchantFromEntity($entity)
     {
+        if ($entity->hasRelation('merchant'))
+        {
+            return $entity->merchant;
+        }
+
         $merchantId = $entity->getMerchantId();
 
         $merchant = $this->findOrFail($merchantId);
@@ -152,5 +194,122 @@ class Repository extends Base\Repository
         $entity->merchant()->associate($merchant);
 
         return $merchant;
+    }
+
+    /**
+     * Fetches merchant records which have features assigned in chunks of 200
+     * records and passes that to the closure argument for processing
+     * @param  Closure $processData Function to process the merchant records
+     */
+    public function fetchMerchantsWithoutFeatureEntries()
+    {
+        $merchantIds = $this->db->select(
+           'SELECT DISTINCT id
+            FROM merchants
+            WHERE features IS NOT NULL
+              AND merchants.id NOT IN
+                (SELECT DISTINCT merchants.id
+                 FROM merchants
+                 JOIN features ON merchants.id = features.entity_id) LIMIT 200');
+
+        $merchantIds = json_decode(json_encode($merchantIds), true);
+
+        $merchantIds = array_map(function ($mid)
+        {
+            return $mid['id'];
+        }, $merchantIds);
+
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->get();
+    }
+
+    /**
+     * Fetches the merchants with its relations (admin, groups)
+     */
+    public function findManyByIdsWithRelations(array $merchantIds)
+    {
+        return $this->newQuery()
+                    ->whereIn(Entity::ID, $merchantIds)
+                    ->with(['admins'])
+                    ->get();
+    }
+
+    public function fetchMerchantsByOrgId($orgId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ORG_ID, '=', $orgId)
+                    ->get();
+    }
+
+    public function fetchMerchantsByFilter(array $merchantIds, array $input)
+    {
+        $merchantCreatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+
+        $merchantId = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
+        $submittedAt = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+        $updatedAt = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
+        $stepsFinished = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
+        $activationProgress = $this->manager->merchant_detail
+                                             ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
+
+        $query = $this->newQuery()
+                      ->select(Entity::ID,
+                               Entity::NAME,
+                               Entity::EMAIL,
+                               Entity::ACTIVATED,
+                               $merchantCreatedAt,
+                               $merchantUpdatedAt,
+                               Entity::ARCHIVED_AT,
+                               Entity::SUSPENDED_AT,
+                               $stepsFinished,
+                               $activationProgress,
+                               $submittedAt,
+                               $updatedAt)
+                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
+                      ->whereIn(Entity::ID, $merchantIds);
+
+        switch (true)
+        {
+            case (empty($input['suspended']) === false):
+                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
+                break;
+
+            case (empty($input['archived']) === false):
+                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['activated']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['pending']) === false):
+                $query = $query->whereNull(Entity::ACTIVATED_AT)
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['dead']) === false):
+                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            default:
+                $query = $query->whereNull(Entity::ARCHIVED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT);
+                break;
+        }
+
+        return $query->get();
     }
 }

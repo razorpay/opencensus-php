@@ -3,12 +3,15 @@
 namespace RZP\Gateway\Base;
 
 use RZP\Constants\Mode;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use Requests;
+use RZP\Exception;
 use RZP\Models\Payment\Status;
-use Symfony\Component\DomCrawler\Crawler;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Utility;
+
+use Requests;
+use Symfony\Component\DomCrawler\Crawler;
 use App;
 
 class Gateway
@@ -17,7 +20,7 @@ class Gateway
      * Default request timeout duration in seconds.
      * @var  integer
      */
-    const TIMEOUT = 30;
+    const TIMEOUT = 60;
 
     /**
      * Default payment timeout duration in mins.
@@ -114,6 +117,17 @@ class Gateway
      */
     protected $config;
 
+    protected $proxyEnabled;
+
+    /**
+     * Api Route instance
+     *
+     * @var RZP\Http\Route
+     */
+    protected $route;
+
+    protected $terminal;
+
     /**
      * Some gateways whitelist our IP and requests to them can only
      * be sent from those IP.
@@ -144,6 +158,8 @@ class Gateway
         $this->loadGatewayConfig();
 
         $this->repo = $this->getRepository();
+
+        $this->route = $this->app['api.route'];
     }
 
     public function authorize(array $input)
@@ -171,12 +187,12 @@ class Gateway
 
     public function debit(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function checkBalance(array $input)
     {
-        ;
+        $this->input = $input;
     }
 
     public function capture(array $input)
@@ -196,6 +212,18 @@ class Gateway
     {
         $this->input = $input;
         $this->action = Action::REFUND;
+    }
+
+    public function reverse(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::REVERSE;
+    }
+
+    public function void(array $input)
+    {
+        $this->input = $input;
+        $this->action = Action::VOID;
     }
 
     public function verify(array $input)
@@ -232,6 +260,35 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
+    {
+        if ($actualPaymentId !== $expectedPaymentId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
+    protected function getCallbackResponseData(array $input)
+    {
+        if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
+        {
+            return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::UNAVAILABLE];
+        }
+
+        return [Payment\Entity::TWO_FACTOR_AUTH => Payment\TwoFactorAuth::PASSED];
+    }
+
+    public function setInput(array $input)
+    {
+        $this->input = $input;
+
+        return $this;
+    }
+
     protected function getHashValueFromContent(array $content)
     {
         return $content[static::CHECKSUM_ATTRIBUTE];
@@ -257,7 +314,8 @@ class Gateway
                 [
                     'actual'    => $actual,
                     'generated' => $generated
-                ]);
+                ]
+            );
 
             throw new Exception\RuntimeException('Failed checksum verification');
         }
@@ -287,8 +345,8 @@ class Gateway
             return $row;
         }, $input['data']);
 
-
         $ns = $this->getGatewayNamespace();
+
         $class = $ns . '\\' . 'RefundFile';
 
         return (new $class)->generate($input);
@@ -298,7 +356,7 @@ class Gateway
     {
         if (isset($request['options']) === false)
         {
-            $request['options']  = array();
+            $request['options'] = array();
         }
 
         if (isset($request['headers']) === false)
@@ -332,12 +390,13 @@ class Gateway
         catch (\Requests_Exception $e)
         {
             $this->exception = $e;
+
             //
             // Some error occurred.
             // Check that whether the gateway response timed out.
             // Mostly it should be gateway timeout only
             //
-            if (\RZP\Gateway\Utility::checkTimeout($e))
+            if (Utility::checkActualTimeout($e))
             {
                 throw new Exception\GatewayTimeoutException($e->getMessage(), $e);
             }
@@ -347,33 +406,70 @@ class Gateway
             }
         }
 
+        $this->validateResponse($response);
+
         // echo 'Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL;
         // \Log::info('Response - ' . PHP_EOL . $response->body . PHP_EOL . PHP_EOL);
 
         return $response;
     }
 
+    protected function validateResponse($response)
+    {
+        if ($response->status_code === 504)
+        {
+            throw new Exception\GatewayTimeoutException('Response status: 504');
+        }
+        else if ($response->status_code >= 500)
+        {
+            $e = new Exception\GatewayErrorException(
+                        ErrorCode::GATEWAY_ERROR_FATAL_ERROR);
+
+            $data = ['status_code' => $response->status_code, 'body' => $response->body];
+            $e->setData($data);
+
+            throw $e;
+        }
+        else if ($response->status_code >= 300)
+        {
+            //
+            // Trace non 200 status codes to figure out what else
+            // needs to be handled here later.
+            //
+
+            $this->trace->info(
+                TraceCode::GATEWAY_PAYMENT_RESPONSE,
+                [
+                    'status_code' => $response->status_code,
+                    'gateway' => $this->gateway
+                ]);
+        }
+    }
+
     protected function runPaymentVerifyFlow($verify)
     {
         // This payment is the gateway entity payment.
         // Also sets this gateway payment in the verify object's payment.
-        $payment = $this->getPaymentToVerify($verify->input, $verify);
+        $gatewayPayment = $this->getPaymentToVerify($verify);
 
-        if (($payment === null) and
+        if (($gatewayPayment === null) and
             ($this->shouldReturnIfPaymentNullInVerifyFlow($verify)))
         {
             $this->trace->warning(
                 TraceCode::GATEWAY_PAYMENT_VERIFY,
-                ['payment_id' => $verify->input['payment']['id'],
-                 'message' => 'payment id not found in the gateway database',
-                 'gateway' => $this->gateway]);
+                [
+                    'payment_id' => $verify->input['payment']['id'],
+                    'message'    => 'payment id not found in the gateway database',
+                    'gateway'    => $this->gateway
+                ]
+            );
 
             return null;
         }
 
-        $content = $this->sendPaymentVerifyRequest($verify);
+        $this->sendPaymentVerifyRequest($verify);
 
-        $status = $this->verifyPayment($verify);
+        $this->verifyPayment($verify);
 
         if (($verify->match === false) and
             ($verify->throwExceptionOnMismatch))
@@ -402,10 +498,13 @@ class Gateway
         return false;
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            $traceCode,
             [
                 'request'    => $request,
                 'gateway'    => $this->gateway,
@@ -413,10 +512,13 @@ class Gateway
             ]);
     }
 
-    protected function traceGatewayPaymentResponse($response, $input)
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            $traceCode,
             [
                 'response'   => $response,
                 'gateway'    => $this->gateway,
@@ -424,14 +526,14 @@ class Gateway
             ]);
     }
 
-    protected function getPaymentToVerify($input, $verify)
+    protected function getPaymentToVerify($verify)
     {
-        $payment = $this->repo->findByPaymentIdAndAction(
-                    $input['payment']['id'], Action::AUTHORIZE);
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
+                    $verify->input['payment']['id'], Action::AUTHORIZE);
 
-        $verify->payment = $payment;
+        $verify->payment = $gatewayPayment;
 
-        return $payment;
+        return $gatewayPayment;
     }
 
     protected function getNamespace()
@@ -557,7 +659,7 @@ class Gateway
 
     protected function loadGatewayConfig()
     {
-        $configGatewayStr = 'gateway.'.$this->gateway;
+        $configGatewayStr = 'gateway.' . $this->gateway;
 
         $this->config = $this->app['config']->get($configGatewayStr);
 
@@ -611,6 +713,11 @@ class Gateway
         return $code;
     }
 
+    protected function getLiveMerchantId()
+    {
+        return $this->input['terminal']['gateway_merchant_id'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];
@@ -637,27 +744,28 @@ class Gateway
         return $request;
     }
 
-    protected function jsonToArray($json)
+    protected function getOtpSubmitRequest(array $input): array
     {
-        $decodeJson = json_decode($json, true);
+        $request = [
+            'url' => $input['otpSubmitUrl'],
+            'method' => 'post'
+        ];
 
-        switch(json_last_error())
+        return $request;
+    }
+
+    protected function getDynamicMerchantName($merchant)
+    {
+        $label = $merchant->getBillingLabel();
+
+        $label = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        if (empty($label) === true)
         {
-            case JSON_ERROR_NONE:
-                return $decodeJson;
-            case JSON_ERROR_DEPTH:
-            case JSON_ERROR_STATE_MISMATCH:
-            case JSON_ERROR_CTRL_CHAR:
-            case JSON_ERROR_SYNTAX:
-            case JSON_ERROR_UTF8:
-                $this->trace->error(
-                    TraceCode::GATEWAY_PAYMENT_ERROR,
-                    ['json' => $json]);
-
-                throw new Exception\RuntimeException(
-                    'Failed to convert json to array',
-                    ['json' => $json]);
+            $label = "Razorpay Payments";
         }
+
+        return str_limit($label, 20);
     }
 
     protected function verifyOtpAttempts($payment, $limit = null)
@@ -669,9 +777,18 @@ class Gateway
 
         if ($payment['otp_attempts'] >= $limit)
         {
-            throw new Exception\BadRequestException(
+            throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_OTP_VALIDATION_ATTEMPT_LIMIT_EXCEEDED);
         }
+    }
+
+    public function getGatewayCertDirPath()
+    {
+        $certificatePath = $this->app['config']->get('gateway.certificate_path');
+
+        $gatewayCertPath = $certificatePath . '/' . $this->getGatewayCertDirName();
+
+        return $gatewayCertPath;
     }
 
     protected function getRepository()
@@ -718,6 +835,32 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
         }
     }
 }

@@ -2,9 +2,9 @@
 
 namespace RZP\Models\Base;
 
-
 use App;
 use RZP\Constants\Mode;
+use RZP\Trace\TraceCode;
 
 class EsDao
 {
@@ -16,6 +16,9 @@ class EsDao
     protected $config;
 
     protected $mode;
+
+    // Logically separated instance for heimdall
+    protected $esHeimdall;
 
     public function __construct($mode = null)
     {
@@ -29,7 +32,6 @@ class EsDao
         // Since, we are using only one index, declaring the index name
         // in this class itself. If we have different indices based on some
         // logic, it makes sense to move it to an appropriate class then.
-
         // Live and Test have different index names in the ES cluster.
         $this->setIndexName($mode);
 
@@ -40,12 +42,14 @@ class EsDao
                 $hostName
             ],
         ];
-
         // Since the es client is being set on this, ensure that only this es
         // instance is used to perform any operations on the client.
         $this->es->setEsClient($params);
-    }
 
+        $heimdallHost = $this->config->get('database.es_audit_host');
+
+        $this->es->setHeimdallESClient([$heimdallHost]);
+    }
 
     public function setIndexName($mode)
     {
@@ -62,6 +66,16 @@ class EsDao
         }
 
         $this->indexName = $this->config->get('database.es_index')[$mode];
+    }
+
+    /**
+     * Returns the EsClient instance.
+     *
+     * @return \RZP\Services\EsClient
+     */
+    public function getEsClient()
+    {
+        return $this->es;
     }
 
     // If a document with entity ID is already present, only the notes key is updated.
@@ -139,6 +153,12 @@ class EsDao
             $skip = (int) $params['skip'];
         }
 
+        $filter = [];
+        if ($merchantId !== null)
+        {
+            $filter = ['term' => ['merchant_id' => $merchantId]];
+        }
+
         $params = [
             'index' => $this->indexName,
             'type'  => $typeName,
@@ -146,15 +166,15 @@ class EsDao
                 'size'  => $count,
                 'from'  => $skip,
                 'query' => [
-                    'filtered'  => [
-                        'query' => [
+                    'bool'  => [
+                        'must' => [
                             'multi_match'   => [
                                 'query'     => $searchString,
                                 'type'      => 'cross_fields',
                                 'fields'    => ['notes.*']
                             ]
                         ],
-                        'filter'    => [],
+                        'filter'    => $filter,
                     ]
                 ],
                 'sort'  => [
@@ -167,12 +187,14 @@ class EsDao
             ]
         ];
 
-        if ($merchantId !== null)
-        {
-            $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
-        }
-
         $entityIds = $this->es->searchNotes($params);
+
+        $this->app['trace']->debug(
+            TraceCode::ES_GET_NOTES_QUERY_AND_RESPONSE,
+            [
+                'es_search_params'     => $params,
+                'es_search_result_ids' => $entityIds,
+            ]);
 
         return $entityIds;
     }
@@ -269,5 +291,115 @@ class EsDao
         ];
 
         return $this->es->changeIndexSettings($params);
+    }
+
+    public function storeAdminEvent($index, $type, $fields)
+    {
+        $this->createIndexIfNotExists($index);
+
+        $params = [
+            'index' => $index,
+            'type'  => $type,
+            'body'  => $fields
+        ];
+
+        $updateReponse = $this->es->indexHeimdall($params);
+    }
+
+    protected function createIndexIfNotExists($index)
+    {
+        $params['index'] = $index;
+
+        $client = $this->es->getHeimdallClient();
+
+        $doesExist = $client->indices()->exists($params);
+
+        if ($doesExist === false)
+        {
+            $client->indices()->create($params);
+        }
+    }
+
+    public function searchAuditLogs($orgId, $options = [])
+    {
+        $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
+
+        $index = $this->config->get('database.es_audit')[$mode];
+
+        $params = [
+            'index'  => $index,
+            'body' => [
+                'query' => [
+                    'match' => [
+                        'extra.org_id' => $orgId
+                    ]
+                ],
+                'sort' => [
+                    'created_at' => ['order' => 'desc']
+                ]
+            ]
+        ];
+
+        if (isset($options['skip']))
+        {
+            $params['body']['from'] = (int) $options['skip'];
+        }
+
+        if (isset($options['count']))
+        {
+            $params['body']['size'] = (int) $options['count'];
+        }
+
+        $results = $this->es->searchHeimdall($params);
+
+        // If the index has no documents
+        if (empty($results))
+        {
+            $results = [];
+        }
+
+        $this->app['trace']->info(TraceCode::MISC_TRACE_CODE, ['results' => $results]);
+
+        $formattedResults = $this->formatAuditLogResults($results);
+
+        return $formattedResults;
+    }
+
+    protected function formatAuditLogResults($results)
+    {
+        // format results
+        $keyMap = [
+            '_id' => 'id',
+            '_source' => 'event'
+        ];
+
+        $exclude = [
+            '_index',
+            '_type',
+            '_score'
+        ];
+
+        foreach($results as &$item)
+        {
+            foreach ($keyMap as $key => $replace)
+            {
+                if (isset($item[$key]) === true)
+                {
+                    $item[$replace] = $item[$key];
+
+                    unset($item[$key]);
+                }
+            }
+
+            foreach($exclude as $key)
+            {
+                if (isset($item[$key]))
+                {
+                    unset($item[$key]);
+                }
+            }
+        }
+
+        return $results;
     }
 }

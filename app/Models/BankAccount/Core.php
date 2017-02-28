@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Constants\MailTags;
 use Mail;
 use RZP\Trace\TraceCode;
 
@@ -66,14 +67,17 @@ class Core extends Base\Core
 
     /**
      * This takes the oldBank Account as it's last parameter
-     * @param  Array $input Input Array with new bank account details
-     * @param  Merchant\Entity $merchant
+     *
+     * @param  array              $input Input Array with new bank account details
+     * @param  Merchant\Entity    $merchant
      * @param  BankAccount\Entity $oldBankAccount
+     *
+     * @return mixed
      */
     protected function changeBankAccount($input, $merchant, $oldBankAccount)
     {
         return $this->repo->transaction(
-            function() use($merchant, $oldBankAccount, $input)
+            function() use ($merchant, $oldBankAccount, $input)
             {
                 $this->repo->delete($oldBankAccount);
 
@@ -89,8 +93,8 @@ class Core extends Base\Core
     {
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
-            'beneficiary_name'      => $merchant->getAttribute('name'),
-            'beneficiary_email'     => $merchant->getAttribute('email'),
+            'beneficiary_name'      => 'Test ' . $merchant->getId(),
+            'beneficiary_email'     => $merchant->getEmail(),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => 'Bengaluru Palace',
             'beneficiary_address2'  => 'Palace Rd, Vasanth Nagar',
@@ -159,10 +163,15 @@ class Core extends Base\Core
 
     protected function sendEmail($template, $subject, $data)
     {
-        Mail::queue($template, $data, function($message) use ($data, $subject){
+        Mail::queue($template, $data, function($message) use ($data, $subject)
+        {
+            $message->to($data['email'], $data['name']);
 
-            $message->to($data['email'], $data['name'])
-                ->subject($subject);
+            $message->subject($subject);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
         });
     }
 }

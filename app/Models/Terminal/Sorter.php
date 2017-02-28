@@ -4,10 +4,12 @@ namespace RZP\Models\Terminal;
 
 use Trace;
 
+use App;
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Sorter
+class Sorter extends Base\Core
 {
     /**
      * This should be overridden in the child class with the respective sorter properties
@@ -15,7 +17,7 @@ class Sorter
      */
     protected $properties;
 
-    public function sort($terminals, $input, $verbose = false)
+    public function sort($terminals, $input, $verbose = false, $options = null)
     {
         // No need to sort if there's only one terminal
         if (count($terminals) === 1)
@@ -30,7 +32,7 @@ class Sorter
         {
             $sorterFunction = $this->getSorterNameForProperty($sorterProperty);
 
-            $currentTerminals = $this->$sorterFunction($currentTerminals, $input);
+            $currentTerminals = $this->$sorterFunction($currentTerminals, $input, $options);
 
             $this->traceTerminals(
                 $currentTerminals,

@@ -16,15 +16,14 @@ class Channel
             Payment\Gateway::AXIS_MIGS,
             Payment\Gateway::BILLDESK,
             Payment\Gateway::HDFC,
-            Payment\Gateway::KOTAK,
             Payment\Gateway::MOBIKWIK,
             Payment\Gateway::PAYTM,
-            Payment\Gateway::SBIEPAY,
             Payment\Gateway::NETBANKING_HDFC,
             Payment\Gateway::WALLET_PAYZAPP,
             Payment\Gateway::WALLET_PAYUMONEY,
             Payment\Gateway::WALLET_OLAMONEY,
             Payment\Gateway::WALLET_FREECHARGE,
+            Payment\Gateway::WALLET_JIOMONEY
         ),
 
         self::ATOM => array(

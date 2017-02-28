@@ -70,7 +70,7 @@ return [
                 'rules' => array(
                     array(
                         'plan_name' => 'TestUploadPlan2',
-                        'payment_method' => 'card',
+                        'payment_method' => 'netbanking',
                         'percent_rate' => 1000,
                         'international' => false,
                         'amount_range_active' => false,
@@ -79,13 +79,13 @@ return [
                     ),
                     array(
                         'plan_name' => 'TestUploadPlan2',
-                        'payment_method' => 'netbanking',
+                        'payment_method' => 'card',
                         'percent_rate' => 1000,
                         'international' => false,
                         'amount_range_active' => false,
                         'amount_range_min' => null,
                         'amount_range_max' => null,
-                    )
+                    ),
                 ),
             ],
         ],
@@ -366,7 +366,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 9,
+                        'count' => 10,
                         'rules' => array(
                             array(),
                         ),
@@ -468,7 +468,7 @@ return [
                     array(
                         'name' => 'testDefaultPlan',
                         'entity' => 'pricing',
-                        'count' => 9,
+                        'count' => 10,
                         'rules' => array(
                             array(),
                         ),
@@ -937,6 +937,39 @@ return [
         'exception' => [
             'class' => 'RZP\Exception\BadRequestException',
             'internal_error_code' => ErrorCode::BAD_REQUEST_PRICING_RULE_ALREADY_DEFINED,
+        ],
+    ],
+
+    'testAddPricingPlanRuleWithFeature' => [
+        'request' => [
+            'content' => [
+                'payment_method' => 'card',
+                'payment_method_type'  => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => 0,
+                'amount_range_active' => '0',
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'feature' => 'recurring',
+            ],
+            'method' => 'POST'
+        ],
+        'response' => [
+            'content' => [
+                'plan_name' => 'TestPlan1',
+                'payment_method' => 'card',
+                'payment_method_type' => 'credit',
+                'payment_network' => 'MAES',
+                'payment_issuer' => 'HDFC',
+                'percent_rate' => 1000,
+                'international' => false,
+                'amount_range_active' => false,
+                'amount_range_min' => null,
+                'amount_range_max' => null,
+                'feature' => 'recurring',
+            ],
         ],
     ],
 ];

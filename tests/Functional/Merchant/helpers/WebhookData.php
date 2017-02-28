@@ -60,7 +60,7 @@ return [
         'request' => [
             'url' => '/webhooks',
             'content' => [
-                'url' => 'http://example.com:90',
+                'url' => 'http://example.com:6000',
                 'events' => [
                     'payment.authorized' => '1',
                 ],
@@ -71,7 +71,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => 'Only 80 or 443 port is currently allowed in webhook url.'
+                    'description' => 'The provided port is restricted and cannot be used in a webhook URL.'
                 ],
             ],
             'status_code' => 400,
@@ -241,6 +241,158 @@ return [
                         'notes' => ['merchant_order_id' => 'random order id'],
                         'error_code' => null,
                         'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidWebhookEventDataWithOrderAndWithoutInvoice' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'order.paid',
+            'contains' => ['payment', 'order'],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity' => 'order',
+                        'amount' => 50000,
+                        'receipt' => 'random',
+                        'currency' => 'INR',
+                        'status' => 'paid',
+                        'attempts' => 1,
+                        'notes' => []
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 50000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoicePaidWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity' => 'event',
+            'event' => 'invoice.paid',
+            'contains' => ['payment', 'order', 'invoice'],
+            'payload' => [
+                'order' => [
+                    'entity' => [
+                        'entity' => 'order',
+                        'id' => 'order_100000000order',
+                        'amount' => 1000000,
+                        'receipt' => 'random',
+                        'currency' => 'INR',
+                        'status' => 'paid',
+                        'attempts' => 1,
+                        'notes' => []
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity' => 'payment',
+                        'amount' => 1000000,
+                        'currency' => 'INR',
+                        'status' => 'captured',
+                        'amount_refunded' => 0,
+                        'refund_status' => null,
+                        'captured' => true,
+                        'description' => 'random description',
+                        'email' => 'a@b.com',
+                        'contact' => '+919918899029',
+                        'notes' => ['merchant_order_id' => 'random order id'],
+                        'error_code' => null,
+                        'error_description' => null,
+                        'invoice_id' => 'inv_1000000invoice',
+                    ],
+                ],
+                'invoice' => [
+                    'entity' => [
+                        'entity' => 'invoice',
+                        'id' => 'inv_1000000invoice',
+                        'customer_id' => 'cust_100000customer',
+                        'order_id' => 'order_100000000order',
+                        'status' => 'paid',
+                        'sms_status' => 'sent',
+                        'email_status' => 'sent',
+                        'customer_details' => [
+                            'customer_name' => 'test',
+                            'customer_contact' => '1234567890',
+                            'customer_email' => 'test@razorpay.com'
+                        ]
+                    ],
+                ],
+            ],
+        ],
+    ],
+
+    'testInvoiceWithoutCustomerDetailsPaidWebhookEventData' => [
+        'mode' => 'test',
+        'event' => [
+            'entity'   => 'event',
+            'event'    => 'invoice.paid',
+            'contains' => ['payment', 'order', 'invoice'],
+            'payload'  => [
+                'order' => [
+                    'entity'       => [
+                        'entity'   => 'order',
+                        'id'       => 'order_100000000order',
+                        'amount'   => 1000000,
+                        'receipt'  => 'random',
+                        'currency' => 'INR',
+                        'status'   => 'paid',
+                        'attempts' => 1,
+                        'notes'    => []
+                    ],
+                ],
+                'payment' => [
+                    'entity' => [
+                        'entity'            => 'payment',
+                        'amount'            => 1000000,
+                        'currency'          => 'INR',
+                        'status'            => 'captured',
+                        'amount_refunded'   => 0,
+                        'refund_status'     => null,
+                        'captured'          => true,
+                        'description'       => 'random description',
+                        'email'             => 'a@b.com',
+                        'contact'           => '+919918899029',
+                        'notes'             => ['merchant_order_id' => 'random order id'],
+                        'error_code'        => null,
+                        'error_description' => null,
+                    ],
+                ],
+                'invoice' => [
+                    'entity' => [
+                        'entity'           => 'invoice',
+                        'id'               => 'inv_1000000invoice',
+                        'customer_id'      => null,
+                        'order_id'         => 'order_100000000order',
+                        'status'           => 'paid',
+                        'sms_status'       => 'sent',
+                        'email_status'     => 'sent',
+                        'customer_details' => [
+                            'customer_name'    => null,
+                            'customer_contact' => '+919918899029',
+                            'customer_email'   => 'a@b.com'
+                        ]
                     ],
                 ],
             ],

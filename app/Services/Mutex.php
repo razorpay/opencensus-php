@@ -2,10 +2,11 @@
 
 namespace RZP\Services;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 
 /**
  * The below lock implementation is based on single-instance redis redlock algorithm
@@ -25,6 +26,70 @@ class Mutex
         $this->requestId = $app['request']->getId();
 
         $this->trace = $app['trace'];
+    }
+
+    /**
+     * Set the lock for the all resource provided
+     *
+     * @param array $resources Array of the resource
+     * @param int $ttl Expiry time of lock in seconds
+     * @param bool $strict defines lock should happen or not, even if one resource is not locked
+     * @param string $suffix
+     *
+     * @return array containing values of locked and not_locked keys
+     */
+    public function acquireMultiple($resources, $ttl = 60, $suffix = '', $strict = false)
+    {
+        $lockedResources = [];
+
+        $alreadyLockedResources = [];
+
+        foreach ($resources as $resource)
+        {
+            $resourceWithSuffix = $resource . $suffix;
+            $isLockAcquired = $this->acquire($resourceWithSuffix, $ttl);
+
+            if ($isLockAcquired === true)
+            {
+                $lockedResources[] = $resource;
+            }
+            else
+            {
+                if ($strict === true)
+                {
+                    $this->releaseMultiple($lockedResources, $suffix);
+
+                    return [
+                        'locked' => [],
+                        'unlocked' => $resources
+                    ];
+                }
+
+                $alreadyLockedResources[] = $resource;
+            }
+        }
+
+        return [
+            'locked' => $lockedResources,
+            'unlocked' => $alreadyLockedResources
+        ];
+    }
+
+    /**
+     * Release the lock for the resource array provided
+     *
+     * @param array $resources Array of the resource
+     *
+     * @return void
+     */
+    public function releaseMultiple($resources, $suffix = '')
+    {
+        foreach ($resources as $resource)
+        {
+            $resourceWithSuffix = $resource . $suffix;
+
+            $this->release($resourceWithSuffix);
+        }
     }
 
     /**
@@ -94,7 +159,11 @@ class Mutex
         return false;
     }
 
-    public function acquireAndRelease($resource, callable $callback, $ttl = 60)
+    public function acquireAndRelease(
+        $resource,
+        callable $callback,
+        $ttl = 60,
+        $errorCode = ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS)
     {
         $ret = null;
 
@@ -104,8 +173,7 @@ class Mutex
 
             if ($acquired === false)
             {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_PAYMENT_ANOTHER_OPERATION_IN_PROGRESS);
+                throw new Exception\BadRequestException($errorCode);
             }
 
             $ret = call_user_func($callback);
@@ -114,7 +182,12 @@ class Mutex
         }
         finally
         {
-            $this->release($resource);
+            $released = $this->release($resource);
+
+            if ($released === false)
+            {
+                $this->trace->error(TraceCode::MUTEX_LOCK_ALREADY_RELEASED);
+            }
         }
     }
 }

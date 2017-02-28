@@ -2,18 +2,22 @@
 
 namespace RZP\Models\Payment;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
+use Cache;
 use Lib\PhoneBook;
-use RZP\Models\Base;
+use RZP\Base;
+use RZP\Exception;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
+use RZP\Models\Upi;
 use RZP\Models\Card;
+use RZP\Models\Currency\Currency;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    protected static $createRules = array(
+    protected static $createRules = [
         'amount'                  =>  'required|integer',
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
@@ -23,8 +27,8 @@ class Validator extends Base\Validator
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
         'description'             =>  'sometimes',
-        'email'                   =>  'required|email',
-        'contact'                 =>  'required|contact_syntax',
+        'email'                   =>  'sometimes|email',
+        'contact'                 =>  'sometimes|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
@@ -37,25 +41,39 @@ class Validator extends Base\Validator
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|integer|max:50000000',
         'service_tax'             =>  'sometimes|integer|max:50000000',
-        '_'                       =>  'sometimes');
+        '_'                       =>  'sometimes'
+    ];
 
-    protected static $captureRules = array(
+    protected static $captureRules = [
         'amount'        => 'required|integer',
-        'currency'      => 'sometimes|in:INR');
+        'currency'      => 'required|in:INR,USD',
+    ];
 
-    protected static $refundRules = array(
+    protected static $refundRules = [
         'amount'        => 'sometimes|integer',
         'notes'         => 'sometimes|notes'
-    );
+    ];
 
-    protected static $createValidators = array(
+    protected static $createValidators = [
         'card_key',
         'amount',
         'bank',
         'currency',
         'description',
         'fee',
-        'contact');
+        'contact',
+        'email',
+    ];
+
+    protected function validateEmail(array $input)
+    {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::EMAIL]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The email field is required.', Entity::EMAIL);
+        }
+    }
 
     protected function validateMethod($attribute, $method)
     {
@@ -70,31 +88,21 @@ class Validator extends Base\Validator
     {
         $vpaParts = explode('@', $vpa);
 
-        if (count($vpaParts) !== 2)
+        if ((count($vpaParts) !== 2) or
+            (strlen($vpaParts[1]) > 50))
         {
             // Invalid VPA
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_INVALID_VPA);
         }
-
-        $merchantId = null;
-
-        if ($this->entity->getMerchantId() !== null)
-        {
-            $merchantId = $this->entity->merchant->getId();
-        }
     }
 
     protected function validateWallet($attribute, $value)
     {
-        if (Wallet::exists($value) === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_NOT_SUPPORTED);
-        }
+        Wallet::validateExists($value);
     }
 
-    protected function validateCardKey($input)
+    protected function validateCardKey(array $input)
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
@@ -123,7 +131,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAmount($input)
+    protected function validateAmount(array $input)
     {
         $amount = $input['amount'];
 
@@ -156,11 +164,23 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Amount exceeds maximum amount allowed.',
-                'amount');
+                'amount',
+                ['amount' => $amount]);
         }
     }
 
-    public function validateCardAndCvv($input)
+    public function validateUpiVpaPsp(string $vpa, array $excludedPsps)
+    {
+        $vpaParts = explode('@', $vpa);
+
+        if (in_array($vpaParts[1], $excludedPsps, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_UPI_APP_NOT_SUPPORTED);
+        }
+    }
+
+    public function validateCardAndCvv(array $input)
     {
         if (isset($input['card']) === false)
         {
@@ -182,6 +202,22 @@ class Validator extends Base\Validator
             // We need to do this check here because currently amex has a higher limit of 5k.
             throw new Exception\BadRequestValidationFailureException(
                 'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
+        }
+    }
+
+    public function validateForPayout(string $mode)
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        if (($mode === MODE::LIVE) and
+            ($this->entity->transaction->isSettled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
         }
     }
 
@@ -208,6 +244,13 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
+        if (($input[Entity::METHOD] !== 'aeps') and
+            (empty($input[Entity::CONTACT]) === true))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'The contact field is required.', Entity::CONTACT);
+        }
+
         if ($input['method'] === Payment\Method::WALLET)
         {
             $number = new PhoneBook($input['contact'], true);
@@ -270,11 +313,8 @@ class Validator extends Base\Validator
     {
         $currency = $input['currency'];
 
-        //
-        // Right now only INR is supported.
-        //
-
-        if ($currency !== "INR")
+        // Right now only INR and USD is supported.
+        if (in_array($currency, Currency::SUPPORTED_CURRENCIES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CURRENCY_NOT_SUPPORTED,
@@ -299,13 +339,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function captureValidate($payment, $amount)
+    public function captureValidate(Payment\Entity $payment, int $amount, string $currency)
     {
         $this->failIfCaptured($payment);
 
         $this->failIfNotAuthorized($payment);
 
-        $this->captureAmountValidate($payment, $amount);
+        // Removing this temporarily
+        // $this->captureAmountValidate($payment, $amount);
+
+        $this->captureCurrencyValidate($payment, $currency);
     }
 
     public function cancelValidate($payment)
@@ -313,19 +356,35 @@ class Validator extends Base\Validator
         $this->failIfNotCreated($payment);
     }
 
-    public function captureAmountValidate($payment, $amount)
+    public function captureAmountValidate(Payment\Entity $payment, int $amount)
     {
-        $amount = (int) $amount;
-
         if ($amount !== $payment->getAmount())
         {
-            $e = new Exception\BadRequestException(
+            throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_AMOUNT_NOT_EQUAL_TO_AUTH,
                 Payment\Entity::AMOUNT,
-                ['amount' => $amount]);
-
-            throw $e;
+                [
+                    'capture_amount' => $amount,
+                    'payment_amount' => $payment->getAmount(),
+                    'payment_id'     => $payment->getId(),
+                ]);
         }
+    }
+
+    protected function captureCurrencyValidate($payment, $currency)
+    {
+        if ($currency !== $payment->getCurrency())
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CAPTURE_CURRENCY_MISMATCH,
+                Payment\Entity::CURRENCY,
+                [
+                    'capture_currency' => $currency,
+                    'payment_currency' => $payment->getCurrency(),
+                    'payment_id'       => $payment->getId(),
+                ]);
+        }
+
     }
 
     protected function failIfNotCreated($payment)

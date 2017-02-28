@@ -2,6 +2,8 @@
 
 namespace RZP\Console\Commands;
 
+use DB;
+use Config;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Input\InputOption;
 

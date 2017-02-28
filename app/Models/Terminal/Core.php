@@ -7,7 +7,7 @@ use RZP\Error\ErrorCode;
 use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Models\Terminal;
+use RZP\Models\Merchant;
 
 class Core extends Base\Core
 {
@@ -15,13 +15,82 @@ class Core extends Base\Core
     {
         $input['merchant_id'] = $merchant->getKey();
 
-        $terminal = (new Terminal\Entity)->build($input);
+        $terminal = (new Entity)->build($input);
 
         $this->validateExistingTerminal($terminal);
 
         $this->repo->saveOrFail($terminal);
 
         return $terminal;
+    }
+
+    public function removeMerchantFromTerminal(Entity $terminal, string $merchantId)
+    {
+        $this->repo->terminal->removeMerchantFromTerminal($terminal, $merchantId);
+
+        return $terminal;
+    }
+
+    public function addMerchantToTerminal(Entity $terminal, string $merchantId)
+    {
+        $subMerchants = $terminal->merchants();
+
+        $subMerchantsIds = $subMerchants->pluck(Merchant\Entity::ID)->all();
+
+        if (in_array($merchantId, $subMerchantsIds, true) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SUB_MERCHANT_ALREADY_ASSIGNED_TO_TERMINAL);
+        }
+
+        $this->repo->terminal->addMerchantToTerminal($terminal, $merchantId);
+
+        return $terminal;
+    }
+
+    public function reassignMerchantForTerminal(Entity $terminal, Merchant\Entity $merchant)
+    {
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SHARED_TERMINAL_MERCHANT_CANNOT_BE_CHANGED);
+        }
+
+        $terminal->merchant()->associate($merchant);
+
+        $this->repo->saveOrFail($terminal);
+
+        return $terminal;
+    }
+
+    public function copy($input, $terminal)
+    {
+        if ($terminal->isShared() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_SHARED_TERMINAL_CANNOT_BE_COPIED);
+        }
+
+        $merchantIds = $input['merchant_ids'];
+
+        $response = [];
+
+        unset($terminal['used_count']);
+
+        foreach ($merchantIds as $merchantId)
+        {
+            $newTerminal = $terminal->replicate();
+            $newTerminal['merchant_id'] = $merchantId;
+
+            $this->repo->saveOrFail($newTerminal);
+
+            $response[] = [
+                'terminal' => $newTerminal->getId(),
+                'merchant' => $merchantId
+            ];
+        }
+
+        return $response;
     }
 
     public function edit($terminal, $input)
@@ -69,8 +138,7 @@ class Core extends Base\Core
 
     public function validateExistingTerminal($terminal)
     {
-        $params = array(
-            Terminal\Entity::MERCHANT_ID => $terminal->getMerchantId());
+        $params = [Entity::MERCHANT_ID => $terminal->getMerchantId()];
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
@@ -86,8 +154,7 @@ class Core extends Base\Core
     protected function validateExistingTerminalGatewayMerchantId($terminal)
     {
         // Check no record with same 'gateway_merchant_id' exists
-        $params = array(
-            Terminal\Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId());
+        $params = [Entity::GATEWAY_MERCHANT_ID => $terminal->getGatewayMerchantId()];
 
         $existingTerminals = $this->repo->terminal->fetch($params);
 
@@ -105,7 +172,7 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_GATEWAY_MERCHANT_ID_EXISTS,
-                Terminal\Entity::GATEWAY_MERCHANT_ID);
+                Entity::GATEWAY_MERCHANT_ID);
         }
     }
 
@@ -129,7 +196,7 @@ class Core extends Base\Core
 
         $input['merchant_id'] = $merchant->getKey();
 
-        $terminal = (new Terminal\Entity)->build($input);
+        $terminal = (new Entity)->build($input);
 
         $this->validateExistingTerminal($terminal);
 

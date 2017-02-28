@@ -2,11 +2,10 @@
 
 namespace RZP\Models\BankAccount;
 
-use Carbon\Carbon;
+use RZP\Exception;
+use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
-use RZP\Error\ErrorCode;
-use RZP\Exception;
 
 class BeneficiaryFile3
 {
@@ -127,6 +126,10 @@ class BeneficiaryFile3
             $message->cc($cc);
 
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 }

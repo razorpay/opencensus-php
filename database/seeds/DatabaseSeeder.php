@@ -8,7 +8,6 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Terminal;
 use Illuminate\Database\Seeder;
-use Illuminate\Database\Eloquent\Model;
 
 class DatabaseSeeder extends Seeder
 {
@@ -25,6 +24,8 @@ class DatabaseSeeder extends Seeder
         $this->seed();
 
         $this->call('IinsTableSeeder');
+        $this->call('PermissionSeeder');
+        $this->call('GroupMapSeeder');
     }
 
     private function seed()
@@ -35,8 +36,116 @@ class DatabaseSeeder extends Seeder
         {
             $pricingSeedData = Pricing\DefaultPlan::getPricingSeedData();
 
+            $todayTime = strtotime('today');
+            $currentTime = time();
+
             DB::table(Table::PRICING)->insert(
                 $pricingSeedData);
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'               => '100000razorpay',
+                    'auth_type'        => 'google_auth',
+                    'business_name'    => 'Razorpay',
+                    'display_name'     => 'Razorpay Software Private Ltd',
+                    'email'            => 'admin@razorpay.com',
+                    'email_domains'    => 'razorpay.com',
+                    'allow_sign_up'    => true,
+                    'login_logo_url'   => null,
+                    'main_logo_url'    => null,
+                    'created_at'       => $currentTime,
+                    'updated_at'       => $currentTime,
+                    'cross_org_access' => true,
+                ]
+            );
+
+            DB::table(Table::ORG)->insert(
+                [
+                    'id'                => '6dLbNSpv5XbCOG',
+                    'auth_type'         => 'password',
+                    'business_name'     => 'HDFC',
+                    'display_name'      => 'HDFC Bank Pvt Ltd',
+                    'email'             => 'hdfc@bank.rzp.in',
+                    'email_domains'     => 'hdfcbank.in',
+                    'allow_sign_up'     => false,
+                    'login_logo_url'    => null,
+                    'main_logo_url'     => null,
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'id'                => '70I3fMI9AGKROX',
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'dashboard.razorpay.com',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'id'                => '70I47LP6lyPYJR',
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'beta-dashboard.razorpay.com',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'id'                => '70I6GMmOpMJp40',
+                    'org_id'            => '100000razorpay',
+                    'hostname'          => 'dashboard.razorpay.dev',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            DB::table(Table::ORG_HOSTNAME)->insert(
+                [
+                    'id'                => '70I6bfuaPQ72xa',
+                    'org_id'            => '6dLbNSpv5XbCOG',
+                    'hostname'          => 'dashboard-hdfc.razorpay.dev',
+                    'created_at'        => $currentTime,
+                    'updated_at'        => $currentTime,
+                ]
+            );
+
+            // DB::table(Table::ORG)->insert(
+            //     [
+            //         'id'                => 'org_6lFupOxpf36BY3',
+            //         'auth_type'         => 'password',
+            //         'business_name'     => 'ICICI',
+            //         'display_name'      => 'ICICI Bank Pvt Ltd',
+            //         'email'             => 'icici@icici.in',
+            //         'email_domains'     => 'icici.in',
+            //         'hostname'          => 'icici.in',
+            //         'login_logo_url'    => null,
+            //         'main_logo_url'     => null,
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
+            //     ]
+            // );
+
+            // DB::table(Table::ORG)->insert(
+            //     [
+            //         'id'                => 'org_6dLbNSpv5XbCOI',
+            //         'auth_type'         => 'password',
+            //         'business_name'     => 'BOB',
+            //         'display_name'      => 'BOB Pvt Ltd',
+            //         'email'             => 'bob@bob.in',
+            //         'email_domains'     => 'bob.in',
+            //         'hostname'          => 'bob.in',
+            //         'login_logo_url'    => null,
+            //         'main_logo_url'     => null,
+            //         'created_at'        => $currentTime,
+            //         'updated_at'        => $currentTime,
+            //     ]
+            // );
 
             DB::table(Table::MERCHANT)->insert(
                 array(
@@ -44,20 +153,31 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Nodal Account',
                     'email'         =>  'nodal@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::NODAL_ACCOUNT,
+                    'contact_name'  => 'Razorpay Nodal Account',
+                    'contact_email' => 'nodal@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::NODAL_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -67,20 +187,31 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Atom Account',
                     'email'         =>  'atom@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'nodal@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::ATOM_ACCOUNT,
+                    'contact_name'  => 'Razorpay Atom Account',
+                    'contact_email' => 'atom@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::ATOM_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -90,20 +221,31 @@ class DatabaseSeeder extends Seeder
                     'name'          =>  'Razorpay Fee Account',
                     'email'         =>  'fees@razorpay.com',
                     'category'      =>  '1234',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'fees@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::API_FEE_ACCOUNT,
+                    'contact_name'  => 'Razorpay Fee Account',
+                    'contact_email' => 'fees@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::API_FEE_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                     )
                 );
 
@@ -114,20 +256,31 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'test@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'test@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::TEST_ACCOUNT,
+                    'contact_name'  => 'Test Account',
+                    'contact_email' => 'test@razorpay.com',
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::TEST_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'balance'       =>  100000,
                     'credits'       =>  50000,
                     'on_hold'       =>  10000,
@@ -141,20 +294,31 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'shared@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'shared@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::SHARED_ACCOUNT,
+                    'contact_name'  => 'Shared Account',
+                    'contact_email' => 'shared@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::SHARED_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -165,20 +329,31 @@ class DatabaseSeeder extends Seeder
                     'email'         =>  'demo@razorpay.com',
                     'category'      =>  '1234',
                     'pricing_plan_id' => Pricing\DefaultPlan::FULL_PLAN_ID,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     'transaction_report_email'=>'demo@razorpay.com',
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    )
+                );
+
+            DB::table(Table::MERCHANT_DETAIL)->insert(
+                array(
+                    'merchant_id'   => Account::DEMO_ACCOUNT,
+                    'contact_name'  => 'Demo Account',
+                    'contact_email' => 'demo@razorpay.com',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                     )
                 );
 
             DB::table(Table::BALANCE)->insert(
                 array(
                     'id'            =>  Account::DEMO_ACCOUNT,
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time(),
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime,
                     )
                 );
 
@@ -187,6 +362,12 @@ class DatabaseSeeder extends Seeder
                 $this->createTestTerminals();
 
                 $this->createLocalCustomer();
+
+                $this->createGlobalCustomer();
+
+                $this->createVpas();
+
+                $this->createDevice();
             }
 
             DB::table(Table::METHODS)->insert(
@@ -200,10 +381,11 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -218,11 +400,12 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'jiomoney'      => '1',
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
-                    'created_at'    =>  time(),
-                    'updated_at'    =>  time()
+                    'created_at'    =>  $currentTime,
+                    'updated_at'    =>  $currentTime
                 )
             );
 
@@ -234,10 +417,161 @@ class DatabaseSeeder extends Seeder
                     'rate'          => 1400,
                     'min_amount'    => 300000,
                     'methods'       => 'card',
-                    'created_at'    => time(),
-                    'updated_at'    => time(),
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
                 )
             );
+
+            DB::table(Table::ADMIN)->insert([
+                [
+                    'id'                  => '6dLbNSpv5Ybbbb',
+                    'email'               => 'rzp@hdfcbank.in',
+                    'name'                => 'Test HDFC Account',
+                    'username'            => 'rzp',
+                    // Hash::make(123456)
+                    'password'            => '$2y$10$hq9FiWfdGNQYrMLhFIcHFeTugK3prV0Y6ghWC5AKuDQKNVS4Xx4SG',
+                    'org_id'              => '6dLbNSpv5XbCOG',
+                    'employee_code'       => '010',
+                    'department_code'     => 'ADMIN',
+                    'branch_code'         => 'HDFC010',
+                    'supervisor_code'     => '001',
+                    'location_code'       => 'BLR',
+                    'last_login_at'       => $todayTime,
+                    'created_at'          => $todayTime,
+                    'updated_at'          => $todayTime,
+                    'allow_all_merchants' => true,
+                ],
+            ]);
+
+            DB::table(Table::ADMIN)->insert([
+                [
+                    'id'                  => '6dLbNSpv5Ycccc',
+                    'email'               => 'rishabh.pugalia@razorpay.com',
+                    'name'                => 'Rishabh Pugalia',
+                    'username'            => 'rishabhp',
+                    'org_id'              => '100000razorpay',
+                    'employee_code'       => '001',
+                    'branch_code'         => 'RZP001',
+                    'department_code'     => 'ADMIN',
+                    'supervisor_code'     => '001',
+                    'location_code'       => 'BLR',
+                    'last_login_at'       => null,
+                    'created_at'          => $todayTime,
+                    'updated_at'          => $todayTime,
+                    'allow_all_merchants' => true,
+                ]
+            ]);
+
+            DB::table(Table::ROLE)->insert([
+                // RZP
+                [
+                    'id'            => '6dLbNSpv5XbC5E',
+                    'name'          => 'SuperAdmin',
+                    'description'   => 'Super Administrator',
+                    'org_id'        => '100000razorpay',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                // HDFC
+                [
+                    'id'            => '6dLbNSpv5XbC5F',
+                    'name'          => 'SuperAdmin',
+                    'description'   => 'Super Administrator',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                // [
+                //     'id'            => '6dLbNSpv5XbC5G',
+                //     'name'          => 'Admin',
+                //     'description'   => 'Administrator',
+                //     'org_id'        => '6dLbNSpv5XbCOG',
+                //     'created_at'    => $currentTime,
+                //     'updated_at'    => $currentTime,
+                // ]
+            ]);
+
+            DB::table(Table::ROLE_MAP)->insert([
+                // RZP
+                [
+                    'role_id'       => '6dLbNSpv5XbC5E',
+                    'entity_id'     => '6dLbNSpv5Ycccc',
+                    'entity_type'   => 'admin',
+                ],
+                // HDFC
+                [
+                    'role_id'       => '6dLbNSpv5XbC5F',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin',
+                ],
+                // [
+                //     'role_id'       => '6dLbNSpv5XbC5G',
+                //     'entity_id'     => '6dLbNSpv5Ybbbc',
+                //     'entity_type'   => 'admin',
+                // ]
+            ]);
+
+            DB::table(Table::GROUP)->insert([
+                [
+                    'id'            => '6euDnqS4zQR4ke',
+                    'name'          => 'Karnataka',
+                    'description'   => 'Karnataka Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kf',
+                    'name'          => 'Bangalore',
+                    'description'   => 'Bangalore Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ],
+                [
+                    'id'            => '6euDnqS4zQR4kg',
+                    'name'          => 'Indiranagar',
+                    'description'   => 'Indiranagar Group',
+                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'created_at'    => $currentTime,
+                    'updated_at'    => $currentTime,
+                ]
+            ]);
+
+            DB::table(Table::GROUP_MAP)->insert([
+                // G1 -> A1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6dLbNSpv5Ybbbb',
+                    'entity_type'   => 'admin',
+                ],
+                // G2 -> G1
+                [
+                    'group_id'      => '6euDnqS4zQR4ke',
+                    'entity_id'     => '6euDnqS4zQR4kf',
+                    'entity_type'   => 'group',
+                ],
+                // G3 -> G2
+                [
+                    'group_id'      => '6euDnqS4zQR4kf',
+                    'entity_id'     => '6euDnqS4zQR4kg',
+                    'entity_type'   => 'group',
+                ],
+                // G2 -> A2
+                // [
+                //     'group_id'      => '6euDnqS4zQR4kf',
+                //     'entity_id'     => '6dLbNSpv5Ybbbc',
+                //     'entity_type'   => 'admin',
+                // ]
+            ]);
+
+            DB::table(Table::MERCHANT_MAP)->insert([
+                [
+                    'merchant_id'   => '10000000000000',
+                    'entity_id'     => '6dLbNSpv5Ycccc',
+                    'entity_type'   => 'admin',
+                ]
+            ]);
         });
     }
 
@@ -278,6 +612,68 @@ class DatabaseSeeder extends Seeder
                     'created_at'            => time(),
                     'updated_at'            => time(),
                 ),
+            )
+        );
+    }
+
+    protected function createGlobalCustomer()
+    {
+        DB::table(Table::CUSTOMER)->insert(
+            array(
+                'id'                    => 'TestGloblCstmr',
+                'merchant_id'           => Account::SHARED_ACCOUNT,
+                'name'                  => 'Global Citizen',
+                'contact'               => '+919876543210',
+                'email'                 => 'test4@razorpay.com',
+                'notes'                 => '{}',
+                'active'                => true,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createVpas()
+    {
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestSenderVpa',
+                'username'              => 'sender',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+
+        DB::table(Table::VPA)->insert(
+            array(
+                'id'                    => 'TestReceivrVpa',
+                'username'              => 'receiver',
+                'handle'                => 'razor',
+                'frequency'             => 'multiple',
+                'customer_id'           => 'TestGloblCstmr',
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            )
+        );
+    }
+
+    protected function createDevice()
+    {
+        DB::table(Table::DEVICE)->insert(
+            array(
+                'id'                    => 'TestNokia3310',
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'customer_id'           => 'TestGloblCstmr',
+                'imei'                  => 'TestImeiValue',
+                'status'                => 'verified',
+                'auth_token'            => 'auth_to_be_okay',
+                'verification_token'    => 'verin_this_together',
+                'upi_token'             => 'upi_dont_need_to',
+                'created_at'            => time(),
+                'updated_at'            => time(),
             )
         );
     }
@@ -338,21 +734,6 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'test_merchant_axis_genius',
                 'gateway_terminal_id'   => 'test_terminal_axis_genius',
                 'gateway_terminal_password' => Crypt::encrypt('test_account_axis_genius_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-                )
-            );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => '1ynP3sEf2tQsm8',
-                'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => Gateway::KOTAK,
-                'card'                  => '1',
-                'gateway_merchant_id'   => 'test_merchant_kotak',
-                'gateway_terminal_id'   => 'test_terminal_kotak',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_kotak_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
@@ -436,6 +817,18 @@ class DatabaseSeeder extends Seeder
 
         DB::table(Table::TERMINAL)->insert(
             array(
+                'id'                        => Terminal\Shared::FIRST_DATA_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::FIRST_DATA,
+                'card'                      => '1',
+                'gateway_merchant_id'       => 'demo_merchant_first_data',
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                )
+            );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
                 'id'                    => Terminal\Shared::AXIS_GENIUS_RAZORPAY_TERMINAL,
                 'merchant_id'           => Account::DEMO_ACCOUNT,
                 'gateway'               => Gateway::AXIS_GENIUS,
@@ -443,21 +836,6 @@ class DatabaseSeeder extends Seeder
                 'gateway_merchant_id'   => 'demo_merchant_axis_genius',
                 'gateway_terminal_id'   => 'shared_terminal_axis_genius',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_axis_genius_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-                )
-            );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => Terminal\Shared::KOTAK_RAZORPAY_TERMINAL,
-                'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => Gateway::KOTAK,
-                'card'                  => '1',
-                'gateway_merchant_id'   => 'demo_merchant_kotak',
-                'gateway_terminal_id'   => 'shared_terminal_kotak',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_kotak_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
@@ -517,18 +895,21 @@ class DatabaseSeeder extends Seeder
             );
 
         $this->createAmexTerminals();
+        $this->createCybersourceTerminals();
         $this->createBilldeskGatewayTerminals();
-        $this->createSbiepayGatewayTerminals();
         $this->createNetbankingHdfcTerminals();
         $this->createMobikwikTerminals();
         $this->createPayzappTerminals();
         $this->createPayumoneyTerminals();
         $this->createSharpGatewayTerminals();
         $this->createNetbankingKotakTerminals();
+        $this->createNetbankingAirtelTerminals();
+        $this->createNetbankingAxisTerminal();
         $this->createOlamoneyTerminals();
         $this->createUpiTerminals();
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
+        $this->createJiomoneyTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -564,6 +945,35 @@ class DatabaseSeeder extends Seeder
                 'updated_at'            =>  time(),
                 )
             );
+    }
+
+    protected function createCybersourceTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => '1VwJebUIU7hIhd',
+            'merchant_id'               => Account::TEST_ACCOUNT,
+            'gateway'                   => Gateway::CYBERSOURCE,
+            'card'                      => '1',
+            'gateway_merchant_id'       => 'test_merchant_cybersource',
+            'gateway_terminal_id'       => 'test_terminal_cybersource',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_hdfc_terminal_pass'),
+            'recurring'                 => 0,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
+
+        DB::table(Table::TERMINAL)->insert([
+            'id'                        => Terminal\Shared::CYBERSOURCE_HDFC_TERMINAL,
+            'merchant_id'               => Account::DEMO_ACCOUNT,
+            'gateway'                   => Gateway::CYBERSOURCE,
+            'card'                      => '1',
+            'gateway_merchant_id'       => 'demo_merchant_cybersource',
+            'gateway_terminal_id'       => 'demo_terminal_cybersource',
+            'gateway_terminal_password' => Crypt::encrypt('demo_account_atom_terminal_pass'),
+            'recurring'                 => 0,
+            'created_at'                => time(),
+            'updated_at'                => time(),
+        ]);
     }
 
     protected function createBilldeskGatewayTerminals()
@@ -706,34 +1116,35 @@ class DatabaseSeeder extends Seeder
         );
     }
 
-    protected function createSbiepayGatewayTerminals()
+    protected function createNetbankingAirtelTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                    => Terminal\Shared::NETBANKING_AIRTEL_TERMINAL,
+                'merchant_id'           => Account::TEST_ACCOUNT,
+                'gateway'               => Gateway::NETBANKING_AIRTEL,
+                'card'                  => '0',
+                'netbanking'            => '1',
+                'gateway_merchant_id'   => 'test_merchant_netbanking_airtel',
+                'gateway_secure_secret' => Crypt::encrypt('test_airtel_terminal_salt'),
+                'recurring'             => 0,
+                'created_at'            => time(),
+                'updated_at'            => time(),
+            ]
+        );
+    }
+
+    protected function createNetbankingAxisTerminal()
     {
         DB::table(Table::TERMINAL)->insert(
             array(
-                'id'                    => '2byKhdVKZ9iJgB',
+                'id'                    => Terminal\Shared::NETBANKING_AXIS_TERMINAL,
                 'merchant_id'           => Account::TEST_ACCOUNT,
-                'gateway'               => 'sbiepay',
+                'gateway'               => 'netbanking_axis',
                 'card'                  => '0',
                 'netbanking'            => '1',
-                'gateway_merchant_id'   => 'test_merchant_sbiepay',
-                'gateway_terminal_id'   => 'test_terminal_sbiepay',
-                'gateway_terminal_password' => Crypt::encrypt('test_account_sbiepay_terminal_pass'),
-                'recurring'             => 0,
-                'created_at'            =>  time(),
-                'updated_at'            =>  time(),
-            )
-        );
-
-        DB::table(Table::TERMINAL)->insert(
-            array(
-                'id'                    => Terminal\Shared::SBIEPAY_RAZORPAY_TERMINAL,
-                'merchant_id'           => Account::DEMO_ACCOUNT,
-                'gateway'               => 'sbiepay',
-                'card'                  => '0',
-                'netbanking'            => '1',
-                'gateway_merchant_id'   => 'demo_merchant_sbiepay',
-                'gateway_terminal_id'   => 'demo_terminal_sbiepay',
-                'gateway_terminal_password' => Crypt::encrypt('demo_account_sbiepay_terminal_pass'),
+                'gateway_merchant_id'   => 'test_merchant_netbanking_axis',
+                'gateway_secure_secret' => Crypt::encrypt('test_netbanking_axis_terminal_pass'),
                 'recurring'             => 0,
                 'created_at'            =>  time(),
                 'updated_at'            =>  time(),
@@ -929,6 +1340,38 @@ class DatabaseSeeder extends Seeder
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )
+        );
+    }
+
+    protected function createJiomoneyTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => '6tUImiItg84AzK',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'gateway_terminal_id'       => 'test_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('test_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            ]
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            [
+                'id'                        => Terminal\Shared::JIOMONEY_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_JIOMONEY,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => 'demo_terminal_jiomoney',
+                'gateway_terminal_password' => Crypt::encrypt('demo_account_jiomoney_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            ]
         );
     }
 

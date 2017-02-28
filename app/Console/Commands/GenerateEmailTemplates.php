@@ -61,6 +61,12 @@ class GenerateEmailTemplates extends Command {
             'emails/payment/merchant',
 
             'emails/refund/common',
+
+            'emails/admin/user',
+
+            'emails/invoice/notification',
+            'emails/invoice/customer/notification',
+            'emails/invoice/merchant/captured',
         ];
 
         $view_directory = app_path().'/../resources/views/';

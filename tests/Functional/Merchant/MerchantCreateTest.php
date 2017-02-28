@@ -49,6 +49,8 @@ class MerchantCreateTest extends TestCase
         $this->checkNetbankingBanks();
 
         $this->checkMethods();
+
+        $this->checkMerchantDetails();
     }
 
     protected function createMerchant()
@@ -101,6 +103,15 @@ class MerchantCreateTest extends TestCase
         $this->assertEquals($methods['paytm'], false);
     }
 
+    protected function checkMerchantDetails()
+    {
+        $this->ba->appAuthTest();
+
+        $merchantDetails = $this->getEntityById('merchant_detail', '1X4hRFHFx4UiXt', true);
+
+        $this->assertEquals($merchantDetails['contact_email'], 'test@localhost.com');
+    }
+
     protected function checkNetbankingBanksInMode($mode)
     {
         $func = 'appAuth'.ucfirst($mode);
@@ -115,7 +126,7 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchant()
     {
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 
@@ -124,7 +135,7 @@ class MerchantCreateTest extends TestCase
 
     public function testCreateSubMerchantWithEmail()
     {
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 
@@ -136,7 +147,7 @@ class MerchantCreateTest extends TestCase
         // Just to check email collisions are still errors
         $this->fixtures->create('merchant', ['id' => '10000000000002', 'email' => 'test2@razorpay.com']);
 
-        $this->fixtures->merchant->editFeatures('aggregator');
+        $this->fixtures->merchant->addFeatures(['aggregator']);
 
         $this->ba->proxyAuth();
 

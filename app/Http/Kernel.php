@@ -26,6 +26,7 @@ class Kernel extends HttpKernel
             \RZP\Http\Middleware\EncryptCookies::class,
             \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
             \Illuminate\Session\Middleware\StartSession::class,
+            \RZP\Http\Middleware\EventTracker::class,
             // \Illuminate\View\Middleware\ShareErrorsFromSession::class,
             // \RZP\Http\Middleware\VerifyCsrfToken::class,
         ],
@@ -41,5 +42,6 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'auth' => \RZP\Http\Middleware\Authenticate::class,
+        'admin_access' => \RZP\Http\Middleware\AdminAccess::class
     ];
 }

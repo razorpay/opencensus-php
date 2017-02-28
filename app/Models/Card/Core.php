@@ -2,12 +2,14 @@
 
 namespace RZP\Models\Card;
 
-use RZP\Constants\Mode;
-use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Card;
+use RZP\Constants\Mode;
+use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
+use RZP\Services\SlackPoster;
 
 class Core extends Base\Core
 {
@@ -44,13 +46,13 @@ class Core extends Base\Core
         return $this->card;
     }
 
-    public function createAndReturnWithSensitiveData(array $input, $merchant)
+    public function createAndReturnWithSensitiveData(array $input, Merchant\Entity $merchant): array
     {
         Card\Entity::modifyNumber($input);
 
         $card = null;
 
-        if (isset($input[Entity::VAULT_TOKEN]))
+        if (isset($input[Entity::VAULT]))
         {
             $newCard = (new Card\Entity)->build($input);
 
@@ -63,12 +65,6 @@ class Core extends Base\Core
         {
             $card = $this->create($input, $merchant);
         }
-        // else
-        // {
-        //     $editInput = array_diff($input, $card->toArray());
-
-        //     $card = $this->edit($card, $editInput);
-        // }
 
         return array_merge(
             $card->toArray(),
@@ -95,7 +91,7 @@ class Core extends Base\Core
 
     public function fillNetworkDetails($card, $input)
     {
-        $network = Card\Network::detectNetwork($input['number']);
+        $network = Card\Network::detectNetwork($card->getIin());
 
         $networkName = Card\Network::getFullName($network);
 
@@ -110,10 +106,15 @@ class Core extends Base\Core
         {
             $iinNetwork = $details->getNetwork();
 
-            if (($network === Card\Network::UNKNOWN) and
-                (Card\Network::isValidNetwork($iinNetwork)))
+            if (Card\Network::isValidNetwork($iinNetwork))
             {
                 $card->setNetwork($iinNetwork);
+            }
+            else
+            {
+                $this->trace->error(
+                    TraceCode::CARD_NETWORK_INVALID,
+                    ['network' => $iinNetwork, 'iin' => $card->getIin()]);
             }
 
             $type = $details['type'];
@@ -179,6 +180,15 @@ class Core extends Base\Core
                     ErrorCode::BAD_REQUEST_PAYMENT_CARD_AMEX_CVV_LENGTH_MUST_BE_FOUR);
             }
         }
+        // If card is Maestro, cvv may be absent
+        else if ($card->isMaestro())
+        {
+            if ((empty($input['cvv']) === false) and ($cvvLength !== 3))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_INVALID_CVV);
+            }
+        }
         else if ($cvvLength !== 3)
         {
             throw new Exception\BadRequestException(
@@ -187,7 +197,7 @@ class Core extends Base\Core
         }
     }
 
-    protected function findExistingCards($newCard, $merchant)
+    protected function findExistingCards(Card\Entity $newCard, Merchant\Entity $merchant)
     {
         $params = array(
             Card\Entity::MERCHANT_ID     => $merchant->getId(),
@@ -201,7 +211,9 @@ class Core extends Base\Core
 
         if ($cards->count() > 0)
         {
-            assertTrue($cards->count() === 1);
+            // TODO: delete the other cards
+
+            $cards->sortBy(Card\Entity::ID);
 
             return $cards[0];
         }

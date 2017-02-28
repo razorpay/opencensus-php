@@ -12,6 +12,7 @@ class Entity extends Base\PublicEntity
     const ID                    = 'id';
     const MERCHANT_ID           = 'merchant_id';
     const BANK_ACCOUNT_ID       = 'bank_account_id';
+    const BATCH_SETTLEMENT_ID   = 'batch_settlement_id';
     const AMOUNT                = 'amount';
     const FEES                  = 'fees';
     const SERVICE_TAX           = 'service_tax';
@@ -20,16 +21,14 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
+    const REMARKS               = 'remarks';
     const RETURN_UTR            = 'return_utr';
-
-    protected $table = \RZP\Constants\Table::SETTLEMENT;
 
     protected static $sign = 'setl';
 
     protected $entity = 'settlement';
 
     protected $fillable = array(
-//        self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
@@ -41,12 +40,14 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
+        self::BATCH_SETTLEMENT_ID,
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
+        self::REMARKS,
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
@@ -86,6 +87,11 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
+    public function batchSettlement()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+    }
+
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);
@@ -94,6 +100,11 @@ class Entity extends Base\PublicEntity
     public function isStatusFailed()
     {
         return ($this->getStatus() === Status::FAILED);
+    }
+
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
     }
 
     public function setlTransactions()
@@ -111,6 +122,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::CHANNEL);
     }
 
+    public function getUtr()
+    {
+        return $this->getAttribute(self::UTR);
+    }
+
     public function getFees()
     {
         return $this->getAttribute(self::FEES);
@@ -124,6 +140,16 @@ class Entity extends Base\PublicEntity
     public function getServiceTax()
     {
         return $this->getAttribute(self::SERVICE_TAX);
+    }
+
+    public function getFailureReason()
+    {
+        return $this->getAttribute(self::FAILURE_REASON);
+    }
+
+    public function getRemarks()
+    {
+        return $this->getAttribute(self::REMARKS);
     }
 
     public function setAmount($amount)
@@ -176,9 +202,19 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
+    public function setRemarks($remarks)
+    {
+        $this->setAttribute(self::REMARKS, $remarks);
+    }
+
     public function getTransactionId()
     {
         return $this->getAttribute(self::TRANSACTION_ID);
+    }
+
+    public function adjustment()
+    {
+        return $this->hasOne('RZP\Models\Adjustment\Entity');
     }
 
     protected function getServiceTaxAttribute()

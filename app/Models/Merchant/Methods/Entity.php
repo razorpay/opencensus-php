@@ -19,6 +19,7 @@ class Entity extends Base\PublicEntity
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
+    const JIOMONEY          = 'jiomoney';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -28,15 +29,14 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::MERCHANT_ID;
 
-    protected $table = \RZP\Constants\Table::METHODS;
-
     protected $entity = 'methods';
 
-    protected static $sign = '';
+    protected $revisionEnabled = true;
+
+    protected $revisionCreationsEnabled = true;
 
     protected $fillable = array(
         self::MERCHANT_ID,
-        self::CARD,
         self::AMEX,
         self::BANKS,
         self::PAYTM,
@@ -46,6 +46,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -65,6 +66,7 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -77,7 +79,6 @@ class Entity extends Base\PublicEntity
         self::METHODS);
 
     protected $defaults = array(
-        self::CARD          => false,
         self::AMEX          => false,
         self::PAYTM         => false,
         self::MOBIKWIK      => false,
@@ -86,9 +87,10 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
+        self::JIOMONEY      => false,
         self::BANKS         => [],
         self::EMI           => false,
-        self::UPI           => false,
+        self::UPI           => true,
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
@@ -102,13 +104,28 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
+        self::JIOMONEY
+    );
+
+    protected static $methods = array(
+        self::CARD,
+        self::EMI,
+        self::AMEX,
+        self::UPI,
+        self::NETBANKING,
+        self::PAYTM,
+        self::MOBIKWIK,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::OLAMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
     );
 
     // Casts the attributes to native types
     protected $casts = [
         self::AMEX        => 'bool',
         self::PAYTM       => 'bool',
-        self::CARD        => 'bool',
         self::CREDIT_CARD => 'bool',
         self::DEBIT_CARD  => 'bool',
         self::NETBANKING  => 'bool',
@@ -118,6 +135,7 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
+        self::JIOMONEY    => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
     ];
@@ -134,7 +152,8 @@ class Entity extends Base\PublicEntity
 
     public function isCardEnabled()
     {
-        return $this->getAttribute(self::CARD);
+        return (($this->isDebitCardEnabled()) or
+                ($this->isCreditCardEnabled()));
     }
 
     public function isDebitCardEnabled()
@@ -218,6 +237,11 @@ class Entity extends Base\PublicEntity
     public function isMobikwikEnabled()
     {
         return $this->getAttribute(self::MOBIKWIK);
+    }
+
+    public function isJiomoneyEnabled()
+    {
+        return $this->getAttribute(self::JIOMONEY);
     }
 
     public function isEmiEnabled()
@@ -359,17 +383,12 @@ class Entity extends Base\PublicEntity
 
     public function setAirtelmoney($value)
     {
-        $this->setAttribute(self::Airtelmoney, $value);
+        $this->setAttribute(self::AIRTELMONEY, $value);
     }
 
     public function setFreecharge($value)
     {
         $this->setAttribute(self::FREECHARGE, $value);
-    }
-
-    public function setCard($card)
-    {
-        $this->setAttribute(self::CARD, $card);
     }
 
     public function setCreditCard($card)
@@ -410,6 +429,9 @@ class Entity extends Base\PublicEntity
 
         $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
 
+        // Unsetting AIRP for now
+        unset($names['AIRP']);
+
         return $names;
     }
 
@@ -427,20 +449,6 @@ class Entity extends Base\PublicEntity
 
     public static function getAllMethodNames()
     {
-        return array(
-            self::CARD,
-            self::EMI,
-            self::AMEX,
-            self::NETBANKING,
-            self::PAYTM,
-            self::MOBIKWIK,
-            self::PAYZAPP,
-            self::PAYUMONEY,
-            self::OLAMONEY,
-            self::AIRTELMONEY,
-            self::EMI,
-            self::UPI,
-            self::FREECHARGE,
-        );
+        return self::$methods;
     }
 }

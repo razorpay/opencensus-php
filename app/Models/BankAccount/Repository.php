@@ -2,23 +2,21 @@
 
 namespace RZP\Models\BankAccount;
 
-use RZP\Models\Base;
-use RZP\Models\BankAccount;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
+use RZP\Models\BankAccount;
+use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryFetch;
+    protected $entity = 'bank_account';
 
-    protected $entity = 'BankAccount';
-
-    const WITH_TRASHED = 'with_trashed';
+    const WITH_TRASHED = 'deleted';
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
         self::WITH_TRASHED      => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:customer,merchant',
+        Entity::ENTITY_ID       => 'sometimes|alpha_num'
     );
 
     public function getBankAccount($merchant)
@@ -29,12 +27,60 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function getBankAccountsForCustomer($customer)
+    public function getBankAccountsForCustomer($customer, $ifsc = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ENTITY_ID, '=', $customer->getId())
+                      ->where(Entity::TYPE, '=', Type::CUSTOMER);
+
+        if ($ifsc !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', '%'.$ifsc.'%');
+        }
+
+        return $query->get();
+    }
+
+    public function getRazorpayBankAccountsForCustomer($customer, $ifsc = 'RAZR')
+    {
+        return $this->getBankAccountsForCustomer($customer, $ifsc);
+    }
+
+    public function getBankAccountsFromAccountNumber($accountNumber, $ifsc = null)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                      ->where(Entity::TYPE, '=', Type::CUSTOMER);
+
+        if ($ifsc !== null)
+        {
+            $query->where(Entity::IFSC_CODE, 'like', '%'.$ifsc.'%');
+        }
+
+        return $query->get();
+    }
+
+    public function getRazarpayBankAccountsFromAccountNumber($accountNumber)
+    {
+        $ifsc = 'RAZR';
+
+        return $this->getBankAccountsFromAccountNumber($accountNumber, $ifsc);
+    }
+
+    public function findByCustomerIdAndAccountNumber($customerId, $accountNumber)
     {
         return $this->newQuery()
-                    ->where(Entity::ENTITY_ID, '=', $customer->getId())
+                    ->where(Entity::ENTITY_ID, '=', $customerId)
                     ->where(Entity::TYPE, '=', Type::CUSTOMER)
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
                     ->get();
+    }
+
+    public function findFirstBankAccountByAccountNumber($accountNumber)
+    {
+        return $this->newQuery()
+                    ->where(Entity::ACCOUNT_NUMBER, '=', $accountNumber)
+                    ->firstOrFail();
     }
 
     public function getAllOrderedByCreatedAt()
@@ -84,7 +130,7 @@ class Repository extends Base\Repository
         $query->orderBy(Entity::MERCHANT_ID, 'desc');
     }
 
-    protected function addQueryParamWithTrashed($query, $params)
+    protected function addQueryParamDeleted($query, $params)
     {
         if ($params[self::WITH_TRASHED] === '1')
         {

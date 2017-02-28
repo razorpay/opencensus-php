@@ -4,10 +4,15 @@ namespace RZP\Gateway\Netbanking\Kotak;
 
 use Carbon\Carbon;
 use RZP\Gateway\Base;
+use RZP\Models\FileStore;
 
 class ClaimsFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'Kotak_Netbanking_Claims';
+    protected static $fileToWriteName;
+
+    protected static $tpvFileName = 'Kotak_Netbanking_Claim_OTRAZORPAY';
+
+    protected static $nonTpvFileName = 'Kotak_Netbanking_Claim_OSRAZORPAY';
 
     protected static $headers = [
         'S.No',
@@ -19,15 +24,32 @@ class ClaimsFile extends Base\RefundFile
 
     public function generate($input)
     {
+        $this->setFileToWriteName($input);
+
         list($txt, $totalAmount) = $this->getClaimsData($input);
 
-        $name = $this->getFileToWriteName();
+        $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $filePath = $this->writeToTextFile($txt);
+        $creator = $this->createFile(
+            FileStore\Format::TXT,
+            $txt,
+            $fileName,
+            FileStore\Type::KOTAK_NETBANKING_CLAIM);
 
-        $fileFullPath = $this->getFullFilePath($name);
+        $file = $creator->get();
 
-        return [$totalAmount, $fileFullPath];
+        return [$totalAmount, $file['local_file_path']];
+    }
+
+    protected function setFileToWriteName($input)
+    {
+        self::$fileToWriteName = self::$nonTpvFileName;
+
+        if (isset($input['tpv']) and
+            ($input['tpv'] === true))
+        {
+            self::$fileToWriteName = self::$tpvFileName;
+        }
     }
 
     protected function getTextData($data, $prependLine = '')
@@ -47,6 +69,7 @@ class ClaimsFile extends Base\RefundFile
         $i = 1;
 
         $data = [];
+
         $totalAmount = 0;
 
         foreach ($input['data'] as $row)
@@ -65,10 +88,6 @@ class ClaimsFile extends Base\RefundFile
 
             $totalAmount = $totalAmount + ($row['payment']['amount'] / 100);
         }
-
-        $name = $this->getFileToWriteName();
-
-        $i--;
 
         $txt = $this->getTextData($data);
 

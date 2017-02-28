@@ -84,9 +84,10 @@ trait PaymentCreationTrait
             '/payments/create/checkout',
             '/payments/create/redirect',
             '/payments/create/recurring',
+            '/payments/create/upi',
             '/payments');
 
-        return in_array($url, $urls);
+        return in_array($url, $urls, true);
     }
 
     protected function isOtpCallbackUrl($uri)
@@ -221,8 +222,76 @@ trait PaymentCreationTrait
                     }
                     else if ($content['type'] === 'async')
                     {
-                        return $response;
+                        return $this->processAsyncPaymentForm($response);
                     }
+                }
+            }
+        }
+
+        return $this->runPaymentCallbackFlowForGateway($response, $gateway, $callback);
+    }
+
+    protected function handleWalletTopupFlow($response, $request, &$callback = null)
+    {
+        $content = $response->getContent();
+
+        $gateway = null;
+
+        // Has to be either redirect or a html form post.o
+        // First check for normal html form post.
+        $ret = ((json_decode($content) === null) and
+                ($this->isResponseInstanceType($response, 'http')) and
+                ($response->headers->get('content-type') === 'text/html; charset=UTF-8') and
+                ($response->getStatusCode() === 200));
+
+        if ($ret === false)
+        {
+            // Now check for redirect
+            $redirect = (($this->isResponseInstanceType($response, 'redirect')) and
+                    ($response->getStatusCode() === 302));
+
+            if ($redirect === true)
+            {
+                $gateway = $response->headers->get('X-gateway');
+            }
+
+            //
+            // Fetch payment creation info from JsonResponse
+            //
+            else if (\Str::endsWith($request['url'], 'topup/ajax'))
+            {
+                $content = $response->getData(true);
+
+                if (isset($content['type']) === true)
+                {
+                    if ($content['type'] === 'first')
+                    {
+                        $gateway = $content['gateway'];
+                    }
+                }
+            }
+            else
+            {
+                return $response;
+            }
+        }
+        else
+        {
+            $gateway = $response->headers->get('X-gateway');
+
+            //
+            // When doing form posts relevant here, we put in a
+            // second form which is not submitted but it contains gateway
+            // field in encrypted form and 'type' field with value as 'first'
+            // or 'return'. Otherwise, don't take an action here.
+            //
+            $content = $this->getSecondFormDataFromResponse($content, 'http://localhost');
+
+            if (isset($content['type']) === true)
+            {
+                if ($content['type'] === 'first')
+                {
+                    $gateway = $content['gateway'];
                 }
             }
         }
@@ -254,6 +323,8 @@ trait PaymentCreationTrait
 
         if ($content['type'] === 'return')
         {
+            $this->assertS2SCallback($response);
+
             $this->merchantCallbackFlow = true;
 
             $request = $this->getFormRequestFromResponse($response->getContent(), 'http://localhost');
@@ -263,6 +334,40 @@ trait PaymentCreationTrait
             $response = $this->makeRequestParent($request);
 
             $this->assertResponse('json', $response);
+
+            return $response;
+        }
+    }
+
+    protected function assertS2SCallback($response)
+    {
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $this->assertResponse('json', $response);
+        }
+    }
+
+    protected function processAsyncPaymentForm($response)
+    {
+        $this->assertTrue($this->isResponseInstanceType($response, 'http'));
+        $this->assertEquals($response->headers->get('content-type'), 'text/html; charset=UTF-8');
+
+        $content = $response->getContent();
+
+        $marker = '// Async Payment data //';
+
+        if (strpos($content, $marker) !== false)
+        {
+            $start = 'var data = ';
+            $end = '// Async Payment data //';
+
+            $data = getTextBetweenStrings($content, $start, $end);
+
+            // Remove ';' at the end to get proper json string
+            $data = trim($data);
+            $content = substr($data, 0, -1);
+
+            $response->setContent($content);
 
             return $response;
         }
@@ -286,7 +391,6 @@ trait PaymentCreationTrait
         $response = $this->makeRequestParent($request);
 
         $statusCode = (int) $response->getStatusCode();
-
 
         if ($statusCode === 302)
         {

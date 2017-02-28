@@ -17,6 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
+                'entity'  => 'customer',
                 'name'    => 'testc',
                 'email'   => 'test@razorpay.com',
                 'contact' => '1234567899',
@@ -137,6 +138,27 @@ return [
         ],
     ],
 
+    'testCreateCustomerDuplicateDontFail' => [
+        'request' => [
+            'url' => '/customers',
+            'method' => 'post',
+            'content' => [
+                'name' => 'testc',
+                'email' => 'test@razorpay.com',
+                'contact' => '1234567890',
+                'fail_existing' => '0',
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id' => 'cust_100000customer',
+                'name' => 'test',
+                'contact' => '1234567890',
+                'email' => 'test@razorpay.com'
+            ]
+        ]
+    ],
+
     'testUpdateCustomer' => [
         'request' => [
             'url' => '/customers/cust_100000customer',
@@ -228,6 +250,24 @@ return [
                 'token'         => '100wallettoken',
                 'method'        => 'wallet',
                 'wallet'        => 'paytm',
+            ],
+        ],
+    ],
+
+    'testUpdateCustomerToken' => [
+        'request' => [
+            'url' => '/customers/cust_100000customer/tokens/token_1000custwallet',
+            'method' => 'put',
+            'content' => [
+                'recurring' => 0
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'id'     => "token_1000custwallet",
+                'entity' => "token",
+                'wallet' => "paytm",
+                'method' => "wallet",
             ],
         ],
     ],

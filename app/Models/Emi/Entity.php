@@ -3,7 +3,6 @@
 namespace RZP\Models\Emi;
 
 use RZP\Models\Base;
-use RZP\Constants\Table;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Entity extends Base\PublicEntity
@@ -22,11 +21,7 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
-    protected static $sign      = '';
-
     protected $entity           = 'emi_plan';
-
-    protected $table            = Table::EMI_PLAN;
 
     protected $generateIdOnCreate = true;
 
@@ -103,13 +98,18 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MIN_AMOUNT);
     }
 
-    protected function getBankAttribute()
+    /**
+     * Issuer is either a bank or a network
+     */
+    public function getIssuer()
     {
-       return $this->attributes[self::BANK];
-    }
+        $bank = $this->getBank();
 
-    protected function getMethodsAttribute()
-    {
-       return $this->attributes[self::METHODS];
+        if (is_null($bank) === false)
+        {
+            return $bank;
+        }
+
+        return $this->getNetwork();
     }
 }

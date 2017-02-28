@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Adjustment\Entity as Adjustment;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Settlement;
 
 class CreateAdjustments extends Migration {
 
@@ -37,8 +38,16 @@ class CreateAdjustments extends Migration {
             $table->char(Adjustment::TRANSACTION_ID, Adjustment::ID_LENGTH)
                   ->nullable();
 
+            $table->char(Adjustment::SETTLEMENT_ID, Adjustment::ID_LENGTH)
+                  ->nullable();
+
             $table->integer(Adjustment::CREATED_AT);
             $table->integer(Adjustment::UPDATED_AT);
+
+            $table->foreign(Adjustment::SETTLEMENT_ID)
+                  ->references(Settlement\Entity::ID)
+                  ->on(Table::SETTLEMENT)
+                  ->on_delete('restrict');
 
             $table->foreign(Adjustment::TRANSACTION_ID)
                   ->references(Transaction\Entity::ID)

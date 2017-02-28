@@ -3,8 +3,6 @@
 namespace RZP\Trace;
 
 use App;
-use RZP\Http\Route;
-use Request;
 use RZP\Exception;
 
 /**
@@ -16,16 +14,19 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected $console;
 
-    /**
-     * @param mixed $serverData array or object w/ ArrayAccess that provides access to the $_SERVER data
-     */
+    protected $route;
+
+    protected $app;
+
     public function __construct()
     {
-        $app = App::getFacadeRoot();
+        $this->app = App::getFacadeRoot();
 
-        $this->request = $app['request'];
+        $this->request = $this->app['request'];
 
-        $this->console = $app->runningInConsole();
+        $this->console = $this->app->runningInConsole();
+
+        $this->route = $this->app['api.route'];
 
         $serverData = $this->getServerData();
 
@@ -35,6 +36,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
     /**
      * @param  array $record
      * @return array
+     * @throws Exception\LogicException
      */
     public function __invoke(array $record)
     {
@@ -43,9 +45,16 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             throw new Exception\LogicException('Server data for trace logs not present');
         }
 
+        $this->addMerchantId();
+
         $record['request'] = $this->serverData;
 
         return $record;
+    }
+
+    protected function addMerchantId()
+    {
+        $this->serverData['merchant_id'] = $this->app['basicauth']->getMerchantIdOfKey();
     }
 
     public function getServerData()
@@ -57,16 +66,22 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
             'method'        => $this->request->method(),
             'ajax'          => $this->request->ajax(),
             'origin'        => $this->request->header('origin'),
+            'application'   => $this->request->header('X-Razorpay-App'),
             'client_ip'     => $this->request->getRealClientIp(),
             'server_ip'     => $this->request->server('SERVER_ADDR'),
             'referer'       => $this->request->headers->get('referer'),
+            'content_type'  => $this->request->headers->get('content-type'),
             'user_agent'    => $this->request->server('HTTP_USER_AGENT'),
-            'console'       => $this->console);
+            'console'       => $this->console,
+            'merchant_id'   => null,
+        );
 
         $userData = array(
             'dashboard'     => $this->request->headers->get('X-Dashboard'),
             'merchant'      => $this->request->headers->get('X-Dashboard-Merchant'),
             'admin_user'    => $this->request->headers->get('X-Dashboard-Username'),
+            'user_id'       => $this->request->headers->get('X-Dashboard-User-Id'),
+            'user_role'     => $this->request->headers->get('X-Dashboard-User-Role'),
         );
 
         $serverData = array_merge($serverData, $userData);
@@ -78,7 +93,7 @@ class WebProcessor extends \Monolog\Processor\WebProcessor
 
     protected function unsetUrlForSensitiveUrls(& $serverData)
     {
-        $sensitiveUrls = Route::getDoNotLogURLs();
+        $sensitiveUrls = $this->route->getDoNotLogURLs();
 
         if (in_array($serverData['uri'], $sensitiveUrls))
         {

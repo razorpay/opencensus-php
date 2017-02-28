@@ -6,6 +6,7 @@ use Config;
 use RZP\Constants\Mode;
 use RZP\Constants\Entity;
 use RZP\Exception;
+use RZP\Models\Payment;
 use RZP\Gateway\Base\Mock;
 
 class GatewayManager extends \Illuminate\Support\Manager
@@ -56,7 +57,7 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     protected function createDriver($driver)
     {
-        if (in_array($driver, $this->getGateways()) === false)
+        if (in_array($driver, $this->getGateways(), true) === false)
         {
             throw new Exception\LogicException($driver . ' is not an available gateway');
         }
@@ -105,7 +106,16 @@ class GatewayManager extends \Illuminate\Support\Manager
 
     public function gateway($gateway)
     {
-        return parent::driver($gateway);
+        return $this->driver($gateway);
+    }
+
+    public function driver($driver = null)
+    {
+        $driver = $driver ?: $this->getDefaultDriver();
+
+        $driver = $this->createDriver($driver);
+
+        return $driver;
     }
 
     public function server($driver)

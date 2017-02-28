@@ -16,4 +16,9 @@ class Type
     const PAYMENT_FAILED     = 'payment.failed';
     const PAYMENT_CAPTURED   = 'payment.captured';
     const ORDER_PAID         = 'order.paid';
+    const INVOICE_PAID       = 'invoice.paid';
+    const VPA_EDITED         = 'vpa.edited';
+    const P2P_CREATED        = 'p2p.created';
+    const P2P_REJECTED       = 'p2p.rejected';
+    const P2P_TRANSFERRED    = 'p2p.transferred';
 }

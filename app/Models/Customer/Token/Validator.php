@@ -2,10 +2,10 @@
 
 namespace RZP\Models\Customer\Token;
 
+use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Bank;
-use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment\Processor\Wallet;
 
@@ -20,6 +20,10 @@ class Validator extends Base\Validator
         Entity::GATEWAY_TOKEN   => 'sometimes|string',
         Entity::GATEWAY_TOKEN2  => 'sometimes|string',
         Entity::EXPIRED_AT      => 'sometimes|integer',
+    );
+
+    protected static $editRules = array(
+        Entity::RECURRING       => 'sometimes|in:0',
     );
 
     protected static function validateBank($attribute, $value)

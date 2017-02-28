@@ -25,6 +25,45 @@ class BilldeskGatewayTest extends TestCase
         $this->setMockGatewayTrue();
     }
 
+    public function testPaymentAndNewPaymentOnDeleteTerminal()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $t = $this->deleteTerminal2($terminal['id']);
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $data = $this->testData['testPaymentAndNewPaymentOnDeleteTerminal'];
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $payment = $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPaymentAndVerifyOnDeleteTerminal()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+        $payment = $this->doAuthPayment($payment);
+
+        $terminal = $this->getLastEntity('terminal', true);
+
+        $t = $this->deleteTerminal2($terminal['id']);
+
+        $this->assertNotNull($t['deleted_at']);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->verifyPayment($payment['id']);
+    }
+
     public function testPayment()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
@@ -73,14 +112,33 @@ class BilldeskGatewayTest extends TestCase
         $this->verifyPayment($payment['id']);
     }
 
+    public function testPaymentVerifyError()
+    {
+        $data = $this->testData['testPaymentVerifyError'];
+
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment['bank'] = 'ANDB';
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $this->runRequestResponseFlow($data, function() use ($payment)
+        {
+            $this->verifyPayment($payment['id']);
+        });
+
+    }
+
     public function testPaymentRefund()
     {
         $payment = $this->getDefaultNetbankingPaymentArray();
+
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $this->refundPayment($payment['id']);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertTestResponse($refund);
     }
 
@@ -93,6 +151,7 @@ class BilldeskGatewayTest extends TestCase
         $this->refundAuthorizedPayment($payment['razorpay_payment_id'], $input);
 
         $refund = $this->getLastEntity('billdesk', true);
+
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentRefund'], $refund);
 
@@ -100,6 +159,10 @@ class BilldeskGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testTransactionAfterRefundingAuthorizedPayment'], $txn);
+
+        $refund = $this->getLastEntity('refund', true);
+
+        $this->assertEquals(true, $refund['gateway_refunded']);
     }
 
     public function testGetPaymentMethodsRoute()
@@ -122,7 +185,8 @@ class BilldeskGatewayTest extends TestCase
         $content = $this->startTest();
 
         $count = count($content['netbanking']);
-        $this->assertEquals(60, $count);
+
+        $this->assertEquals(59, $count);
     }
 
     public function testServerToServerCallback()
@@ -149,15 +213,13 @@ class BilldeskGatewayTest extends TestCase
 
         $this->setMockServer($server);
 
-        try
+        $data = $this->testData['testServerToServerCallback'];
+
+        $this->runRequestResponseFlow($data, function()
         {
             $payment = $this->getDefaultNetbankingPaymentArray();
             $payment = $this->doAuthPayment($payment);
-        }
-        catch (Exception\RuntimeException $e)
-        {
-            ;
-        }
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
@@ -205,5 +267,28 @@ class BilldeskGatewayTest extends TestCase
         $this->runRequestResponseFlow($data, function() use ($payment) {
             $this->refundPayment($payment['id'], 40000);
         });
+    }
+
+    public function testReconcileCancelledTransactions()
+    {
+        $payment = $this->getDefaultNetbankingPaymentArray();
+
+        $payment = $this->doAuthAndCapturePayment($payment);
+
+        $paymentTransaction = $this->getLastTransaction(true);
+
+        $this->refundPayment($payment['id'], $payment['amount']);
+
+        $billdeskRefund = $this->getLastEntity('billdesk', true);
+
+        $this->fixtures->edit('billdesk', $billdeskRefund['id'], ['refStatus' => '0699']);
+
+        $this->startTest();
+
+        $paymentTransaction = $this->getEntityById('transaction', $paymentTransaction['id'], true);
+
+        $this->assertNotNull($paymentTransaction['reconciled_at']);
+        $this->assertEquals(0, $paymentTransaction['gateway_service_tax']);
+        $this->assertEquals(0, $paymentTransaction['gateway_fee']);
     }
 }

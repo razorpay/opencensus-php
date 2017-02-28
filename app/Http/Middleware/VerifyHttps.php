@@ -4,9 +4,7 @@ namespace RZP\Http\Middleware;
 
 use App;
 use Closure;
-
-use RZP\Http\ApiResponse;
-
+use ApiResponse;
 
 class VerifyHttps
 {
@@ -15,8 +13,6 @@ class VerifyHttps
         $app = App::getFacadeRoot();
 
         $config = $app['config'];
-
-        $productionHosts = [];
 
         $productionHosts = $config->get('url.api_hosts');
 
@@ -29,7 +25,7 @@ class VerifyHttps
 
         $productionHosts = $this->getProductionHosts();
 
-        if ((in_array($host, $productionHosts)) and
+        if ((in_array($host, $productionHosts, true)) and
             ($request->secure() === false))
         {
             return ApiResponse::onlyHttpsAllowed();

@@ -28,6 +28,13 @@ class Core
      */
     protected $trace;
 
+    /**
+     * Test/Live mode
+     *
+     * @var string
+     */
+    protected $mode;
+
     protected $merchant;
 
     public function __construct()
@@ -44,5 +51,18 @@ class Core
         $this->repo = $this->app['repo'];
 
         $this->merchant = $this->app['basicauth']->getMerchant();
+
+        $this->device = $this->app['basicauth']->getDevice();
+
+        $this->init();
+    }
+
+    /**
+     * This function can be over-loaded by child classes to init
+     * class specific instance properties. This will prevent class
+     * constructor from being over-loaded every time.
+     */
+    protected function init()
+    {
     }
 }

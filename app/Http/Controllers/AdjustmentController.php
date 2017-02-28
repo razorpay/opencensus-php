@@ -2,10 +2,9 @@
 
 namespace RZP\Http\Controllers;
 
-use RZP\Http\ApiResponse;
-use RZP\Exception\RecoverableException;
-use RZP\Models\Adjustment;
+use ApiResponse;
 use Request;
+use RZP\Models\Adjustment;
 
 class AdjustmentController extends Controller
 {
@@ -30,6 +29,15 @@ class AdjustmentController extends Controller
         $input = Request::all();
 
         $data = (new Adjustment\Service)->addAdjustment($input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function postReverseAdjustments()
+    {
+        $input = Request::all();
+
+        $data = (new Adjustment\Service)->postReverseAdjustments($input);
 
         return ApiResponse::json($data);
     }

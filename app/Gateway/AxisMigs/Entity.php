@@ -75,8 +75,6 @@ class Entity extends Base\Entity
         'vpc_VerType',
     );
 
-    protected $table = 'axis';
-
     protected $guarded = array();
 
     protected $entity = 'axis_migs';
@@ -116,9 +114,15 @@ class Entity extends Base\Entity
     }
 
     /**
-     * Under any circumstance we should not reset vpc_TransactionNo.
+     * Under any circumstance we should not reset
+     * vpc_TransactionNo. It is updated in two cases:
+     * callback, and one of the cases of verify
+     * If the verify request goes before the callback
+     * is received, there is a chance that the verify
+     * response doesn't have vpc_TransactionNo set,
+     * which will set its value to NULL/0.
      * This happened couple of times in the past so
-     * now we check for null explicitly before setting it.
+     * now we check for empty explicitly before setting it.
      * @param string $txnNo
      */
     public function setVpcTransactionNoAttribute($txnNo)
@@ -130,7 +134,7 @@ class Entity extends Base\Entity
             $oldTxnNo = $this->attributes['vpc_TransactionNo'];
         }
 
-        if ($oldTxnNo === null)
+        if (empty($oldTxnNo))
         {
             $this->attributes['vpc_TransactionNo'] = $txnNo;
         }
