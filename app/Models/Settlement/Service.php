@@ -40,7 +40,8 @@ class Service extends Base\Service
         (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
         $batchSettlementId = $input['batch_settlement_id'];
-        s($batchSettlementId);
+
+        // TODO: Send relations to avoid n+1 query
         $setlAttmepts = $this->repo
                       ->bank_transfer_attempt
                       ->getBankTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId);

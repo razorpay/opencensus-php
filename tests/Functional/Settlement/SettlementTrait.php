@@ -78,7 +78,7 @@ trait SettlementTrait
     protected function retryIntiateSettlements($channel = 'kotak')
     {
         $request = [
-            'url' => '/settlements/reconcile/retry/kotak',
+            'url' => '/settlements/retry/kotak',
             'method' => 'POST',
         ];
 

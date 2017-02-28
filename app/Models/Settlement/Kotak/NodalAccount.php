@@ -97,7 +97,7 @@ class NodalAccount
             $totalAttemptCount++;
 
             $settlement = $attempt->source;
-            // s($settlement);
+
             $merchant = $settlement->merchant;
 
             $ba = $attempt->bankAccount;

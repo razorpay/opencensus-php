@@ -218,12 +218,6 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::VERSION, $version);
     }
 
-    // Fix usages
-    // public function setRemarks($remarks)
-    // {
-    //     $this->setAttribute(self::REMARKS, $remarks);
-    // }
-
     // --------------------------------- modifiers -------------------------------
 
     protected function getServiceTaxAttribute()

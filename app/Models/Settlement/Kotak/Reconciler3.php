@@ -280,35 +280,27 @@ class Reconciler3
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
                     'Settlement Id: ' . $setl->getId()
                 ]);
-                // throw new Exception\BadRequestValidationFailureException(
-                //     'Old and new status not matching. ' .
-                //     'Old status: ' . $oldStatus . ' New status: ' . $status .
-                //     'Settlement Id: ' . $setl->getId());
             }
         }
-        // else
-        // {
-            $bankTransferAttempt->setUtr($utr);
-            $bankTransferAttempt->setStatus($status);
-            $bankTransferAttempt->setBankStatusCode($statusCode);
+        $bankTransferAttempt->setUtr($utr);
+        $bankTransferAttempt->setStatus($status);
+        $bankTransferAttempt->setBankStatusCode($statusCode);
 
-            $bankTransferAttempt->setRemarks($remarks);
-            $bankTransferAttempt->setFailureReason($failureReason);
-            $bankTransferAttempt->setDateTime($row['DateTime']);
-            $bankTransferAttempt->setCmsRefNo($row['Cms. ref no.']);
+        $bankTransferAttempt->setRemarks($remarks);
+        $bankTransferAttempt->setFailureReason($failureReason);
+        $bankTransferAttempt->setDateTime($row['DateTime']);
+        $bankTransferAttempt->setCmsRefNo($row['Cms. ref no.']);
 
-            $this->repo->bank_transfer_attempt->saveOrFail($bankTransferAttempt);
+        $this->repo->bank_transfer_attempt->saveOrFail($bankTransferAttempt);
 
-            $setl->setUtr($utr);
-            $setl->setStatus($status);
-            $setl->setFailureReason($failureReason);
-            // $setl->setRemarks($remarks);
+        $setl->setUtr($utr);
+        $setl->setStatus($status);
+        $setl->setFailureReason($failureReason);
 
-            $this->repo->saveOrFail($setl);
+        $this->repo->saveOrFail($setl);
 
-            $setl->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->saveOrFail($setl->transaction);
-        // }
+        $setl->transaction->setReconciledAt($this->reconciledAt);
+        $this->repo->saveOrFail($setl->transaction);
 
         return $setl;
     }

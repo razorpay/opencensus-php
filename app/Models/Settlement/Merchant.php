@@ -13,7 +13,6 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
-// use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 
 class Merchant
 {
@@ -48,20 +47,7 @@ class Merchant
         // Create Settlement attempt entity
         $bankTransferAtpt = $this->createSettlementAttemptEntity();
 
-        // // Create or update batch settlement
-        // // Find out what to pass as 2nd argument below
-        // $this->createOrUpdateBatchSettlementForSettlement($setl, 0);
-
-        // // Associate batch settlement
-        // $setl->batchSettlement()->associate($this->batchSettlement);
-
-        // $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
-
-        // $this->repo->saveOrFail($this->setl);
-
         $this->repo->saveOrFail($this->bankTransferAtpt);
-
-        // $this->repo->saveOrFail($this->batchSettlement);
 
         return $bankTransferAtpt;
     }
@@ -85,11 +71,6 @@ class Merchant
 
         // Updates merchant and api balance
         $this->updateBalances();
-
-        // $this->createOrUpdateBatchSettlementForSettlement($setl, $txns->count());
-        // $setl->batchSettlement()->associate($this->batchSettlement);
-
-        // $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
 
         $this->saveChangesToDb();
 
@@ -349,8 +330,6 @@ class Merchant
         $this->repo->saveOrFailCollection($this->setlDetails);
 
         $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
-
-        // $this->repo->saveOrFail($this->batchSettlement);
     }
 
     protected function updateBalances(): Transaction\Entity

@@ -24,7 +24,6 @@ class Entity extends Base\PublicEntity
     protected $entity = 'bank_transfer_attempt';
 
     protected $fillable = [
-        // self::ENTITY_TYPE,
         self::ENTITY_ID,
         self::CHANNEL,
         self::VERSION,
