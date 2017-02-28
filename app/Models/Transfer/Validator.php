@@ -47,9 +47,9 @@ class Validator extends Base\Validator
 
         foreach ($transfers as $transfer)
         {
-            $transferSum += $transfer['amount'];
+            $transferSum += (int) $transfer[Entity::AMOUNT];
 
-            $this->validateTransferCurrency($payment, $transfer['currency']);
+            $this->validateTransferCurrency($payment, $transfer[ENTITY::CURRENCY]);
 
             $keySet = false;
 
