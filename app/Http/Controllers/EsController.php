@@ -28,6 +28,7 @@ class EsController extends Controller
      * @var array
      */
     protected static $allowedDebugMethods =[
+        'cat',
         'search',
         'explain',
         'getMapping',

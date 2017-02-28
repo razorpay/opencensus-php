@@ -50,6 +50,15 @@ class EsClient
         }
     }
 
+    public function cat(array $params)
+    {
+        $res = $this->client->cat()->indices($params);
+
+        $this->trace->debug(TraceCode::ES_CAT_RESPONSE, [$res]);
+
+        return [$res];
+    }
+
     public function search(array $params)
     {
         return $this->client->search($params);
