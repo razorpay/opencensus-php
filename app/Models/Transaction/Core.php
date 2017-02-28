@@ -4,6 +4,7 @@ namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Reversal;
@@ -90,6 +91,12 @@ class Core extends Base\Core
     public function updateOnHoldToggle(Payment\Entity $payment)
     {
         $txn = $payment->transaction;
+
+        if ($txn->isSettled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
+        }
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 

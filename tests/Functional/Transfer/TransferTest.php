@@ -131,6 +131,28 @@ class TransferTest extends TestCase
         $this->checkPaymentAndTxnRecords($patch);
     }
 
+    public function testPatchTransferOnHoldTxnSettled()
+    {
+        $transfer = $this->createTransfer('account');
+
+        $transferId = $this->fixtures->transfer->stripSign($transfer['id']);
+
+        $transferPayment = $this->getEntities('payment', ['transfer_id' => $transferId], true)['items'][0];
+
+        $this->fixtures->edit('transaction', $transferPayment['transaction_id'], ['settled' => 1]);
+
+        $body = $this->getTransferRequestBody('account', 'patch')['content'];
+
+        unset($body['on_hold_until']);
+
+        $body['on_hold'] = '0';
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer, $body)
+        {
+            $this->patchTransfer('account', 'trf_' . $transfer['id'], $body);
+        });
+    }
+
     public function testPatchTransferOnHoldUntilOnHoldFalse()
     {
         $this->markTestSkipped('on_hold_until removed for now');

@@ -86,6 +86,22 @@ return [
         ],
     ],
 
+    'testPatchTransferOnHoldTxnSettled' => [
+        'response'  => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class' => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED,
+        ],
+    ],
+
     'testTransferOnHoldUntilOnHoldFalse' => [
         'response'  => [
             'content' => [

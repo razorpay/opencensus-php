@@ -342,6 +342,8 @@ class PublicErrorDescription
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_TRANSFERRED         = 'The reversal amount provided is greater than amount transferred';
     const BAD_REQUEST_TRANSFER_REVERSAL_AMOUNT_GREATER_THAN_UNREVERSED          = 'The reversal amount provided is greater than the amount not reversed';
 
+    const BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED                            = 'The hold attributes cannot be modified as the amount has already been settled to your account.';
+
     const BAD_REQUEST_USER_ACCOUNT_LOCKED                                       = 'Your account has been locked';
     const BAD_REQUEST_USER_ACCOUNT_DISABLED                                     = 'Your account has been disabled';
     const BAD_REQUEST_ADMIN_SELF_EDIT_PROHIBITED                                = 'SuperAdmin/Admin cannot edit their own preferences';
