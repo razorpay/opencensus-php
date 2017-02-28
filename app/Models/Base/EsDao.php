@@ -156,7 +156,7 @@ class EsDao
         $filter = [];
         if ($merchantId !== null)
         {
-            $filter = ['term' => ['merchant_id' => strtolower($merchantId)]];
+            $filter = ['term' => ['merchant_id' => $merchantId]];
         }
 
         $params = [
