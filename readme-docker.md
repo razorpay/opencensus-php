@@ -31,15 +31,7 @@ Also, if you are getting seemingly unrelated errors, make sure to update bash/zs
 
 If everything is setup correctly, running `$ php -v` should give you 7.0.+.
 
-To install phpunit, either follow the instructions [here](http://www.newmediacampaigns.com/page/install-pear-phpunit-xdebug-on-macosx-snow-leopard)
-or simply download phpunit.phar and symlink it as follows:
-
-```
-$ curl -o phpunit-5.6.phar https://phar.phpunit.de/phpunit-5.6.0.phar
-$ chmod 755 phpunit-5.6.phar
-$ mv phpunit-5.6.phar /usr/local/bin
-$ ln -s /usr/local/bin/phpunit-5.6.phar phpunit
-```
+Note: We will use the phpunit that comes along with composer. We do not explicitly need phpunit to be installed for the docker setup.
 
 ##### Install docker
 [Docker installation and Hello World!](https://docs.docker.com/engine/getstarted/step_one/)
@@ -73,6 +65,14 @@ Note: By default API will run on port 28080 and mysql on 23306. In case you wish
 
 #### Setup API/Building Container
 
+Note: Docker for Mac suffers from heavy performance implications due to the nature of xhyve fs implementation. We need to optimize our current setup to make sure this can be handled. Hence, please run `make init` before proceeding with the below steps:
+
+```
+$ make init
+```
+
+Now, build the containers:
+
 ```
 $ make build
 ```
@@ -84,13 +84,13 @@ to run the app locally.
 You should be able to access the app at:
 `http://api.razorpay.dev:28080/`
 
-#### Shutting down the container
+#### Shutting down/Pausing the container
 
 ```
 $ make down
 ```
 
-#### Bringing the container back after it has been shut down
+#### Bringing the container back after it has been shut down/paused
 
 ```
 $ make up
@@ -108,12 +108,16 @@ $ make clean
 $ make clean-all
 ```
 
-#### Running unit tests using dockerized containers
+#### Notes on running tests
+On a vanilla mode, to run all the tests do the following:
 ```
 $ make test
 ```
 
-Note: the name api_api_1 can be got from `docker ps` command
+If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-failure etc), do the following:
+```
+$ make test AT="--filter PaymentTest --stop-on-failure"
+```
 
 #### Containerization Issues
 
