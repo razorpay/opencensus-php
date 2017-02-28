@@ -172,6 +172,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::AUTH_TYPE);
     }
 
+    public function getCustomCode()
+    {
+        return $this->getAttribute(self::CUSTOM_CODE);
+    }
+
     public function isCrossOrgAccessEnabled()
     {
         return $this->getAttribute(self::CROSS_ORG_ACCESS);

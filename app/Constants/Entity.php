@@ -62,6 +62,7 @@ class Entity
     const PERMISSION            = 'permission';
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
+    const ADMIN_LEAD            = 'admin_lead';
     const ADMIN_TOKEN           = 'admin_token';
     const ORG_FIELDMAP          = 'org_fieldmap';
 
@@ -167,6 +168,7 @@ class Entity
         self::GROUP                 => \RZP\Models\Admin\Group::class,
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
+        self::ADMIN_LEAD            => \RZP\Models\Admin\AdminLead::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
     );
 

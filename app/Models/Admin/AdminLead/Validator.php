@@ -14,7 +14,7 @@ class Validator extends Base\Validator
         Entity::FORM_DATA => 'required|string',
     ];
 
-    protected static $sendInvitationRulesForHdfcBank = [
+    protected static $sendInvitationRules = [
         'contact_email' => 'required|max:255|email',
         'channel_code'  => 'required',
         'crm_next_no'   => 'required',

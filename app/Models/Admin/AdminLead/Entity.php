@@ -60,4 +60,9 @@ class Entity extends Base\Entity
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
+
+    public function getFillableFields()
+    {
+        return $this->fillable;
+    }
 }

@@ -14,8 +14,8 @@ class Validator extends Base\Validator
     {
         $rulesVar = $this->getRulesVariableForOrg($operation, $orgCode);
 
-        // We check for valid keys  because single entity stores unique fields for many
-        // orgs which should not be erroneously filled.
+        // We check for valid keys because single entity stores unique
+        // fields for many orgs which should not be errorneously filled.
         $invalidKeys = array_keys(array_diff_key($input, static::$$rulesVar));
 
         if (count($invalidKeys) > 0)
@@ -40,7 +40,7 @@ class Validator extends Base\Validator
         array $input,
         string $orgCode)
     {
-        $rulesVar = $this->getRulesVariableForOrg($operation);
+        $rulesVar = $this->getRulesVariableForOrg($operation, $orgCode);
 
         $customAttributes = $this->getCustomAttributes($operation);
 
