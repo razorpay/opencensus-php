@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UTR,
         self::FAILURE_REASON,
-        self::RETURN_UTR,
+        self::REMARKS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
