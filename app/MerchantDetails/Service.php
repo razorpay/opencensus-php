@@ -352,6 +352,7 @@ class Service extends Base\Service
 
         $mailer = new MerchantMailer($user->currentMerchant, $merchantDetails);
 
+        // For marketplace linked accounts - skip sending this email
         if ($this->isLinkedAccount() === false)
         {
             $mailer->confirmActivationSubmission()->queueAndDeliver();

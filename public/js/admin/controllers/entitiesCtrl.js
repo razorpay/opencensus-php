@@ -505,8 +505,8 @@ app.controller('EntitiesCtrl', [
         ]
       },
       transfer: {
-        source_id: ['Payment/Merchant Id'],
-        to_id: ['Merchant/Customer Id'],
+        source: ['Source Payment/Merchant Id'],
+        recipient: ['Recipient Merchant/Customer Id'],
         merchant_id: ['Merchant Id']
       },
       token: {
