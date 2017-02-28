@@ -601,7 +601,7 @@ class Gateway extends Base\Gateway
 
         if ((isset($content[$statusField]) === false) or
             (($content[$statusField] !== ErrorCodes::SUCCESS) and
-            ($content[$statusField]  !== ErrorCodes::TRANSACTION_NOT_PRESENT)))
+            ($content[$statusField] !== ErrorCodes::TRANSACTION_NOT_PRESENT)))
         {
             $this->handleRequestError($content, $statusField);
         }
@@ -655,5 +655,10 @@ class Gateway extends Base\Gateway
         }
 
         return $attributes;
+    }
+
+    protected function getLiveSecret()
+    {
+        return $this->config['live_hash_secret'];
     }
 }
