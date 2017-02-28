@@ -254,6 +254,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
+    }
+
     public function save(array $options = array())
     {
         $this->validateAmount();

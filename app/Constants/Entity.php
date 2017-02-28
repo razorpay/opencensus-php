@@ -64,10 +64,10 @@ class Entity
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
     const BANK_TRANSFER_ATTEMPT = 'bank_transfer_attempt';
-
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const OFFER                 = 'offer';
     const COUPON                = 'coupon';
+    const PAYOUT                = 'payout';
 
     //
     // Gateway entities

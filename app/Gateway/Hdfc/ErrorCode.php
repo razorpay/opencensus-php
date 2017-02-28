@@ -183,6 +183,11 @@ class ErrorCode
      */
     const RP00013   = 'RP00013';
 
+    /**
+     * Any gateway request exception except request timeout.
+     */
+    const RP00014   = 'RP00014';
+
     public static $resultToErrorCodeMap = array(
         Result::HOST_TIMEOUT        => self::RP00004,
         Result::DENIED_BY_RISK      => self::RP00005,
@@ -281,6 +286,7 @@ class ErrorCode
         self::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on RuPay 3dsecure page.',
         self::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
         self::RP00013   => 'Operation timed out while making the request',
+        self::RP00014   => 'Gatewqy request failed due to some issue.',
     );
 
     /**
@@ -368,6 +374,7 @@ class ErrorCode
         self::RP00011   => Error\ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_CLICKING_CANCEL,
         self::RP00012   => Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED,
         self::RP00013   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_TIMEOUT,
+        self::RP00014   => Error\ErrorCode::GATEWAY_ERROR_REQUEST_ERROR,
     );
 
     public static $invalidErrorCode = self::RP00001;

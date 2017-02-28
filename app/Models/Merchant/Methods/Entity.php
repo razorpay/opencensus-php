@@ -107,6 +107,21 @@ class Entity extends Base\PublicEntity
         self::JIOMONEY
     );
 
+    protected static $methods = array(
+        self::CARD,
+        self::EMI,
+        self::AMEX,
+        self::UPI,
+        self::NETBANKING,
+        self::PAYTM,
+        self::MOBIKWIK,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::OLAMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+    );
+
     // Casts the attributes to native types
     protected $casts = [
         self::AMEX        => 'bool',
@@ -434,20 +449,6 @@ class Entity extends Base\PublicEntity
 
     public static function getAllMethodNames()
     {
-        return array(
-            self::CARD,
-            self::EMI,
-            self::AMEX,
-            self::NETBANKING,
-            self::PAYTM,
-            self::MOBIKWIK,
-            self::PAYZAPP,
-            self::PAYUMONEY,
-            self::OLAMONEY,
-            self::AIRTELMONEY,
-            self::EMI,
-            self::UPI,
-            self::FREECHARGE,
-        );
+        return self::$methods;
     }
 }

@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
     protected function handleCallbackFailure(array $content)
     {
         throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
             $content[ResponseFields::RESPONSE_CODE],
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );

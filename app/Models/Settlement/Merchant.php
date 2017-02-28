@@ -122,6 +122,7 @@ class Merchant
             SetlDetails\Component::PAYMENT,
             SetlDetails\Component::REFUND,
             SetlDetails\Component::ADJUSTMENT,
+            SetlDetails\Component::PAYOUT,
         ];
 
         $details = [];
@@ -142,25 +143,22 @@ class Merchant
 
             switch ($txn->getType())
             {
-            case Transaction\Type::PAYMENT:
+                case Transaction\Type::PAYMENT:
+                    $details[$componentType]['amount'] += $txn->getAmount();
+                    break;
 
-                $details[$componentType]['amount'] += $txn->getAmount();
+                case Transaction\Type::REFUND:
+                    $details[$componentType]['amount'] -= $txn->getAmount();
+                    break;
 
-                break;
+                case Transaction\Type::ADJUSTMENT:
+                    $details[$componentType]['amount'] += $txn->getCredit();
+                    $details[$componentType]['amount'] -= $txn->getDebit();
+                    break;
 
-            case Transaction\Type::REFUND:
-
-                $details[$componentType]['amount'] -= $txn->getAmount();
-
-                break;
-
-            case Transaction\Type::ADJUSTMENT:
-
-                $details[$componentType]['amount'] += $txn->getCredit();
-
-                $details[$componentType]['amount'] -= $txn->getDebit();
-
-                break;
+                case Transaction\Type::PAYOUT:
+                    $details[$componentType]['amount'] -= $txn->getAmount();
+                    break;
             }
 
             $totalServiceTax += $txn->getServiceTax();

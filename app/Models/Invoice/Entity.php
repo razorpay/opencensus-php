@@ -241,7 +241,7 @@ class Entity extends Base\PublicEntity
         self::SHORT_URL,
         self::VIEW_LESS,
         self::TYPE,
-        // self::USER_ID,
+        self::USER_ID,
         // self::TOTAL_AMOUNT,
         self::CREATED_AT,
     ];
@@ -489,7 +489,7 @@ class Entity extends Base\PublicEntity
         $from    = $this->merchant->getBillingLabelElseName();
         $status  = $this->hasBeenPaid() ? 'Paid' : 'Unpaid';
 
-        return "Invoice $receipt from $from ($status)";
+        return sanitizeFilename("Invoice $receipt from $from ($status)");
     }
 
     // -------------------------------------- End Getters --------------------------------------

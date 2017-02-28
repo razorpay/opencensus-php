@@ -44,14 +44,26 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($customer['id'], $response['customer_id']);
         $this->assertEquals('10000000000000', $customer['merchant_id']);
-        $this->assertArrayNotHasKey('user_id', $response);
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
 
+        //
+        // Asserts expire_by's default value. Must be set to 60 days from
+        // created_at.
+        //
         $this->assertNotNull($response['expire_by']);
         $this->assertInternalType('int', $response['expire_by']);
-        $this->assertEquals(5184000, $response['expire_by'] - $response['issued_at']);
+
+        //
+        // Use delta of 5 secs to avoid random failures of tests
+        //
+        $this->assertEquals(
+            5184000,
+            $response['expire_by'] - $response['created_at'],
+            'expire_by should be by default 60 days in future',
+            5
+        );
     }
 
     public function testCreateInvoiceWithExistingCustomer()
