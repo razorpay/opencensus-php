@@ -16,10 +16,13 @@ class AuditLogEntry extends Event
     public $action;
 
     public $customProperties;
+
     /**
      * Create a new event instance.
      *
-     * @return void
+     * @param $admin
+     * @param $action
+     * @param $customProperties
      */
     public function __construct($admin, $action, $customProperties = null)
     {

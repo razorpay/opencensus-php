@@ -267,18 +267,26 @@ class Processor extends Base\Core
                 $i++;
             }
 
-            //settle only if settlement amount is more than INR 1
-            if ($setlAmount <= 100)
+            //
+            // settle only if settlement amount is more than INR 1 and greater than
+            // merchants account balance
+            //
+            $balance = $merchant->balance->getBalance();
+
+            if (($setlAmount <= 100) or
+                ($setlAmount > $balance))
             {
                 $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                     [
                         'merchant'   => $merchant->getId(),
                         'setlAmount' => $setlAmount,
+                        'balance'    => $balance
                     ]);
 
                 continue;
             }
 
+            // create settlement and update batch settlement entity in transaction
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
             $setl = $this->repo->transaction(

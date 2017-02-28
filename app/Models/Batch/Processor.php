@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Processor extends Base\Core
 {
@@ -403,6 +404,10 @@ class Processor extends Base\Core
             $message->to($emails);
 
             $message->attach($data['refundFile']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::BATCH_REFUNDS_FILE);
         });
     }
 }

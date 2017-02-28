@@ -6,6 +6,7 @@ use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
@@ -64,7 +65,7 @@ class Validator extends Base\Validator
         'email',
     ];
 
-    protected function validateEmail($input)
+    protected function validateEmail(array $input)
     {
         if (($input[Entity::METHOD] !== 'aeps') and
             (empty($input[Entity::EMAIL]) === true))
@@ -101,7 +102,7 @@ class Validator extends Base\Validator
         Wallet::validateExists($value);
     }
 
-    protected function validateCardKey($input)
+    protected function validateCardKey(array $input)
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
@@ -130,7 +131,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAmount($input)
+    protected function validateAmount(array $input)
     {
         $amount = $input['amount'];
 
@@ -168,7 +169,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    public function validateUpiVpaPsp(string $vpa, array $excludedPsps)
     {
         $vpaParts = explode('@', $vpa);
 
@@ -201,6 +202,22 @@ class Validator extends Base\Validator
             // We need to do this check here because currently amex has a higher limit of 5k.
             throw new Exception\BadRequestValidationFailureException(
                 'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
+        }
+    }
+
+    public function validateForPayout(string $mode)
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        if (($mode === MODE::LIVE) and
+            ($this->entity->transaction->isSettled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
         }
     }
 

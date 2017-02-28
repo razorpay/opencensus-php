@@ -2,10 +2,9 @@
 
 namespace RZP\Models\FileStore\Storage\AwsS3;
 
-use AWS;
+use Aws;
 use Config;
 
-use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
@@ -26,7 +25,7 @@ class Handler extends BaseHandler
 
         $awsConfig['region'] = $awsConfig['bucket_region'];
 
-        $client = new \Aws\Sdk($awsConfig);
+        $client = new Aws\Sdk($awsConfig);
 
         return $client->createClient('s3');
     }
@@ -72,10 +71,8 @@ class Handler extends BaseHandler
 
             $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }
-
         catch (\Exception $e)
         {
-
             $this->trace->traceException($e);
 
             throw $e;
@@ -102,7 +99,7 @@ class Handler extends BaseHandler
                 '+' . $duration . ' minutes'
             );
 
-            $presignedUrl = (string) $request->getUri();
+            $preSignedUrl = (string) $request->getUri();
         }
         catch (\Exception $e)
         {
@@ -111,19 +108,7 @@ class Handler extends BaseHandler
             throw $e;
         }
 
-        return $presignedUrl;
-    }
-
-    public function getBucketName($type)
-    {
-        $bucketType = Bucket::getBucketConfigName($type);
-
-        if ($this->mode === Mode::TEST)
-        {
-            return 'rzp-test-bucket';
-        }
-
-        return $this->config[$bucketType];
+        return $preSignedUrl;
     }
 
     protected function getS3SaveObj($bucket, $fileDetails)
@@ -149,5 +134,14 @@ class Handler extends BaseHandler
         ];
 
         return $s3Obj;
+    }
+
+    public function getBucketName($type, $env)
+    {
+        $bucketType = Bucket::getBucketConfigName($type, $env);
+
+        $bucketName = $this->config[$bucketType];
+
+        return $bucketName;
     }
 }

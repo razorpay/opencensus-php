@@ -4,7 +4,9 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
+use RZP\Trace\TraceCode;
 
 class Accessor extends Base\Core
 {
@@ -17,6 +19,8 @@ class Accessor extends Base\Core
      * Id for which entity has to be fetched
      */
     protected $id = null;
+
+    protected $merchantId;
 
     /**
      * Set the Id in Query Param
@@ -101,7 +105,7 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $file = $this->getEntity();
+        $file = $this->get();
 
         if ($file instanceof Base\PublicCollection)
         {
@@ -113,6 +117,27 @@ class Accessor extends Base\Core
         $storageHandler = Store::getHandler($file->store);
 
         $filePath = $this->createFullFilePath($file->location);
+
+        $dir = dirname($filePath);
+
+        if (file_exists($dir) === false)
+        {
+            $oldmask = umask(0);
+
+            $result = mkdir($dir, 0777, true);
+
+            umask($oldmask);
+
+            if ($result === false)
+            {
+                $this->trace->warning(
+                    TraceCode::FILE_STORE_MKDIR_FAILED,
+                    [
+                        'dir'  => $dir,
+                        'path' => $filePath,
+                    ]);
+            }
+        }
 
         $storageHandler->saveAs($file->bucket, $file->location, $filePath);
 
@@ -160,7 +185,7 @@ class Accessor extends Base\Core
     /**
      * Throws Exception if Invalid No of files are found
      *
-     * @param Base\PublicCollection
+     * @param Base\PublicCollection $files
      *
      * @return void
      * @throws Exception\LogicException
@@ -188,9 +213,7 @@ class Accessor extends Base\Core
     {
         if ($this->merchantId === null)
         {
-            $merchant = $this->repo->merchant->getSharedAccount();
-
-            $this->merchantId($merchant->getId());
+            $this->merchantId(Account::SHARED_ACCOUNT);
         }
     }
 }

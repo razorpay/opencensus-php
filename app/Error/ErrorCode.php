@@ -43,6 +43,7 @@ class ErrorCode
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
     const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
+    const GATEWAY_ERROR_FALSE_AUTHORIZE                                             = 'GATEWAY_ERROR_FALSE_AUTHORIZE';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
     const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
@@ -95,6 +96,7 @@ class ErrorCode
     const BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN                                  = 'BAD_REQUEST_INVALID_PASSWORD_RESET_TOKEN';
     const BAD_REQUEST_NO_RECORDS_FOUND                                              = 'BAD_REQUEST_NO_RECORDS_FOUND';
     const BAD_REQUEST_ONLY_HTTPS_ALLOWED                                            = 'BAD_REQUEST_ONLY_HTTPS_ALLOWED';
+    const BAD_REQUEST_FORBIDDEN                                                     = 'BAD_REQUEST_FORBIDDEN';
     const BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED                                       = 'BAD_REQUEST_HTTP_METHOD_NOT_ALLOWED';
     const BAD_REQUEST_ERROR                                                         = 'BAD_REQUEST_ERROR';
     const BAD_REQUEST_EXTRA_FIELDS_PROVIDED                                         = 'BAD_REQUEST_EXTRA_FIELDS_PROVIDED';
@@ -144,6 +146,10 @@ class ErrorCode
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                      = 'BAD_REQUEST_PAYMENT_CARD_INVALID_CVV';
     const BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED                                   = 'BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED';
     const BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED                          = 'BAD_REQUEST_PAYMENT_STATUS_CAPTURE_NOT_PROCESSED';
+    const BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT                              = 'BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT';
+    const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED                   = 'BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_CAPTURED';
+    const BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING                    = 'BAD_REQUEST_PAYMENT_PAYOUT_AMOUNT_GREATER_THAN_PENDING';
+    const BAD_REQUEST_PAYMENT_FULLY_PAIDOUT                                         = 'BAD_REQUEST_PAYMENT_FULLY_PAIDOUT';
     const BAD_REQUEST_PAYMENT_FULLY_REFUNDED                                        = 'BAD_REQUEST_PAYMENT_FULLY_REFUNDED';
     const BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED                                  = 'BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED';
     const BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED                          = 'BAD_REQUEST_PAYMENT_PARTIAL_REFUND_NOT_SUPPORTED';
@@ -287,6 +293,9 @@ class ErrorCode
     const BAD_REQUEST_REFUND_FAILED                                                 = 'BAD_REQUEST_REFUND_FAILED';
     const BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_REFUND_NOT_ENOUGH_BALANCE';
 
+    const BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE                                     = 'BAD_REQUEST_PAYOUT_NOT_ENOUGH_BALANCE';
+    const BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD                                 = 'BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD';
+
     const BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT                                       = 'BAD_REQUEST_BATCH_FILE_EXCEED_LIMIT';
     const BAD_REQUEST_BATCH_FILE_EMPTY                                              = 'BAD_REQUEST_BATCH_FILE_EMPTY';
     const BAD_REQUEST_BATCH_FILE_INVALID_TYPE                                       = 'BAD_REQUEST_BATCH_FILE_INVALID_TYPE';
@@ -390,6 +399,7 @@ class ErrorCode
     const SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND                                        = 'SERVER_ERROR_MYSQL_ENTRY_NOT_FOUND';
     const SERVER_ERROR_AWS_FAILURE                                                  = 'SERVER_ERROR_AWS_FAILURE';
     const SERVER_ERROR_PRICING_RULE_ABSENT                                          = 'SERVER_ERROR_PRICING_RULE_ABSENT';
+    const SERVER_ERROR_MISSING_HANDLER                                              = 'SERVER_ERROR_MISSING_HANDLER';
     const SERVER_ERROR_CARD_NUMBER_LOGGED                                           = 'SERVER_ERROR_CARD_NUMBER_LOGGED';
     const SERVER_ERROR_INVOICE_ID_EMPTY                                             = 'SERVER_ERROR_INVOICE_ID_EMPTY';
     const SERVER_ERROR_INVALID_DURATION                                             = 'SERVER_ERROR_INVALID_DURATION';
@@ -419,10 +429,13 @@ class ErrorCode
     const BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS                      = 'BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS';
     const BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS                         = 'BAD_REQUEST_SETTLEMENT_RECONCILIATION_IN_PROGRESS';
 
+    const BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS                          = 'BAD_REQUEST_PAYOUT_ANOTHER_OPERATION_IN_PROGRESS';
+
     const BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE                                  = 'BAD_REQUEST_INVALID_MAILGUN_WEBHOOK_TYPE';
     const BAD_REQUEST_INVALID_MAILGUN_SIGNATURE                                     = 'BAD_REQUEST_INVALID_MAILGUN_SIGNATURE';
 
     const BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT                                     = 'BAD_REQUEST_DUPLICATE_INVOICE_RECEIPT';
+    const BAD_REQUEST_INVOICE_EXPIRE_FAILED                                         = 'BAD_REQUEST_INVOICE_EXPIRE_FAILED';
     const BAD_REQUEST_API_KEY_NOT_PRESENT                                           = 'BAD_REQUEST_API_KEY_NOT_PRESENT';
 
     const BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED                                    = 'BAD_REQUEST_ITEM_OPERATION_NOT_ALLOWED';
@@ -452,4 +465,7 @@ class ErrorCode
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
+
+    // ES related error codes
+    const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
 }

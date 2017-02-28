@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Invoice;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Base\UniqueIdEntity;
 
 use Carbon\Carbon;
 use Mockery;
@@ -18,7 +19,13 @@ class InvoiceTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['invoice']);
+        // Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'                 => '10000000000000',
+                'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+            ]);
 
         $this->ba->proxyAuth();
     }
@@ -37,10 +44,26 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($customer['id'], $response['customer_id']);
         $this->assertEquals('10000000000000', $customer['merchant_id']);
-        $this->assertArrayNotHasKey('user_id', $response);
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);
+
+        //
+        // Asserts expire_by's default value. Must be set to 60 days from
+        // created_at.
+        //
+        $this->assertNotNull($response['expire_by']);
+        $this->assertInternalType('int', $response['expire_by']);
+
+        //
+        // Use delta of 5 secs to avoid random failures of tests
+        //
+        $this->assertEquals(
+            5184000,
+            $response['expire_by'] - $response['created_at'],
+            'expire_by should be by default 60 days in future',
+            5
+        );
     }
 
     public function testCreateInvoiceWithExistingCustomer()
@@ -59,6 +82,45 @@ class InvoiceTest extends TestCase
         $invoice = $this->fixtures->create('invoice');
 
         $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+    }
+
+    public function testCreateLinkWithSource()
+    {
+        $this->startTest();
+    }
+
+    public function testCreateLinkWithInvalidSource()
+    {
+        //
+        // TODO: (Low priority)
+        // - Fix Source::checkType and Type::validateType methods.
+        //
+    }
+
+    public function testCreateLinkAndPayAndCheckCustomerDetailsInInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice',
+            [
+                'customer_id'      => null,
+                'customer_name'    => null,
+                'customer_email'   => null,
+                'customer_contact' => null,
+                'type'             => 'link',
+            ]);
+
+        //
+        // While making payment, we pull customer data from payment and fill in
+        // invoice columns.
+        //
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $invoice = $this->getLastEntity('invoice', true);
+
+        $this->assertEquals($invoice['customer']['email'], 'a@b.com');
+        $this->assertEquals($invoice['customer']['contact'], '+919918899029');
     }
 
     public function testCreateInvoiceWithMultipleLineItems()
@@ -124,11 +186,9 @@ class InvoiceTest extends TestCase
 
         $this->assertInvoiceCreateResponse($response);
 
-        $this->assertNotNull($response['customer_details']['customer_address']);
-
         $address = $this->getLastEntity('address', true);
 
-        $this->assertEquals('shipping_address', $address['type']);
+        $this->assertEquals('billing_address', $address['type']);
         $this->assertEquals('1', $address['primary']);
         $this->assertEquals($response['customer_id'], $address['entity_id']);
         $this->assertEquals('customer', $address['entity_type']);
@@ -166,7 +226,30 @@ class InvoiceTest extends TestCase
 
     public function testCreateDraftInvoiceAndView()
     {
+        $skipReason = 'View endpoint will now not throw exception.
+                      It will serve error page.
+                      Will remove this if required later.';
+
+        $this->markTestSkipped($skipReason);
+
         $this->createDraftInvoice();
+
+        $this->startTest();
+    }
+
+    public function testInvoiceViewWithExpiredInvoice()
+    {
+        $skipReason = 'View endpoint will now not throw exception.
+                      It will serve error page.
+                      Will remove this if required later.';
+
+        $this->markTestSkipped($skipReason);
+
+        $this->fixtures->create('invoice',
+            [
+                'status'   => 'expired',
+                'order_id' => null
+            ]);
 
         $this->startTest();
     }
@@ -266,6 +349,11 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
+    public function testCreateInvoiceWithBadExpiredBy()
+    {
+        $this->startTest();
+    }
+
 
 
     // ------------------------------------------------------------
@@ -288,7 +376,25 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
+    }
+
+    public function testUpdateDraftInvoiceAndIssue()
+    {
+        $this->createDraftInvoice(['amount' => 100000]);
+
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        //
+        // On sending 'draft'='0', it should just issue the invoice
+        //
+
+        $response = $this->startTest();
+
+        $this->assertNotEmpty($response['short_url']);
+        $this->assertNotEmpty($response['order_id']);
+        $this->assertNotEmpty($response['issued_at']);
     }
 
     public function testUpdateDraftInvoiceWithBasicFieldsAndLineItems()
@@ -319,7 +425,7 @@ class InvoiceTest extends TestCase
         $this->assertNotContains('1000000002item', $lineItemIds);
         $this->assertNotContains('1000000003item', $lineItemIds);
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceAmountWhenLineItemsExists()
@@ -348,7 +454,7 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceWithCustomerDetails()
@@ -360,7 +466,7 @@ class InvoiceTest extends TestCase
         $customer = $this->getLastEntity('customer', true);
         $this->assertEquals($customer['id'], $response['customer_id']);
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateDraftInvoiceWithCustomerIdAndDetails()
@@ -377,7 +483,7 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateIssuedInvoiceWithExtraFields()
@@ -459,8 +565,10 @@ class InvoiceTest extends TestCase
         $this->startTest();
     }
 
-    public function testDeleteDraftInvoice()
+    public function testDeleteInvoice()
     {
+        $this->createOrder();
+
         $this->createDraftInvoice();
 
         $this->startTest();
@@ -469,11 +577,15 @@ class InvoiceTest extends TestCase
         $this->assertNull($invoice);
     }
 
-    public function testDeleteIssuedInvoice()
+    public function testDeletePaidInvoice()
     {
         $this->createOrder();
 
-        $this->fixtures->create('invoice');
+        $invoice = $this->fixtures->create('invoice');
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
 
         $this->startTest();
 
@@ -481,7 +593,7 @@ class InvoiceTest extends TestCase
         $this->assertNotNull($invoice);
     }
 
-    public function testAddLineItemsToInvoice()
+    public function testAddLineItemToInvoice()
     {
         $this->createDraftInvoice();
 
@@ -526,10 +638,35 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
-    public function testAddLineItemsToInvoiceWithBadData()
+    public function testAddTooManyLineItemsToInvoice()
+    {
+        $this->createDraftInvoice();
+
+        foreach (range(1, 18) as $i)
+        {
+            $item = $this->fixtures->create('item',
+                [
+                    'id' => UniqueIdEntity::generateUniqueId(),
+                ]);
+
+            $this->fixtures->create('line_item',
+                [
+                    'id'      => UniqueIdEntity::generateUniqueId(),
+                    'item_id' => $item->getId(),
+                ]);
+        }
+
+        $this->startTest();
+
+        $invoice = $this->getLastEntity('invoice');
+
+        $this->assertCount(18, $invoice['line_items']);
+    }
+
+    public function testAddLineItemToInvoiceWithBadData()
     {
         $this->createDraftInvoice();
 
@@ -576,7 +713,7 @@ class InvoiceTest extends TestCase
 
         $this->createDraftInvoice();
 
-        $testData = $this->testData['testAddLineItemsToInvoice'];
+        $testData = $this->testData['testAddLineItemToInvoice'];
 
         $response = $this->startTest($testData);
 
@@ -635,7 +772,7 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateLineItemOfInvoiceWithExistingItem()
@@ -656,7 +793,7 @@ class InvoiceTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testUpdateLineItemOfInvoiceWithBadData()
@@ -692,7 +829,7 @@ class InvoiceTest extends TestCase
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(0, $lineItems['count']);
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testRemoveManyLineItemsOfInvoice()
@@ -706,7 +843,7 @@ class InvoiceTest extends TestCase
         $lineItems = $this->getEntities('line_item', [], true);
         $this->assertEquals(1, $lineItems['count']);
 
-        $this->assertUpdateResponseWithLastEntity('invoice', __FUNCTION__);
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testRemoveManyLineItemsOfInvoiceWithBadData()
@@ -747,6 +884,16 @@ class InvoiceTest extends TestCase
     }
 
     public function testSendNotificationWithSmsMode()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        $this->startTest();
+    }
+
+    public function testSendNotificationWithEmailMode()
     {
         $this->ba->publicAuth();
 
@@ -967,6 +1114,173 @@ class InvoiceTest extends TestCase
 
         // Clear the mock.
         Carbon::setTestNow();
+    }
+
+    //
+    // Following 2 tests, just test if we're getting OK status for the view endpoint.
+    //
+
+    public function testGetLinkView()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice', ['type' => 'link']);
+
+        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+
+        $this->assertResponseOk();
+    }
+
+    public function testGetInvoiceView()
+    {
+        $this->ba->publicAuth();
+
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        $response = $this->call('GET', '/v1/t/inv_1000000invoice', ['key_id' => $this->ba->getKey()]);
+
+        $this->assertResponseOk();
+    }
+
+    public function testPayExpiredInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['status' => 'expired']);
+
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $invoice->order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testPayDeletedInvoice()
+    {
+        $order = $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice', ['deleted_at' => time()]);
+
+        $this->assertNull($this->getLastEntity('invoice'));
+
+        $payment             = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $invoice->order->getPublicId();
+        $payment['amount']   = $invoice->getAmount();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($testData, function() use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+    }
+
+    public function testExpireInvoice()
+    {
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+        $this->fixtures->create('item');
+        $this->fixtures->create('line_item');
+
+        $this->startTest();
+    }
+
+    public function testExpirePaymentInProgressInvoice()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        //
+        // Just adds one failed payment too, for testing purposes.
+        //
+        $this->fixtures->create('payment:failed',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->fixtures->create('payment:authorized',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testExpirePaidInvocie()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        $this->makePaymentForInvoiceAndAssert($invoice->toArrayPublic());
+
+        $this->ba->proxyAuth();
+
+        $this->startTest();
+    }
+
+    public function testExpireInvoiceWithFailedPayment()
+    {
+        $this->createOrder();
+
+        $invoice = $this->fixtures->create('invoice');
+
+        $this->fixtures->create('payment:failed',
+            [
+                'order_id'   => '100000000order',
+                'invoice_id' => '1000000invoice',
+                'card_id'    => null,
+            ]);
+
+        $this->startTest();
+    }
+
+    public function testExpireInvoices()
+    {
+        // Issued invoice
+        $this->createOrder();
+        $this->fixtures->create('invoice');
+
+        // Issued invoice and past expire_by
+        $this->createOrder(['id' => '100000001order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000001invoice',
+                'order_id'   => '100000001order',
+                'expire_by'  => 1484519217,
+            ]);
+
+        // Draft invoice and past expire_by
+        $this->createDraftInvoice([
+                'id'         => '1000002invoice',
+                'expire_by'  => 1484519217
+            ]);
+
+        // Issued invoice, past expire_by but paid
+        $this->createOrder(['id' => '100000003order']);
+        $this->fixtures->create('invoice',
+            [
+                'id'         => '1000003invoice',
+                'order_id'   => '100000003order',
+                'expire_by'  => 1484519217,
+                'status'     => 'paid',
+            ]);
+
+        $this->ba->appAuth();
+
+        $this->startTest();
     }
 
     // -------------------- Protected methods --------------------

@@ -93,7 +93,7 @@ return array(
 
     'key' => env('ENCRYPTION_KEY'),
 
-    'cipher' => MCRYPT_RIJNDAEL_128,
+    'cipher' => env('ENCRYPTION_CIPHER', MCRYPT_RIJNDAEL_128),
 
     /*
     |--------------------------------------------------------------------------
@@ -254,6 +254,8 @@ return array(
     'checkout' => env('CHECKOUT_URL'),
 
     'invoice' => env('INVOICE_URL'),
+
+    'cdn_v1_url' => env('CDN_V1_URL'),
 
     'proxy_enabled' => env('PROXY_ENABLED'),
 

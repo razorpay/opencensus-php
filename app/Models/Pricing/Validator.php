@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Error\PublicErrorDescription;
 use RZP\Models\Card\Network;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Pricing;
 use RZP\Models\Bank\IFSC;
@@ -18,7 +19,7 @@ class Validator extends Base\Validator
         Entity::FEATURE             => 'sometimes|alpha',
         Entity::GATEWAY             => 'sometimes|',
         Entity::PLAN_NAME           => 'sometimes|',
-        Entity::PAYMENT_METHOD      => 'required|alpha',
+        Entity::PAYMENT_METHOD      => 'required|string',
         Entity::PAYMENT_METHOD_TYPE => 'sometimes_if:payment_method,card|in:debit,credit',
         Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
         Entity::PAYMENT_ISSUER      => 'sometimes_if:payment_method,card|alpha|max:10',
@@ -64,10 +65,9 @@ class Validator extends Base\Validator
         {
             Payment\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
         }
-
-        if ($feature === Pricing\Feature::PAYOUT)
+        else if ($feature === Pricing\Feature::PAYOUT)
         {
-            //add payout validator
+            Payout\Method::validateMethod($input[Pricing\Entity::PAYMENT_METHOD]);
         }
     }
 

@@ -57,12 +57,7 @@ class DailyFiles extends Base\DailyFiles
 
         $this->mail->queue($view, $data, function($message) use ($data, $bankName)
         {
-            $emails = [
-                'settlements@razorpay.com',
-                'dashrathi.dakwa@axisbank.com',
-                'venkatesh.ramachandran@axisbank.com',
-                'santosh.sakpal@axisbank.com'
-            ];
+            $emails = ['axis.netbanking.refunds@razorpay.com'];
 
             $message->from('refunds@razorpay.com', $bankName . ' Netbanking Refunds');
 
@@ -82,7 +77,7 @@ class DailyFiles extends Base\DailyFiles
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::AXIS_NETBANKING_REFUNDS_MAIL);
         });
     }
 }

@@ -1,0 +1,90 @@
+<div>
+  @php
+      $status = $invoice['status'];
+      $headerLabel = '';
+      $ctaLabel = '';
+      $ctaHref = '';
+
+      if (isset($payment))
+      {
+          $ctaLabel = 'DOWNLOAD PDF';
+          $ctaHref = $invoice['short_url'];
+          $headerLabel = 'PAYMENT SUCCESSFUL';
+      }
+      elseif ($status === 'issued')
+      {
+          $ctaLabel = 'PROCEED TO PAY';
+          $ctaHref = $invoice['short_url'];
+          $headerLabel = $merchant['name'] . ' has sent you an invoice for ' . $invoice['currency'] . ' ' . $invoice['amount_formatted'];
+      }
+      elseif ($status === 'expired')
+      {
+          $headerLabel = strtoupper($invoice['type_label']) . ' EXPIRED';
+      }
+  @endphp
+
+
+  @extends('emails.invoice.notification')
+
+  @section('header')
+      <table border="0" cellpadding="0" cellspacing="0" height="100%" width="100%">
+        <tbody>
+          <tr>
+            <td class="text-center">
+              <div>
+                @if ($merchant['image'])
+                  <img
+                      class="merchant__logo"
+                      src="{{ $merchant['image'] }}"
+                   />
+                @endif
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-center">
+              <h2 style="color: {{ $merchant['brand_text_color'] }}">
+                  {{ $invoice['type_label'] }} from {{$merchant['name']}}
+              </h2>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-center">
+              <div style="color: {{ $merchant['brand_text_color'] }}">
+                  @if ($invoice['receipt'])
+                      {{ $invoice['type_label'] }} Receipt: {{$invoice['receipt']}}
+                  @else
+                      {{ $invoice['type_label'] }} Id: {{$invoice['id']}}
+                  @endif
+              </div>
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-center">
+              <div style="margin-top: 12px; color: {{ $merchant['brand_text_color'] }}">
+                <div style="color: {{ $merchant['brand_text_color'] }}">
+                    {{ $headerLabel }}
+                </div>
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+  @endsection
+
+  @section('footerCTA')
+      @if ($ctaLabel)
+          <a class="footer--cta" href="{{ $ctaHref }}" target="_blank" style="
+            color: {{ $merchant['brand_text_color'] }};
+            background-color: {{ $merchant['brand_color'] }};
+            border: 1px solid {{ $merchant['brand_color'] }};
+          ">
+            {{ $ctaLabel }}
+          </a>
+      @endif
+  @endsection
+<! -- >
+</div>

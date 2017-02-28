@@ -9,6 +9,8 @@ class Validator
     const ACCEPTED_EXTENSIONS_MAP = [
         'csv'   => ['text/csv', 'text/x-comma-separated-values', 'text/comma-separated-values', 'text/plain'],
         'txt'   => ['text/plain'],
+        // Ensure that this is always above 'xlsx' because of `getExtensionFromContentType`
+        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
         // Don't know why but, getting application/zip and application/octet-stream as mimetype for xlsx files.
         'xlsx'  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
                     'application/zip', 'application/octet-stream'],
@@ -18,21 +20,22 @@ class Validator
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/zip',
             'application/octet-stream', 'application/vnd.oasis.opendocument.spreadsheet',
         ],
-        'zip'   => ['application/x-compressed', 'application/x-zip-compressed', 'application/zip', 'multipart/x-zip'],
     ];
 
     const GATEWAY_SUBJECT_REGEX = [
-        Orchestrator::HDFC     => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
-        Orchestrator::KOTAK    => "/^PG Transaction File/",
-        Orchestrator::OLAMONEY => "/^Merchant Settlement File/",
+        Orchestrator::HDFC       => "/^'{0,1}Email MPR as of [0-9]{2}-(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-20[0-9]{2}/",
+        Orchestrator::KOTAK      => "/^PG Transaction File/",
+        Orchestrator::OLAMONEY   => "/^Merchant Settlement File/",
+        Orchestrator::FREECHARGE => "/^Merchant (Transaction|Settlement) Report/",
     ];
 
     const GATEWAY_BODY_REGEX = [
-        Orchestrator::OLAMONEY => "/^Please find settlement report for /",
+        Orchestrator::OLAMONEY   => "/^Please find settlement report for /",
+        Orchestrator::FREECHARGE => "/Please view your (transaction|settlement) report/",
     ];
 
     const GATEWAY_ATTACHMENT_COUNT = [
-        Orchestrator::OLAMONEY => 1,
+        Orchestrator::OLAMONEY   => 1,
     ];
 
     // Add here too when being added in Validator::ACCEPTED_EXTENSIONS_MAP
@@ -54,6 +57,13 @@ class Validator
         }
     }
 
+    public function getExtensionFromContentType(string $contentType)
+    {
+        $extension = Orchestrator::getKeyFromSubArrayMatch($contentType, self::ACCEPTED_EXTENSIONS_MAP);
+
+        return $extension;
+    }
+
     public function validateHdfcEmail(array $emailDetails)
     {
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::HDFC);
@@ -64,24 +74,49 @@ class Validator
         return $this->validateEmailSubject($emailDetails['subject'], Orchestrator::KOTAK);
     }
 
+    public function validateFreechargeEmail(array $emailDetails)
+    {
+        $validSubject = $this->validateEmailSubject(
+            $emailDetails['subject'], Orchestrator::FREECHARGE);
+
+        $validBody = $this->validateEmailBody(
+            $emailDetails['body_html_text'],
+            Orchestrator::FREECHARGE);
+
+        return ($validSubject and $validBody);
+    }
+
     public function validateOlamoneyEmail(array $emailDetails)
     {
         $validSubject = $this->validateEmailSubject($emailDetails['subject'], Orchestrator::OLAMONEY);
 
-        $validAttachmentCount = $this->validateAttachmentCount(
-                                                    $emailDetails[Orchestrator::ATTACHMENT_COUNT],
-                                                    Orchestrator::OLAMONEY);
-
         $validBody = $this->validateEmailBody($emailDetails['body'], Orchestrator::OLAMONEY);
+
+        $validAttachmentCount = $this->validateAttachmentCount(
+            $emailDetails[Orchestrator::ATTACHMENT_COUNT],
+            Orchestrator::OLAMONEY);
 
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
-    public function validateAttachments(array & $input)
+    /**
+     * For emails without attachments, but links, we allow
+     * zero attachments during the initial validation.
+     * After we get the attachments from the link, we validate
+     * it again.
+     *
+     * @param array $input
+     * @param bool  $allowZeroAttachments
+     *
+     * @throws Exception\ReconciliationException
+     */
+    public function validateAttachments(array & $input, bool $allowZeroAttachments = false)
     {
+        //
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
         // Excludes 'attachment-count'.
+        //
         $foundAttachments = array_filter(
             $input,
             function($key)
@@ -94,8 +129,15 @@ class Validator
 
         $foundAttachmentsCount = count($foundAttachments);
 
-        // There should be at least 1 attachment present.
-        if ($foundAttachmentsCount === 0)
+        //
+        // In link based emails, we don't have the attachments at
+        // this point. Hence, it'll be 0. This is fine, since we
+        // update the attachment-count at a later point.
+        //
+        // Otherwise, there should be at least 1 attachment present.
+        //
+        if (($foundAttachmentsCount === 0) and
+            ($allowZeroAttachments === false))
         {
             throw new Exception\ReconciliationException(
                 'No attachments found in the input.'

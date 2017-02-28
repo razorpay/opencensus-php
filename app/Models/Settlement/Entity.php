@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
+    const REMARKS               = 'remarks';
     const RETURN_UTR            = 'return_utr';
 
     protected static $sign = 'setl';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
+        self::REMARKS,
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
@@ -100,6 +102,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
+    }
+
     public function setlTransactions()
     {
         return $this->hasMany('RZP\Models\Transaction\Entity');
@@ -138,6 +145,11 @@ class Entity extends Base\PublicEntity
     public function getFailureReason()
     {
         return $this->getAttribute(self::FAILURE_REASON);
+    }
+
+    public function getRemarks()
+    {
+        return $this->getAttribute(self::REMARKS);
     }
 
     public function setAmount($amount)
@@ -188,6 +200,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setRemarks($remarks)
+    {
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function getTransactionId()

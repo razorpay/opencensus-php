@@ -222,7 +222,8 @@ class PaymentCreateTest extends TestCase
 
     protected function mockEsClient()
     {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
+        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
+                                ->makePartial();
 
         $this->app->instance('es', $clientBuilder);
 
