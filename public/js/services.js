@@ -52,7 +52,7 @@ angular.module('app.services', [])
           }
           // if any of the fields is missing, isPreSignupDone will be false
           _isPreSignupDone = _identity.pre_signup
-            && ((_identity.created_at < 1488240000) // pre-signup is only for signup on/after 28 Feb 2017
+            && ((_identity.created_at < 1488306600) // pre-signup is only for signup on/after 01 March 2017
               || !!Object.keys(_identity.pre_signup)
                 // get all values
                 .map(function (key) {return _identity.pre_signup[key]})
