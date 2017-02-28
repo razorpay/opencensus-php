@@ -43,16 +43,14 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
+        self::SOURCE,
+        self::RECIPIENT,
         self::MERCHANT_ID,
-        self::TO_ID,
-        self::TO_TYPE,
-        self::SOURCE_ID,
-        self::SOURCE_TYPE,
         self::AMOUNT,
         self::CURRENCY,
         self::AMOUNT_REVERSED,
         self::ON_HOLD,
-        self::ON_HOLD_UNTIL,
+        // self::ON_HOLD_UNTIL,
         self::TRANSACTION_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
@@ -73,10 +71,10 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::ID,
-        self::ENTITY,
-        self::TRANSACTION_ID,
         self::SOURCE,
         self::RECIPIENT,
+        self::TRANSACTION_ID,
+        self::ENTITY,
     ];
 
     protected $casts = [
@@ -237,11 +235,7 @@ class Entity extends Base\PublicEntity
             $entity = 'RZP\Models\Merchant\AccountEntity';
         }
 
-        if ($toId !== null)
-        {
-            $attributes[self::RECIPIENT] = $entity::getSignedId($toId);
-            $attributes[self::TO_ID]     = $entity::getSignedId($toId);
-        }
+        $attributes[self::RECIPIENT] = $entity::getSignedId($toId);
     }
 
     public function setPublicSourceAttribute(array & $attributes)
@@ -257,10 +251,6 @@ class Entity extends Base\PublicEntity
             $entity = 'RZP\Models\Merchant\AccountEntity';
         }
 
-        if ($sourceId !== null)
-        {
-            $attributes[self::SOURCE]    = $entity::getSignedId($sourceId);
-            $attributes[self::SOURCE_ID] = $entity::getSignedId($sourceId);
-        }
+        $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
     }
 }

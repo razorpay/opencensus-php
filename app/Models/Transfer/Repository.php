@@ -12,14 +12,14 @@ class Repository extends Base\Repository
     protected $entity = 'transfer';
 
     protected $entityFetchParamRules = [
-        Entity::TO_ID               => 'sometimes|string|max:20',
+        Entity::RECIPIENT           => 'sometimes|string|max:20',
     ];
 
     protected $appFetchParamRules = [
         Entity::TRANSACTION_ID      => 'sometimes|alpha_num|size:14',
         Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
-        Entity::SOURCE_ID           => 'sometimes|alpha_num|min:14',
-        Entity::TO_ID               => 'sometimes|alpha_num|min:14'
+        Entity::SOURCE              => 'sometimes|string|min:14',
+        Entity::RECIPIENT           => 'sometimes|string|min:14'
     ];
 
     /**
@@ -56,5 +56,23 @@ class Repository extends Base\Repository
                     ->where(Entity::TO_ID, $accountId)
                     ->merchantId($marketplace->getId())
                     ->get();
+    }
+
+    protected function addQueryParamSource($query, $params)
+    {
+        $sourceId = $params[Entity::SOURCE];
+
+        Entity::stripSignWithoutValidation($sourceId);
+
+        $query->where(Entity::SOURCE_ID, $sourceId);
+    }
+
+    protected function addQueryParamRecipient($query, $params)
+    {
+        $toId = $params[Entity::RECIPIENT];
+
+        Entity::stripSignWithoutValidation($toId);
+
+        $query->where(Entity::TO_ID, $toId);
     }
 }
