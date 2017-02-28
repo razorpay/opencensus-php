@@ -39,4 +39,7 @@ return [
     'permission_create'                 => 'permissions',
 
     'merchant_attach_admin'             => 'merchants/{id}/admins',
+
+    // Org Field Maps
+    'org_fieldmap_get'                  => 'orgs/{id}/field-map/{entity}',
 ];

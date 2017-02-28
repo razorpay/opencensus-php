@@ -16,6 +16,28 @@ app.controller('MerchantInvitationCtrl', [
      * Actions
      */
 
+    // Get the dynamic fields
+
+    var request = $http({
+      url: '/admin/generic',
+
+      method: 'GET',
+
+      params: {
+        route_name: 'org_fieldmap_get',
+
+        url_params: {
+          '{entity}' : 'admin_lead'
+        }
+      }
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.fields = data.data.fields;
+      }
+    });
+
     $scope.inviteMerchant = function(merchant) {
       var request = $http({
         method: 'post',
