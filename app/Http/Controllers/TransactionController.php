@@ -264,7 +264,7 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function getTransactionBrokingReport($mode, $resource)
+    public function getTransactionBrokingReport($mode, $resource = 'broking')
     {
         $this->checkMode($mode);
 
