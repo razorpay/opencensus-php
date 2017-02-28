@@ -119,6 +119,22 @@ If you want to pass in specific params(e.g. -filter PaymentTest or --stop-on-fai
 $ make test AT="--filter PaymentTest --stop-on-failure"
 ```
 
+#### Connecting to mysql:
+
+Available Databases:
+* api_live
+* api_test
+* api_testing_live
+* api_testing_test
+
+```
+$ mysql -u api_user -p -P23306 -h 127.0.0.1 api_live
+```
+
+Look at the value of `DB_LIVE_PASSWORD` in `docker-compose.dev.yml` file for the password. You can also use tools like sequelpro etc with the 
+above configuration. Do note that the mysql port is going to be `23306`.
+
+
 #### Containerization Issues
 
 Please file issues regarding Containerization on the local `api`
