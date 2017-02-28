@@ -462,7 +462,7 @@ class Service extends Base\Service
             {
                 // TODO: Use single error message to avoid info leak
                 // @see https://github.com/razorpay/dashboard/issues/216
-                $error = ['User account not confirmed'];
+                $error = ['User email not confirmed. Please click on verification link in email to continue.'];
             }
             else
             {

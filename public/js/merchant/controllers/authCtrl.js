@@ -247,12 +247,18 @@ app.controller('AuthCtrl', [
       request.success(function (data) {
         hideSpinner();
         if (data.success) {
-          pushToDrip()
-          if ($scope.signup.currentSubStep == 4) {
-            goToVerification();
-          } else {
-            $scope.goToSignupStep(1, $scope.signup.currentSubStep + 1);
-          }
+          pushToDrip();
+          // if verification is already done, go to dashboard (call /user again to check)
+          user.identity(true).then(function(userDetails) {
+          // user.authorize and then if email verified
+            if (user.isVerified()) {
+              var role = userDetails.merchants[userDetails.id].pivot.role;
+              $scope.goToDashboard(role);
+            } else {
+              goToVerification();
+            }
+          })
+          // else 
         } else {
           angular.forEach(data.errors, function (value) {
             $scope.alerts.addAlert('danger', value);
@@ -300,8 +306,11 @@ app.controller('AuthCtrl', [
 
     var pushToDrip = (function () {
       var dataSent = {};
-
       return function () {
+        // send only on production
+        if (location.host !== 'dashboard.razorpay.com') {
+          return;
+        }
         var data = {};
         var payload = {};
         var keys = ['business_type','transaction_volume','role','department','business_name','contact_mobile','contact_name'];
@@ -352,6 +361,7 @@ app.controller('AuthCtrl', [
       $scope.goToLoginStep(1); // reset login step
       $scope.rightLayout = false;
       $scope.signup.data.email = $scope.login.data.email;
+      $scope.email_not_verified = false;
       $scope.alerts.resetAlerts();
       var toRoute = 'access.signup';
       $state.transitionTo(toRoute, {}, {
@@ -365,7 +375,7 @@ app.controller('AuthCtrl', [
         email: '',
         password: '',
       },
-      currentStep: 1, // 2 -> verification, 1 -> login, 0 -> forgotpwd
+      currentStep: 1, // 3 -> verification, 2 -> questions, 1 -> login, 0 -> forgotpwd
       currentSubStep: 0, // 0 -> email+pwd, 1 -> provision for OTP screen
     };
 
@@ -379,9 +389,22 @@ app.controller('AuthCtrl', [
             $scope.login.data.email = $stateParams.email;
           }
         } else {
-          var userDetails = user.getIdentity();
-          var role = userDetails.merchants[userDetails.id].pivot.role;
-          $scope.goToDashboard(role);
+          if (!user.isPreSignupDone()) {
+            $scope.isLoggedIn = true;
+            var userDetails = user.getIdentity();
+            if (userDetails) {
+              Object.assign($scope.signup.merchantData, userDetails.pre_signup);
+            }
+            goToRelevantQuestion();
+            $scope.login.currentStep = 2;
+            $state.transitionTo('access.pre_signup', {}, {
+              notify: false,
+            });
+          } else {
+            var userDetails = user.getIdentity();
+            var role = userDetails.merchants[userDetails.id].pivot.role;
+            $scope.goToDashboard(role);
+          }
         }
       } else if ($state.current.name === 'access.forgotpwd') {
         $scope.login.currentStep = 0;
@@ -392,9 +415,13 @@ app.controller('AuthCtrl', [
           });
           $scope.login.currentStep = 1;
         } else {
+          // if pre sign up pending
           $scope.isLoggedIn = true;
-          $scope.login.data.email = (user.getIdentity() && user.getIdentity().email);
+          var userDetails = user.getIdentity();
+          $scope.login.data.email = userDetails.email;
+          Object.assign($scope.signup.merchantData, userDetails.pre_signup);
           $scope.login.currentStep = 2;
+          goToRelevantQuestion();
         }
       }
     } else if ($state.current.name === 'access.signup') {
@@ -402,11 +429,31 @@ app.controller('AuthCtrl', [
         $state.transitionTo('access.pre_signup', {}, {
           notify: false,
         });
+        var userDetails = user.getIdentity();
         $scope.rightLayout = true;
         $scope.isLoggedIn = true;
-        $scope.login.data.email = (user.getIdentity() && user.getIdentity().email);
+        $scope.login.data.email = userDetails.email;
+        Object.assign($scope.signup.merchantData, userDetails.pre_signup);
         $scope.login.currentStep = 2;
+        goToRelevantQuestion();  
       }
+    }
+
+    function goToRelevantQuestion() {
+      var merchantData = $scope.signup.merchantData;
+      $scope.noTransition = true;
+      if (!merchantData.business_type) {
+        $scope.signup.currentSubStep = 0;
+      } else if (!merchantData.transaction_volume) {
+        $scope.signup.currentSubStep = 1;
+      } else if (!merchantData.role) {
+        $scope.signup.currentSubStep = 2;
+      } else if (!merchantData.department) {
+        $scope.signup.currentSubStep = 3;
+      } else {
+        $scope.signup.currentSubStep = 4;
+      }
+      $timeout(function () {$scope.noTransition = false;}, 0);
     }
 
     $scope.goToForgotPwd = function () {
@@ -437,14 +484,35 @@ app.controller('AuthCtrl', [
         if (data.success) {
           // check questions have been answered or not
           user.identity(true).then(function(userDetails) {
-            var role = userDetails.merchants && userDetails.merchants[userDetails.id].pivot.role;
-            $scope.goToDashboard(role);
+            if (user.isVerified() && user.isPreSignupDone()) {
+              var role = userDetails.merchants && userDetails.merchants[userDetails.id].pivot.role;
+              $scope.goToDashboard(role);
+            } else {
+              $scope.email_not_verified = false;
+              $scope.isLoggedIn = true;
+              hideSpinner();
+              if (userDetails) {
+                $scope.login.data.email = userDetails.email;
+                Object.assign($scope.signup.merchantData, userDetails.pre_signup);
+              }
+              goToRelevantQuestion();
+              $scope.login.currentStep = 2;
+              $state.transitionTo('access.pre_signup', {}, {
+                notify: false,
+              });
+            }
           });
         } else {
           hideSpinner();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
+          if (data.errors[0].includes('email not confirmed')) {
+            // go to email not verified screen
+            $scope.email_not_verified = true;
+            $scope.login.currentStep = 2;
+          } else {
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
         }
       });
     };
@@ -509,12 +577,12 @@ app.controller('AuthCtrl', [
         $scope.signup.merchantData.business_name = '';
         $scope.signup.merchantData.contact_mobile = '';
         $scope.signup.merchantData.contact_name = '';
+        $scope.email_not_verified = false;
         $scope.forms.signupForm.$setPristine();
         $scope.forms.detailsForm.$setPristine();
       });
       return request;
     };
-
   }
 ]).directive('overrideTab', ['$window', function () {
     return function (scope, element) {

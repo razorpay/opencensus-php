@@ -12,9 +12,9 @@
         <form class="auth-form" name="forms.signupForm" xng-submit="goToSignupStep(1)" ng-submit="createAccount(forms.signupForm.$valid)">
           
           <label class="form-label auth-subheading" for="email">Your Work Email</label>
-          <input type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
+          <input tabindex=1 type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="signup.data.email" class="form-control auth-form-input" required ng-readonly="lock_email">
           <label class="form-label auth-subheading" for="password">Create a Password</label>
-          <input override-tab type="password" placeholder="Min 7 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
+          <input tabindex=2 type="password" placeholder="Min 7 char, 1 letter & 1 number" name="password" id="password" ng-model="signup.data.password" class="form-control auth-form-input" required>
           <div class="google-captcha" 
             no-captcha
             g-recaptcha-response="signup.data.captcha"
@@ -25,7 +25,7 @@
           <div class="auth-subtext">
             By signing up you agree to our <a class="highlight" target="_blank" href="https://razorpay.com/privacy/">privacy policy</a> and <a class="highlight" target="_blank" href="https://razorpay.com/terms/">terms of use</a>.
           </div>
-          <button override-tab class="btn btn-primary form-control " type="submit">
+          <button tabindex=3 override-tab class="btn btn-primary form-control " type="submit">
             Create Account
           </button>
           <div class="loading-animation"><div class="spinner-container" style="background-image: url('img/loading-bubbles.svg')"></div></div>
