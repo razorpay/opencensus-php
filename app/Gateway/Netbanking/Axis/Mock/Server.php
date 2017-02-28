@@ -74,7 +74,7 @@ class Server extends Base\Mock\Server
         $response =  [
             ResponseFields::STATUS             => Constants::YES,
             ResponseFields::MERCHANT_REFERENCE => $data[RequestFields::MERCHANT_REFERENCE],
-            ResponseFields::BANK_REFERENCE_ID  => mt_rand(1000000000, 9999999999),
+            ResponseFields::BANK_REFERENCE_ID  => 9999999999,
             ResponseFields::ITEM_CODE          => $data[RequestFields::ITEM_CODE],
             ResponseFields::AMOUNT             => $data[RequestFields::AMOUNT],
             ResponseFields::CURRENCY_CODE      => Currency::INR,
