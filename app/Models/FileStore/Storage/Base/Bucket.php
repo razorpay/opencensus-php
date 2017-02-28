@@ -11,6 +11,14 @@ class Bucket
     const DEFAULT_CONFIG_NAME = Type::SETTLEMENT_BUCKET_CONFIG;
     const TEST_BUCKET_NAME    = Type::TEST_BUCKET_CONFIG;
 
+    /**
+     * Get the Bucket Config Name for given file type
+     *
+     * @param string $type File Type
+     * @param string $env  Environment
+     *
+     * @return string Bucket config Name
+     */
     public static function getBucketConfigName($type, $env = 'production')
     {
         $bucketConfigName = static::DEFAULT_CONFIG_NAME;

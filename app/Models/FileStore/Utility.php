@@ -8,7 +8,15 @@ use RZP\Trace\TraceCode;
 
 class Utility
 {
-    public static function callFileOperation($method, $params)
+    /**
+     * Call Given File Operation and tarce if it fails/errors out
+     *
+     * @param string $method File Operation
+     * @param array  $params Array of Params to be passed to File Operation fn call
+     *
+     * @return void
+     */
+    public static function callFileOperation(string $method, array $params)
     {
         $app = App::getFacadeRoot();
 

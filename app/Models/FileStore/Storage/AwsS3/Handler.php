@@ -11,6 +11,9 @@ use RZP\Models\FileStore\Utility;
 
 class Handler extends BaseHandler
 {
+    /**
+     * Config for the Handler Instance
+     */
     protected $config;
 
     public function __construct()
@@ -20,6 +23,13 @@ class Handler extends BaseHandler
         $this->config = $this->app['config']->get('filestore.aws');
     }
 
+    /**
+     * Static function to get the Aws Client
+     *
+     * @param string|null $region region of s3 bucket
+     *
+     * @return Aws\Sdk Aws S3 client
+     */
     public static function getClient($region = null)
     {
         $awsConfig = Config::get('aws');
@@ -36,6 +46,14 @@ class Handler extends BaseHandler
         return $client->createClient('s3');
     }
 
+    /**
+     * Saves the File in Aws and returns Url of file saved
+     *
+     * @param array $bucketConfig Bucket config having name and region
+     * @param array $fileDetails  Array containing File Params
+     *
+     * @return string saved file Url
+     */
     public function save($bucketConfig, $fileDetails)
     {
         if ($this->config['mock'] === true)
@@ -63,6 +81,15 @@ class Handler extends BaseHandler
         return $result['ObjectURL'];
     }
 
+    /**
+     * Download File form AWS and stores in the $filePath provided
+     *
+     * @param array  $bucketConfig bucket config
+     * @param string $key          Key of file to be saved
+     * @param string $filePath     File path where files should be saved
+     *
+     * @return void
+     */
     public function saveAs($bucketConfig, $key, $filePath)
     {
         $s3 = self::getClient($bucketConfig['region']);
@@ -87,6 +114,15 @@ class Handler extends BaseHandler
         }
     }
 
+    /**
+     * Get Signed Url for Given Key
+     *
+     * @param array  $bucketConfig bucket config
+     * @param string $key          File for which the signed url should be fetched
+     * @param string $duration     Validity of signed url
+     *
+     * @return signed Url
+     */
     public function getSignedUrl($bucketConfig, $key, $duration = '15')
     {
         if ($this->config['mock'] === true)
@@ -119,6 +155,14 @@ class Handler extends BaseHandler
         return $preSignedUrl;
     }
 
+    /**
+     * Helper function to get s3 save object array
+     *
+     * @param string $bucket      bucket name
+     * @param arary  $fileDetails file details array
+     *
+     * @return array s3 save object
+     */
     protected function getS3SaveObj($bucket, $fileDetails)
     {
         $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['key']);
@@ -134,6 +178,14 @@ class Handler extends BaseHandler
         return $s3Obj;
     }
 
+    /**
+     * Helper function to get s3 fetch object array
+     *
+     * @param string $bucket Bucket name
+     * @param string $key    Key Name
+     *
+     * @return array s3 fetch object
+     */
     protected function getS3FetchObj($bucket, $key)
     {
         $s3Obj = [

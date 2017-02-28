@@ -92,6 +92,8 @@ class Creator extends Base\Core
 
     /**
      * Set the default Value for store and metadata
+     *
+     * @return void
      */
     public function setDefaults()
     {
@@ -159,7 +161,7 @@ class Creator extends Base\Core
     /**
      * Set the Mime of File Store
      *
-     * @param $mime
+     * @param string $mime Mime
      *
      * @return Creator object
      */
@@ -334,6 +336,9 @@ class Creator extends Base\Core
 
     /**
      * Validates the Content before saving
+     *
+     * @return void
+     * @throws Exception\LogicException
      */
     protected function validateBeforeSave()
     {
@@ -344,6 +349,9 @@ class Creator extends Base\Core
 
     /**
      * Validates the Mime and Extension before uploading
+     *
+     * @return void
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateBeforeUpload()
     {
@@ -416,6 +424,8 @@ class Creator extends Base\Core
 
     /**
      * Write to Text File
+     *
+     * @return void
      */
     protected function writeTextFile()
     {
@@ -456,6 +466,11 @@ class Creator extends Base\Core
         $this->createUploadedFile($fullPath, $fileName);
     }
 
+    /**
+     * Write to Excel File
+     *
+     * @return void
+     */
     protected function writeToExcelFile()
     {
         $fileNameWithoutExt = $this->file->getName();
@@ -470,6 +485,14 @@ class Creator extends Base\Core
         $this->createUploadedFile($fileMetadata['full'], $fileMetadata['file']);
     }
 
+    /**
+     * Create Uploaded File Instance and sets to $this->filePath
+     *
+     * @param string $filePath File Path of File Name
+     * @param string $fileName File name
+     *
+     * @return void
+     */
     protected function createUploadedFile($filePath, $fileName)
     {
         $file = new UploadedFile($filePath, $fileName);
@@ -479,6 +502,11 @@ class Creator extends Base\Core
         $this->filePath = $filePath;
     }
 
+    /**
+     * Associates Merchant to a File
+     *
+     * @return void
+     */
     protected function associateMerchantWithFile()
     {
         if ($this->merchant !== null)
@@ -497,11 +525,21 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
+    /**
+     * Get Full File Path
+     *
+     * @return string Full File Path
+     */
     public function getFullFilePath()
     {
         return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
     }
 
+    /**
+     * Get Storage Directory
+     *
+     * @return string storage directory
+     */
     protected function getStorageDir()
     {
         return storage_path(Store::STORAGE_DIRECTORY);

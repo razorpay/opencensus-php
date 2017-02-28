@@ -36,7 +36,8 @@ class Store
     /**
      * Returns the Store Handler Object
      *
-     * @param  string   $store
+     * @param string $store Store
+     *
      * @return Store instance of Store Object
      * @throws Exception\LogicException
      */

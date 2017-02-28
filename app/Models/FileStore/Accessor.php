@@ -135,6 +135,11 @@ class Accessor extends Base\Core
         return $filePath;
     }
 
+    /**
+     * Get Signed URL for single and/or multiple file entities
+     *
+     * @return array array with entity id as key and signed url as value
+     */
     public function getSignedUrl()
     {
         $urls = [];
@@ -154,6 +159,13 @@ class Accessor extends Base\Core
         return $urls;
     }
 
+    /**
+     * Get Signed URL for single file entity
+     *
+     * @param Entity $fileStore Entity object
+     *
+     * @return string signed url
+     */
     protected function getUrl(Entity $fileStore)
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
@@ -168,11 +180,23 @@ class Accessor extends Base\Core
         return $url;
     }
 
+    /**
+     * Get Full Path of given File Location
+     *
+     * @param string $location location
+     *
+     * @return string full path url
+     */
     protected function createFullFilePath(string $location)
     {
         return $this->getStorageDir() . $location;
     }
 
+    /**
+     * Get Storage Directory
+     *
+     * @return string storage directory
+     */
     protected function getStorageDir()
     {
         return storage_path(Store::STORAGE_DIRECTORY);
@@ -181,7 +205,7 @@ class Accessor extends Base\Core
     /**
      * Throws Exception if Invalid No of files are found
      *
-     * @param Base\PublicCollection $files
+     * @param Base\PublicCollection $files files
      *
      * @return void
      * @throws Exception\LogicException
