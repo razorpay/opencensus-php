@@ -224,7 +224,7 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getRefererUrl($pa)
+    protected function getRefererUrl(Entity $pa)
     {
         $reqReferer = $this->request->header(RequestHeader::REFERER);
 
@@ -262,7 +262,7 @@ class Parser extends Base\Core
         return ((strtolower($domain) !== 'razorpay.com') ? $reqReferer : null);
     }
 
-    protected function getIp($pa)
+    protected function getIp(Entity $pa)
     {
         $ip = $this->request->getRealClientIp();
 
