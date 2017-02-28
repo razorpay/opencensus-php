@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Merchant\Account;
+use RZP\Models\Transaction;
 
 class Refund extends Base
 {
@@ -30,6 +31,38 @@ class Refund extends Base
 
         $refund->transaction()->associate($txn);
         $refund->saveOrFail();
+
+        return $refund;
+    }
+
+    public function createFromTransferPayment($attributes)
+    {
+        $payment = $attributes['payment'];
+
+        unset($attributes['payment']);
+
+        if (isset($attributes['amount']) === false)
+        {
+            $attributes['amount'] = $payment->getAmount();
+        }
+
+        $attributes['payment_id'] = $payment->getId();
+        $attributes['merchant_id'] = $payment->merchant->getId();
+        $attributes['base_amount'] = $attributes['amount'];
+
+        $refund = $this->build('refund', $attributes);
+
+        $txn = $this->createTransactionOnRefund($refund);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $refund->getCreatedAt());
+
+        $txn->saveOrFail();
+
+        $refund->saveOrFail();
+
+        $payment->refundAmount($attributes['amount'], $attributes['base_amount']);
+
+        $payment->saveOrFail();
 
         return $refund;
     }

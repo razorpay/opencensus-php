@@ -51,4 +51,12 @@ trait TransactionTrait
             return (new \RZP\Models\Transaction\Core)->createFromTransfer($transfer);
         });
     }
+
+    protected function createTransactionOnReversal($reversal)
+    {
+        return $this->transaction(function() use ($reversal)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromReversal($reversal);
+        });
+    }
 }

@@ -112,12 +112,14 @@ trait Reversal
 
                     if ($reversal['amount'] > $amountUnreversed)
                     {
-                        $message = 'Reversal amount exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
-
-                        throw new Exception\BadRequestValidationFailureException(
-                            $message,
-                            'reversal_amount',
-                            ['unreversed_amount' => $amountUnreversed]
+                        throw new Exception\LogicException(
+                            'Reversal amount exceeds the unreversed amount',
+                            null,
+                            [
+                                'transfer_id'       => $transfer->getId(),
+                                'amount'            => $reversal['amount'],
+                                'unreversed_amount' => $amountUnreversed,
+                            ]
                         );
                     }
 

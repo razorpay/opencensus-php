@@ -98,7 +98,9 @@ trait Transfer
 
             $transferBaseAmount = $transferPayment->getAmount() * $conversionFactor;
 
-            $transferPayment->setBaseAmount(floor($transferBaseAmount));
+            $transferBaseAmount = (int) floor($transferBaseAmount);
+
+            $transferPayment->setBaseAmount($transferBaseAmount);
         }
         else
         {

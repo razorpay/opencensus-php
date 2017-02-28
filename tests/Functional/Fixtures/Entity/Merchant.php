@@ -71,9 +71,16 @@ class Merchant extends Base
                 'pricing_plan_id' => '1hDYlICobzOCYt'
             ]);
 
-        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => '0']);
+        $balance = 0;
 
-        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => '0']);
+        if (isset($data['balance']) === true)
+        {
+            $balance = $data['balance'];
+        }
+
+        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => $balance]);
 
         $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
 

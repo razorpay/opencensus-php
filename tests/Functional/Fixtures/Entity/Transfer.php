@@ -19,7 +19,7 @@ class Transfer extends Base
         }
         else
         {
-            $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 1000000]);
+            $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
         }
 
         $defaultValues = [
@@ -45,6 +45,7 @@ class Transfer extends Base
                 'amount'        => $transfer->getAmount(),
                 'transfer_id'   => $transfer->getId(),
                 'merchant_id'   => $transfer->getToId(),
+                'on_hold'       => $transfer->getOnHold(),
                 'created_at'    => $transfer->getCreatedAt(),
                 'updated_at'    => $transfer->getCreatedAt(),
             ]);

@@ -47,6 +47,8 @@ class Validator extends Base\Validator
 
         foreach ($transfers as $transfer)
         {
+            $this->validateInput('transfer', $transfer);
+
             $transferSum += (int) $transfer[Entity::AMOUNT];
 
             $this->validateTransferCurrency($payment, $transfer[ENTITY::CURRENCY]);

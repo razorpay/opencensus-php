@@ -554,5 +554,14 @@ final class FactoryData
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
         ]);
+
+        $factory(\RZP\Models\Reversal\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'amount'             => 200,
+            'currency'           => 'INR',
+            'merchant_id'        => '10000000000000',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
     }
 }
