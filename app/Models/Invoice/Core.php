@@ -3,6 +3,7 @@
 namespace RZP\Models\Invoice;
 
 use Config;
+use Carbon\Carbon;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
@@ -20,6 +21,7 @@ use RZP\Models\FileStore;
 class Core extends Base\Core
 {
     const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
+    const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
 
     use DispatchesJobs;
 
@@ -278,7 +280,7 @@ class Core extends Base\Core
 
         if ($medium === NotifyMedium::EMAIL)
         {
-            $pdfPath = $this->getInvoicePdfIfExistsOrCreate($invoice);
+            $pdfPath = $this->getFreshInvoicePdf($invoice);
         }
 
         $response = (new Notifier($invoice, $pdfPath))->$func();
@@ -440,6 +442,38 @@ class Core extends Base\Core
         }
 
         $this->repo->saveOrFail($invoice);
+    }
+
+    /**
+     * Gets fresh invoice pdf.
+     * Considers MAX_EXPECTED_QUEUE_DELAY as the max time our queue can take to
+     * process job and update the invoice, and if pdf needs to be viewed (sync
+     * call, non frequent) directly we use this method to ensure we see the updated
+     * version.
+     *
+     * @param Entity $invoice
+     *
+     * @return string
+     */
+    public function getFreshInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
+        {
+            $this->trace->debug(TraceCode::INVOICE_PDF_GEN_SYNC, ['id' => $invoice->getId()]);
+
+            return $this->createInvoicePdf($invoice);
+        }
+        else
+        {
+            return $this->getInvoicePdfIfExistsOrCreate($invoice);
+        }
     }
 
     public function getInvoicePdfIfExistsOrCreate(Entity $invoice)

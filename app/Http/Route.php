@@ -947,6 +947,7 @@ final class Route
             'refund_gateway_refunded_txns',
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
+            'schedule_migration',
         ),
 
         'kotak' => array(
