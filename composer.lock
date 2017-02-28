@@ -4049,16 +4049,16 @@
         },
         {
             "name": "razorpay/ifsc",
-            "version": "0.2.8",
+            "version": "0.2.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/razorpay/ifsc.git",
-                "reference": "266c3eaf680e0f4972022caf1f2dab07db159acb"
+                "reference": "c53369233ae794724acf0a20582da34b05138d5d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/266c3eaf680e0f4972022caf1f2dab07db159acb",
-                "reference": "266c3eaf680e0f4972022caf1f2dab07db159acb",
+                "url": "https://api.github.com/repos/razorpay/ifsc/zipball/c53369233ae794724acf0a20582da34b05138d5d",
+                "reference": "c53369233ae794724acf0a20582da34b05138d5d",
                 "shasum": ""
             },
             "type": "library",
@@ -4078,7 +4078,7 @@
                 }
             ],
             "description": "Razorpay IFSC Codes Library",
-            "time": "2017-02-10T09:09:13+00:00"
+            "time": "2017-02-27T06:31:48+00:00"
         },
         {
             "name": "razorpay/razorpay",
@@ -4134,7 +4134,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-01-04 14:23:02"
+            "time": "2017-01-04T14:23:02+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -4181,7 +4181,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-11-22 08:12:12"
+            "time": "2016-11-22T08:12:12+00:00"
         },
         {
             "name": "razorpay/upi-clients",
