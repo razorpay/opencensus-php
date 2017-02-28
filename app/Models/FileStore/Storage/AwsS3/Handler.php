@@ -7,7 +7,6 @@ use Config;
 
 use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
-use RZP\Models\FileStore\Storage\Base\Bucket;
 use RZP\Models\FileStore\Utility;
 
 class Handler extends BaseHandler

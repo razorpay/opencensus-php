@@ -17,7 +17,7 @@ class Utility
         // umask can vary on system level, need to reset for doing file operations
         // and after file operation are done, restore umask value to default
         //
-        $oldmask = umask(0);
+        $oldMask = umask(0);
 
         try
         {
@@ -27,7 +27,7 @@ class Utility
             {
                 $params['method'] = $method;
 
-                $trace->warning(
+                $trace->error(
                     TraceCode::FILE_OPERATION_FAILED,
                     $params
                 );
@@ -39,7 +39,7 @@ class Utility
 
             $trace->traceException(
                 $e,
-                Trace::WARNING,
+                Trace::ERROR,
                 TraceCode::FILE_OPERATION_FAILED,
                 $params
             );
@@ -48,7 +48,7 @@ class Utility
         }
         finally
         {
-            umask($oldmask);
+            umask($oldMask);
         }
     }
 }

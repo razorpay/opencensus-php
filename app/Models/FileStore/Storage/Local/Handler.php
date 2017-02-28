@@ -6,7 +6,6 @@ use Config;
 use Storage;
 
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
-use RZP\Models\FileStore\Storage\Base\Bucket;
 
 class Handler extends BaseHandler
 {
