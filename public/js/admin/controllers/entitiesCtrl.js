@@ -441,7 +441,7 @@ app.controller('EntitiesCtrl', [
       payout: {
         merchant_id: ['Merchant Id'],
         customer_id: ['Customer Id'],
-        destination_id: ['Bank Account Id'],
+        destination: ['Bank Account Id'],
         method: [
           'all',
           'fund_transfer'
