@@ -45,10 +45,10 @@ class Core extends Base\Core
     protected function sendInvitationEmail(Admin\Entity $admin, $invitation)
     {
         // TODO use queue mailers
-        $mailer = new MiscMailer();
-
-        $mailer
-            ->sendMerchantInvitationEmail($invitation, $admin->toArray())
-            ->queueAndDeliver();
+        // $mailer = new MiscMailer();
+        //
+        // $mailer
+        //     ->sendMerchantInvitationEmail($invitation, $admin->toArray())
+        //     ->queueAndDeliver();
     }
 }

@@ -462,4 +462,9 @@ class Entity extends Base\Entity
 
         return Org\Entity::getSignedId($orgId);
     }
+
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
 }

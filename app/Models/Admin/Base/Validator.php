@@ -12,9 +12,9 @@ class Validator extends Base\Validator
     public function validateOrgSpecificInput(
         string $operation,
         array $input,
-        string $orgCode)
+        string $orgId)
     {
-        $rules = $this->getRulesVariableForOrg($operation, $orgCode);
+        $rules = $this->getRulesVariableForOrg($operation, $orgId);
 
         // We check for valid keys because single entity stores unique
         // fields for many orgs which should not be errorneously filled.
@@ -25,22 +25,22 @@ class Validator extends Base\Validator
             $this->throwExtraFieldsException($invalidKeys);
         }
 
-        $this->validateInputValuesForOrg($operation, $input, $orgCode);
+        $this->validateInputValuesForOrg($operation, $input, $orgId);
     }
 
     protected function getRulesVariableForOrg(
         string $operation,
-        string $orgCode)
+        string $orgId)
     {
-        $entityName = $this->entity->getEntityName();
+        $entity = 'admin_lead';
 
         $rulesVar = $this->getRulesVariableName($operation);
 
         $fields = (new FieldMap\Repository)
-                    ->findByOrgIdAndEntity($orgCode, $entity)
+                    ->findByOrgIdAndEntity($orgId, $entity)
                     ->getFields();
 
-        return array_intersect_key(static::$$rulesVar, $fields);
+        return array_intersect_key(static::$$rulesVar, array_flip($fields));
     }
 
     protected function validateInputValuesForOrg(

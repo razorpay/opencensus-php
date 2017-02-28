@@ -15,22 +15,23 @@ class Validator extends Base\Validator
     ];
 
     protected static $sendInvitationRules = [
-        'contact_email' => 'required|max:255|email',
-        'channel_code'  => 'required',
-        'crm_next_no'   => 'required',
-        'db_token_no'   => 'required',
-        'branch_lts_no' => 'required',
-        'branch_code'   => 'required',
-        'source_code'   => 'required',
-        'promo_code'    => 'required',
-        'lg_code'       => 'required',
-        'lc_ro_code'    => 'required',
-        'mrm_code'      => 'required',
-        'mcc_category'  => 'required',
-        'mcc_code'      => 'required',
-        'merchant_type' => 'required',
-        'merchant_name' => 'required',
-        'contact_name'  => 'required',
-        'dba_name'      => 'required'
+        'contact_email'         => 'required|max:255|email',
+        'channel_code'          => 'required',
+        'channel_code_others'   => 'sometimes',
+        'crm_next_no'           => 'required',
+        'db_token_no'           => 'required',
+        'branch_lts_no'         => 'required',
+        'branch_code'           => 'required',
+        'source_code'           => 'required',
+        'promo_code'            => 'required',
+        'lg_code'               => 'required',
+        'lc_ro_code'            => 'required',
+        'mrm_code'              => 'required',
+        'mcc_category'          => 'required',
+        'mcc_code'              => 'required',
+        'merchant_type'         => 'required',
+        'merchant_name'         => 'required',
+        'contact_name'          => 'required',
+        'dba_name'              => 'required'
     ];
 }
