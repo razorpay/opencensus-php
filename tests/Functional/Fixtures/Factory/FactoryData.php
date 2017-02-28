@@ -177,6 +177,7 @@ final class FactoryData
         $factory(\RZP\Models\BankTransferAttempt\Entity::class, [
             'id' => $faker->uniqueid,
             'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
+            'entity_type' => 'settlement',
             'channel' => 'kotak',
             'version' => 'v2',
         ]);

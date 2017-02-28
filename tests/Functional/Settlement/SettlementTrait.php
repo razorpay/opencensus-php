@@ -75,6 +75,20 @@ trait SettlementTrait
         return $content;
     }
 
+    protected function retryIntiateSettlements($channel = 'kotak')
+    {
+        $request = [
+            'url' => '/settlements/reconcile/retry/kotak',
+            'method' => 'POST',
+        ];
+
+        $this->ba->appAuthMode();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
     protected function generateDailyReport()
     {
         $request = [

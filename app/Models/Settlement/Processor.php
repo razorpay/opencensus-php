@@ -21,6 +21,8 @@ class Processor extends Base\Core
 {
     protected $setlTime;
 
+    protected $channel;
+
     protected $input;
 
     protected $mutex;
@@ -38,24 +40,15 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function process(array $input, $channel, $schedule = true)
+    public function processFailedSettlements(array $input, $channel)
     {
-        $this->increaseAllowedSystemLimits();
-
         $this->preSettlementProcessing($input, $channel);
-
-        list($shouldProcess, $message) = $this->shouldProcessSettlements();
-
-        if ($shouldProcess === false)
-        {
-            return $message;
-        }
 
         $data = $this->mutex->acquireAndRelease(
             self::MUTEX_RESOURCE,
-            function () use ($input, $channel, $schedule)
+            function () use ($input, $channel)
             {
-                return $this->processSettlements($input, $channel, $schedule);
+                return $this->retryProcessFailedSettlements($channel);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -63,95 +56,113 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function increaseAllowedSystemLimits()
+    public function process(array $input, $channel, $schedule = true)
     {
-        RuntimeManager::setMemoryLimit('1024M');
+        $this->preSettlementProcessing($input, $channel);
 
-        RuntimeManager::setTimeLimit(300);
+        $data = $this->mutex->acquireAndRelease(
+            self::MUTEX_RESOURCE,
+            function () use ($input, $channel, $schedule)
+            {
+                return $this->processSettlements($input, $schedule);
+            },
+            self::MUTEX_LOCK_TIMEOUT,
+            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+
+        return $data;
     }
 
-    protected function preSettlementProcessing(array $input, & $channel)
-    {
-        $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
-
-        $this->input = $input;
-
-        //set channel
-        if ($channel === null)
-        {
-            $channel = Channel::KOTAK;
-        }
-    }
-
-    protected function shouldProcessSettlements()
-    {
-        $today = Carbon::today('Asia/Kolkata');
-
-        if (($this->mode === Mode::LIVE) and
-            (Holidays::isWorkingDay($today) === false))
-        {
-            return [false, Holidays::HOLIDAY_MESSAGE];
-        }
-
-        if ($this->checkInvalidSettlementTime() === true)
-        {
-            return [false, ['message' => 'settlements cannot be processed now']];
-        }
-
-        return [true, null];
-    }
-
-    protected function checkInvalidSettlementTime()
-    {
-        // NEFT can be processed between 8am and 6 pm only, while batch file can
-        // be uploaded anytime
-
-        $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
-
-        // Cron runs at 5.01pm.
-        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
-
-        if (($this->mode === Mode::LIVE) and
-            (($this->setlTime <= $sevenAm) or
-             ($this->setlTime >= $fivePm)))
-        {
-            return true;
-        }
-
-        return false;
-    }
-
-    protected function processSettlements($input, $channel, $schedule)
+    protected function processSettlements($input, $schedule)
     {
         try
         {
-            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel, $schedule);
+            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($this->channel, $schedule);
 
-            $data = [
-                'channel'               => $channel,
-                'count'                 => $settlements->count(),
-                'transaction_count'     => $txnCount,
-            ];
+            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
 
-            if ($setlAttempts->count() > 0)
-            {
-                list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel);
-
-                $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
-
-                $data['settlement_text_file']  = $urlText;
-                $data['settlement_excel_file'] = $urlExcel;
-
-                $this->successNotification($data, $settlements);
-            }
-            else
-            {
-                $data['message'] = 'No settlements found!';
-            }
         }
         catch (\Exception $e)
         {
-            $this->settlementFailure($channel, $e);
+            $this->settlementFailure($this->channel, $e);
+        }
+
+        return $response;
+    }
+
+    // Is schedule needed here?
+    protected function retryProcessFailedSettlements($channel): array
+    {
+        try
+        {
+            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($channel,
+                ['setlTransactions', 'merchant', 'bankAccount']);
+
+            $setlAttempts = new Base\PublicCollection;
+
+            foreach ($settlements as $setl)
+            {
+                $merchant = $setl->merchant;
+
+                $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
+
+                $bankTransferAtpt = $this->repo->transaction(function() use ($merchantSettler, $setl)
+                {
+                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
+
+                    $setlTxns = $setl->setlTransactions;
+
+                    // how to fetch transactions that had this settl_id
+                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
+
+                    $setl->batchSettlement()->associate($this->batchSettlement);
+
+                    $this->repo->saveOrFail($setl);
+
+                    $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
+                    $this->repo->saveOrFail($bankTransferAtpt);
+
+                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
+
+                    return $bankTransferAtpt;
+                });
+
+                $setlAttempts->push($bankTransferAtpt);
+            }
+
+            $reponse = $this->generateAndSendSettlementFile($settlements, $setlAttempts, 0);
+
+        }
+        catch (\Exception $e)
+        {
+            $this->settlementFailure($this->channel, $e);
+        }
+
+        return $reponse;
+    }
+
+    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount)
+    {
+        $data = [
+                    'channel'               => $this->channel,
+                    'count'                 => $settlements->count(),
+                    'transaction_count'     => $txnCount, // how do I get this for failed?
+        ];
+
+        if ($setlAttempts->count() > 0)
+        {
+            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts);
+
+            $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
+
+            $data['settlement_text_file']  = $urlText;
+            $data['settlement_excel_file'] = $urlExcel;
+
+            $this->successNotification($data, $settlements);
+        }
+        else
+        {
+            $data['message'] = 'No settlements found!';
         }
 
         return $data;
@@ -203,6 +214,7 @@ class Processor extends Base\Core
             // skip if txn not to be settled
             if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
             {
+                s('continue');
                 continue;
             }
 
@@ -214,6 +226,7 @@ class Processor extends Base\Core
 
                 if ($payment->hasBeenCaptured() === false)
                 {
+                    s('payment not captured');
                     $txn[Transaction\Entity::SETTLED_AT] = null;
 
                     $this->repo->saveOrFail($txn);
@@ -239,36 +252,10 @@ class Processor extends Base\Core
 
         while ($i < $txnsCount)
         {
-            // Settlement amount
-            $setlAmount = $setlGatewayFee = $setlApiFee = 0;
-            $setlFee = $serviceTax = 0;
-
-            $setlTxns = new Base\PublicCollection;
-
-            // Get merchant
-            assert($txns[$i]->merchant !== null);
-
             $merchant = $txns[$i]->merchant;
-            $merchantId = $merchant->getId();
 
-            //
-            // Since transactions are ordered by the merchant id,
-            // we can do the following operation in O(n) instead of O(n^2)
-            //
-            while (($i < $txnsCount) and
-                   ($txns[$i]->getMerchantId() === $merchantId))
-            {
-                $txn = $txns[$i];
-
-                $setlAmount     += $txn->getCredit() - $txn->getDebit();
-                $setlGatewayFee += $txn->getGatewayFee();
-                $setlApiFee     += $txn->getApiFee();
-                $setlFee        += $txn->getFee();
-                $serviceTax     += $txn->getServiceTax();
-
-                $setlTxns->push($txn);
-                $i++;
-            }
+            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax) =
+                $this->getTransactionDetailsByMerchantId($txns, $i, $txnsCount, $merchant);
 
             //
             // settle only if settlement amount is more than INR 1 and greater than
@@ -276,8 +263,7 @@ class Processor extends Base\Core
             //
             $balance = $merchant->balance->getBalance();
 
-            if (($setlAmount <= 100) or
-                ($setlAmount > $balance))
+            if (($setlAmount <= 100) or ($setlAmount > $balance))
             {
                 $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
                     [
@@ -293,16 +279,14 @@ class Processor extends Base\Core
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
             list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                function()
-                    use ($merchantSettler, $setlTxns, $setlAmount,
-                         $setlFee, $setlApiFee, $serviceTax)
+                function() use ($merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
                 {
                     list($setl, $bankTransferAtpt) = $merchantSettler->settle(
-                                            $setlTxns,
-                                            $setlAmount,
-                                            $setlFee,
-                                            $setlApiFee,
-                                            $serviceTax);
+                                                        $setlTxns,
+                                                        $setlAmount,
+                                                        $setlFee,
+                                                        $setlApiFee,
+                                                        $serviceTax);
 
                     $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
 
@@ -327,6 +311,37 @@ class Processor extends Base\Core
         }
 
         return [$settlements, $txnsSettledCount, $setlAttempts];
+    }
+
+    protected function getTransactionDetailsByMerchantId($txns, & $i, $txnsCount, $merchant): array
+    {
+        $setlAmount = $setlGatewayFee = $setlApiFee = 0;
+        $setlFee = $serviceTax = 0;
+
+        $setlTxns = new Base\PublicCollection;
+
+        assert($txns[$i]->merchant !== null);
+
+        $merchantId = $merchant->getId();
+
+        // Since transactions are ordered by the merchant id,
+        // we can do the following operation in O(n) instead of O(n^2)
+        while (($i < $txnsCount) and
+               ($txns[$i]->getMerchantId() === $merchantId))
+        {
+            $txn = $txns[$i];
+
+            $setlAmount     += $txn->getCredit() - $txn->getDebit();
+            $setlGatewayFee += $txn->getGatewayFee();
+            $setlApiFee     += $txn->getApiFee();
+            $setlFee        += $txn->getFee();
+            $serviceTax     += $txn->getServiceTax();
+
+            $setlTxns->push($txn);
+            $i++;
+        }
+
+        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax];
     }
 
     protected function createBatchSettlementEntity($setl, $txnsCount)
@@ -383,11 +398,11 @@ class Processor extends Base\Core
         $this->repo->saveOrFail($batchSettlement);
     }
 
-    protected function generateSettlementFile($setlAttempts, $channel)
+    protected function generateSettlementFile($setlAttempts)
     {
         $data = null;
 
-        if ($channel === Channel::KOTAK)
+        if ($this->channel === Channel::KOTAK)
         {
             $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
         }
@@ -403,7 +418,6 @@ class Processor extends Base\Core
 
         $shouldSettle = (($txn->getChannel() === $channel) and
                          ($merchant->holdFunds() === false));
-
         assert ($merchant->bankAccount !== null);
 
         if (($this->mode !== Mode::TEST) and
@@ -440,4 +454,77 @@ class Processor extends Base\Core
         (new SlackNotification)->failure('setl_initiate', $exception);
     }
 
+    protected function preSettlementProcessing(array $input, $channel)
+    {
+        $this->inititalizeVariables($input, $channel);
+
+        list($shouldProcess, $message) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === false)
+        {
+            return $message;
+        }
+
+        $this->increaseAllowedSystemLimits();
+    }
+
+    protected function increaseAllowedSystemLimits()
+    {
+        RuntimeManager::setMemoryLimit('1024M');
+
+        RuntimeManager::setTimeLimit(300);
+    }
+
+    protected function inititalizeVariables(array $input, $channel)
+    {
+        $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $this->input = $input;
+
+        //set channel
+        $this->channel = $channel;
+
+        if ($channel === null)
+        {
+            $this->channel = Channel::KOTAK;
+        }
+    }
+
+    protected function shouldProcessSettlements()
+    {
+        $today = Carbon::today('Asia/Kolkata');
+
+        if (($this->mode === Mode::LIVE) and
+            (Holidays::isWorkingDay($today) === false))
+        {
+            return [false, Holidays::HOLIDAY_MESSAGE];
+        }
+
+        if ($this->checkInvalidSettlementTime() === true)
+        {
+            return [false, ['message' => 'settlements cannot be processed now']];
+        }
+
+        return [true, null];
+    }
+
+    protected function checkInvalidSettlementTime()
+    {
+        // NEFT can be processed between 8am and 6 pm only, while batch file can
+        // be uploaded anytime
+
+        $sevenAm = Carbon::today('Asia/Kolkata')->hour(7)->timestamp;
+
+        // Cron runs at 5.01pm.
+        $fivePm = Carbon::today('Asia/Kolkata')->hour(17)->minute(10)->timestamp;
+
+        if (($this->mode === Mode::LIVE) and
+            (($this->setlTime <= $sevenAm) or
+             ($this->setlTime >= $fivePm)))
+        {
+            return true;
+        }
+
+        return false;
+    }
 }

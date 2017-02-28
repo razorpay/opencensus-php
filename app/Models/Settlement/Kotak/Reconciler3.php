@@ -248,7 +248,6 @@ class Reconciler3
             else if ((empty($remarks) === true) or
                 (in_array($remarks, self::SUCCESS_STATUS) === true))
             {
-                s($remarks);
                 $status = Settlement\Status::PROCESSED;
             }
             else
@@ -274,14 +273,21 @@ class Reconciler3
 
             if ($oldStatus !== $status)
             {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Old and new status not matching. ' .
+                $this->trace->warning(
+                TraceCode::MISC_TRACE_CODE,
+                [
+                    'message' => 'Old and new status not matching. ' .
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Settlement Id: ' . $setl->getId());
+                    'Settlement Id: ' . $setl->getId()
+                ]);
+                // throw new Exception\BadRequestValidationFailureException(
+                //     'Old and new status not matching. ' .
+                //     'Old status: ' . $oldStatus . ' New status: ' . $status .
+                //     'Settlement Id: ' . $setl->getId());
             }
         }
-        else
-        {
+        // else
+        // {
             $bankTransferAttempt->setUtr($utr);
             $bankTransferAttempt->setStatus($status);
             $bankTransferAttempt->setBankStatusCode($statusCode);
@@ -302,7 +308,7 @@ class Reconciler3
 
             $setl->transaction->setReconciledAt($this->reconciledAt);
             $this->repo->saveOrFail($setl->transaction);
-        }
+        // }
 
         return $setl;
     }

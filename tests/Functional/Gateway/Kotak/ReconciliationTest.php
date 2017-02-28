@@ -97,6 +97,38 @@ class ReconciliationTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testRetryRecon()
+    {
+        $this->testReconciliationFailure();
+
+        $content = $this->retryIntiateSettlements('kotak');
+
+        // Check settlement entities
+        $setlAttempts = $this->getEntities('bank_transfer_attempt', [], true);
+        $this->assertEquals(2, $setlAttempts['count']);
+
+        // Check reconciliation
+        $setlFile = $content['settlement_text_file'];
+
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+
+        // Reconcile settlements
+        $data = $this->reconcileSettlements($setlReconciliationFile);
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement();
+
+        //Validate settlement entity
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconSuccess');
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
+        $this->assertNotNull($settlementAttempt['utr']);
+    }
+
     public function testAsjustmentCreationAgainstSettlement()
     {
         // Create payments and refunds with timestamps two days back

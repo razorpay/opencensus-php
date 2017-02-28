@@ -87,6 +87,7 @@ class Entity extends Base\PublicEntity
                     BankAccount\Entity::ID);
     }
 
+    // Fetches the transaction of type Settlement
     public function transaction()
     {
         return $this->belongsTo('RZP\Models\Transaction\Entity');
@@ -97,6 +98,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
     }
 
+    // Fetches all types of transactions for the given settlement
     public function setlTransactions()
     {
         return $this->hasMany('RZP\Models\Transaction\Entity');

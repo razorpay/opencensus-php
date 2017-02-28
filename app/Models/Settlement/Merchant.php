@@ -13,6 +13,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
+// use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 
 class Merchant
 {
@@ -26,6 +27,7 @@ class Merchant
     protected $setlDetails;
     protected $fee;
     protected $serviceTax;
+    // protected $batchSettlement;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -37,6 +39,31 @@ class Merchant
 
         // Get merchant bank account
         $this->attachMerchantBankAccount();
+    }
+
+    public function retryFailedSettlement($setl)
+    {
+        $this->setl = $setl;
+
+        // Create Settlement attempt entity
+        $bankTransferAtpt = $this->createSettlementAttemptEntity();
+
+        // // Create or update batch settlement
+        // // Find out what to pass as 2nd argument below
+        // $this->createOrUpdateBatchSettlementForSettlement($setl, 0);
+
+        // // Associate batch settlement
+        // $setl->batchSettlement()->associate($this->batchSettlement);
+
+        // $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
+        // $this->repo->saveOrFail($this->setl);
+
+        $this->repo->saveOrFail($this->bankTransferAtpt);
+
+        // $this->repo->saveOrFail($this->batchSettlement);
+
+        return $bankTransferAtpt;
     }
 
     public function settle($txns, $amount, $fee, $apiFee, $serviceTax): array
@@ -59,12 +86,17 @@ class Merchant
         // Updates merchant and api balance
         $this->updateBalances();
 
+        // $this->createOrUpdateBatchSettlementForSettlement($setl, $txns->count());
+        // $setl->batchSettlement()->associate($this->batchSettlement);
+
+        // $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
         $this->saveChangesToDb();
 
         return [$setl, $bankTransferAtpt];
     }
 
-    public function collectApiFees($apiFee): array
+    protected function collectApiFees($apiFee): array
     {
         $this->amount = $apiFee;
         $this->fee = 0;
@@ -105,16 +137,14 @@ class Merchant
 
     protected function createSettlementDetailsEntities()
     {
-        $entityTypes = array(
+        $entityTypes = [
             SetlDetails\Component::PAYMENT,
             SetlDetails\Component::REFUND,
             SetlDetails\Component::ADJUSTMENT,
-        );
+        ];
 
         $details = [];
-        $totalServiceTax = 0;
-        $totalFee = 0;
-        $totalFeeCredits = 0;
+        $totalServiceTax = $totalFee = $totalFeeCredits = 0;
 
         foreach ($entityTypes as $componentType)
         {
@@ -129,19 +159,27 @@ class Merchant
 
             $details[$componentType]['count'] += 1;
 
-            if ($txn->getType() === Transaction\Type::PAYMENT)
+            switch ($txn->getType())
             {
+            case Transaction\Type::PAYMENT:
+
                 $details[$componentType]['amount'] += $txn->getAmount();
-            }
-            else if ($txn->getType() === Transaction\Type::REFUND)
-            {
+
+                break;
+
+            case Transaction\Type::REFUND:
+
                 $details[$componentType]['amount'] -= $txn->getAmount();
-            }
-            else if ($txn->getType() === Transaction\Type::ADJUSTMENT)
-            {
+
+                break;
+
+            case Transaction\Type::ADJUSTMENT:
+
                 $details[$componentType]['amount'] += $txn->getCredit();
 
                 $details[$componentType]['amount'] -= $txn->getDebit();
+
+                break;
             }
 
             $totalServiceTax += $txn->getServiceTax();
@@ -150,7 +188,6 @@ class Merchant
 
             // FeeCredits is either zero or equal to fees.
             $totalFeeCredits += $txn->getFeeCredits();
-
         }
 
         foreach ($entityTypes as $componentType)
@@ -312,6 +349,8 @@ class Merchant
         $this->repo->saveOrFailCollection($this->setlDetails);
 
         $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
+
+        // $this->repo->saveOrFail($this->batchSettlement);
     }
 
     protected function updateBalances(): Transaction\Entity

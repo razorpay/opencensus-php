@@ -4,6 +4,7 @@ namespace RZP\Models\Settlement;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement;
+use RZP\Models\Transaction as Transaction;
 
 class Repository extends Base\Repository
 {
@@ -17,6 +18,19 @@ class Repository extends Base\Repository
         Entity::STATUS              => 'sometimes|in:created,processed,failed',
         Entity::UTR                 => 'sometimes|alpha_num',
     );
+
+    public function getFailedSettlementsWithRelations($channel)
+    {
+        return $query = $this->newQuery()
+                      ->where('channel', '=', 'kotak')
+                      ->where('status', '=', 'failed')
+                      ->with('merchant', 'bankAccount')
+                      ->with(['setlTransactions' => function($query)
+                        {
+                            $query->where(Transaction\Entity::TYPE, '!=', Transaction\Type::SETTLEMENT);
+                        }])
+                      ->get();
+    }
 
     public function getSettlementWithFeesAsNullOrZero()
     {

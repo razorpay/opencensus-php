@@ -52,4 +52,14 @@ return [
         'remarks' => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
         'failure_reason' => 'Reconciliation',
     ],
+
+    'testRetryRecon' => [
+        'request' => [
+            'url' => '/settlements/retry/kotak',
+            'method' => 'post',
+            'content' => [],
+        ],
+        'response' => [
+        ]
+    ]
 ];

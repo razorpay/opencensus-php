@@ -289,12 +289,21 @@ class Repository extends Base\Repository
 
     public function settled($txns, $settledAt)
     {
-        if ($txns->count() === 0)
-        {
-            return;
-        }
+        $txnCount = $txns->count();
 
-        $ids = $txns->getIds();
+        switch ($txnCount)
+        {
+            case 0:
+                return;
+
+            case 1:
+                $ids = [$txns->getId()];
+                break;
+
+            default:
+                $ids = $txns->getIds();
+                break;
+        }
 
         $values = array(
             Transaction\Entity::SETTLED_AT  => $settledAt,

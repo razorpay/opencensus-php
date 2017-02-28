@@ -28,6 +28,15 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postSettlementRetry($channel)
+    {
+        $input = Request::all();
+
+        $data = (new Settlement\Service)->processFailedSettlements($input, $channel);
+
+        return ApiResponse::json($data);
+    }
+
     public function postSettlementFileGenerate()
     {
         $input = Request::all();

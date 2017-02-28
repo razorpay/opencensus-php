@@ -28,15 +28,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function processFailedSettlements($input, $channel)
+    {
+        $data = (new Settlement\Processor)->processFailedSettlements($input, $channel);
+
+        return $data;
+    }
+
     public function generateSettlementFile($input)
     {
         (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
         $batchSettlementId = $input['batch_settlement_id'];
+        s($batchSettlementId);
+        $setlAttmepts = $this->repo
+                      ->bank_transfer_attempt
+                      ->getBankTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId);
 
-        $setls = $this->repo->settlement->getSettlementsByBatchSettlementId($batchSettlementId);
-
-        $urls = (new Kotak\Service)->generateSettlementFile($setls);
+        $urls = (new Kotak\Service)->generateSettlementFile($setlAttmepts);
 
         return $urls;
     }

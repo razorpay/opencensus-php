@@ -49,9 +49,9 @@ class Service extends Base\Service
         return ['setlReturnFile' => $filename];
     }
 
-    public function generateSettlementFile($setls)
+    public function generateSettlementFile($setlAttempts)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($setls, false);
+        $urls = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts, false);
 
         return $urls;
     }
