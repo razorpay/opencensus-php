@@ -23,6 +23,21 @@ return [
         ],
     ],
 
+    'testFetchCardRecurring' => [
+       'request' => [
+            'url' => '/cards/recurring',
+            'method' => 'get',
+            'content' => [
+                'number' => '4111111111111111'
+            ],
+        ],
+        'response' => [
+            'content' => [
+                'recurring' => true
+            ],
+        ],
+    ],
+
     'testBlockedCard' => [
         'request' => [
             'content' => [

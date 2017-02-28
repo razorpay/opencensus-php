@@ -33,6 +33,15 @@ class CardTest extends TestCase
         $this->assertEquals($card['id'], $payment['card_id']);
     }
 
+    public function testFetchCardRecurring()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
     public function testUnsupportedCardNetworks()
     {
         $numbers = array(
