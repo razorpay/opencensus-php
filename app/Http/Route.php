@@ -321,6 +321,7 @@ final class Route
         'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
+        'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
         'gateway_add_priorities'                  => ['post',     'gateway/priorities/{method}',                    'GatewayController@createGatewayPriority'                           ],
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
@@ -681,6 +682,7 @@ final class Route
         'emi_generate_excel',
         'refund_verify',
         'payment_capture_verify',
+        'es_debug_read',
         'es_migrate_entity',
         'dummy_critical_error',
         'reconciliate',
@@ -1127,14 +1129,16 @@ final class Route
         return $schema . $host . $urlSegment;
     }
 
-    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '')
+    public function getUrlWithPublicCallbackAuth(array $parameters = [], $key = '', $route = 'payment_callback_with_key_post')
     {
         if ($key === '')
         {
             $key = $this->ba->getPublicKey();
         }
 
-        return $this->getUrl('payment_callback_with_key_post', $parameters, $key);
+        $url = $this->getUrl($route, $parameters, $key);
+
+        return $url;
     }
 
     public function getPublicCallbackUrlWithHash($pid, $key = '')
@@ -1160,7 +1164,7 @@ final class Route
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        list($schema, $host) = $this->getSchemaAndHost();
+        list($schema, $host, $port) = $this->getSchemaAndHost();
 
         $auth = '';
         if ($key !== '')
@@ -1176,6 +1180,11 @@ final class Route
 
         $url = $schema . $auth . $host;
 
+        if ((int)$port !== 80)
+        {
+            $url .= ':' . $port;
+        }
+
         return $url;
     }
 
@@ -1184,9 +1193,12 @@ final class Route
         $request = \Request::getFacadeRoot();
 
         $schema = $request->getScheme() . '://';
+
         $host = $request->getHost();
 
-        return [$schema, $host];
+        $port = $request->getPort();
+
+        return [$schema, $host, $port];
     }
 
     // @codingStandardsIgnoreStart

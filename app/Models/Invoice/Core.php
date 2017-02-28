@@ -457,6 +457,11 @@ class Core extends Base\Core
      */
     public function getFreshInvoicePdf(Entity $invoice)
     {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)

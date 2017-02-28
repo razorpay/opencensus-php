@@ -755,7 +755,7 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getCacheKey($input['payment']['id']);
 
-        return Cache::store($this->secureCacheDriver)->get($key);
+        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
     }
 
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
