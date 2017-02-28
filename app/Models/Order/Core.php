@@ -50,7 +50,7 @@ class Core extends Base\Core
     {
         $offer = $this->repo->offer->findByPublicIdAndMerchant($offerId, $this->merchant);
 
-        $offerChecker = new Offer\Checker($offer);
+        $offerChecker = new Offer\Checker($offer, true);
 
         if ($offerChecker->checkOfferApplicableOnOrder($order) === false)
         {

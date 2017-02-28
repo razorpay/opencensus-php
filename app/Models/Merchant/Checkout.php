@@ -295,18 +295,16 @@ class Checkout
 
         $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
 
-        $directOffer = null;
-
-        if ($orderId !== null)
+        if ($orderId === null)
         {
-            $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
+            return;
         }
+
+        $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
 
         if ($directOffer !== null)
         {
             $data['offers'] = $directOffer->toArrayPublic();
         }
-
-        return;
     }
 }

@@ -64,20 +64,15 @@ class Core extends Base\Core
     {
         $order = $payment->order;
 
-        $appliedOffer = null;
-
-        if ($order !== null)
-        {
-            $appliedOffer = $order->offer;
-        }
-
-        // Return if offer is not present for order
-        if ($appliedOffer === null)
+        if (($order === null) or
+            ($order->offer === null))
         {
             return;
         }
 
-        $offerChecker = new Checker($appliedOffer);
+        $appliedOffer = $order->offer;
+
+        $offerChecker = new Checker($appliedOffer, true);
 
         if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
         {
@@ -91,16 +86,12 @@ class Core extends Base\Core
                 throw new Exception\BadRequestException(
                     ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
             }
-
-            return;
         }
 
         $this->trace->info(TraceCode::OFFER_APPLIED_ON_PAYMENT, [
             'payment_id' => $payment->getId(),
             'offer_id'   => $appliedOffer->getId()
         ]);
-
-        return;
     }
 
     public function fetchForOrder(string $orderId, Merchant\Entity $merchant)
@@ -109,12 +100,7 @@ class Core extends Base\Core
 
         $offer = $order->offer;
 
-        if ($offer !== null)
-        {
-            return $offer;
-        }
-
-        return null;
+        return $offer;
     }
 
     public function fetchSharedOffers()

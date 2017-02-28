@@ -35,14 +35,11 @@ class Checker extends Base\Core
     {
         $this->order = $order;
 
-        $validOrderAmount = $this->checkOrderAmount();
-
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
-        return (($validOrderAmount === true) and
-                ($offerActive === true) and
+        return (($offerActive === true) and
                 ($validOfferPeriod === true));
     }
 
@@ -52,14 +49,11 @@ class Checker extends Base\Core
 
         $validPaymentMethod = $this->checkPaymentMethod();
 
-        $validPaymentAmount = $this->checkPaymentAmount();
-
         $offerActive = $this->offer->isActive();
 
         $validOfferPeriod = $this->checkOfferPeriod();
 
         return (($validPaymentMethod === true) and
-                ($validPaymentAmount === true) and
                 ($offerActive === true) and
                 ($validOfferPeriod === true));
     }
@@ -135,7 +129,7 @@ class Checker extends Base\Core
             $result = (in_array($this->card->getIin(), $iins, true) === true);
 
             $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
-                'result' => $result
+                'result' => $result,
             ]);
 
             return $result;
