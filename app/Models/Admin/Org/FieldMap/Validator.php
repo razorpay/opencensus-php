@@ -55,10 +55,11 @@ class Validator extends Base\Validator
 
         $entity = new $class;
 
-        $fillableFields = $entity->getFillableFields();
+        $entityFields = $entity->getInputFields();
 
         // We only consider fillable fields for addition or deletion
-        $diffArray = array_diff($input[Entity::FIELDS], $fillableFields);
+        // In case of entities like admin-lead we fetch from validators
+        $diffArray = array_diff($input[Entity::FIELDS], $entityFields);
 
         if (empty($diffArray) === false)
         {

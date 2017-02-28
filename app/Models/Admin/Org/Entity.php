@@ -199,7 +199,7 @@ class Entity extends Base\Entity
         $this->attributes[self::EMAIL_DOMAINS] = $emailDomains;
     }
 
-    public function getFillableFields()
+    public function getInputFields()
     {
         return $this->fillable;
     }

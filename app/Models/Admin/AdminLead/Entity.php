@@ -61,8 +61,18 @@ class Entity extends Base\Entity
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 
-    public function getFillableFields()
+    public function getOrgId() : string
     {
-        return $this->fillable;
+        return $this->getAttribute(self::ORG_ID);
+    }
+
+    public function getInputFields() : array
+    {
+        // Fields in the adminLead table are stored as json in FORM_DATA
+        $validator = $this->getValidator();
+
+        $rulesVar = $validator->getRulesForOperation('send_invitation');
+
+        return array_keys($rulesVar);
     }
 }

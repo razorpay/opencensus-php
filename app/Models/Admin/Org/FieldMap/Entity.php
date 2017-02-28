@@ -73,8 +73,13 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENTITY_NAME);
     }
 
-    public function getFillableFields()
+    public function getInputFields() : array
     {
         return $this->fillable;
+    }
+
+    public function getOrgId() : string
+    {
+        return $this->getAttribute(self::ORG_ID);
     }
 }
