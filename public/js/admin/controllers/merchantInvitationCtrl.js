@@ -39,12 +39,21 @@ app.controller('MerchantInvitationCtrl', [
     });
 
     $scope.inviteMerchant = function(merchant) {
+
       var request = $http({
-        method: 'post',
-        url: '/admin/merchants/invite',
-        transformRequest: transformRequestAsFormPost,
-        data: merchant
+        url: '/admin/generic',
+
+        method: 'POST',
+
+        params: {
+          route_name: 'admin_lead_create'
+        },
+
+        data: {
+          body: merchant
+        }
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Invitation has been sent to ' +
