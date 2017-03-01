@@ -105,14 +105,16 @@ class Processor extends Base\Core
 
                 $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-                $bankTransferAtpt = $this->repo->transaction(function() use ($merchantSettler, $setl)
+                $setlTxns = $setl->setlTransactions;
+
+                $setlTxnsCount = $setlTxns->count();
+
+                $bankTransferAtpt = $this->repo->transaction(
+                    function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
                 {
                     $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
 
-                    $setlTxns = $setl->setlTransactions;
-
-                    // how to fetch transactions that had this settl_id
-                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
+                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxnsCount);
 
                     $setl->batchSettlement()->associate($this->batchSettlement);
 
@@ -130,7 +132,7 @@ class Processor extends Base\Core
                 $setlAttempts->push($bankTransferAtpt);
             }
 
-            $reponse = $this->generateAndSendSettlementFile($settlements, $setlAttempts, 0);
+            $reponse = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $setlTxnsCount);
 
         }
         catch (\Exception $e)
@@ -146,7 +148,7 @@ class Processor extends Base\Core
         $data = [
                     'channel'               => $this->channel,
                     'count'                 => $settlements->count(),
-                    'transaction_count'     => $txnCount, // how do I get this for failed?
+                    'transaction_count'     => $txnCount,
         ];
 
         if ($setlAttempts->count() > 0)
@@ -214,7 +216,6 @@ class Processor extends Base\Core
             // skip if txn not to be settled
             if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
             {
-                s('continue');
                 continue;
             }
 

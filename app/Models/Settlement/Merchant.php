@@ -26,7 +26,6 @@ class Merchant
     protected $setlDetails;
     protected $fee;
     protected $serviceTax;
-    // protected $batchSettlement;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -311,8 +310,6 @@ class Merchant
         $bankTransferAttempt->sourceAssociate($this->setl);
 
         $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
-
-        // $bankTransferAttempt->merchant()->associate($this->merchant);
 
         $this->bankTransferAtpt = $bankTransferAttempt;
 
