@@ -87,6 +87,11 @@ class ScheduleTest extends TestCase
         });
     }
 
+    public function testScheduleInvalidHour()
+    {
+        $this->startTest();
+    }
+
     public function testGetSchedule()
     {
         $schedule = $this->createSchedule();
@@ -149,6 +154,7 @@ class ScheduleTest extends TestCase
 
         $this->assertEquals($response['settlement_schedule'], $scheduleDelay);
     }
+
 
     private function createAndAssignSchedule()
     {

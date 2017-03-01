@@ -24,6 +24,15 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($basicT3Schedule, $data['cases']);
     }
 
+    public function testTimedSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $timedSchedule = new Schedule\Entity($data['schedule']);
+
+        $this->runCaseWiseScheduleTest($timedSchedule, $data['cases']);
+    }
+
     public function testTwoHourSchedule()
     {
         $data = $this->testData[__FUNCTION__];

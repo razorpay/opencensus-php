@@ -129,4 +129,32 @@ return [
             'internal_error_code'   => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testScheduleInvalidHour' => [
+        'request' => [
+            'method'  => 'POST',
+            'url'     => '/schedules',
+            'content' => [
+                'name'       => 'Hourly with time set',
+                'type'       => 'settlement',
+                'period'     => 'hourly',
+                'interval'   => 5,
+                'hour'       => 12,
+                'delay'      => 0,
+            ],
+        ],
+        'response'  => [
+            'content'     => [
+                'error' => [
+                    'code'          => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description'   => PublicErrorDescription::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED,
+                ],
+            ],
+            'status_code' => 400,
+        ],
+        'exception' => [
+            'class'                 => 'RZP\Exception\BadRequestException',
+            'internal_error_code'   => ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED,
+        ],
+    ],
 ];
