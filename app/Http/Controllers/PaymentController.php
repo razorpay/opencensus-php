@@ -262,6 +262,8 @@ class PaymentController extends Controller
             TraceCode::PAYMENT_WEBHOOK,
             $input);
 
+        #TODO : Remove before merging
+
         $data = ['body' => 'test_mail'];
 
         $view = 'emails.message';

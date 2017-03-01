@@ -276,7 +276,6 @@ class ApiServiceProvider extends BaseServiceProvider
     {
         $this->app->singleton('ses.mailer', function ($app)
         {
-            //TODO : setup Mock
             $swiftMailer =  new Swift_Mailer($app['swift.transport']->driver('ses'));
 
             $mailer = new Mailer(

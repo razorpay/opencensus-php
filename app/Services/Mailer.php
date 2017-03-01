@@ -2,6 +2,9 @@
 
 namespace RZP\Services;
 
+use Swift_Mailer;
+use Illuminate\Contracts\View\Factory;
+use Illuminate\Contracts\Events\Dispatcher;
 use Illuminate\Mail\Mailer as LaravelMailer;
 
 class Mailer extends LaravelMailer
