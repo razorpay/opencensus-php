@@ -119,4 +119,17 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ],
     ],
+
+    'testUpdateSavedCard' => [
+        'request' => [
+            'method'  => 'put',
+            'url'     => '/cards/saved',
+            'content' => [
+            ],
+        ],
+        'response' => [
+            'content' => [
+            ],
+        ],
+    ],
 ];
