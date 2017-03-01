@@ -3,9 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
-use RZP\Models\Transaction;
 
 trait BatchSettlementTrait
 {
