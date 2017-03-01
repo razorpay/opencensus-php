@@ -99,11 +99,24 @@ class Validator
         return ($validSubject and $validAttachmentCount and $validBody);
     }
 
-    public function validateAttachments(array & $input)
+    /**
+     * For emails without attachments, but links, we allow
+     * zero attachments during the initial validation.
+     * After we get the attachments from the link, we validate
+     * it again.
+     *
+     * @param array $input
+     * @param bool  $allowZeroAttachments
+     *
+     * @throws Exception\ReconciliationException
+     */
+    public function validateAttachments(array & $input, bool $allowZeroAttachments = false)
     {
+        //
         // Gets all the attachments found in the input by checking the number of
         // input keys starting with 'attachment-'.
         // Excludes 'attachment-count'.
+        //
         $foundAttachments = array_filter(
             $input,
             function($key)
@@ -116,8 +129,15 @@ class Validator
 
         $foundAttachmentsCount = count($foundAttachments);
 
-        // There should be at least 1 attachment present.
-        if ($foundAttachmentsCount === 0)
+        //
+        // In link based emails, we don't have the attachments at
+        // this point. Hence, it'll be 0. This is fine, since we
+        // update the attachment-count at a later point.
+        //
+        // Otherwise, there should be at least 1 attachment present.
+        //
+        if (($foundAttachmentsCount === 0) and
+            ($allowZeroAttachments === false))
         {
             throw new Exception\ReconciliationException(
                 'No attachments found in the input.'

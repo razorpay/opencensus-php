@@ -22,6 +22,7 @@ class TransactionFilter extends Terminal\Filter
         IFSC::DBSS,
         IFSC::IDFB,
         IFSC::SVCB,
+        IFSC::UTIB,
     ];
 
     protected $properties = [
@@ -163,7 +164,7 @@ class TransactionFilter extends Terminal\Filter
     public function educationBankFilter($terminal, $input)
     {
         if (($input['payment']->isNetbanking() === true) and
-            ($input['payment']->getMethod() === Gateway::BILLDESK))
+            ($input['payment']->getGateway() === Gateway::BILLDESK))
         {
             $bank = $input['payment']->getBank();
 

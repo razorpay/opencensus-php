@@ -243,7 +243,7 @@ class Service extends Base\Service
 
         $displayName = $invoice->getPdfDisplayName();
 
-        $path = $this->core->getInvoicePdfIfExistsOrCreate($invoice);
+        $path = $this->core->getFreshInvoicePdf($invoice);
 
         return [$displayName, $path];
     }

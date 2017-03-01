@@ -9,6 +9,7 @@ use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -315,12 +316,12 @@ class Repository extends \Razorpay\Spine\Repository
         }
         catch (\Exception $ex)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
+                $entity->toArray()
+            );
         }
     }
 

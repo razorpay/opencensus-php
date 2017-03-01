@@ -706,9 +706,14 @@ class Entity extends Base\PublicEntity
         return $count;
     }
 
-    public function getMetadata()
+    public function getMetadata($key = null, $default = null)
     {
-        return $this->metadata;
+        if ($key === null)
+        {
+            return $this->metadata;
+        }
+
+        return $this->metadata[$key] ?? $default;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -770,6 +775,16 @@ class Entity extends Base\PublicEntity
     public function hasInvoice()
     {
         return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
+    public function hasMetadata($key = null)
+    {
+        if ($key === null)
+        {
+            return false;
+        }
+
+        return (isset($this->metadata[$key]) === true);
     }
 
     public function isCaptured()

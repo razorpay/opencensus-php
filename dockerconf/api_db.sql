@@ -1,0 +1,8 @@
+CREATE DATABASE IF NOT EXISTS api_live;
+CREATE DATABASE IF NOT EXISTS api_test;
+CREATE DATABASE IF NOT EXISTS api_testing_live;
+CREATE DATABASE IF NOT EXISTS api_testing_test;
+GRANT ALL PRIVILEGES ON api_live.* TO 'api_user'@'%';
+GRANT ALL PRIVILEGES ON api_test.* TO 'api_user'@'%';
+GRANT ALL PRIVILEGES ON api_testing_live.* TO 'api_user'@'%';
+GRANT ALL PRIVILEGES ON api_testing_test.* TO 'api_user'@'%';
