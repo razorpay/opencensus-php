@@ -12,8 +12,6 @@ class Bucket
     const TEST_BUCKET_NAME    = Type::TEST_BUCKET_CONFIG;
 
     /**
-     * Get the Bucket Config Name for given file type
-     *
      * @param string $type File Type
      * @param string $env  Environment
      *

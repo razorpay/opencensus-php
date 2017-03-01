@@ -181,8 +181,6 @@ class Accessor extends Base\Core
     }
 
     /**
-     * Get Full Path of given File Location
-     *
      * @param string $location location
      *
      * @return string full path url
@@ -193,8 +191,6 @@ class Accessor extends Base\Core
     }
 
     /**
-     * Get Storage Directory
-     *
      * @return string storage directory
      */
     protected function getStorageDir()

@@ -45,25 +45,11 @@ class Handler extends BaseHandler
         return $this->getStorageDir() . $fileName;
     }
 
-    /**
-     * Save File as(Not Implemented for local)
-     *
-     * @param string $bucket   bucket name
-     * @param string $key      key name
-     * @param string $filePath file path
-     *
-     * @return void
-     */
     public function saveAs($bucket, $key, $filePath)
     {
         ;
     }
 
-    /**
-     * Get Full Storage Directory
-     *
-     * @return string full storage dircetory
-     */
     protected function getStorageDir()
     {
         $path = Storage::disk('local')->getDriver()->getAdapter()->getPathPrefix();

@@ -77,7 +77,6 @@ class Format
      * @param string $mime      Mime
      * @param string $extension Extension
      *
-     * @return void
      * @throws Exception\BadRequestValidationFailureException
      */
     public static function validateMimeForExtension($mime, $extension)

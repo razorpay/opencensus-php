@@ -82,7 +82,7 @@ class Handler extends BaseHandler
     }
 
     /**
-     * Download File form AWS and stores in the $filePath provided
+     * Download File from AWS and stores in the $filePath provided
      *
      * @param array  $bucketConfig bucket config
      * @param string $key          Key of file to be saved
@@ -159,14 +159,6 @@ class Handler extends BaseHandler
         return $preSignedUrl;
     }
 
-    /**
-     * Helper function to get s3 save object array
-     *
-     * @param string $bucket      bucket name
-     * @param array  $fileDetails file details array
-     *
-     * @return array s3 save object
-     */
     protected function getS3SaveObj($bucket, $fileDetails)
     {
         $s3Obj = $this->getS3FetchObj($bucket, $fileDetails['key']);
@@ -182,14 +174,6 @@ class Handler extends BaseHandler
         return $s3Obj;
     }
 
-    /**
-     * Helper function to get s3 fetch object array
-     *
-     * @param string $bucket Bucket name
-     * @param string $key    Key Name
-     *
-     * @return array s3 fetch object
-     */
     protected function getS3FetchObj($bucket, $key)
     {
         $s3Obj = [
