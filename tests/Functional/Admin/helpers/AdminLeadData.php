@@ -17,7 +17,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'email' => 'abc@xyz.com',
             ],
             'status_code' => 200,
         ],

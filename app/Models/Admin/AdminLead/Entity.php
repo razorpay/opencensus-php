@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\AdminLead;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 use RZP\Models\Admin\Base;
+use RZP\Models\Admin\Admin;
 
 class Entity extends Base\Entity
 {
@@ -51,6 +52,12 @@ class Entity extends Base\Entity
         self::CREATED_AT,
     ];
 
+    protected $publicSetters = [
+        self::ID,
+        self::ORG_ID,
+        self::ADMIN_ID,
+    ];
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
@@ -59,6 +66,16 @@ class Entity extends Base\Entity
     public function org()
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
+    }
+
+    public function setPublicAdminIdAttribute(array &$attributes)
+    {
+        $adminId = $this->getAttribute(static::ADMIN_ID);
+
+        if ($adminId !== null)
+        {
+            $attributes[static::ADMIN_ID] = Admin\Entity::getSignedId($adminId);
+        }
     }
 
     public function getOrgId() : string

@@ -26,10 +26,6 @@ class Core extends Base\Core
 
         $this->repo->saveOrFail($lead);
 
-        $lead->admin()->associate($admin);
-
-        $lead->org()->associate($admin->org);
-
         return $lead;
     }
 
