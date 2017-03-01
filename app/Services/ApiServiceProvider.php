@@ -115,6 +115,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
+
+        $this->registerSesClient();
     }
 
     /**
@@ -124,7 +126,7 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array(
+        return [
             'api.mutex',
             'bitly',
             'card.tokenex',
@@ -142,7 +144,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-        );
+            'ses.client',
+        ];
     }
 
     /**
@@ -265,5 +268,24 @@ class ApiServiceProvider extends BaseServiceProvider
 
             'bank_account'    => BankAccount\Entity::class,
         ]);
+    }
+
+    protected function registerSesClient()
+    {
+        $this->app->singleton('ses.client', function($app)
+        {
+            // Uncomment after mock is in place
+            /*
+            $sesClientMock = $app['config']->get('applications.ses.mock');
+
+            if ($sesClientMock === true)
+            {
+                return new Mock\SesClient($app);
+            }
+             */
+
+            return new SesClient($app);
+        });
+
     }
 }
