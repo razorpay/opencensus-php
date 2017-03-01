@@ -16,6 +16,8 @@ class Type
 
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
+    const FEDERAL_NETBANKING_REFUND         = 'federal_netbanking_refund';
+
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
 
     const PAYUMONEY_WALLET_REFUND           = 'payumoney_wallet_refund';
