@@ -43,4 +43,5 @@ return [
     // Org Field Maps
     'org_fieldmap_get'                  => 'orgs/{id}/field-map/{entity}',
     'admin_lead_create'                 => 'orgs/{id}/admin-lead',
+    'admin_lead_get_multiple'           => 'orgs/{id}/admin-lead'
 ];

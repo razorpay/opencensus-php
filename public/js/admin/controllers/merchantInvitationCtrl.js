@@ -8,10 +8,8 @@ app.controller('MerchantInvitationCtrl', [
   '$state',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, $state) {
     $scope.alerts = alertsFactory.getHandler();
-    $scope.merchant = {
-      promo_code: 'RP_StartUP',
-      merchant_type: 'stp',
-    };
+    $scope.merchant = {};
+
     /**
      * Actions
      */
@@ -35,6 +33,14 @@ app.controller('MerchantInvitationCtrl', [
     request.success(function (data) {
       if (data.success) {
         $scope.fields = data.data.fields;
+
+        if (data.data.fields.indexOf('promo_code') !== -1) {
+          $scope.merchant.promo_code = 'RP_StartUP';
+        }
+
+        if (data.data.fields.indexOf('merchant_type') !== -1) {
+          $scope.merchant.merchant_type = 'stp';
+        }
       }
     });
 

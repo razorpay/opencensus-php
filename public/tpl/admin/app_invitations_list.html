@@ -31,12 +31,14 @@
             <tr>
               <th>Invitation Id</th>
               <th>Merchant Email</th>
+              <th>Created At</th>
               <th data-sort-ignore="true">&nbsp;</th>
           </thead>
           <tbody>
             <tr ng-repeat="row in invitations">
               <td>{{row.id}}</td>
               <td>{{row.email}}</td>
+              <td>{{row.created_at * 1000 | date: 'medium'}}</td>
               <td>
                 <a href="javascript:void(0);" class="btn btn-default btn-xs" ng-click="showInvitationDetails(row.id)">
                   Details

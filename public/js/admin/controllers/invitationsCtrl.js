@@ -14,14 +14,35 @@ app.controller('InvitationsCtrl', [
     $scope.invitation_cache = {};
 
     $scope.fetchInvitations = function () {
-      var request = $http.get('/admin/invitations');
+      // var request = $http.get('/admin/invitations');
+      //
+      // request.success(function (data) {
+      //   if (data.success) {
+      //     $scope.invitations = data.data;
+      //     $scope.count = data.data.length;
+      //
+      //     data.data.forEach(function (v, i) {
+      //       $scope.invitation_cache[v.id] = v;
+      //     });
+      //   }
+      // });
+
+      var request = $http({
+        url: '/admin/generic',
+
+        method: 'GET',
+
+        params: {
+          route_name: 'admin_lead_get_multiple',
+        }
+      });
 
       request.success(function (data) {
         if (data.success) {
-          $scope.invitations = data.data;
-          $scope.count = data.data.length;
+          $scope.invitations = data.data.items;
+          $scope.count = data.data.count;
 
-          data.data.forEach(function (v, i) {
+          data.data.items.forEach(function (v, i) {
             $scope.invitation_cache[v.id] = v;
           });
         }
