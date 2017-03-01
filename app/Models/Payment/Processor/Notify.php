@@ -385,6 +385,7 @@ class Notify
         if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
         {
             (new Invoice\Core)->dispatchQueueJob(
+                                    $this->mode,
                                     InvoiceAction::AUTHORIZED,
                                     $this->invoice->getId());
         }

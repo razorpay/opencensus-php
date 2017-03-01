@@ -64,7 +64,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatchQueueJob(InvoiceAction::ISSUED, $invoice->getId());
+            $this->dispatchQueueJob($this->mode, InvoiceAction::ISSUED, $invoice->getId());
         }
 
         return $invoice;
@@ -110,7 +110,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatchQueueJob(InvoiceAction::UPDATED, $invoice->getId());
+            $this->dispatchQueueJob($this->mode, InvoiceAction::UPDATED, $invoice->getId());
         }
 
         return $invoice;
@@ -133,7 +133,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatchQueueJob(InvoiceAction::ISSUED, $invoice->getId());
+        $this->dispatchQueueJob($this->mode, InvoiceAction::ISSUED, $invoice->getId());
 
         return $invoice;
     }
@@ -312,7 +312,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatchQueueJob(InvoiceAction::EXPIRED, $invoice->getId());
+        $this->dispatchQueueJob($this->mode, InvoiceAction::EXPIRED, $invoice->getId());
 
         return $invoice;
     }
@@ -533,14 +533,19 @@ class Core extends Base\Core
     /**
      * Dispatches invoice queue job.
      *
+     * @param string $mode   - Taking mode as argument just if this method gets
+     *                         invoked from another async queue job.
+     *                         ENHANCEMENT: Long term/Permanent solution is to have all such
+     *                         app variables to be initialized in abstract way.
+     *                         And then we will not have to do such things everywhere.
      * @param string $action
      * @param string $id
      *
      * @return void
      */
-    public function dispatchQueueJob(string $action, string $id)
+    public function dispatchQueueJob(string $mode, string $action, string $id)
     {
-        $job = (new InvoiceAction($this->mode, $action, $id));
+        $job = (new InvoiceAction($mode, $action, $id));
 
         $mock = Config::get('queue.mock');
 
