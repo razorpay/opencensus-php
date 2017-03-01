@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants\Mode;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -50,12 +51,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         $app = App::getFacadeRoot();
 
-        //
-        // TODO: Fix this!
-        // - Use $app['rzp.mode'] in http flow,
-        //   Also, ensures it's set in cron/async queue flow.
-        //
-        $this->mode = 'test';
+        $this->mode = $app['rzp.mode'] ?? Mode::LIVE;
 
         $this->trace = $app['trace'];
 
@@ -407,6 +403,8 @@ class EsRepository extends \Razorpay\Spine\Repository
         $id     = $data['id'];
         $mode   = $data['mode'];
         $action = $data['action'];
+
+        \Database\DefaultConnection::set($mode);
 
         $class = $this->getEntityClass();
 
