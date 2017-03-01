@@ -53,11 +53,11 @@ class CreatePayoutsTable extends Migration
 
             $table->integer(Payout::FEES)
                   ->unsigned()
-                  ->nullable();
+                  ->default(0);
 
             $table->integer(Payout::SERVICE_TAX)
                   ->unsigned()
-                  ->nullable();
+                  ->default(0);
 
             $table->string(Payout::STATUS);
 

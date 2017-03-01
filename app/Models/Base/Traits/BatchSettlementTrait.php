@@ -22,7 +22,7 @@ trait BatchSettlementTrait
             $this->batchSettlement->incrementAmount($entity->getAmount());
             $this->batchSettlement->incrementFees($entity->getFees());
             $this->batchSettlement->incrementServiceTax($entity->getServiceTax());
-            $this->batchSettlement->incrementSettlementCount();
+            $this->batchSettlement->incrementTotalCount();
             $this->batchSettlement->incrementTransactionCount($txnsCount);
         }
 
@@ -51,11 +51,12 @@ trait BatchSettlementTrait
         $batchSettlement = new BatchSettlement;
 
         $input = [
+            BatchSettlement::TYPE              => $entity->getEntity(),
             BatchSettlement::CHANNEL           => $entity->getChannel(),
             BatchSettlement::AMOUNT            => $entity->getAmount(),
             BatchSettlement::FEES              => $entity->getFees(),
             BatchSettlement::SERVICE_TAX       => $entity->getServiceTax(),
-            BatchSettlement::SETTLEMENT_COUNT  => 1,
+            BatchSettlement::TOTAL_COUNT       => 1,
             BatchSettlement::TRANSACTION_COUNT => $txnsCount,
             BatchSettlement::INITIATED_AT      => time(),
             BatchSettlement::API_FEE           => 0,

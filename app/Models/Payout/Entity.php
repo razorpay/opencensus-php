@@ -29,7 +29,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX           = 'service_tax';
     const PAYMENT_ID            = 'payment_id';
     const TRANSACTION_ID        = 'transaction_id';
-    const BATCH_SETTLEMENT_ID   = 'batch_settlment_id';
+    const BATCH_SETTLEMENT_ID   = 'batch_settlement_id';
     const STATUS                = 'status';
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';

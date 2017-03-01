@@ -267,6 +267,7 @@ class ReconciliationTest extends TestCase
             'count' => 1,
             'items' => [
                 [
+                    'type' => 'settlement',
                     'entity' => 'batch_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
@@ -275,7 +276,7 @@ class ReconciliationTest extends TestCase
                     'service_tax' => 15000,
                     'api_fee' => 0,
                     'gateway_fee' => 0,
-                    'settlement_count' => 1,
+                    'total_count' => 1,
                     'transaction_count' => 10,
                 ],
             ]
