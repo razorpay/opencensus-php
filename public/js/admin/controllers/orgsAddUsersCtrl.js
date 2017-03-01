@@ -9,6 +9,28 @@ app.controller('OrgsAddUsersCtrl', [
   '$stateParams',
   function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, organization, $stateParams) {
     $scope.alerts = alertsFactory.getHandler();
+    $scope.obBug = {};
+
+    // Get dynamic user fields
+    var request = $http({
+      url: '/admin/generic',
+
+      method: 'GET',
+
+      params: {
+        route_name: 'org_fieldmap_get',
+
+        url_params: {
+          '{entity}' : 'admin'
+        }
+      }
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.fields = data.data.fields;
+      }
+    });
 
     $scope.fetchUser = function(id) {
       var request = $http({
@@ -24,16 +46,16 @@ app.controller('OrgsAddUsersCtrl', [
 
       request.success(function(data) {
         if (data.success) {
-          var user = data.data
-          var userGroups = user.groups || []
-          var userRole = user.roles && user.roles[0].id
+          var user = data.data;
+          var userGroups = user.groups || [];
+          var userRole = user.roles.length && user.roles[0].id;
 
           userGroups.map(function(group){
             $scope.selected_groups[group.id] = true;
           });
 
-          $scope.role = userRole
-          $scope.user = user
+          $scope.obBug.role = userRole;
+          $scope.user = user;
         }
       })
     }
@@ -41,7 +63,7 @@ app.controller('OrgsAddUsersCtrl', [
     $scope.user = {};
     $scope.selected_groups = [];
     $scope.select_all = false;
-    $scope.role = '';
+    $scope.obBug.role = '';
 
     organization.fetchRoles().then(function(roles) {
       $scope.roles = {};
@@ -124,11 +146,13 @@ app.controller('OrgsAddUsersCtrl', [
     }
 
     function getSelectedRoles() {
-      var roles = []
-      if ($scope.role) {
-        roles.push($scope.role)
+      var roles = [];
+
+      if ($scope.obBug.role) {
+        roles.push($scope.obBug.role);
       }
-      return roles
+
+      return roles;
     }
 
     $scope.save = function(user) {
