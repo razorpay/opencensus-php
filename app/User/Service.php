@@ -28,7 +28,8 @@ use App\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
-    const ACCOUNT_ALREADY_EXISTS = 'You already have an account. Log in and accept the invite in you account settings page.';
+    const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
+    const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
 
     protected function getRef(array &$input)
     {

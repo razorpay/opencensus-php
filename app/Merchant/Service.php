@@ -25,7 +25,6 @@ class Service extends Base\Service
     const INVALID_EMAIL_OR_PASSWORD     = 'Email or password is invalid.';
     const EMAIL_CHANGE_FORBIDDEN        = "Email change forbidden on this account";
     const NAME_CHANGE_FORBIDDEN         = "Name change forbidden on this account";
-    const INVALID_CONFIRMATION_TOKEN    = 'Invalid confirmation token or the merchant is already confirmed.';
     const ROLL_KEY_FORBIDDEN            = "Roll key forbidden on this account";
     const SELF_REMOVE_FORBIDDEN         = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT             = "We couldn't find the merchant that you own.";
