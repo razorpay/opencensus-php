@@ -115,9 +115,17 @@ class Repository extends Base\Repository
                          'cards.type'    => DB::raw('iins.type'),
                       ]);
 
-        return $count + $amexCount;
+        return [
+            'count'     => $count,
+            'amexCount' => $amexCount,
+        ];
     }
 
+    /**
+     * Instantiates a query with an entity having timestamps set to false.
+     * This is to avoid setting the updated_at field.
+     * @return Query\Builder queryBuilder object
+     */
     public function newQueryWithoutTimestamps()
     {
         $entity = $this->getEntityObject();

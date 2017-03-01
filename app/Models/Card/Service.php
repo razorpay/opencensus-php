@@ -25,17 +25,11 @@ class Service extends Base\Service
 
     public function updateSavedCards()
     {
-        $count = $this->repo->card->updateSavedCardsWithIins();
+        $data = $this->repo->card->updateSavedCardsWithIins();
 
-        $this->trace->info(
-            TraceCode::SAVED_CARDS_UPDATED_WITH_IIN,
-            [
-                'count' => $count,
-            ]);
+        $this->trace->info(TraceCode::SAVED_CARDS_UPDATED_WITH_IIN, $data);
 
-        return [
-            'updated_cards' => $count,
-        ];
+        return $data;
     }
 
     public function getCardRecurring($input)
