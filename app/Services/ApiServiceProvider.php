@@ -16,6 +16,9 @@ use RZP\Models\Settlement;
 use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP;
+use Swift_Mailer;
+use Illuminate\Mail\Mailer;
+
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -144,7 +147,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-            'ses.client',
+            'ses.mailer',
         ];
     }
 
@@ -272,20 +275,22 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerSesClient()
     {
-        $this->app->singleton('ses.client', function($app)
+        $this->app->singleton('ses.mailer', function ($app)
         {
-            // Uncomment after mock is in place
-            /*
-            $sesClientMock = $app['config']->get('applications.ses.mock');
+            //TODO : setup Mock
+            $swiftMailer =  new Swift_Mailer($app['swift.transport']->driver('ses'));
 
-            if ($sesClientMock === true)
-            {
-                return new Mock\SesClient($app);
+            $mailer = new Mailer(
+                $app['view'], $swiftMailer, $app['events']
+            );
+
+            $mailer->setContainer($app);
+
+            if ($app->bound('queue')) {
+                $mailer->setQueue($app['queue.connection']);
             }
-             */
 
-            return new SesClient($app);
+            return $mailer;
         });
-
     }
 }

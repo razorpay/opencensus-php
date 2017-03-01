@@ -2,16 +2,22 @@
 
 namespace RZP\Services;
 
+use Swift_Mailer;
+use Illuminate\Mai\Mailer;
+
 class SesClient
 {
     public function __construct($app)
     {
         $this->config = $app['config']->get('applications.ses');
 
-        $this->mode = $app['rzp.mode'];
+        $this->app = $app;
 
-        $this->register();
+        $this->mode = 'test';
+
+        return $this->register();
     }
+
     public function register()
     {
         $this->app->singleton('ses.mailer', function ($app)
