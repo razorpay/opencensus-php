@@ -155,7 +155,6 @@ class ScheduleTest extends TestCase
         $this->assertEquals($response['settlement_schedule'], $scheduleDelay);
     }
 
-
     private function createAndAssignSchedule()
     {
         $schedule = $this->createSchedule();

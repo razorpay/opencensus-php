@@ -49,7 +49,7 @@ class Library
         }
 
         // Schedule is to run at a specific time of the day
-        $nextRun = $nextRun->addHours($schedule->getHour());
+        $futureRun = $futureRun->addHours($schedule->getHour());
 
         return $futureRun;
     }

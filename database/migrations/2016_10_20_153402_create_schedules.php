@@ -38,7 +38,7 @@ class CreateSchedules extends Migration
             $table->tinyInteger(Schedule::ANCHOR)
                   ->nullable();
 
-            $table->tinyInteger(Schedule::HOUR);
+            $table->tinyInteger(Schedule::HOUR)
                   ->default(0);
 
             $table->tinyInteger(Schedule::DELAY);
