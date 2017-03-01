@@ -11,8 +11,10 @@ class Mailer extends LaravelMailer
 {
     protected $serviceName = 'mailer';
 
-    public function __construct(Factory $views, Swift_Mailer $swift,
-        Dispatcher $events = null, string $serviceName = 'mailer')
+    public function __construct(Factory $views,
+                                Swift_Mailer $swift,
+                                Dispatcher $events = null,
+                                string $serviceName = 'mailer')
     {
         parent::__construct($views, $swift, $events);
 

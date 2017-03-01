@@ -23,6 +23,10 @@ return [
         'secret' => env('MANDRILL_SECRET'),
     ],
 
+    //
+    // AWS_KEY_ID, AWS_KEY_SECRET are blank,
+    // they are getting filled by IAM roles in production
+    //
     'ses' => [
         'key'    => env('AWS_KEY_ID'),
         'secret' => env('AWS_KEY_SECRET'),
