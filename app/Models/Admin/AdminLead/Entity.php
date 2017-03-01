@@ -100,6 +100,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getEmail() : string
+    {
+        return $this->getAttribute(self::EMAIL);
+    }
+
     public function getInputFields() : array
     {
         // Fields in the adminLead table are stored as json in FORM_DATA

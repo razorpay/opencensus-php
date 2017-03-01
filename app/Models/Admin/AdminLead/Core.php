@@ -2,6 +2,10 @@
 
 namespace RZP\Models\Admin\AdminLead;
 
+use Carbon\Carbon;
+use Mail;
+
+use RZP\Constants\MailTags;
 use RZP\Exception;
 use RZP\Models\Admin\Admin;
 use RZP\Models\Base;
@@ -29,11 +33,39 @@ class Core extends Base\Core
 
     public function sendInvitationEmail(Admin\Entity $admin, $invitation)
     {
-        // TODO use queue mailers
-        // $mailer = new MiscMailer();
-        //
-        // $mailer
-        //     ->sendMerchantInvitationEmail($invitation, $admin->toArray())
-        //     ->queueAndDeliver();
+        $orgName = $admin->org->getDisplayName();
+
+        // date format = 6th July 2015
+        $date = Carbon::today('Asia/Kolkata')->format('jS F Y');
+
+        $subject = sprintf("%s | Invitation for %s", $orgName, $date);
+
+        $email = $invitation->getEmail();
+
+        // TODO have a fallover when contact name is not given
+        $contactName = $invitation->getFormData()['contact_name'] ?? '';
+
+        $data = [
+            'invitation' => $invitation->toArrayPublic(),
+            'adminName'  => $admin->getName(),
+        ];
+
+        Mail::send(
+            'emails.admin.invite_merchant',
+            ['data' => $data],
+            function ($message) use ($subject, $email, $contactName)
+            {
+                $message->to($email, $contactName);
+
+                $message->from('admin@razorpay.com');
+                $message->cc('notifications@razorpay.com');
+
+                $message->subject($subject);
+
+                $headers = $message->getHeaders();
+
+                $headers->addTextHeader(
+                    MailTags::HEADER, MailTags::ADMIN_INVITE_MERCHANT);
+            });
     }
 }
