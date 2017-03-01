@@ -11,10 +11,10 @@ class ExcelFormatter
      *
      * @param array  $data         Contents of Excel File
      * @param string $name         Name of Excel File
-     * @param array  $columnFormat Column FOrmat
+     * @param array  $columnFormat Column Format
      * @param string $sheetName    Sheet Name
      *
-     * @return Execl excel object
+     * @return Excel excel object
      */
     public static function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
     {
@@ -49,7 +49,7 @@ class ExcelFormatter
      *
      * @param array  $content      Content of file
      * @param string $name         Name of file
-     * @param arary  $columnFormat Column format of file
+     * @param array  $columnFormat Column format of file
      * @param string $extension    Extension of file to be saved as
      * @param string $path         Path of file to be stored as
      *

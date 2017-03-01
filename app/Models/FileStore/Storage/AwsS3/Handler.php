@@ -163,7 +163,7 @@ class Handler extends BaseHandler
      * Helper function to get s3 save object array
      *
      * @param string $bucket      bucket name
-     * @param arary  $fileDetails file details array
+     * @param array  $fileDetails file details array
      *
      * @return array s3 save object
      */
