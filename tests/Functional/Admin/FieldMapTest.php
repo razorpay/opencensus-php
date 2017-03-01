@@ -42,7 +42,7 @@ class FieldMapTest extends TestCase
     protected function getDefaultFieldMap()
     {
         return $this->fixtures->create(
-            'org_fieldmap',
+            'org_field_map',
             [
                 'org_id'      => $this->orgId,
                 'entity_name' => 'org',
