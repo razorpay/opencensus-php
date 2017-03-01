@@ -197,6 +197,7 @@ class Entity
         self::GROUP,
         self::ADMIN,
         self::ADMIN_TOKEN,
+        self::ADMIN_LEAD,
         self::IIN,
         self::FEATURE,
         self::METHODS,
