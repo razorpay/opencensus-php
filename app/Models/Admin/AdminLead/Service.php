@@ -16,8 +16,10 @@ class Service extends Base\Service
 
         $customCode = $admin->getOrgId();
 
+        $entity = (new Entity)->getEntityName();
+
         (new Validator)->validateOrgSpecificInput(
-            'sendInvitation', $input, $customCode);
+            'sendInvitation', $input, $customCode, $entity);
 
         $admin = $this->app['basicauth']->getAdmin();
 

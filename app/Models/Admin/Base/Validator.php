@@ -5,6 +5,7 @@ namespace RZP\Models\Admin\Base;
 use Validator as LaravelValidator;
 
 use RZP\Base;
+use RZP\Exception;
 use RZP\Models\Admin\Org\FieldMap;
 
 class Validator extends Base\Validator
@@ -12,9 +13,10 @@ class Validator extends Base\Validator
     public function validateOrgSpecificInput(
         string $operation,
         array $input,
-        string $orgId)
+        string $orgId,
+        string $entity = null)
     {
-        $rules = $this->getRulesVariableForOrg($operation, $orgId);
+        $rules = $this->getRulesVariableForOrg($operation, $orgId, $entity);
 
         // We check for valid keys because single entity stores unique
         // fields for many orgs which should not be errorneously filled.
@@ -30,9 +32,22 @@ class Validator extends Base\Validator
 
     protected function getRulesVariableForOrg(
         string $operation,
-        string $orgId)
+        string $orgId,
+        string $entity = null)
     {
-        $entity = 'admin_lead';
+        // Validator may or may not have entity passed to it
+        if (empty($entity) === true)
+        {
+            if (empty($this->entity) === false)
+            {
+                $entity = $this->entity->getEntityName();
+            }
+            else
+            {
+                throw new Exception\BadRequestValidationFailure(
+                    'The entity is not given in input or as member variable of validator class');
+            }
+        }
 
         $rulesVar = $this->getRulesVariableName($operation);
 
@@ -46,9 +61,10 @@ class Validator extends Base\Validator
     protected function validateInputValuesForOrg(
         string $operation,
         array $input,
-        string $orgCode)
+        string $orgCode,
+        string $entity = null)
     {
-        $rules = $this->getRulesVariableForOrg($operation, $orgCode);
+        $rules = $this->getRulesVariableForOrg($operation, $orgCode, $entity);
 
         $customAttributes = $this->getCustomAttributes($operation);
 
