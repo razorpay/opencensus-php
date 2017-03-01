@@ -62,10 +62,10 @@ class Core extends Base\Core
 
     public function validateOfferApplicableOnPayment(Payment\Entity $payment)
     {
-        $order = $payment->order;
+        $order = $this->repo->order->fetchForPayment($payment);
 
         if (($order === null) or
-            ($order->offer === null))
+            ($order->getOfferId() === null))
         {
             return;
         }
@@ -76,29 +76,33 @@ class Core extends Base\Core
 
         if ($offerChecker->checkOfferApplicableOnPayment($payment) === false)
         {
-            $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT, [
-                'payment_id' => $payment->getId(),
-                'offer_id'   => $appliedOffer->getId()
-            ]);
+            $this->trace->info(
+                TraceCode::OFFER_NOT_APPLIED_ON_PAYMENT,
+                [
+                    'payment_id' => $payment->getId(),
+                    'offer_id'   => $appliedOffer->getId()
+                ]);
 
-            if ($appliedOffer->failPaymentIfOfferInapplicable() === true)
+            if ($appliedOffer->shouldBlock() === true)
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_PAYMENT);
+                    ErrorCode::BAD_REQUEST_PAYMENT_INVALID_OFFER);
             }
         }
 
-        $this->trace->info(TraceCode::OFFER_APPLIED_ON_PAYMENT, [
-            'payment_id' => $payment->getId(),
-            'offer_id'   => $appliedOffer->getId()
-        ]);
+        $this->trace->info(
+            TraceCode::OFFER_APPLIED_ON_PAYMENT,
+            [
+                'payment_id' => $payment->getId(),
+                'offer_id'   => $appliedOffer->getId()
+            ]);
     }
 
     public function fetchForOrder(string $orderId, Merchant\Entity $merchant)
     {
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
-        $offer = $order->offer;
+        $offer = $this->repo->offer->fetchForOrder($order);
 
         return $offer;
     }

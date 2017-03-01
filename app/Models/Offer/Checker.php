@@ -129,7 +129,8 @@ class Checker extends Base\Core
             $result = (in_array($this->card->getIin(), $iins, true) === true);
 
             $this->traceCheckResult(TraceCode::OFFER_CARD_IIN_CHECK, [
-                'result' => $result,
+                'iin'        => $this->card->getIin(),
+                'result'     => $result,
             ]);
 
             return $result;
@@ -243,9 +244,11 @@ class Checker extends Base\Core
         $result = (($now >= $this->offer->getStartsAt()) and
                     ($now <= $this->offer->getEndsAt()));
 
-        $this->traceCheckResult(TraceCode::OFFER_PERIOD_CHECK, [
-            'result' => $result
-        ]);
+        $this->traceCheckResult(
+            TraceCode::OFFER_PERIOD_CHECK,
+            [
+                'result' => $result
+            ]);
 
         return $result;
     }

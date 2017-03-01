@@ -59,13 +59,15 @@ class Core extends Base\Core
                 'order_id' => $order->getId()
             ]);
 
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_ORDER);
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER);
         }
 
-        $this->trace->info(TraceCode::OFFER_APPLIED_ON_ORDER, [
-            'offer_id' => $offerId,
-            'order_id' => $order->getId()
-        ]);
+        $this->trace->info(
+            TraceCode::OFFER_APPLIED_ON_ORDER,
+            [
+                'offer_id' => $offerId,
+                'order_id' => $order->getId()
+            ]);
 
         $order->offer()->associate($offer);
     }

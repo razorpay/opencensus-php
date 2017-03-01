@@ -179,6 +179,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
+    public function getOfferId()
+    {
+        return $this->getAttribute(self::OFFER_ID);
+    }
+
     public function getMaskedAccountNumber()
     {
         $accountNumber = $this->getAccountNumber();
