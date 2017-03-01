@@ -12,14 +12,14 @@ class Mailer extends LaravelMailer
     protected $serviceName = 'mailer';
 
     public function __construct(Factory $views, Swift_Mailer $swift,
-        Dispatcher $events = null, $serviceName = 'mailer')
+        Dispatcher $events = null, string $serviceName = 'mailer')
     {
         parent::__construct($views, $swift, $events);
 
         $this->serviceName = $serviceName;
     }
 
-    public function queue($view, array $data, $callback, $queue = null)
+    public function queue(Factory $view, array $data, callable $callback, $queue = null)
     {
         $callback = $this->buildQueueCallable($callback);
 

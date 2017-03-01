@@ -268,7 +268,7 @@ class PaymentController extends Controller
 
         $view = 'emails.message';
 
-        $this->app['ses.mailer']->queue($view, $data, function($message) use ($data)
+        $this->app['piegon']->queue($view, $data, function($message) use ($data)
         {
             $emails = ['gaurav.d@razorpay.com'];
 
