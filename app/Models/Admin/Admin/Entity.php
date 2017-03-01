@@ -467,4 +467,14 @@ class Entity extends Base\Entity
     {
         return $this->getAttribute(self::ORG_ID);
     }
+
+    public function getInputFields() : array
+    {
+        $extra = [
+            'role',
+            'group'
+        ];
+
+        return $this->fillable + $extra;
+    }
 }
