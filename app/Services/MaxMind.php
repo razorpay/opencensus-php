@@ -35,7 +35,7 @@ class MaxMind
 
         $this->basicauth = $app['basicauth'];
 
-        $this->maxmind = new MinFraud($config['id'], $config['secretv2']);
+        $this->maxmind = new MinFraud($config['id'], $config['secret']);
     }
 
     public function query(Payment $payment)
