@@ -305,37 +305,8 @@ class Service extends Base\Service
         }
 
         $merchant->changeName($name);
+
         $merchant->save();
-    }
-
-    public function confirm($token)
-    {
-        $user = User\Entity::getUserForConfirmation($token);
-
-        if (is_null($user))
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $merchant = $user->getOwnerMerchant();
-
-        if (is_null($merchant))
-        {
-            return [[static::NO_OWNED_MERCHANT], []];
-        }
-
-        return $this->confirmMerchantById($merchant->id);
-    }
-
-    public function confirmMerchantById($merchantId)
-    {
-        $merchant = $this->createMerchantOnApi($merchantId);
-
-        // Confirm the merchant and associated users (with same email)
-        // This also calls the mailing list subscription for the user email
-        $merchant->confirm();
-
-        return [null, ['email' => $merchant->email]];
     }
 
     public function createMerchantOnApi($merchantId)
@@ -347,6 +318,7 @@ class Service extends Base\Service
         // Once the merchant is created we also have to tag him
         // with the admin if he was invited by one.
         $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
+
         if ($lead)
         {
             $merchantApiData['admin_id'] = $lead->admin_id;

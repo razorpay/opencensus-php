@@ -852,11 +852,13 @@ class AdminController extends Controller
     }
 
     /**
-     * Confirm a merchant account manually
+     * Confirm a user account manually
      */
-    public function postConfirmMerchant($merchantId)
+    public function postConfirmUser()
     {
-        list($error, $data) = $response = (new Admin\Service)->confirmMerchant($merchantId);
+        $input = Input::all();
+
+        list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
 
         return AppResponse::jsonResponse($error, $response);
     }

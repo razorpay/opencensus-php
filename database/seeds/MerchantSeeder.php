@@ -21,7 +21,6 @@ class MerchantSeeder extends Seeder
             'id'            =>  $merchantId,
             'name'          =>  $name,
             'email'         =>  $email,
-            'password'      =>  Hash::make('123456'),
             'created_at'    =>  time(),
             'updated_at'    =>  time()
             ) + $attributes

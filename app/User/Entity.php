@@ -332,6 +332,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function confirm()
     {
         $this->confirm_token = null;
+
         $this->save();
 
         return $this;
@@ -342,6 +343,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
         $user = Auth::guard('user')->user();
 
         $currentMerchant = $user->currentMerchant;
+
         return $currentMerchant->pivot->role;
     }
 

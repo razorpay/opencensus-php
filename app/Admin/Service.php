@@ -2177,13 +2177,11 @@ class Service extends Base\Service
         return [null, $merchant->tagNames()];
     }
 
-    public function confirmMerchant($merchantId)
+    public function confirmUser($email)
     {
-        (new Merchant\Service)->confirmMerchantById($merchantId);
+        list($error, $data) = (new User\Service)->confirmUserByEmail($email);
 
-        $this->logActionToSlack($merchantId, Actions::CONFIRMED);
-
-        return [null, 'Merchant Confirmed'];
+        return [$error, $data];
     }
 
     public function editIIN($iin, $input)
@@ -2192,6 +2190,7 @@ class Service extends Base\Service
         $this->setApiCredentials(null);
 
         $this->api->IIN->edit($iin, $input);
+
         return [null, 'IIN Edit successful'];
     }
 

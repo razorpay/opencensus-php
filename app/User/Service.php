@@ -189,6 +189,58 @@ class Service extends Base\Service
     }
 
     /**
+     * This function is used to confirm a user by email.
+     * @param string $email
+     */
+    public function confirmUserByEmail($email)
+    {
+        $user = User\Entity::where('email', $email)->first();
+
+        if ($user === null)
+        {
+            return [['Email is invalid.'], []];
+        }
+
+        $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        /*
+         * For handling the old code.
+         * For all those users who have registered earlier using old code and have not confirmed yet.
+         * [For them, on dashboard side we have created data. Creating data on Api side]
+         */
+        $merchant = $user->getOwnerMerchant();
+
+        if ($merchant !== null)
+        {
+            (new Merchant\Service)->createMerchantOnApi($merchant->id);
+        }
+
+        return [null, ['email' => $user->email]];
+    }
+
+    /**
+     * This function is used to confirm a user by token.
+     * @param string $token
+     */
+    public function confirm($token)
+    {
+        $user = User\Entity::getUserForConfirmation($token);
+
+        if ($user === null)
+        {
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
+        }
+
+        $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        return [null, ['email' => $user->email]];
+    }
+
+    /**
      * Attach a user to a merchant using an invitation
      */
     protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
@@ -196,21 +248,6 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        Auth::guard('user')->login($user);
-    }
-
-    protected function attachMerchantToAdmin(Merchant\Entity $merchant, User\Entity $user, AdminLead\Entity $invitation)
-    {
-        $input = ['body' => ['admin_id' => $invitation->admin_id], 'method' => 'post'];
-
-        $route = 'merchants/'.$merchant->id.'/admins';
-
-        (new Merchant\Service)->confirm($merchant->confirm_token);
-
-        $response = (new Generic\Service)->makeRawApiCallInternal($input, $route);
 
         $this->subscribeToMailingList($user);
 
@@ -605,7 +642,11 @@ class Service extends Base\Service
             // $data['id'] is the newly created merchant Id
             // This confirmation creates the Merchant Account on the API Side
             // Make sure that the id is not submitted ever by the user
-            (new Merchant\Service)->confirmMerchantById($data['id']);
+            (new Merchant\Service)->createMerchantOnApi($data['id']);
+
+            $user->confirm();
+
+            $this->subscribeToMailingList($user);
         }
 
         return [$error, $data];

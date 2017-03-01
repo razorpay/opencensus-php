@@ -338,11 +338,17 @@ app.controller('ActionsCtrl', [
         });
       };
 
-      $scope.confirmMerchant = function (id) {
-        var request = $http.put('/admin/merchants/' + id + '/confirmed');
+      $scope.confirmUser = function (email) {
+        var request = $http({
+          method: 'post',
+          url: '/admin/users/confirm',
+          data: {
+            'email': email
+          }
+        });
         request.success(function (data) {
           if (data.success) {
-            $scope.alerts.addAlert('success', 'Merchant confirmed successfully', true);
+            $scope.alerts.addAlert('success', 'User confirmed successfully', true);
           } else {
             $scope.alerts.resetAlerts();
             angular.forEach(data.errors, function (value) {
@@ -362,13 +368,12 @@ app.controller('ActionsCtrl', [
         modalInstance.result.then($scope.archiveMerchant, $.noop);
       };
 
-
-      $scope.openConfirmMerchant = function () {
+      $scope.openConfirmUser = function () {
         var modalInstance = $modal.open({
-          templateUrl: 'confirmMerchantModal.html',
-          controller: 'archiveMerchantModalCtrl'
+          templateUrl: 'confirmUserModal.html',
+          controller: 'confirmUserModalCtrl'
         });
-        modalInstance.result.then($scope.confirmMerchant, $.noop);
+        modalInstance.result.then($scope.confirmUser, $.noop);
       };
       $scope.openAuthorizeFailedPayment = function () {
         var modalInstance = $modal.open({
@@ -447,12 +452,12 @@ app.controller('ActionsCtrl', [
       };
     });
 
-    $scope.openConfirmMerchant = function () {
+    $scope.openConfirmUser = function () {
       var modalInstance = $modal.open({
-        templateUrl: 'confirmMerchantModal.html',
-        controller: 'archiveMerchantModalCtrl'
+        templateUrl: 'confirmUserModal.html',
+        controller: 'confirmUserModalCtrl'
       });
-      modalInstance.result.then($scope.confirmMerchant, $.noop);
+      modalInstance.result.then($scope.confirmUser, $.noop);
     };
     $scope.openAuthorizeFailedPayment = function () {
       var modalInstance = $modal.open({
@@ -617,6 +622,17 @@ app.controller('ActionsCtrl', [
   function ($scope, $modalInstance, $http) {
     $scope.ok = function (id) {
       $modalInstance.close(id);
+    };
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+  }
+]).controller('confirmUserModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  function ($scope, $modalInstance, $http) {
+    $scope.ok = function (email) {
+      $modalInstance.close(email);
     };
     $scope.cancel = function () {
       $modalInstance.dismiss('cancel');
