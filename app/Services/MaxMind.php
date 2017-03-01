@@ -40,18 +40,30 @@ class MaxMind
 
     public function query($payment)
     {
+        $card = $payment->card;
+
+        $ip = $this->request->getRealClientIp();
+        $ua = $this->request->header('User-Agent');
+
+        if ($this->basicauth->isPrivateAuth() === true)
+        {
+            $ip = $payment->getMetadata('ip');
+            $ua = $payment->getMetadata('user_agent');
+        }
+
+        // We don't use maxmind if payment doesn't have IP and UserAgent
+        // in case of s2s integration
         if (($this->mode === Mode::TEST) or
-            ($this->basicauth->isPrivateAuth() === true))
+            ($ua === null) or
+            ($ip === null))
         {
             return;
         }
 
-        $card = $payment->card;
-
         $input = array(
             'license_key'       => $this->licenseKey,
-            'i'                 => $this->request->getRealClientIp(),
-            'user_agent'        => $this->request->header('User-Agent'),
+            'i'                 => $ip,
+            'user_agent'        => $ua,
             'accept_language'   => $this->request->header('Accept-Language'),
             'domain'            => $this->getEmailDomain($payment),
             'custPhone'         => $payment->getContact(),

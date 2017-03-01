@@ -97,7 +97,8 @@ class PaymentCreateController extends Controller
         {
             $this->app['rzp.merchant_callback_url'] = $input['callback_url'];
         }
-        else if ($this->app['basicauth']->isPrivateAuth())
+
+        if ($this->app['basicauth']->isPrivateAuth())
         {
             $input = (new Payment\Analytics\Service)->setMetadataForS2SPayment($input);
         }
