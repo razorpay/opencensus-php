@@ -506,7 +506,7 @@ class BasicAuth
         if (empty($features) === false)
         {
             //
-            // If the merchant has atleast one of the features
+            // If the merchant has at least one of the features
             // in the $features array enabled, we allow the request
             //
             $merchantFeatures = $this->merchant->getEnabledFeatures();

@@ -26,7 +26,7 @@ class Repository extends Base\Repository
      * Fetch all transfers from a merchant, done on a payment
      *
      * @param  string          $paymentId
-     * @param  Merchant\Entity $marketplace
+     * @param  Merchant\Entity $merchant
      */
     public function fetchBySourcePaymentIdAndMerchant(string $paymentId, Merchant\Entity $merchant)
     {

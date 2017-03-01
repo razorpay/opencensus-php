@@ -318,7 +318,7 @@ class Processor
 
         return $this->mutex->acquireAndRelease($payment->getId(), function() use ($payment, $input)
         {
-            return $this->repo->transaction(function () use ($payment, $input)
+            return $this->repo->transaction(function() use ($payment, $input)
             {
                 $transfers = (new TransferCore)->createForPayment(
                                 $payment,

@@ -64,8 +64,10 @@ class Core extends Base\Core
     /**
      * Credit an amount to customer_balance account
      *
-     * @param  Entity $balance
-     * @param  int    $amount
+     * @param Entity $balance
+     * @param int    $amount
+     * @param bool   $isRefund
+     *
      * @return Entity
      */
     public function credit(Entity $balance, int $amount, bool $isRefund = false) : Entity

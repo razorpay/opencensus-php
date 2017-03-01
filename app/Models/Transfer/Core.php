@@ -336,7 +336,7 @@ class Core extends Base\Core
      *
      * @param  mixed                  $source
      * @param  string                 $accountId
-     * @param  Merchant\Entity        $source
+     * @param  Merchant\Entity        $merchant
      * @return mixed
      */
     protected function checkAndSetSourcePayment($source, string $accountId, Merchant\Entity $merchant)

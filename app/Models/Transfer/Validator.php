@@ -66,7 +66,7 @@ class Validator extends Base\Validator
                 }
             }
 
-            // Fail if atleast one of the values in
+            // Fail if at least one of the values in
             // ToType::$allowedTypes is not set for a transfer
             if ($keySet === false)
             {
