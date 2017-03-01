@@ -15,29 +15,30 @@ class Entity extends Base\PublicEntity
 {
     use NotesTrait;
 
-    const ID                = 'id';
-    const MERCHANT_ID       = 'merchant_id';
-    const CUSTOMER_ID       = 'customer_id';
-    const METHOD            = 'method';
-    const DESTINATION_ID    = 'destination_id';
-    const DESTINATION_TYPE  = 'destination_type';
-    const PURPOSE           = 'purpose';
-    const AMOUNT            = 'amount';
-    const CURRENCY          = 'currency';
-    const NOTES             = 'notes';
-    const FEE               = 'fee';
-    const SERVICE_TAX       = 'service_tax';
-    const PAYMENT_ID        = 'payment_id';
-    const TRANSACTION_ID    = 'transaction_id';
-    const STATUS            = 'status';
-    const CHANNEL           = 'channel';
-    const UTR               = 'utr';
-    const FAILURE_REASON    = 'failure_reason';
-    const RETURN_UTR        = 'return_utr';
-    const REMARKS           = 'remarks';
+    const ID                    = 'id';
+    const MERCHANT_ID           = 'merchant_id';
+    const CUSTOMER_ID           = 'customer_id';
+    const METHOD                = 'method';
+    const DESTINATION_ID        = 'destination_id';
+    const DESTINATION_TYPE      = 'destination_type';
+    const PURPOSE               = 'purpose';
+    const AMOUNT                = 'amount';
+    const CURRENCY              = 'currency';
+    const NOTES                 = 'notes';
+    const FEES                  = 'fees';
+    const SERVICE_TAX           = 'service_tax';
+    const PAYMENT_ID            = 'payment_id';
+    const TRANSACTION_ID        = 'transaction_id';
+    const BATCH_SETTLEMENT_ID   = 'batch_settlment_id';
+    const STATUS                = 'status';
+    const CHANNEL               = 'channel';
+    const UTR                   = 'utr';
+    const FAILURE_REASON        = 'failure_reason';
+    const RETURN_UTR            = 'return_utr';
+    const REMARKS               = 'remarks';
 
     // Public attribute
-    const DESTINATION       = 'destination';
+    const DESTINATION           = 'destination';
 
     protected $entity = 'payout';
 
@@ -69,10 +70,11 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::NOTES,
         self::METHOD,
-        self::FEE,
+        self::FEES,
         self::SERVICE_TAX,
         self::PAYMENT_ID,
         self::TRANSACTION_ID,
+        self::BATCH_SETTLEMENT_ID,
         self::STATUS,
         self::CHANNEL,
         self::UTR,
@@ -91,7 +93,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
-        self::FEE,
+        self::FEES,
         self::SERVICE_TAX,
         self::STATUS,
         self::UTR,
@@ -114,13 +116,13 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = [
         self::AMOUNT,
-        self::FEE,
+        self::FEES,
         self::SERVICE_TAX
     ];
 
     protected $casts = [
         self::AMOUNT      => 'int',
-        self::FEE         => 'int',
+        self::FEES        => 'int',
         self::SERVICE_TAX => 'int',
     ];
 
@@ -149,14 +151,19 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
+    public function batchSettlement()
+    {
+        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+    }
+
     public function getAmount()
     {
         return $this->getAttribute(self::AMOUNT);
     }
 
-    public function getFee()
+    public function getFees()
     {
-        return $this->getAttribute(self::FEE);
+        return $this->getAttribute(self::FEES);
     }
 
     public function getServiceTax()
@@ -177,6 +184,11 @@ class Entity extends Base\PublicEntity
     public function getStatus()
     {
         return $this->getAttribute(self::STATUS);
+    }
+
+    public function getChannel()
+    {
+        return $this->getAttribute(self::CHANNEL);
     }
 
     public function isStatusCreated()
@@ -219,9 +231,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
     }
 
-    public function setFee($fee)
+    public function setFees($fees)
     {
-        $this->setAttribute(self::FEE, $fee);
+        $this->setAttribute(self::FEES, $fees);
     }
 
     public function setMethod($method)

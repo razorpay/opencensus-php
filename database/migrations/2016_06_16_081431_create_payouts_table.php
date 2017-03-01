@@ -8,6 +8,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payout\Entity as Payout;
+use RZP\Models\Settlement\Batch as BatchSettlement;
 use RZP\Models\Transaction;
 
 class CreatePayoutsTable extends Migration
@@ -64,6 +65,9 @@ class CreatePayoutsTable extends Migration
                   ->nullable()
                   ->unique();
 
+            $table->char(Payout::BATCH_SETTLEMENT_ID, Payout::ID_LENGTH)
+                  ->nullable();
+
             $table->string(Payout::CHANNEL, 8);
 
             $table->string(Payout::UTR)
@@ -109,6 +113,11 @@ class CreatePayoutsTable extends Migration
                   ->references(Transaction\Entity::ID)
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
+
+            $table->foreign(Payout::BATCH_SETTLEMENT_ID)
+                  ->references(BatchSettlement\Entity::ID)
+                  ->on(Table::BATCH_SETTLEMENT)
+                  ->on_delete('restrict');
         });
     }
 
@@ -121,13 +130,15 @@ class CreatePayoutsTable extends Migration
     {
         Schema::table(Table::PAYOUT, function($table)
         {
-            $table->dropForeign(Table::PAYOUT.'_'.Payout::CUSTOMER_ID.'_foreign');
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::CUSTOMER_ID . '_foreign');
 
-            $table->dropForeign(Table::PAYOUT.'_'.Payout::MERCHANT_ID.'_foreign');
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::MERCHANT_ID . '_foreign');
 
-            $table->dropForeign(Table::PAYOUT.'_'.Payout::PAYMENT_ID.'_foreign');
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::PAYMENT_ID . '_foreign');
 
-            $table->dropForeign(Table::PAYOUT.'_'.Payout::TRANSACTION_ID.'_foreign');
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::TRANSACTION_ID . '_foreign');
+
+            $table->dropForeign(Table::PAYOUT . '_' . Payout::BATCH_SETTLEMENT_ID . '_foreign');
         });
 
         Schema::drop(Table::PAYOUT);
