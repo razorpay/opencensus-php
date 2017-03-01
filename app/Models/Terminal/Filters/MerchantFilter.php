@@ -249,20 +249,13 @@ class MerchantFilter extends Terminal\Filter
             ($acquirer === Gateway::ACQUIRER_HDFC) and
             ($input['payment']->isMethodCardOrEmi()))
         {
-            $network = $input['payment']->card->getNetworkCode();
-
-            // This check is because only Visa and Mastercards are
+            // This check is for all the card networks which are
             // supported by gateways from other acquirers that also
             // have a shared terminal.
-            if (in_array($network, [Network::VISA, Network::MC], true) === true)
-            {
-                return false;
-            }
-            elseif (in_array($network, [Network::RUPAY, Network::MAESTRO], true) === true)
-            {
-                throw new Exception\BadRequestException(
-                    Error\ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
-            }
+            // Currently, we don't have a shared terminal RuPay and
+            // Maestro. We are doing a workaround using the
+            // merchant descriptor feature of FirstData
+            return false;
         }
 
         return true;
