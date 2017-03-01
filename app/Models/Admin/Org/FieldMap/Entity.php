@@ -38,7 +38,7 @@ class Entity extends Base\PublicEntity
 
     public function org()
     {
-        return $this->hasOne('RZP\Models\Org\Entity');
+        return $this->belongsTo('RZP\Models\Org\Entity');
     }
 
     public function setFieldsAttribute(array $fields)

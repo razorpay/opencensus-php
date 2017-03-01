@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org\FieldMap\Entity as FieldMap;
+use RZP\Models\Admin\Org\Entity as Org;
 
 class CreateOrgFieldMap extends Migration
 {
@@ -30,6 +31,10 @@ class CreateOrgFieldMap extends Migration
 
             $table->unique([FieldMap::ORG_ID, FieldMap::ENTITY_NAME]);
 
+            $table->foreign(FieldMap::ORG_ID)
+                  ->references(Org::ID)
+                  ->on(Table::ORG);
+
             $table->integer(FieldMap::CREATED_AT);
             $table->integer(FieldMap::UPDATED_AT);
         });
@@ -42,6 +47,12 @@ class CreateOrgFieldMap extends Migration
      */
     public function down()
     {
+        Schema::table(Table::ORG_FIELD_MAP, function($table)
+        {
+            $table->dropForeign(
+                Table::ORG_FIELD_MAP . '_' . FieldMap::ORG_ID . '_foreign');
+        });
+
         Schema::drop(Table::ORG_FIELD_MAP);
     }
 }
