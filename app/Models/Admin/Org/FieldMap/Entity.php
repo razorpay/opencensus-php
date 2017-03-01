@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_NAME = 'entity_name';
     const FIELDS      = 'fields';
 
-    protected $entity = 'org_fieldmap';
+    protected $entity = 'org_field_map';
 
     protected $fillable = [
         self::ORG_ID,

@@ -37,7 +37,7 @@ class Service extends Base\Service
 
     public function getFieldsForEntity(string $orgId, string $entity)
     {
-        $entityMap = $this->repo->org_fieldmap
+        $entityMap = $this->repo->org_field_map
                                 ->findByOrgIdAndEntity($orgId, $entity);
 
         return $entityMap->toArrayPublic();

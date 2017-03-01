@@ -888,12 +888,12 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
-        'org_fieldmap_create'            => [Permission::CREATE_ORG_FIELDMAP],
-        'org_fieldmap_get'               => [Permission::GET_ORG_FIELDMAP],
-        'org_fieldmap_edit'              => [Permission::EDIT_ORG_FIELDMAP],
-        'org_fieldmap_delete'            => [Permission::DELETE_ORG_FIELDMAP],
-        'admin_lead_create'              => [Permission::CREATE_MERCHANT_INVITE],
-        'admin_lead_get_multiple'        => [Permission::VIEW_MERCHANT_INVITE],
+        'org_fieldmap_create'            => ['*'],//[Permission::CREATE_ORG_FIELDMAP],
+        'org_fieldmap_get'               => ['*'],//[Permission::GET_ORG_FIELDMAP],
+        'org_fieldmap_edit'              => ['*'],//[Permission::EDIT_ORG_FIELDMAP],
+        'org_fieldmap_delete'            => ['*'],//[Permission::DELETE_ORG_FIELDMAP],
+        'admin_lead_create'              => ['*'],//[Permission::CREATE_MERCHANT_INVITE],
+        'admin_lead_get_multiple'        => ['*'],//[Permission::VIEW_MERCHANT_INVITE],
     ];
 
     public static $direct = array(

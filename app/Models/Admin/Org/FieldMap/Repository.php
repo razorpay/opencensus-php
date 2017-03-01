@@ -7,7 +7,7 @@ use RZP\Models\Admin\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'org_fieldmap';
+    protected $entity = 'org_field_map';
 
     protected $merchantIdRequiredForMultipleFetch = false;
 
@@ -35,6 +35,6 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->where(Entity::ENTITY_NAME, '=', $entity)
-                    ->firstOrFail();
+                    ->firstOrFailPublic();
     }
 }

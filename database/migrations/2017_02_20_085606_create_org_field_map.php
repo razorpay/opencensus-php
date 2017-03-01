@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\Admin\Org\FieldMap\Entity as FieldMap;
 
-class CreateOrgFieldmap extends Migration
+class CreateOrgFieldMap extends Migration
 {
     /**
      * Run the migrations.
@@ -15,7 +15,7 @@ class CreateOrgFieldmap extends Migration
      */
     public function up()
     {
-        Schema::create(Table::ORG_FIELDMAP, function (Blueprint $table)
+        Schema::create(Table::ORG_FIELD_MAP, function (Blueprint $table)
         {
             $table->engine = 'InnoDb';
 
@@ -41,6 +41,6 @@ class CreateOrgFieldmap extends Migration
      */
     public function down()
     {
-        Schema::drop(Table::ORG_FIELDMAP);
+        Schema::drop(Table::ORG_FIELD_MAP);
     }
 }
