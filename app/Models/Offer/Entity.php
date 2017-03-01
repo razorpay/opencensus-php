@@ -19,7 +19,7 @@ class Entity extends Base\PublicEntity
     const ISSUER                    = 'issuer';
     const ACTIVE                    = 'active';
     const TYPE                      = 'type';
-    const FAIL_PAYMENT              = 'fail_payment';
+    const BLOCK                     = 'block';
     const PERCENT_RATE              = 'percent_rate';
     const MIN_AMOUNT                = 'min_amount';
     const MAX_CASHBACK              = 'max_cashback';
@@ -28,22 +28,20 @@ class Entity extends Base\PublicEntity
     const PROCESSING_TIME           = 'processing_time';
     const STARTS_AT                 = 'starts_at';
     const ENDS_AT                   = 'ends_at';
-    const ADDITIONAL_DETAILS        = 'additional_details';
-    const CUSTOM_SHORT_DISPLAY_TEXT = 'custom_short_display_text';
-    const CUSTOM_LONG_DISPLAY_TEXT  = 'custom_long_display_text';
+    const DISPLAY_TEXT              = 'display_text';
+    const TERMS                     = 'terms';
 
     // Offer types
     const INSTANT  = 'instant';
     const DEFERRED = 'deferred';
 
     //Attribute lengths
-    const NAME_LENGTH                      = 25;
+    const NAME_LENGTH                      = 50;
     const PAYMENT_METHOD_LENGTH            = 10;
-    const PAYMENT_METHOD_TYPE_LENTH        = 6;
+    const PAYMENT_METHOD_TYPE_LENTH        = 10;
     const PAYMENT_NETWORK_LENGTH           = 20;
     const ISSUER_LENGTH                    = 10;
-    const CUSTOM_SHORT_DISPLAY_TEXT_LENGTH = 50;
-    const CUSTOM_LONG_DISPLAY_TEXT_LENGTH  = 200;
+    const DISPLAY_TEXT_LENGTH              = 255;
 
     protected $entity      = 'offer';
 
@@ -66,12 +64,11 @@ class Entity extends Base\PublicEntity
         self::PROCESSING_TIME,
         self::ACTIVE,
         self::TYPE,
-        self::FAIL_PAYMENT,
+        self::BLOCK,
         self::STARTS_AT,
         self::ENDS_AT,
-        self::ADDITIONAL_DETAILS,
-        self::CUSTOM_SHORT_DISPLAY_TEXT,
-        self::CUSTOM_LONG_DISPLAY_TEXT
+        self::DISPLAY_TEXT,
+        self::TERMS,
     ];
 
     protected $public = [
@@ -89,13 +86,12 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
         self::ACTIVE,
-        self::FAIL_PAYMENT,
+        self::BLOCK,
         self::TYPE,
         self::STARTS_AT,
         self::ENDS_AT,
-        self::ADDITIONAL_DETAILS,
-        self::CUSTOM_SHORT_DISPLAY_TEXT,
-        self::CUSTOM_LONG_DISPLAY_TEXT
+        self::DISPLAY_TEXT,
+        self::TERMS,
     ];
 
     protected $visible = [
@@ -114,32 +110,25 @@ class Entity extends Base\PublicEntity
         self::PROCESSING_TIME,
         self::STARTS_AT,
         self::ENDS_AT,
-        self::ADDITIONAL_DETAILS,
-        self::CUSTOM_SHORT_DISPLAY_TEXT,
-        self::CUSTOM_LONG_DISPLAY_TEXT,
+        self::DISPLAY_TEXT,
         self::ACTIVE,
-        self::FAIL_PAYMENT,
+        self::BLOCK,
         self::TYPE,
+        self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $defaults = [
-        self::ACTIVE       => 1,
-        self::FAIL_PAYMENT => 1,
-        self::TYPE         => self::DEFERRED
-    ];
-
-    protected $publicSetters = [
-        self::ID,
-        self::CUSTOM_LONG_DISPLAY_TEXT,
-        self::CUSTOM_SHORT_DISPLAY_TEXT
+        self::ACTIVE => 1,
+        self::BLOCK  => 1,
+        self::TYPE   => self::DEFERRED
     ];
 
     protected $casts = [
         self::IINS            => 'array',
         self::ACTIVE          => 'boolean',
-        self::FAIL_PAYMENT    => 'boolean',
+        self::BLOCK           => 'boolean',
         self::PROCESSING_TIME => 'int',
         self::PERCENT_RATE    => 'int',
         self::MAX_CASHBACK    => 'int',
@@ -215,11 +204,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PROCESSING_TIME);
     }
 
-    public function getAdditionalDetails()
-    {
-        return $this->getAttribute(self::ADDITIONAL_DETAILS);
-    }
-
     public function getIins()
     {
         return $this->getAttribute(self::IINS);
@@ -235,55 +219,32 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ENDS_AT);
     }
 
-    public function deactivate()
+    public function shouldBlock()
     {
-        $this->active = false;
+        return $this->getAttribute(self::BLOCK);
     }
 
-    public function failPaymentIfOfferInapplicable()
+    public function getDisplayText()
     {
-        return $this->getAttribute(self::FAIL_PAYMENT);
+        return $this->getAttribute(self::DISPLAY_TEXT);
     }
+
+    public function getTerms()
+    {
+        return $this->getAttribute(self::TERMS);
+    }
+
+// ----------------------- Setters ---------------------------------------------
+
+    public function deactivate()
+    {
+        $this->setAttribute(self::ACTIVE, false);
+    }
+
 
 // -----------------------Mutators begin----------------------------------------
     /**
-     * Sets the custom_long_display_text value if present else generates a long
-     * description from the offer attributes
-     */
-    public function setPublicCustomLongDisPlayTextAttribute(array & $array)
-    {
-        $customLongDisplayText = $this->getAttribute(self::CUSTOM_LONG_DISPLAY_TEXT);
-
-        if ($customLongDisplayText === null)
-        {
-            $generator = new Generator($this);
-
-            $customLongDisplayText = $generator->generateLongDescription();
-        }
-
-        $array[self::CUSTOM_LONG_DISPLAY_TEXT] = $customLongDisplayText;
-    }
-
-    /**
-     * Sets the custom_long_display_text value if present else generates a short
-     * description from the offer attributes
-     */
-    public function setPublicCustomShortDisplayTextAttribute(array & $array)
-    {
-        $customShortDisplayText = $this->getAttribute(self::CUSTOM_SHORT_DISPLAY_TEXT);
-
-        if ($customShortDisplayText === null)
-        {
-            $generator = new Generator($this);
-
-            $customShortDisplayText = $generator->generateShortDescription();
-        }
-
-        $array[self::CUSTOM_SHORT_DISPLAY_TEXT] = $customShortDisplayText;
-    }
-
-    /**
-     * Since wallet validation is not case sensitiove, we convert to loewercase
+     * Since wallet validation is not case sensitive, we convert to lowercase
      * and set in entity
      *
      * @param string $paymentNetwork Input payment networl

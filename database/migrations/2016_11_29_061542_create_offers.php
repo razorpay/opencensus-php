@@ -45,7 +45,7 @@ class CreateOffers extends Migration
             $table->tinyInteger(Offer::ACTIVE)
                     ->default(1);
 
-            $table->tinyInteger(Offer::FAIL_PAYMENT)
+            $table->tinyInteger(Offer::BLOCK)
                     ->default(1);
 
             $table->string(Offer::TYPE, 15)
@@ -73,14 +73,10 @@ class CreateOffers extends Migration
 
             $table->integer(Offer::ENDS_AT);
 
-            $table->text(Offer::ADDITIONAL_DETAILS)
-                    ->nullable();
+            $table->string(Offer::DISPLAY_TEXT)
+                  ->nullable();
 
-            $table->string(Offer::CUSTOM_LONG_DISPLAY_TEXT, Offer::CUSTOM_LONG_DISPLAY_TEXT_LENGTH)
-                    ->nullable();
-
-            $table->string(Offer::CUSTOM_SHORT_DISPLAY_TEXT, Offer::CUSTOM_SHORT_DISPLAY_TEXT_LENGTH)
-                    ->nullable();
+            $table->text(Offer::TERMS);
 
             $table->integer(Offer::CREATED_AT);
 

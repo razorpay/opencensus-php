@@ -8,11 +8,18 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Offer\Core;
+    }
+
     public function create(array $input)
     {
         $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
 
-        $offer = (new Core)->create($input);
+        $offer = $this->core->create($input);
 
         return $offer->toArrayPublic();
     }
@@ -23,7 +30,7 @@ class Service extends Base\Service
 
         $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $offer = (new Core)->update($offer, $input);
+        $offer = $this->core->update($offer, $input);
 
         return $offer->toArrayPublic();
     }
@@ -44,7 +51,7 @@ class Service extends Base\Service
 
     public function deactivate()
     {
-        $disabledOffers = (new Core)->deactivate();
+        $disabledOffers = $this->core->deactivate();
 
         return $disabledOffers;
     }
