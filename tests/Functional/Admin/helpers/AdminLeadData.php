@@ -18,6 +18,11 @@ return [
         'response' => [
             'content' => [
                 'email' => 'abc@xyz.com',
+                'form_data' => [
+                    "channel_code"  => "RZP001",
+                    "contact_email" => "abc@xyz.com",
+                    "contact_name"  => "test user"
+                ],
             ],
             'status_code' => 200,
         ],

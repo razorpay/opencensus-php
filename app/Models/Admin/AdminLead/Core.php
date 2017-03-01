@@ -10,8 +10,6 @@ class Core extends Base\Core
 {
     public function saveLead(Admin\Entity $admin, array $inviteData)
     {
-        $formData = json_encode($inviteData);
-
         $lead = (new Entity)->generateId();
 
         $entityData = [
@@ -19,7 +17,7 @@ class Core extends Base\Core
             'org_id'     => $admin->org_id,
             'email'      => $inviteData['contact_email'] ?? null,
             'token'      => str_random(40),
-            'form_data'  => $formData,
+            'form_data'  => $inviteData,
         ];
 
         $lead->build($entityData);

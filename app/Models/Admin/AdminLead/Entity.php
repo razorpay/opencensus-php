@@ -78,6 +78,23 @@ class Entity extends Base\Entity
         }
     }
 
+    public function setFormDataAttribute(array $formData)
+    {
+        $formData = json_encode($formData);
+
+        $this->attributes[self::FORM_DATA] = $formData;
+    }
+
+    public function getFormDataAttribute(string $formData)
+    {
+        return json_decode($formData, true);
+    }
+
+    public function setFormData()
+    {
+        return $this->setAttribute(self::FORM_DATA);
+    }
+
     public function getOrgId() : string
     {
         return $this->getAttribute(self::ORG_ID);
@@ -91,5 +108,10 @@ class Entity extends Base\Entity
         $rulesVar = $validator->getRulesForOperation('send_invitation');
 
         return array_keys($rulesVar);
+    }
+
+    public function getFormData()
+    {
+        return $this->getAttribute(self::FORM_DATA);
     }
 }

@@ -11,7 +11,7 @@ class Validator extends Base\Validator
         Entity::EMAIL     => 'required|email',
         Entity::ORG_ID    => 'required|string|max:14',
         Entity::ADMIN_ID  => 'required|string|max:14',
-        Entity::FORM_DATA => 'required|string',
+        Entity::FORM_DATA => 'required|array',
     ];
 
     protected static $sendInvitationRules = [
