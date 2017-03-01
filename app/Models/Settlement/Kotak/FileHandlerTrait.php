@@ -162,6 +162,32 @@ trait FileHandlerTrait
         return $this->getFileFromAws($key, $fullPath, $bucket);
     }
 
+    public static function getHeadings()
+    {
+        return static::$headings;
+    }
+
+    public function deleteFileIfExists()
+    {
+        $fullPath = $this->getFileIfExists();
+
+        if ($fullPath !== null)
+        {
+            $success = unlink($fullPath);
+
+            if ($success === false)
+            {
+                throw new Exception\RuntimeException(
+                    'Failed to delete file: ' . $fullPath);
+            }
+        }
+    }
+
+    public function getFileBasename($fileFullPath)
+    {
+        return basename($fileFullPath);
+    }
+
     /**
      * Flattens an array recursively
      * Concatenating keys using periods
@@ -484,22 +510,6 @@ trait FileHandlerTrait
         return $fullpath;
     }
 
-    public function deleteFileIfExists()
-    {
-        $fullPath = $this->getFileIfExists();
-
-        if ($fullPath !== null)
-        {
-            $success = unlink($fullPath);
-
-            if ($success === false)
-            {
-                throw new Exception\RuntimeException(
-                    'Failed to delete file: ' . $fullPath);
-            }
-        }
-    }
-
     protected function getFileToReadName()
     {
         return $this->getFileToReadNameWithoutExt().'.txt';
@@ -703,11 +713,6 @@ trait FileHandlerTrait
         $lines = file($filePath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
 
         return $lines;
-    }
-
-    public static function getHeadings()
-    {
-        return static::$headings;
     }
 
     protected function storeReconciledFile($file)

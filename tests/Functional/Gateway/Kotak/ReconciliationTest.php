@@ -53,6 +53,7 @@ class ReconciliationTest extends TestCase
 
         // Validate settlement attempt entity
         $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
     }
@@ -131,45 +132,45 @@ class ReconciliationTest extends TestCase
         $this->assertNotNull($settlementAttempt['utr']);
     }
 
-    public function testAsjustmentCreationAgainstSettlement()
-    {
-        // Create payments and refunds with timestamps two days back
-        $prEntities = $this->createPaymentAndRefundEntities();
+    // public function testAsjustmentCreationAgainstSettlement()
+    // {
+    //     // Create payments and refunds with timestamps two days back
+    //     $prEntities = $this->createPaymentAndRefundEntities();
 
-        // delete Existing files
-        $this->deleteSetlFiles();
+    //     // delete Existing files
+    //     $this->deleteSetlFiles();
 
-        // reconciliation
-        $txns = $this->matchTransactions($prEntities);
+    //     // reconciliation
+    //     $txns = $this->matchTransactions($prEntities);
 
-        // Generate settlements for above transactions
-        $setlFile = $this->initiateSettlementsAndAssertSuccess();
+    //     // Generate settlements for above transactions
+    //     $setlFile = $this->initiateSettlementsAndAssertSuccess();
 
-        $setl = $this->getLastEntity('settlement', true);
+    //     $setl = $this->getLastEntity('settlement', true);
 
-        $setlId = $setl['id'];
+    //     $setlId = $setl['id'];
 
-        $adjustmentData =[
-            'amount'        => 100,
-            'currency'      => 'INR',
-            'description'   => 'random desc',
-            'settlement_id' => $setlId
-        ];
+    //     $adjustmentData =[
+    //         'amount'        => 100,
+    //         'currency'      => 'INR',
+    //         'description'   => 'random desc',
+    //         'settlement_id' => $setlId
+    //     ];
 
-        $request = [
-            'method'    => 'POST',
-            'url'       => '/adjustments',
-            'content'   => $adjustmentData
-        ];
+    //     $request = [
+    //         'method'    => 'POST',
+    //         'url'       => '/adjustments',
+    //         'content'   => $adjustmentData
+    //     ];
 
-        $this->ba->proxyAuth();
+    //     $this->ba->proxyAuth();
 
-        $content = $this->makeRequestAndGetContent($request);
+    //     $content = $this->makeRequestAndGetContent($request);
 
-        $data = $this->getLastEntity('adjustment', true);
+    //     $data = $this->getLastEntity('adjustment', true);
 
-        $this->assertArraySelectiveEquals($content, $data);
-    }
+    //     $this->assertArraySelectiveEquals($content, $data);
+    // }
 
     public function testPayoutReconciliation()
     {

@@ -28,6 +28,23 @@ class Repository extends Base\Repository
             $query->with($relations);
         }
 
-        return $query->get();
+        return $query-get();
+    }
+
+    public function findByIdWithSourceAndRelations($id, $relations = [])
+    {
+        // Find the bta entity
+        $bta = $this->newQuery()->findOrFailPublic($id);
+
+        $type = $bta->getEntityType();
+
+        // Find the source entity of bta, and fetch relevant relations
+        $entityWithRelations = $this->manager->$type->findByIdWithRelations(
+                                    $bta->getEntityId(),
+                                    $relations);
+
+        $bta->setRelation('source', $entityWithRelations);
+
+        return $bta;
     }
 }

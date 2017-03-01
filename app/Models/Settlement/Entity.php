@@ -254,6 +254,11 @@ class Entity extends Base\PublicEntity
         return ($this->getStatus() === Status::FAILED);
     }
 
+    public function isStatusProcessed()
+    {
+        return $this->getStatus() === Status::PROCESSED;
+    }
+
     public function isPendingReconciliation()
     {
         return $this->isStatusCreated();

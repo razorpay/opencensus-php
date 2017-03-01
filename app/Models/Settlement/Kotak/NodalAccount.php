@@ -100,7 +100,7 @@ class NodalAccount
 
             $merchant = $settlement->merchant;
 
-            $ba = $attempt->bankAccount;
+            $ba = $merchant->bankAccount;
 
             //
             // @note: Convert the amount to string for text file otherwise
@@ -135,7 +135,7 @@ class NodalAccount
                 'Client_Code'           => 'RAZORNODAL',
                 'Product_Code'          => 'MERPAY',
                 'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $attempt->getId(),
+                'Payment_Ref_No.'       => $attempt->getPublicId(),
                 'Payment_Date'          => $this->date,
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,

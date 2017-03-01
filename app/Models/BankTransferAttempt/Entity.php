@@ -9,6 +9,7 @@ class Entity extends Base\PublicEntity
 {
     const ENTITY_TYPE           = 'entity_type';
     const ENTITY_ID             = 'entity_id';
+    // const MERCHANT_ID           = 'merchant_id';
     const BANK_ACCOUNT_ID       = 'bank_account_id';
     const CHANNEL               = 'channel';
     const VERSION               = 'version';
@@ -20,6 +21,8 @@ class Entity extends Base\PublicEntity
     const CMS_REF_NO            = 'cms_ref_no';
     const FAILURE_REASON        = 'failure_reason';
     const BATCH_TRANSFER_ID     = 'batch_transfer_id';
+
+    protected static $sign = 'bta';
 
     protected $entity = 'bank_transfer_attempt';
 
@@ -34,6 +37,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::ENTITY_TYPE,
         self::ENTITY_ID,
+        // self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
         self::CHANNEL,
         self::VERSION,
@@ -90,6 +94,16 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
     }
 
+    // public function merchant()
+    // {
+    //     return $this->belongsTo('RZP\Models\Merchant\Entity');
+    // }
+
+    // public function transaction()
+    // {
+    //     return $this->settlement->transaction;
+    // }
+
     // ------------------------------- getters ---------------------------------
 
     public function getRemarks()
@@ -110,6 +124,26 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    // public function getMerchantId()
+    // {
+    //     return $this->getAttribute(self::MERCHANT_ID);
+    // }
+
+    // public function getTransactionId()
+    // {
+    //     return $this->transaction->getId();
+    // }
+
+    public function getStatus()
+    {
+        return $this->getAttribute(self::STATUS);
+    }
+
+    public function getEntityType()
+    {
+        return $this->getAttribute(self::ENTITY_TYPE);
     }
 
     // ------------------------------- setters ---------------------------------
@@ -174,5 +208,21 @@ class Entity extends Base\PublicEntity
     protected function setCmsRefNoAttribute($refNo)
     {
         $this->attributes[self::CMS_REF_NO] = substr($refNo, 0, 255);
+    }
+
+    // ------
+    public function isStatusCreated()
+    {
+        return $this->getStatus() === Status::CREATED;
+    }
+
+    public function isPendingReconciliation()
+    {
+        return $this->isStatusCreated();
+    }
+
+    public function isStatusFailed()
+    {
+        return $this->getStatus() === Status::FAILED;
     }
 }

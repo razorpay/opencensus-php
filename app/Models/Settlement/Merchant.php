@@ -312,7 +312,9 @@ class Merchant
 
         $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
 
-        $this->bankTransferAtpt = $bankTransferAttempt;
+        // $bankTransferAttempt->merchant()->associate($this->merchant);
+
+        // $this->bankTransferAtpt = $bankTransferAttempt;
 
         return $bankTransferAttempt;
     }
