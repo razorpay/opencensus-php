@@ -48,12 +48,16 @@ class Library
             $futureRun = self::resolveUnAnchored($settledAt, $schedule, $nextRun);
         }
 
+        // Schedule is to run at a specific time of the day
+        $nextRun = $nextRun->addHours($schedule->getHour());
+
         return $futureRun;
     }
 
     protected static function resolveAnchored($settledAt, $schedule)
     {
-        // Since hourly schedules can't be anchored, time no longer matters.
+        // Since hourly schedules can't be anchored,
+        // time can be set to midnight for now.
         $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
 
         // Step size may vary based on the period of the schedule
