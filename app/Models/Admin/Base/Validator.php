@@ -27,7 +27,7 @@ class Validator extends Base\Validator
             $this->throwExtraFieldsException($invalidKeys);
         }
 
-        $this->validateInputValuesForOrg($operation, $input, $orgId);
+        $this->validateInputValuesForOrg($operation, $input, $orgId, $entity);
     }
 
     protected function getRulesVariableForOrg(
@@ -44,7 +44,7 @@ class Validator extends Base\Validator
             }
             else
             {
-                throw new Exception\BadRequestValidationFailure(
+                throw new Exception\BadRequestValidationFailureException(
                     'The entity is not given in input or as member variable of validator class');
             }
         }

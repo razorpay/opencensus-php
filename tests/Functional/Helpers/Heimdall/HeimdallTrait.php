@@ -88,4 +88,27 @@ trait HeimdallTrait
 
         return $content;
     }
+
+    public function storeFieldsForEntity(
+        string $orgId,
+        string $entity,
+        array $fields,
+        string $token = null)
+    {
+        $request = [
+            'url' => '/orgs/' . $orgId . '/field-map',
+            'method' => 'POST',
+            'content' => [
+                'entity_name' => $entity,
+                'org_id' => $orgId,
+                'fields' => $fields
+            ],
+        ];
+
+        $this->ba->adminAuth('test', $token);
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
 }

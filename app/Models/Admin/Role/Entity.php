@@ -103,6 +103,15 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::ORG_ID);
     }
 
+    public function getPermissions()
+    {
+        $permissions = $this->permissions()->get()->toArray();
+
+        return array_map(function($permission) {
+                    return $permission['name'];
+                }, $permissions);
+    }
+
     public function getName()
     {
         return $this->getAttribute(self::NAME);
