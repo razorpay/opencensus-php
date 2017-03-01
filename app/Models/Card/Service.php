@@ -5,6 +5,7 @@ namespace RZP\Models\Card;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
@@ -20,6 +21,15 @@ class Service extends Base\Service
         $cards = $this->repo->card->fetch($input, $this->merchant->getId());
 
         return $cards->toArrayPublic();
+    }
+
+    public function updateSavedCards()
+    {
+        $data = $this->repo->card->updateSavedCardsWithIins();
+
+        $this->trace->info(TraceCode::SAVED_CARDS_UPDATED_WITH_IIN, $data);
+
+        return $data;
     }
 
     public function getCardRecurring($input)
