@@ -121,20 +121,6 @@ class Repository extends Base\Repository
         ];
     }
 
-    /**
-     * Instantiates a query with an entity having timestamps set to false.
-     * This is to avoid setting the updated_at field.
-     * @return Query\Builder queryBuilder object
-     */
-    public function newQueryWithoutTimestamps()
-    {
-        $entity = $this->getEntityObject();
-
-        $entity->timestamps = false;
-
-        return $entity->setConnection($this->connection)->newQuery();
-    }
-
     protected function addQueryParamInternational($query, $params)
     {
         $international = $this->getAttributeWithTableName(Entity::INTERNATIONAL);
