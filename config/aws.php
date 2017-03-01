@@ -29,6 +29,7 @@ return [
     'h2h_bucket'            => env('AWS_H2H_BUCKET'),
     'activation_bucket'     => env('AWS_ACTIVATION_BUCKET'),
     'invoice_bucket'        => env('AWS_S3_INVOICES_BUCKET'),
+    'test_bucket'           => env('AWS_S3_TEST_BUCKET'),
 
     'mock' => env('AWS_S3_MOCK')
 ];

@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
     const AMOUNT_AUTHORIZED     = 'amount_authorized';
     const AMOUNT_REFUNDED       = 'amount_refunded';
     const BASE_AMOUNT_REFUNDED  = 'base_amount_refunded';
+    const AMOUNT_PAIDOUT        = 'amount_paidout';
     const STATUS                = 'status';
     const TWO_FACTOR_AUTH       = 'two_factor_auth';
     const ORDER_ID              = 'order_id';
@@ -129,6 +130,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT_REFUNDED,
         self::BASE_AMOUNT_REFUNDED,
         self::CURRENCY,
+        self::AMOUNT_PAIDOUT,
         self::STATUS,
         self::TWO_FACTOR_AUTH,
         self::REFUND_STATUS,
@@ -189,6 +191,7 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
         self::DESCRIPTION,
@@ -235,6 +238,7 @@ class Entity extends Base\PublicEntity
         self::NOTES                => [],
         self::AMOUNT_REFUNDED      => 0,
         self::BASE_AMOUNT_REFUNDED => 0,
+        self::AMOUNT_PAIDOUT       => 0,
         self::SIGNED               => 0,
         self::GATEWAY              => null,
         self::VERIFIED             => null,
@@ -259,6 +263,7 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT_REFUNDED,
         self::AMOUNT_AUTHORIZED,
         self::AMOUNT_REFUNDED,
+        self::AMOUNT_PAIDOUT,
         self::FEE,
         self::SERVICE_TAX
     );
@@ -269,6 +274,7 @@ class Entity extends Base\PublicEntity
         self::BASE_AMOUNT_REFUNDED => 'int',
         self::AMOUNT_AUTHORIZED    => 'int',
         self::AMOUNT_REFUNDED      => 'int',
+        self::AMOUNT_PAIDOUT       => 'int',
         self::AUTO_CAPTURED        => 'bool',
         self::SIGNED               => 'bool',
         self::AMOUNT               => 'int',
@@ -427,6 +433,11 @@ class Entity extends Base\PublicEntity
     public function setBaseAmountRefunded($amount)
     {
         $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $amount);
+    }
+
+    public function setAmountPaidout(int $amount)
+    {
+        $this->setAttribute(self::AMOUNT_PAIDOUT, $amount);
     }
 
     /**
@@ -695,9 +706,14 @@ class Entity extends Base\PublicEntity
         return $count;
     }
 
-    public function getMetadata()
+    public function getMetadata($key = null, $default = null)
     {
-        return $this->metadata;
+        if ($key === null)
+        {
+            return $this->metadata;
+        }
+
+        return $this->metadata[$key] ?? $default;
     }
 
 // ----------------------- Accessor Ends ---------------------------------------
@@ -759,6 +775,16 @@ class Entity extends Base\PublicEntity
     public function hasInvoice()
     {
         return ($this->isAttributeNotNull(self::INVOICE_ID));
+    }
+
+    public function hasMetadata($key = null)
+    {
+        if ($key === null)
+        {
+            return false;
+        }
+
+        return (isset($this->metadata[$key]) === true);
     }
 
     public function isCaptured()
@@ -899,6 +925,11 @@ class Entity extends Base\PublicEntity
     public function getCurrency()
     {
         return $this->getAttribute(self::CURRENCY);
+    }
+
+    public function getAmountPaidout()
+    {
+        return $this->getAttribute(self::AMOUNT_PAIDOUT);
     }
 
     public function getGateway()
@@ -1487,6 +1518,32 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::AMOUNT_REFUNDED, $amountRefunded);
 
         $this->setAttribute(self::BASE_AMOUNT_REFUNDED, $baseAmountRefunded);
+    }
+
+    /**
+     * Updates Payment amount_paidout field
+     *
+     * @param  int    $amount
+     */
+    public function payoutAmount(int $amount)
+    {
+        $amountPaidout = $this->getAmountPaidout() + $amount;
+
+        $paymentAmount = $this->getAmount();
+
+        if ($amountPaidout > $paymentAmount)
+        {
+            throw new Exception\LogicException(
+                'Payment payout: Payout total greater than payment amount',
+                null,
+                [
+                    'payout' => $amount,
+                    'payment_amount'  => $paymentAmount,
+                ]
+            );
+        }
+
+        $this->setAmountPaidout($amountPaidout);
     }
 
     public function toArrayTraceRelevant()

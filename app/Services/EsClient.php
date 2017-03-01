@@ -4,6 +4,9 @@ namespace RZP\Services;
 
 use Elasticsearch\ClientBuilder;
 
+use RZP\Exception\InvalidArgumentException;
+use RZP\Trace\TraceCode;
+
 class EsClient
 {
     protected $client;
@@ -12,16 +15,22 @@ class EsClient
 
     protected $esHeimdallMock;
 
-    protected $app;
-
     protected $heimdallClient;
 
+    protected $config;
+
+    protected $trace;
+
+    public function __construct($app)
+    {
+        $this->config = $app['config'];
+
+        $this->trace = $app['trace'];
+    }
 
     public function setEsClient($params)
     {
-        $app = \App::getFacadeRoot();
-
-        $this->esMock = $app['config']->get('database.es_mock');
+        $this->esMock = $this->config->get('database.es_mock');
 
         // Initiate client only if ES is not mocked.
         if ($this->esMock !== true)
@@ -32,15 +41,45 @@ class EsClient
 
     public function setHeimdallESClient($hosts)
     {
-        $app = \App::getFacadeRoot();
-
-        $this->esHeimdallMock = $app['config']->get('database.es_audit_mock');
+        $this->esHeimdallMock = $this->config->get('database.es_audit_mock');
 
         if ($this->esHeimdallMock !== true)
         {
             $this->heimdallClient = ClientBuilder::create()
                                         ->setHosts($hosts)->build();
         }
+    }
+
+    public function cat(array $params)
+    {
+        $res = $this->client->cat()->indices($params);
+
+        $this->trace->debug(TraceCode::ES_CAT_RESPONSE, [$res]);
+
+        return [$res];
+    }
+
+    public function explain(array $params)
+    {
+        return $this->client->explain($params);
+    }
+
+    public function getMapping(array $params)
+    {
+        $mapping = $this->client->indices()->getMapping($params);
+
+        $this->trace->debug(TraceCode::ES_MAPPING_RESPONSE, $mapping);
+
+        return $mapping;
+    }
+
+    public function getSettings(array $params)
+    {
+        $settings = $this->client->indices()->getSettings();
+
+        $this->trace->debug(TraceCode::ES_SETTINGS_RESPONSE, $settings);
+
+        return $settings;
     }
 
     public function update($params)

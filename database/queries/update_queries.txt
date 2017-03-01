@@ -51,3 +51,25 @@ UPDATE terminals
     SET gateway_acquirer='hdfc'
     WHERE gateway='cybersource'
         AND gateway_acquirer is null;
+
+# Delete duplicate Billdesk txns
+delete from transactions where id in ('53RrhAM3nM6rUl', '53wE4kQZKrJ0HM', '57VxC2mxdshLTe', '5BBItEdZ1PnPqY',
+'5BPVrFedAc6scN', '5BwmvfKSBkJjxg', '5CHRFrVEKa7tKp', '5EKoSPRa3SDByh', '5FNMoQ0VSduHs7', '5Fndf4enJJ3mUR',
+'5GJ7n1lbBlkfPg', '5HQQucXhBtJRTh', '5HSmgYxnlKra6Z', '5IDOpgagGylzz1', '5IVhKjLddcLQld', '5L7mF51bI9OjzY',
+'5RFUoxT5cGbh3T', '5GJ7k9qmEwPLDH');
+# Corresponding fees_breakup ids for the above txns
+delete from fees_breakup where id in ('6ehOVBvjfuslSF','6ehOVCBNcL46LZ','6ehOVCQel0hGQg','6ehUdc4DJpYbex',
+'6ehUdcTbHxfzXP','6ehUdcny05ZPUg','6eiCqW7f1pjZ0E','6eiCqWMm30QbQ1','6eiCqWbWqfJCI2','6eis0KenGEWcKV','6eis0KtzHmO7DS',
+'6eis0L8NkoxzaP','6eisFc30qPgDWF','6eisFcljXYikyw','6eisFdIsgwz25S','6eiyOgNReBjEIT','6eiyOgc4AQhqjp','6eiyOgqYkaglHh',
+'6ej1ZX8uFp598z','6ej1ZXNJ1Z9Swa','6ej1ZXb3g7jjJr','6ejNraj8GgD3FE','6ejNrazi2EPhAJ','6ejNrbF2Vb0Pir','6ejdSakRuLGKza',
+'6ejdSazPEGxp8v','6ejdSbESijFOvM','6ejk5YukZ4MIFd','6ejk5ZQA9zCToq','6ejk5ZojLpXC4N','6ejtdSG50MOVBF','6ejtdSlZUD2wDF',
+'6ejtdTJg8uJ7N8','6ejtdcHpUFLBIv','6ejtdco4lq0UDu','6ejtddJj5A4t1C','6ekCLx1TPGZbRa','6ekCLxJ7pqbAU5','6ekCLxYNfo2xQa',
+'6ekCVspDwOVSbM','6ekCVt4KwKPp9x','6ekCVtfEZiT05O','6ekP1npfyKXOwi','6ekP1oUdxa69q8','6ekP1p2I339i42','6ekSEICfLGowZR',
+'6ekSEIRqN28DEG','6ekSEIh2H3MsdS','6emnvYn7VY9t8t','6emnvZ32uGgYAc','6emnvZa5saFu6V','6esQVfmFCrRvyG','6esQVg0jdQnxkY',
+'6esQVgI6SQzYif')
+
+# update billdesk refund entity with gateway's txn id
+update billdesk set refundId = 'HICI5095780548' where id = 967024
+
+# capture had timed out. it was actually successful
+update payments set gateway_captured = 1 where id = '7MkcS3XRIUhb5y'

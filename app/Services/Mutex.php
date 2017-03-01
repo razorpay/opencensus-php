@@ -2,7 +2,7 @@
 
 namespace RZP\Services;
 
-use Redis;
+use Illuminate\Support\Facades\Redis;
 use Predis\PredisException;
 use RZP\Exception;
 use RZP\Error\ErrorCode;

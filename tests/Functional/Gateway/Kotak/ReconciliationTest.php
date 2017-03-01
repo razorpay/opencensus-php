@@ -8,19 +8,21 @@ use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
 
 class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use PayoutTrait;
 
     public function setUp()
     {
         parent::setUp();
     }
 
-    public function testReconciliation()
+    public function testSettlementReconciliation()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -123,6 +125,34 @@ class ReconciliationTest extends TestCase
         $this->assertArraySelectiveEquals($content, $data);
     }
 
+    public function testPayoutReconciliation()
+    {
+        // Create payments and refunds with timestamps two days back
+        $payoutEntities = $this->createPayoutEntities();
+
+        // reconciliation
+        $txns = $this->matchTransactions($payoutEntities);
+
+        // Generate settlements for above transactions
+        $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
+
+        // Generate reconciliation file, settlement and payout have common implementation
+        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
+
+        // Reconcile settlements, same route is being used as both are h2h
+        $data = $this->reconcileSettlements($payoutReconciliationFile);
+    }
+
+    protected function initiatePayoutsAndAssertSuccess()
+    {
+        $content = $this->initiatePayouts();
+
+        $this->assertArrayHasKey('kotak', $content);
+        $this->assertArrayHasKey('payout_text_file', $content['kotak']);
+
+        return $content['kotak']['payout_text_file'];
+    }
+
     protected function initiateSettlementsAndAssertSuccess()
     {
         $content = $this->initiateSettlements();
@@ -201,6 +231,28 @@ class ReconciliationTest extends TestCase
 
             array_push($prEntities, $payment);
             array_push($prEntities, $refund);
+        }
+
+        return $prEntities;
+    }
+
+    protected function createPayoutEntities()
+    {
+        $prEntities = array();
+
+        $r = range(1,5);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+
+        foreach ($r as $i)
+        {
+            $payout = $this->fixtures->create('payout',
+                [
+                    'amount' => 1000,
+                    'created_at' => $createdAt
+                ]);
+
+            array_push($prEntities, $payout);
         }
 
         return $prEntities;

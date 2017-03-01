@@ -17,7 +17,7 @@ class EsDao
 
     protected $mode;
 
-    // Logically seperated instance for heimdall
+    // Logically separated instance for heimdall
     protected $esHeimdall;
 
     public function __construct($mode = null)
@@ -86,6 +86,16 @@ class EsDao
     public function search(array $params)
     {
         return $this->es->search($params);
+    }
+
+    /**
+     * Returns the EsClient instance.
+     *
+     * @return \RZP\Services\EsClient
+     */
+    public function getEsClient()
+    {
+        return $this->es;
     }
 
     // If a document with entity ID is already present, only the notes key is updated.
@@ -163,6 +173,12 @@ class EsDao
             $skip = (int) $params['skip'];
         }
 
+        $filter = [];
+        if ($merchantId !== null)
+        {
+            $filter = ['term' => ['merchant_id' => $merchantId]];
+        }
+
         $params = [
             'index' => $this->indexName,
             'type'  => $typeName,
@@ -170,15 +186,15 @@ class EsDao
                 'size'  => $count,
                 'from'  => $skip,
                 'query' => [
-                    'filtered'  => [
-                        'query' => [
+                    'bool'  => [
+                        'must' => [
                             'multi_match'   => [
                                 'query'     => $searchString,
                                 'type'      => 'cross_fields',
                                 'fields'    => ['notes.*']
                             ]
                         ],
-                        'filter'    => [],
+                        'filter'    => $filter,
                     ]
                 ],
                 'sort'  => [
@@ -191,12 +207,14 @@ class EsDao
             ]
         ];
 
-        if ($merchantId !== null)
-        {
-            $params['body']['query']['filtered']['filter'] = ['term' => ['merchant_id' => $merchantId]];
-        }
-
         $entityIds = $this->es->searchNotes($params);
+
+        $this->app['trace']->debug(
+            TraceCode::ES_GET_NOTES_QUERY_AND_RESPONSE,
+            [
+                'es_search_params'     => $params,
+                'es_search_result_ids' => $entityIds,
+            ]);
 
         return $entityIds;
     }

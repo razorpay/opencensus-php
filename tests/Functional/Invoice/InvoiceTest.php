@@ -45,7 +45,6 @@ class InvoiceTest extends TestCase
 
         $this->assertEquals($customer['id'], $response['customer_id']);
         $this->assertEquals('10000000000000', $customer['merchant_id']);
-        $this->assertArrayNotHasKey('user_id', $response);
 
         // Asserts if have assigned default value to invoices.date
         $this->assertNotNull($response['date']);

@@ -123,7 +123,7 @@ class Service extends Base\Service
      * @param  string $id
      * @param  array  $input
      *
-     * @return Payment\Entity
+     * @return array
      */
     public function refund($id, array $input)
     {
@@ -389,6 +389,20 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * Create a payout from a payment
+     *
+     * @param string    $id
+     * @param array     $input
+     *
+     * @return array
+     */
+    public function payout(string $id, array $input) : array
+    {
+        $payout = $this->getNewProcessor()->payout($id, $input);
+
+        return $payout->toArrayPublic();
+    }
 
     /**
      * If a payment has been captured on gateway but not on the api side,

@@ -63,10 +63,10 @@ class Entity
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
-
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const OFFER                 = 'offer';
     const COUPON                = 'coupon';
+    const PAYOUT                = 'payout';
 
     //
     // Gateway entities

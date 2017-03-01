@@ -27,7 +27,6 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
-                'user_id'       => '10000000UserId',
             ],
         ],
         'response' => [
@@ -44,6 +43,7 @@ return [
                         'amount'        => 100000,
                     ]
                 ],
+                'user_id'       => '10000000UserId',
             ],
         ],
     ],

@@ -117,6 +117,7 @@ class TestCase extends ParentTestCase
     protected function createEsMock($withMethods = [])
     {
         $esMock = $this->getMockBuilder(EsClient::class)
+                       ->setConstructorArgs([$this->app])
                        ->setMethods($withMethods)
                        ->getMock();
 

@@ -58,8 +58,9 @@ return array(
 
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
-        'id'        => env('MAXMIND_ID', 113707),
-        'secret'    => env('MAXMIND_SECRET')
+        'id'        => '113707',
+        'secret'    => env('MAXMIND_SECRET'),
+        'secretv2'  => env('MAXMIND_V2_SECRET')
     ),
 
     'kotak' => array(

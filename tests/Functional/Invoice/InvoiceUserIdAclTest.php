@@ -22,6 +22,8 @@ class InvoiceUserIdAclTest extends TestCase
     public function testCreateInvoiceWithUserIdHeader()
     {
         $this->startTest();
+
+        $this->assertResponseWithLastEntity('invoice', __FUNCTION__);
     }
 
     public function testGetInvoiceWithUserIdHeaderSuccess()
