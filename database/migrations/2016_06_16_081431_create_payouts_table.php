@@ -51,7 +51,7 @@ class CreatePayoutsTable extends Migration
             $table->string(Payout::NOTES)
                   ->nullable();
 
-            $table->integer(Payout::FEE)
+            $table->integer(Payout::FEES)
                   ->unsigned()
                   ->nullable();
 

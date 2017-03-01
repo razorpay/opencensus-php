@@ -111,6 +111,8 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::STATUS            => Status::CREATED,
         self::PURPOSE           => 'refund',
+        self::FEES              => 0,
+        self::SERVICE_TAX       => 0,
         self::NOTES             => [],
     ];
 

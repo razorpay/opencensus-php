@@ -218,7 +218,7 @@ class Core extends Base\Core
 
         $txn = $txnCore->createFromPayout($payout);
 
-        $payout->setFee($txn->getFee());
+        $payout->setFees($txn->getFee());
 
         $payout->setServiceTax($txn->getServiceTax());
 
@@ -231,7 +231,7 @@ class Core extends Base\Core
 
     protected function validateMerchantBalance(Entity $payout)
     {
-        $debitAmount = $payout->getAmount() + $payout->getFee();
+        $debitAmount = $payout->getAmount() + $payout->getFees();
 
         $hasBalance = (new Merchant\Balance\Core)
                            ->checkMerchantBalance($payout->merchant, $debitAmount);

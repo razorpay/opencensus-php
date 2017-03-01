@@ -1696,3 +1696,9 @@ ALTER TABLE payments
 # payout reconcilation remarks
 ALTER TABLE payouts
     ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;
+
+# payouts - add batch settlement
+ALTER TABLE payouts
+    CHANGE COLUMN `fee` `fees` INT UNSIGNED DEFAULT NULL,
+    ADD COLUMN batch_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT payouts_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id) REFERENCES daily_settlements(id) ON DELETE RESTRICT;
