@@ -13,7 +13,7 @@ use RZP\Constants\Mode;
 class EsRepository extends \Razorpay\Spine\Repository
 {
     use EsQuery;
-    use EsHitsToCollection;
+    use EsHydrator;
 
     protected $esDao;
     protected $indexName;
@@ -296,7 +296,7 @@ class EsRepository extends \Razorpay\Spine\Repository
         //
         if ($this->searchHitsOnly === true)
         {
-            return $this->esHitsToCollection($hits);
+            return $this->hydrate($hits);
         }
 
         //

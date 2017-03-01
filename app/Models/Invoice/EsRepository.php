@@ -47,7 +47,7 @@ class EsRepository extends BaseEsRepository
         Entity::NOTES . '.*',
     ];
 
-    public function setFieldMappings()
+    protected function setFieldMappings()
     {
         $this->fieldMappings = [
             Entity::CUSTOMER_NAME    => EsMappping::$textFieldMapping,
