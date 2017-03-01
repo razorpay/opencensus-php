@@ -11,12 +11,9 @@ use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
-    const OFFER_ID    = 'offer_id';
-    const MERCHANT_ID = 'merchant_id';
-
     protected $entity = 'offer';
 
-    protected $entityFetchParamRules = [
+    protected $appFetchParamRules = [
         Entity::PAYMENT_METHOD            => 'sometimes|alpha',
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|alpha',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
@@ -26,7 +23,7 @@ class Repository extends Base\Repository
     /**
      * set of attributes required to uniquely define an offer
      */
-    protected $offerFetchAttributes = [
+    const OFFER_FETCH_ATTRIBUTES = [
         Entity::PAYMENT_METHOD,
         Entity::PAYMENT_METHOD_TYPE,
         Entity::PAYMENT_NETWORK,
@@ -66,16 +63,16 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->where(Entity::ACTIVE, '=', true)
-                    ->where(Entity::ENDS_AT, '<=', $now)
+                    ->where(Entity::ENDS_AT, '<', $now)
                     ->get();
     }
 
     protected function buildQuery(Entity $newOffer, string $merchantId)
     {
         $query = $this->newQuery()
-                      ->where(Entity::MERCHANT_ID, '=', $merchantId);
+                      ->merchant($merchantId);
 
-        foreach ($this->offerFetchAttributes as $attribute)
+        foreach (self::OFFER_FETCH_ATTRIBUTES as $attribute)
         {
             if ($newOffer->getAttribute($attribute) !== null)
             {

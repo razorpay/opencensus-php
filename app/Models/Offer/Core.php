@@ -128,16 +128,16 @@ class Core extends Base\Core
         {
             $iins = $offer[Entity::IINS];
 
-            $existingIins = $this->repo->iin->fetchIins($iins)->toArrayPublic()['items'];
-
-            $existingIins = array_column($existingIins, 'iin');
+            $existingIins = $this->repo->iin->findMany($iins)->getIds();
 
             $nonExistingIins = array_diff($iins, $existingIins);
 
-            $this->trace->info(TraceCode::OFFER_IIN_DOES_NOT_EXISTS, [
-                'merchant_id'       => $merchant->getId(),
-                'non_existing_iins' => array_values($nonExistingIins),
-            ]);
+            $this->trace->info(
+                TraceCode::OFFER_IIN_DOES_NOT_EXISTS,
+                [
+                    'merchant_id'       => $merchant->getId(),
+                    'non_existing_iins' => array_values($nonExistingIins),
+                ]);
         }
     }
 }

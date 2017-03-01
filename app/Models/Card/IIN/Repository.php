@@ -44,14 +44,4 @@ class Repository extends Base\Repository
     {
         return false;
     }
-
-    public function fetchIins(array $iins)
-    {
-        $existingIins = $this->newQuery()
-                             ->whereIn(Entity::IIN, $iins)
-                             ->select(Entity::IIN)
-                             ->get();
-
-        return $existingIins;
-    }
 }

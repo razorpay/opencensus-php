@@ -238,7 +238,7 @@ class Entity extends Base\PublicEntity
 
     public function deactivate()
     {
-        $this->setAttribute(self::ACTIVE, false);
+        $this->setAttribute(self::ACTIVE, 0);
     }
 
 // ----------------------- Mutators --------------------------------------------
