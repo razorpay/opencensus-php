@@ -56,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::TYPE,
         self::PERCENT_RATE,
         self::MIN_AMOUNT,
         self::MAX_CASHBACK,
@@ -63,7 +64,6 @@ class Entity extends Base\PublicEntity
         self::PAYMENT_COUNT,
         self::PROCESSING_TIME,
         self::ACTIVE,
-        self::TYPE,
         self::BLOCK,
         self::STARTS_AT,
         self::ENDS_AT,
@@ -79,6 +79,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::TYPE,
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
@@ -87,7 +88,6 @@ class Entity extends Base\PublicEntity
         self::PROCESSING_TIME,
         self::ACTIVE,
         self::BLOCK,
-        self::TYPE,
         self::STARTS_AT,
         self::ENDS_AT,
         self::DISPLAY_TEXT,
@@ -102,6 +102,7 @@ class Entity extends Base\PublicEntity
         self::IINS,
         self::PAYMENT_NETWORK,
         self::ISSUER,
+        self::TYPE,
         self::PERCENT_RATE,
         self::MAX_CASHBACK,
         self::FLAT_CASHBACK,
@@ -113,7 +114,6 @@ class Entity extends Base\PublicEntity
         self::DISPLAY_TEXT,
         self::ACTIVE,
         self::BLOCK,
-        self::TYPE,
         self::TERMS,
         self::CREATED_AT,
         self::UPDATED_AT
@@ -241,8 +241,7 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::ACTIVE, false);
     }
 
-
-// -----------------------Mutators begin----------------------------------------
+// ----------------------- Mutators --------------------------------------------
     /**
      * Since wallet validation is not case sensitive, we convert to lowercase
      * and set in entity
@@ -263,27 +262,11 @@ class Entity extends Base\PublicEntity
     {
         $existingIins = $this->getAttribute(self::IINS);
 
-        $mergedIins = $iins;
-
         if ($existingIins !== null)
         {
-            $mergedIins = array_unique(array_merge($existingIins, $iins));
+            $iins = array_unique(array_merge($existingIins, $iins));
         }
 
-        $this->attributes[self::IINS] = json_encode(array_values($mergedIins));
-    }
-
-// -----------------------Mutators end------------------------------------------
-
-// -----------------------Accessors begin---------------------------------------
-
-    protected function getAdditionalDetailsAttribute($additionalDetails)
-    {
-        if ($additionalDetails === null)
-        {
-            $additionalDetails = '';
-        }
-
-        return $additionalDetails;
+        $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 }
