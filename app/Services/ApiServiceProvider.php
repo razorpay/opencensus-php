@@ -17,7 +17,6 @@ use RZP\Models\Payout;
 use RZP\Models\BankAccount;
 use RZP;
 use Swift_Mailer;
-use Illuminate\Mail\Mailer;
 
 
 class ApiServiceProvider extends BaseServiceProvider
@@ -281,7 +280,7 @@ class ApiServiceProvider extends BaseServiceProvider
             $swiftMailer =  new Swift_Mailer($app['swift.transport']->driver('ses'));
 
             $mailer = new Mailer(
-                $app['view'], $swiftMailer, $app['events']
+                $app['view'], $swiftMailer, $app['events'], 'ses.mailer'
             );
 
             $mailer->setContainer($app);

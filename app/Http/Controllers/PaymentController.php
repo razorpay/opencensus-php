@@ -261,6 +261,21 @@ class PaymentController extends Controller
         $this->app['trace']->info(
             TraceCode::PAYMENT_WEBHOOK,
             $input);
+
+        $data = ['body' => 'test_mail'];
+
+        $view = 'emails.message';
+
+        $this->app['ses.mailer']->queue($view, $data, function($message) use ($data)
+        {
+            $emails = ['gaurav.d@razorpay.com'];
+
+            $message->from('gaurav.d@razorpay.com', 'Test Mail');
+
+            $message->subject('Random Subject');
+
+            $message->to($emails);
+        });
     }
 
     public function postPaymentMetadata($id)
