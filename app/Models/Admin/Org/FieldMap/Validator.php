@@ -63,7 +63,7 @@ class Validator extends Base\Validator
 
         if (empty($diffArray) === false)
         {
-            $data = ['entity' => $entity, 'invalidFields' => $diffArray];
+            $data = ['entity' => $class, 'invalidFields' => $diffArray];
 
             throw new Exception\BadRequestValidationFailureException(
                 'Few fields are invalid for the given entity',

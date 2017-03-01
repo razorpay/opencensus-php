@@ -8,15 +8,6 @@ use RZP\Models\Base;
 
 class Core extends Base\Core
 {
-    public function createInviteAndSendEmail(
-        Admin\Entity $admin,
-        array $inviteData)
-    {
-        $invitation = $this->saveLead($admin, $inviteData);
-
-        $this->sendInvitationEmail($admin, $invitation);
-    }
-
     public function saveLead(Admin\Entity $admin, array $inviteData)
     {
         $formData = json_encode($inviteData);
@@ -26,7 +17,7 @@ class Core extends Base\Core
         $entityData = [
             'admin_id'   => $admin->getId(),
             'org_id'     => $admin->org_id,
-            'email'      => $inviteData['contact_email'],
+            'email'      => $inviteData['contact_email'] ?? null,
             'token'      => str_random(40),
             'form_data'  => $formData,
         ];
@@ -39,10 +30,10 @@ class Core extends Base\Core
 
         $lead->org()->associate($admin->org);
 
-        return $lead->toArrayPublic();
+        return $lead;
     }
 
-    protected function sendInvitationEmail(Admin\Entity $admin, $invitation)
+    public function sendInvitationEmail(Admin\Entity $admin, $invitation)
     {
         // TODO use queue mailers
         // $mailer = new MiscMailer();

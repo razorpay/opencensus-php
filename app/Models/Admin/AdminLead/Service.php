@@ -14,14 +14,12 @@ class Service extends Base\Service
 
         $admin = $this->app['basicauth']->getAdmin();
 
-        $customCode = $admin->getOrgId();
+        $orgId = $admin->getOrgId();
 
         $entity = (new Entity)->getEntityName();
 
         (new Validator)->validateOrgSpecificInput(
-            'sendInvitation', $input, $customCode, $entity);
-
-        $admin = $this->app['basicauth']->getAdmin();
+            'sendInvitation', $input, $orgId, $entity);
 
         if ((empty($input['contact_email']) === false) and
             ($admin->email === $input['contact_email']))
@@ -37,9 +35,11 @@ class Service extends Base\Service
                 $data);
         }
 
-        (new Core)->createInviteAndSendEmail($admin, $input);
+        $invitation = $this->core()->saveLead($admin, $input);
 
-        return ['success' => true];
+        $this->core()->sendInvitationEmail($admin, $invitation);
+
+        return $invitation->toArrayPublic();
     }
 
     public function getInvitations()

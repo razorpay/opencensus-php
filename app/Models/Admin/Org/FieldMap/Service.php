@@ -25,7 +25,7 @@ class Service extends Base\Service
         string $entity,
         array $input)
     {
-        $entityMap = $this->repo->org_fieldmap
+        $entityMap = $this->repo->org_field_map
                                 ->findByOrgIdAndEntity($orgId, $entity);
 
         $entityMap->edit($input);
@@ -45,7 +45,7 @@ class Service extends Base\Service
 
     public function deleteFieldMapForEntity(string $orgId, string $entity)
     {
-        $entityMap = $this->repo->org_fieldmap
+        $entityMap = $this->repo->org_field_map
                                 ->findByOrgIdAndEntity($orgId, $entity);
 
         $this->repo->deleteOrFail($entityMap);

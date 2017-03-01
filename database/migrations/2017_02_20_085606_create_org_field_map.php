@@ -19,7 +19,8 @@ class CreateOrgFieldMap extends Migration
         {
             $table->engine = 'InnoDb';
 
-            $table->char(FieldMap::ID, FieldMap::ID_LENGTH);
+            $table->char(FieldMap::ID, FieldMap::ID_LENGTH)
+                  ->primary();;
 
             $table->char(FieldMap::ORG_ID, FieldMap::ID_LENGTH);
 
@@ -27,7 +28,7 @@ class CreateOrgFieldMap extends Migration
 
             $table->text(FieldMap::FIELDS);
 
-            $table->unique(FieldMap::ORG_ID, FieldMap::ENTITY_NAME);
+            $table->unique([FieldMap::ORG_ID, FieldMap::ENTITY_NAME]);
 
             $table->integer(FieldMap::CREATED_AT);
             $table->integer(FieldMap::UPDATED_AT);
