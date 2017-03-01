@@ -75,7 +75,7 @@ class Entity extends Base\PublicEntity
 
         if($this->getPeriod() !== Period::HOURLY)
         {
-            $nextRun->hour(0);
+            $nextRun->hour($this->getHour());
         }
 
         $nextRun->minute(0)->second(0);

@@ -33,23 +33,6 @@ return [
     ],
 
     'testTimedSchedule' => [
-        'cases' => [
-            //Initial is on Friday, Sat-Sun are holidays, 3 days delay
-            //is Monday, Tuesday, Wednesday. Expected time is Thursday noon.
-            [
-                'initialTime' => "2016-10-21 20:57:59",
-                'expectedNextTime' => "2016-10-26 12:00:00"
-            ],
-
-            //Initial is 13th April. 14th and 15th are Holidays,
-            //16th is a Saturday, but a working day. 17th is a Sunday.
-            //18th is working, but 19th is another holiday.
-            //Expected time is therefore 20th at noon.
-            [
-                'initialTime' => "2016-04-13 16:27:10",
-                'expectedNextTime' => "2016-04-20 12:00:00"
-            ],
-        ],
         'schedule' => [
             'name'        => 'Basic T3 with time set',
             'merchant_id' => '100000Razorpay',
@@ -59,7 +42,6 @@ return [
             'anchor'      => null,
             'hour'        => 12,
             'delay'       => 3,
-            'next_run'    => 1451586600,
         ],
     ],
 
