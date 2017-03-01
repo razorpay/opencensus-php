@@ -320,23 +320,23 @@ class ReconciliationTest extends TestCase
         return $batchSettlement;
     }
 
-    protected function checkAdjustmentCreated()
-    {
-        $setl = $this->getLastEntity('settlement', true);
-        $settlementSign = 'setl_';
-        $setlId = substr($setl['id'], strlen($settlementSign));
+    // protected function checkAdjustmentCreated()
+    // {
+    //     $setl = $this->getLastEntity('settlement', true);
+    //     $settlementSign = 'setl_';
+    //     $setlId = substr($setl['id'], strlen($settlementSign));
 
-        $data = [
-            'merchant_id' => "10000000000000",
-            'amount' => 4385000,
-            'currency' => "INR",
-            'channel' => "kotak",
-            'description' => "Adjustment for failed settlement",
-            'settlement_id' => $setlId
-        ];
+    //     $data = [
+    //         'merchant_id' => "10000000000000",
+    //         'amount' => 4385000,
+    //         'currency' => "INR",
+    //         'channel' => "kotak",
+    //         'description' => "Adjustment for failed settlement",
+    //         'settlement_id' => $setlId
+    //     ];
 
-        $content = $this->getLastEntity('adjustment', true);
+    //     $content = $this->getLastEntity('adjustment', true);
 
-        $this->assertArraySelectiveEquals($data, $content);
-    }
+    //     $this->assertArraySelectiveEquals($data, $content);
+    // }
 }

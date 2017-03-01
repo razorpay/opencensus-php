@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
+        self::PUBLIC_ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
         self::BATCH_SETTLEMENT_ID,
@@ -66,6 +67,10 @@ class Entity extends Base\PublicEntity
         self::FEES,
         self::SERVICE_TAX,
     );
+
+    protected $appends = [
+        self::PUBLIC_ID,
+    ];
 
     // --------------------------------- relations -------------------------------
 

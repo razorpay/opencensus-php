@@ -391,7 +391,6 @@ class SettlementTest extends TestCase
         $bta = $this->getLastEntity('bank_transfer_attempt', true);
 
         $this->assertEquals('settlement', $bta['entity_type']);
-        $this->assertEquals($setl['id'], $bta['entity_id']);
     }
 
     public function testSettlementIgnoredTxns()

@@ -177,27 +177,98 @@ class Reconciler3
     protected function reconcileEntity($row)
     {
         // reconciliation version
-        // validate type here -- using entity type?
-        $version = ucfirst($row['Enrichment_2'] ?? 'v1');
+        $version = ucfirst($row['Enrichment_2'] ?: 'v1');
 
-        $entity = $this->loadEntityAndRelations($row);
+        $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
+        $entity = $this->$loadEntityAndRelationsMethod($row);
 
-        $entity = $this->processEntityStatus($entity, $row);
+        $processEntityStatusMethod = 'processEntityStatus' . $version;
+        $entity = $this->$processEntityStatusMethod($entity, $row);
 
         return $entity;
     }
 
-    protected function processEntityStatus($entity, $row)
+    protected function processEntityStatusV1($entity, $row)
+    {
+        list($utr, $statusCode, $remarks, $recordDate, $failureReason, $status) =
+            $this->parseDataFromRow($entity, $row);
+
+        // if already processed
+        if ($entity->isPendingReconciliation() === false)
+        {
+            $oldStatus = $entity->getStatus();
+
+            if ($oldStatus !== $status)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Entity Id: ' . $entity->getPublicId());
+            }
+        }
+
+        $entity->setUtr($utr);
+        $entity->setStatus($status);
+        $entity->setFailureReason($failureReason);
+        $entity->setRemarks($remarks);
+
+        $this->repo->saveOrFail($entity);
+
+        $entity->transaction->setReconciledAt($this->reconciledAt);
+        $this->repo->saveOrFail($entity->transaction);
+
+        return $entity;
+    }
+
+    protected function processEntityStatusV2($entity, $row)
+    {
+        list($utr, $statusCode, $remarks, $recordDate, $failureReason, $status) =
+            $this->parseDataFromRow($entity, $row);
+
+        // if already processed
+        if ($entity->isPendingReconciliation() === false)
+        {
+            $oldStatus = $entity->getStatus();
+
+            if ($oldStatus !== $status)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Old and new status not matching. ' .
+                    'Old status: ' . $oldStatus . ' New status: ' . $status .
+                    'Entity Id: ' . $entity->getPublicId());
+            }
+        }
+
+        $entity->setUtr($utr);
+        $entity->setStatus($status);
+        $entity->setFailureReason($failureReason);
+        $entity->setRemarks($remarks);
+        $entity->setBankStatusCode($statusCode);
+        $entity->setDateTime($row['DateTime']);
+        $entity->setCmsRefNo($row['Cms. ref no.']);
+
+        $this->repo->saveOrFail($entity);
+
+        $source = $entity->source;
+        $source->setUtr($utr);
+        $source->setFailureReason($failureReason);
+        $source->setStatus($status);
+
+        $this->repo->saveOrFail($source);
+
+        $source->transaction->setReconciledAt($this->reconciledAt);
+        $this->repo->saveOrFail($source->transaction);
+
+        return $source;
+    }
+
+    protected function parseDataFromRow($entity, $row)
     {
         $utr = null;
 
-        $type = $entity->getEntity();
+        $statusCode = trim($row['Status Of transaction']);
 
-        $class = '\\RZP\\Models\\' . studly_case($type) . '\\Status';
-
-        $statusCode = $row['Status Of transaction'];
-
-        $remarks = $row['Remarks'];
+        $remarks = trim($row['Remarks']);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 
@@ -206,6 +277,10 @@ class Reconciler3
         $tenPm = $recordDate->hour(22)->timestamp;
 
         $failureReason = null;
+
+        $type = $entity->getEntity();
+
+        $class = '\\RZP\\Models\\' . studly_case($type) . '\\Status';
 
         $status = $class::FAILED;
 
@@ -237,58 +312,10 @@ class Reconciler3
             }
         }
 
-        // if already processed
-        if ($entity->isPendingReconciliation() === false)
-        {
-            $oldStatus = $entity->getStatus();
-
-            if ($oldStatus !== $status)
-            {
-                throw new Exception\BadRequestValidationFailureException(
-                    'Old and new status not matching. ' .
-                    'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Entity Id: ' . $entity->getPublicId());
-            }
-        }
-
-        $entity->setUtr($utr);
-        $entity->setStatus($status);
-        $entity->setFailureReason($failureReason);
-        $entity->setRemarks($remarks);
-
-        if (($type === 'settlement') or ($type === 'payout'))
-        {
-            $entity->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->saveOrFail($entity->transaction);
-
-            $this->repo->saveOrFail($entity);
-
-            return $entity;
-        }
-        else if ($type === 'bank_transfer_attempt')
-        {
-            $entity->setBankStatusCode($statusCode);
-            $entity->setDateTime($row['DateTime']);
-            $entity->setCmsRefNo($row['Cms. ref no.']);
-
-            $this->repo->saveOrFail($entity);
-
-            $source = $entity->source;
-
-            $source->setUtr($utr);
-            $source->setFailureReason($failureReason);
-            $source->setStatus($status);
-
-            $this->repo->saveOrFail($source);
-
-            $source->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->saveOrFail($source->transaction);
-
-            return $source;
-        }
+        return [$utr, $statusCode, $remarks, $recordDate, $failureReason, $status];
     }
 
-    protected function loadEntityAndRelations($row)
+    protected function loadEntityAndRelationsV1($row)
     {
         $entityId = $row['Payment_Ref_No.'];
 
@@ -303,41 +330,48 @@ class Reconciler3
             }
         }
 
-        $entity = $this->getEntityByIdWithRelations($entityId);
-
-        return $entity;
-    }
-
-    protected function getEntityByIdWithRelations($entityId)
-    {
         $entity = null;
 
         if (strpos($entityId, Settlement\Entity::getSign(), 0) === 0)
         {
             Settlement\Entity::verifyIdAndStripSign($entityId);
 
-            $entity = $this->repo->settlement->findByIdWithRelations(
-                $entityId,
-                ['merchant', 'transaction']);
-        }
-        else if (strpos($entityId, BankTransferAttempt\Entity::getSign(), 0) === 0)
-        {
-            // Find a way to validate this!
-            // assert($row['Enrichment_2'] === $bankTransferAttempt->getVersion());
-
-            BankTransferAttempt\Entity::verifyIdAndStripSign($entityId);
-
-            $entity = $this->repo->bank_transfer_attempt->findByIdWithSourceAndRelations(
-                $entityId, ['transaction', 'merchant']);
+            $entity = $this->repo
+                           ->settlement
+                           ->findByIdWithRelations($entityId, ['merchant', 'transaction']);
         }
         else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
         {
             Payout\Entity::verifyIdAndStripSign($entityId);
 
-            $entity = $this->repo->payout->findByIdWithRelations(
-                $entityId,
-                ['merchant', 'transaction']);
+            $entity = $this->repo
+                           ->payout
+                           ->findByIdWithRelations($entityId, ['merchant', 'transaction']);
         }
+
+        return $entity;
+    }
+
+    protected function loadEntityAndRelationsV2($row)
+    {
+        $entityId = $row['Payment_Ref_No.'];
+
+        $entityId = str_replace(' ', '_', $entityId);
+
+        if ($entityId === '')
+        {
+            // Check if row is empty.
+            if (strlen(implode($row)) === 0)
+            {
+                return;
+            }
+        }
+
+        BankTransferAttempt\Entity::verifyIdAndStripSign($entityId);
+
+        $entity = $this->repo
+                       ->bank_transfer_attempt
+                       ->findByIdWithSourceAndRelations($entityId, ['transaction', 'merchant']);
 
         return $entity;
     }

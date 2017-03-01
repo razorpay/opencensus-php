@@ -12,9 +12,9 @@ class Repository extends Base\Repository
         Entity::ENTITY_TYPE         => 'sometimes|string|in:settlement',
         Entity::ENTITY_ID           => 'sometimes|string|size:14',
         Entity::STATUS              => 'sometimes|string|size:1',
-        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|max:14',
+        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|size:14',
         Entity::UTR                 => 'sometimes|alpha_num',
-        Entity::BATCH_TRANSFER_ID   => 'sometimes|alpha_num|max:14',
+        Entity::BATCH_TRANSFER_ID   => 'sometimes|alpha_num|size:14',
         Entity::VERSION             => 'sometimes|string|in:v1,v2',
     ];
 
@@ -28,7 +28,7 @@ class Repository extends Base\Repository
             $query->with($relations);
         }
 
-        return $query-get();
+        return $query->get();
     }
 
     public function findByIdWithSourceAndRelations($id, $relations = [])
