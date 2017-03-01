@@ -137,6 +137,10 @@ class Service extends Base\Service
 
     public function createUserForSubmerchant(array $input)
     {
+        // id contains the merchant ID
+        // Even though this is ignored by eloquent because we
+        // have a generator, nice idea to drop it
+        unset($input['id']);
         $user = $this->buildUserEntity($input);
 
         if ($user->confirm_token !== null)
@@ -144,6 +148,7 @@ class Service extends Base\Service
             $user->token = $user->confirm_token;
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
+
         unset($user->token);
 
         return $user;

@@ -57,6 +57,7 @@ return [
     'balance_get'               => $allButSellerApp,
     'bank_account_fetch'        => $allButSellerApp,
     'submerchant_register'      => $writers,
+    'subuser_register'          => $writers,
     'invoice_fetch_all'         => $all,
     'invoice_fetch_single'      => $all,
     // Support role can't create invoices, but sellerapp role can

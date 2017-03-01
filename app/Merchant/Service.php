@@ -22,7 +22,6 @@ use Razorpay\Api\Errors\Error as ApiError;
 
 class Service extends Base\Service
 {
-
     const INVALID_EMAIL_OR_PASSWORD     = 'Email or password is invalid.';
     const EMAIL_CHANGE_FORBIDDEN        = "Email change forbidden on this account";
     const NAME_CHANGE_FORBIDDEN         = "Name change forbidden on this account";
@@ -139,8 +138,8 @@ class Service extends Base\Service
         $currentMerchant = $this->currentMerchant;
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
-        $submerchant = $this->fetch($input['id']);
-        $email = $submerchant['email'];
+        $subMerchant = $this->fetch($input['id']);
+        $email = $subMerchant['email'];
         $input['email'] = $email;
 
         $error = (new Merchant\Validator)
@@ -153,20 +152,33 @@ class Service extends Base\Service
                 return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
             }
 
-            if ($currentUser->ownsMerchant($submerchant) !== true) //checks if the main merchant's user owns the sub-merchant being given user access
+            // checks if the main merchant's owner user is the primary
+            // owner of the submerchant account
+            if ($currentMerchant->primaryOwner()->ownsMerchant($subMerchant) !== true)
             {
                 return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
             }
 
-            $input['name'] = $submerchant['name'];
+            $input['name'] = $subMerchant['name'];
             $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
 
-            $user = (new User\Service)->createUserForSubmerchant($input);
-            $user->save();
-            // Finally attach the new user to the sub merchant
-            $user->joinMerchantByIdWithRole($input['id'], 'owner');
+            try
+            {
+                $user = (new User\Service)->createUserForSubmerchant($input);
+                $user->save();
 
-            return [null, $user->toArray()];
+                // Finally attach the new user to the sub merchant
+                $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+                return [null, $user->toArray()];
+            }
+
+            catch(User\RecoverableException $e)
+            {
+                $error = [$e->getMessage()];
+
+                return [$error, null];
+            }
         }
         else
         {

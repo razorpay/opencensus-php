@@ -528,7 +528,7 @@ class MerchantController extends Controller
 
         return AppResponse::jsonResponse($error, $data);
     }
-    
+
     public function getCustomers(Request $request, $mode)
     {
         $this->checkMode($mode);
@@ -547,7 +547,7 @@ class MerchantController extends Controller
         list($error, $data) = (new Api\Service)->fetchCollectionForAutocomplete($mode, 'customer');
 
         return AppResponse::jsonResponse($error, $data);
-    }    
+    }
 
     public function postCustomer(Request $request, $mode)
     {

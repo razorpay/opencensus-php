@@ -217,7 +217,7 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
     public function ownsMerchant($merchant)
     {
         $merchant = $this->merchants()
-                         ->where('email',$merchant['email'])
+                         ->where('merchant_id', $merchant['id'])
                          ->where('role','owner')
                          ->first();
 
@@ -250,9 +250,8 @@ class Entity extends Base\Entity implements AuthenticatableContract, CanResetPas
      */
     protected function generateOneTimeUseToken($length)
     {
-        $factory = new RandomLibFactory;
-        $generator = $factory->getLowStrengthGenerator();
-        $token = bin2hex($generator->generate($length/2));
+        $bytes = random_bytes($length/2);
+        $token = bin2hex($bytes);
 
         return $token;
     }
