@@ -84,7 +84,7 @@ class Repository extends Base\Repository
         $count = $this->newQueryWithoutTimestamps()
                       ->join('iins', 'iins.iin', '=', 'cards.iin')
                       ->whereNotNull('cards.vault')
-                      ->where('cards.network', '!=', 'American Express')
+                      ->where('cards.network', '!=', NetworkName::AMEX)
                       ->where(function ($q)
                       {
                          $q->where('cards.issuer', '!=', 'iins.issuer')
@@ -102,7 +102,7 @@ class Repository extends Base\Repository
         $amexCount = $this->newQueryWithoutTimestamps()
                       ->join('iins', 'iins.iin', '=', 'cards.iin')
                       ->whereNotNull('cards.vault')
-                      ->where('cards.network', '=', 'American Express')
+                      ->where('cards.network', '=', NetworkName::AMEX)
                       ->where(function ($q)
                       {
                          $q->where('cards.issuer', '!=', 'iins.issuer')

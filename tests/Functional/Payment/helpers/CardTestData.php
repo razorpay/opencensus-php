@@ -122,7 +122,7 @@ return [
 
     'testUpdateSavedCard' => [
         'request' => [
-            'method'  => 'post',
+            'method'  => 'put',
             'url'     => '/cards/saved',
             'content' => [
             ],

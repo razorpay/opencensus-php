@@ -87,7 +87,7 @@ final class Route
         'card_check_recurring'                    => ['get',      'cards/recurring',                                'PaymentController@getCardRecurring'                                ],
         'card_fetch_by_id'                        => ['get',      'cards/{id}',                                     'PaymentController@getCard'                                         ],
         'card_fetch_multiple'                     => ['get',      'cards',                                          'PaymentController@getCards'                                        ],
-        'card_update_saved'                       => ['post',     'cards/saved',                                    'CardController@updateSavedCards'                                   ],
+        'card_update_saved'                       => ['put',      'cards/saved',                                    'CardController@updateSavedCards'                                   ],
         'iin_fetch_by_iin'                        => ['get',      'iins/{id}',                                      'CardController@getIin'                                             ],
         'iin_fetch_multiple'                      => ['get',      'iins',                                           'CardController@getIins'                                            ],
         'iin_add'                                 => ['post',     'iins',                                           'CardController@postIin'                                            ],
