@@ -21,4 +21,24 @@ class Service extends Base\Service
 
         return $cards->toArrayPublic();
     }
+
+    public function getCardRecurring($input)
+    {
+        (new Card\Validator)->validateInput('recurring', $input);
+
+        $iin = substr($input['number'], 0, 6);
+
+        $iinEntity = $this->repo->iin->find($iin);
+
+        $data['recurring'] = false;
+
+        if (($iinEntity !== null) and
+            ($iinEntity->getType() === Card\Type::CREDIT) and
+            (in_array($iinEntity->getNetworkCode(), Card\Network::$recurringNetworks, true)))
+        {
+            $data['recurring'] = true;
+        }
+
+        return $data;
+    }
 }
