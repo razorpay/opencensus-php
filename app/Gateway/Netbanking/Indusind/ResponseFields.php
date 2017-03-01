@@ -11,7 +11,7 @@ class ResponseFields
     const STATUS              = 'PAID';
     const BANK_REFERENCE_ID   = 'BID';
     const FLAG                = 'STATFLG';
-    const ENCRYPTED_STRING    = 'QR';
+    const ENCRYPTED_STRING    = 'RQS';
     const PAYEE_ID            = 'PAYEEID';
     const DATE                = 'PaymentDate';
     const PAYMENT_STATUS      = 'PaymentStatus';

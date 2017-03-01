@@ -16,11 +16,9 @@ class RequestFields
     const RESPONSE                 = 'RESPONSE';
     const CONFIRMATION             = 'CG';
     const DATE                     = 'DATE';
+    const USER_TYPE                = 'UserType';
 
     // verify fields
-    const VERIFY_PAYEE_ID          = 'payeeid';
-    const VERIFY_ITC               = 'itc';
-    const VERIFY_PRN               = 'prn';
-    const VERIFY_DATE              = 'date';
-    const VERIFY_AMT               = 'amt';
+    const PAYMENT_TYPE             = 'STATFLG';
+    const BANK_REFERENCE_ID        = 'BID';
 }

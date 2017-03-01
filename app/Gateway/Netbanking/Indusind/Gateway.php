@@ -34,9 +34,9 @@ class Gateway extends Base\Gateway
 
         $content = $this->getPaymentRequestData($input);
 
-        $entityAttributes = $this->getEntityAttributes($input);
+        $entity = [RequestFields::AMOUNT => $input['payment'][Payment\Entity::AMOUNT] / 100];
 
-        $this->createGatewayPaymentEntity($entityAttributes);
+        $this->createGatewayPaymentEntity($entity);
 
         $request = $this->getStandardRequestArray($content);
 
@@ -156,34 +156,30 @@ class Gateway extends Base\Gateway
     {
         $payment = $verify->payment;
 
-        $timestamp = $payment['original']['created_at'];
+        $input = $verify->input;
 
-        $date = date('Y-m-d', $timestamp);
-
-        $data = [
-            RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => strtoupper($payment['payment_id']),
-            RequestFields::VERIFY_PRN      => $payment['payment_id'],
-            RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $payment['amount'],
-        ];
+        $data = $this->getPaymentRequestData($input, Constants::VERIFY);
 
         return $data;
     }
 
-    protected function getPaymentRequestData(array $input)
+    protected function getPaymentRequestData(array $input, $mode)
     {
-        $encryptedString = $this->getAuthorizeEncryptedString($input);
+        $data = $this->createDefaultRequestData($input, $mode);
 
-        return [
-            RequestFields::ENCRYPTED_STRING         => $encryptedString,
-            RequestFields::RETURN_URL               => $input['callbackUrl']
-        ];
+        $data[RequestFields::ENCRYPTED_STRING] = $this->getEncryptedString($input);
+
+        return $data;
     }
 
-    protected function getEncryptedString(array $input)
+    protected function getEncryptedString(array $input, $mode)
     {
         $data = $this->getAuthorizeRequestData($input);
+
+        if ($mode === Constants::VERIFY)
+        {
+            $input[RequestFields::BANK_REFERENCE_ID] = $input['payment']['bank_payment_id'];
+        }
 
         $this->traceGatewayPaymentRequest($data, $input);
 
@@ -196,29 +192,49 @@ class Gateway extends Base\Gateway
         return base64_encode($aes->encryptString($queryString));
     }
 
-    protected function getEntityAttributes(array $input)
+    protected function getAuthorizeRequestData(array $input)
     {
         return [
-            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
             RequestFields::ITEM_CODE          => strtoupper($input['payment']['id']),
-            RequestFields::AMOUNT             => $input['payment']['amount'] / 100
+            RequestFields::MERCHANT_REFERENCE => $input['payment']['id'],
+            RequestFields::AMOUNT             => ($input['payment']['amount'] / 100),
+            RequestFields::RETURN_URL         => $input['callbackUrl'],
+            RequestFields::CURRENCY_CODE      => Currency::INR,
+            RequestFields::CONFIRMATION       => Constants::YES,
         ];
+    }
+
+    protected function createDefaultRequestData(array $input, $mode)
+    {
+ 
+        $data = [
+            RequestFields::MODE       => $mode,
+            RequestFields::PAYEE_ID   => $this->getPid(),
+            RequestFields::USER_TYPE  => Constants::RETAIL_USER
+        ];
+
+        if ($mode === Constants::VERIFY)
+        {
+            $data[RequestFields::PAYMENT_TYPE] = Constants::HOT_PAYMENT;
+        }
+
+        return $data;
     }
 
     /*
      * @param Eg. $data = ['PRN' => "6vTX585l2WP6Bq", 'MD' => "P"]
-     * @return Eg. string "PRN~6vTX585l2WP6Bq$MD~P"
+     * @return Eg. string "PRN=6vTX585l2WP6Bq&MD=P"
      */
-    protected function prepareStringToEncrypt(array $data)
+    protected function createQueryString(array $data)
     {
         $queryArray = [];
 
         foreach ($data as $key => $value)
         {
-            $queryArray[] = $key . '~' . $value;
+            $queryArray[] = $key . '=' . $value;
         }
 
-        $queryString = implode('$', $queryArray);
+        $queryString = implode('&', $queryArray);
 
         return $queryString;
     }
@@ -229,7 +245,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $crypto = new AESCrypto($masterKey);
+        $crypto = new AESCrypto(Constants::MODE_ECB, $masterKey);
 
         $decryptedString = $crypto->decryptString($encryptedString);
 
@@ -273,10 +289,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::STATUS],
-            'amount'            => $content[ResponseFields::AMOUNT],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+            Base\Entity::RECEIVED        => true,
+            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_REFERENCE_ID]
         ];
     }
 
@@ -303,7 +318,6 @@ class Gateway extends Base\Gateway
         return [
             'received'          => true,
             'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMT],
             'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
