@@ -21,7 +21,7 @@ class Mailer extends LaravelMailer
         $this->serviceName = $serviceName;
     }
 
-    public function queue(Factory $view, array $data, callable $callback, $queue = null)
+    public function queue($view, array $data, $callback, $queue = null)
     {
         $callback = $this->buildQueueCallable($callback);
 
