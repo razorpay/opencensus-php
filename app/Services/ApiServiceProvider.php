@@ -146,7 +146,7 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-            'ses.mailer',
+            'pigeon',
         ];
     }
 
@@ -274,12 +274,12 @@ class ApiServiceProvider extends BaseServiceProvider
 
     protected function registerSesClient()
     {
-        $this->app->singleton('ses.mailer', function ($app)
+        $this->app->singleton('pigeon', function ($app)
         {
             $swiftMailer =  new Swift_Mailer($app['swift.transport']->driver('ses'));
 
             $mailer = new Mailer(
-                $app['view'], $swiftMailer, $app['events'], 'ses.mailer'
+                $app['view'], $swiftMailer, $app['events'], 'pigeon'
             );
 
             $mailer->setContainer($app);
