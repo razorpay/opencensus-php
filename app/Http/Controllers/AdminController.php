@@ -1003,22 +1003,6 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $response);
     }
 
-    public function postSendMerchantInvitation()
-    {
-        $input = Input::all();
-
-        list($error, $data) = (new Admin\Service)->sendInvitation($input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function getMerchantInvitations()
-    {
-        list($error, $data) = (new Admin\Service)->getAdminLeads();
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     // ----- /Credits -----
 
     // ----- Heimdall (Whitelabel) -----

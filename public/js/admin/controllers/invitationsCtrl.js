@@ -14,18 +14,6 @@ app.controller('InvitationsCtrl', [
     $scope.invitation_cache = {};
 
     $scope.fetchInvitations = function () {
-      // var request = $http.get('/admin/invitations');
-      //
-      // request.success(function (data) {
-      //   if (data.success) {
-      //     $scope.invitations = data.data;
-      //     $scope.count = data.data.length;
-      //
-      //     data.data.forEach(function (v, i) {
-      //       $scope.invitation_cache[v.id] = v;
-      //     });
-      //   }
-      // });
 
       var request = $http({
         url: '/admin/generic',

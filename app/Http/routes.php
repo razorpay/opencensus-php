@@ -334,8 +334,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/generic', 'GenericController@postGeneric');
         Route::put('/admin/generic', 'GenericController@putGeneric');
         Route::delete('/admin/generic', 'GenericController@deleteGeneric');
-        Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
-        Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
 
         Route::get('/admin/auditlogs', 'AdminController@getAuditLogs');
         Route::get('admin/get_current');
