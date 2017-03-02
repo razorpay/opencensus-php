@@ -500,7 +500,6 @@ class BasicAuth
             //
             // Current route is in feature map list.
             //
-
             $accessedFeature = Route::$routeNameToFeatureMap[$route];
 
             if ($this->merchant->isFeatureEnabled($accessedFeature))

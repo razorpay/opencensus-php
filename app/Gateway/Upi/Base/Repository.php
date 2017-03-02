@@ -5,6 +5,8 @@ namespace RZP\Gateway\Upi\Base;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Gateway\Upi\Base\Entity;
+use RZP\Constants\Table;
+use RZP\Models\Payment;
 
 class Repository extends Base\Repository
 {
@@ -29,12 +31,22 @@ class Repository extends Base\Repository
                     ->first();
     }
 
-    public function fetchAllForProviderUpdate($limit = 100, $lastId = 0)
+    public function fetchAllForBankUpdate($limit = 100, $lastId = 0)
     {
+        $paymentId = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentStatus = $this->manager->payment->getAttributeWithTableName(Payment\Entity::STATUS);
+
+        $upiId = $this->getAttributeWithTableName(Entity::ID);
+        $upiVpa = $this->getAttributeWithTableName(Entity::VPA);
+        $upiBank = $this->getAttributeWithTableName(Entity::BANK);
+        $upiPaymentId = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+
         return $this->newQuery()
-                    ->select(Entity::ID, Entity::VPA)
-                    ->where('id', '>', $lastId)
-                    ->whereNull(Entity::PROVIDER)
+                    ->select($upiId, $upiVpa)
+                    ->join(TABLE::PAYMENT, $upiPaymentId, '=', $paymentId)
+                    ->where($paymentStatus, '=', Payment\Status::CAPTURED)
+                    ->where($upiId, '>', $lastId)
+                    ->whereNull($upiBank)
                     ->limit($limit)
                     ->get();
     }
