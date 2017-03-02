@@ -50,12 +50,19 @@ app.controller('ActivationCtrl', [
       }
     };
     $scope.onFileSelect = saveFile;
+    var addressCopyToggle = false;
     $scope.genOperation = function (flag) {
+      addressCopyToggle = flag;
       if (flag) {
         $scope.data.business_operation_address = $scope.data.business_registered_address;
         $scope.data.business_operation_state = $scope.data.business_registered_state;
         $scope.data.business_operation_city = $scope.data.business_registered_city;
         $scope.data.business_operation_pin = $scope.data.business_registered_pin;
+      }
+    };
+    $scope.changeOperationalAddress = function (input) {
+      if (addressCopyToggle && input.substr(0,19) === 'business_registered') {
+        $scope.data[input.replace('registered', 'operation')] = $scope.data[input];
       }
     };
     getData();
