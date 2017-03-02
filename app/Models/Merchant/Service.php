@@ -719,6 +719,13 @@ class Service extends Base\Service
         return $webhooks->toArrayPublic();
     }
 
+    public function patchMerchantBeneficiaryCode()
+    {
+        $data = (new BankAccount\Core)->updateBeneficiaryCodes();
+
+        return $data;
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
