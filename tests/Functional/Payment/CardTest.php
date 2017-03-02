@@ -33,6 +33,15 @@ class CardTest extends TestCase
         $this->assertEquals($card['id'], $payment['card_id']);
     }
 
+    public function testFetchCardRecurring()
+    {
+        $this->ba->privateAuth();
+
+        $testData = $this->testData[__FUNCTION__];
+
+        return $this->runRequestResponseFlow($testData);
+    }
+
     public function testUnsupportedCardNetworks()
     {
         $numbers = array(
@@ -130,6 +139,60 @@ class CardTest extends TestCase
 
         $this->assertArraySelectiveEquals($cardInfo, $card);
         $this->assertArrayNotHasKey('number', $card);
+    }
+
+    public function testUpdateSavedCard()
+    {
+        // Create card with missing fields
+        $card = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => null,
+                    'country' => null,
+                    'network' => 'MasterCard',
+                ]);
+
+        // Create IIN with missing info relating to card
+        $iin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => 'ICIC',
+                    'country' => 'IN',
+                    'network' => 'Visa',
+                ]);
+
+        $amexCard = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '553212',
+                    'country' => null,
+                    'network' => 'American Express',
+                ]);
+
+        $amexIin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '553212',
+                    'country' => 'IN',
+                    'network' => 'American Express',
+                ]);
+
+        $this->ba->appAuthTest();
+
+        $this->startTest();
+
+        $card = $this->getEntityById('card', $card->getId(), true);
+
+        // Assert that card info has been populated
+        $this->assertEquals($iin->getCountry(), $card['country']);
+        $this->assertEquals($iin->getNetwork(), $card['network']);
+
+        $amexCard = $this->getEntityById('card', $amexCard->getId(), true);
+
+        // Assert that Amex country did not get updated
+        $this->assertNull($amexCard['country']);
     }
 
     public function testCardWhenNotEnabledOnLive()
