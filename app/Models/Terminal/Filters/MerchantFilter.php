@@ -244,11 +244,11 @@ class MerchantFilter extends Terminal\Filter
 
         $acquirer = $terminal->getGatewayAcquirer();
 
-        if (($terminal->isShared() === true) and
-            ($category2 === Category::PHARMA) and
+        if (($category2 === Category::PHARMA) and
             ($input['payment']->isMethodCardOrEmi()))
         {
-            if ($acquirer === Gateway::ACQUIRER_HDFC)
+            if (($terminal->isShared() === true) and
+                ($acquirer === Gateway::ACQUIRER_HDFC))
             {
                 // This check is for all the card networks which are
                 // supported by gateways from other acquirers that also
