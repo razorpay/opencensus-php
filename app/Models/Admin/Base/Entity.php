@@ -40,4 +40,18 @@ class Entity extends BaseModel\PublicEntity
 
         return $this;
     }
+
+    public function editWithOrg(
+        array $input = array(),
+        string $orgId,
+        string $operation = 'edit')
+    {
+        $validator->validateOrgSpecificInput($operation, $input, $orgId);
+
+        $this->unsetInput($operation, $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }
