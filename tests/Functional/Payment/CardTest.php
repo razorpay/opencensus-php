@@ -150,7 +150,7 @@ class CardTest extends TestCase
                     'iin'     => '453211',
                     'issuer'  => null,
                     'country' => null,
-                    'network' => 'MC',
+                    'network' => 'MasterCard',
                 ]);
 
         // Create IIN with missing info relating to card
