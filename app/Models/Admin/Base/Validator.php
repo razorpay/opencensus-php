@@ -51,9 +51,18 @@ class Validator extends Base\Validator
 
         $rulesVar = $this->getRulesVariableName($operation);
 
-        $fields = (new FieldMap\Repository)
-                    ->findByOrgIdAndEntity($orgId, $entity)
-                    ->getFields();
+        $obj = (new FieldMap\Repository)
+                    ->findByOrgIdAndEntity($orgId, $entity);
+
+        // If the org specific rules are not defined, return all the rules and
+        // let it consider all the entries in the rules as applicable which is
+        // basically default validator
+        if ($obj === null)
+        {
+            return static::$$rulesVar;
+        }
+
+        $fields = $obj->getFields();
 
         return array_intersect_key(static::$$rulesVar, array_flip($fields));
     }

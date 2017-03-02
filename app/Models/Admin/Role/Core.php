@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $role->org()->associate($org);
 
-        $role->build($input);
+        $role->buildWithOrg($input, $org->getId());
 
         $this->validateExistingRole($role);
 

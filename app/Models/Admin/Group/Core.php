@@ -14,7 +14,7 @@ class Core extends Base\Core
     {
         $group = (new Entity)->generateId();
 
-        $group->build($input);
+        $group->buildWithOrg($input, $org->getId());
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
 

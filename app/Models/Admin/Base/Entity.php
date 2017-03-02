@@ -21,4 +21,23 @@ class Entity extends BaseModel\PublicEntity
             $attributes[static::ORG_ID] = Org::getSignedId($orgId);
         }
     }
+
+    public function buildWithOrg(array $input = array(), string $orgId)
+    {
+        $this->input = $input;
+
+        $this->modify($input);
+
+        $validator = $this->getValidator();
+
+        $validator->validateOrgSpecificInput('create', $input, $orgId);
+
+        $this->generate($input);
+
+        $this->unsetInput('create', $input);
+
+        $this->fill($input);
+
+        return $this;
+    }
 }

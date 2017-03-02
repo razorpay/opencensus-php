@@ -50,7 +50,7 @@ class Core extends Base\Core
             'adminName'  => $admin->getName(),
         ];
 
-        Mail::send(
+        Mail::queue(
             'emails.admin.invite_merchant',
             ['data' => $data],
             function ($message) use ($subject, $email, $contactName)

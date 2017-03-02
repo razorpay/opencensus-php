@@ -2,7 +2,7 @@
 
 namespace RZP\Tests\Functional\Admin;
 
-use Mockery;
+use Mail;
 
 use RZP\Tests\Functional\Fixtures\Entity\Org;
 use RZP\Tests\Functional\Helpers\Heimdall\HeimdallTrait;
@@ -50,13 +50,7 @@ class AdminLeadTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
-        $mock = Mockery::mock('RZP\Services\Mailgun')
-                    ->makePartial()
-                    ->shouldAllowMockingProtectedMethods();
-
-        $mock->shouldReceive('sendMessage')->times(1);
-
-        $this->app->instance('mailgun', $mock);
+        Mail::shouldReceive('queue')->times(1);
 
         $this->startTest();
     }

@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Admin\Role;
 
-use RZP\Base;
+use RZP\Models\Admin\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 
