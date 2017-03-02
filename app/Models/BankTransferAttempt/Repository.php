@@ -8,17 +8,19 @@ class Repository extends Base\Repository
 {
     protected $entity = 'bank_transfer_attempt';
 
+    // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::ENTITY_TYPE         => 'sometimes|string|in:settlement',
-        Entity::ENTITY_ID           => 'sometimes|string|size:14',
+        Entity::ENTITY_ID           => 'sometimes|alpha_dash|min:14|max:19',
         Entity::STATUS              => 'sometimes|string|size:1',
-        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|size:14',
         Entity::UTR                 => 'sometimes|alpha_num',
         Entity::BATCH_TRANSFER_ID   => 'sometimes|alpha_num|size:14',
         Entity::VERSION             => 'sometimes|string|in:v1,v2',
     ];
 
-    public function getBankTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId, $relations = [])
+    public function getBankTransferAttemptsByBatchSettlementIdWithRelations(
+        $batchSettlementId,
+        $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::BATCH_TRANSFER_ID, '=', $batchSettlementId);

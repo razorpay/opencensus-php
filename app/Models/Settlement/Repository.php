@@ -5,16 +5,17 @@ namespace RZP\Models\Settlement;
 use RZP\Models\Base;
 use RZP\Models\Settlement;
 use RZP\Models\Transaction as Transaction;
+use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'settlement';
 
     protected $appFetchParamRules = array(
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num|max:14',
-        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|max:14',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
+        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_num|min:14|max:17',
         Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num|max:14',
-        Entity::TRANSACTION_ID      => 'sometimes|alpha_num|max:14',
+        Entity::TRANSACTION_ID      => 'sometimes|alpha_num|min:14|max:18',
         Entity::STATUS              => 'sometimes|in:created,processed,failed',
         Entity::UTR                 => 'sometimes|alpha_num',
     );
@@ -95,4 +96,22 @@ class Repository extends Base\Repository
                     ->whereIn(Entity::ID, $setlIds2)
                     ->get();
     }
+
+    protected function addQueryParamBankAccountId($query, $params)
+    {
+        $bankAccountId = $params[Entity::BANK_ACCOUNT_ID];
+
+        BankAccount\Entity::verifyIdAndSilentlyStripSign($bankAccountId);
+
+        $query->where(Entity::BANK_ACCOUNT_ID, '=', $bankAccountId);
+    }
+
+    protected function addQueryParamTransactionId($query, $params)
+     {
+        $transactionId = $params[Entity::TRANSACTION_ID];
+
+        Transaction\Entity::verifyIdAndSilentlyStripSign($transactionId);
+
+        $query->where(Entity::TRANSACTION_ID, '=', $transactionId);
+     }
 }
