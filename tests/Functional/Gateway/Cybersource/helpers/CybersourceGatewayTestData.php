@@ -121,7 +121,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::GATEWAY_ERROR,
-                    'description' => 'There is a problem with the gateway causing the payment to fail',
+                    'description' => PublicErrorDescription::GATEWAY_ERROR,
                 ],
             ],
             'status_code' => 502,
@@ -260,7 +260,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
@@ -276,7 +276,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
@@ -308,7 +308,7 @@ return [
             'content' => [
                 'error' => [
                     'code' => PublicErrorCode::SERVER_ERROR,
-                    'description' => 'The server encountered an error. The incident has been reported to admins.',
+                    'description' => PublicErrorDescription::SERVER_ERROR,
                 ],
             ],
             'status_code' => 500,
