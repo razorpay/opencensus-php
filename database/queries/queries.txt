@@ -1707,7 +1707,17 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE bank_accounts
     ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
+    
+# payouts - add batch settlement
+ALTER TABLE payouts
+    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0,
+    MODIFY COLUMN service_tax INT UNSIGNED DEFAULT 0,
+    ADD COLUMN batch_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT payouts_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id) REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN type VARCHAR(50) DEFAULT NULL AFTER id,
+    CHANGE COLUMN `settlement_count` `total_count` INTEGER NOT NULL;
 
 ALTER TABLE files
     ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;
-

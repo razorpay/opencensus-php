@@ -106,7 +106,8 @@ class Server extends Base\Mock\Server
         {
             $number = $input['card_number'];
 
-            if ($number === '555555555555558')
+            if (($number === '555555555555558') or
+                ($number === '4000184186218826'))
             {
                 return false;
             }

@@ -58,6 +58,8 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
+        $this->assignDefaultSettlementSchedule($merchant);
+
         // Once the merchant is created we must tag him to
         // the admin referral
         if (isset($adminId) === true)
@@ -83,6 +85,15 @@ class Service extends Base\Service
         }
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function assignDefaultSettlementSchedule($merchant)
+    {
+        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
+
+        $merchant->schedule()->associate($schedule);
     }
 
     protected function attachAdmin($merchantId, $adminId)

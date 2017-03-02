@@ -423,7 +423,7 @@ trait FileHandlerTrait
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException(
+            $this->trace()->traceException(
                 $e,
                 Trace::WARNING,
                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,

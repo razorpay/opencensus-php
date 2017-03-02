@@ -24,6 +24,10 @@ class Payout extends Base
 
         $txn->saveOrFail();
 
+        $payout->setFees($txn->getFee());
+
+        $payout->setServiceTax($txn->getServiceTax());
+
         $payout->saveOrFail();
 
         return $payout;
