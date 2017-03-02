@@ -26,4 +26,6 @@ class Validator extends Base\Validator
         'roles'             => 'sometimes|array',
         'parents'           => 'sometimes|array',
     ];
+
+    public $isOrgSpecificValidationSupported = false;
 }

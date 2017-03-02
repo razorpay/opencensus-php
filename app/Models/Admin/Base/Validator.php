@@ -10,6 +10,8 @@ use RZP\Models\Admin\Org\FieldMap;
 
 class Validator extends Base\Validator
 {
+    public $isOrgSpecificValidationSupported = false;
+
     public function validateOrgSpecificInput(
         string $operation,
         array $input,
@@ -56,9 +58,9 @@ class Validator extends Base\Validator
         $obj = (new FieldMap\Repository)
                     ->findByOrgIdAndEntity($orgId, $entity);
 
-        // If the org specific rules are not defined, return all the rules and
-        // let it consider all the entries in the rules as applicable which is
-        // basically default validator
+        // If the org-specific rules for a org are not defined,
+        // return all the rules and let it consider all the entries
+        // in the rules as applicable which is basically default validator
         if ($obj === null)
         {
             return static::$$rulesVar;

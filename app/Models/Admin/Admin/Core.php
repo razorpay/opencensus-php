@@ -21,7 +21,7 @@ class Core extends Base\Core
 
         $admin->org()->associate($org);
 
-        $admin->buildWithOrg($input, $org->getId());
+        $admin->build($input);
 
         $this->repo->saveOrFail($admin);
 

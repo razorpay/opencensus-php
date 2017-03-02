@@ -34,4 +34,6 @@ class Validator extends Base\Validator
         'contact_name'          => 'required',
         'dba_name'              => 'required'
     ];
+
+    public $isOrgSpecificValidationSupported = false;
 }

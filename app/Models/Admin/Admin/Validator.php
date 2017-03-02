@@ -97,6 +97,8 @@ class Validator extends Base\Validator
         Entity::PASSWORD
     ];
 
+    public $isOrgSpecificValidationSupported = true;
+
     public function validateCredentials(array $input)
     {
         $this->validateInput('login', $input);

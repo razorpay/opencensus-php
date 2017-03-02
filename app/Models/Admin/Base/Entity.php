@@ -7,6 +7,8 @@ use RZP\Models\Admin\Org\Entity as Org;
 
 class Entity extends BaseModel\PublicEntity
 {
+    const ORG_ID      = 'org_id';
+
     const ROLES       = 'roles';
     const GROUPS      = 'groups';
     const MERCHANTS   = 'merchants';
@@ -22,7 +24,7 @@ class Entity extends BaseModel\PublicEntity
         }
     }
 
-    public function buildWithOrg(array $input = array(), string $orgId)
+    public function build(array $input = array())
     {
         $this->input = $input;
 
@@ -30,7 +32,19 @@ class Entity extends BaseModel\PublicEntity
 
         $validator = $this->getValidator();
 
-        $validator->validateOrgSpecificInput('create', $input, $orgId);
+        if ((isset($validator->isOrgSpecificValidationSupported) === true) and
+            ($validator->isOrgSpecificValidationSupported === true))
+        {
+            $orgId = $this->getAttribute(static::ORG_ID);
+
+            $validator = $this->getValidator();
+
+            $validator->validateOrgSpecificInput('create', $input, $orgId);
+        }
+        else
+        {
+            $this->validateInput('create', $input);
+        }
 
         $this->generate($input);
 
@@ -41,12 +55,21 @@ class Entity extends BaseModel\PublicEntity
         return $this;
     }
 
-    public function editWithOrg(
-        array $input = array(),
-        string $orgId,
-        string $operation = 'edit')
+    public function edit(array $input = array(), $operation = 'edit')
     {
-        $validator->validateOrgSpecificInput($operation, $input, $orgId);
+        if ((isset($validator->isOrgSpecificValidationSupported) === true) and
+            ($validator->isOrgSpecificValidationSupported === true))
+        {
+            $orgId = $this->getAttribute(static::ORG_ID);
+
+            $validator = $this->getValidator();
+
+            $validator->validateOrgSpecificInput($operation, $input, $orgId);
+        }
+        else
+        {
+            $this->validateInput($operation, $input);
+        }
 
         $this->unsetInput($operation, $input);
 
