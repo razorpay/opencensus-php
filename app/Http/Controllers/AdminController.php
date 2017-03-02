@@ -408,6 +408,17 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    /**
+     * This route returns the same response as `get_activation_details`
+     * @param  string $id
+     */
+    public function getMerchantActivationDetails($id)
+    {
+        list($error, $data) = (new Admin\Service)->fetchMerchantActivationDetails($id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function getEntityFeatures($entityId)
     {
         list($error, $data) = (new Admin\Service)->fetchEntityFeatures($entityId);

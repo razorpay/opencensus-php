@@ -1,27 +1,40 @@
+"use strict";
+
 //Merchant Activation Detail Display Controller
 app.controller('MerchantActivationCtrl', [
   '$scope',
   '$http',
+  '$controller',
   '$stateParams',
-  'alertsFactory',
-  function ($scope, $http, $stateParams, alertsFactory) {
-    $scope.alerts = alertsFactory.getHandler();
-    $scope.merchant = { id: $stateParams.id };
-    $scope.check = {};
-    $scope.data = {
-      1: {},
-      2: {},
-      3: {},
-      4: {},
-      5: {},
-      6: {}
-    };
-    $scope.files = {};
-    $scope.locked = true;
-    $scope.companyInfo = null;
+  function ($scope, $http, $controller, $stateParams) {
 
+    $controller('ActivationCtrl', {$scope: $scope});
+
+    $scope.merchant = { id: $stateParams.id };
+
+    $scope.files = {};
+    $scope.companyInfo = null;
     $scope.panVerified = false;
-    getData();
+
+    // This decides whether the admin context options will be shown
+    // or not.
+    $scope.admin = true;
+
+    $scope.getUrl = function(name, params) {
+      switch(name) {
+        case 'fetch_details':
+          return '/admin/merchant/' + $scope.merchant.id + '/activation';
+
+        case 'upload_file':
+          return '/activation/save/file';
+
+        case 'submit_form':
+          return '/activation';
+
+        case 'save_step':
+          return '/activation/save/step/' + params.step;
+      }
+    };
 
     $scope.verifyPAN = function (signatories, pan_name, pan_number) {
       for (var i in signatories) {
@@ -30,7 +43,7 @@ app.controller('MerchantActivationCtrl', [
           $scope.panVerified = true;
         }
       }
-    }
+    };
 
     $scope.getCompanyData = function(cin) {
       var request = $http.get('/admin/companies/' + cin + '/info');
@@ -44,29 +57,6 @@ app.controller('MerchantActivationCtrl', [
       }).error(function () {
         $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
       });
-    }
-
-    function getData() {
-      var request = $http.get('/admin/merchant/' + $scope.merchant.id + '/details');
-      request.success(function (data) {
-        if (data.success) {
-          angular.forEach(data.data.merchant.steps_finished, function (value, key) {
-            $scope.check[value] = true;
-          });
-          angular.forEach(data.data.merchant.merchant_details, function (value, key) {
-            $scope.data[key] = value;
-          });
-          angular.forEach(data.data.activation.files, function (value, key) {
-            $scope.files[key] = value;
-          });
-          $scope.merchant = data.data.merchant;
-          $scope.locked = $scope.data['locked'];
-        } else {
-          $scope.alerts.addAlert('danger');
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger');
-      });
-    }
+    };
   }
 ]);

@@ -100,8 +100,7 @@ app.controller('ActivationCtrl', [
       return url;
     };
 
-    getData();
-    function getData() {
+    $scope.getData = function() {
       var request = $http.get($scope.getUrl('fetch_details'));
       request.success(function (data) {
         var steps_finished = data.data.steps_finished;
@@ -142,7 +141,8 @@ app.controller('ActivationCtrl', [
           }
         }
       });
-    }
+    };
+
     function saveStep(step) {
       var data = $scope.data;
 
@@ -254,7 +254,7 @@ app.controller('ActivationCtrl', [
         if (data.success) {
           $scope.alerts[step].addAlert('success', 'Form submitted Successfully!', true);
           $scope.check[step] = true;
-          getData();
+          $scope.getData();
         } else {
           $scope.alerts[step].resetAlerts();
           angular.forEach(data.errors, function (value) {

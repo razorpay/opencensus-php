@@ -463,44 +463,6 @@ class Service extends Base\Service
         }
     }
 
-    public function fetchMerchantActivationDetails($id)
-    {
-        $merchantDetails =  MerchantDetails\Entity::findorfail($id);
-
-        $response = $merchantDetails->filterDetails();
-
-        $files = [];
-
-        foreach ($response['files'] as $key => &$file)
-        {
-            $extension_position = strrpos($file, '.', -1);
-            $extension  = substr($file, $extension_position + 1);
-
-            $s3 = $this->getS3Client();
-
-            try
-            {
-                $cmd = $s3->getCommand('GetObject', [
-                    'Bucket' => env('AWS_ACTIVATION_BUCKET'),
-                    'Key'    => $id.'/'.$key.'.'.$extension
-                ]);
-
-                $request = $s3->createPresignedRequest($cmd, '+60 minutes');
-
-                $file = (string) $request->getUri();
-            }
-            catch (\Exception $e)
-            {
-                $file = 'ERROR: ' . $e->getMessage();
-            }
-
-            $files[$key] = $file;
-        }
-
-        $fileResponse['files'] = $files;
-        return $fileResponse;
-    }
-
     public function fetchMerchantAndActivationDetails($id)
     {
         if ($id === null)
@@ -517,7 +479,19 @@ class Service extends Base\Service
             'merchant'   => $details
         );
 
-        return [[], $data];
+        return [null, $data];
+    }
+
+    public function fetchMerchantActivationDetails($id)
+    {
+        if ($id === null)
+        {
+            return [['id' => 'Merchant id cannot be null'], []];
+        }
+
+        $activationDetails = (new MerchantDetails\Service)->getDetailsFromAPI($id);
+
+        return [null, $activationDetails];
     }
 
     public function fetchEntityFeatures($entityId)
@@ -597,10 +571,6 @@ class Service extends Base\Service
         $data['merchant_details'] = $merchantDetail;
 
         $merchant = $merchant->toArray();
-
-        // @todo This is failing tests on wercker, fix
-        // $merchant = Merchant\Entity::findorfail($id);
-        // Merchant\Validator::checkAPIMatch($merchant, $response);
 
         $response = [
             'archived_at'         => $merchant['archived_at'],

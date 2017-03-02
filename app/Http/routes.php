@@ -173,6 +173,8 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}', 'AdminController@getMerchant');
         Route::get('/admin/merchant/{id}/balance', 'AdminController@getMerchantBalance');
         Route::get('/admin/merchant/{id}/details', 'AdminController@getMerchantDetails');
+        // This route returns the same response as `get_activation_details`
+        Route::get('/admin/merchant/{id}/activation', 'AdminController@getMerchantActivationDetails');
         // This is the list of banks in netbanking
         Route::get('/admin/merchant/{id}/banks', 'AdminController@getMerchantBanks');
 
