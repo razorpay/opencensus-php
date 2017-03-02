@@ -37,7 +37,6 @@ class Entity extends Base\PublicEntity
 
     protected $visible = array(
         self::ID,
-        self::PUBLIC_ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
         self::BATCH_SETTLEMENT_ID,

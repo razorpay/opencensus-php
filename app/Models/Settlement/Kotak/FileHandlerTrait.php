@@ -162,11 +162,6 @@ trait FileHandlerTrait
         return $this->getFileFromAws($key, $fullPath, $bucket);
     }
 
-    public static function getHeadings()
-    {
-        return static::$headings;
-    }
-
     public function deleteFileIfExists()
     {
         $fullPath = $this->getFileIfExists();

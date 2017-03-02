@@ -178,10 +178,6 @@ class Reconciler
 
     public static function getHeadings()
     {
-        $headings = Kotak\NodalAccount::getHeadings();
-
-        $headings = array_merge($headings, static::$extraHeadings);
-
-        return $headings;
+        return Headings::getResponseFileHeadings();
     }
 }

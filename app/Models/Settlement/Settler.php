@@ -334,8 +334,8 @@ class Settler
 
             $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
 
-            list($setl, $bankTransferAtpt) = $this->repo->transaction(function() use ($merchantSettler, $setlTxns,
-                $setlAmount, $setlFee, $setlApiFee, $serviceTax)
+            list($setl, $bankTransferAtpt) = $this->repo->transaction(
+                function() use ($merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
             {
                 list($setl, $bankTransferAtpt) = $merchantSettler->settle(
                                                     $setlTxns,

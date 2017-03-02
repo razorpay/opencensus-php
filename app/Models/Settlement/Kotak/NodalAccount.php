@@ -21,57 +21,6 @@ class NodalAccount
 
     protected static $nodalAccountNumber = '7911547334';
 
-    public static $headings = array(
-        'Client_Code',
-        'Product_Code',
-        'Payment_Type',
-        'Payment_Ref_No.',
-        'Payment_Date',
-        'Instrument Date',
-        'Dr_Ac_No',
-        'Amount',
-        'Bank_Code_Indicator',
-        'Beneficiary_Code',
-        'Beneficiary_Name',
-        'Beneficiary_Bank',
-        'IFSC Code',
-        'Beneficiary_Acc_No',
-        'Location',
-        'Print_Location',
-        'Instrument_Number',
-        'Beneficiary_Address_1',
-        'Beneficiary_Address_2',
-        'Beneficiary_Address_3',
-        'Beneficiary_Address_4',
-        'Beneficiary_Email',
-        'Beneficiary_Mobile',
-        'Debit_Narration',
-        'Credit_Narration',
-        'Payment Details 1',
-        'Payment Details 2',
-        'Payment Details 3',
-        'Payment Details 4',
-        'Enrichment_1',
-        'Enrichment_2',
-        'Enrichment_3',
-        'Enrichment_4',
-        'Enrichment_5',
-        'Enrichment_6',
-        'Enrichment_7',
-        'Enrichment_8',
-        'Enrichment_9',
-        'Enrichment_10',
-        'Enrichment_11',
-        'Enrichment_12',
-        'Enrichment_13',
-        'Enrichment_14',
-        'Enrichment_15',
-        'Enrichment_16',
-        'Enrichment_17',
-        'Enrichment_18',
-        'Enrichment_19',
-        'Enrichment_20');
-
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
@@ -80,6 +29,11 @@ class NodalAccount
         $this->queue = \Queue::getFacadeRoot();
 
         $this->mail = \Mail::getFacadeRoot();
+    }
+
+    public static function getHeadings()
+    {
+        return Headings::getRequestFileHeadings();
     }
 
     public function generateSettlementFile($setlAttempts, $h2h = true)
@@ -131,23 +85,23 @@ class NodalAccount
                 $neftCount++;
             }
 
-            $array = array(
-                'Client_Code'           => 'RAZORNODAL',
-                'Product_Code'          => 'MERPAY',
-                'Payment_Type'          => $type,
-                'Payment_Ref_No.'       => $attempt->getPublicId(),
-                'Payment_Date'          => $this->date,
-                'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => $amount,
-                'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Code'      => $ba->getKotakBeneficaryCode(),
-                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
-                'Payment Details 1'     => 'RAZORPAY PAYMENT',
-                'Payment Details 2'     => $merchant->getPublicId(),
-                'Payment Details 3'     => $ba->getId(),
-                'Enrichment_1'          => $settlement->getPublicId(),
-                'Enrichment_2'          => $attempt->getVersion(),
-            );
+            $array = [
+                Headings::CLIENT_CODE             => 'RAZORNODAL',
+                Headings::PRODUCT_CODE            => 'MERPAY',
+                Headings::PAYMENT_TYPE            => $type,
+                Headings::PAYMENT_REF_NO          => $attempt->getPublicId(),
+                Headings::PAYMENT_DATE            => $this->date,
+                Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                Headings::AMOUNT                  => $amount,
+                Headings::BANK_CODE_INDICATOR     => 'M',
+                Headings::BENEFICIARY_CODE        => $ba->getKotakBeneficaryCode(),
+                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYMENT',
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_3       => $ba->getId(),
+                Headings::SOURCE_ID               => $settlement->getPublicId(),
+                Headings::VERSION                 => $attempt->getVersion(),
+            ];
 
             $array = $this->getAllFields($array);
 
@@ -204,21 +158,21 @@ class NodalAccount
             $totalAmount += $amount;
 
             $array = [
-                'Client_Code'           => 'RAZORNODAL',
-                'Product_Code'          => 'REFUND',
-                'Payment_Type'          => 'IMPS',
-                'Payment_Ref_No.'       => $payout->getPublicId(),
-                'Payment_Date'          => $this->date,
-                'Dr_Ac_No'              => static::$nodalAccountNumber,
-                'Amount'                => (string) $amount,
-                'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Name'      => $ba->getBeneficiaryName(),
-                'IFSC Code'             => $ba->getIfscCode(),
-                'Beneficiary_Acc_No'    => $ba->getAccountNumber(),
-                'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
-                'Payment Details 1'     => 'RAZORPAY PAYOUTS',
-                'Payment Details 2'     => $merchant->getPublicId(),
-                'Payment Details 3'     => $ba->getId()
+                Headings::CLIENT_CODE             => 'RAZORNODAL',
+                Headings::PRODUCT_CODE            => 'REFUND',
+                Headings::PAYMENT_TYPE            => 'IMPS',
+                Headings::PAYMENT_REF_NO          => $payout->getPublicId(),
+                Headings::PAYMENT_DATE            => $this->date,
+                Headings::DR_AC_NO                => static::$nodalAccountNumber,
+                Headings::AMOUNT                  => (string) $amount,
+                Headings::BANK_CODE_INDICATOR     => 'M',
+                Headings::BENEFICIARY_NAME        => $ba->getBeneficiaryName(),
+                Headings::IFSC_CODE               => $ba->getIfscCode(),
+                Headings::BENEFICIARY_ACC_NO       => $ba->getAccountNumber(),
+                Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
+                Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
+                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
+                Headings::PAYMENT_DETAILS_3       => $ba->getId()
             ];
 
             $array = $this->getAllFields($array);
@@ -251,9 +205,11 @@ class NodalAccount
 
     protected function getEmptyArray()
     {
-        $count = count(static::$headings);
+        $headings = self::getHeadings();
 
-        return array_combine(static::$headings, array_fill(0, $count, null));
+        $count = count($headings);
+
+        return array_combine($headings, array_fill(0, $count, null));
     }
 
     protected function getAllFields($partialValues)

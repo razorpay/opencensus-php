@@ -23,15 +23,6 @@ class ReconciliationGenerator
 
     protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
 
-    protected static $extraHeadings = array(
-        'Status Of transaction',
-        'UTR number',
-        'Reject Reason',
-        'DateTime',
-        'Int.ref no.',
-        'Dummy',
-    );
-
     public function __construct()
     {
         $this->app = App::getFacadeRoot();
@@ -88,7 +79,7 @@ class ReconciliationGenerator
 
             $date = Carbon::createFromFormat('d/m/Y', $row['Payment_Date']);
 
-            $row['Payment_Date'] = $date->format('d-M-y');
+            $row[Headings::PAYMENT_DATE] = $date->format('d-M-y');
 
             $row = array_merge($row, $newFields);
         }
@@ -101,17 +92,17 @@ class ReconciliationGenerator
         $utr = random_integer(10);
 
         $data = [
-            'Status Of transaction' => 'P',
-            'UTR number'            => 'KKBKH1' . $utr,
-            'Reject Reason'         => '',
-            'DateTime'              => $date,
-            'Int.ref no.'           => 'kotak',
-            'Dummy'                 => ''
+            Headings::STATUS_OF_TRANSACTION     => 'P',
+            Headings::UTR_NUMBER                => 'KKBKH1' . $utr,
+            Headings::REMARKS                   => '',
+            Headings::DATE_TIME                 => $date,
+            Headings::CMS_REF_NO                => 'kotak',
+            Headings::DUMMY                     => ''
         ];
 
         if ($generateFailedReconciliations === true)
         {
-            $data['Reject Reason']  = 'This is a string which test characters count limit.' .
+            $data[Headings::REMARKS]  = 'This is a string which test characters count limit.' .
                 ' This is a string which test characters count limit. This is a string which' .
                 ' test characters count limit. This is a string which test characters count limit.' .
                 ' This is a string which test characters count limit.';

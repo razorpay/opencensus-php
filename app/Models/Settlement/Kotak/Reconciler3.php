@@ -411,11 +411,7 @@ class Reconciler3
 
     public static function getHeadings()
     {
-        $headings = Kotak\NodalAccount::getHeadings();
-
-        $headings = array_merge($headings, static::$extraHeadings);
-
-        return $headings;
+        return Headings::getResponseFileHeadings();
     }
 
     protected function getReconcilationFile($input)
