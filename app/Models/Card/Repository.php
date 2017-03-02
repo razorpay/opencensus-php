@@ -110,29 +110,13 @@ class Repository extends Base\Repository
         $typeCount = $this->newQueryWithoutTimestamps()
                       ->join('iins', 'iins.iin', '=', 'cards.iin')
                       ->whereNotNull('cards.vault')
-                      ->where(function ($q)
-                      {
-                         $q->where('cards.type', '!=', 'iins.type')
-                           ->whereNotNull('iins.type');
-                      })
+                      ->where('cards.type', '!=', 'iins.type')
+                      ->whereNotNull('iins.type')
                       ->update([
                          'cards.type'    => DB::raw('iins.type'),
                       ]);
 
-        $amexTypeCount = $this->newQueryWithoutTimestamps()
-                      ->join('iins', 'iins.iin', '=', 'cards.iin')
-                      ->whereNotNull('cards.vault')
-                      ->where('cards.network', '=', NetworkName::AMEX)
-                      ->where(function ($q)
-                      {
-                         $q->where('cards.type', '!=', 'iins.type')
-                           ->where('iins.type', '=', 'NULL');
-                      })
-                      ->update([
-                         'cards.type'    => 'credit',
-                      ]);
-
-        return compact('count', 'countryCount', 'typeCount', 'amexTypeCount');
+        return compact('count', 'countryCount', 'typeCount');
     }
 
     protected function addQueryParamInternational($query, $params)
