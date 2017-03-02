@@ -64,8 +64,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::CUSTOMER_ID,
-        self::DESTINATION_ID,
-        self::DESTINATION_TYPE,
+        self::DESTINATION,
         self::AMOUNT,
         self::CURRENCY,
         self::NOTES,
@@ -78,7 +77,7 @@ class Entity extends Base\PublicEntity
         self::CHANNEL,
         self::UTR,
         self::FAILURE_REASON,
-        self::RETURN_UTR,
+        self::REMARKS,
         self::CREATED_AT,
         self::UPDATED_AT
     ];

@@ -215,7 +215,7 @@ final class FactoryData
         $factory(\RZP\Models\Card\IIN\Entity::class, [
             'iin' => 411111,
             'category' => null,
-            'network' => 'visa',
+            'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
             'issuer' => 'SBI',

@@ -34,16 +34,9 @@ trait FraudDetector
 
         try
         {
-            if ($payment->getMerchantId() === '6ZJzxyLFWrGs74')
-            {
-                $response = $this->app['maxmind2']->query($payment);
-            }
-            else
-            {
-                $response = $this->app['maxmind']->query($payment);
-            }
+            $response = $this->app['maxmind']->query($payment);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
         }

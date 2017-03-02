@@ -44,9 +44,9 @@ class Mutex extends BaseLock
      */
     public function release($resource)
     {
-        if ($this->cache->get($resource) === $this->requestId)
+        if ($this->cache->store('file')->get($resource) === $this->requestId)
         {
-            return $this->cache->forget($resource);
+            return $this->cache->store('file')->forget($resource);
         }
 
         return false;

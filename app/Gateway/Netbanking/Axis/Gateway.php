@@ -169,18 +169,16 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentVerifyData(Verify $verify)
     {
-        $payment = $verify->payment;
+        $input = $verify->input;
 
-        $timestamp = $payment['original']['created_at'];
-
-        $date = date('Y-m-d', $timestamp);
+        $date = date('Y-m-d', $input['payment']['created_at']);
 
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => strtoupper($payment['payment_id']),
-            RequestFields::VERIFY_PRN      => $payment['payment_id'],
+            RequestFields::VERIFY_ITC      => strtoupper($input['payment']['id']),
+            RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $payment['amount'],
+            RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
         ];
 
         return $data;
@@ -303,10 +301,9 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::STATUS],
-            'amount'            => $content[ResponseFields::AMOUNT],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+            'received'        => true,
+            'status'          => $content[ResponseFields::STATUS],
+            'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 
