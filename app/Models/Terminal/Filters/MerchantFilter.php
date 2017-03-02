@@ -263,7 +263,7 @@ class MerchantFilter extends Terminal\Filter
             {
                  $network = $input['payment']->card->getNetworkCode();
 
-                 if (in_array($network, [Network::RUPAY, Network::MESTRO], true) === false)
+                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
                  {
                     return false;
                  }
