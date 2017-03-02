@@ -123,6 +123,8 @@ class Core extends Base\Core
 
         $ba->associateMerchant($merchant);
 
+        $ba->generateBeneficiaryCode();
+
         $this->repo->saveOrFail($ba);
 
         return $ba;

@@ -118,7 +118,6 @@ class Entity extends Base\PublicEntity
 
     protected static $generators = array(
         self::ID,
-        self::BENEFICIARY_CODE,
         self::BENEFICIARY_COUNTRY,
     );
 
@@ -139,6 +138,8 @@ class Entity extends Base\PublicEntity
         return $this;
     }
 
+    // we are not doing it via generators as we want to generate only for
+    // merchant bank accounts
     protected function generateBeneficiaryCode($input)
     {
         $beneficiaryCode = $this->getKotakBeneficaryCode();

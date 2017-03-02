@@ -1700,3 +1700,11 @@ ALTER TABLE payouts
 # Adding column to schedule to fix time of day
 ALTER TABLE schedules
     ADD COLUMN hour TINYINT(1) DEFAULT 0 AFTER anchor;
+
+# Updates the filed for beneficiary_code in bank_accounts
+ALTER TABLE bank_accounts
+    MODIFY COLUMN beneficiary_code VARCHAR(10) AFTER type;
+
+# Adds beneficiary code to bank accounts
+ALTER TABLE bank_accounts
+    ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
