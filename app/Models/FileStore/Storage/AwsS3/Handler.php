@@ -65,7 +65,7 @@ class Handler extends BaseHandler
 
         try
         {
-            $s3Obj = $this->getS3SaveObj($bucketConfig['bucket'], $fileDetails);
+            $s3Obj = $this->getS3SaveObj($bucketConfig['name'], $fileDetails);
 
             $result = $s3->putObject($s3Obj);
 
@@ -96,7 +96,7 @@ class Handler extends BaseHandler
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucketConfig['bucket'], $key);
+            $s3Obj = $this->getS3FetchObj($bucketConfig['name'], $key);
 
             $s3Obj['SaveAs'] = $filePath;
 
@@ -138,7 +138,7 @@ class Handler extends BaseHandler
 
         try
         {
-            $s3Obj = $this->getS3FetchObj($bucketConfig['bucket'], $key);
+            $s3Obj = $this->getS3FetchObj($bucketConfig['name'], $key);
 
             $command = $s3->getCommand('GetObject', $s3Obj);
 
