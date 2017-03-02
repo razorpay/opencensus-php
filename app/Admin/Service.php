@@ -2717,6 +2717,12 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+        if ($extension !== '.png')
+        {
+            return ['Invalid file format. Please upload a file with PNG extension.', $data];
+        }
 
         // org_id/login_logo/file_name
         $keyName = "$orgId/{$type}_logo/$fileName";
