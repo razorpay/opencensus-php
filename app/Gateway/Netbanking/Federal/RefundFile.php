@@ -9,7 +9,7 @@ use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
-    protected static $fileToWriteName = 'FBK_REFUND_';
+    protected static $fileToWriteName = 'FBK_REFUND';
 
     const EMAIL_BODY = 'Please forward the Federal Netbanking refunds file to the operations team';
 
@@ -38,7 +38,9 @@ class RefundFile extends Base\RefundFile
 
         $file = $creator->get();
 
-        $this->sendRefundEmail();
+        $fileData = $this->getFileData();
+
+        $this->sendRefundEmail($fileData);
 
         return [$totalAmount, $file['local_file_path']];
     }
@@ -76,31 +78,40 @@ class RefundFile extends Base\RefundFile
     {
         $txt = $this->generateText($data, '|', true);
 
-        return txt;
+        return $txt;
     }
 
-    protected function sendRefundEmail()
+    protected function sendRefundEmail($fileData = [])
     {
-        $filePath = $this->getFileToWriteName(FileStore\Format::TXT);
-
-        $this->mail->queue('email.message', $filePath, function ($message) use ($filePath)
+        $this->mail->queue('email.message', $fileData, function ($message) use ($fileData)
         {
-            $emails = ['settlements@razorpay.com'];
+            $emails = $fileData['emails'];
 
             $message->from('refunds@razorpay.com', 'Federal Netbanking refunds');
 
-            $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
-
-            $message->subject('Federal Netbanking refunds file for ' . $today);
+            $message->subject($fileData['subject']);
 
             $message->to($emails);
 
-            $message->attach($filePath);
+            $message->attach($fileData['file_path']);
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader(MailTags::HEADER, MailTags::HDFC_NETBANKING_REFUNDS_MAIL);
+            $headers->addTextHeader(MailTags::HEADER, MailTags::FEDERAL_NETBANKING_REFUNDS_MAIL);
         });
+    }
+
+    protected function getFileData()
+    {
+        $today = Carbon::now('Asia/Kolkata')->format('d_m_Y');
+
+        $emails = ['settlements@razorpay.com'];
+
+        return [
+            'file_path' => $this->getFileToWriteName(),
+            'subject'   => 'Federal Netbanking refunds file for ' . $today,
+            'emails'    => $emails
+        ];
     }
 
     protected function getFileToWriteNameWithoutExt()
