@@ -154,11 +154,6 @@ class Entity extends Base\Entity
     ];
 
     protected $defaults = [
-        self::BRANCH_CODE         => 'default_branch',
-        self::SUPERVISOR_CODE     => 'default_supervisor',
-        self::DEPARTMENT_CODE     => 'default_location',
-        self::LOCATION_CODE       => 'default_department',
-        self::EMPLOYEE_CODE       => 'default_employee',
         self::ALLOW_ALL_MERCHANTS => false,
     ];
 
@@ -471,8 +466,8 @@ class Entity extends Base\Entity
     public function getInputFields() : array
     {
         $extra = [
-            'role',
-            'group'
+            self::ROLES,
+            self::GROUPS
         ];
 
         return $this->fillable + $extra;
