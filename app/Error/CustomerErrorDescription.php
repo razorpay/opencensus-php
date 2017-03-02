@@ -4,6 +4,8 @@ namespace RZP\Error;
 
 class CustomerErrorDescription
 {
+    const GATEWAY_ERROR                                                         = 'Payment failed. Please try again with a different payment method';
+
     const BAD_REQUEST_PAYMENT_DECLINED_3DSECURE_AUTH_FAILED                     = '3dsecure or OTP authentication failed';
     const BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD                              = 'Payment declined';
     const BAD_REQUEST_PAYMENT_CARD_INVALID_CVV                                  = 'The CVV provided is incorrect';
