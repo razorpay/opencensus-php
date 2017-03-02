@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Constants\Entity as E;
 
 trait RepositoryFetch
 {
@@ -204,24 +205,27 @@ trait RepositoryFetch
 
         foreach ($keys as $key)
         {
+            $entityKey = $key;
+
             // Remove '_id' prefix at end.
             if (substr($key, -3) === '_id')
             {
-                $key = substr($key, 0, -3);
+                $entityKey = substr($key, 0, -3);
             }
 
             // If not valid entity, then continue the loop
-            if (E::isValidEntity($key) === false)
+            if (E::isValidEntity($entityKey) === false)
             {
                 continue;
             }
 
             // Gets entity class
-            $entityClass = E::getEntityClass($key);
+            $entityClass = E::getEntityClass($entityKey);
 
             $value = $params[$key];
 
-            if ($this->auth->isAdminAuth())
+            if (($this->auth->isAdminAuth() === true) or
+                ($this->auth->isPrivilegeAuth() === true))
             {
                 // In case of admin auth, don't throw exception
                 // if sign is not there
@@ -229,7 +233,7 @@ trait RepositoryFetch
             }
             else
             {
-                $entityClass::verifyIdAndSilentlyStripSign($value);
+                $entityClass::verifyIdAndStripSign($value);
             }
 
             $params[$key] = $value;
