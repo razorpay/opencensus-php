@@ -3,22 +3,19 @@
 namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
-use RZP\Base\RuntimeManager;
+
 use RZP\Constants\Mode;
-use RZP\Dashboard\Dashboard;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Card;
-use RZP\Models\Payment;
-use RZP\Models\Settlement;
 use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 use RZP\Models\Settlement\Kotak;
-use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
 
 class Processor extends Base\Core
 {
+    use CommonTrait;
+
     protected $setlTime;
 
     protected $channel;
@@ -104,7 +101,7 @@ class Processor extends Base\Core
             {
                 $merchant = $setl->merchant;
 
-                $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
+                $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
                 $setlTxns = $setl->setlTransactions;
 
@@ -207,144 +204,6 @@ class Processor extends Base\Core
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function filterTransactionsForSettlement($txns, $channel)
-    {
-        $filteredTxns = new Base\PublicCollection;
-
-        foreach ($txns as $txn)
-        {
-            // skip if txn not to be settled
-            if ($this->shouldSettle($txn, $channel, $txn->merchant) === false)
-            {
-                continue;
-            }
-
-            // skip if txn is refund of authorized txn and update the txn
-            if (($txn->getBalance() === 0) and
-                ($txn->isTypeRefund()))
-            {
-                $payment = $txn->source->payment;
-
-                if ($payment->hasBeenCaptured() === false)
-                {
-                    s('payment not captured');
-                    $txn[Transaction\Entity::SETTLED_AT] = null;
-
-                    $this->repo->saveOrFail($txn);
-
-                    continue;
-                }
-            }
-
-            $filteredTxns->push($txn);
-        }
-
-        return $filteredTxns;
-    }
-
-    protected function createSettlementsFromTxns($txns, $channel): array
-    {
-        $settlements = new Base\PublicCollection;
-        $setlAttempts = new Base\PublicCollection;
-        $txnsSettledCount = 0;
-
-        $i = 0;
-        $txnsCount = $txns->count();
-
-        while ($i < $txnsCount)
-        {
-            $merchant = $txns[$i]->merchant;
-
-            list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax) =
-                $this->getTransactionDetailsByMerchantId($txns, $i, $txnsCount, $merchant);
-
-            //
-            // settle only if settlement amount is more than INR 1 and greater than
-            // merchants account balance
-            //
-            $balance = $merchant->balance->getBalance();
-
-            if (($setlAmount <= 100) or ($setlAmount > $balance))
-            {
-                $this->trace->info(TraceCode::SETTLEMENT_SKIPPED,
-                    [
-                        'merchant'   => $merchant->getId(),
-                        'setlAmount' => $setlAmount,
-                        'balance'    => $balance
-                    ]);
-
-                continue;
-            }
-
-            // create settlement and update batch settlement entity in transaction
-            $merchantSettler = new Settlement\Merchant($merchant, $channel, $this->repo);
-
-            list($setl, $bankTransferAtpt) = $this->repo->transaction(
-                function() use ($merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
-                {
-                    list($setl, $bankTransferAtpt) = $merchantSettler->settle(
-                                                        $setlTxns,
-                                                        $setlAmount,
-                                                        $setlFee,
-                                                        $setlApiFee,
-                                                        $serviceTax);
-
-                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
-
-                    $setl->batchSettlement()->associate($this->batchSettlement);
-
-                    $this->repo->saveOrFail($setl);
-
-                    $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
-
-                    $this->repo->saveOrFail($bankTransferAtpt);
-
-                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
-
-                    return [$setl, $bankTransferAtpt];
-                });
-
-            $txnsSettledCount += $setlTxns->count();
-
-            $settlements->push($setl);
-
-            $setlAttempts->push($bankTransferAtpt);
-        }
-
-        return [$settlements, $txnsSettledCount, $setlAttempts];
-    }
-
-    protected function getTransactionDetailsByMerchantId($txns, & $i, $txnsCount, $merchant): array
-    {
-        $setlAmount = $setlGatewayFee = $setlApiFee = 0;
-        $setlFee = $serviceTax = 0;
-
-        $setlTxns = new Base\PublicCollection;
-
-        assert($txns[$i]->merchant !== null);
-
-        $merchantId = $merchant->getId();
-
-        // Since transactions are ordered by the merchant id,
-        // we can do the following operation in O(n) instead of O(n^2)
-        while (($i < $txnsCount) and
-               ($txns[$i]->getMerchantId() === $merchantId))
-        {
-            $txn = $txns[$i];
-
-            $setlAmount     += $txn->getCredit() - $txn->getDebit();
-            $setlGatewayFee += $txn->getGatewayFee();
-            $setlApiFee     += $txn->getApiFee();
-            $setlFee        += $txn->getFee();
-            $serviceTax     += $txn->getServiceTax();
-
-            $setlTxns->push($txn);
-            $i++;
-        }
-
-        return [$setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax];
-    }
-
     protected function createBatchSettlementEntity($setl, $txnsCount)
     {
         $batchSettlement = new BatchSettlement;
@@ -411,50 +270,6 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
-    {
-        $today = Carbon::today('Asia/Kolkata');
-
-        $lastWorkingDay = Holidays::getPreviousWorkingDay($today);
-
-        $shouldSettle = (($txn->getChannel() === $channel) and
-                         ($merchant->holdFunds() === false));
-        assert ($merchant->bankAccount !== null);
-
-        if (($this->mode !== Mode::TEST) and
-            ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))
-        {
-            $shouldSettle = false;
-        }
-
-        return $shouldSettle;
-    }
-
-    protected function settlementFailure($channel, $e, $traceCode)
-    {
-        $e = new SettlementFailureException($channel, null, $e);
-
-        $this->failureNotification($e);
-
-        $this->trace->critical($traceCode);
-
-        throw $e;
-    }
-
-    protected function successNotification($data, $settlements, $traceCode)
-    {
-        $this->trace->info($traceCode, $data);
-
-        (new SlackNotification)->success('setl_initiate', $data);
-
-        Dashboard::send('settlement', $settlements);
-    }
-
-    protected function failureNotification($exception)
-    {
-        (new SlackNotification)->failure('setl_initiate', $exception);
-    }
-
     protected function preSettlementProcessing(array $input, $channel)
     {
         $this->inititalizeVariables($input, $channel);
@@ -467,13 +282,6 @@ class Processor extends Base\Core
         }
 
         $this->increaseAllowedSystemLimits();
-    }
-
-    protected function increaseAllowedSystemLimits()
-    {
-        RuntimeManager::setMemoryLimit('1024M');
-
-        RuntimeManager::setTimeLimit(300);
     }
 
     protected function inititalizeVariables(array $input, $channel)
