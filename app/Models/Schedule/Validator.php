@@ -15,6 +15,7 @@ class Validator extends Base\Validator
         Entity::TYPE     => 'required|string|in:settlement',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
+        Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'required|integer|min:0|max:30',
         Entity::NEXT_RUN => 'sometimes|integer',
     );
@@ -23,6 +24,7 @@ class Validator extends Base\Validator
         Entity::NAME     => 'sometimes|string|max:50',
         Entity::INTERVAL => 'sometimes|integer|max:24',
         Entity::ANCHOR   => 'sometimes|integer|min:-1|max:30',
+        Entity::HOUR     => 'sometimes|integer|min:0|max:23',
         Entity::DELAY    => 'sometimes|integer|min:0|max:30',
         Entity::NEXT_RUN => 'sometimes|integer',
     );
@@ -30,6 +32,12 @@ class Validator extends Base\Validator
     protected static $createValidators = array(
         'period',
         'anchor',
+        'hour',
+    );
+
+    protected static $editValidators = array(
+        'anchor',
+        'hour',
     );
 
     protected function validatePeriod($input)
@@ -43,19 +51,36 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAnchor($input)
+    protected function validateHour($input)
     {
-        if ($input[Entity::PERIOD] === Period::WEEKLY)
+        if ((isset($input[Entity::PERIOD]) === true) and
+            ($input[Entity::PERIOD] === Period::HOURLY))
         {
-            $this->validateWeeklyAnchor($input);
-        }
-        else if (($input[Entity::PERIOD] === Period::DAILY) or
-                ($input[Entity::PERIOD] === Period::HOURLY))
-        {
-            if (isset($input[Entity::ANCHOR]) === true)
+            if ((isset($input[Entity::HOUR]) === true) and
+                (intval($input[Entity::HOUR]) !== 0))
             {
                 throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED);
+                    ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED);
+            }
+        }
+    }
+
+    protected function validateAnchor($input)
+    {
+        if (isset($input[Entity::PERIOD]) === true)
+        {
+            if ($input[Entity::PERIOD] === Period::WEEKLY)
+            {
+                $this->validateWeeklyAnchor($input);
+            }
+            else if (($input[Entity::PERIOD] === Period::DAILY) or
+                    ($input[Entity::PERIOD] === Period::HOURLY))
+            {
+                if (isset($input[Entity::ANCHOR]) === true)
+                {
+                    throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED);
+                }
             }
         }
     }

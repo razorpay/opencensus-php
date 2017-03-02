@@ -1696,3 +1696,7 @@ ALTER TABLE payments
 # payout reconcilation remarks
 ALTER TABLE payouts
     ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER return_utr;
+
+# Adding column to schedule to fix time of day
+ALTER TABLE schedules
+    ADD COLUMN hour TINYINT(1) DEFAULT 0 AFTER anchor;
