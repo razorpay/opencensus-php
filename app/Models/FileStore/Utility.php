@@ -6,7 +6,7 @@ use App;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
-class Utility
+class Utility extends Base\Core
 {
     /**
      * Call Given File Operation and tarce if it fails/errors out
@@ -16,15 +16,12 @@ class Utility
      *
      * @return void
      */
-    public static function callFileOperation(string $method, array $params)
+    public function callFileOperation(string $method, array $params)
     {
         $result = true;
 
         $exception = null;
 
-        $app = App::getFacadeRoot();
-
-        $trace = $app['trace'];
         //
         // umask can vary on system level, need to reset for doing file operations
         // and after file operation are done, restore umask value to default
@@ -47,7 +44,7 @@ class Utility
             {
                 $params['method'] = $method;
 
-                $trace->traceException(
+                $this->trace->traceException(
                     $e,
                     Trace::ERROR,
                     TraceCode::FILE_OPERATION_FAILED,

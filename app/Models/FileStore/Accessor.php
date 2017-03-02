@@ -114,15 +114,15 @@ class Accessor extends Base\Core
             $file = $file->first();
         }
 
-        $storageHandler = Store::getHandler($file->store);
+        $storageHandler = Store::getHandler($file->getStore());
 
-        $filePath = $this->createFullFilePath($file->location);
+        $filePath = $this->createFullFilePath($file->getLocation());
 
         $dir = dirname($filePath);
 
         if (file_exists($dir) === false)
         {
-            Utility::callFileOperation('mkdir', [$dir, 0777, true]);
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
         $bucketConfig = [
@@ -130,7 +130,7 @@ class Accessor extends Base\Core
             'region' => $file->getRegion(),
         ];
 
-        $storageHandler->saveAs($bucketConfig, $file->location, $filePath);
+        $storageHandler->saveAs($bucketConfig, $file->getLocation(), $filePath);
 
         return $filePath;
     }

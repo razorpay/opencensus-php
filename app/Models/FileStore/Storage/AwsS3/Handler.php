@@ -106,7 +106,7 @@ class Handler extends BaseHandler
             // Need to change permission of downloaded file,
             // as other user may need to override this file
             //
-            Utility::callFileOperation('chmod', [$filePath, 0777]);
+            (new Utility)->callFileOperation('chmod', [$filePath, 0777]);
 
             $this->trace->info(TraceCode::AWS_FILE_DOWNLOAD, $s3Obj);
         }

@@ -428,7 +428,7 @@ class Creator extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            Utility::callFileOperation('mkdir', [$dir, 0777, true]);
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
         $file = fopen($fullPath, 'w');
@@ -441,7 +441,7 @@ class Creator extends Base\Core
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            Utility::callFileOperation('chmod', [$fullPath, 0777]);
+            (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
         }
         catch (\Exception $e)
         {
