@@ -26,7 +26,7 @@ app.controller('OrgsAddUsersCtrl', [
         if (data.success) {
           var user = data.data
           var userGroups = user.groups || []
-          var userRole = user.roles && user.roles[0].id
+          var userRole = user.roles && user.roles[0] && user.roles[0].id
 
           userGroups.map(function(group){
             $scope.selected_groups[group.id] = true;
