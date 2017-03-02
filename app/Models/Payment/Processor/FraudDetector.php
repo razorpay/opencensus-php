@@ -34,14 +34,7 @@ trait FraudDetector
 
         try
         {
-            if ($payment->getMerchantId() === '6ZJzxyLFWrGs74')
-            {
-                $response = $this->app['maxmind2']->query($payment);
-            }
-            else
-            {
-                $response = $this->app['maxmind']->query($payment);
-            }
+            $response = $this->app['maxmind']->query($payment);
         }
         catch (\Throwable $e)
         {
