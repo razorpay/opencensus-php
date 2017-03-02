@@ -95,8 +95,8 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
                     ->whereNull(BankAccount\Entity::BENEFICIARY_CODE)
-                    ->get()
-                    ->take(1000);
+                    ->take(1000)
+                    ->get();
     }
 
     public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
