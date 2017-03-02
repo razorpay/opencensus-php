@@ -37,6 +37,12 @@ return [
         'content' => [],
     ],
 
+    'capturePayment' => [
+        'method'  => 'POST',
+        'url'     => '/payments/',
+        'content' => [],
+    ],
+
     'testEditSchedule' => [
         'method'  => 'PUT',
         'url'     => '/schedules/',
@@ -65,6 +71,15 @@ return [
         'anchor'     => 3,
         'delay'      => 1,
         'next_run'   => 1452105000,
+    ],
+
+    'timedScheduleBody' => [
+        'name'       => 'Timed Schedule',
+        'type'       => 'settlement',
+        'period'     => 'daily',
+        'interval'   => 5,
+        'hour'       => 12,
+        'delay'      => 1,
     ],
 
     'testDeleteScheduleInUse' => [
@@ -131,18 +146,6 @@ return [
     ],
 
     'testScheduleInvalidHour' => [
-        'request' => [
-            'method'  => 'POST',
-            'url'     => '/schedules',
-            'content' => [
-                'name'       => 'Hourly with time set',
-                'type'       => 'settlement',
-                'period'     => 'hourly',
-                'interval'   => 5,
-                'hour'       => 12,
-                'delay'      => 0,
-            ],
-        ],
         'response'  => [
             'content'     => [
                 'error' => [
