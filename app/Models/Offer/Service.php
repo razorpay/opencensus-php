@@ -12,7 +12,7 @@ class Service extends Base\Service
     {
         parent::__construct();
 
-        $this->core = new Offer\Core;
+        $this->core = new Core;
     }
 
     public function create(array $input)

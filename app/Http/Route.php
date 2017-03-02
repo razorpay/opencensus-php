@@ -567,10 +567,6 @@ final class Route
         'p2p_fetch_private',
         'vpa_fetch_private',
         'customer_collect_request_fetch_private',
-        'offer_create',
-        'offer_update',
-        'offer_fetch_multiple',
-        'offer_fetch_by_id',
         'payout_fetch_by_id',
         'payout_fetch_multiple',
         'payout_create',
@@ -809,6 +805,10 @@ final class Route
         'merchant_activation_details',
         'merchant_activation_upload_file',
         'merchant_activation_save',
+        'offer_create',
+        'offer_update',
+        'offer_fetch_multiple',
+        'offer_fetch_by_id',
     );
 
     public static $admin = [

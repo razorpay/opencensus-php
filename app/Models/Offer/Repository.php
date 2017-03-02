@@ -87,7 +87,7 @@ class Repository extends Base\Repository
     protected function buildQuery(Entity $newOffer, string $merchantId)
     {
         $query = $this->newQuery()
-                      ->merchant($merchantId);
+                      ->where(Entity::MERCHANT_ID, '=', $merchantId);
 
         foreach (self::OFFER_FETCH_ATTRIBUTES as $attribute)
         {

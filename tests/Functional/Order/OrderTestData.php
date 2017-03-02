@@ -273,15 +273,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_INVALID_OFFER
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER
         ]
     ],
 
@@ -299,15 +299,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_ORDER_INVALID_OFFER
                 ]
             ],
             'status_code' => 400
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::BAD_REQUEST_OFFER_INVALID_FOR_ORDER
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER
         ]
     ],
 
@@ -315,17 +315,15 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::
-BAD_REQUEST_PAYMENT_INVALID_OFFER
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_PAYMENT_INVALID_OFFER
                 ],
             ],
             'status_code' => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\BadRequestException',
-            'internal_error_code' => ErrorCode::
-BAD_REQUEST_PAYMENT_INVALID_OFFER
+            'class'               => 'RZP\Exception\BadRequestException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_OFFER
         ],
     ],
 ];

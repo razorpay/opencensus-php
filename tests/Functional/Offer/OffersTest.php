@@ -16,7 +16,7 @@ class OffersTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->privateAuth();
+        $this->ba->proxyAuth();
     }
 
     public function testCreateCardOffer()
@@ -161,8 +161,6 @@ class OffersTest extends TestCase
         $this->testData[__FUNCTION__]['request']['url'] = '/offers/' . $offer->getPublicId();
 
         $this->testData[__FUNCTION__]['response']['content']['id'] = $offer->getPublicId();
-
-        $this->ba->privateAuth();
 
         $this->startTest();
     }

@@ -393,7 +393,7 @@ class OrderTest extends TestCase
     {
         $offer = $this->fixtures->create('offer:card');
 
-        $offer['fail_payment'] = false;
+        $offer['block'] = false;
 
         $offer->saveOrFail();
 
