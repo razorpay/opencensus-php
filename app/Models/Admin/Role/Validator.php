@@ -20,6 +20,8 @@ class Validator extends Base\Validator
         Entity::PERMISSIONS     => 'sometimes',
     ];
 
+    public $isOrgSpecificValidationSupported = false;
+
     public function validateRoleIsNotSuperAdmin()
     {
         $role = $this->entity;

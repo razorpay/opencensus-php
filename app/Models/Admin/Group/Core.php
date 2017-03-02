@@ -14,11 +14,11 @@ class Core extends Base\Core
     {
         $group = (new Entity)->generateId();
 
-        $group->buildWithOrg($input, $org->getId());
+        $group->org()->associate($org);
+
+        $group->build($input);
 
         $this->repo->group->validateOrgHasNoSuchGroup($group, $org);
-
-        $group->org()->associate($org);
 
         $group->setAuditAction(Action::CREATE_GROUP);
 
