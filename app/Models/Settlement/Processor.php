@@ -80,10 +80,11 @@ class Processor extends Base\Core
 
             $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
 
+            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         catch (\Exception $e)
         {
-            $this->settlementFailure($this->channel, $e);
+            $this->settlementFailure($this->channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
         }
 
         return $response;
@@ -132,15 +133,16 @@ class Processor extends Base\Core
                 $setlAttempts->push($bankTransferAtpt);
             }
 
-            $reponse = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $setlTxnsCount);
+            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $setlTxnsCount);
 
+            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_RETRIED);
         }
         catch (\Exception $e)
         {
-            $this->settlementFailure($this->channel, $e);
+            $this->settlementFailure($this->channel, $e, TraceCode::SETTLEMENT_RETRY_FAILED);
         }
 
-        return $reponse;
+        return $response;
     }
 
     protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount)
@@ -159,8 +161,6 @@ class Processor extends Base\Core
 
             $data['settlement_text_file']  = $urlText;
             $data['settlement_excel_file'] = $urlExcel;
-
-            $this->successNotification($data, $settlements);
         }
         else
         {
@@ -430,20 +430,20 @@ class Processor extends Base\Core
         return $shouldSettle;
     }
 
-    protected function settlementFailure($channel, $e)
+    protected function settlementFailure($channel, $e, $traceCode)
     {
         $e = new SettlementFailureException($channel, null, $e);
 
         $this->failureNotification($e);
 
-        $this->trace->critical(TraceCode::SETTLEMENT_INITIATE_FAILED);
+        $this->trace->critical($traceCode);
 
         throw $e;
     }
 
-    protected function successNotification($data, $settlements)
+    protected function successNotification($data, $settlements, $traceCode)
     {
-        $this->trace->info(TraceCode::SETTLEMENT_INITIATED, $data);
+        $this->trace->info($traceCode, $data);
 
         (new SlackNotification)->success('setl_initiate', $data);
 
