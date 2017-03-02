@@ -140,7 +140,7 @@ class Entity extends Base\PublicEntity
 
     // we are not doing it via generators as we want to generate only for
     // merchant bank accounts
-    protected function generateBeneficiaryCode($input)
+    public function generateBeneficiaryCode()
     {
         $beneficiaryCode = $this->getKotakBeneficaryCode();
 
