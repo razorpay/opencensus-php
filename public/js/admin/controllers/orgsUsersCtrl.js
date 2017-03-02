@@ -25,32 +25,26 @@ app.controller('OrgsUsersCtrl', [
       });
     });
 
-    /**
-     *  Modals
-    **/
+    // Get dynamic user fields
+    var request = $http({
+      url: '/admin/generic',
 
-    $scope.openEditOrgUser = function (id) {
-      $scope.selected = $scope.users.filter(function(x) { return x['id'] === id; });
-      var modalInstance = $modal.open({
-        templateUrl: 'editOrgUserModalContent.html',
-        controller: 'editOrgUserModalCtrl',
-        resolve: {
-          current: function () {
-            return jQuery.extend(true, {}, $scope.selected[0]);
-          },
-          roles: function () {
-            return jQuery.extend(true, {}, $scope.roles);
-          },
-          groups: function () {
-            return jQuery.extend(true, {}, $scope.groups);
-          },
+      method: 'GET',
 
+      params: {
+        route_name: 'org_fieldmap_get',
+
+        url_params: {
+          '{entity}' : 'admin'
         }
-      });
-      modalInstance.result.then(function (users) {
-        $scope.editUser(users);
-      }, $.noop);
-    };
+      }
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.fields = data.data.fields;
+      }
+    });
 
     /**
      *  Actions
@@ -93,85 +87,5 @@ app.controller('OrgsUsersCtrl', [
         }
       });
     }
-  }
-]).controller('newAdminModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  function ($scope, $modalInstance) {
-    $scope.ok = function (data) {
-      $modalInstance.close(data);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
-  }
-]).controller('editOrgUserModalCtrl', [
-  '$scope',
-  '$modalInstance',
-  'current',
-  'roles',
-  'groups',
-  function ($scope, $modalInstance, current, roles, groups) {
-
-    current.locked = !!current.locked;
-    current.disabled = !!current.disabled;
-    $scope.roles = roles;
-    $scope.groups = groups;
-    $scope.selected_groups = {};
-    $scope.select_all = false;
-
-    if (current.roles.length) {
-      current.role = current.roles[0].id;
-    }
-
-    current.groups.map(function(group){
-      $scope.selected_groups[group.id] = true;
-      return group;
-    })
-
-    $scope.user = current;
-
-    $scope.selectAll = function() {
-      /**
-       * I'm using a hack here, for some reason the ng-model for select_all
-       * was not working in the modal. The state is being maintained in the
-       * controller
-       */
-
-      $scope.selected_groups = {};
-      $scope.select_all = !$scope.select_all;
-
-      if (!$scope.select_all) {
-        return;
-      }
-
-      for (var key in $scope.groups) {
-        if ($scope.groups.hasOwnProperty(key)) {
-          var group = $scope.groups[key];
-          $scope.selected_groups[group.id] = true;
-        }
-      }
-    }
-
-    $scope.ok = function (user) {
-      user.groups = [];
-      user.roles = [];
-
-      for (var key in $scope.selected_groups) {
-        if ($scope.selected_groups.hasOwnProperty(key)) {
-
-          if ($scope.selected_groups[key]) {
-            user.groups.push(key);
-          }
-        }
-      }
-
-      user.roles.push(user.role);
-
-      $modalInstance.close(user);
-    };
-    $scope.cancel = function () {
-      $modalInstance.dismiss('cancel');
-    };
   }
 ]);
