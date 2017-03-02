@@ -65,20 +65,44 @@ app.controller('ActivationCtrl', [
         $scope.data.business_operation_pin = $scope.data.business_registered_pin;
       }
     };
+
     $scope.changeOperationalAddress = function (input) {
       if (addressCopyToggle && input.substr(0,19) === 'business_registered') {
         $scope.data[input.replace('registered', 'operation')] = $scope.data[input];
       }
     };
-    getData();
-    function getData() {
-      var url = '/activation/details';
+
+    $scope.getUrl = function(name, params) {
+      var url = null;
+      switch(name) {
+        case 'fetch_details':
+          url = '/activation/details';
+          break;
+
+        case 'upload_file':
+          url = '/activation/save/file';
+          break;
+
+        case 'submit_form':
+          url= '/activation';
+      	  break;
+
+        case 'save_step':
+          url = '/activation/save/step/' + params.step;
+          break;
+      }
+
+      // Marketplace specific
       if ($scope.accountDetails) {
         url += '/' + $scope.account;
       }
 
-      var request = $http.get(url);
+      return url;
+    };
 
+    getData();
+    function getData() {
+      var request = $http.get($scope.getUrl('fetch_details'));
       request.success(function (data) {
         var steps_finished = data.data.steps_finished;
         angular.forEach(steps_finished, function (value) {
@@ -136,14 +160,9 @@ app.controller('ActivationCtrl', [
         delete data.bank_account_number_confirmation;
       }
 
-      var url = '/activation/save/step/' + step;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
-
       var request = $http({
         method: 'post',
-        url: url,
+        url: $scope.getUrl('save_step', {step: step}),
         transformRequest: transformRequestAsFormPost,
         data: data
       });
@@ -182,14 +201,8 @@ app.controller('ActivationCtrl', [
       }
       $scope.locked = true;
       $scope.fileAlerts[fieldname].addAlert('info', 'Uploading...', true);
-
-      var url = '/activation/save/file' ;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
-
       var request = $upload.upload({
-        url: url,
+        url: $scope.getUrl('upload_file'),
         method: 'POST',
         file: file,
         fileFormDataName: fieldname,
@@ -218,6 +231,7 @@ app.controller('ActivationCtrl', [
         $scope.locked = false;
       });
     }
+
     function checkInputDateSupport() {
       var input = document.createElement('input');
       input.setAttribute('type', 'date');
@@ -225,20 +239,15 @@ app.controller('ActivationCtrl', [
       input.setAttribute('value', notADateValue);
       return (input.value !== notADateValue);
     }
+
     function submitForm(step) {
       if ($scope.data.agree_terms !== true) {
         $scope.alerts[step].addAlert('danger', 'You must agree to the terms & conditions to use Razorpay services', true);
         return;
       }
-
-      var url = '/activation' ;
-      if ($scope.accountDetails) {
-        url += '/' + $scope.account;
-      }
-
       var request = $http({
         method: 'post',
-        url: url,
+        url: $scope.getUrl('submit_form'),
         transformRequest: transformRequestAsFormPost
       });
       request.success(function (data) {

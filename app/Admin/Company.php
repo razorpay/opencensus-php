@@ -7,7 +7,11 @@ use Sunra\PhpSimple\HtmlDomParser;
 
 /**
  * Fetches company data from MCA website
- * Dataset is generated using the script at https://gist.github.com/captn3m0/28290674a042384d9c53ffb4d7b419a1
+ * Dataset inside the {cin/din}.txt files is generated using the script
+ * at https://gist.github.com/captn3m0/28290674a042384d9c53ffb4d7b419a1
+ *
+ * The MCA website does have a captcha field, but works completely
+ * fine if you do not send it
  */
 class Company
 {
