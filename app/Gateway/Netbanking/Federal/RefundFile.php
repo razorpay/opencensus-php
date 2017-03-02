@@ -60,7 +60,7 @@ class RefundFile extends Base\RefundFile
                 'Payee ID'      => $row['terminal']['gateway_merchant_id'],
                 'Date'          => $date,
                 'PRN'           => $row['payment']['id'],
-                'FREEFIELD'     => '00000000',
+                'FREEFIELD'     => Constants::FREEFIELD,
                 'BID'           => $row['gateway']['bank_payment_id'],
                 'TXN Amount'    => $row['payment']['amount'],
                 'Refund Amount' => $row['refund']['amount']

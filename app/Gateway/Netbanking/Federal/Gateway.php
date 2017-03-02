@@ -248,6 +248,34 @@ class Gateway extends Base\Gateway
         ];
     }
 
+    /**
+     * Overriding the parent method
+     **/
+    protected function getUrl($type = null)
+    {
+        $url = $this->getUrlDomain();
+
+        //
+        // If the BID was never saved, verify request
+        // needs to go to a different url
+        //
+        if ((empty($content[RequestFields::BANK_PAYMENT_ID]) === true) and
+            ($this->action === Action::VERIFY))
+        {
+            $type = Constants::VERIFY_BROKEN;
+        }
+        else
+        {
+            $type = $this->action;
+        }
+
+        $type = strtoupper($type);
+
+        $url .= $this->getRelativeUrl($type);
+
+        return $url;
+    }
+
     protected function getMerchantId()
     {
         if ($this->mode === Mode::TEST)
