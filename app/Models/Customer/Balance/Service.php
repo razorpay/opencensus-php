@@ -14,18 +14,4 @@ class Service extends Base\Service
         $this->core = new Core;
     }
 
-    /**
-     * Fetch balance details for a customer wallet account
-     *
-     * @param  string $customerId
-     * @return array
-     */
-    public function getBalance(string $customerId) : array
-    {
-        $balance = $this->repo
-                        ->customer_balance
-                        ->findByIdAndMerchant($customerId, $this->merchant);
-
-        return $balance->toArrayPublic();
-    }
 }

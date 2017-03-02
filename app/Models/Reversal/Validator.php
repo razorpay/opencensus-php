@@ -6,12 +6,16 @@ use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Transfer;
-use RZP\Models\Merchant;
 
 class Validator extends Base\Validator
 {
+    protected static $createRules = [
+        Entity::AMOUNT      => 'required|integer|min:100',
+        Entity::CURRENCY    => 'required|string|size:3|in:INR',
+    ];
+
     protected static $reversalRules = [
-        Entity::AMOUNT      => 'sometimes|integer|min:100'
+        Entity::AMOUNT      => 'sometimes|integer|min:100',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

@@ -495,8 +495,6 @@ class BasicAuth
      */
     public function verifyFeatureAccess()
     {
-        $route = $this->getCurrentRouteName();
-
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route

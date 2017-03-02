@@ -38,7 +38,6 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
-    const MARKETPLACE        = 'marketplace';
 
     const ACQUIRER_HDFC      = 'hdfc';
     const ACQUIRER_ICIC      = 'icic';
@@ -100,7 +99,6 @@ class Gateway
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
-        self::MARKETPLACE        => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -151,10 +149,6 @@ class Gateway
         Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
-        ],
-
-        Method::TRANSFER => [
-            self::MARKETPLACE,
         ],
     ];
 

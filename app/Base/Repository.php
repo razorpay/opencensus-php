@@ -263,10 +263,11 @@ class Repository extends \Razorpay\Spine\Repository
     /**
      * Fetches entity with given id with a MySQL lock for update
      *
-     * @param string       $id
-     * @param bool         $withTrashed - Whether to include soft deleted results?
+     * @param string $id
+     * @param bool   $withTrashed - Whether to include soft deleted results?
      *
      * @return Models\Base\PublicEntity
+     * @throws Exception\LogicException
      */
     public function lockForUpdate(string $id, bool $withTrashed = false)
     {

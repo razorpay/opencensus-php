@@ -3,7 +3,6 @@
 namespace RZP\Models\Transfer;
 
 use RZP\Exception;
-use RZP\Constants\Entity as E;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
@@ -86,11 +85,12 @@ class Core extends Base\Core
      * Edit the attributes of a transfer entity
      * Currently allowed for on_hold and on_hold_until fields
      *
-     * @param  Transfer\Entity  $transfer
-     * @param  array            $input
-     * @return Transfer\Entity
+     * @param  Transfer\Entity $transfer
+     * @param  array           $input
+     *
+     * @return Entity
      */
-    public function edit(Transfer\Entity $transfer, array $input, Merchant\Entity $merchant) : Entity
+    public function edit(Transfer\Entity $transfer, array $input) : Entity
     {
         $transfer->edit($input);
 
@@ -122,7 +122,6 @@ class Core extends Base\Core
      * @param Merchant\Entity $merchant
      *
      * @return Entity
-     * @internal param int $amount
      */
     protected function createTransfer(
         Base\Entity $source,
@@ -132,11 +131,9 @@ class Core extends Base\Core
     {
         $transfer = new Entity;
 
-        $transfer->generate($input);
-
-        $transfer->fill($input);
-
         $transfer->generateId();
+
+        $transfer->build($input);
 
         $transfer->merchant()->associate($merchant);
 
@@ -145,7 +142,7 @@ class Core extends Base\Core
         $transfer->to()->associate($to);
 
         // Create a transaction for the transfer; debits the source merchant
-        $txn = (new Transaction\Core)->createFromTransfer($transfer, $to);
+        $txn = (new Transaction\Core)->createFromTransfer($transfer);
 
         $this->repo->saveOrFail($txn);
 
@@ -267,7 +264,7 @@ class Core extends Base\Core
         $txn = $transfer->transaction;
 
         // Fetch customer balance and credit
-        $balance = $this->getCustomerBalanceLockForUpdate($to, $txn->merchant);
+        $balance = (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
 
         (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
 
@@ -311,7 +308,7 @@ class Core extends Base\Core
 
         $transfer = $this->createTransfer($source, $to, $input, $merchant);
 
-        $transferPayment = (new Payment\Service)->processTransfer($to, $input, $originPayment);
+        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
 
         $transferPayment->transfer()->associate($transfer);
 
@@ -357,8 +354,10 @@ class Core extends Base\Core
      * A transfer can only be done once to an account
      * from a source payment. This function validates that.
      *
-     * @param  string           $paymentId
-     * @param  string           $accountId
+     * @param  string         $paymentId
+     * @param  string         $accountId
+     * @param Merchant\Entity $merchant
+     *
      * @throws Exception\BadRequestException
      */
     protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId, Merchant\Entity $merchant)
@@ -375,15 +374,5 @@ class Core extends Base\Core
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
         }
-    }
-
-    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer, Merchant\Entity $merchant)
-    {
-        $customerId = $customer->getId();
-
-        // Try to create the customer_balance entity first - if not already exists
-        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer, $merchant);
-
-        return $balance;
     }
 }

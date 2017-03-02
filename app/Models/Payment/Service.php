@@ -16,6 +16,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
@@ -30,19 +31,6 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->core = new Payment\Core;
-    }
-
-    /**
-     * Create and process a transfer payment
-     * (internal payments created on Marketplace transfer to linked-accounts)
-     *
-     * @param  Merchant\Entity $account
-     * @param  array           $input
-     * @param  Payment\Entity  $originPayment (Origin payment entity, IF transferring funds from a captured payment)
-     */
-    public function processTransfer(Merchant\Entity $account, array $input, Payment\Entity $originPayment = null)
-    {
-        return $this->getNewProcessor($account)->processTransfer($input, $originPayment);
     }
 
     /**
@@ -430,7 +418,7 @@ class Service extends Base\Service
 
         $transfers = $this->repo
                           ->transfer
-                          ->fetchBySourcePaymentIdAndMerchant($id, $this->merchant);
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
 
         return $transfers->toArrayPublic();
     }

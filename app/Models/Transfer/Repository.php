@@ -5,7 +5,6 @@ namespace RZP\Models\Transfer;
 use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
-use RZP\Models\Transfer\Entity;
 
 class Repository extends Base\Repository
 {
@@ -25,13 +24,14 @@ class Repository extends Base\Repository
     /**
      * Fetch all transfers from a merchant, done on a payment
      *
-     * @param  string          $paymentId
-     * @param  Merchant\Entity $merchant
+     * @param string          $type
+     * @param string          $paymentId
+     * @param Merchant\Entity $merchant
      */
-    public function fetchBySourcePaymentIdAndMerchant(string $paymentId, Merchant\Entity $merchant)
+    public function fetchBySourceTypeAndIdAndMerchant(string $type, string $paymentId, Merchant\Entity $merchant)
     {
         return $this->newQuery()
-                    ->where(Entity::SOURCE_TYPE, E::PAYMENT)
+                    ->where(Entity::SOURCE_TYPE, $type)
                     ->where(Entity::SOURCE_ID, $paymentId)
                     ->merchantId($merchant->getId())
                     ->get();

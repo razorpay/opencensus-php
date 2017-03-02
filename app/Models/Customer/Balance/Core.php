@@ -3,42 +3,14 @@
 namespace RZP\Models\Customer\Balance;
 
 use Carbon\Carbon;
-use Lib\PhoneBook;
 
 use RZP\Models\Base;
 use RZP\Models\Wallet;
 use RZP\Models\Merchant;
-use RZP\Models\Transaction;
 use RZP\Models\Customer;
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 
 class Core extends Base\Core
 {
-    /**
-     * Create and save a new customer_balance wallet account linked to merchant
-     *
-     * @param  Customer\Entity $customer
-     * @param  Merchant\Entity $merchant
-     * @return Entity              Balance Entity
-     */
-    protected function create(Customer\Entity $customer, Merchant\Entity $merchant) : Entity
-    {
-        $this->validateIndianContact($customer->getContact());
-
-        $balance = new Entity;
-
-        $balance->customer()->associate($customer);
-
-        $balance->merchant()->associate($merchant);
-
-        $balance->generate([]);
-
-        $this->repo->saveOrFail($balance);
-
-        return $balance;
-    }
-
     /**
      * Debit an amount from customer_balance account
      *
@@ -135,30 +107,27 @@ class Core extends Base\Core
     }
 
     /**
-     * Wallets can only be created for customers having
-     * Indian numbers
+     * Create and save a new customer_balance wallet account linked to merchant
      *
-     * @param   string        $number
-     * @return  null
-     * @throws  Exception\BadRequestException
+     * @param  Customer\Entity $customer
+     * @param  Merchant\Entity $merchant
+     * @return Entity              Balance Entity
      */
-    protected function validateIndianContact(string $number)
+    protected function create(Customer\Entity $customer, Merchant\Entity $merchant) : Entity
     {
-        if (empty($number) === true)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
-        }
+        $customer->getValidator()->validateIndianContact();
 
-        $number = new PhoneBook($number, true);
+        $balance = new Entity;
 
-        $country = $number->getRegionCodeForNumber();
+        $balance->customer()->associate($customer);
 
-        if ($country !== 'IN')
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
-        }
+        $balance->merchant()->associate($merchant);
+
+        $balance->build();
+
+        $this->repo->saveOrFail($balance);
+
+        return $balance;
     }
 
     /**
@@ -182,24 +151,20 @@ class Core extends Base\Core
 
         $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
 
-        list($resetDay, $resetWeek, $resetMonth) = $this->checkTimestampForReset($lastTxnTime);
+        $resetParams = $this->checkTimestampForReset($lastTxnTime);
 
-        $this->updateDailyUsage($balance, $amount, $resetDay);
+        $this->updateDailyUsage($balance, $amount, $resetParams['resetDay']);
 
-        $this->updateWeeklyUsage($balance, $amount, $resetWeek);
+        $this->updateWeeklyUsage($balance, $amount, $resetParams['resetWeek']);
 
-        $this->updateMonthlyUsage($balance, $amount, $resetMonth);
+        $this->updateMonthlyUsage($balance, $amount, $resetParams['resetMonth']);
     }
 
     protected function checkTimestampForReset(Carbon $lastTxnTime) : array
     {
         $now = Carbon::now('Asia/Kolkata');
 
-        $resetDay = false;
-
-        $resetWeek = false;
-
-        $resetMonth = false;
+        $resetDay = $resetWeek = $resetMonth = false;
 
         if ($lastTxnTime->dayOfYear !== $now->dayOfYear)
         {
@@ -216,7 +181,11 @@ class Core extends Base\Core
             $resetMonth = true;
         }
 
-        return [$resetDay, $resetWeek, $resetMonth];
+        return [
+            'resetDay'      => $resetDay,
+            'resetWeek'     => $resetWeek,
+            'resetMonth'    => $resetMonth,
+        ];
     }
 
     protected function resetAllUsages(Entity $balance, int $amount)
@@ -238,7 +207,7 @@ class Core extends Base\Core
         $balance->setDailyUsage($amount);
     }
 
-    protected function updateWeeklyusage(Entity $balance, int $amount, bool $resetWeek)
+    protected function updateWeeklyUsage(Entity $balance, int $amount, bool $resetWeek)
     {
         if ($resetWeek === false)
         {

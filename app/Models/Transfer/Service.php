@@ -5,7 +5,6 @@ namespace RZP\Models\Transfer;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 use RZP\Models\Reversal;
-use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
@@ -56,7 +55,7 @@ class Service extends Base\Service
                           ->transfer
                           ->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $transfer = $this->core->edit($transfer, $input, $this->merchant);
+        $transfer = $this->core->edit($transfer, $input);
 
         return $transfer->toArrayPublic();
     }

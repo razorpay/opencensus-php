@@ -270,7 +270,7 @@ class Entity extends Base\PublicEntity
     public function getEnabledFeatures()
     {
         return $this->features
-                    ->pluck(\RZP\Models\Feature\Entity::NAME)
+                    ->pluck(Feature\Entity::NAME)
                     ->toArray();
     }
 

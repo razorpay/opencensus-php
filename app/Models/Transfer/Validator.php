@@ -12,11 +12,20 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    protected static $createRules = [
+        ToType::ACCOUNT        => 'required_without:customer|string|size:18',
+        ToType::CUSTOMER       => 'required_without:account|string|size:19',
+        Entity::AMOUNT         => 'required|integer|min:100',
+        Entity::CURRENCY       => 'required|size:3|in:INR',
+        Entity::ON_HOLD        => 'sometimes|boolean',
+        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+    ];
+
     protected static $transferRules = [
         ToType::ACCOUNT        => 'required_without:customer|string|size:18',
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
-        Entity::AMOUNT         => 'required|integer',
-        Entity::CURRENCY       => 'required|size:3',
+        Entity::AMOUNT         => 'required|integer|min:100',
+        Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::ON_HOLD        => 'sometimes|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
@@ -51,11 +60,11 @@ class Validator extends Base\Validator
 
             $transferSum += (int) $transfer[Entity::AMOUNT];
 
-            $this->validateTransferCurrency($payment, $transfer[ENTITY::CURRENCY]);
+            $this->validateTransferCurrency($payment, $transfer[Entity::CURRENCY]);
 
             $keySet = false;
 
-            ++$transferCount;
+            $transferCount++;
 
             foreach (ToType::$allowedTypes as $type)
             {
@@ -107,6 +116,8 @@ class Validator extends Base\Validator
      *
      * @param  Payment\Entity $payment
      * @param  string         $currency
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateTransferCurrency(Payment\Entity $payment, string $currency)
     {

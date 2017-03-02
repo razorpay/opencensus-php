@@ -34,7 +34,6 @@ class Entity extends Base\PublicEntity
     protected $generateIdOnCreate = true;
 
     protected $fillable = [
-        self::MERCHANT_ID,
         self::AMOUNT,
         self::CURRENCY,
         self::ON_HOLD,

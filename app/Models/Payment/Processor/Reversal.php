@@ -179,7 +179,7 @@ trait Reversal
         {
             $transfers = $this->repo
                               ->transfer
-                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+                              ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
 
             $refundType = $this->getPaymentRefundType($input);
 
@@ -212,7 +212,7 @@ trait Reversal
 
         $transfers = $this->repo
                           ->transfer
-                          ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+                          ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
 
         if ($refundType === Payment\Refund\Status::FULL)
         {

@@ -9,7 +9,6 @@ use RZP\Models\Transfer;
 use RZP\Models\Transaction;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
-use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 
 class Core extends Base\Core
@@ -86,24 +85,28 @@ class Core extends Base\Core
             );
         }
 
-        return $this->mutex->acquireAndRelease($transfer->getId(), function() use ($transfer, $input, $merchant)
-        {
-            (new Validator)->validateReversalAmount($transfer, $input);
-
-            // If amount is not sent in input,
-            // reverse the entire transfer amount pending
-            $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
-
-            return $this->repo->transaction(function () use ($transfer, $amount, $merchant)
+        return $this->mutex->acquireAndRelease(
+            $transfer->getId(),
+            function() use ($transfer, $input, $merchant)
             {
-                $reversal = (new Payment\Processor\Processor($merchant))
-                                ->refundPaymentAndReverseTransfer($transfer, $amount);
+                (new Validator)->validateReversalAmount($transfer, $input);
 
-                $this->traceSuccess($reversal);
+                //
+                // If amount is not sent in input,
+                // reverse the entire transfer amount pending
+                //
+                $amount = $input['amount'] ?? $transfer->getAmountUnreversed();
 
-                return $reversal;
+                return $this->repo->transaction(function () use ($transfer, $amount, $merchant)
+                {
+                    $reversal = (new Payment\Processor\Processor($merchant))
+                                    ->refundPaymentAndReverseTransfer($transfer, $amount);
+
+                    $this->traceSuccess($reversal);
+
+                    return $reversal;
+                });
             });
-        });
     }
 
     protected function create(int $amount, string $currency) : Entity
@@ -113,7 +116,7 @@ class Core extends Base\Core
             'currency'  => $currency,
         ];
 
-        $reversal = (new Entity)->fill($data);
+        $reversal = (new Entity)->build($data);
 
         $reversal->generateId();
 
