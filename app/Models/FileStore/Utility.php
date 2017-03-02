@@ -18,6 +18,10 @@ class Utility
      */
     public static function callFileOperation(string $method, array $params)
     {
+        $result = true;
+
+        $exception = null;
+
         $app = App::getFacadeRoot();
 
         $trace = $app['trace'];
@@ -30,32 +34,27 @@ class Utility
         try
         {
             $result = call_user_func_array($method, $params);
-
-            if ($result === false)
-            {
-                $params['method'] = $method;
-
-                $trace->error(
-                    TraceCode::FILE_OPERATION_FAILED,
-                    $params
-                );
-            }
         }
-        catch (\Exception $e)
+        catch (\Exception $exception)
         {
-            $params['method'] = $method;
-
-            $trace->traceException(
-                $e,
-                Trace::ERROR,
-                TraceCode::FILE_OPERATION_FAILED,
-                $params
-            );
+            $result = false;
 
             throw $e;
         }
         finally
         {
+            if ($result === false)
+            {
+                $params['method'] = $method;
+
+                $trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::FILE_OPERATION_FAILED,
+                    $params
+                );
+            }
+
             umask($oldMask);
         }
     }
