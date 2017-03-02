@@ -1705,6 +1705,5 @@ ALTER TABLE schedules
 ALTER TABLE bank_accounts
     MODIFY COLUMN beneficiary_code VARCHAR(10) AFTER type;
 
-# Adds beneficiary code to bank accounts
 ALTER TABLE bank_accounts
     ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
