@@ -205,6 +205,11 @@ class Validator extends Base\Validator
 
     protected function validateAutoRefundDelay($attribute, $autoRefundDelayPeriod)
     {
+        if ($autoRefundDelayPeriod === null)
+        {
+            return;
+        }
+
         $autoRefundDelay = explode(' ', $autoRefundDelayPeriod);
 
         $min = $max = null;

@@ -224,6 +224,7 @@ class TraceCode
     const TRACE_MISC_CODE                           = 'TRACE_MISC_CODE';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
+    const SAVED_CARDS_UPDATED_WITH_IIN              = 'SAVED_CARDS_UPDATED_WITH_IIN';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';

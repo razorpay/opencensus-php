@@ -18,6 +18,8 @@ return [
 
     'default'               => env('QUEUE_DRIVER', 'sync'),
 
+    'mock'                  => env('QUEUE_MOCK', false),
+
     'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
     'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
     'sqs_webhooks_live'     => env('AWS_WEBHOOK_LIVE_QUEUE'),
