@@ -132,6 +132,20 @@ class Repository extends \Razorpay\Spine\Repository
         return E::getTableNameForEntity($this->entity);
     }
 
+    /**
+     * Instantiates a query with an entity having timestamps set to false.
+     * This is to avoid setting the updated_at field.
+     * @return Query\Builder queryBuilder object
+     */
+    public function newQueryWithoutTimestamps()
+    {
+        $entity = $this->getEntityObject();
+
+        $entity->timestamps = false;
+
+        return $entity->setConnection($this->connection)->newQuery();
+    }
+
     protected function processDbQueryFailure($operation, $attributes = null)
     {
         $e = $this->getExceptionDataArray($operation, $attributes);
