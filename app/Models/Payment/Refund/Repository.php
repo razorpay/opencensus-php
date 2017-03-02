@@ -34,6 +34,10 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
+    protected $signedIds = [
+        Entity::PAYMENT_ID
+    ];
+
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
     {
         $query = $this->newQuery()->where(Refund\Entity::MERCHANT_ID, '=', $merchantId);
@@ -335,14 +339,5 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
-    }
-
-    protected function addQueryParamPaymentId($query, $params)
-    {
-        $paymentId = $params[Refund\Entity::PAYMENT_ID];
-
-        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
-
-        $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
     }
 }
