@@ -89,6 +89,22 @@ class Core extends Base\Core
             });
     }
 
+    public function updateBeneficiaryCodes()
+    {
+        $bas = $this->repo->bank_account->fetchBankAccountsWithoutBeneCode();
+
+        foreach ($bas as $ba)
+        {
+            $ba->generateBeneficiaryCode();
+
+            $this->repo->saveOrFail($ba);
+        }
+
+        $result['count'] = $bas->count();
+
+        return $result;
+    }
+
     public function createTestBankAccount($merchant)
     {
         $input = array(
