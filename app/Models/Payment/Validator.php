@@ -26,7 +26,7 @@ class Validator extends Base\Validator
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             =>  'sometimes|max:255',
+        'description'             =>  'sometimes',
         'email'                   =>  'sometimes|email',
         'contact'                 =>  'sometimes|contact_syntax',
         'signature'               =>  'sometimes',
