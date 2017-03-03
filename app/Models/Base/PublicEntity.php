@@ -300,6 +300,18 @@ class PublicEntity extends UniqueIdEntity
         return $id;
     }
 
+    public static function stripSignIfExists(string & $id)
+    {
+        $ix = strpos($id, static::$delimiter);
+
+        if ($ix !== false)
+        {
+            $id = substr($id, $ix + 1);
+        }
+
+        return $id;
+    }
+
     public static function getSign()
     {
         return static::$sign;
