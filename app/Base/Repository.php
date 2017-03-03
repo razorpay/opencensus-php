@@ -9,6 +9,7 @@ use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -141,6 +142,20 @@ class Repository extends \Razorpay\Spine\Repository
     public function getTableName()
     {
         return E::getTableNameForEntity($this->entity);
+    }
+
+    /**
+     * Instantiates a query with an entity having timestamps set to false.
+     * This is to avoid setting the updated_at field.
+     * @return Query\Builder queryBuilder object
+     */
+    public function newQueryWithoutTimestamps()
+    {
+        $entity = $this->getEntityObject();
+
+        $entity->timestamps = false;
+
+        return $entity->setConnection($this->connection)->newQuery();
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -327,12 +342,12 @@ class Repository extends \Razorpay\Spine\Repository
         }
         catch (\Exception $ex)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
+                $entity->toArray()
+            );
         }
     }
 

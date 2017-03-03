@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
@@ -243,19 +244,29 @@ class MerchantFilter extends Terminal\Filter
 
         $acquirer = $terminal->getGatewayAcquirer();
 
-        if (($terminal->isShared() === true) and
-            ($category2 === Category::PHARMA) and
-            ($acquirer === Gateway::ACQUIRER_HDFC) and
+        if (($category2 === Category::PHARMA) and
             ($input['payment']->isMethodCardOrEmi()))
         {
-            $network = $input['payment']->card->getNetworkCode();
-
-            // This check is because only Visa and Mastercards are
-            // supported by gateways from other acquirers that also
-            // have a shared terminal.
-            if (in_array($network, [Network::VISA, Network::MC], true) === true)
+            if (($terminal->isShared() === true) and
+                ($acquirer === Gateway::ACQUIRER_HDFC))
             {
+                // This check is for all the card networks which are
+                // supported by gateways from other acquirers that also
+                // have a shared terminal.
+                // Currently, we don't have a shared terminal RuPay and
+                // Maestro. We are doing a workaround using the
+                // merchant descriptor feature of FirstData
                 return false;
+            }
+            // Terminal ID for Aala first data terminal is 76lEBqibDvhOzY
+            else if ($terminal->getId() === '76lEBqibDvhOzY')
+            {
+                 $network = $input['payment']->card->getNetworkCode();
+
+                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 {
+                    return false;
+                 }
             }
         }
 

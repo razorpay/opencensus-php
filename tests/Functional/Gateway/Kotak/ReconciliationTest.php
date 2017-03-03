@@ -45,7 +45,7 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchData('settlement');
 
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
@@ -85,7 +85,7 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchData('settlement');
 
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
@@ -120,7 +120,7 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchData('settlement');
 
         //Validate settlement entity
         $settlement = $this->getLastEntity('settlement', true);
@@ -132,45 +132,45 @@ class ReconciliationTest extends TestCase
         $this->assertNotNull($settlementAttempt['utr']);
     }
 
-    // public function testAsjustmentCreationAgainstSettlement()
-    // {
-    //     // Create payments and refunds with timestamps two days back
-    //     $prEntities = $this->createPaymentAndRefundEntities();
+    public function testAsjustmentCreationAgainstSettlement()
+    {
+        // Create payments and refunds with timestamps two days back
+        $prEntities = $this->createPaymentAndRefundEntities();
 
-    //     // delete Existing files
-    //     $this->deleteSetlFiles();
+        // delete Existing files
+        $this->deleteSetlFiles();
 
-    //     // reconciliation
-    //     $txns = $this->matchTransactions($prEntities);
+        // reconciliation
+        $txns = $this->matchTransactions($prEntities);
 
-    //     // Generate settlements for above transactions
-    //     $setlFile = $this->initiateSettlementsAndAssertSuccess();
+        // Generate settlements for above transactions
+        $setlFile = $this->initiateSettlementsAndAssertSuccess();
 
-    //     $setl = $this->getLastEntity('settlement', true);
+        $setl = $this->getLastEntity('settlement', true);
 
-    //     $setlId = $setl['id'];
+        $setlId = $setl['id'];
 
-    //     $adjustmentData =[
-    //         'amount'        => 100,
-    //         'currency'      => 'INR',
-    //         'description'   => 'random desc',
-    //         'settlement_id' => $setlId
-    //     ];
+        $adjustmentData =[
+            'amount'        => 100,
+            'currency'      => 'INR',
+            'description'   => 'random desc',
+            'settlement_id' => $setlId
+        ];
 
-    //     $request = [
-    //         'method'    => 'POST',
-    //         'url'       => '/adjustments',
-    //         'content'   => $adjustmentData
-    //     ];
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/adjustments',
+            'content'   => $adjustmentData
+        ];
 
-    //     $this->ba->proxyAuth();
+        $this->ba->proxyAuth();
 
-    //     $content = $this->makeRequestAndGetContent($request);
+        $content = $this->makeRequestAndGetContent($request);
 
-    //     $data = $this->getLastEntity('adjustment', true);
+        $data = $this->getLastEntity('adjustment', true);
 
-    //     $this->assertArraySelectiveEquals($content, $data);
-    // }
+        $this->assertArraySelectiveEquals($content, $data);
+    }
 
     public function testPayoutReconciliation()
     {
@@ -188,6 +188,9 @@ class ReconciliationTest extends TestCase
 
         // Reconcile settlements, same route is being used as both are h2h
         $data = $this->reconcileSettlements($payoutReconciliationFile);
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchData('payout');
     }
 
     protected function initiatePayoutsAndAssertSuccess()
@@ -305,11 +308,14 @@ class ReconciliationTest extends TestCase
         return $prEntities;
     }
 
-    protected function fetchAndMatchBatchSettlement()
+    // Fetches and matches batch data for given entity
+    protected function fetchAndMatchBatchData(string $entityName)
     {
         $batchSettlement = $this->getLastEntity('batch_settlement', true);
 
-        $this->assertTestResponse($batchSettlement, 'fetchAndMatchBatchSettlement');
+        $expectedData = 'fetchAndMatchBatchData' . ucfirst($entityName);
+
+        $this->assertTestResponse($batchSettlement, $expectedData);
 
         $time = time();
 
@@ -320,23 +326,23 @@ class ReconciliationTest extends TestCase
         return $batchSettlement;
     }
 
-    // protected function checkAdjustmentCreated()
-    // {
-    //     $setl = $this->getLastEntity('settlement', true);
-    //     $settlementSign = 'setl_';
-    //     $setlId = substr($setl['id'], strlen($settlementSign));
+    protected function checkAdjustmentCreated()
+    {
+        $setl = $this->getLastEntity('settlement', true);
+        $settlementSign = 'setl_';
+        $setlId = substr($setl['id'], strlen($settlementSign));
 
-    //     $data = [
-    //         'merchant_id' => "10000000000000",
-    //         'amount' => 4385000,
-    //         'currency' => "INR",
-    //         'channel' => "kotak",
-    //         'description' => "Adjustment for failed settlement",
-    //         'settlement_id' => $setlId
-    //     ];
+        $data = [
+            'merchant_id' => "10000000000000",
+            'amount' => 4385000,
+            'currency' => "INR",
+            'channel' => "kotak",
+            'description' => "Adjustment for failed settlement",
+            'settlement_id' => $setlId
+        ];
 
-    //     $content = $this->getLastEntity('adjustment', true);
+        $content = $this->getLastEntity('adjustment', true);
 
-    //     $this->assertArraySelectiveEquals($data, $content);
-    // }
+        $this->assertArraySelectiveEquals($data, $content);
+    }
 }

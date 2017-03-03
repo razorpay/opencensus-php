@@ -324,6 +324,7 @@ class ErrorCode
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                       = 'BAD_REQUEST_SCHEDULE_INVALID_PERIOD';
     const BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED                         = 'BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED';
     const BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED                    = 'BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED';
+    const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                            = 'BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED';
     const BAD_REQUEST_SCHEDULE_IN_USE                                               = 'BAD_REQUEST_SCHEDULE_IN_USE';
 
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
@@ -465,4 +466,7 @@ class ErrorCode
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
+
+    // ES related error codes
+    const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
 }

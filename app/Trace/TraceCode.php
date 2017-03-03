@@ -224,6 +224,7 @@ class TraceCode
     const TRACE_MISC_CODE                           = 'TRACE_MISC_CODE';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
+    const SAVED_CARDS_UPDATED_WITH_IIN              = 'SAVED_CARDS_UPDATED_WITH_IIN';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
@@ -450,6 +451,11 @@ class TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
+    const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
+    const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
+    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
+    const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';

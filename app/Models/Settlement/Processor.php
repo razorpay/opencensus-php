@@ -9,12 +9,14 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
+use RZP\Models\Base\Traits\BatchSettlementTrait;
 use RZP\Models\Settlement\Kotak;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
 {
     use CommonTrait;
+    use BatchSettlementTrait;
 
     protected $setlTime;
 
@@ -23,8 +25,6 @@ class Processor extends Base\Core
     protected $input;
 
     protected $mutex;
-
-    protected $batchSettlement;
 
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
@@ -112,7 +112,7 @@ class Processor extends Base\Core
                 {
                     $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
 
-                    $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxnsCount);
+                    $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxnsCount);
 
                     $setl->batchSettlement()->associate($this->batchSettlement);
 
@@ -154,7 +154,12 @@ class Processor extends Base\Core
         {
             list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts);
 
-            $this->updateBatchSettlementEntityUrls($urlText, $urlExcel);
+            $urls = [
+                'kotak_settlement_txt'   => $urlText,
+                'kotak_settlement_excel' => $urlExcel
+            ];
+
+            $this->updateBatchSettlementEntityUrls($urls);
 
             $data['settlement_text_file']  = $urlText;
             $data['settlement_excel_file'] = $urlExcel;
@@ -199,63 +204,10 @@ class Processor extends Base\Core
     {
         $txns = $this->filterTransactionsForSettlement($txns, $channel);
 
-        list($settlements, $settledTxnsCount, $setlAttempts) = $this->createSettlementsFromTxns($txns, $channel);
+        list($settlements, $settledTxnsCount, $setlAttempts) =
+            $this->createSettlementsFromTxns($txns, $channel);
 
         return [$settlements, $settledTxnsCount, $setlAttempts];
-    }
-
-    protected function createBatchSettlementEntity($setl, $txnsCount)
-    {
-        $batchSettlement = new BatchSettlement;
-
-        $input = [
-            BatchSettlement::CHANNEL           => $setl->getChannel(),
-            BatchSettlement::AMOUNT            => $setl->getAmount(),
-            BatchSettlement::FEES              => $setl->getFees(),
-            BatchSettlement::SERVICE_TAX       => $setl->getServiceTax(),
-            BatchSettlement::SETTLEMENT_COUNT  => 1,
-            BatchSettlement::TRANSACTION_COUNT => $txnsCount,
-            BatchSettlement::INITIATED_AT      => time(),
-            BatchSettlement::API_FEE           => 0,
-            BatchSettlement::GATEWAY_FEE       => 0,
-            BatchSettlement::URLS              => null,
-        ];
-
-        $batchSettlement->build($input);
-
-        return $batchSettlement;
-    }
-
-    protected function createOrUpdateBatchSettlementForSettlement($setl, $txnsCount)
-    {
-        if ($this->batchSettlement === null)
-        {
-            $this->batchSettlement = $this->createBatchSettlementEntity($setl, $txnsCount);
-        }
-        else
-        {
-            $this->batchSettlement->incrementAmount($setl->getAmount());
-            $this->batchSettlement->incrementFees($setl->getFees());
-            $this->batchSettlement->incrementServiceTax($setl->getServiceTax());
-            $this->batchSettlement->incrementSettlementCount();
-            $this->batchSettlement->incrementTransactionCount($txnsCount);
-        }
-
-        $this->repo->saveOrFail($this->batchSettlement);
-    }
-
-    protected function updateBatchSettlementEntityUrls($urlText, $urlExcel)
-    {
-        $batchSettlement = $this->batchSettlement;
-
-        $urls = [
-            'kotak_settlement_txt'   => $urlText,
-            'kotak_settlement_excel' => $urlExcel
-        ];
-
-        $batchSettlement->setUrls($urls);
-
-        $this->repo->saveOrFail($batchSettlement);
     }
 
     protected function generateSettlementFile($setlAttempts)

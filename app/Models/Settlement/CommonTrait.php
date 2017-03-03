@@ -142,7 +142,7 @@ trait CommonTrait
                                                     $setlApiFee,
                                                     $serviceTax);
 
-                $this->createOrUpdateBatchSettlementForSettlement($setl, $setlTxns->count());
+                $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxns->count());
 
                 $setl->batchSettlement()->associate($this->batchSettlement);
 

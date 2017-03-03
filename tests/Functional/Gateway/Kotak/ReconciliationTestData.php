@@ -3,15 +3,28 @@
 use Carbon\Carbon;
 
 return [
-    'fetchAndMatchBatchSettlement' => [
+    'fetchAndMatchBatchDataSettlement' => [
         'channel' => 'kotak',
         'amount' => 4385000,
         'fees' => 115000,
         'service_tax' => 15000,
         'api_fee' => 0,
         'gateway_fee' => 0,
-        'settlement_count' => 1,
+        'total_count' => 1,
         'transaction_count' => 10,
+    ],
+
+    'fetchAndMatchBatchDataPayout' => [
+        'type' => 'payout',
+        'entity' => 'batch_settlement',
+        'channel' => 'kotak',
+        'amount' => 5000,
+        'fees' => 2935,
+        'service_tax' => 385,
+        'api_fee' => 0,
+        'gateway_fee' => 0,
+        'total_count' => 5,
+        'transaction_count' => 5,
     ],
 
     'fetchAndMatchSettlementsForReconSuccess' => [

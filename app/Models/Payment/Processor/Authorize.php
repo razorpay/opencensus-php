@@ -385,7 +385,26 @@ trait Authorize
 
         $this->verifyPaymentMethodEnabled($payment);
 
+        $this->validatePaymentNetworkSupported($payment);
+
         $this->runInternationalChecks($payment);
+    }
+
+    protected function validatePaymentNetworkSupported(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($merchant->getCategory2() === Terminal\Category::PHARMA))
+        {
+            $card = $payment->card;
+
+            if ($card->getNetworkCode() === Card\Network::DICL)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+        }
     }
 
     // @codingStandardsIgnoreStart
@@ -528,7 +547,7 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function runInternationalChecks(Payment\Entity$payment)
+    protected function runInternationalChecks(Payment\Entity $payment)
     {
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
