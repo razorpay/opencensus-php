@@ -140,22 +140,31 @@ trait CommonTrait
                                                     $setlAmount,
                                                     $setlFee,
                                                     $setlApiFee,
-                                                    $serviceTax);
+                                                    $serviceTax,
+                                                    $this->setlTime);
 
-                $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxns->count());
-
-                $setl->batchSettlement()->associate($this->batchSettlement);
-
-                $this->repo->saveOrFail($setl);
-
-                $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
-
-                $this->repo->saveOrFail($bankTransferAtpt);
-
-                $this->repo->transaction->settled($setlTxns, $this->setlTime);
+                list($setl, $bankTransferAtpt) = $this->createAndupdateBatchEntities(
+                                                    $setl,
+                                                    $setlTxns->count(),
+                                                    $bankTransferAtpt);
 
                 return [$setl, $bankTransferAtpt];
             });
+
+        return [$setl, $bankTransferAtpt];
+    }
+
+    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt)
+    {
+        $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxnsCount);
+
+        $setl->batchSettlement()->associate($this->batchSettlement);
+
+        $this->repo->saveOrFail($setl);
+
+        $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
+
+        $this->repo->saveOrFail($bankTransferAtpt);
 
         return [$setl, $bankTransferAtpt];
     }

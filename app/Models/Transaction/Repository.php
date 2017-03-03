@@ -287,27 +287,18 @@ class Repository extends Base\Repository
                     ->update([Transaction\Entity::SETTLED_AT  => 1]);
     }
 
-    public function settled($txns, $settledAt)
+    /**
+     * @param $txns - Array of transaction entities to be updated
+     * @param $values - Array. Key - Column name, Value - Column value
+     */
+    public function settled($txns, array $values)
     {
-        $txnCount = $txns->count();
-
-        switch ($txnCount)
+        if ($txns->count() === 0)
         {
-            case 0:
-                return;
-
-            case 1:
-                $ids = [$txns->getId()];
-                break;
-
-            default:
-                $ids = $txns->getIds();
-                break;
+            return;
         }
 
-        $values = array(
-            Transaction\Entity::SETTLED_AT  => $settledAt,
-            Transaction\Entity::SETTLED     => true);
+        $ids = $txns->getIds();
 
         $count = $this->newQuery()
                       ->whereIn(Transaction\Entity::ID, $ids)

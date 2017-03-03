@@ -13,9 +13,12 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Models\Base\Traits\BatchSettlementTrait;
 
 class Merchant
 {
+    use BatchSettlementTrait;
+
     protected $merchant;
     protected $amount;
     protected $apiFee;
@@ -26,6 +29,7 @@ class Merchant
     protected $setlDetails;
     protected $fee;
     protected $serviceTax;
+    protected $setlTime;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -42,22 +46,26 @@ class Merchant
     public function retryFailedSettlement($setl)
     {
         $this->setl = $setl;
+        $this->txns = $this->setl->setlTransactions;
 
         // Create Settlement attempt entity
         $bankTransferAtpt = $this->createSettlementAttemptEntity();
 
         $this->repo->saveOrFail($this->bankTransferAtpt);
 
+        $this->updateTransactions();
+
         return $bankTransferAtpt;
     }
 
-    public function settle($txns, $amount, $fee, $apiFee, $serviceTax): array
+    public function settle($txns, $amount, $fee, $apiFee, $serviceTax, $setlTime): array
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
         $this->fee = $fee;
         $this->txns = $txns;
         $this->serviceTax = $serviceTax;
+        $this->setlTime = $setlTime;
 
         $setl = $this->createSetlEntityAndTxn();
 
@@ -73,7 +81,22 @@ class Merchant
 
         $this->saveChangesToDb();
 
+        // Update transactions
+        $this->updateTransactions();
+
         return [$setl, $bankTransferAtpt];
+    }
+
+    protected function updateTransactions()
+    {
+        // Update transactions
+        $values = [
+            Transaction\Entity::SETTLED_AT      => $this->setlTime,
+            Transaction\Entity::SETTLED         => true,
+            Transaction\Entity::SETTLEMENT_ID   => $this->setl->getId(),
+        ];
+
+        $this->repo->transaction->settled($this->txns, $values);
     }
 
     protected function collectApiFees($apiFee): array
@@ -325,8 +348,6 @@ class Merchant
         $this->repo->saveOrFail($this->bankTransferAtpt);
 
         $this->repo->saveOrFailCollection($this->setlDetails);
-
-        $this->repo->transaction->updateSettlementId($this->txns, $this->setl->getId());
     }
 
     protected function updateBalances(): Transaction\Entity

@@ -107,24 +107,12 @@ class Processor extends Base\Core
 
                 $setlTxnsCount = $setlTxns->count();
 
-                $bankTransferAtpt = $this->repo->transaction(
+                list($setl, $bankTransferAtpt) = $this->repo->transaction(
                     function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
                 {
-                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
+                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl, $this->setlTime);
 
-                    $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxnsCount);
-
-                    $setl->batchSettlement()->associate($this->batchSettlement);
-
-                    $this->repo->saveOrFail($setl);
-
-                    $bankTransferAtpt->batchTransfer()->associate($this->batchSettlement);
-
-                    $this->repo->saveOrFail($bankTransferAtpt);
-
-                    $this->repo->transaction->settled($setlTxns, $this->setlTime);
-
-                    return $bankTransferAtpt;
+                    return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
                 });
 
                 $setlAttempts->push($bankTransferAtpt);
