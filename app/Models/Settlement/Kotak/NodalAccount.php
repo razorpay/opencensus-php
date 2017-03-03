@@ -134,7 +134,7 @@ class NodalAccount
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Code'      => $ba->getKotakBeneficaryCode(),
+                'Beneficiary_Code'      => $ba->getBeneficaryCode(),
                 'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),

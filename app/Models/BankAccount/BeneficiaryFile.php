@@ -72,7 +72,7 @@ class BeneficiaryFile
         {
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
-                'Bene_Code'             => $ba->getKotakBeneficaryCode(),
+                'Bene_Code'             => $ba->getBeneficaryCode(),
                 'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
                 'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
                 'Bene_Add_2'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),
