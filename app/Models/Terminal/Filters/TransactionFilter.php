@@ -164,7 +164,7 @@ class TransactionFilter extends Terminal\Filter
     public function educationBankFilter($terminal, $input)
     {
         if (($input['payment']->isNetbanking() === true) and
-            ($input['payment']->getGateway() === Gateway::BILLDESK))
+            ($terminal->getGateway() === Gateway::BILLDESK))
         {
             $bank = $input['payment']->getBank();
 

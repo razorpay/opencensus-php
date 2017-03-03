@@ -48,6 +48,7 @@ class Entity extends Base\PublicEntity
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
 
     /**
      * Refers to methods relation and not a property;
@@ -149,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT           => null,
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
-        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::SETTLEMENT_SCHEDULE_ID => null,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,

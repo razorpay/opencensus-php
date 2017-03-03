@@ -15,6 +15,7 @@ class Entity extends Base\PublicEntity
     const MERCHANT_ID               = 'merchant_id';
     const ENTITY_ID                 = 'entity_id';
     const TYPE                      = 'type';
+    const BENEFICIARY_CODE          = 'beneficiary_code';
     const IFSC_CODE                 = 'ifsc_code';
     const ACCOUNT_NUMBER            = 'account_number';
     const BENEFICIARY_NAME          = 'beneficiary_name';
@@ -69,9 +70,7 @@ class Entity extends Base\PublicEntity
         self::MERCHANT_ID,
         self::ENTITY_ID,
         self::TYPE,
-        self::MPIN_SET,
-        self::MPIN,
-        self::MOBILE_BANKING_ENABLED,
+        self::BENEFICIARY_CODE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
         self::ACCOUNT_NUMBER,
@@ -85,15 +84,18 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
+        self::MPIN_SET,
+        self::MPIN,
+        self::MOBILE_BANKING_ENABLED,
         self::CREATED_AT
     );
 
     protected $public = array(
         self::ID,
         self::ENTITY,
+        self::BENEFICIARY_CODE,
         self::IFSC_CODE,
         self::BENEFICIARY_NAME,
-        self::MPIN_SET,
         self::ACCOUNT_NUMBER,
         self::BENEFICIARY_ADDRESS1,
         self::BENEFICIARY_ADDRESS2,
@@ -105,6 +107,7 @@ class Entity extends Base\PublicEntity
         self::BENEFICIARY_STATE,
         self::BENEFICIARY_COUNTRY,
         self::BENEFICIARY_PIN,
+        self::MPIN_SET,
     );
 
     protected $appends = [
@@ -133,6 +136,15 @@ class Entity extends Base\PublicEntity
         $this->fill($input);
 
         return $this;
+    }
+
+    // we are not doing it via generators as we want to generate only for
+    // merchant bank accounts
+    public function generateBeneficiaryCode()
+    {
+        $beneficiaryCode = $this->getKotakBeneficaryCode();
+
+        $this->setAttribute(self::BENEFICIARY_CODE, $beneficiaryCode);
     }
 
     protected function generateBeneficiaryCountry($input)
@@ -298,6 +310,8 @@ class Entity extends Base\PublicEntity
         $last3 = substr($id, -3);
 
         $beneficiaryCode = $first7 . $last3;
+
+        $beneficiaryCode = strtoupper($beneficiaryCode);
 
         assertTrue(strlen($beneficiaryCode) === 10);
 

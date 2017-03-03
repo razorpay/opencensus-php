@@ -29,7 +29,7 @@ return [
                 'method'      => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
                 'service_tax' => 77,
-                'fee'         => 587,
+                'fees'        => 587,
                 'notes'       => [
                     'abc' => 'xyz',
                 ],
@@ -148,7 +148,7 @@ return [
                 'destination' => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
                 'service_tax' => 77,
-                'fee'         => 587,
+                'fees'        => 587,
                 'notes'       => [
                     'abc' => 'xyz',
                 ],
@@ -210,7 +210,7 @@ return [
                 'destination' => 'fund_transfer',
                 'destination' => 'ba_1000000lcustba',
                 'service_tax' => 78,
-                'fee'         => 598,
+                'fees'        => 598,
                 'notes'       => [
                     'abc' => 'xyz',
                 ],

@@ -132,6 +132,7 @@ final class Route
         'merchant_actions'                        => ['put',      'merchants/{id}/action',                          'MerchantController@putAction'                                      ],
         'merchant_fetch_balance'                  => ['get',      'merchants/{id}/balance',                         'MerchantController@getBalance'                                     ],
         'merchant_edit_free_credits'              => ['post',     'merchants/{id}/credits',                         'MerchantController@postAmountCredits',                             ],
+        'merchant_patch_beneficiary_code'         => ['patch',    'merchants/beneficiary/code',                     'MerchantController@patchMerchantBeneficiaryCode'                   ],
         'merchant_beneficiary_file'               => ['get',      'merchants/beneficiary/file',                     'MerchantController@getMerchantBeneficiaryFile'                     ],
         'merchant_post_beneficiary_file'          => ['post',     'merchants/beneficiary/file/bank',                'MerchantController@postMerchantBeneficiaryFile'                    ],
         'merchant_notify_holiday'                 => ['post',     'merchants/notify/holiday',                       'MerchantController@postMerchantsNotifyHoliday'                     ],
@@ -743,7 +744,8 @@ final class Route
         'merchant_activation_migrate',
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
-        'offer_deactivate'
+        'offer_deactivate',
+        'merchant_patch_beneficiary_code',
     );
 
     public static $proxy = array(
@@ -955,7 +957,8 @@ final class Route
             'merchant_activation_migrate',
             'billdesk_create_cancelled_refunds',
             'schedule_migration',
-            'offer_deactivate'
+            'offer_deactivate',
+            'merchant_patch_beneficiary_code',
         ),
 
         'kotak' => array(

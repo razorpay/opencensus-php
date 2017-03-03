@@ -361,6 +361,13 @@ class MerchantController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function patchMerchantBeneficiaryCode()
+    {
+        $data = (new Merchant\Service)->patchMerchantBeneficiaryCode();
+
+        return ApiResponse::json($data);
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $data = (new Merchant\Service)->getMerchantBeneficiaryFile();

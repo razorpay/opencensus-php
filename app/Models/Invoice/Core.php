@@ -64,7 +64,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatchQueueJob($this->mode, InvoiceAction::ISSUED, $invoice->getId());
+            (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
         }
 
         return $invoice;
@@ -133,7 +133,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatchQueueJob($this->mode, InvoiceAction::ISSUED, $invoice->getId());
+        (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
 
         return $invoice;
     }
@@ -312,7 +312,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatchQueueJob($this->mode, InvoiceAction::EXPIRED, $invoice->getId());
+        (new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()))->handle();
 
         return $invoice;
     }
