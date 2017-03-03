@@ -16,7 +16,7 @@ class Repository extends Base\Repository
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|alpha_dash|max:18',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
     );
 
     protected $proxyFetchParamRules = [
@@ -25,7 +25,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::NOTES           => 'sometimes|string|max:500',
     );
 

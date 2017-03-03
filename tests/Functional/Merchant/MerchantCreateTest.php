@@ -42,6 +42,8 @@ class MerchantCreateTest extends TestCase
 
         $this->assertSame($content['activated'], false);
 
+        $this->checkSettlementSchedule($content);
+
         $this->checkTerminals();
 
         $this->checkBalances();
@@ -110,6 +112,18 @@ class MerchantCreateTest extends TestCase
         $merchantDetails = $this->getEntityById('merchant_detail', '1X4hRFHFx4UiXt', true);
 
         $this->assertEquals($merchantDetails['contact_email'], 'test@localhost.com');
+    }
+
+    protected function checkSettlementSchedule($content)
+    {
+        $this->ba->appAuthTest();
+
+        $schedule = $this->getEntityById('schedule', $content['settlement_schedule_id'], true);
+
+        $this->assertEquals($schedule['type'], 'settlement');
+        $this->assertEquals($schedule['merchant_id'], '100000Razorpay');
+        $this->assertEquals($schedule['period'], 'daily');
+        $this->assertEquals($schedule['delay'], 3);
     }
 
     protected function checkNetbankingBanksInMode($mode)
