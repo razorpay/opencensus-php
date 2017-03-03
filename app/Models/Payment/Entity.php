@@ -334,37 +334,38 @@ class Entity extends Base\PublicEntity
 
         if ($input['method'] !== Method::NETBANKING)
         {
-            $input['bank'] = null;
+            unset($input['bank']);
         }
 
         if ($input['method'] !== Method::EMI)
         {
-            $input['emi_duration'] = null;
+            unset($input['emi_duration']);
         }
 
         if ($input['method'] !== Method::WALLET)
         {
-            $input['wallet'] = null;
+            unset($input['wallet']);
         }
 
         if ($input['method'] !== Method::UPI)
         {
-            $input['vpa'] = null;
+            unset($input['vpa']);
         }
     }
 
     protected function modifyConvertEmptyStringsToNull(& $input)
     {
-        $array = array(
+        $array = [
             Entity::CUSTOMER_ID,
             Entity::TOKEN,
-            Entity::APP_TOKEN);
+            Entity::APP_TOKEN
+        ];
 
         foreach ($array as $key)
         {
             if (empty($input[$key]))
             {
-                $input[$key] = null;
+                unset($input[$key]);
             }
         }
     }
@@ -374,7 +375,7 @@ class Entity extends Base\PublicEntity
         if ((isset($input['method'])) and
             ($input['method'] !== Method::NETBANKING))
         {
-            $input['bank'] = null;
+            unset($input['bank']);
         }
     }
 
@@ -383,7 +384,7 @@ class Entity extends Base\PublicEntity
         if ((isset($input['method'])) and
             ($input['method'] !== Method::WALLET))
         {
-            $input['wallet'] = null;
+            unset($input['wallet']);
         }
     }
 
