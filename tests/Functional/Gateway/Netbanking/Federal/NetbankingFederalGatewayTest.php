@@ -79,6 +79,13 @@ class NetbankingFederalGatewayTest extends TestCase
             {
                 $this->doAuthAndCapturePayment($this->payment);
             });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
+        $this->assertEquals($gatewayPayment['received'], false);
+        $this->assertEquals($gatewayPayment['status'], null);
     }
 
     public function testPaymentVerify()
@@ -91,7 +98,31 @@ class NetbankingFederalGatewayTest extends TestCase
 
         $gatewayPayment = $this->getLastEntity('netbanking', true);
 
+        $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
+    }
+
+    public function testAuthFailedVerifySuccess()
+    {
+        $this->testAuthorizeFailed();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
         $this->assertEquals($gatewayPayment['status'], 'Y');
+
+        // The BID was never saved
+        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
+        $this->assertEquals($gatewayPayment['received'], true);
     }
 
     public function testExcelRefundFileGeneration()

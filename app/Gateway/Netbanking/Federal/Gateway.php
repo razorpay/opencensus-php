@@ -259,7 +259,10 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        $attributes = [Base\Entity::STATUS => $content[ResponseFields::STATUS]];
+        $attributes = [
+            Base\Entity::RECEIVED => true,
+            Base\Entity::STATUS   => $content[ResponseFields::STATUS]
+        ];
 
         $gatewayPayment->fill($attributes);
 
