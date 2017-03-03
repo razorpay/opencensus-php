@@ -41,7 +41,7 @@ class Validator extends Base\Validator
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
         'fee'                     =>  'sometimes|filled|integer|max:50000000',
         'service_tax'             =>  'sometimes|filled|integer|max:50000000',
-        '_'                       =>  'sometimes|filled'
+        '_'                       =>  'sometimes'
     ];
 
     protected static $captureRules = [
