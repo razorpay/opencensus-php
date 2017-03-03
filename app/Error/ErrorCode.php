@@ -43,6 +43,7 @@ class ErrorCode
     const GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED                              = 'GATEWAY_ERROR_TRANSACTION_TYPE_NOT_SUPPORTED';
     const GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR                                  = 'GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR';
     const GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK                                    = 'GATEWAY_ERROR_UNSUPPORTED_CARD_NETWORK';
+    const GATEWAY_ERROR_FALSE_AUTHORIZE                                             = 'GATEWAY_ERROR_FALSE_AUTHORIZE';
     const GATEWAY_ERROR_UNKNOWN_ERROR                                               = 'GATEWAY_ERROR_UNKNOWN_ERROR';
     const GATEWAY_ERROR_INVALID_TERMINAL                                            = 'GATEWAY_ERROR_INVALID_TERMINAL';
     const GATEWAY_ERROR_INVALID_RESPONSE                                            = 'GATEWAY_ERROR_INVALID_RESPONSE';
@@ -324,6 +325,7 @@ class ErrorCode
     const BAD_REQUEST_SCHEDULE_INVALID_PERIOD                                       = 'BAD_REQUEST_SCHEDULE_INVALID_PERIOD';
     const BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED                         = 'BAD_REQUEST_SCHEDULE_WEEKEND_ANCHOR_NOT_PERMITTED';
     const BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED                    = 'BAD_REQUEST_SCHEDULE_HOURLY_DAILY_ANCHOR_NOT_PERMITTED';
+    const BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED                            = 'BAD_REQUEST_SCHEDULE_HOURLY_HOUR_NOT_PERMITTED';
     const BAD_REQUEST_SCHEDULE_IN_USE                                               = 'BAD_REQUEST_SCHEDULE_IN_USE';
 
     const BAD_REQUEST_PRICING_ID_REQURED                                            = 'BAD_REQUEST_PRICING_ID_REQURED';
@@ -482,4 +484,7 @@ class ErrorCode
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                    = 'BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD';
+
+    // ES related error codes
+    const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                     = 'BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID';
 }

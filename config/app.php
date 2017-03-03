@@ -93,7 +93,7 @@ return array(
 
     'key' => env('ENCRYPTION_KEY'),
 
-    'cipher' => MCRYPT_RIJNDAEL_128,
+    'cipher' => env('ENCRYPTION_CIPHER', MCRYPT_RIJNDAEL_128),
 
     /*
     |--------------------------------------------------------------------------
@@ -177,6 +177,7 @@ return array(
         Maknz\Slack\SlackServiceProvider::class,
         Propaganistas\LaravelPhone\LaravelPhoneServiceProvider::class,
         Maatwebsite\Excel\ExcelServiceProvider::class,
+        Http\Httplug\HttplugServiceProvider::class,
 
     ),
 
@@ -220,6 +221,7 @@ return array(
         'File'          => Illuminate\Support\Facades\File::class,
         'Gate'          => Illuminate\Support\Facades\Gate::class,
         'Hash'          => Illuminate\Support\Facades\Hash::class,
+        'Httplug'       => Http\Httplug\Facade\Httplug::class,
         'Lang'          => Illuminate\Support\Facades\Lang::class,
         'Log'           => Illuminate\Support\Facades\Log::class,
         'Mail'          => Illuminate\Support\Facades\Mail::class,

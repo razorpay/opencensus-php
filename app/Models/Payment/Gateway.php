@@ -286,6 +286,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
     );

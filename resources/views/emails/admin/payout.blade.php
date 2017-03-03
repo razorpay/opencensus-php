@@ -16,7 +16,7 @@
       <div class="content" style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; display: block; max-width: 600px; margin: 0 auto; padding: 0;">
       <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
-<p>PFA Payout files.</p>
+<p>PFA the IMPS payouts file.</p>
             <table style="border: 1px solid grey;">
                 <thead>
                     <tr style="border: 1px solid grey">
@@ -27,7 +27,7 @@
                 </thead>
                 <tbody>
                     <tr style="border: 1px solid grey">
-                        <td style="border: 1px solid grey">Total</td>
+                        <td style="border: 1px solid grey">Payouts</td>
                         <td style="border: 1px solid grey">{{{$amounts['total']}}}</td>
                         <td style="border: 1px solid grey">{{{$count['total']}}}</td>
                     </tr>

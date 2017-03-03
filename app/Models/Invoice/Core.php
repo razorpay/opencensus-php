@@ -64,7 +64,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()));
+            (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
         }
 
         return $invoice;
@@ -110,7 +110,7 @@ class Core extends Base\Core
 
         if ($invoice->isIssued())
         {
-            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::UPDATED, $invoice->getId()));
+            $this->dispatchQueueJob($this->mode, InvoiceAction::UPDATED, $invoice->getId());
         }
 
         return $invoice;
@@ -133,7 +133,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()));
+        (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
 
         return $invoice;
     }
@@ -312,7 +312,7 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()));
+        (new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()))->handle();
 
         return $invoice;
     }
@@ -457,6 +457,11 @@ class Core extends Base\Core
      */
     public function getFreshInvoicePdf(Entity $invoice)
     {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
@@ -523,6 +528,35 @@ class Core extends Base\Core
         $this->setPdfGenerator($invoice);
 
         return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * Dispatches invoice queue job.
+     *
+     * @param string $mode   - Taking mode as argument just if this method gets
+     *                         invoked from another async queue job.
+     *                         ENHANCEMENT: Long term/Permanent solution is to have all such
+     *                         app variables to be initialized in abstract way.
+     *                         And then we will not have to do such things everywhere.
+     * @param string $action
+     * @param string $id
+     *
+     * @return void
+     */
+    public function dispatchQueueJob(string $mode, string $action, string $id)
+    {
+        $job = (new InvoiceAction($mode, $action, $id));
+
+        $mock = Config::get('queue.mock');
+
+        if ($mock === false)
+        {
+            $queue = Config::get('queue.sqs_invoice_emails');
+
+            $job->onConnection('sqs_multi_default')->onQueue($queue);
+        }
+
+        $this->dispatch($job);
     }
 
     // -------------------- Protected methods --------------------

@@ -42,8 +42,10 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        $batchSetlData = $this->getBatchSettlementData('settlement');
+
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
 
         //Validate settlement entity
         $this->fetchAndMatchSettlements();
@@ -75,8 +77,10 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        $batchSetlData = $this->getBatchSettlementData('settlement');
+
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
 
         //Validate settlement entity
         $this->fetchAndMatchSettlements(true);
@@ -141,6 +145,11 @@ class ReconciliationTest extends TestCase
 
         // Reconcile settlements, same route is being used as both are h2h
         $data = $this->reconcileSettlements($payoutReconciliationFile);
+
+        $batchSetlData = $this->getBatchSettlementData('payout');
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
     }
 
     protected function initiatePayoutsAndAssertSuccess()
@@ -258,15 +267,12 @@ class ReconciliationTest extends TestCase
         return $prEntities;
     }
 
-    protected function fetchAndMatchBatchSettlement()
+    protected function getBatchSettlementData(string $type)
     {
-        $content = $this->getEntities('batch_settlement', [], true);
-
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
+        switch ($type) {
+            case 'settlement':
+                $data = [
+                    'type' => 'settlement',
                     'entity' => 'batch_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
@@ -275,9 +281,43 @@ class ReconciliationTest extends TestCase
                     'service_tax' => 15000,
                     'api_fee' => 0,
                     'gateway_fee' => 0,
-                    'settlement_count' => 1,
+                    'total_count' => 1,
                     'transaction_count' => 10,
-                ],
+                ];
+                break;
+
+            case 'payout':
+                $data = [
+                    'type' => 'payout',
+                    'entity' => 'batch_settlement',
+                    'date' => Carbon::today('Asia/Kolkata')->timestamp,
+                    'channel' => 'kotak',
+                    'amount' => 5000,
+                    'fees' => 2935,
+                    'service_tax' => 385,
+                    'api_fee' => 0,
+                    'gateway_fee' => 0,
+                    'total_count' => 5,
+                    'transaction_count' => 5,
+                ];
+                break;
+
+            default:
+                $data = [];
+        }
+
+        return $data;
+    }
+
+    protected function fetchAndMatchBatchSettlement(array $data)
+    {
+        $content = $this->getEntities('batch_settlement', [], true);
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                $data,
             ]
         );
 

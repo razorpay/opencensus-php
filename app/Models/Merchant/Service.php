@@ -58,6 +58,8 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
+        $this->assignDefaultSettlementSchedule($merchant);
+
         // Once the merchant is created we must tag him to
         // the admin referral
         if (isset($adminId) === true)
@@ -83,6 +85,15 @@ class Service extends Base\Service
         }
 
         return $merchant->toArrayPublic();
+    }
+
+    protected function assignDefaultSettlementSchedule($merchant)
+    {
+        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
+
+        $merchant->schedule()->associate($schedule);
     }
 
     protected function attachAdmin($merchantId, $adminId)
@@ -721,6 +732,13 @@ class Service extends Base\Service
         $webhooks = $this->repo->webhook->fetch([], $this->merchant->getId());
 
         return $webhooks->toArrayPublic();
+    }
+
+    public function patchMerchantBeneficiaryCode()
+    {
+        $data = (new BankAccount\Core)->updateBeneficiaryCodes();
+
+        return $data;
     }
 
     public function getMerchantBeneficiaryFile()

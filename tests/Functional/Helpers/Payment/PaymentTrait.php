@@ -53,7 +53,7 @@ trait PaymentTrait
      */
     protected $failPaymentOnBankPage = false;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency='INR')
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency ='INR')
     {
         if ($payment === null)
         {
@@ -92,7 +92,7 @@ trait PaymentTrait
         return $refund;
     }
 
-    protected function doAuthAndGetPayment($payment = null, $paymentResponse = array())
+    protected function doAuthAndGetPayment($payment = null, $paymentResponse = [])
     {
         if ($payment === null)
         {
@@ -154,9 +154,10 @@ trait PaymentTrait
     {
         $this->ba->appAuth();
 
-        $request = array(
+        $request = [
             'url' => '/payments/autocapture',
-            'method' => 'post');
+            'method' => 'post'
+        ];
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -165,9 +166,10 @@ trait PaymentTrait
     {
         $this->ba->appAuth();
 
-        $request = array(
+        $request = [
             'url' => '/payments/autocapture/email',
-            'method' => 'get');
+            'method' => 'get'
+        ];
 
         return $this->makeRequestAndGetContent($request);
     }
@@ -197,7 +199,7 @@ trait PaymentTrait
         return $data;
     }
 
-    protected function defaultAuthPayment(array $payment = array())
+    protected function defaultAuthPayment(array $payment = [])
     {
         $defaultPayment = $this->getDefaultPaymentArray();
 
@@ -219,10 +221,11 @@ trait PaymentTrait
 
         $content = array_merge($content, $payment);
 
-        $request = array(
+        $request = [
             'method' => 'GET',
             'url' => '/payments/create/jsonp',
-            'content' => $content);
+            'content' => $content
+        ];
 
         $this->ba->publicAuth();
 
@@ -243,10 +246,11 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments',
-            'content' => $payment);
+            'content' => $payment
+        ];
 
         if (isset($server))
         {
@@ -260,17 +264,18 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function doS2SPrivateAuthPayment($payment = null)
+    protected function doS2SPrivateAuthPayment($payment = null, $server = null)
     {
         if ($payment === null)
         {
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments/create/redirect',
-            'content' => $payment);
+            'content' => $payment
+        ];
 
         if (isset($server))
         {
@@ -291,10 +296,11 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments/create/recurring',
-            'content' => $payment);
+            'content' => $payment
+        ];
 
         if (isset($server))
         {
@@ -315,10 +321,11 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments/create/upi',
-            'content' => $payment);
+            'content' => $payment
+        ];
 
         if (isset($server))
         {
@@ -377,10 +384,11 @@ trait PaymentTrait
             $payment = $this->getDefaultPaymentArray();
         }
 
-        $request = array(
+        $request = [
             'content' => $payment,
             'url' => '/payments/create/checkout',
-            'method' => 'post');
+            'method' => 'post'
+        ];
 
         $this->ba->publicAuth();
 
@@ -389,14 +397,14 @@ trait PaymentTrait
 
     protected function makeOtpCallback($url)
     {
-        $request = array(
+        $request = [
             'url'       => $url,
             'method'    => 'POST',
-            'content'   => array(
+            'content'   => [
                 'otp' => $this->getOtp(),
                 'type' => 'otp'
-            ),
-        );
+            ],
+        ];
 
         return $this->sendRequest($request);
     }
@@ -416,11 +424,11 @@ trait PaymentTrait
 
     protected function doWalletTopup($id)
     {
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments/'.$id.'/topup',
-            'content' => array()
-        );
+            'content' => []
+        ];
 
         $this->ba->publicAuth();
 
@@ -433,11 +441,11 @@ trait PaymentTrait
 
     protected function doWalletTopupViaAjaxRoute($id)
     {
-        $request = array(
+        $request = [
             'method' => 'POST',
             'url' => '/payments/'.$id.'/topup/ajax',
-            'content' => array()
-        );
+            'content' => []
+        ];
 
         $this->ba->publicAuth();
 
@@ -502,9 +510,9 @@ trait PaymentTrait
     protected function getFeesForPayment($payment)
     {
         $request = array(
-                'method'  => 'POST',
-                'url'     =>  '/payments/create/fees',
-                'content' =>  $payment);
+            'method'  => 'POST',
+            'url'     => '/payments/create/fees',
+            'content' => $payment);
 
         $this->ba->publicAuth();
 
@@ -513,11 +521,11 @@ trait PaymentTrait
         return $content;
     }
 
-    protected function capturePayment($id, $amount, $currency='INR', $verifyAmount = 0)
+    protected function capturePayment($id, $amount, $currency = 'INR', $verifyAmount = 0)
     {
         $request = array(
             'method' => 'POST',
-            'url' => "/payments/".$id.'/capture',
+            'url' => '/payments/' . $id . '/capture',
             'content' => array('amount' => $amount));
 
         if ($currency !== 'INR')
@@ -629,7 +637,7 @@ trait PaymentTrait
     {
         $this->ba->privateAuth();
 
-        $content = array();
+        $content = [];
 
         if ($amount !== null)
         {
@@ -668,7 +676,7 @@ trait PaymentTrait
     {
         $this->ba->appAuth();
 
-        $content = array();
+        $content = [];
 
         $request = array(
             'method' => 'POST',
@@ -680,7 +688,7 @@ trait PaymentTrait
         return $response;
     }
 
-    protected function refundAuthorizedPayment($id, array $input = array())
+    protected function refundAuthorizedPayment($id, array $input = [])
     {
         $this->ba->proxyAuth();
 
@@ -746,7 +754,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function getAndMatchPayment($id, $paymentResponse = array())
+    protected function getAndMatchPayment($id, $paymentResponse = [])
     {
         $testData['request']['url'] = '/payments/'.$id;
         $testData['request']['method'] = 'GET';
@@ -800,14 +808,15 @@ trait PaymentTrait
         // default payment object
         //
         $payment = [
-            'amount'          =>  '50000',
-            'currency'        =>  'INR',
-            'email'             => 'a@b.com',
-            'contact'           => '9918899029',
-            'notes'             => array(
-                'merchant_order_id' => 'random order id'),
-            'description'       => 'random description',
-            'bank'              => 'ICIC',
+            'amount'      => '50000',
+            'currency'    => 'INR',
+            'email'       => 'a@b.com',
+            'contact'     => '9918899029',
+            'notes'       => [
+                'merchant_order_id' => 'random order id'
+            ],
+            'description' => 'random description',
+            'bank'        => 'ICIC',
         ];
 
         return $payment;
@@ -1091,7 +1100,7 @@ trait PaymentTrait
             $request = $content['request'];
             $url = $content['request']['url'];
 
-            $values = array();
+            $values = [];
             $method = $request['method'];
 
             if (($method === 'post') and
@@ -1239,23 +1248,23 @@ trait PaymentTrait
         $maxmind = Mockery::mock('RZP\Services\Mock\MaxMind')->makePartial();
 
         $maxmind->shouldReceive('query')
-              ->with(Mockery::type('RZP\Models\Payment\Entity'))
-              ->andReturnUsing(function ($payment)
+                ->with(Mockery::type('RZP\Models\Payment\Entity'))
+                ->andReturnUsing(function ($payment)
+                {
+                    $bin = $payment->card->getIin();
+
+                    $binRiskMapping = [
+                        '510510' => '22.0',
+                        '401201' => '60.3',
+                    ];
+
+                    if (isset($binRiskMapping[$bin]) === true)
                     {
-                        $bin = $payment->card->getIin();
+                        return ['riskScore' => $binRiskMapping[$bin]];
+                    }
 
-                        $binRiskMapping = [
-                            '510510' => '22.0',
-                            '401201' => '60.3',
-                        ];
-
-                        if (isset($binRiskMapping[$bin]) === true)
-                        {
-                            return ['riskScore' => $binRiskMapping[$bin]];
-                        }
-
-                        return null;
-                    });
+                    return null;
+                });
 
         $this->app->instance('maxmind', $maxmind);
     }
@@ -1267,34 +1276,34 @@ trait PaymentTrait
         $this->app->instance('card.tokenex', $tokenex);
 
         $tokenex->shouldReceive('sendRequest')
-              ->with(Mockery::type('string'), 'post', Mockery::type('array'))
-              ->andReturnUsing(function ($route, $method, $input)
+                ->with(Mockery::type('string'), 'post', Mockery::type('array'))
+                ->andReturnUsing(function ($route, $method, $input)
+                {
+                    $response = [
+                        'Error' => '',
+                        'ReferenceNumber' => '15102913382030662954',
+                        'Success' => true,
+                    ];
+
+                    switch ($route)
                     {
-                        $response = array(
-                            "Error" => "",
-                            "ReferenceNumber" => "15102913382030662954",
-                            "Success" => true,
-                        );
+                        case 'REST/Tokenize':
+                            $response['Token'] = base64_encode($input['Data']);
+                            break;
 
-                        switch ($route)
-                        {
-                            case 'REST/Tokenize':
-                                $response['Token'] = base64_encode($input['Data']);
-                                break;
+                        case 'REST/Detokenize':
+                            $response['Value'] = base64_decode($input['Token']);
+                            break;
 
-                            case 'REST/Detokenize':
-                                $response['Value'] = base64_decode($input['Token']);
-                                break;
+                        case 'REST/ValidateToken':
+                            $response['Valid'] = true;
+                            break;
 
-                            case 'REST/ValidateToken':
-                                $response['Valid'] = true;
-                                break;
-
-                            case 'REST/DeleteToken':
-                                break;
-                        }
-                        return $response;
-                    });
+                        case 'REST/DeleteToken':
+                            break;
+                    }
+                    return $response;
+                });
 
         $this->app->instance('card.tokenex', $tokenex);
     }

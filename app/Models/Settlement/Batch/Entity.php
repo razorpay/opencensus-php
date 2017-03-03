@@ -1,28 +1,28 @@
 <?php
 
-/**
- * This entity contains aggregated settlement data.
- * It is updated during settlement creation.
- * If the update fails and the settlement creation
- * goes through successfully, this will not get updated.
- * We will need to update it manually via a route.
- */
-
 namespace RZP\Models\Settlement\Batch;
 
 use RZP\Models\Base;
 use Carbon\Carbon;
 
+/**
+ * This entity contains aggregated settlement/payout data.
+ * It is updated during settlement/payout creation.
+ * If the update fails and the creation
+ * goes through successfully, this will not get updated.
+ * We will need to update it manually via a route.
+ */
 class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const DATE              = 'date';
+    const TYPE              = 'type';
     const CHANNEL           = 'channel';
     const AMOUNT            = 'amount';
     const FEES              = 'fees';
     const API_FEE           = 'api_fee';
     const GATEWAY_FEE       = 'gateway_fee';
-    const SETTLEMENT_COUNT  = 'settlement_count';
+    const TOTAL_COUNT       = 'total_count';
     const TRANSACTION_COUNT = 'transaction_count';
     const SERVICE_TAX       = 'service_tax';
     const URLS              = 'urls';
@@ -37,10 +37,11 @@ class Entity extends Base\PublicEntity
     protected static $delimiter = '';
 
     protected $fillable = array(
+        self::TYPE,
         self::CHANNEL,
         self::AMOUNT,
         self::FEES,
-        self::SETTLEMENT_COUNT,
+        self::TOTAL_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::INITIATED_AT,
@@ -52,13 +53,14 @@ class Entity extends Base\PublicEntity
     protected $public = array(
         self::ID,
         self::ENTITY,
+        self::TYPE,
         self::DATE,
         self::CHANNEL,
         self::AMOUNT,
         self::FEES,
         self::API_FEE,
         self::GATEWAY_FEE,
-        self::SETTLEMENT_COUNT,
+        self::TOTAL_COUNT,
         self::TRANSACTION_COUNT,
         self::SERVICE_TAX,
         self::URLS,
@@ -93,7 +95,7 @@ class Entity extends Base\PublicEntity
         self::API_FEE           => 'int',
         self::GATEWAY_FEE       => 'int',
         self::INITIATED_AT      => 'int',
-        self::SETTLEMENT_COUNT  => 'int',
+        self::TOTAL_COUNT       => 'int',
         self::TRANSACTION_COUNT => 'int',
     ];
 
@@ -104,9 +106,9 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::DATE, $timestamp);
     }
 
-    public function getSettlementCount()
+    public function getTotalCount()
     {
-        return $this->getAttribute(self::SETTLEMENT_COUNT);
+        return $this->getAttribute(self::TOTAL_COUNT);
     }
 
     public function getUrls()
@@ -140,14 +142,19 @@ class Entity extends Base\PublicEntity
         $this->increment(self::SERVICE_TAX, $value);
     }
 
-    public function incrementSettlementCount()
+    public function incrementTotalCount()
     {
-        $this->increment(self::SETTLEMENT_COUNT);
+        $this->increment(self::TOTAL_COUNT);
     }
 
     public function incrementTransactionCount($value)
     {
         $this->increment(self::TRANSACTION_COUNT, $value);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
     }
 
     public function setUrls($urls)

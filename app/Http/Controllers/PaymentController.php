@@ -201,6 +201,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function getCardRecurring()
+    {
+        $input = Request::all();
+
+        $data = (new Card\Service)->getCardRecurring($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function getCards()
     {
         $input = Request::all();
