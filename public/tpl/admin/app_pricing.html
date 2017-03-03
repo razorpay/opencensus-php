@@ -189,7 +189,12 @@
   </div>
   <div class="panel panel-default" id="create-plan-panel"  ng-if="create_plan">
     <div class="panel-heading">
-      Plan Name: <input type="text" name="plan_name" ng-model="new_plan.plan_name" placeholder="Plan Name" />
+      <div class="form-horizontal row">
+        <label class="control-label col-md-2"> Plan Name: </label>
+        <div class="col-md-4">
+          <input type="text" class="form-control" name="plan_name" ng-model="new_plan.plan_name" placeholder="Plan Name" />
+        </div>
+      </div>
     </div>
     <div class="table-responsive">
       <table class="table table-striped b-t b-light">
@@ -285,7 +290,7 @@
         </tbody>
         <tfoot>
           <tr>
-            <td collspan="6">
+            <td colspan="10">
               <a href ng-click="savePlan()"><button class="btn btn-primary btn-rounded">Save and Add More Rules</button></a>
               <a href ng-click="create_plan = false"><button class="btn btn-primary btn-rounded">Cancel</button></a>
             </td>

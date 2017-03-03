@@ -46,7 +46,7 @@
 
 
   <div class="signup-details-overflow-container">
-    <div class="signup-details-translate-container" style="transform: translateX({{-(240)*signup.currentSubStep}}px)">
+    <div class="signup-details-translate-container" ng-class="{'no-transition': noTransition}" style="transform: translateX({{-(240)*signup.currentSubStep}}px)">
       <div class="auth-substep business-type-substep" ng-class="{'business-type-show-more': signup.showMore}">
         <div class="auth-subheading">
           Select your Business Type
@@ -129,7 +129,7 @@
         </button>
         <alert ng-repeat="alert in alerts.getAlerts()" type="{{alert.type}}" close="alerts.closeAlert($index)">{{alert.msg}}</alert>  
       </div>
-      <div class="auth-substep">
+      <div class="auth-substep name-substep">
         <form class="" name="forms.detailsForm" > 
           <label class="form-label details-label" for="contact_name">Your Name</label>
           <input type="text" name="contact_name" id="contact_name" ng-model="signup.merchantData.contact_name"

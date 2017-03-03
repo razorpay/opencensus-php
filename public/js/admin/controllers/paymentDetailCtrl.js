@@ -20,6 +20,7 @@ app.controller('PaymentDetailCtrl', [
 
     // Keys currently added the to good-looking view
     var shownByDefault = [
+      'analytics',
       'amount',
       'amount_authorized',
       'amount_refunded',
@@ -255,6 +256,27 @@ app.controller('PaymentDetailCtrl', [
         if (data.success) {
           $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
+        } else {
+          angular.forEach(data.errors, function (error) {
+            $scope.alerts.addAlert('danger', error);
+          });
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', null, true);
+      });
+    };
+
+    $scope.showAnalytics = function () {
+      if ($scope.isAnalyticsCollapsed === false) {
+        $scope.isAnalyticsCollapsed = true;
+        return;
+      }
+      var request = $http.get('/admin/' + $scope.mode + '/payments/' + $scope.entity.id + '/analytics');
+      request.success(function (data) {
+        $scope.alerts.resetAlerts();
+        if (data.success) {
+          $scope.entity.analytics = data.data;
+          $scope.isAnalyticsCollapsed = false;
         } else {
           angular.forEach(data.errors, function (error) {
             $scope.alerts.addAlert('danger', error);

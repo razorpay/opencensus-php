@@ -520,6 +520,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function getPaymentAnalytics($mode, $id)
+    {
+        $this->checkMode($mode);
+
+        list($error, $data) = (new Admin\Service)->getPaymentAnalytics($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function postAuthorizeFailedPayment($mode, $id)
     {
         list($error, $data) = (new Admin\Service)->authorizeFailedPayment($mode, $id);
@@ -852,11 +861,13 @@ class AdminController extends Controller
     }
 
     /**
-     * Confirm a merchant account manually
+     * Confirm a user account manually
      */
-    public function postConfirmMerchant($merchantId)
+    public function postConfirmUser()
     {
-        list($error, $data) = $response = (new Admin\Service)->confirmMerchant($merchantId);
+        $input = Input::all();
+
+        list($error, $data) = $response = (new Admin\Service)->confirmUser($input['email']);
 
         return AppResponse::jsonResponse($error, $response);
     }

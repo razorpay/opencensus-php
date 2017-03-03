@@ -50,13 +50,14 @@ angular.module('app.services', [])
           if (data.data.steps_finished) {
             _identity.activation_progress = data.data.activation_progress;
           }
-
           // if any of the fields is missing, isPreSignupDone will be false
-          _isPreSignupDone = _identity.pre_signup && !!Object.keys(_identity.pre_signup)
-            // get all values
-            .map(function (key) {return _identity.pre_signup[key]})
-            // reduce all values using '&&'
-            .reduce(function (x, y){return x && y});
+          _isPreSignupDone = _identity.pre_signup
+            && ((_identity.created_at < 1488306600) // pre-signup is only for signup on/after 01 March 2017
+              || !!Object.keys(_identity.pre_signup)
+                // get all values
+                .map(function (key) {return _identity.pre_signup[key]})
+                // reduce all values using '&&'
+                .reduce(function (x, y){return x && y}));
 
           _isVerified = _identity.user.confirmed;
 
@@ -88,12 +89,15 @@ angular.module('app.services', [])
       authorize: function () {
         return user.identity().then(function () {
           if ($rootScope.toState.data.role === 'auth') {
-            if (!user.isAuthenticated() && !user.isVerified()) {
+            if (!user.isAuthenticated()){
               $state.go('access.signin');
+            }
+            if (!user.isVerified() || !user.isPreSignupDone()) {
+              $state.go('access.pre_signup');
             }
           }
           else if ($rootScope.toState.data.role === 'guest') {
-            if (user.isAuthenticated() && user.isVerified()) {
+            if (user.isAuthenticated() && user.isVerified() && user.isPreSignupDone()) {
               if ($rootScope.role === 'sellerapp') {
                 $state.go('app.invoices');
               } else {

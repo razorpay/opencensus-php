@@ -999,6 +999,54 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    /**
+     * Makes a request to fetch the list of payment_analytics entities
+     * for that payment, and then returns the URL for the entity
+     * itself
+     * @param  string $mode
+     * @param  string $paymentId
+     * @return array
+     */
+    public function getPaymentAnalytics($mode, $paymentId)
+    {
+        $this->stripSign($paymentId);
+
+        $analytics = null;
+
+        list($error, $data) = $this->fetchMultipleEntities($mode, 'payment_analytics', [
+            'payment_id'    =>  $paymentId
+        ]);
+
+        if (empty($error) and $data['count'] === 1)
+        {
+            $analytics = $data['items'][0];
+
+            $ua_parsed = [];
+
+            $original_ua = $analytics['user_agent'];
+
+            try
+            {
+                $parser = Parser::create();
+
+                $analytics['user_agent'] = $parser->parse($original_ua)->toString();
+            }
+
+            // Catch any index errors and return the
+            // default response instead
+            catch(\Exception $e)
+            {
+                $analytics['user_agent'] = $original_ua;
+            }
+        }
+        else if ($data['count'] === 0)
+        {
+            $error[] = 'No analytics found';
+        }
+
+        return [$error, $analytics];
+    }
+
     public function getPaymentRefunds($mode, $paymentId)
     {
         list($error, $response) = $this->fetchEntityById($mode, 'payment', $paymentId);
@@ -2212,13 +2260,11 @@ class Service extends Base\Service
         return [null, $merchant->tagNames()];
     }
 
-    public function confirmMerchant($merchantId)
+    public function confirmUser($email)
     {
-        (new Merchant\Service)->confirmMerchantById($merchantId);
+        list($error, $data) = (new User\Service)->confirmUserByEmail($email);
 
-        $this->logActionToSlack($merchantId, Actions::CONFIRMED);
-
-        return [null, 'Merchant Confirmed'];
+        return [$error, $data];
     }
 
     public function editIIN($iin, $input)
@@ -2227,6 +2273,7 @@ class Service extends Base\Service
         $this->setApiCredentials(null);
 
         $this->api->IIN->edit($iin, $input);
+
         return [null, 'IIN Edit successful'];
     }
 
@@ -2705,6 +2752,12 @@ class Service extends Base\Service
 
         $filePath = $file->getPathname();
         $fileName = $file->getFilename();
+        $extension = pathinfo($fileName, PATHINFO_EXTENSION);
+
+        if ($extension !== '.png')
+        {
+            return ['Invalid file format. Please upload a file with PNG extension.', $data];
+        }
 
         // org_id/login_logo/file_name
         $keyName = "$orgId/{$type}_logo/$fileName";

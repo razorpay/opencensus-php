@@ -34,7 +34,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group([], function()
     {
-        Route::get('/user/confirm/{token}', 'MerchantController@getConfirm');
+        Route::get('/user/confirm/{token}', 'UserController@getConfirm');
         Route::group([], function()
         {
             Route::post('/user/signin', 'UserController@postSignin');
@@ -278,15 +278,17 @@ Route::group(['middleware' => ['web']], function () {
 
         // Admin Payment Actions
         Route::get('/admin/{mode}/payment/{id}/verify', 'AdminController@getVerifyPayment');
+        Route::get('/admin/{mode}/payments/{id}/analytics', 'AdminController@getPaymentAnalytics');
         Route::post('/admin/{mode}/payments/{id}/authorize_failed', 'AdminController@postAuthorizeFailedPayment');
         Route::post('/admin/payments/verify', 'AdminController@verifyAllPayments');
         Route::get('/admin/{mode}/payments/{id}/refunds', 'AdminController@getPaymentRefunds');
+
         // More admin payment actions
         // These use proxy auth so needs merchantId
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
-        Route::put('/admin/merchants/{id}/confirmed', 'AdminController@postConfirmMerchant');
+        Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Admin Main Actions, mostly initiated from the Actions screen
         Route::post('/admin/beneficiary', 'AdminController@generateBeneficiaryFile');

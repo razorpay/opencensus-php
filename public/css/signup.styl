@@ -33,10 +33,10 @@
     display: none; 
   }
   
-  &.no-transition {
-    * {
-      transition-duration: 0s !important;
-    }
+  .no-transition {
+    // * {
+    transition-duration: 0s !important;
+    // }
   }
   .ng-invalid.ng-dirty {
     border-color: #da4444;
@@ -481,19 +481,19 @@
 .auth-substep{
   width: 240px;
   float: left;
-  padding-bottom: 16px;
+  padding-bottom: 14px;
   position: relative;
+  overflow: auto;
+  &::-webkit-scrollbar {
+      display: initial !important;
+  }
 }  
 
-.business-type-substep {
-  overflow: auto;
+.business-type-substep, .name-substep {
   height: 360px;
   // padding-bottom: 24px;
   .select-one {
     height: 235px;
-  }
-  &::-webkit-scrollbar {
-      display: initial !important;
   }
 }
 

@@ -45,9 +45,9 @@
           ng-show="admin.permissions.indexOf('edit_merchant_archive') !== -1">
           Archive Merchant
         </a>
-        <a href class="list-group-item" ng-click="openConfirmMerchant()"
+        <a href class="list-group-item" ng-click="openConfirmUser()"
           ng-show="admin.permissions.indexOf('edit_merchant_confirm') !== -1">
-          Confirm Merchant
+          Confirm User
         </a>
         <a href class="list-group-item" ng-click="verifyAllPayments()"
           ng-show="admin.permissions.indexOf('edit_verify_payments') !== -1">
@@ -379,23 +379,23 @@
   </div>
 </script>
 
-<script type="text/ng-template" id="confirmMerchantModal.html">
+<script type="text/ng-template" id="confirmUserModal.html">
   <div class="modal-header">
-    <h3 class="modal-title">Confirm Merchant</h3>
+    <h3 class="modal-title">Confirm User</h3>
   </div>
   <div class="modal-body terminal-modal">
-    <form class="form-horizontal" ng-init="id=''">
+    <form class="form-horizontal" ng-init="email=''">
       <div class="form-group">
-        <label for="id" class="col-lg-2 control-label">Merchant Id: </label>
+        <label for="email" class="col-lg-2 control-label">User Email: </label>
         <div class="col-lg-10" >
-          <input type="text" class="form-control m-b" name="id" ng-model="id" placeholder="Merchant Id"/>
+          <input type="text" class="form-control m-b" name="email" ng-model="email" placeholder="User Email"/>
         </div>
       </div>
     </form>
   </div>
   <div class="modal-footer">
       <button class="btn btn-default" ng-click="cancel()">Cancel</button>
-      <button class="btn btn-primary modal-ok" ng-click="ok(id)">OK</button>
+      <button class="btn btn-primary modal-ok" ng-click="ok(email)">OK</button>
   </div>
 </script>
 

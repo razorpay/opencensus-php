@@ -23,7 +23,6 @@ class Service extends Base\Service
     const INVALID_EMAIL_OR_PASSWORD             = 'Email or password is invalid.';
     const EMAIL_CHANGE_FORBIDDEN                = "Email change forbidden on this account";
     const NAME_CHANGE_FORBIDDEN                 = "Name change forbidden on this account";
-    const INVALID_CONFIRMATION_TOKEN            = 'Invalid confirmation token or the merchant is already confirmed.';
     const ROLL_KEY_FORBIDDEN                    = "Roll key forbidden on this account";
     const SELF_REMOVE_FORBIDDEN                 = "You cannot remove yourself.";
     const NO_OWNED_MERCHANT                     = "We couldn't find the merchant that you own.";
@@ -152,8 +151,8 @@ class Service extends Base\Service
         $currentMerchant = $this->currentMerchant;
         $currentUser = User\Entity::getUserWithEmail($currentMerchant->email);
 
-        $submerchant = $this->fetch($input['id']);
-        $email = $submerchant['email'];
+        $subMerchant = $this->fetch($input['id']);
+        $email = $subMerchant['email'];
         $input['email'] = $email;
 
         $error = (new Merchant\Validator)
@@ -166,20 +165,33 @@ class Service extends Base\Service
                 return [[self::SUBMERCHANT_EMAIL_NOT_UNIQUE], null];
             }
 
-            if ($currentUser->ownsMerchant($submerchant) !== true) //checks if the main merchant's user owns the sub-merchant being given user access
+            // checks if the main merchant's owner user is the primary
+            // owner of the submerchant account
+            if ($currentMerchant->primaryOwner()->ownsMerchant($subMerchant) !== true)
             {
                 return [[self::NOT_AUTHORIZED_TO_ACCESS_MERCHANT], null];
             }
 
-            $input['name'] = $submerchant['name'];
+            $input['name'] = $subMerchant['name'];
             $input['captcha_disable'] = User\Validator::DISABLE_CAPTCHA_SECRET;
 
-            $user = (new User\Service)->createUserForSubmerchant($input);
-            $user->save();
-            // Finally attach the new user to the sub merchant
-            $user->joinMerchantByIdWithRole($input['id'], 'owner');
+            try
+            {
+                $user = (new User\Service)->createUserForSubmerchant($input);
+                $user->save();
 
-            return [null, $user->toArray()];
+                // Finally attach the new user to the sub merchant
+                $user->joinMerchantByIdWithRole($input['id'], 'owner');
+
+                return [null, $user->toArray()];
+            }
+
+            catch(User\RecoverableException $e)
+            {
+                $error = [$e->getMessage()];
+
+                return [$error, null];
+            }
         }
         else
         {
@@ -306,37 +318,8 @@ class Service extends Base\Service
         }
 
         $merchant->changeName($name);
+
         $merchant->save();
-    }
-
-    public function confirm($token)
-    {
-        $user = User\Entity::getUserForConfirmation($token);
-
-        if (is_null($user))
-        {
-            return [[static::INVALID_CONFIRMATION_TOKEN], []];
-        }
-
-        $merchant = $user->getOwnerMerchant();
-
-        if (is_null($merchant))
-        {
-            return [[static::NO_OWNED_MERCHANT], []];
-        }
-
-        return $this->confirmMerchantById($merchant->id);
-    }
-
-    public function confirmMerchantById($merchantId)
-    {
-        $merchant = $this->createMerchantOnApi($merchantId);
-
-        // Confirm the merchant and associated users (with same email)
-        // This also calls the mailing list subscription for the user email
-        $merchant->confirm();
-
-        return [null, ['email' => $merchant->email]];
     }
 
     public function createMerchantOnApi($merchantId)
@@ -348,6 +331,7 @@ class Service extends Base\Service
         // Once the merchant is created we also have to tag him
         // with the admin if he was invited by one.
         $lead = \DB::table('admin_leads')->where('email', '=', $merchantApiData['email'])->first();
+
         if ($lead)
         {
             $merchantApiData['admin_id'] = $lead->admin_id;

@@ -37,7 +37,7 @@
               <label ng-if="!lockme" class="form-label auth-subheading" for="email">Email</label>
               <input ng-if="!lockme" type="email" placeholder="yourname@company.com" name="email" id="email" ng-model="login.data.email" class="form-control auth-form-input" required>
               <label class="form-label auth-subheading" for="password">Password</label>
-              <input override-tab type="password" placeholder="Razorpay Password" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
+              <input type="password" placeholder="Razorpay Password" name="password" id="password" ng-model="login.data.password" class="form-control auth-form-input" required>
               <div ng-if="!lockme" class="highlight-clickable-text forgot-password-text" ng-click="goToForgotPwd()">
                 Forgot Password?
               </div>
@@ -53,7 +53,7 @@
       </div>
     </div>
     
-    <div class="auth-step" ng-if="right">
+    <div class="auth-step" ng-if="!email_not_verified">
       <div ng-include="'tpl/auth/questions.html'"></div>
     </div>
     <div class="auth-step" >

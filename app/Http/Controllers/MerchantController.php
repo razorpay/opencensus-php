@@ -115,13 +115,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getConfirm($token)
-    {
-        list($error, $data) = (new Merchant\Service)->confirm($token);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getActivationDetails($accountId = null)
     {
         $service = new MerchantDetails\Service;

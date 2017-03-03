@@ -79,26 +79,6 @@ app.controller('MerchantDetailCtrl', [
       });
     };
 
-    $scope.confirmAccount = function () {
-      var request = $http.put('/admin/merchants/' + $scope.merchant.id + '/confirmed');
-      request.success(function (data) {
-        if (data.success) {
-          $scope.unconfirmed = false;
-          $scope.alerts.addAlert('success', 'Merchant confirmed', true);
-          $scope.merchant.confirm_token = null;
-          generateMerchant();
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
-      });
-
-    };
-
     $scope.captureScreenshot = function () {
       var request = $http.put('/admin/merchant/' + $scope.merchant.id + '/screenshot');
       request.success(function (data) {

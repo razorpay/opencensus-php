@@ -25,3 +25,4 @@ tmp/
 public/js/themes/*.js
 !public/js/themes/init.js
 public/react/dist/
+yarn-error.log

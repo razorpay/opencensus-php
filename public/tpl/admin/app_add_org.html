@@ -138,8 +138,10 @@
               <label class="col-sm-3 control-label">Login Logo</label>
               <div class="col-sm-8">
                 <img src="{{organization.login_logo_url}}" alt="" class="center block" width="200">
-                <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')">
+                <input ui-jq="filestyle" type="file" name="login_logo" ng-file-select="onLoginLogoSelect($files, 'login_logo')" accept="image/jpeg,image/jpg,image/png">
+
               </div>
+              <label class="col-sm-3 control-label">* Allowed file types are JPEG, JPG, PNG</label>
             </div>
 
             <div class="form-group" ng-show="organization.id">
@@ -148,6 +150,7 @@
                 <img src="{{organization.main_logo_url}}" alt="" class="center block" width="200">
                 <input ui-jq="filestyle" type="file" name="main_logo" ng-file-select="onMainLogoSelect($files, 'main_logo')">
               </div>
+              <label class="col-sm-3 control-label">* Allowed file types are JPEG, JPG, PNG</label>
             </div>
 
             <div class="form-group" ng-show="organization.id">

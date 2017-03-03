@@ -28,7 +28,8 @@ use App\Mailers\UserMailer;
 
 class Service extends Base\Service
 {
-    const ACCOUNT_ALREADY_EXISTS = 'You already have an account. Log in and accept the invite in you account settings page.';
+    const INVALID_CONFIRMATION_TOKEN = 'Invalid confirmation token or the merchant is already confirmed.';
+    const ACCOUNT_ALREADY_EXISTS     = 'You already have an account. Log in and accept the invite in you account settings page.';
 
     protected function getRef(array &$input)
     {
@@ -137,6 +138,10 @@ class Service extends Base\Service
 
     public function createUserForSubmerchant(array $input)
     {
+        // id contains the merchant ID
+        // Even though this is ignored by eloquent because we
+        // have a generator, nice idea to drop it
+        unset($input['id']);
         $user = $this->buildUserEntity($input);
 
         if ($user->confirm_token !== null)
@@ -144,6 +149,7 @@ class Service extends Base\Service
             $user->token = $user->confirm_token;
             (new UserMailer($user))->accountVerification()->queueAndDeliver();
         }
+
         unset($user->token);
 
         return $user;
@@ -184,6 +190,58 @@ class Service extends Base\Service
     }
 
     /**
+     * This function is used to confirm a user by email.
+     * @param string $email
+     */
+    public function confirmUserByEmail($email)
+    {
+        $user = User\Entity::where('email', $email)->first();
+
+        if ($user === null)
+        {
+            return [['Email is invalid.'], []];
+        }
+
+        $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        /*
+         * For handling the old code.
+         * For all those users who have registered earlier using old code and have not confirmed yet.
+         * [For them, on dashboard side we have created data. Creating data on Api side]
+         */
+        $merchant = $user->getOwnerMerchant();
+
+        if ($merchant !== null)
+        {
+            (new Merchant\Service)->createMerchantOnApi($merchant->id);
+        }
+
+        return [null, ['email' => $user->email]];
+    }
+
+    /**
+     * This function is used to confirm a user by token.
+     * @param string $token
+     */
+    public function confirm($token)
+    {
+        $user = User\Entity::getUserForConfirmation($token);
+
+        if ($user === null)
+        {
+            return [[static::INVALID_CONFIRMATION_TOKEN], []];
+        }
+
+        $user->confirm();
+
+        $this->subscribeToMailingList($user);
+
+        return [null, ['email' => $user->email]];
+    }
+
+    /**
      * Attach a user to a merchant using an invitation
      */
     protected function attachUserToInvite(User\Entity $user, Invitation\Entity $invitation)
@@ -191,21 +249,6 @@ class Service extends Base\Service
         Merchant\Entity::attachUserToMerchantByInvitation($invitation, $user);
 
         $user->confirm();
-
-        $this->subscribeToMailingList($user);
-
-        Auth::guard('user')->login($user);
-    }
-
-    protected function attachMerchantToAdmin(Merchant\Entity $merchant, User\Entity $user, AdminLead\Entity $invitation)
-    {
-        $input = ['body' => ['admin_id' => $invitation->admin_id], 'method' => 'post'];
-
-        $route = 'merchants/'.$merchant->id.'/admins';
-
-        (new Merchant\Service)->confirm($merchant->confirm_token);
-
-        $response = (new Generic\Service)->makeRawApiCallInternal($input, $route);
 
         $this->subscribeToMailingList($user);
 
@@ -462,7 +505,7 @@ class Service extends Base\Service
             {
                 // TODO: Use single error message to avoid info leak
                 // @see https://github.com/razorpay/dashboard/issues/216
-                $error = ['User account not confirmed'];
+                $error = ['User email not confirmed. Please click on verification link in email to continue.'];
             }
             else
             {
@@ -600,7 +643,11 @@ class Service extends Base\Service
             // $data['id'] is the newly created merchant Id
             // This confirmation creates the Merchant Account on the API Side
             // Make sure that the id is not submitted ever by the user
-            (new Merchant\Service)->confirmMerchantById($data['id']);
+            (new Merchant\Service)->createMerchantOnApi($data['id']);
+
+            $user->confirm();
+
+            $this->subscribeToMailingList($user);
         }
 
         return [$error, $data];
