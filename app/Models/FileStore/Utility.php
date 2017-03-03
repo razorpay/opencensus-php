@@ -36,7 +36,7 @@ class Utility extends Base\Core
         {
             $result = false;
 
-            throw $e;
+            throw $exception;
         }
         finally
         {
@@ -45,7 +45,7 @@ class Utility extends Base\Core
                 $params['method'] = $method;
 
                 $this->trace->traceException(
-                    $e,
+                    $exception,
                     Trace::ERROR,
                     TraceCode::FILE_OPERATION_FAILED,
                     $params
