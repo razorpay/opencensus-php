@@ -17,7 +17,6 @@ use RZP\Models\Payout;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
 use Illuminate\Support\Facades\App;
@@ -29,14 +28,6 @@ class Reconciler3
     protected static $fileToReadName = 'Kotak_Settlement_Reconciliation';
 
     protected static $fileToWriteName = 'Kotak_Settlement_Reconciliation';
-
-    protected static $extraHeadings = array(
-        'Status Of transaction',
-        'UTR number',
-        'Remarks',
-        'DateTime',
-        'Cms. ref no.',
-        'Dummy');
 
     const SUCCESS_STATUS = [
         'Beneficiary Account Credited',
@@ -178,6 +169,9 @@ class Reconciler3
     {
         // reconciliation version
         $version = ucfirst($row['Enrichment_2'] ?: 'v1');
+
+        // validate version
+        BankTransferAttempt\Version::validateVersion($version);
 
         $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
         $entity = $this->$loadEntityAndRelationsMethod($row);

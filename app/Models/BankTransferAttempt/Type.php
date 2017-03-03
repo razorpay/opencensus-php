@@ -8,7 +8,7 @@ class Type
 {
     const SETTLEMENT = 'settlement';
 
-    public static function validateType($type)
+    public static function validateType(string $type)
     {
         if (defined(__CLASS__.'::'.strtoupper($type)) === false)
         {
@@ -17,7 +17,7 @@ class Type
         }
     }
 
-    public static function getEntityClass($type)
+    public static function getEntityClass(string $type)
     {
         return 'RZP\\Models\\' . ucfirst($type) . '\Entity';
     }

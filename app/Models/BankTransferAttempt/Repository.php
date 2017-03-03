@@ -33,7 +33,7 @@ class Repository extends Base\Repository
         return $query->get();
     }
 
-    public function findByIdWithSourceAndRelations($id, $relations = [])
+    public function findByIdWithSourceAndRelations(string $id, $relations = [])
     {
         // Find the bta entity
         $bta = $this->newQuery()->findOrFailPublic($id);
