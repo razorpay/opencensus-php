@@ -88,7 +88,7 @@ class Service extends Base\Service
     {
         $currentMerchant = $this->currentMerchant;
 
-        $isAccount = \Input::get('account') ?? false;
+        $isLinkedAccount = \Input::get('account') ?? false;
 
         if ($isLinkedAccount === true)
         {
