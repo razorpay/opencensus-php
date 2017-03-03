@@ -441,7 +441,10 @@ class Creator extends Base\Core
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
+            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
+            {
+                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
+            }
         }
         catch (\Exception $e)
         {
