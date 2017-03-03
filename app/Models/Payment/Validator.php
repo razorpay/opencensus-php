@@ -22,7 +22,7 @@ class Validator extends Base\Validator
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
         'vpa'                     =>  'required_if:method,upi|max:100|custom',
-        'card'                    =>  'sometimes|filled|array',
+        'card'                    =>  'sometimes|filled',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
