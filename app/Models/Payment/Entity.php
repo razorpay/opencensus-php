@@ -603,6 +603,21 @@ class Entity extends Base\PublicEntity
         $this->metadata = $metadata;
     }
 
+    public function setIp($input)
+    {
+        $this->metadata['ip'] = $input['ip'] ?? null;
+    }
+
+    public function setReferer($input)
+    {
+        $this->metadata['referer'] = $input['referer'] ?? null;
+    }
+
+    public function setUserAgent($input)
+    {
+        $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+    }
+
     public function setSave($save)
     {
         $this->setAttribute(self::SAVE, $save);
