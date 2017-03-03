@@ -42,6 +42,24 @@ class NetbankingFederalGatewayTest extends TestCase
         $this->assertTestResponse($gatewayPayment, 'testPaymentNetbankingEntity');
     }
 
+    /**
+     * Test a payment that was tampered with
+     * Should throw PaymentVerificationException
+     */
+    public function testTamperedPayment()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedVerifyResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);
@@ -181,5 +199,18 @@ class NetbankingFederalGatewayTest extends TestCase
             $rowRefundAmount = trim($refundsFileRow[6]);
             assert(in_array($rowRefundAmount, $refundAmounts));
         }
+    }
+
+    protected function mockFailedVerifyResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'verify')
+            {
+                $content = "<HTML>
+                                <BODY> N </BODY>
+                            </HTML>";
+            }
+        });
     }
 }

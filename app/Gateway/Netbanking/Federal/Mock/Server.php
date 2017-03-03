@@ -33,7 +33,7 @@ class Server extends Base\Mock\Server
 
         $response = $this->getVerifyResponseData();
 
-        $this->content($response);
+        $this->content($response, 'verify');
 
         return $this->makeResponse($response);
     }

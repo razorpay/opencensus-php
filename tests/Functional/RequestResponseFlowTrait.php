@@ -28,7 +28,6 @@ trait RequestResponseFlowTrait
             {
                 $response = $this->sendRequest($data['request']);
             }
-
         }
         catch (Exception\BaseException $e)
         {

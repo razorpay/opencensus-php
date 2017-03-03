@@ -38,6 +38,6 @@ class Validator extends Base\Validator
         RequestFields::USER_TYPE       => 'required',
         RequestFields::APP_TYPE        => 'required',
         RequestFields::CONFIRMATION    => 'required',
-        RequestFields::BANK_PAYMENT_ID => 'required',
+        RequestFields::BANK_PAYMENT_ID => 'sometimes', // for verify broken, BID is not needed
     ];
 }
