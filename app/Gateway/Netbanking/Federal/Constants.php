@@ -12,6 +12,7 @@ class Constants
     const USER_TYPE     = '1';
     const APP_TYPE      = 'corporate';
     const CONFIRMATION  = 'Y';
+    const FAILURE       = 'N';
     const VERIFY_BROKEN = 'verify_broken';
     const FREEFIELD     = '00000000';
 }

@@ -17,7 +17,7 @@ class Server extends Base\Mock\Server
 
         $response = $this->getCallbackResponseData($input);
 
-        $this->content($response);
+        $this->content($response, 'authorize');
 
         $callbackUrl = $input[RequestFields::RETURN_URL] . '?' .
                         http_build_query($response);

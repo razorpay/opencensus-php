@@ -103,8 +103,6 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::GATEWAY_ERROR_PAYMENT_VERIFICATION_ERROR);
         }
-
-        $this->action = Action::CALLBACK;
     }
 
     protected function sendPaymentVerifyRequest(Verify $verify)

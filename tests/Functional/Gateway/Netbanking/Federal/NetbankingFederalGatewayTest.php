@@ -58,6 +58,27 @@ class NetbankingFederalGatewayTest extends TestCase
             {
                 $this->doAuthAndCapturePayment($this->payment);
             });
+
+        // Assert that we don't save any information into the netbanking entity
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['bank_payment_id'], null);
+        $this->assertEquals($gatewayPayment['received'], false);
+        $this->assertEquals($gatewayPayment['status'], null);
+    }
+
+    public function testAuthorizeFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->mockFailedCallbackResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthAndCapturePayment($this->payment);
+            });
     }
 
     public function testPaymentVerify()
@@ -210,6 +231,17 @@ class NetbankingFederalGatewayTest extends TestCase
                 $content = "<HTML>
                                 <BODY> N </BODY>
                             </HTML>";
+            }
+        });
+    }
+
+    protected function mockFailedCallbackResponse()
+    {
+        $this->mockServerContentFunction(function(& $content, $action = null)
+        {
+            if ($action === 'authorize')
+            {
+                $content['PAID'] = 'N';
             }
         });
     }
