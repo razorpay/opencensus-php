@@ -7,7 +7,7 @@ use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
-class BeneficiaryFile3
+class BeneficiaryFile
 {
     use FileHandlerTrait;
 
