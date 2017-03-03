@@ -213,7 +213,7 @@ class Inferno
     {
         $factory = app()->make('httplug.message_factory.default');
 
-        $req = $factory->createRequest('POST', $request['url'], $request['headers']);
+        $req = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
 
         $httpClient = $this->createHttpClient();
 
