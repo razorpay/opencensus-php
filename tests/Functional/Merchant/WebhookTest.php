@@ -8,6 +8,7 @@ use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
+use Psr\Http\Message\ResponseInterface;
 
 class WebhookTest extends TestCase
 {
@@ -243,7 +244,7 @@ class WebhookTest extends TestCase
 
         $inferno = $this->mockInferno();
 
-        $response = new \Requests_Response;
+        $response = new \GuzzleHttp\Psr7\Response;
         $response->status_code = '501';
 
         $inferno->shouldReceive('makeRequest')
@@ -475,9 +476,9 @@ class WebhookTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
     }
 
-    protected function getStandardWebhookResponse($statusCode = 200)
+    protected function getStandardWebhookResponse($statusCode = 200): ResponseInterface
     {
-        $response = new \Requests_Response;
+        $response = new \GuzzleHttp\Psr7\Response;
         $response->status_code = $statusCode;
 
         $success = false;
