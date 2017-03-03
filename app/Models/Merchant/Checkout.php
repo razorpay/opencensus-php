@@ -304,7 +304,10 @@ class Checkout
 
         if ($directOffer !== null)
         {
-            $data['offers'] = $directOffer->toArrayPublic();
+            $data['offers'] = [
+                Offer\Entity::PAYMENT_METHOD => $directOffer->getPaymentMethod(),
+                Offer\Entity::DISPLAY_TEXT   => $directOffer->getDisplayText()
+            ];
         }
     }
 }

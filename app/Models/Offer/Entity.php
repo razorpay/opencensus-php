@@ -122,7 +122,11 @@ class Entity extends Base\PublicEntity
     protected $defaults = [
         self::ACTIVE => 1,
         self::BLOCK  => 1,
-        self::TYPE   => self::DEFERRED
+        self::TYPE   => self::DEFERRED,
+    ];
+
+    protected static $generators = [
+        self::STARTS_AT,
     ];
 
     protected $casts = [
@@ -248,7 +252,7 @@ class Entity extends Base\PublicEntity
      *
      * @param string $paymentNetwork Input payment networl
      */
-    public function setPaymentNetworkAttribute(string $paymentNetwork)
+    protected function setPaymentNetworkAttribute(string $paymentNetwork)
     {
         if ($this->getPaymentMethod() === Payment\Method::WALLET)
         {
@@ -268,5 +272,12 @@ class Entity extends Base\PublicEntity
         }
 
         $this->attributes[self::IINS] = json_encode(array_values($iins));
+    }
+
+    protected function generateStartsAt(array $input)
+    {
+        $startsAt = $input[self::STARTS_AT] ?? Carbon::now('Asia/Kolkata')->timestamp;
+
+        $this->setAttribute(self::STARTS_AT, $startsAt);
     }
 }

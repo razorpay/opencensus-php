@@ -37,8 +37,7 @@ class Validator extends Base\Validator
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
         Entity::TYPE                      => 'sometimes|in:instant,deferred',
-        Entity::BLOCK                     => 'sometimes|boolean',
-        Entity::STARTS_AT                 => 'required|integer',
+        Entity::STARTS_AT                 => 'sometimes|integer',
         Entity::ENDS_AT                   => 'required|integer',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
         Entity::TERMS                     => 'required|string'
@@ -48,7 +47,6 @@ class Validator extends Base\Validator
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
         Entity::IINS                      => 'sometimes|array',
         Entity::ACTIVE                    => 'sometimes|in:0',
-        Entity::BLOCK                     => 'sometimes|boolean',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
         Entity::TERMS                     => 'sometimes|string'
     ];
@@ -122,14 +120,27 @@ class Validator extends Base\Validator
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $startsAt = $input[Entity::STARTS_AT];
-
         $endsAt = $input[Entity::ENDS_AT];
 
-        if (($startsAt <= $now) or ($endsAt <= $now) or ($startsAt >= $endsAt))
+        if (isset($input[Entity::STARTS_AT]) === true)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
+            $startsAt = $input[Entity::STARTS_AT];
+
+            if (($startsAt <= $now) or
+                ($endsAt <= $now) or
+                ($startsAt >= $endsAt))
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
+            }
+        }
+        else
+        {
+            if ($endsAt <= $now)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
+            }
         }
     }
 
