@@ -1,5 +1,11 @@
 # Razorpay dashboard
 
+#### Pre-requisites
+
+* Install [composer](https://getcomposer.org/download/) PHP package manager
+* Install [`node`](https://github.com/creationix/nvm) (`v6` or above)
+* Install [`yarn`](https://yarnpkg.com/en/docs/install)
+
 ## Set up instructions for development
 
 *  Copy over `dashboard.razorpay.dev.conf` to `/etc/apache2/sites-available/`.
@@ -9,7 +15,7 @@
 * Copy over `environment/env.sample.php` to `environment/env.php`
 * Copy `environment/.env.example` to `environment/.env.dev` and edit it accordingly
 * Make sure `SECURE_SESSION=false` in `.env.dev`
-* Run `php composer.phar install` to install laravel
+* Run `composer install` to install laravel
 * Run `php artisan migrate --seed` to migrate and seed the db. If you face problem regarding null fields, turn off strict SQL mode.
 * Make sure you have redis installed (used for session management and caching).
 * Make sure you are running the latest node (only 6 and above are supported)
