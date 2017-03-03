@@ -54,7 +54,8 @@
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "^1.5",
-        "orchestra/testbench": "3.2.*"
+        "orchestra/testbench": "3.2.*",
+        "php-http/mock-client": "^0.3.3"
     },
     "autoload": {
         "classmap": [
