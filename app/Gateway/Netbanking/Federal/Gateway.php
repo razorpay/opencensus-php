@@ -59,17 +59,18 @@ class Gateway extends Base\Gateway
         $this->assertPaymentId($input['payment']['id'],
                                $content[ResponseFields::PAYMENT_ID]);
 
-        $this->saveCallbackResponse($content);
-
         $this->checkCallbackStatus($content);
 
         // If callback status was a success, we verify the payment immediately
         $this->verifyCallback($input);
 
+        // Saving callback response only if the above checks pass
+        $this->saveCallbackResponse($content);
+
         return $this->getCallbackResponseData($input);
     }
 
-    public function verify (array $input)
+    public function verify(array $input)
     {
         parent::verify($input);
 
@@ -85,7 +86,7 @@ class Gateway extends Base\Gateway
      */
     protected function verifyCallback(array $input)
     {
-        $this->action = Action::VERIFY;
+        parent::verify($input);
 
         $verify = new Verify($this->gateway, $input);
 
