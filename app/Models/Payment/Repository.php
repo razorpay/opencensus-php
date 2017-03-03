@@ -68,6 +68,11 @@ class Repository extends Base\Repository
         Entity::NOTES
     ];
 
+    protected $signedIds = [
+        Entity::ORDER_ID,
+        Entity::INVOICE_ID,
+    ];
+
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
     {
         $timestamp = time() - Entity::PAYMENT_WINDOW;
@@ -595,20 +600,6 @@ class Repository extends Base\Repository
         }
 
         return parent::addQueryParamEmail($query, $params);
-    }
-
-    protected function addQueryParamOrderId($query, $params)
-    {
-        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
-
-        $query->where(Entity::ORDER_ID, '=', $orderId);
-    }
-
-    protected function addQueryParamInvoiceId($query, $params)
-    {
-        $invoiceId = (new Invoice\Entity)->verifyIdAndSilentlyStripSign($params[Entity::INVOICE_ID]);
-
-        $query->where(Entity::INVOICE_ID, '=', $invoiceId);
     }
 
     protected function joinQueryCard($query)
