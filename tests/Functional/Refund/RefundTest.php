@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Refund;
 
 use DB;
 use Mockery;
@@ -86,7 +86,10 @@ class RefundTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['id'];
 
-        return $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $refunds = $this->getEntities('refund', ['payment_id' => $payment['id']]);
+        $this->assertEquals($refunds['count'], 4);
     }
 
     public function testRefundWithHigherAmount()

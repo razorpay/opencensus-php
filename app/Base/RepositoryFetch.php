@@ -6,6 +6,7 @@ use RZP\Constants;
 use RZP\Exception;
 use RZP\Models\Merchant;
 use RZP\Models\Customer;
+use RZP\Constants\Entity as E;
 
 trait RepositoryFetch
 {
@@ -16,6 +17,13 @@ trait RepositoryFetch
         'skip'          => 'integer');
 
     protected $originalFetchParamRules;
+
+    /**
+     * Ids which have signed prefix.
+     * We will need to remove the prefix before
+     * they can be fetched.
+     */
+    // protected $signedIds = [];
 
       // Merchant allowed
 //    protected $entityFetchParamRules = array();
@@ -64,6 +72,9 @@ trait RepositoryFetch
 
         // Validate the rules against each query param.
         $this->validateFetchParams($params);
+
+        // modify params if required
+        $this->modifyFetchParams($params);
 
         // Check if the params need to be searched via ES.
         $isEs = $this->isEsFetch($params);
@@ -179,6 +190,54 @@ trait RepositoryFetch
     protected function buildFetchQueryAdditional($params, $query)
     {
         return;
+    }
+
+    protected function modifyFetchParams(array & $params)
+    {
+        if (isset($this->signedIds) === false)
+        {
+            return;
+        }
+
+        $signedIds = array_flip($this->signedIds);
+
+        $keys = array_keys(array_intersect_key($params, $signedIds));
+
+        foreach ($keys as $key)
+        {
+            $entityKey = $key;
+
+            // Remove '_id' prefix at end.
+            if (substr($key, -3) === '_id')
+            {
+                $entityKey = substr($key, 0, -3);
+            }
+
+            // If not valid entity, then continue the loop
+            if (E::isValidEntity($entityKey) === false)
+            {
+                continue;
+            }
+
+            // Gets entity class
+            $entityClass = E::getEntityClass($entityKey);
+
+            $value = $params[$key];
+
+            if (($this->auth->isAdminAuth() === true) or
+                ($this->auth->isPrivilegeAuth() === true))
+            {
+                // In case of admin auth, don't throw exception
+                // if sign is not there
+                $entityClass::verifyIdAndSilentlyStripSign($value);
+            }
+            else
+            {
+                $entityClass::verifyIdAndStripSign($value);
+            }
+
+            $params[$key] = $value;
+        }
     }
 
     protected function validateFetchParams(array $params)
