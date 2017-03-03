@@ -22,26 +22,26 @@ class Validator extends Base\Validator
         'currency'                =>  'required|size:3',
         'method'                  =>  'custom',
         'vpa'                     =>  'required_if:method,upi|max:100|custom',
-        'card'                    =>  'sometimes',
+        'card'                    =>  'sometimes|filled|array',
         'bank'                    =>  'required_if:method,netbanking',
         'wallet'                  =>  'required_if:method,wallet|custom',
         'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             =>  'sometimes',
+        'description'             =>  'sometimes|max:255',
         'email'                   =>  'sometimes|email',
         'contact'                 =>  'sometimes|contact_syntax',
         'signature'               =>  'sometimes',
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
         'callback_url'            =>  'sometimes|url',
-        'order_id'                =>  'sometimes',
-        'customer_id'             =>  'sometimes',
+        'order_id'                =>  'sometimes|filled',
+        'customer_id'             =>  'sometimes|filled',
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'fee'                     =>  'sometimes|integer|max:50000000',
-        'service_tax'             =>  'sometimes|integer|max:50000000',
-        '_'                       =>  'sometimes'
+        'fee'                     =>  'sometimes|filled|integer|max:50000000',
+        'service_tax'             =>  'sometimes|filled|integer|max:50000000',
+        '_'                       =>  'sometimes|filled'
     ];
 
     protected static $captureRules = [
