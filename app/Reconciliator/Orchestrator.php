@@ -55,8 +55,7 @@ class Orchestrator extends Base\Core
         self::KOTAK           => ['BankAlerts@kotak.com'],
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE      => ['noreply@freechargemail.in'],
-        // TODO: Need to add axis nb emails
-        self::NETBANKING_AXIS => [],
+        self::NETBANKING_AXIS => ['it.RICO@axisbank.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN           => ['prashanth.yv@razorpay.com'],
@@ -70,6 +69,7 @@ class Orchestrator extends Base\Core
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
+        self::NETBANKING_AXIS
     ];
 
     /**
@@ -559,7 +559,7 @@ class Orchestrator extends Base\Core
 
     protected function gatewayEmailIsValid($gateway)
     {
-        $gatewayEmailValidator = 'validate' . title_case($gateway) . 'Email';
+        $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
 
         $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
 
