@@ -55,7 +55,7 @@ class Orchestrator extends Base\Core
         self::KOTAK           => ['BankAlerts@kotak.com'],
         self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
         self::FREECHARGE      => ['noreply@freechargemail.in'],
-        self::NETBANKING_AXIS => ['it.RICO@axisbank.com'],
+        self::NETBANKING_AXIS => ['it.rico@axisbank.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
         self::ADMIN           => ['prashanth.yv@razorpay.com'],
