@@ -2,9 +2,12 @@
 
 namespace RZP\Gateway\Netbanking\Base;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
