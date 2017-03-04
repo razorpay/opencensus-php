@@ -52,7 +52,6 @@ class Core extends Base\Core
             $methods = $this->getPaymentMethods($merchant);
         }
 
-
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
         foreach ($methodsToCheck as $method)

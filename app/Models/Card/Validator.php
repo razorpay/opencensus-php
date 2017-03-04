@@ -25,6 +25,10 @@ class Validator extends Base\Validator
         Entity::VAULT              => 'required_with:vault_token|in:tokenex'
     );
 
+    protected static $recurringRules = [
+        Entity::NUMBER             => 'required|numeric|luhn|digits_between:12,19'
+    ];
+
     protected static $createValidators = array(
         'expiry_date'
     );

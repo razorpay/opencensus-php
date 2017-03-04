@@ -707,7 +707,6 @@ class Terminal extends Base
             'merchant_id'               => $merchantId,
             'gateway'                   => 'netbanking_airtel',
             'gateway_merchant_id'       => 'test_merchant_id',
-            'gateway_secure_secret'     => 'test_salt',
             'netbanking'                => 1,
             'shared'                    => 1
         ];

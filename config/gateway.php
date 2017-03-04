@@ -158,7 +158,7 @@ return array(
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
     ),
 
-    'upi_idfc'  => [
+    'upi_idfc' => [
         'test_kek'               => env('UPI_IDFC_TEST_KEK'),
         'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
@@ -180,7 +180,7 @@ return array(
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
     ),
 
-    'wallet_olamoney'  => array(
+    'wallet_olamoney' => array(
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
@@ -236,6 +236,7 @@ return array(
     'netbanking_airtel' => [
         'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'netbanking_federal' => [

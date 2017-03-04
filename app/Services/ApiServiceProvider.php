@@ -13,7 +13,11 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
+use RZP\Models\Payout;
+use RZP\Models\BankAccount;
 use RZP;
+use Swift_Mailer;
+
 
 class ApiServiceProvider extends BaseServiceProvider
 {
@@ -113,6 +117,8 @@ class ApiServiceProvider extends BaseServiceProvider
         $this->registerQueueableEntityResolver();
 
         $this->registerMorphRelationMaps();
+
+        $this->registerSesClient();
     }
 
     /**
@@ -122,7 +128,7 @@ class ApiServiceProvider extends BaseServiceProvider
      */
     public function provides()
     {
-        return array(
+        return [
             'api.mutex',
             'bitly',
             'card.tokenex',
@@ -132,7 +138,6 @@ class ApiServiceProvider extends BaseServiceProvider
             'instance',
             'mailgun',
             'maxmind',
-            'maxmind2',
             'raven',
             'repo',
             'elfin',
@@ -140,7 +145,8 @@ class ApiServiceProvider extends BaseServiceProvider
             'upi.client',
             'webhook.inferno',
             'exchange',
-        );
+            'pigeon',
+        ];
     }
 
     /**
@@ -177,18 +183,6 @@ class ApiServiceProvider extends BaseServiceProvider
             }
 
             return new MaxMind($app);
-        });
-
-        $this->app->singleton('maxmind2', function($app)
-        {
-            $maxmindMock = $app['config']->get('applications.maxmind.mock');
-
-            if ($maxmindMock === true)
-            {
-                return new Mock\MaxMind($app);
-            }
-
-            return new MaxMind2($app);
         });
     }
 
@@ -259,6 +253,29 @@ class ApiServiceProvider extends BaseServiceProvider
             'payment'         => Payment\Entity::class,
             'refund'          => Payment\Refund\Entity::class,
             'settlement'      => Settlement\Entity::class,
+            'payout'          => Payout\Entity::class,
+
+            'bank_account'    => BankAccount\Entity::class,
         ]);
+    }
+
+    protected function registerSesClient()
+    {
+        $this->app->singleton('pigeon', function ($app)
+        {
+            $swiftMailer =  new Swift_Mailer($app['swift.transport']->driver('ses'));
+
+            $mailer = new Mailer(
+                $app['view'], $swiftMailer, $app['events'], 'pigeon'
+            );
+
+            $mailer->setContainer($app);
+
+            if ($app->bound('queue')) {
+                $mailer->setQueue($app['queue.connection']);
+            }
+
+            return $mailer;
+        });
     }
 }

@@ -32,6 +32,7 @@ class TraceCode
     const PAYMENT_CAPTURE_FAILURE                   = 'PAYMENT_CAPTURE_FAILURE';
     const PAYMENT_CAPTURE_FORCED                    = 'PAYMENT_CAPTURE_FORCED';
     const PAYMENT_ALREADY_CAPTURED                  = 'PAYMENT_ALREADY_CAPTURED';
+    const PAYMENT_PAYOUT_REQUEST                    = 'PAYMENT_PAYOUT_REQUEST';
     const PAYMENT_AUTO_CAPTURE                      = 'PAYMENT_AUTO_CAPTURE';
     const PAYMENT_AUTO_CAPTURE_FAILED               = 'PAYMENT_AUTO_CAPTURE_FAILED';
     const PAYMENT_AUTO_REFUND                       = 'PAYMENT_AUTO_REFUND';
@@ -111,6 +112,7 @@ class TraceCode
     const TRANSACTION_CREATED                       = 'TRANSACTION_CREATED';
     const INVOICE_RAVEN_REQUEST_FAILED              = 'INVOICE_RAVEN_REQUEST_FAILED';
     const INVOICE_NOTIFICATION_FAILED               = 'INVOICE_NOTIFICATION_FAILED';
+    const FILE_STORE_MKDIR_FAILED                   = 'FILE_STORE_MKDIR_FAILED';
     const FILE_PERMISSION_CHANGE_FAILED             = 'FILE_PERMISSION_CHANGE_FAILED';
     const GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS     = 'GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS';
     const GATEWAY_ABSENT_REFUND_RETRY_FAILED        = 'GATEWAY_ABSENT_REFUND_RETRY_FAILED';
@@ -173,6 +175,7 @@ class TraceCode
     const INVOICE_ACTION_JOB_ERROR                  = 'INVOICE_ACTION_JOB_ERROR';
     const INVOICE_PDF_GEN_FAILED                    = 'INVOICE_PDF_GEN_FAILED';
     const INVOICE_PDF_GEN_TIME_TAKEN                = 'INVOICE_PDF_GEN_TIME_TAKEN';
+    const INVOICE_PDF_GEN_SYNC                      = 'INVOICE_PDF_GEN_SYNC';
 
     const ITEM_CREATE_REQUEST                       = 'ITEM_CREATE_REQUEST';
     const ITEM_UPDATE_REQUEST                       = 'ITEM_UPDATE_REQUEST';
@@ -221,6 +224,7 @@ class TraceCode
     const TRACE_MISC_CODE                           = 'TRACE_MISC_CODE';
     const PAYMENT_APP_TOKEN_NOT_FOUND               = 'PAYMENT_APP_TOKEN_NOT_FOUND';
     const PAYMENT_UPDATE_TOKEN                      = 'PAYMENT_UPDATE_TOKEN';
+    const SAVED_CARDS_UPDATED_WITH_IIN              = 'SAVED_CARDS_UPDATED_WITH_IIN';
 
     //Pricing
     const PRICING_RULE_SELECTION                    = 'PRICING_RULE_SELECTION';
@@ -239,6 +243,8 @@ class TraceCode
     const VERIFY_PROCESSED_SUMMARY                  = 'VERIFY_PROCESSED_SUMMARY';
     const PAYMENT_VERIFY_RESULT                     = 'PAYMENT_VERIFY_RESULT';
     const PAYMENT_VERIFY_ALREADY_AUTHORIZED         = 'PAYMENT_VERIFY_ALREADY_AUTHORIZED';
+
+    const PAYMENT_UPDATE_AMOUNT_PAIDOUT             = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
     /*
      * Gateway component error messages
@@ -393,6 +399,8 @@ class TraceCode
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
 
+    const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
+
     const MERCHANT_ARCHIVE                          = 'MERCHANT_ARCHIVE';
     const MERCHANT_UNARCHIVE                        = 'MERCHANT_UNARCHIVE';
     const MERCHANT_SUSPEND                          = 'MERCHANT_SUSPEND';
@@ -441,6 +449,11 @@ class TraceCode
 
     const MAXMIND_RESPONSE                          = 'MAXMIND_RESPONSE';
 
+    const ES_CAT_RESPONSE                           = 'ES_CAT_RESPONSE';
+    const ES_MAPPING_RESPONSE                       = 'ES_MAPPING_RESPONSE';
+    const ES_SETTINGS_RESPONSE                      = 'ES_SETTINGS_RESPONSE';
+    const ES_GET_NOTES_QUERY_AND_RESPONSE           = 'ES_GET_NOTES_QUERY_AND_RESPONSE';
+    const ES_DEBUG_FAILED                           = 'ES_DEBUG_FAILED';
     const ES_SAVE_FAILED                            = 'ES_SAVE_FAILED';
     const ES_BULK_UPDATE_FAILED                     = 'ES_BULK_UPDATE_FAILED';
     const ES_BULK_UPDATE                            = 'ES_BULK_UPDATE';
