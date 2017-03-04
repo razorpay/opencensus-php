@@ -282,17 +282,19 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Overriding the parent method
-     **/
-    protected function getUrl($type = null)
+     * Overriding parent class's method
+     */
+    protected function getUrlType($type)
     {
-        $url = $this->getUrlDomain();
+        $paymentId = $this->input['payment']['id'];
+
+        $gatewayPayment = $this->repo->findByPaymentId($paymentId);
 
         //
         // If the BID was never saved, verify request
-        // needs to go to a different url
+        // needs to go to a Verify Broken URL
         //
-        if ((empty($content[RequestFields::BANK_PAYMENT_ID]) === true) and
+        if ((empty($gatewayPayment['bank_payment_id']) === true) and
             ($this->action === Action::VERIFY))
         {
             $type = Constants::VERIFY_BROKEN;
@@ -302,11 +304,7 @@ class Gateway extends Base\Gateway
             $type = $this->action;
         }
 
-        $type = strtoupper($type);
-
-        $url .= $this->getRelativeUrl($type);
-
-        return $url;
+        return $type;
     }
 
     protected function getMerchantId()

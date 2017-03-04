@@ -482,7 +482,7 @@ class Gateway
         return $verify->getDataToTrace();
     }
 
-    public function preProcessS2SResponse($input)
+    public function preProcessS2sResponse($input)
     {
         return $input;
     }
@@ -645,16 +645,23 @@ class Gateway
     {
         $url = $this->getUrlDomain();
 
-        if ($type === null)
-        {
-            $type = $this->action;
-        }
+        $type = $this->getUrlType($type);
 
         $type = strtoupper($type);
 
         $url .= $this->getRelativeUrl($type);
 
         return $url;
+    }
+
+    protected function getUrlType($type)
+    {
+        if ($type === null)
+        {
+            $type = $this->action;
+        }
+
+        return $type;
     }
 
     protected function loadGatewayConfig()
