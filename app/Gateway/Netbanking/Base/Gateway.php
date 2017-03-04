@@ -5,6 +5,7 @@ namespace RZP\Gateway\Netbanking\Base;
 use RZP\Models\Merchant;
 use RZP\Gateway\Netbanking;
 use RZP\Gateway\Base\Action;
+use RZP\Gateway\Base\VerifyResult;
 
 class Gateway extends \RZP\Gateway\Base\Gateway
 {
@@ -58,6 +59,22 @@ class Gateway extends \RZP\Gateway\Base\Gateway
         }
 
         return false;
+    }
+
+    protected function returnVerifyStatusOrThrowException(Verify $verify)
+    {
+        //
+        // In this case, there's a bug in the code
+        // The payment was incorrectly marked as authorized.
+        //
+        if (($verify->apiSuccess === true) and
+            ($verify->gatewaySuccess === false))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
+        }
+
+        return VerifyResult::STATUS_MISMATCH;
     }
 
     public function generateClaims(array $input)

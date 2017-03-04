@@ -43,8 +43,8 @@ class NetbankingFederalGatewayTest extends TestCase
     }
 
     /**
-     * Test a payment that was tampered with
-     * Should throw PaymentVerificationException
+     * Test a payment that was tampered with in the authorize step
+     * This case should throw PaymentVerificationException
      */
     public function testTamperedPayment()
     {
@@ -123,6 +123,28 @@ class NetbankingFederalGatewayTest extends TestCase
         // The BID was never saved
         $this->assertEquals($gatewayPayment['bank_payment_id'], null);
         $this->assertEquals($gatewayPayment['received'], true);
+    }
+
+    /**
+     * When the payment is incorrectly marked as authorized
+     * and verify points out that it is not
+     */
+    public function testAuthSuccessVerifyFailed()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $this->testPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockFailedVerifyResponse();
+
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
     }
 
     public function testExcelRefundFileGeneration()

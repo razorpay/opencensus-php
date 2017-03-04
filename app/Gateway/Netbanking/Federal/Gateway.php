@@ -139,15 +139,15 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyMatchStatus(Verify $verify)
     {
-        $status = VerifyResult::STATUS_MISMATCH;
+        $status = VerifyResult::STATUS_MATCH;
 
         $this->checkApiSuccess($verify);
 
         $this->checkGatewaySuccess($verify);
 
-        if ($verify->gatewaySuccess === $verify->apiSuccess)
+        if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
-            $status = VerifyResult::STATUS_MATCH;
+            $status = $this->returnVerifyStatusOrThrowException($verify);
         }
 
         return $status;

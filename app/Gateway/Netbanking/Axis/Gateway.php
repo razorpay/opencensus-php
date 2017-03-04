@@ -151,22 +151,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function returnVerifyStatusOrThrowException(Verify $verify)
-    {
-        //
-        // In this case, there's a bug in the code
-        // The payment was incorrectly marked as authorized.
-        //
-        if (($verify->apiSuccess === true) and
-            ($verify->gatewaySuccess === false))
-        {
-            throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
-        }
-
-        return VerifyResult::STATUS_MISMATCH;
-    }
-
     protected function getPaymentVerifyData(Verify $verify)
     {
         $input = $verify->input;
