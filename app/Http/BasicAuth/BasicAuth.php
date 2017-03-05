@@ -534,13 +534,6 @@ class BasicAuth
         return (substr($key, 0, 4) === 'rzp_');
     }
 
-    protected function verifyAccountKey(string $key)
-    {
-        $accountId = $key;
-
-        return Merchant\AccountEntity::stripSign($accountId);
-    }
-
     protected function verifyAndSetMode($key)
     {
         $mode = substr($key, 4, 4);
