@@ -447,8 +447,7 @@ class Core extends Base\Core
 
     protected function checkIfOldPayment($payment)
     {
-        if (($payment->exists === true) and
-            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {

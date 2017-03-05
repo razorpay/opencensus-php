@@ -56,6 +56,8 @@ trait Transfer
         $payment->setAuthorizeTimestamp();
 
         $payment->setCaptureTimestamp();
+
+        $payment->setAttribute(Payment\Entity::CREATED_AT, time());
     }
 
     protected function getTransferPaymentData(array $input, $originPayment)
