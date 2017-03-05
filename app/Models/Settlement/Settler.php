@@ -394,7 +394,13 @@ class Settler
                          ($merchant->holdFunds() === false));
 
 
-        assert ($merchant->bankAccount !== null);
+        if ($merchant->bankAccount === null)
+        {
+            throw new Exception\LogicException(
+                'No bank account mapped for merchant settlement',
+                null,
+                ['merchant_id' => $merchant->getId()]);
+        }
 
         // If merchant has a hourly schedule entity assigned to him, his settlements
         // will be handled by the new Settler defined in Settlement\Processor

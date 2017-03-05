@@ -19,6 +19,7 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::SETTLED         => 'sometimes|in:0,1',
+        Entity::ON_HOLD         => 'sometimes|in:0,1',
         Entity::TYPE            => 'sometimes|in:payment,refund,settlement,adjustment',
         Entity::SETTLEMENT_ID   => 'sometimes|alpha_num',
         Entity::ENTITY_ID       => 'sometimes|string|min:14',
@@ -63,6 +64,7 @@ class Repository extends Base\Repository
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
+                    ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)
                     ->where(Merchant\Entity::HOLD_FUNDS, '=', 0)
@@ -88,6 +90,7 @@ class Repository extends Base\Repository
                     ->select($transactionData)
                     ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
                     ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
+                    ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::SETTLED, '=', 0)
                     ->where($transactionType, '!=', Type::SETTLEMENT)
@@ -102,6 +105,7 @@ class Repository extends Base\Repository
     public function fetchUnsettledTransactionsForMerchant($timestamp, $merchant)
     {
         return $this->newQuery()
+                    ->where(Transaction\Entity::ON_HOLD, 0)
                     ->where(Transaction\Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Transaction\Entity::SETTLED, '=', 0)
                     ->where(Transaction\Entity::TYPE, '!=', Type::SETTLEMENT)

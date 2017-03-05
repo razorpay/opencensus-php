@@ -129,7 +129,7 @@ trait PaymentTrait
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $testData = $this->testData[$func];
+        $testData = $this->testData[$func] ?? [] ;
 
         if (isset($testData['request']) === false)
             $testData['request'] = [];
@@ -568,6 +568,21 @@ trait PaymentTrait
         // $this->assertEquals($content['status'], 'failed');
     }
 
+    protected function transferPayment(string $id, array $transfers)
+    {
+        $request = [
+            'method'        => 'POST',
+            'url'           => '/payments/' . $id . '/transfers',
+            'content'       => [
+                'transfers' => $transfers,
+            ],
+        ];
+
+        $this->ba->privateAuth();
+
+        return $this->makeRequestAndGetContent($request);
+    }
+
     protected function addPaymentMetadata($id, $content)
     {
         $request = array(
@@ -618,7 +633,7 @@ trait PaymentTrait
         return $this->makeRequestAndGetContent($request);
     }
 
-    protected function refundPayment($id, $amount = null)
+    protected function refundPayment($id, $amount = null, $reversals = [], $reverseAll = false)
     {
         $this->ba->privateAuth();
 
@@ -629,10 +644,21 @@ trait PaymentTrait
             $content = array('amount' => $amount);
         }
 
-        $request = array(
-            'method' => 'POST',
-            'url' => '/payments/'.$id.'/refund',
-            'content' => $content);
+        if (empty($reversals) === false)
+        {
+            $content['reversals'] = $reversals;
+        }
+
+        if ($reverseAll === true)
+        {
+            $content['reverse_all'] = true;
+        }
+
+        $request = [
+            'method'    => 'POST',
+            'url'       => '/payments/'.$id.'/refund',
+            'content'   => $content
+        ];
 
         $refund = $this->makeRequestAndGetContent($request);
 
@@ -901,6 +927,22 @@ trait PaymentTrait
         $payment = $this->getDefaultPaymentArray();
         $payment['method'] = 'wallet';
         $payment['wallet'] = $wallet;
+
+        return $payment;
+    }
+
+    protected function getDefaultOpenwalletPaymentArray($customerId = null, $amount = null)
+    {
+        $payment = $this->getDefaultWalletPaymentArray('openwallet');
+
+        if ($customerId !== null)
+        {
+            $payment['customer_id'] = $customerId;
+        }
+
+        $payment['amount'] = $amount ?? $payment['amount'];
+
+        unset($payment['bank'], $payment['card']);
 
         return $payment;
     }

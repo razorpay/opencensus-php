@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Transaction;
 
 class Payment extends Base
 {
@@ -292,6 +293,28 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->create($attributes);
+
+        return $payment;
+    }
+
+    public function createMethodTransfer(array $attributes = [])
+    {
+        $defaultValues = [
+            'status'        => 'captured',
+            'method'        => 'transfer',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->create($attributes);
+
+        list($txn, $feesSplit) = $this->createTransactionOnPaymentMethodTransfer($payment);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $payment->getCreatedAt());
+
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
 
         return $payment;
     }

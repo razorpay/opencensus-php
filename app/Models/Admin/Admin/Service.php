@@ -580,7 +580,12 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
+            $merchant['is_marketplace'] = $merchant->isMarketplace();
+
             $merchant['referrer'] = $responseHash[$merchant->getId()];
+
+            // Unset eager loaded relations
+            unset ($merchant['features']);
         }
 
         return $merchants->toArray();
