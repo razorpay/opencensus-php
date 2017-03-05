@@ -160,6 +160,17 @@ class NetbankingFederalGatewayTest extends TestCase
         $this->checkRefundFileData($data['netbanking_federal']);
     }
 
+    public function testEmptyExcelRefundFileGeneration()
+    {
+        $payments = $this->createPaymentsToClaim();
+
+        $data = $this->generateRefundsExcelForNb($this->bank);
+
+        // Refund file is never generated as count is 0
+        $this->assertEquals($data['netbanking_federal']['count'], 0);
+        $this->assertFalse(array_key_exists('file', $data));
+    }
+
     protected function createPaymentsToClaim()
     {
         $this->doAuthAndCapturePayment($this->payment);
