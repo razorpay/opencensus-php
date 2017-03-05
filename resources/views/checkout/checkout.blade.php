@@ -9,7 +9,7 @@
     <meta name="viewport" content="user-scalable=no,width=device-width,initial-scale=1,maximum-scale=1">
   </head>
   <body>
-    <div style="font-family: 'lato'; visibility: hidden;">.</div>
+    <div style="font-family:'lato';visibility:hidden;position:absolute;">.</div>
   </body>
   @if (isset($error))
     <script>
