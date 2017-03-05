@@ -203,7 +203,6 @@ class Entity extends Base\PublicEntity
         self::INTERNATIONAL,
         self::METHOD,
         self::AMOUNT_REFUNDED,
-        self::AMOUNT_TRANSFERRED,
         self::AMOUNT_PAIDOUT,
         self::REFUND_STATUS,
         self::CAPTURED,
