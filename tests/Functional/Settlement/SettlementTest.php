@@ -237,6 +237,29 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSettlementWithPayout()
+    {
+        // Create payments and refunds with timestamps two days back
+        $payments = $this->createPaymentEntities();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'amount'     => '1000',
+                'currency'   => 'INR',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        // (5 payments txn + 1 payout txn)
+        $this->assertEquals(6, $content['kotak']['transaction_count']);
+    }
+
     public function testMerchantSettlement()
     {
         $this->ba->appAuth();

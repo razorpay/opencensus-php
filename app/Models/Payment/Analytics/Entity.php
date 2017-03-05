@@ -186,6 +186,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::INTEGRATION_VERSION);
     }
 
+    public function getUserAgent()
+    {
+        return $this->getAttribute(self::USER_AGENT);
+    }
+
     // ----------------------- Getters End -------------------------------------
 
     // ----------------------- Setters -----------------------------------------

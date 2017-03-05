@@ -237,17 +237,24 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
 
-            if ($approvalCode === 'N:100')
-            {
-                $data = [
-                    'approval_code' => $gatewayEntity->getApprovalCode(),
-                    'error_msg'     => $gatewayErrorDesc,
-                ];
-
-                throw new Exception\RuntimeException('Internal Error in FirstData Gateway', $data);
-            }
+            // Cryptic error messages that First Data keeps sending us
+            $this->checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc);
 
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
+        }
+    }
+
+    protected function checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc)
+    {
+        if (ErrorCodes::isSpecialCase($approvalCode) === true)
+        {
+            $this->trace->critical(
+                TraceCode::GATEWAY_FIRST_DATA_UNEXPECTED,
+                [
+                    'approval_code' => $gatewayEntity->getApprovalCode(),
+                    'error_msg'     => $gatewayErrorDesc,
+                ]
+            );
         }
     }
 

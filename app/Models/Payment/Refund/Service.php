@@ -61,9 +61,11 @@ class Service extends Base\Service
                     $gateway = $gateways[$gatewayCode];
                 }
 
-                // Removing kotak from gateways list/
-                // Should not be run along with others.
+                // Removing kotak and axis from gateways list
+                // These gateways go through a reconciliation process
+                // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
+                unset($gateways[IFSC::UTIB]);
                 break;
 
             case Payment\Method::WALLET:

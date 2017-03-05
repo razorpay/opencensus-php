@@ -215,7 +215,7 @@ final class FactoryData
         $factory(\RZP\Models\Card\IIN\Entity::class, [
             'iin' => 411111,
             'category' => null,
-            'network' => 'visa',
+            'network' => 'Visa',
             'type' => 'credit',
             'country' => 'IN',
             'issuer' => 'SBI',
@@ -497,6 +497,22 @@ final class FactoryData
             'handle'             => 'razorpay',
             'bank_account_id'    => 'factory:RZP\Models\BankAccount\Entity',
             'customer_id'        => '100000customer',
+            'created_at'         => $faker->timestamp,
+            'updated_at'         => $faker->timestamp,
+        ]);
+
+        $factory(\RZP\Models\Payout\Entity::class, [
+            'id'                 => $faker->uniqueid,
+            'customer_id'        => '100000customer',
+            'method'             => 'fund_transfer',
+            'destination_id'     => '1000000lcustba',
+            'destination_type'   => 'dummy',
+            'purpose'            => 'refund',
+            'amount'             => 100,
+            'currency'           => 'INR',
+            'merchant_id'        => '10000000000000',
+            'status'             => 'created',
+            'channel'            => 'kotak',
             'created_at'         => $faker->timestamp,
             'updated_at'         => $faker->timestamp,
         ]);

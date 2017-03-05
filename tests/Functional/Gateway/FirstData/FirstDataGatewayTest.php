@@ -65,8 +65,7 @@ class FirstDataGatewayTest extends TestCase
             [
                 'iin'    => '607466',
                 'issuer' => 'ICIC',
-            ]
-            );
+            ]);
 
         $this->doAuthPayment($payment);
 

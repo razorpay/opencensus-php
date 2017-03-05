@@ -29,34 +29,36 @@ class Orchestrator extends Base\Core
      * Bank constants
      ******************/
 
-    const HDFC       = 'HDFC';
-    const AXIS       = 'Axis';
-    const KOTAK      = 'Kotak';
-    const BILLDESK   = 'BillDesk';
-    const PAYZAPP    = 'PayZapp';
-    const MOBIKWIK   = 'Mobikwik';
-    const PAYTM      = 'Paytm';
-    const OLAMONEY   = 'Olamoney';
-    const FREECHARGE = 'Freecharge';
-    const ADMIN      = 'admin';
+    const HDFC            = 'HDFC';
+    const AXIS            = 'Axis';
+    const KOTAK           = 'Kotak';
+    const BILLDESK        = 'BillDesk';
+    const PAYZAPP         = 'PayZapp';
+    const MOBIKWIK        = 'Mobikwik';
+    const PAYTM           = 'Paytm';
+    const OLAMONEY        = 'Olamoney';
+    const FREECHARGE      = 'Freecharge';
+    const NETBANKING_AXIS = 'NetbankingAxis';
+    const ADMIN           = 'admin';
 
     /**
      * The gateway names should be the same name as the directories present under 'reconciliator'
      * The banks send their MIS files through this sender address
      */
     const GATEWAY_SENDER_MAPPING = [
-        self::HDFC       => ['payoutreport@hdfcbank.com'],
-        self::AXIS       => [],
-        self::BILLDESK   => [],
-        self::PAYZAPP    => [],
-        self::MOBIKWIK   => [],
-        self::PAYTM      => [],
-        self::KOTAK      => ['BankAlerts@kotak.com'],
-        self::OLAMONEY   => ['olamoney-noreply@olacabs.com'],
-        self::FREECHARGE => ['noreply@freechargemail.in'],
+        self::HDFC            => ['payoutreport@hdfcbank.com'],
+        self::AXIS            => [],
+        self::BILLDESK        => [],
+        self::PAYZAPP         => [],
+        self::MOBIKWIK        => [],
+        self::PAYTM           => [],
+        self::KOTAK           => ['BankAlerts@kotak.com'],
+        self::OLAMONEY        => ['olamoney-noreply@olacabs.com'],
+        self::FREECHARGE      => ['noreply@freechargemail.in'],
+        self::NETBANKING_AXIS => ['it.rico@axisbank.com'],
         // Used when someone from the team needs to send the
         // reconciliation file via mail for reconciliation.
-        self::ADMIN      => ['prashanth.yv@razorpay.com'],
+        self::ADMIN           => ['prashanth.yv@razorpay.com'],
     ];
 
     /**
@@ -67,6 +69,7 @@ class Orchestrator extends Base\Core
         self::KOTAK,
         self::OLAMONEY,
         self::FREECHARGE,
+        self::NETBANKING_AXIS
     ];
 
     /**
@@ -282,18 +285,16 @@ class Orchestrator extends Base\Core
             $this->fetchAndStoreLinkDocuments($input);
 
             $fileLocationType = FileProcessor::STORAGE;
+
+            //
+            // This is already being done in `getEmailDetails`, but is being done
+            // again here because we create an attachment after parsing the email and
+            // downloading the file. Until then, the attachment count would be 0.
+            //
+            $this->validator->validateAttachments($input);
+
+            $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
         }
-
-        //
-        // Validates attachments that are present in the email.
-        // Note that this should be done AFTER processing link_based_banks
-        // because we create an attachment after parsing the email and
-        // downloading the file. Until then, the attachment count would be 0 or
-        // more.
-        //
-        $this->validator->validateAttachments($input);
-
-        $this->emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
 
         $allFilesDetails = $this->getFileDetailsFromInput(
             $this->emailDetails, $input, $fileLocationType);
@@ -441,6 +442,7 @@ class Orchestrator extends Base\Core
 
     protected function getEmailDetails($input)
     {
+        //
         // Sender info is picked from the 'X-Original-Sender' header, instead
         // of 'sender' or 'from' headers.
         //
@@ -449,6 +451,7 @@ class Orchestrator extends Base\Core
         // 'From' may contain values like "HDFC Bank <payoutreport@hdfcbank.com",
         // formatted by the sender's email client.
         // 'X-Original-Sender' always contains just the email address.
+        //
 
         $emailDetails = [
             'from'              => $input['X-Original-Sender'] ?? $input['sender'],
@@ -458,6 +461,16 @@ class Orchestrator extends Base\Core
             'body'              => $input['stripped-text'],
             'body_html_text'    => html_entity_decode(strip_tags($input['stripped-html'])),
         ];
+
+        //
+        // Validates that attachments are present in the email.
+        // In some cases (link based banks), attachment count can be 0.
+        // We haven't parsed the email for attachments yet at this point.
+        // Hence, sending `true` as the second parameter (allowZeroAttachments).
+        //
+        $this->validator->validateAttachments($input, true);
+
+        $emailDetails[self::ATTACHMENT_COUNT] = $input['attachment-count'];
 
         return $emailDetails;
     }
@@ -546,7 +559,7 @@ class Orchestrator extends Base\Core
 
     protected function gatewayEmailIsValid($gateway)
     {
-        $gatewayEmailValidator = 'validate' . title_case($gateway) . 'Email';
+        $gatewayEmailValidator = 'validate' . studly_case($gateway) . 'Email';
 
         $valid = $this->validator->$gatewayEmailValidator($this->emailDetails);
 

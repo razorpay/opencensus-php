@@ -139,6 +139,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayout(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->payout($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * @deprecated
      * @return mixed
@@ -188,6 +197,15 @@ class PaymentController extends Controller
     public function getCard($id)
     {
         $data = (new Card\Service)->fetchById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCardRecurring()
+    {
+        $input = Request::all();
+
+        $data = (new Card\Service)->getCardRecurring($input);
 
         return ApiResponse::json($data);
     }

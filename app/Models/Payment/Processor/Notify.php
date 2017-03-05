@@ -384,7 +384,10 @@ class Notify
     {
         if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
         {
-            $this->dispatch(new InvoiceAction($this->mode, InvoiceAction::AUTHORIZED, $this->invoice->getId()));
+            (new Invoice\Core)->dispatchQueueJob(
+                                    $this->mode,
+                                    InvoiceAction::AUTHORIZED,
+                                    $this->invoice->getId());
         }
 
         /**

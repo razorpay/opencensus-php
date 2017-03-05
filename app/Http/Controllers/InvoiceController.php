@@ -8,6 +8,7 @@ use View;
 use ApiResponse;
 use RZP\Models\Invoice;
 use RZP\Exception\BaseException;
+use Illuminate\Http\Response as ResponseCodes;
 
 class InvoiceController extends Controller
 {
@@ -181,14 +182,16 @@ class InvoiceController extends Controller
                 ],
             ];
 
-            return View::make('invoice.index')->with('data', $data);
+            return response()
+                        ->view('invoice.index', ['data' => $data])
+                        ->setStatusCode(ResponseCodes::HTTP_BAD_REQUEST);
         }
 
         $download = Request::input('download', '0');
 
         if ($download === '1')
         {
-            return Response::download($path, $displayName);
+            return Response::download($path, "$displayName.pdf");
         }
 
         return Response::file($path);

@@ -510,7 +510,7 @@ class Gateway extends Base\Gateway
             // send the request and get response
             $response['response'] = $this->postRequest($request);
         }
-        catch (Exception\GatewayTimeoutException $e)
+        catch (Exception\GatewayRequestException $e)
         {
             // For verify we should throw exception as is.
             if ($this->action === BaseAction::VERIFY)
@@ -524,7 +524,14 @@ class Gateway extends Base\Gateway
 
             $curlErrorMessage = strtolower($e->getData()['message']);
 
-            Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
+            if ($e instanceof Exception\GatewayTimeoutException)
+            {
+                Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
+            }
+            else
+            {
+                Hdfc\ErrorHandler::setRequestError($response, $curlErrorMessage);
+            }
 
             return;
         }

@@ -18,9 +18,17 @@ class Repository extends Base\Repository
 
     public function findForPayment($paymentId)
     {
-        return $this->repo
+        return $this->newQuery()
                     ->where(Entity::PAYMENT_ID, '=', $paymentId)
                     ->get();
+    }
+
+    public function findForLatestPayment($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->orderBy(Entity::CREATED_AT, 'desc')
+                    ->firstOrFail();
     }
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)

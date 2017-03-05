@@ -6,6 +6,7 @@ use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
@@ -32,14 +33,14 @@ class Validator extends Base\Validator
         'notes'                   =>  'sometimes|notes',
         'notes.merchant_order_id' =>  'required_with:signature',
         'callback_url'            =>  'sometimes|url',
-        'order_id'                =>  'sometimes',
-        'customer_id'             =>  'sometimes',
+        'order_id'                =>  'sometimes|filled',
+        'customer_id'             =>  'sometimes|filled',
         'app_token'               =>  'sometimes',
         'token'                   =>  'sometimes',
         'save'                    =>  'sometimes|in:0,1',
         'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'fee'                     =>  'sometimes|integer|max:50000000',
-        'service_tax'             =>  'sometimes|integer|max:50000000',
+        'fee'                     =>  'sometimes|filled|integer|max:50000000',
+        'service_tax'             =>  'sometimes|filled|integer|max:50000000',
         '_'                       =>  'sometimes'
     ];
 
@@ -201,6 +202,22 @@ class Validator extends Base\Validator
             // We need to do this check here because currently amex has a higher limit of 5k.
             throw new Exception\BadRequestValidationFailureException(
                 'Minimum amount allowed for EMI payment on this card must be ' . $emiPlan->getMinAmount());
+        }
+    }
+
+    public function validateForPayout(string $mode)
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        if (($mode === MODE::LIVE) and
+            ($this->entity->transaction->isSettled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
         }
     }
 

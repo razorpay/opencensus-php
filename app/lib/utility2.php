@@ -171,3 +171,21 @@ if (! function_exists('get_brand_text_color'))
         return ((255 - $backgroundDelta) < $threshold) ? "#000000" : "#ffffff";
     }
 }
+
+if (! function_exists('sanitizeFilename'))
+{
+    /**
+     * Sanitizes a given string to make it usable for filenames.
+     *
+     * @param string $filename
+     * @param string $replaceWith
+     *
+     * @return string
+     */
+    function sanitizeFilename(string $filename, string $replaceWith = '_')
+    {
+        $replace = ['"', '\'', '&', '/', '\\', '?', '#'];
+
+        return str_replace($replace, $replaceWith, $filename);
+    }
+}

@@ -16,12 +16,22 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const DISALLOW_EDUCATION_IFSC = [
+        IFSC::ICIC,
+        IFSC::ALLA,
+        IFSC::DBSS,
+        IFSC::IDFB,
+        IFSC::SVCB,
+        IFSC::UTIB,
+    ];
+
     protected $properties = [
         'method',
         'network',
         'currency',
         'international',
         'bank',
+        'education_bank',
         'amount',
         'maestro',
         'recurring',
@@ -143,6 +153,24 @@ class TransactionFilter extends Terminal\Filter
 
             if (($issuer === Issuer::ICIC) and
                 ($terminal->getGateway() === Gateway::FIRST_DATA))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function educationBankFilter($terminal, $input)
+    {
+        if (($input['payment']->isNetbanking() === true) and
+            ($terminal->getGateway() === Gateway::BILLDESK))
+        {
+            $bank = $input['payment']->getBank();
+
+            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
+            if (($terminal->getId() === '7KORSqVp2oR0GH') and
+                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
             {
                 return false;
             }

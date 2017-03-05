@@ -685,6 +685,16 @@ class Gateway extends Base\Gateway
         return $terminal['gateway_merchant_id'];
     }
 
+    protected function getDealerId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_dealer_id'];
+        }
+
+        return $terminal['gateway_merchant_id2'];
+    }
+
     protected function getUrlDomain()
     {
         $urlClass = $this->getGatewayNamespace() . '\Url';
@@ -835,14 +845,21 @@ class Gateway extends Base\Gateway
 
     protected function getDebitRequestArray($input)
     {
-        $content = array(
+        $content = [
             RequestFields::ACCESS_TOKEN    => '',
             RequestFields::AMOUNT          => (string) ($input['payment']['amount'] / 100),
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
             RequestFields::CURRENCY        => $input['payment']['currency'],
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
-        );
+        ];
+
+        $dealerId = $this->getDealerId($input['terminal']);
+
+        if (empty($dealerId) === false)
+        {
+            $content[RequestFields::DEALER_ID] = $dealerId;
+        }
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
 
