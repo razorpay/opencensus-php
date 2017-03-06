@@ -5,6 +5,7 @@ namespace App\Generic;
 use App\Base;
 use App\Admin;
 use App\Trace\TraceCode;
+use Input;
 
 class Service extends Base\Service
 {
@@ -17,20 +18,27 @@ class Service extends Base\Service
 
     public function call(array $input, $route)
     {
-        list($error, $response) = $this->makeRawApiCall($input, $route);
+        $type = Input::get('type') ?? 'admin';
+        list($error, $response) = $this->makeRawApiCall($input, $route, $type);
 
         return [$error, $response];
     }
 
-    public function makeRawApiCall($input, $path)
+    public function makeRawApiCall($input, $path, $type)
     {
         $input['mode'] = 'live';
 
-        $input['auth'] = 'admin'; // admin auth
+        if ($type === 'merchant') {
+            $input['auth'] = 'proxy';
+        } else {
+            $input['auth'] = 'admin'; // admin auth
+        }
 
         $input['token'] = session('api_admin.token'); // admin auth token
 
         $input['file'] = null;
+
+        $input['merchant_id'] = Input::get('merchant_id') ?? '';
 
         $autoBuildQuery = false;
 
