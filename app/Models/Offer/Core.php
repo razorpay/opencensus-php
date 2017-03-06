@@ -62,6 +62,11 @@ class Core extends Base\Core
 
     public function validateOfferApplicableOnPayment(Payment\Entity $payment)
     {
+        if ($payment->getApiOrderId() === null)
+        {
+            return;
+        }
+
         $order = $this->repo->order->fetchForPayment($payment);
 
         if (($order === null) or
