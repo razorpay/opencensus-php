@@ -32,6 +32,13 @@ class CardController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function updateSavedCards()
+    {
+        $data = (new Card\Service)->updateSavedCards();
+
+        return ApiResponse::json($data);
+    }
+
     public function getIins()
     {
         $input = Request::all();
@@ -56,6 +63,7 @@ class CardController extends Controller
 
         return ApiResponse::json($data);
     }
+
     public function uploadIin()
     {
         $input = Request::all();
@@ -77,6 +85,16 @@ class CardController extends Controller
         }
         return ApiResponse::json($data);
     }
+
+    public function rangeUploadIin(Card\IIN\Service $iinService)
+    {
+        $input = Request::all();
+
+        $data = $iinService->addIinRange($input);
+
+        return ApiResponse::json($data);
+    }
+
     public function editIin($id)
     {
         $input = Request::all();

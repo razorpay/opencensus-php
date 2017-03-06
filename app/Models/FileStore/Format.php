@@ -58,7 +58,7 @@ class Format
      * @param string $content   Content of file
      * @param string $extension Extension of file
      *
-     * @return boolean
+     * @return void
      *
      * @throws Exception\BadRequestValidationFailureException
      */
@@ -71,6 +71,14 @@ class Format
         }
     }
 
+    /**
+     * Validate if Mime is valid for provided Extension type
+     *
+     * @param string $mime      Mime
+     * @param string $extension Extension
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public static function validateMimeForExtension($mime, $extension)
     {
         $allowedMime = Format::VALID_EXTENSION_MIME_MAP[$extension];

@@ -18,7 +18,7 @@ class Gateway extends Base\Gateway
     {
         $attr = $this->getMappedAttributes($attributes);
 
-        $action = $action ? $action : $this->action;
+        $action = $action ?: $this->action;
 
         $gatewayPayment = $this->getNewGatewayPaymentEntity();
 
@@ -35,15 +35,28 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function createGatewayRefundEntity($attributes)
+    protected function createGatewayRefundEntity($attributes, $action = null)
     {
+        $action = $action ? $action : $this->action;
+
         $refund = $this->getNewGatewayPaymentEntity();
 
         $refund->fill($attributes);
 
+        $refund->setAction($action);
+
         $refund->saveOrFail();
 
         return $refund;
+    }
+
+    private function updateWalletEntity($wallet, $attributes)
+    {
+        $wallet->fill($attributes);
+
+        $this->repo->saveOrFail($wallet);
+
+        return $wallet;
     }
 
     /*
@@ -51,16 +64,41 @@ class Gateway extends Base\Gateway
      *
      * @param gatewayPayment Wallet\Base\Entity      Gateway Payment Entity
      * @param attributes     array
+     * @param mapped         boolean                 If the attrs are mapped to gateway codes
      */
-    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
+    protected function updateGatewayPaymentEntity(
+        $gatewayPayment,
+        $attributes,
+        $mapped = true)
     {
-        $attr = $this->getMappedAttributes($attributes);
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
 
-        $gatewayPayment->fill($attr);
+        return $this->updateWalletEntity($gatewayPayment, $attributes);
+    }
 
-        $this->repo->saveOrFail($gatewayPayment);
+    /**
+     * Updates the gateway refund entity
+     *
+     * @param      $gatewayPayment
+     * @param      $attributes
+     * @param bool $mapped
+     *
+     * @return
+     */
+    protected function updateGatewayRefundEntity(
+        $gatewayPayment,
+        $attributes,
+        $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
 
-        return $gatewayPayment;
+        return $this->updateWalletEntity($gatewayPayment, $attributes);
     }
 
     protected function getNewGatewayPaymentEntity()

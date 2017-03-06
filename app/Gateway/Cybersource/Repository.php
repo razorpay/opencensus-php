@@ -27,4 +27,13 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTION, '=', Base\Action::AUTHORIZE)
                     ->firstOrFail();
     }
+
+    public function findSuccessfulCapturedEntity($paymentId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::PAYMENT_ID, '=', $paymentId)
+                    ->where(Entity::ACTION, '=', Base\Action::CAPTURE)
+                    ->where(Entity::STATUS, '=', Status::CAPTURED)
+                    ->first();
+    }
 }

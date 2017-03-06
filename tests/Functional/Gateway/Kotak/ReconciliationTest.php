@@ -8,19 +8,21 @@ use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
 
 class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use PayoutTrait;
 
     public function setUp()
     {
         parent::setUp();
     }
 
-    public function testReconciliation()
+    public function testSettlementReconciliation()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -40,8 +42,13 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
+        $batchSetlData = $this->getBatchSettlementData('settlement');
+
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
+
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements();
     }
 
     public function testReconciliationFailure()
@@ -70,10 +77,13 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $batchSetlData = $this->getBatchSettlementData('settlement');
 
-        $this->checkAdjustmentCreated();
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
+
+        //Validate settlement entity
+        $this->fetchAndMatchSettlements(true);
 
         // Resetting time
         Carbon::setTestNow();
@@ -117,6 +127,39 @@ class ReconciliationTest extends TestCase
         $data = $this->getLastEntity('adjustment', true);
 
         $this->assertArraySelectiveEquals($content, $data);
+    }
+
+    public function testPayoutReconciliation()
+    {
+        // Create payments and refunds with timestamps two days back
+        $payoutEntities = $this->createPayoutEntities();
+
+        // reconciliation
+        $txns = $this->matchTransactions($payoutEntities);
+
+        // Generate settlements for above transactions
+        $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
+
+        // Generate reconciliation file, settlement and payout have common implementation
+        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
+
+        // Reconcile settlements, same route is being used as both are h2h
+        $data = $this->reconcileSettlements($payoutReconciliationFile);
+
+        $batchSetlData = $this->getBatchSettlementData('payout');
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchSettlement($batchSetlData);
+    }
+
+    protected function initiatePayoutsAndAssertSuccess()
+    {
+        $content = $this->initiatePayouts();
+
+        $this->assertArrayHasKey('kotak', $content);
+        $this->assertArrayHasKey('payout_text_file', $content['kotak']);
+
+        return $content['kotak']['payout_text_file'];
     }
 
     protected function initiateSettlementsAndAssertSuccess()
@@ -173,7 +216,7 @@ class ReconciliationTest extends TestCase
 
     protected function createPaymentAndRefundEntities()
     {
-        $prEntities = array();
+        $prEntities = [];
 
         $r = range(1,5);
 
@@ -190,8 +233,8 @@ class ReconciliationTest extends TestCase
             $attrs = [
                 'payment' => $payment,
                 'amount' => '100000',
-                 'created_at' => $createdAt + 20,
-                 'updated_at' => $createdAt + 20];
+                'created_at' => $createdAt + 20,
+                'updated_at' => $createdAt + 20];
 
             $refund = $this->fixtures->create('refund:from_payment', $attrs);
 
@@ -202,15 +245,34 @@ class ReconciliationTest extends TestCase
         return $prEntities;
     }
 
-    protected function fetchAndMatchBatchSettlement()
+    protected function createPayoutEntities()
     {
-        $content = $this->getEntities('batch_settlement', [], true);
+        $prEntities = array();
 
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
+        $r = range(1,5);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(4)->timestamp + 5;
+
+        foreach ($r as $i)
+        {
+            $payout = $this->fixtures->create('payout',
                 [
+                    'amount' => 1000,
+                    'created_at' => $createdAt
+                ]);
+
+            array_push($prEntities, $payout);
+        }
+
+        return $prEntities;
+    }
+
+    protected function getBatchSettlementData(string $type)
+    {
+        switch ($type) {
+            case 'settlement':
+                $data = [
+                    'type' => 'settlement',
                     'entity' => 'batch_settlement',
                     'date' => Carbon::today('Asia/Kolkata')->timestamp,
                     'channel' => 'kotak',
@@ -219,9 +281,43 @@ class ReconciliationTest extends TestCase
                     'service_tax' => 15000,
                     'api_fee' => 0,
                     'gateway_fee' => 0,
-                    'settlement_count' => 1,
+                    'total_count' => 1,
                     'transaction_count' => 10,
-                ],
+                ];
+                break;
+
+            case 'payout':
+                $data = [
+                    'type' => 'payout',
+                    'entity' => 'batch_settlement',
+                    'date' => Carbon::today('Asia/Kolkata')->timestamp,
+                    'channel' => 'kotak',
+                    'amount' => 5000,
+                    'fees' => 2935,
+                    'service_tax' => 385,
+                    'api_fee' => 0,
+                    'gateway_fee' => 0,
+                    'total_count' => 5,
+                    'transaction_count' => 5,
+                ];
+                break;
+
+            default:
+                $data = [];
+        }
+
+        return $data;
+    }
+
+    protected function fetchAndMatchBatchSettlement(array $data)
+    {
+        $content = $this->getEntities('batch_settlement', [], true);
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                $data,
             ]
         );
 
@@ -232,8 +328,44 @@ class ReconciliationTest extends TestCase
         $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
         $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
         $this->assertGreaterThanOrEqual($item['returned_at'], $time);
+    }
 
+    protected function fetchAndMatchSettlements($failed = false)
+    {
         $content = $this->getEntities('settlement', array(), true);
+
+        $data = array(
+            'entity' => 'collection',
+            'count' => 1,
+            'items' => [
+                [
+                    'merchant_id' => '10000000000000',
+                    'channel' => 'kotak',
+                    'amount' => 4385000,
+                    'fees' => 115000,
+                    'service_tax' => 15000,
+                    'channel'     => 'kotak',
+                ],
+            ]
+        );
+
+        if ($failed == true)
+        {
+            $data['items'][0]['failure_reason'] = 'Reconciliation';
+            $data['items'][0]['remarks'] =
+                'This is a string which test characters count limit.' .
+                ' This is a string which test characters count limit. This is a string which' .
+                ' test characters count limit. This is a string which test characters count limit.' .
+                ' This is a string which test characters count li';
+            $data['items'][0]['status'] = 'failed';
+        }
+        else
+        {
+            $data['items'][0]['failure_reason'] = null;
+            $data['items'][0]['remarks'] = '';
+        }
+
+        $this->assertArraySelectiveEquals($data, $content);
     }
 
     protected function checkAdjustmentCreated()

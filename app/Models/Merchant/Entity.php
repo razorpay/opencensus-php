@@ -18,6 +18,7 @@ class Entity extends Base\PublicEntity
     const ORG_ID                    = 'org_id';
     const NAME                      = 'name';
     const EMAIL                     = 'email';
+    const PARENT_ID                 = 'parent_id';
     const ACTIVATED                 = 'activated';
     const ACTIVATED_AT              = 'activated_at';
     const LIVE                      = 'live';
@@ -31,7 +32,7 @@ class Entity extends Base\PublicEntity
     const SETTLEMENT_SCHEDULE_ID    = 'settlement_schedule_id';
     const WEBSITE                   = 'website';
     const CATEGORY                  = 'category';
-    const FEATURES                  = 'features';
+    const CATEGORY2                 = 'category2';
     const SCOPE                     = 'scope';
     const FEE_BEARER                = 'fee_bearer';
     const FEE_MODEL                 = 'fee_model';
@@ -41,14 +42,14 @@ class Entity extends Base\PublicEntity
     const AWS_LOGO_URL              = 'aws_logo_url';
     const MAX_PAYMENT_AMOUNT        = 'max_payment_amount';
     const AUTO_REFUND_DELAY         = 'auto_refund_delay';
+    const AUTO_CAPTURE_LATE_AUTH    = 'auto_capture_late_auth';
     const CONVERT_CURRENCY          = 'convert_currency';
     const ARCHIVED_AT               = 'archived_at';
     const SUSPENDED_AT              = 'suspended_at';
 
-    /**
-     * Category for particular methods or gateways
-     */
-    const CATEGORY2                 = 'category2';
+    // constants
+    const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
 
     /**
      * Refers to methods relation and not a property;
@@ -67,10 +68,11 @@ class Entity extends Base\PublicEntity
 
     protected $revisionCreationsEnabled = true;
 
-    protected static $generators = array(
-        self::TRANSACTION_REPORT_EMAIL);
+    protected static $generators = [
+        self::TRANSACTION_REPORT_EMAIL
+    ];
 
-    protected $fillable = array(
+    protected $fillable = [
         self::ID,
         self::NAME,
         self::EMAIL,
@@ -90,20 +92,22 @@ class Entity extends Base\PublicEntity
         self::AUTO_REFUND_DELAY,
         self::MAX_PAYMENT_AMOUNT,
         self::SETTLEMENT_SCHEDULE,
-        self::SETTLEMENT_SCHEDULE_ID,
         self::RECEIPT_EMAIL_ENABLED,
+        self::AUTO_CAPTURE_LATE_AUTH,
+        self::SETTLEMENT_SCHEDULE_ID,
         self::TRANSACTION_REPORT_EMAIL,
-    );
+    ];
 
     // Requires PHP 5.6
-    const CONFIG_LIST = array(
+    const CONFIG_LIST = [
         self::ID,
         self::BRAND_COLOR,
         self::TRANSACTION_REPORT_EMAIL,
-        self::LOGO_URL
-    );
+        self::LOGO_URL,
+        self::AUTO_CAPTURE_LATE_AUTH,
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::ID,
         self::ENTITY,
         self::NAME,
@@ -113,6 +117,7 @@ class Entity extends Base\PublicEntity
         self::LIVE,
         self::HOLD_FUNDS,
         self::PRICING_PLAN_ID,
+        self::PARENT_ID,
         self::WEBSITE,
         self::CATEGORY,
         self::CATEGORY2,
@@ -128,24 +133,28 @@ class Entity extends Base\PublicEntity
         self::CONVERT_CURRENCY,
         self::MAX_PAYMENT_AMOUNT,
         self::AUTO_REFUND_DELAY,
+        self::AUTO_CAPTURE_LATE_AUTH,
         self::BRAND_COLOR,
         self::RISK_RATING,
         self::CREATED_AT,
         self::UPDATED_AT,
+        self::SUSPENDED_AT,
+        self::ARCHIVED_AT,
         self::LOGO_URL,
         self::ORG_ID,
         'groups',
-        'admins'
-     );
+        'admins',
+     ];
 
-    protected $defaults = array(
+    protected $defaults = [
+        self::PARENT_ID              => null,
         self::CATEGORY2              => null,
         self::LIVE                   => false,
         self::ACTIVATED              => false,
         self::ACTIVATED_AT           => null,
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
-        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::SETTLEMENT_SCHEDULE_ID => null,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
@@ -154,28 +163,30 @@ class Entity extends Base\PublicEntity
         self::MAX_PAYMENT_AMOUNT     => null,
         self::ORG_ID                 => null,
         self::AUTO_REFUND_DELAY      => null,
+        self::AUTO_CAPTURE_LATE_AUTH => false,
         self::FEE_MODEL              => FeeModel::PREPAID,
         self::CONVERT_CURRENCY       => null,
         self::ARCHIVED_AT            => null,
         self::SUSPENDED_AT           => null,
-    );
+    ];
 
-    protected $publicSetters = array(
+    protected $publicSetters = [
         self::ID,
         self::ENTITY,
         self::LOGO_URL,
-    );
+    ];
 
-    protected $casts = array(
-        self::ACTIVATED             => 'bool',
-        self::LIVE                  => 'bool',
-        self::INTERNATIONAL         => 'bool',
-        self::RECEIPT_EMAIL_ENABLED => 'bool',
-        self::HOLD_FUNDS            => 'bool',
-        self::CATEGORY              => 'int',
-        self::SETTLEMENT_SCHEDULE   => 'int',
-        self::CONVERT_CURRENCY      => 'bool'
-    );
+    protected $casts = [
+        self::ACTIVATED                 => 'bool',
+        self::LIVE                      => 'bool',
+        self::INTERNATIONAL             => 'bool',
+        self::RECEIPT_EMAIL_ENABLED     => 'bool',
+        self::HOLD_FUNDS                => 'bool',
+        self::CATEGORY                  => 'int',
+        self::SETTLEMENT_SCHEDULE       => 'int',
+        self::CONVERT_CURRENCY          => 'bool',
+        self::AUTO_CAPTURE_LATE_AUTH    => 'bool',
+    ];
 
     const MAX_PAYMENT_AMOUNT_DEFAULT = 50000000;
 
@@ -221,6 +232,17 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
+    // Is the merchant a linked-account under Marketplace
+    public function isLinkedAccount()
+    {
+        return $this->isAttributeNotNull(self::PARENT_ID);
+    }
+
+    public function isMarketplace()
+    {
+        return $this->isFeatureEnabled(Feature\Constants::MARKETPLACE);
+    }
+
     public function isEducationCategory()
     {
         $eduCategories = array(
@@ -236,7 +258,21 @@ class Entity extends Base\PublicEntity
 
     public function isFeatureEnabled($feature)
     {
-        return in_array($feature, $this->features(), true);
+        $assignedFeatures = $this->getEnabledFeatures();
+
+        return (in_array($feature, $assignedFeatures, true) === true);
+    }
+
+    /**
+     * Return an array of features enabled for the merchant entity
+     *
+     * @return array
+     */
+    public function getEnabledFeatures()
+    {
+        return $this->features
+                    ->pluck(Feature\Entity::NAME)
+                    ->toArray();
     }
 
     public function activate()
@@ -326,6 +362,18 @@ class Entity extends Base\PublicEntity
         return $this->hasMany('RZP\Models\Customer\Entity');
     }
 
+    // Linked-accounts belonging to the Marketplace
+    public function accounts()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
+    }
+
+    // Marketplace owner
+    public function parent()
+    {
+        return $this->belongsTo('RZP\Models\Merchant\Entity', self::PARENT_ID, self::ID);
+    }
+
     public function balance()
     {
         return $this->hasOne(
@@ -366,6 +414,16 @@ class Entity extends Base\PublicEntity
     {
         return $this->hasOne(
             'RZP\Models\Merchant\Webhook\Entity');
+    }
+
+    public function features()
+    {
+        return $this->morphMany('RZP\Models\Feature\Entity', 'entity');
+    }
+
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
     }
 
     public function merchantDetail()
@@ -418,6 +476,15 @@ class Entity extends Base\PublicEntity
         }
 
         return $label;
+    }
+
+    public function getFilteredDba()
+    {
+        $label = $this->getBillingLabelElseName();
+
+        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
+
+        return $filteredLabel;
     }
 
     public function getPricingPlanId()
@@ -510,7 +577,19 @@ class Entity extends Base\PublicEntity
 
     public function getAutoRefundDelay()
     {
-        return $this->getAttribute(self::AUTO_REFUND_DELAY);
+        $autoRefundDelay = $this->getAttribute(self::AUTO_REFUND_DELAY);
+
+        if ($autoRefundDelay === null)
+        {
+            $autoRefundDelay = self::AUTO_REFUND_DELAY_DEFAULT;
+        }
+
+        return $autoRefundDelay;
+    }
+
+    public function getAutoCaptureLateAuth()
+    {
+        return $this->getAttribute(self::AUTO_CAPTURE_LATE_AUTH);
     }
 
     /**
@@ -529,17 +608,11 @@ class Entity extends Base\PublicEntity
 
     /**
      * check if api or gateway should do currency conversion for merchant
-     * @return [type] [description]
+     * @return bool
      */
     public function convertOnApi()
     {
         return $this->getAttribute(self::CONVERT_CURRENCY);
-    }
-
-    public function features()
-    {
-        return $this->hasMany(\RZP\Models\Feature\Entity::class, 'entity_id')
-                    ->get()->pluck(\RZP\Models\Feature\Entity::NAME)->toArray();
     }
 
     public function getBrandColor()
@@ -613,6 +686,11 @@ class Entity extends Base\PublicEntity
         $awsLogoUrl = $this->getLogoUrlBasedOnSize($baseAwsLogoUrl, $size);
 
         return $awsLogoUrl;
+    }
+
+    public function getParentId()
+    {
+        return $this->getAttribute(self::PARENT_ID);
     }
 
     protected function getLogoUrlBasedOnSize($logoUrl, $size)
@@ -848,16 +926,5 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
-    }
-
-    public function toArrayPublic()
-    {
-         $merchant = parent::toArrayPublic();
-
-         $groups = $this->groups;
-
-         $merchant['groups'] = $groups->toArrayPublicEmbedded();
-
-         return $merchant;
     }
 }

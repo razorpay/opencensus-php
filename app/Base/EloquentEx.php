@@ -129,4 +129,9 @@ class EloquentEx extends \Razorpay\Spine\Entity
     {
         return (is_null($this->getAttribute($attr)) === false);
     }
+
+    public function hasRelation($relation)
+    {
+        return (empty($this->relations[$relation]) === false);
+    }
 }

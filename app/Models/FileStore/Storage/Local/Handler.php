@@ -5,35 +5,49 @@ namespace RZP\Models\FileStore\Storage\Local;
 use Config;
 use Storage;
 
-use RZP\Constants\Mode;
-use RZP\Trace\TraceCode;
 use RZP\Models\FileStore\Storage\Base\Handler as BaseHandler;
 
 class Handler extends BaseHandler
 {
+    /**
+     * Directory prefix where all files should be stored
+     */
     const STORAGE_DIRECTORY = 'files/';
 
-    public function save($bucket, $fileDetails)
+    /*
+     * config for the Handler instance
+     */
+    protected $config;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->config = $this->app['config']->get('filestore.local');
+    }
+
+    /**
+     * save file to given directory
+     *
+     * @param string $directory   directory name
+     * @param array  $filedetails file details array
+     *
+     * @return file full path
+     */
+    public function save($directory, $fileDetails)
     {
         $content = file_get_contents($fileDetails['path']);
 
-        $fileName = self::STORAGE_DIRECTORY . $bucket . '/' . $fileDetails['key'];
+        $fileName = self::STORAGE_DIRECTORY . $directory . '/' . $fileDetails['key'];
 
         Storage::put($fileName, $content);
 
         return $this->getStorageDir() . $fileName;
     }
 
-    public function getBucketName($type)
+    public function saveAs($bucket, $key, $filePath)
     {
-        $bucketType = Bucket::getBucketConfigName($type);
-
-        if ($this->mode === Mode::TEST)
-        {
-            $bucketType = 'rzp-test-bucket';
-        }
-
-        return $bucketType;
+        ;
     }
 
     protected function getStorageDir()
@@ -43,4 +57,3 @@ class Handler extends BaseHandler
         return $path;
     }
 }
-?>

@@ -8,6 +8,7 @@ use Request;
 use RZP\Exception;
 use RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Payment;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 use RZP\Gateway\Upi\Base\ProviderCode;
 use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
@@ -271,7 +272,7 @@ class GatewayController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function fillUpiProviderCode()
+    public function fillUpiBank()
     {
         RuntimeManager::setMaxExecTime(1800);
 
@@ -285,7 +286,7 @@ class GatewayController extends Controller
 
         while (true)
         {
-            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize, $lastId);
+            $recordsToUpdate = $this->repo->upi->fetchAllForBankUpdate($batchSize, $lastId);
 
             $currentBatchCount = count($recordsToUpdate);
 
@@ -300,11 +301,20 @@ class GatewayController extends Controller
             {
                 $provider = $upiRecord->extractProviderFromVpa();
 
-                $upiRecord->setProvider($provider);
+                $bankCode = ProviderCode::getBankCode($provider);
 
-                $upiRecord->setBank(ProviderCode::getBankCode($provider));
+                if ($bankCode === null)
+                {
+                    $failedCount++;
 
-                $upiRecord->setAcquirer('icici');
+                    $failedIds[] = $upiRecord->getId();
+
+                    $lastId = $upiRecord->getId();
+
+                    continue;
+                }
+
+                $upiRecord->setBank($bankCode);
 
                 try
                 {
@@ -336,4 +346,37 @@ class GatewayController extends Controller
         ]);
     }
 
+    public function createGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->createPriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getGatewayPriority()
+    {
+        $data = (new GatewayPriority\Service)->fetchPriority();
+
+        return ApiResponse::json($data);
+    }
+
+    public function addOrUpdateGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->addOrUpdatePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
+
+    public function removeGatewayPriority(string $method)
+    {
+        $input = Request::all();
+
+        $data = (new GatewayPriority\Service)->removePriorityForMethod($method, $input);
+
+        return ApiResponse::json($data);
+    }
 }

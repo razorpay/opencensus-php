@@ -72,7 +72,15 @@ class Gateway extends Base\Gateway
 
         $content = $input['gateway'];
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->assertPaymentId($input['payment']['id'], $content[ResponseFields::TXN_REF_NO]);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'response'   => $input['gateway'],
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         if ((isset($content[ResponseFields::STATUS]) === false) or
             ($content[ResponseFields::STATUS] !== Status::SUCCESS))
@@ -114,8 +122,8 @@ class Gateway extends Base\Gateway
             else if (isset($content[ResponseFields::MESSAGE]) === true)
             {
                 $refundData['response_description'] = substr($content[ResponseFields::MESSAGE], 0, 255);
-
             }
+
             $refundData['status_code'] = $content[ResponseFields::STATUS];
 
             $this->createGatewayRefundEntity($refundData);
@@ -170,7 +178,7 @@ class Gateway extends Base\Gateway
         $content = $this->xmlToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content'    => $content,
                 'gateway'    => $this->gateway,

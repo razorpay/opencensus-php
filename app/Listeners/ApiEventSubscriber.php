@@ -8,17 +8,16 @@ use Illuminate\Events\Dispatcher;
 use App;
 use RZP\Constants;
 use RZP\Jobs\WebHook;
+use RZP\Models\Base;
 use RZP\Models\Event;
 use RZP\Models\Payment;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant\Webhook\Event as WebhookEvent;
 
-class ApiEventSubscriber
+class ApiEventSubscriber extends Base\Core
 {
     // Used to push jobs to queues
     use DispatchesJobs;
-
-    protected $app;
 
     /**
      * Event being fired
@@ -34,8 +33,6 @@ class ApiEventSubscriber
 
     protected $queue;
 
-    protected $trace;
-
     protected $params;
 
     protected $webhookEnabledForEvent = false;
@@ -49,10 +46,9 @@ class ApiEventSubscriber
 
     public function __construct()
     {
-        $this->app = App::getFacadeRoot();
+        parent::__construct();
 
         $this->event = $this->app['events'];
-        $this->trace = $this->app['trace'];
         $this->queue = $this->app['queue'];
     }
 
@@ -297,7 +293,7 @@ class ApiEventSubscriber
 
     protected function isWebhookEnabledForEvent($params)
     {
-        $webhook = $params->merchant->webhook;
+        $webhook = $this->repo->webhook->findByMerchant($params->merchant);
 
         return (($webhook !== null) and
                 ($webhook->isActive()) and

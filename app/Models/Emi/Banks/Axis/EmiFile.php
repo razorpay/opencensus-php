@@ -45,14 +45,18 @@ class EmiFile extends Base\EmiFile
         {
             $emiTenure = $emiPayment->emiPlan['duration'];
 
+            $merchant = $this->repo->merchant->fetchMerchantFromEntity($emiPayment);
+
+            $txn = $this->repo->transaction->fetchForPayment($emiPayment);
+
             $data[] = [
                 'Card Number'                  => $this->getCardNumber($emiPayment->card),
                 'Transaction Amount'           => $emiPayment->getAmount()/100,
                 'Transaction Date'             => $this->formattedDateFromTimestamp($emiPayment->getCaptureTimestamp()),
-                'Settlement Date'              => $this->formattedDateFromTimestamp($emiPayment->transaction->getSettledAt()),
+                'Settlement Date'              => $this->formattedDateFromTimestamp($txn->getSettledAt()),
                 'Authorisation Id'             => $this->getAuthCode($emiPayment),
                 'Merchant Name'                => 'Razorpay Payments',
-                'MCC (Merchant Category Code)' => $emiPayment->merchant->getCategory(), // Non Mandatory,
+                'MCC (Merchant Category Code)' => $merchant->getCategory(), // Non Mandatory,
                 'Tenure'                       => $emiTenure,
                 'Source'                       => 'Razorpay',
                 'EMI ID'                       => $emiPayment->getId(), // Non Mandatory, filling with our payment id

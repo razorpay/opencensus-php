@@ -23,13 +23,17 @@ return [
         'secret' => env('MANDRILL_SECRET'),
     ],
 
+    //
+    // AWS_KEY_ID, AWS_KEY_SECRET are blank,
+    // they are getting filled by IAM roles in production
+    //
     'ses' => [
-        'key'    => env('SES_KEY'),
-        'secret' => env('SES_SECRET'),
+        'key'    => env('AWS_KEY_ID'),
+        'secret' => env('AWS_KEY_SECRET'),
         'region' => 'us-east-1',
     ],
 
     'mutex' => [
         'mock' => env('MUTEX_MOCK', false)
-    ]
+    ],
 ];

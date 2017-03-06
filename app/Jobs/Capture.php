@@ -43,7 +43,8 @@ class Capture
             $this->runCaptureFlowForQueue();
 
             $this->trace->info(
-                TraceCode::PAYMENT_QUEUE_CAPTURE_SUCCESS
+                TraceCode::PAYMENT_QUEUE_CAPTURE_SUCCESS,
+                $this->data
             );
 
             $job->delete();

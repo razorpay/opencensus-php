@@ -63,8 +63,6 @@ class Generator extends Base\Core
 
         $this->elfin = $this->app['elfin'];
 
-        $this->setElfinServices();
-
         $this->baseInvoiceUrl = $this->app['config']->get('app.invoice');
     }
 
@@ -92,25 +90,6 @@ class Generator extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $this->invoice, $input);
         }
 
-        //
-        // In case notification to the customer throws any kind of exception,
-        // we should not fail the invoice creation.
-        //
-        try
-        {
-            (new Notifier($this->invoice))->sendNotificationToCustomer();
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                null,
-                null,
-                [
-                    'invoice_id' => $this->invoice->getId()
-                ]);
-        }
-
         return $this->invoice;
     }
 
@@ -133,19 +112,22 @@ class Generator extends Base\Core
     {
         $this->associateCustomerWithInvoice($input);
 
-        if (isset($input[Entity::LINE_ITEMS]) === false)
+        if (isset($input[Entity::LINE_ITEMS]) === true)
         {
-            return;
+            $this->lineItemCore->updateLineItemsAsPut(
+                $input[Entity::LINE_ITEMS],
+                $this->merchant,
+                $this->invoice);
+
+            $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+            $this->invoice->setAmount($totalAmount);
         }
 
-        $this->lineItemCore->updateLineItemsAsPut(
-            $input[Entity::LINE_ITEMS],
-            $this->merchant,
-            $this->invoice);
-
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->setAmount($totalAmount);
+        if ($this->invoice->getStatus() === Status::ISSUED)
+        {
+            $this->issueInvoice();
+        }
     }
 
     /**
@@ -353,26 +335,6 @@ class Generator extends Base\Core
         {
             $this->invoice->customer()->associate($customer);
             $this->invoice->setCustomerDetails($customer);
-        }
-    }
-
-    /**
-     * This has been put in place temporarily to test uptime of gimli and avoid
-     * extra latency in case gimli fails for some reason.
-     *
-     * By default GIMLI is the first preferece. But for now overriding it to
-     * allow the same for only 30% of the traffic.
-     *
-     * @return null
-     *
-     */
-    protected function setElfinServices()
-    {
-        $randInt = mt_rand(0, 100);
-
-        if ($randInt >= 70)
-        {
-            $this->elfin->setServices([Elfin::BITLY, Elfin::GIMLI]);
         }
     }
 }

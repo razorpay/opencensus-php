@@ -55,6 +55,8 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayCallback($input['gateway']);
 
+        $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
+
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['gateway'][ConnectResponseFields::ORDER_ID],
             Base\Action::AUTHORIZE);
@@ -235,7 +237,24 @@ class Gateway extends Base\Gateway
 
             $errorCode = ErrorCodes::getMappedCode($approvalCode);
 
+            // Cryptic error messages that First Data keeps sending us
+            $this->checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc);
+
             throw new Exception\GatewayErrorException($errorCode, $approvalCode, $gatewayErrorDesc);
+        }
+    }
+
+    protected function checkSpecialCases($approvalCode, $gatewayEntity, $gatewayErrorDesc)
+    {
+        if (ErrorCodes::isSpecialCase($approvalCode) === true)
+        {
+            $this->trace->critical(
+                TraceCode::GATEWAY_FIRST_DATA_UNEXPECTED,
+                [
+                    'approval_code' => $gatewayEntity->getApprovalCode(),
+                    'error_msg'     => $gatewayErrorDesc,
+                ]
+            );
         }
     }
 
@@ -257,6 +276,7 @@ class Gateway extends Base\Gateway
     {
         $attributes = [
             Entity::AMOUNT             => $authRequest[ConnectRequestFields::CHARGE_TOTAL] * 100,
+            Entity::CURRENCY           => $authRequest[ConnectRequestFields::CURRENCY],
             Entity::GATEWAY_PAYMENT_ID => $authRequest[ConnectRequestFields::ORDER_ID],
         ];
 
@@ -329,11 +349,14 @@ class Gateway extends Base\Gateway
 
     protected function getCommonResponseFields($response, $input)
     {
+        $currencyCode = Currency::ISO_NUMERIC_CODES[$input['currency']];
+
         $attributes = [
-            Entity::RECEIVED               => true,
-            Entity::APPROVAL_CODE          => $response[ApiResponseFields::APPROVAL_CODE],
-            Entity::AMOUNT                 => $input['amount'],
-            Entity::STATUS                 => Status::CAPTURED,
+            Entity::RECEIVED      => true,
+            Entity::APPROVAL_CODE => $response[ApiResponseFields::APPROVAL_CODE],
+            Entity::AMOUNT        => $input['amount'],
+            Entity::CURRENCY      => $currencyCode,
+            Entity::STATUS        => Status::CAPTURED,
         ];
 
         $this->setApproval($attributes[Entity::APPROVAL_CODE]);
@@ -961,11 +984,14 @@ class Gateway extends Base\Gateway
             ['gateway_soap_request' => $request]);
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->scrubCardInfo($request['content']);
 
-        parent::traceGatewayPaymentRequest($request, $input);
+        parent::traceGatewayPaymentRequest($request, $input, $traceCode);
     }
 
     protected function traceGatewayCallback($gatewayCallback)

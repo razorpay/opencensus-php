@@ -226,9 +226,11 @@ class Error extends Support\Fluent
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_SECRET:
             case ErrorCode::BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED:
+            case ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED:
                 $httpStatusCode = 401;
                 break;
             case ErrorCode::BAD_REQUEST_ONLY_HTTPS_ALLOWED:
+            case ErrorCode::BAD_REQUEST_FORBIDDEN:
                 $httpStatusCode = 403;
                 break;
         }

@@ -200,6 +200,9 @@ class CreateMerchantDetailsTable extends Migration
                   ->nullable()
                   ->default('[]');
 
+            $table->integer(MerchantDetail::ACTIVATION_PROGRESS)
+                  ->default(0);
+
             $table->boolean(MerchantDetail::LOCKED)
                   ->default(0);
 

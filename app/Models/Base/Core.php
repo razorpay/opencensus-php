@@ -53,5 +53,16 @@ class Core
         $this->merchant = $this->app['basicauth']->getMerchant();
 
         $this->device = $this->app['basicauth']->getDevice();
+
+        $this->init();
+    }
+
+    /**
+     * This function can be over-loaded by child classes to init
+     * class specific instance properties. This will prevent class
+     * constructor from being over-loaded every time.
+     */
+    protected function init()
+    {
     }
 }

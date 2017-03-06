@@ -11,11 +11,9 @@ class Service extends Base\Service
 {
     public function getAdjustment($id)
     {
-        Adjustment\Entity::verifyIdAndStripSign($id);
+        $adj = $this->repo->adjustment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $setl = $this->repo->adjustment->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        return $setl->toArrayPublic();
+        return $adj->toArrayPublic();
     }
 
     public function getAdjustments($input)

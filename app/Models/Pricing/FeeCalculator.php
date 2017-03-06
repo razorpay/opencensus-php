@@ -42,6 +42,8 @@ class FeeCalculator
 
     protected $pricingRules = null;
 
+    protected $amount = null;
+
     public function __construct($entity)
     {
         $this->entity = $entity;
@@ -57,8 +59,6 @@ class FeeCalculator
     {
         $entity = $this->entity;
 
-        $this->getRelevantPricingRule($pricing);
-
         $amount = $entity->getBaseAmount();
 
         if ($entity->merchant->isFeeBearerCustomer())
@@ -68,6 +68,10 @@ class FeeCalculator
             // 2. On validation/capture call, the fee will be set
             $amount = $amount - $entity->getFee();
         }
+
+        $this->amount = $amount;
+
+        $this->getRelevantPricingRule($pricing);
 
         list($fee, $serviceTax) = $this->getFees($amount);
 
@@ -174,6 +178,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPaymentPricingRule($rules, $method);
         }
+        else if ($feature === Pricing\Feature::PAYOUT)
+        {
+            $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+        }
 
         if ($rule === null)
         {
@@ -184,6 +192,13 @@ class FeeCalculator
         }
 
         $this->pricingRules->push($rule);
+    }
+
+    protected function getRelevantPayoutPricingRule($rules, $method)
+    {
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
+
+        return $rule;
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -210,6 +225,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
         }
+        // else if ($method === Payment\Method::TRANSFER)
+        // {
+        //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
+        // }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);
@@ -232,7 +251,7 @@ class FeeCalculator
     {
         $payment = $this->entity;
 
-        $amount = $payment->getBaseAmount();
+        $amount = $this->amount;
 
         $filters = [
             [Pricing\Entity::AMOUNT_RANGE_ACTIVE, true, true, false]
@@ -600,7 +619,7 @@ class FeeCalculator
             $totalTaxPercentage += $taxPercentage;
         }
 
-        $totalTaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+        $totalTaxes = (int) round(($fee * $totalTaxPercentage) / 10000);
 
         foreach ($taxComponents as $name => $percentage)
         {

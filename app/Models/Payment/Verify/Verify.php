@@ -35,16 +35,14 @@ class Verify extends Base\Core
      * We verify it and move it to bucket 2. And this cycle keeps repeating
      */
     protected static $failureStartBoundary = [
-        0 => 900,           // 15 Minutes
-        1 => 3600,          // 60 Minutes
-        2 => 86400,         // 1 Day
-        3 => 172800,        // 2 Day
-        4 => 259200,        // 3 Day
-        5 => 345600,        // 4 Day
-        6 => 432000,        // 5 Day
-        7 => 518400,        // 6 Day
-        8 => 604800,        // 7 Day
-        // TODO: Decide on the boundaries.
+        0 => 900,       // 15 Minutes
+        1 => 1800,      // 30 Minutes
+        2 => 3600,      // 60 Minutes
+        3 => 21600,     // 6 hours
+        4 => 86400,     // 1 Day
+        5 => 172800,    // 2 Day
+        6 => 259200,    // 3 Day
+        7 => 345600,    // 4 Day
     ];
 
     /**
@@ -60,6 +58,13 @@ class Verify extends Base\Core
      * created state, before we run a "created" verify on it.
      */
     const CREATED_MIN_TIME = 120;  // 2 Minutes
+
+    /**
+     * This is the maximum time for which the payment should be in
+     * created state, before we run a "created" verify on it.
+     * After that created payments, follow boundary rule
+     */
+    const CREATED_MAX_TIME = 720;  // 12 Minutes
 
     /**
      * This is the minimum time for which the payment should be in
@@ -88,6 +93,18 @@ class Verify extends Base\Core
         Filter::PAYMENTS_CREATED    => self::CREATED_MIN_TIME,
         Filter::VERIFY_FAILED       => self::ERRORED_MIN_TIME,
         Filter::VERIFY_ERROR        => self::ERRORED_MIN_TIME,
+    ];
+
+    /**
+     * Maximum duration after which payments will be picked,
+     * according to their verify_bucket,
+     * Cuurently used for CREATED payments only
+     */
+    const MAXIMUM_TIME_MAP = [
+        Filter::PAYMENTS_FAILED     => null,
+        Filter::PAYMENTS_CREATED    => self::CREATED_MAX_TIME,
+        Filter::VERIFY_FAILED       => null,
+        Filter::VERIFY_ERROR        => null,
     ];
     /**
      * Max number of payments on which single instance of verify cron should operate
@@ -150,10 +167,16 @@ class Verify extends Base\Core
 
         $minimumTime = self::MINIMUM_TIME_MAP[$filter];
 
+        $maximumTime = self::MAXIMUM_TIME_MAP[$filter];
+
+        $minMaxArray = [
+            'min' => $minimumTime,
+            'max' => $maximumTime
+        ];
+
         $boundary = [];
 
-        if (($filter === Filter::PAYMENTS_FAILED) or
-            ($filter === Filter::VERIFY_FAILED))
+        if ($filter !== Filter::VERIFY_ERROR)
         {
             // Return the proper boundary array
             $boundary = self::$failureStartBoundary;
@@ -185,7 +208,7 @@ class Verify extends Base\Core
         // and filtering extra payments in later stage
         //
         $paymentsCollectionWithCount = $this->repo->payment->getPaymentsToVerify(
-                                                                $minimumTime,
+                                                                $minMaxArray,
                                                                 $boundary,
                                                                 $verifyStatus,
                                                                 $paymentStatus,
@@ -202,7 +225,7 @@ class Verify extends Base\Core
     /**
      * @param Base\PublicCollection $payments
      * @param string                $filter
-     * @param arary                 $bucketFilter
+     * @param array                 $bucketFilter
      * @param integer               $verifiableCount
      * @return array with aggregated results
      */
@@ -279,7 +302,9 @@ class Verify extends Base\Core
     /** Lock All Payments
      *
      * @param Base\PublicCollection $payments
-     * @return array with keys locked and not_locked,
+     * @param string                $filter
+     *
+     * @return Base\PublicCollection with keys locked and not_locked,
      *         having payments which are locked and not_locked respectively
      */
     protected function lockPaymentsForVerify(Base\PublicCollection $payments, string $filter)
@@ -326,7 +351,7 @@ class Verify extends Base\Core
      * @param array $result             Raw result array
      * @param array $times              Array containing time metrics
      * @param string $filter            Filter used to fetch payments
-     * @param arary  $bucketFilter      Bucket filter used to fetch payments
+     * @param array  $bucketFilter      Bucket filter used to fetch payments
      * @param integer $verifiableCount  Max payments waiting to be verified
      * @return array with processed result
      */
@@ -549,10 +574,18 @@ class Verify extends Base\Core
 
     protected function getPaymentNextVerifyBucket(Payment\Entity $payment, string  $filter)
     {
-        // For Payment in created state and payment having verified as error,
+        // For Payment having verified as error,
         // verify bucket should be 0
-        if (($filter === Filter::PAYMENTS_CREATED) or
-            ($filter === Filter::VERIFY_ERROR))
+        if ($filter === Filter::VERIFY_ERROR)
+        {
+            return 0;
+        }
+
+        $diff = Carbon::now('Asia/Kolkata')->timestamp - $payment->getCreatedAt();
+
+        // Payments which are less than X minutes old should always be picked by cron
+        // Payments older than X minutes should follow the bucket logic
+        if (($filter === Filter::PAYMENTS_CREATED) and ($diff < self::CREATED_MAX_TIME))
         {
             return 0;
         }
@@ -571,7 +604,7 @@ class Verify extends Base\Core
 
     /**
      * @param string $filter filter for which boundary has to be returned
-     * @return array  Arary containg boundary with expiry time
+     * @return array  Array containg boundary with expiry time
      * @throws Exception\LogicException
      */
     public function getBoundaryInSeconds(string $filter)
@@ -580,7 +613,7 @@ class Verify extends Base\Core
         {
             case Filter::VERIFY_FAILED:
             case Filter::PAYMENTS_FAILED:
-                // Return the proper boundary array
+            case Filter::PAYMENTS_CREATED:
                 $boundaries = self::$failureStartBoundary;
                 break;
 

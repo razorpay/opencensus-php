@@ -114,16 +114,17 @@ class PaymentCreateTest extends TestCase
     public function testIntlPaymentWhenNotAllowed()
     {
         $this->fixtures->merchant->disableInternational();
-        $this->runRequestResponseFlow(
-            $this->testData[__FUNCTION__],
-            function ()
-            {
-                $this->payment['card']['number'] = '4012010000000007';
-                $this->doAuthPayment($this->payment);
-            });
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function ()
+        {
+            $this->payment['card']['number'] = '4012010000000007';
+            $this->doAuthPayment($this->payment);
+        });
 
         $payment = $this->getLastEntity('payment', true);
 
+        $this->assertEquals($payment['gateway'], null);
+        $this->assertEquals($payment['terminal_id'], null);
         $this->assertEquals($payment['status'], 'failed');
         $this->assertEquals($payment['error_code'], 'BAD_REQUEST_ERROR');
         $this->assertEquals($payment['internal_error_code'], 'BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED');
@@ -221,7 +222,8 @@ class PaymentCreateTest extends TestCase
 
     protected function mockEsClient()
     {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
+        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
+                                ->makePartial();
 
         $this->app->instance('es', $clientBuilder);
 

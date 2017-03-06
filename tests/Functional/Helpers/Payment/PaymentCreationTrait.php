@@ -392,7 +392,6 @@ trait PaymentCreationTrait
 
         $statusCode = (int) $response->getStatusCode();
 
-
         if ($statusCode === 302)
         {
             return $response->getTargetUrl();

@@ -4,6 +4,8 @@ namespace RZP\Models\Settlement;
 
 use Carbon\Carbon;
 use RZP\Models\Base;
+use RZP\Models\Report\BasicEntityReport;
+use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Icici;
 use RZP\Models\Settlement\Kotak;
@@ -41,9 +43,7 @@ class Service extends Base\Service
 
     public function fetch($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
-
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $setl->toArrayPublic();
     }
@@ -79,11 +79,9 @@ class Service extends Base\Service
 
     public function getSettlementTransactions($id)
     {
-        Settlement\Entity::verifyIdAndStripSign($id);
+        $setl = $this->repo->settlement->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $setl = $this->repo->settlement->findByIdAndMerchantId($id, $this->merchant->getKey());
-
-        $txns = $this->repo->transaction->fetchBySettlementId($id);
+        $txns = $this->repo->transaction->fetchBySettlement($setl);
 
         return $txns->toArrayPublic();
     }
@@ -120,7 +118,9 @@ class Service extends Base\Service
 
     public function getSettlementCombinedReport($input)
     {
-        return (new Base\Report)->getReport($input, 'transaction');
+        $report = new BasicEntityReport(E::TRANSACTION);
+
+        return $report->getReport($input);
     }
 
     public function postInitiateTransfer($input)

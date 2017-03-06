@@ -12,7 +12,10 @@ class Service extends Base\Service
     {
         $org = $this->repo->org->findByPublicId($orgId);
 
-        $role = $this->core()->create($org, $input);
+        $role = $this->repo->transactionOnLiveAndTest(function() use ($org, $input)
+        {
+            return $this->core()->create($org, $input);
+        });
 
         return $role->toArrayPublic();
     }
@@ -53,7 +56,10 @@ class Service extends Base\Service
 
         $role->getValidator()->validateRoleIsNotSuperAdmin();
 
-        $this->core()->edit($role, $input);
+        $role = $this->repo->transactionOnLiveAndTest(function() use ($role, $input)
+        {
+            return $this->core()->edit($role, $input);
+        });
 
         return $role->toArrayPublic();
     }

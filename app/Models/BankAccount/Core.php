@@ -5,6 +5,7 @@ namespace RZP\Models\BankAccount;
 use RZP\Constants\Mode;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
+use RZP\Constants\MailTags;
 use Mail;
 use RZP\Trace\TraceCode;
 
@@ -88,12 +89,28 @@ class Core extends Base\Core
             });
     }
 
+    public function updateBeneficiaryCodes()
+    {
+        $bas = $this->repo->bank_account->fetchBankAccountsWithoutBeneCode();
+
+        foreach ($bas as $ba)
+        {
+            $ba->generateBeneficiaryCode();
+
+            $this->repo->saveOrFail($ba);
+        }
+
+        $result['count'] = $bas->count();
+
+        return $result;
+    }
+
     public function createTestBankAccount($merchant)
     {
         $input = array(
             'ifsc_code'             => Entity::SPECIAL_IFSC_CODE,
-            'beneficiary_name'      => substr($merchant->getAttribute('name'), 0, 40),
-            'beneficiary_email'     => $merchant->getAttribute('email'),
+            'beneficiary_name'      => 'Test ' . $merchant->getId(),
+            'beneficiary_email'     => $merchant->getEmail(),
             'account_number'        => random_integer(11),
             'beneficiary_address1'  => 'Bengaluru Palace',
             'beneficiary_address2'  => 'Palace Rd, Vasanth Nagar',
@@ -121,6 +138,8 @@ class Core extends Base\Core
         $ba = $this->buildBankAccount($input, $merchant, $mode);
 
         $ba->associateMerchant($merchant);
+
+        $ba->generateBeneficiaryCode();
 
         $this->repo->saveOrFail($ba);
 
@@ -162,10 +181,15 @@ class Core extends Base\Core
 
     protected function sendEmail($template, $subject, $data)
     {
-        Mail::queue($template, $data, function($message) use ($data, $subject){
+        Mail::queue($template, $data, function($message) use ($data, $subject)
+        {
+            $message->to($data['email'], $data['name']);
 
-            $message->to($data['email'], $data['name'])
-                ->subject($subject);
+            $message->subject($subject);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_CHANGED);
         });
     }
 }

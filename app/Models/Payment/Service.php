@@ -16,6 +16,8 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
+use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -122,7 +124,7 @@ class Service extends Base\Service
      * @param  string $id
      * @param  array  $input
      *
-     * @return Payment\Entity
+     * @return array
      */
     public function refund($id, array $input)
     {
@@ -141,9 +143,7 @@ class Service extends Base\Service
      */
     public function refundAuthorized($id, array $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $refund = $this->getNewProcessor()->refundAuthorizedPayment($payment, $input);
 
@@ -206,9 +206,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->verify($payment);
 
@@ -231,7 +229,7 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchant = $this->repo->merchant->findOrFail($payment->getMerchantId());
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)
                      ->forceAuthorizeFailedPayment($payment, $input);
@@ -286,36 +284,55 @@ class Service extends Base\Service
     {
         $payment = $this->core->retrieveById($id);
 
-        $merchantId = $payment->getMerchantId();
-
-        $merchant = $this->repo->merchant->findOrFail($merchantId);
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         $data = $this->getNewProcessor($merchant)->authorizeFailedPayment($payment);
 
         return $data;
     }
 
-    public function fixAuthorizeAt($id)
+    public function fixAuthorizeAt($input)
     {
-        $payment = $this->core->retrieveById($id);
+        $paymentIds = $input['payment_ids'];
 
-        if (($payment->isFailed() === false) or
-            ($payment->hasBeenCaptured() === true))
+        $failurePayments = [];
+
+        $successes = $failures = 0;
+
+        $total = count($paymentIds);
+
+        foreach ($paymentIds as $paymentId)
         {
-            throw new Exception\BadRequestException(
-                Error\ErrorCode::BAD_REQUEST_PAYMENT_INVALID_STATUS);
+            $payment = $this->core->retrieveById($paymentId);
+
+            if (($payment->isFailed() === false) or
+                ($payment->hasBeenCaptured() === true))
+            {
+                $failures++;
+                $failurePayments[] = $paymentId;
+                continue;
+            }
+
+            $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
+                'payment_id' => $paymentId,
+                'old_authorized_at' => $payment->getAuthorizeTimestamp()
+            ]);
+
+            $payment->setAuthorizedAtNull();
+
+            $this->repo->saveOrFail($payment);
+
+            $successes++;
         }
 
-        $this->trace->info(TraceCode::PAYMENT_AUTHORIZED_NULL, [
-            'payment_id' => $id,
-            'old_authorized_at' => $payment->getAuthorizeTimestamp()
-        ]);
+        $data = [
+            'success_count'     => $successes,
+            'failure_count'     => $failures,
+            'failure_payments'  => $failurePayments,
+            'total'             => $total,
+        ];
 
-        $payment->setAuthorizeAtNull();
-
-        $this->repo->saveOrFail($payment);
-
-        return $payment->toArray();
+        return $data;
     }
 
     public function retrieveRefundByIdAndPaymentId($paymentId, $rfndId)
@@ -333,31 +350,25 @@ class Service extends Base\Service
 
     public function getCardForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $card = $payment->card;
+        $card = $this->repo->card->fetchForPayment($payment);
 
         return $card->toArrayPublic();
     }
 
     public function retrieveRefundsForPayment($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
-
-        $refunds = $this->repo->refund->findForPayment($payment, $this->merchant);
+        $refunds = $this->repo->refund->findForPaymentAndMerchant($payment, $this->merchant);
 
         return $refunds->toArrayPublic();
     }
 
     public function fetchTransactionByPaymentId($id)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
-
-        $payment = $this->repo->payment->findByIdAndMerchantId($id, $this->merchant->getId());
+        $payment = $this->repo->payment->findByPublicIdAndMerchant($id, $this->merchant);
 
         $transaction = $this->repo->transaction->findByEntityId($id, $this->merchant, true);
 
@@ -379,6 +390,53 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * Transfers a payment
+     * /payment/:id/transfer
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function transfer(string $id, array $input) : array
+    {
+        $transfers = $this->getNewProcessor()->transfer($id, $input);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Get Transfers for a payment_id
+     *
+     * @param  string $id   Payment ID
+     * @return array
+     */
+    public function getTransfers(string $id) : array
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Create a payout from a payment
+     *
+     * @param string    $id
+     * @param array     $input
+     *
+     * @return array
+     */
+    public function payout(string $id, array $input) : array
+    {
+        $payout = $this->getNewProcessor()->payout($id, $input);
+
+        return $payout->toArrayPublic();
+    }
 
     /**
      * If a payment has been captured on gateway but not on the api side,
@@ -408,6 +466,24 @@ class Service extends Base\Service
         return $data;
     }
 
+    public function manualGatewayCapture($paymentId)
+    {
+        Entity::verifyIdAndSilentlyStripSign($paymentId);
+
+        $payment = $this->repo->payment->findOrFail($paymentId);
+
+        $data = $this->getNewProcessor($payment->merchant)->manualGatewayCapture($payment);
+
+        $this->trace->info(
+            TraceCode::MANUAL_GATEWAY_CAPTURE_RESPONSE,
+            [
+                'payment_id'    => $paymentId,
+                'data'          => $data
+            ]);
+
+        return $data;
+    }
+
     /**
      * After card enroll, bank redirects to us
      * and we send it to gateway for further
@@ -427,11 +503,9 @@ class Service extends Base\Service
 
     public function s2sCallback($id, $input)
     {
-        Payment\Entity::verifyIdAndStripSign($id);
+        $payment = $this->repo->payment->findByPublicId($id);
 
-        $payment = $this->repo->payment->findOrFailPublic($id);
-
-        $merchant = $payment->merchant;
+        $merchant = $this->repo->merchant->fetchMerchantFromEntity($payment);
 
         // TODO: Hack to prevent S2S callback processing for TPV Merchants.
         // All TPV Merchant transactions will be made through BILLDESK.
@@ -647,10 +721,10 @@ class Service extends Base\Service
     {
         // Since we are taking 12 am of today, we only need to subtract 4 days from today
         // to arrive at 5 days before.
-        $days = Processor\Processor::AUTO_REFUND_TIME_PERIOD;
+        $seconds = Merchant\Entity::AUTO_REFUND_DELAY_DEFAULT;
 
         $date = Carbon::today('Asia/Kolkata');
-        $ts = $date->subDays($days)->timestamp;
+        $ts = $date->subSeconds($seconds)->timestamp;
 
         $payments = $this->repo->payment->getAuthorizedPaymentsBeforeTimestamp($ts);
 
@@ -696,14 +770,6 @@ class Service extends Base\Service
 
                 $refunded++;
             }
-            catch (Exception\GatewayErrorException $e)
-            {
-                $failed++;
-
-                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
-
-                // Now Just continue
-            }
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
@@ -712,6 +778,14 @@ class Service extends Base\Service
 
                 // Just continue
                 $timedOut++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
+                // Now Just continue
             }
             catch (\Exception $e)
             {
@@ -779,25 +853,29 @@ class Service extends Base\Service
         $startTime = microtime(true);
 
         // All Payments in created state will be marked as failed after 9 minutes
-        $timestamp = time() - 9 * 60;
+        $now = time();
+        $timestamp = $now - Payment\Entity::PAYMENT_TIMEOUT_DEFAULT_OLD;
 
         $payments = $this->repo->payment->fetchOldCreatedPaymentsForTimeout($timestamp);
 
         foreach ($payments as $payment)
         {
-            try
+            if ($payment->shouldTimeout($now) === true)
             {
-                $this->getNewProcessor($payment->merchant)
-                     ->setPayment($payment)
-                     ->timeoutPayment();
+                try
+                {
+                    $this->getNewProcessor($payment->merchant)
+                         ->setPayment($payment)
+                         ->timeoutPayment();
 
-                $count++;
-            }
-            catch (\Exception $e)
-            {
-                $this->trace->traceException($e);
+                    $count++;
+                }
+                catch (\Exception $e)
+                {
+                    $this->trace->traceException($e);
 
-                $error++;
+                    $error++;
+                }
             }
         }
 
@@ -1001,8 +1079,10 @@ class Service extends Base\Service
 
                 $headers = $message->getHeaders();
 
+                $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
+
                 foreach ($data['payments'] as $payment) {
-                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                    $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
                 }
             });
     }

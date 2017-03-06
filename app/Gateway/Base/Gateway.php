@@ -260,6 +260,18 @@ class Gateway
         $this->mock = $mock;
     }
 
+    protected function assertPaymentId($expectedPaymentId, $actualPaymentId)
+    {
+        if ($actualPaymentId !== $expectedPaymentId)
+        {
+            throw new Exception\LogicException(
+                'Data tampering found.', null, [
+                    'expected' => $expectedPaymentId,
+                    'actual'   => $actualPaymentId
+                ]);
+        }
+    }
+
     protected function getCallbackResponseData(array $input)
     {
         if ($input['payment'][Payment\Entity::METHOD] === Payment\Method::NETBANKING)
@@ -486,10 +498,13 @@ class Gateway
         return false;
     }
 
-    protected function traceGatewayPaymentRequest($request, $input)
+    protected function traceGatewayPaymentRequest(
+        $request,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_REQUEST)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_REQUEST,
+            $traceCode,
             [
                 'request'    => $request,
                 'gateway'    => $this->gateway,
@@ -497,10 +512,13 @@ class Gateway
             ]);
     }
 
-    protected function traceGatewayPaymentResponse($response, $input)
+    protected function traceGatewayPaymentResponse(
+        $response,
+        $input,
+        $traceCode = TraceCode::GATEWAY_PAYMENT_RESPONSE)
     {
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            $traceCode,
             [
                 'response'   => $response,
                 'gateway'    => $this->gateway,
@@ -736,29 +754,6 @@ class Gateway
         return $request;
     }
 
-    protected function jsonToArray($json)
-    {
-        $decodeJson = json_decode($json, true);
-
-        switch(json_last_error())
-        {
-            case JSON_ERROR_NONE:
-                return $decodeJson;
-            case JSON_ERROR_DEPTH:
-            case JSON_ERROR_STATE_MISMATCH:
-            case JSON_ERROR_CTRL_CHAR:
-            case JSON_ERROR_SYNTAX:
-            case JSON_ERROR_UTF8:
-                $this->trace->error(
-                    TraceCode::GATEWAY_PAYMENT_ERROR,
-                    ['json' => $json]);
-
-                throw new Exception\RuntimeException(
-                    'Failed to convert json to array',
-                    ['json' => $json]);
-        }
-    }
-
     protected function getDynamicMerchantName($merchant)
     {
         $label = $merchant->getBillingLabel();
@@ -840,6 +835,32 @@ class Gateway
                 'Failed to convert xml to array',
                 ['xml' => $xml],
                 $e);
+        }
+    }
+
+    protected function jsonToArray($json)
+    {
+        $decodeJson = json_decode($json, true);
+
+        switch (json_last_error())
+        {
+            case JSON_ERROR_NONE:
+                return $decodeJson;
+
+            case JSON_ERROR_DEPTH:
+            case JSON_ERROR_STATE_MISMATCH:
+            case JSON_ERROR_CTRL_CHAR:
+            case JSON_ERROR_SYNTAX:
+            case JSON_ERROR_UTF8:
+            default:
+
+                $this->trace->error(
+                    TraceCode::GATEWAY_PAYMENT_ERROR,
+                    ['json' => $json]);
+
+                throw new Exception\RuntimeException(
+                    'Failed to convert json to array',
+                    ['json' => $json]);
         }
     }
 }

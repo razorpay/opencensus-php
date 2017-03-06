@@ -36,7 +36,7 @@ return [
             'content'     => [
                 'error' => [
                     'code'          => ErrorCode::BAD_REQUEST_ERROR,
-                    'description'   => ErrorCode::BAD_REQUEST_PAYMENT_FEES_OR_SERVICE_TAX_TAMPERED,
+                    'description'   => 'Payment failed because fees or service tax was tampered',
                 ],
             ],
             'status_code' => 200,

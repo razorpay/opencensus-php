@@ -102,7 +102,9 @@ trait Topup
 
         if ($payment->getGlobalTokenId() !== null)
         {
-            $gatewayInput['token'] = $payment->globalToken->toArray();
+            $token = $this->repo->token->getGlobalOrLocalTokenEntityOfPayment($payment);
+
+            $gatewayInput['token'] = $token->toArray();
         }
 
         if ($payment->analytics !== null)

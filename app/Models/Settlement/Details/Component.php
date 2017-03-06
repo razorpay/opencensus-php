@@ -7,11 +7,14 @@ use RZP\Exception;
 class Component
 {
     const REFUND        = 'refund';
+    const PAYOUT        = 'payout';
     const PAYMENT       = 'payment';
     const ADJUSTMENT    = 'adjustment';
     const FEE           = 'fee';
     const SERVICE_TAX   = 'service_tax';
     const FEE_CREDITS   = 'fee_credits';
+    const TRANSFER      = 'transfer';
+    const REVERSAL      = 'reversal';
 
     public static function validateComponent($component)
     {

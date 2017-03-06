@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use Closure;
+use RZP\Constants\Table;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -24,6 +25,7 @@ class Repository extends Base\Repository
         Entity::HOLD_FUNDS              => 'sometimes|boolean',
         Entity::LIVE                    => 'sometimes|boolean',
         Entity::EMAIL                   => 'sometimes|string|max:255',
+        Entity::PARENT_ID               => 'sometimes|string|size:14',
         Entity::CATEGORY                => 'sometimes|string|max:4',
         Entity::INTERNATIONAL           => 'sometimes|boolean',
         Entity::RECEIPT_EMAIL_ENABLED   => 'sometimes|boolean',
@@ -40,7 +42,7 @@ class Repository extends Base\Repository
         if ($this->sharedMerchant === null)
         {
             $this->sharedMerchant = $this->newQuery()
-                                         ->where(Entity::ID, "=", Account::SHARED_ACCOUNT)
+                                         ->where(Entity::ID, '=', Account::SHARED_ACCOUNT)
                                          ->firstOrFail();
         }
 
@@ -179,8 +181,13 @@ class Repository extends Base\Repository
                     ->where(Entity::LIVE, '=', 1);
     }
 
-    public function getMerchantFromEntity($entity)
+    public function fetchMerchantFromEntity($entity)
     {
+        if ($entity->hasRelation('merchant'))
+        {
+            return $entity->merchant;
+        }
+
         $merchantId = $entity->getMerchantId();
 
         $merchant = $this->findOrFail($merchantId);
@@ -234,5 +241,121 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Entity::ORG_ID, '=', $orgId)
                     ->get();
+    }
+
+    public function fetchMerchantsByFilter(array $merchantIds, array $input)
+    {
+        $merchantCreatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+        $merchantUpdatedAt = $this->manager->merchant->getAttributeWithTableName(Entity::CREATED_AT);
+
+        $merchantId = $this->manager
+                           ->merchant_detail
+                           ->getAttributeWithTableName(Merchant\Detail\Entity::MERCHANT_ID);
+
+        $submittedAt = $this->manager
+                            ->merchant_detail
+                            ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED_AT);
+
+        $stepsFinished = $this->manager
+                              ->merchant_detail
+                              ->getAttributeWithTableName(Merchant\Detail\Entity::STEPS_FINISHED);
+
+        $activationProgress = $this->manager
+                                   ->merchant_detail
+                                   ->getAttributeWithTableName(Merchant\Detail\Entity::ACTIVATION_PROGRESS);
+
+        $submitted = $this->manager
+                          ->merchant_detail
+                          ->getAttributeWithTableName(Merchant\Detail\Entity::SUBMITTED);
+
+        $updatedAt = $this->manager
+                          ->merchant_detail
+                          ->getAttributeWithTableName(Merchant\Detail\Entity::UPDATED_AT);
+
+        $query = $this->newQuery()
+                      ->with('features')
+                      ->select(Entity::ID,
+                               Entity::NAME,
+                               Entity::EMAIL,
+                               Entity::ACTIVATED,
+                               Entity::PARENT_ID,
+                               $merchantCreatedAt,
+                               $merchantUpdatedAt,
+                               Entity::ARCHIVED_AT,
+                               Entity::SUSPENDED_AT,
+                               $stepsFinished,
+                               $activationProgress,
+                               $submitted,
+                               $submittedAt,
+                               $updatedAt)
+                      ->join(Table::MERCHANT_DETAIL, Entity::ID, '=', $merchantId)
+                      ->whereIn(Entity::ID, $merchantIds);
+
+        switch (true)
+        {
+            case (empty($input['suspended']) === false):
+                $query = $query->whereNotNull(Entity::SUSPENDED_AT);
+                break;
+
+            case (empty($input['archived']) === false):
+                $query = $query->whereNotNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['activated']) === false):
+                $query = $query->whereNotNull(Entity::ACTIVATED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['pending']) === false):
+                $query = $query->whereNull(Entity::ACTIVATED_AT)
+                               ->whereNotNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            case (empty($input['dead']) === false):
+                $query = $query->where($merchantCreatedAt, '<', time() - 24 * 7 * 3600)
+                               ->whereNull($submittedAt)
+                               ->whereNull(Entity::SUSPENDED_AT)
+                               ->whereNull(Entity::ARCHIVED_AT);
+                break;
+
+            default:
+                $query = $query->whereNull(Entity::ARCHIVED_AT)
+                               ->whereNull(Entity::SUSPENDED_AT);
+                break;
+        }
+
+        // Marketplace accounts filter
+        if (empty($input['sub_accounts']) === false)
+        {
+            if ($input['sub_accounts'] === '1')
+            {
+                $query = $query->whereNotNull(Entity::PARENT_ID);
+            }
+            else
+            {
+                $query = $query->where(Entity::PARENT_ID, $input['sub_accounts']);
+            }
+        }
+
+        return $query->get();
+    }
+
+    public function fetchByAccountIdAndMerchant(string $accountId, Entity $marketplace)
+    {
+        AccountEntity::verifyIdAndStripSign($accountId);
+
+        $account =  $this->newQuery()
+                         ->where(Entity::PARENT_ID, $marketplace->getId())
+                         ->find($accountId);
+
+        if ($account !== null)
+        {
+            $account->parent()->associate($marketplace);
+        }
+
+        return $account;
     }
 }

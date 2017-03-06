@@ -66,6 +66,7 @@ class Repository extends Base\Repository
             'gateway_transaction_id'    => $response['paymentid'],
             'action'                    => $request['action'],
             'amount'                    => $request['amt'],
+            'currency'                  => $request['currencycode'],
             'enroll_result'             => $response['enroll_result'],
             'status'                    => $status,
             'eci'                       => $response['eci']);
@@ -87,6 +88,7 @@ class Repository extends Base\Repository
             'payment_id'            => $id,
             'action'                => $requestData['action'],
             'amount'                => $requestData['amt'],
+            'currency'              => $requestData['currencycode'],
             'error_code'            => $error['code'],
             'error_text'            => $error['text'],
             'enroll_result'         => $enrollResult,

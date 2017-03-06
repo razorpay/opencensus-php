@@ -8,11 +8,6 @@ use RZP\Models\Payment;
 
 class Service extends Base\Service
 {
-    public function __construct()
-    {
-        parent::__construct();
-    }
-
     public function create(array $input)
     {
         $merchant = $this->merchant;

@@ -121,7 +121,7 @@ class Service extends Base\Service
 
     public function getSupportedNetworks()
     {
-        $bankCodes = Processor\Netbanking::getSupportedBanks('live');
+        $bankCodes = Processor\Netbanking::getSupportedBanks();
 
         $bankNamesMap = Bank\Name::getNames($bankCodes);
 

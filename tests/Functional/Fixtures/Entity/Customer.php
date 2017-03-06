@@ -134,4 +134,32 @@ class Customer extends Base
 
         return $bankAccounts;
     }
+
+    public function createCustomerBalance($attributes = [])
+    {
+        $merchantId = '10000000000000';
+        $customerValues = [
+            'id'            => '200000customer',
+            'name'          => 'Balancetest',
+            'email'         => 'balancetest@razorpay.com',
+            'contact'       => '1234567890',
+            'merchant_id'   => $merchantId
+        ];
+
+        $customer = $this->fixtures->create('customer', $customerValues);
+
+        $customerBalanceValues = [
+            'customer_id'   => $customer->getId(),
+            'merchant_id'   => $merchantId,
+            'balance'       => 0,
+            'daily_usage'   => 0,
+            'weekly_usage'  => 0,
+            'monthly_usage' => 0,
+            'max_balance'   => 2000000,
+        ];
+
+        $customerBalanceValues = array_merge($customerBalanceValues, $attributes);
+
+        return $this->fixtures->create('customer_balance', $customerBalanceValues);
+    }
 }

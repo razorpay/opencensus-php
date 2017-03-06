@@ -29,9 +29,13 @@ class CreateMerchants extends Migration
             $table->char(Merchant::ORG_ID, Merchant::ID_LENGTH)
                   ->nullable();
 
-            $table->string(Merchant::NAME);
+            $table->string(Merchant::NAME)
+                  ->nullable();
 
             $table->string(Merchant::EMAIL, 255);
+
+            $table->char(Merchant::PARENT_ID, Merchant::ID_LENGTH)
+                  ->nullable();
 
             $table->tinyInteger(Merchant::ACTIVATED)
                   ->default(0);
@@ -71,9 +75,6 @@ class CreateMerchants extends Migration
             $table->string(Merchant::TRANSACTION_REPORT_EMAIL)
                   ->nullable();
 
-            $table->string(Merchant::FEATURES)
-                  ->nullable();
-
             $table->tinyInteger(Merchant::FEE_BEARER)
                   ->default(FeeBearer::getValueForBearerString(FeeBearer::PLATFORM));
 
@@ -92,11 +93,15 @@ class CreateMerchants extends Migration
                   ->default(1);
 
             $table->integer(Merchant::MAX_PAYMENT_AMOUNT)
+                  ->unsigned()
                   ->nullable();
 
             $table->integer(Merchant::AUTO_REFUND_DELAY)
                   ->nullable()
                   ->default(null);
+
+            $table->tinyInteger(Merchant::AUTO_CAPTURE_LATE_AUTH)
+                  ->default(0);
 
             $table->tinyInteger(Merchant::CONVERT_CURRENCY)
                   ->nullable();
@@ -104,7 +109,6 @@ class CreateMerchants extends Migration
             // Columns for Method and Gateway Based Categories
             $table->string(Merchant::CATEGORY2)
                   ->nullable();
-
 
             $table->integer(Merchant::CREATED_AT);
 
@@ -119,6 +123,15 @@ class CreateMerchants extends Migration
             $table->index(Merchant::RECEIPT_EMAIL_ENABLED);
             $table->index(Merchant::RISK_RATING);
             $table->index(Merchant::EMAIL);
+            $table->index(Merchant::AUTO_REFUND_DELAY);
+        });
+
+        Schema::table(Table::MERCHANT, function(Blueprint $table)
+        {
+            $table->foreign(Merchant::PARENT_ID)
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
     }
 
@@ -129,6 +142,12 @@ class CreateMerchants extends Migration
      */
     public function down()
     {
+        Schema::table(Table::MERCHANT, function($table)
+        {
+            $table->dropForeign(
+                Table::MERCHANT . '_' . MERCHANT::PARENT_ID . '_foreign');
+        });
+
         Schema::drop(Table::MERCHANT);
     }
 }

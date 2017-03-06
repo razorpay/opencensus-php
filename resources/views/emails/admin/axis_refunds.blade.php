@@ -17,6 +17,32 @@
       <table style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; width: 100%; margin: 0; padding: 0;"><tr style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <td style="font-family: 'Helvetica Neue', 'Helvetica', Helvetica, Arial, sans-serif; font-size: 100%; line-height: 1.6em; margin: 0; padding: 0;">
 <p>PFA Claims and Refund files. Forward this mail to Dashrathi.Dakwa@axisbank.com, Venkatesh.Ramachandran@axisbank.com, Santosh.Sakpal@axisbank.com, settlements@razorpay.com</p>
+            <table style="border: 1px solid grey;">
+                <thead>
+                    <tr style="border: 1px solid grey">
+                        <th style="border: 1px solid grey">Description</th>
+                        <th style="border: 1px solid grey">Transaction Count</th>
+                        <th style="border: 1px solid grey">Transaction Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">Claim File Dated {{{$date}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['claims']}}}</td>
+                        <td style="border: 1px solid grey">{{{$amount['claims']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">Refund Dated {{{$date}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['refunds']}}}</td>
+                        <td style="border: 1px solid grey">{{{$amount['refunds']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">Net Amt to be credited to Nodal A/c</td>
+                        <td style="border: 1px solid grey">{{{$count['total']}}}</td>
+                        <td style="border: 1px solid grey">{{{$amount['total']}}}</td>
+                    </tr>
+                </tbody>
+            </table>
           </td>
         </tr></table>
 </div>

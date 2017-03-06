@@ -45,9 +45,17 @@ class Gateway extends Base\Gateway
 
     protected function callbackNormalFlow(array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $input['gateway']);
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_CALLBACK,
+            [
+                'request' => $input['gateway'],
+                'gateway' => 'mobikwik',
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         $this->verifySecureHash($input['gateway']);
+
+        $this->assertPaymentId($input['payment']['id'], $input['gateway']['orderid']);
 
         $payment = $this->repo->findByPaymentIdAndActionOrFail(
                             $input['gateway']['orderid'], Action::AUTHORIZE);
@@ -56,14 +64,6 @@ class Gateway extends Base\Gateway
 
         $payment->fill($input['gateway']);
         $payment->saveOrFail();
-
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_CALLBACK,
-            [
-                'request' => $input['gateway'],
-                'gateway' => 'mobikwik',
-                'payment_id' => $input['payment']['id'],
-            ]);
 
         $this->verifyPaymentCallbackResponse($input['gateway']);
 
@@ -82,7 +82,7 @@ class Gateway extends Base\Gateway
         $content = $this->xmlToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content' => $content,
                 'gateway' => 'mobikwik',
@@ -197,12 +197,12 @@ class Gateway extends Base\Gateway
         $content = http_build_query($content);
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $content['received'] = 1;
         $refund->fill($content)->saveOrFail();
@@ -229,12 +229,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_USER_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_USER_RESPONSE, $content);
 
         $content['received'] = 1;
 
@@ -269,12 +269,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_CREATE_USER_RESPONSE, $content);
 
         $code = $content['statuscode'];
 
@@ -297,23 +297,23 @@ class Gateway extends Base\Gateway
         $content = array(
             'amount'       => $input['payment']['amount'] / 100,
             'cell'         => $this->getFormattedContact($input['payment']['contact']),
-            'merchantname' => $this->getBillingLabel($input),
+            'merchantname' => $input['merchant']->getFilteredDba(),
             'mid'          => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'      => MessageCode::OTP_GENERATE,
             'tokentype'    => '0',
         );
 
         $content['checksum'] = $this->getHashOfArray($content);
-        $content['merchantAlias'] = $input['merchant']['billing_label'];
+        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $content = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE, $content);
 
         $code = $content['statuscode'];
 
@@ -341,7 +341,7 @@ class Gateway extends Base\Gateway
             'amount'        => (string) ($input['payment']['amount'] / 100),
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'comment'       => 'Order id - ' . $input['payment']['public_id'],
-            'merchantname'  => $this->getBillingLabel($input),
+            'merchantname'  => $input['merchant']->getFilteredDba(),
             'mid'           => $this->getMobikwikMerchantId($input['terminal']),
             'msgcode'       => MessageCode::OTP_SUBMIT,
             'orderid'       => $input['payment']['id'],
@@ -353,12 +353,12 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST, $request);
 
         $response = $this->sendGatewayRequest($request);
         $responseArray = $this->xmlToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $responseArray);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE, $responseArray);
 
         $code = $responseArray['statuscode'];
 
@@ -411,7 +411,7 @@ class Gateway extends Base\Gateway
             'amount'        => $input['payment']['amount'] / 100,
             'cell'          => $this->getFormattedContact($input['payment']['contact']),
             'orderid'       => $input['payment']['id'],
-            'merchantname'  => $input['merchant']['billing_label'],
+            'merchantname'  => $input['merchant']->getFilteredDba(),
             'mid'           => $input['terminal']['gateway_merchant_id'],
             'redirecturl'   => $input['callbackUrl'],
         );
@@ -423,7 +423,7 @@ class Gateway extends Base\Gateway
 
         $payment = $this->createGatewayPaymentEntity($content);
         $content['checksum'] = $this->getHashForAuthorizeRequest($content);
-        $content['merchantAlias'] = $input['merchant']['billing_label'];
+        $content['merchantAlias'] = $input['merchant']->getFilteredDba();
 
         return $content;
     }
@@ -478,12 +478,20 @@ class Gateway extends Base\Gateway
 
         $content['orderid'] = $input['payment']['id'];
 
+        $contentToTrace = http_build_query($content);
+
         $content['checksum'] = $this->getHashForVerifyRequest(
                                     $content['mid'], $content['orderid']);
 
         $content = http_build_query($content);
 
         $request = $this->getStandardRequestArray($content);
+
+        $requestToTrace = $request;
+
+        $requestToTrace['content'] = $contentToTrace;
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST, $requestToTrace);
 
         return $request;
     }
@@ -751,19 +759,5 @@ class Gateway extends Base\Gateway
         $number = new PhoneBook($contact, true);
 
         return $number->format(PhoneBook::DOMESTIC);
-    }
-
-    protected function getBillingLabel(array $input)
-    {
-        $label = $input['merchant']['billing_label'];
-
-        if (empty($label) === true)
-        {
-            $label = $input['merchant']['name'];
-        }
-
-        $filteredLabel = preg_replace('/[^a-zA-Z0-9 ]+/', '', $label);
-
-        return $filteredLabel;
     }
 }

@@ -126,7 +126,5 @@ class Core extends Base\Core
         }
 
         $admin->setPassword($input['password']);
-
-        $this->repo->saveOrFail($admin);
     }
 }

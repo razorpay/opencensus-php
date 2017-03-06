@@ -11,8 +11,9 @@ use SoapClient;
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Constants;
-use RZP\Models\Card;
 use RZP\Gateway\Base;
+use RZP\Models\Card;
+use RZP\Models\Payment;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -74,7 +75,10 @@ class Gateway extends Base\Gateway
 
     public function capture(array $input)
     {
-        parent::capture($input);
+        // We are using action to allow force capture on
+        // already captured payment entity, when they are not
+        // captured on gateway
+        parent::action($input, Action::CAPTURE);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
                                 $input['payment']['id'], Action::AUTHORIZE);
@@ -102,6 +106,37 @@ class Gateway extends Base\Gateway
         {
             $this->handleSoapFault($exception, 'Payment capture failed');
         }
+    }
+
+    public function manualGatewayCapture(array $input)
+    {
+        $canManualCapture = $this->canForceCapture($input);
+
+        if ($canManualCapture)
+        {
+            $this->capture($input);
+
+            // Successfully captured on the gateway
+            return true;
+        }
+
+        // Did not capture on the gateway side
+        return false;
+    }
+
+    protected function canForceCapture($input)
+    {
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayPaymentEntity = $this->repo->findSuccessfulCapturedEntity($paymentId);
+
+        if (($gatewayPaymentEntity !== null) and
+            ($gatewayPaymentEntity->getAmount() === $input['amount']))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     public function callback(array $input)
@@ -694,7 +729,7 @@ class Gateway extends Base\Gateway
         }
         else
         {
-            $vaultToken = Card\Tokenex::getVaultToken($input['card']['number']);
+            $vaultToken = (new Card\Tokenex)->getVaultToken($input['card']['number']);
         }
 
         $key = $this->getCacheKey($input['payment']['id']);
@@ -711,7 +746,7 @@ class Gateway extends Base\Gateway
     {
         $data = $this->getCardDetailsFromCache($input);
 
-        $input['card']['number'] = Card\Tokenex::getCardNumber($data['vault_token']);
+        $input['card']['number'] = (new Card\Tokenex)->getCardNumber($data['vault_token']);
 
         $input['card']['cvv']    = Crypt::decrypt($data['cvv']);
     }
@@ -720,7 +755,7 @@ class Gateway extends Base\Gateway
     {
         $key = $this->getCacheKey($input['payment']['id']);
 
-        return Cache::store($this->secureCacheDriver)->pull($key);
+        return Cache::store($this->secureCacheDriver)->get($key) ?: [];
     }
 
     protected function getAttributeFromAuthEnrollResponse(array $input, array $response)
@@ -1148,11 +1183,14 @@ class Gateway extends Base\Gateway
 
         $paymentId = $input['payment']['id'];
         $amount    = $input['payment']['amount'];
+        $currency  = $input['payment']['currency'];
         $acquirer  = $input['terminal']->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
 
         $gatewayPayment->setAmount($amount);
+
+        $gatewayPayment->setCurrency($currency);
 
         $gatewayPayment->setAction($this->action);
 
@@ -1174,6 +1212,7 @@ class Gateway extends Base\Gateway
         $paymentId    = $input['payment']['id'];
         $refundId     = $input['refund']['id'];
         $refundAmount = $input['refund']['amount'];
+        $currency     = $input['refund']['currency'];
         $acquirer  = $input['terminal']->getGatewayAcquirer();
 
         $gatewayPayment->setPaymentId($paymentId);
@@ -1181,6 +1220,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setRefundId($refundId);
 
         $gatewayPayment->setAmount($refundAmount);
+
+        $gatewayPayment->setCurrency($currency);
 
         $gatewayPayment->setAction($this->action);
 

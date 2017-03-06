@@ -10,7 +10,7 @@ class Validator extends Base\Validator
         'merchantId'        => 'numeric|max:9999999999',
         'merchantName'      => 'alpha_num|max:50',
         'subMerchantId'     => 'sometimes|alpha_num|max:10',
-        'subMerchantName'   => 'sometimes|alpha_num|max:50',
+        'subMerchantName'   => 'sometimes|alpha_space_num|max:50',
         'terminalId'        => 'sometimes|digits_between:1,10',
         'merchantTranId'    => 'required|alpha_num|max:20',
         'billNumber'        => 'sometimes|alpha_num|max:50',

@@ -52,7 +52,6 @@ class Core extends Base\Core
             $methods = $this->getPaymentMethods($merchant);
         }
 
-
         $methodsToCheck = Payment\Method::getAllPaymentMethods();
 
         foreach ($methodsToCheck as $method)
@@ -91,7 +90,7 @@ class Core extends Base\Core
     {
         $methods = $this->getPaymentMethods($merchant);
 
-        $supportedBanks = Netbanking::getSupportedBanks($this->mode, $merchant->isTPVRequired());
+        $supportedBanks = Netbanking::getSupportedBanks($merchant->isTPVRequired());
 
         $methods->setBanks($supportedBanks);
 
@@ -138,7 +137,7 @@ class Core extends Base\Core
 
     public function getEnabledAndDisabledBanks($merchant)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         return $this->getEnabledDisabledBanks($banks);
     }
@@ -159,17 +158,21 @@ class Core extends Base\Core
 
         $methods->merchant()->associate($merchant);
 
-        $methods->setCreditCard(true);
-        $methods->setDebitCard(true);
-        $methods->setAmex(true);
-        $methods->setMobikwik(true);
-        $methods->setPayzapp(true);
-        $methods->setPayumoney(true);
-        $methods->setOlamoney(true);
-        $methods->setFreecharge(true);
-        $methods->setAirtelmoney(true);
+        // No default methods are enabled for Marketplace accounts
+        if ($merchant->isLinkedAccount() === false)
+        {
+            $methods->setCreditCard(true);
+            $methods->setDebitCard(true);
+            $methods->setAmex(true);
+            $methods->setMobikwik(true);
+            $methods->setPayzapp(true);
+            $methods->setPayumoney(true);
+            $methods->setOlamoney(true);
+            $methods->setFreecharge(true);
+            $methods->setAirtelmoney(true);
 
-        $this->setAllPaymentBanks($methods);
+            $this->setAllPaymentBanks($methods);
+        }
 
         $this->repo->saveOrFail($methods);
 
@@ -187,7 +190,7 @@ class Core extends Base\Core
 
     public function setPaymentBanksForMerchant($merchant, $input)
     {
-        $banks = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $banks = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($banks === null)
         {
@@ -200,7 +203,7 @@ class Core extends Base\Core
 
     protected function getPaymentMethods(Merchant\Entity $merchant)
     {
-        $methods = $this->repo->methods->getMerchantMethods($merchant->getId());
+        $methods = $this->repo->methods->getMethodsForMerchant($merchant);
 
         if ($methods === null)
         {

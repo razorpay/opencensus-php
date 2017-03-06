@@ -2,10 +2,13 @@
 
 namespace RZP\Models\Invoice;
 
+use Carbon\Carbon;
+
 use RZP\Base;
 use RZP\Models\Merchant;
 use RZP\Exception\BadRequestValidationFailureException;
 use RZP\Exception\BadRequestException;
+use RZP\Exception\LogicException;
 use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
@@ -27,6 +30,13 @@ class Validator extends Base\Validator
     const EDIT_DRAFT    = 'editDraft';
     const EDIT_ISSUED   = 'editIssued';
 
+    const MAX_ALLOWED_LINE_ITEMS = 20;
+
+    //
+    // A minimum of 1 days of gap must exist between invoice issue and expired by
+    //
+    const MIN_EXPIRY_SECS = 86400;
+
     protected static $createRules = [
         // Entity::DISCOUNT_FLAT       => 'sometimes|integer|min:1',
         // Entity::DISCOUNT_PERCENT    => 'sometimes|integer|min:1|max:100',
@@ -38,21 +48,23 @@ class Validator extends Base\Validator
 
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     //
@@ -71,65 +83,72 @@ class Validator extends Base\Validator
 
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|boolean',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     protected static $createIssuedRules = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes|array',
         Entity::CUSTOMER_ID         => 'sometimes|public_id|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::CURRENCY            => 'sometimes|in:INR',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
         Entity::DRAFT               => 'sometimes|in:0',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
     ];
 
     protected static $editDraftRules  = [
         Entity::SMS_NOTIFY          => 'sometimes|boolean',
         Entity::EMAIL_NOTIFY        => 'sometimes|boolean',
-        Entity::DATE                => 'sometimes|integer',
+        Entity::DATE                => 'sometimes|epoch',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
         Entity::VIEW_LESS           => 'sometimes|in:1',
         Entity::SOURCE              => 'sometimes|string|max:32|custom',
         Entity::TYPE                => 'sometimes|string|max:16|custom',
         Entity::CUSTOMER            => 'sometimes',
         Entity::CUSTOMER_ID         => 'sometimes|string|size:19',
-        Entity::LINE_ITEMS          => 'sometimes|array',
+        Entity::LINE_ITEMS          => 'sometimes|array|min:1|max:' . self::MAX_ALLOWED_LINE_ITEMS,
         Entity::AMOUNT              => 'sometimes|integer|min:100|max:50000000',
         Entity::DESCRIPTION         => 'sometimes|string|max:2048',
         Entity::USER_ID             => 'sometimes|alpha_num|size:14',
+        Entity::EXPIRE_BY           => 'sometimes|epoch',
+        Entity::DRAFT               => 'sometimes|boolean',
     ];
 
     protected static $editIssuedRules  = [
-        Entity::DATE                => 'sometimes|integer',
         Entity::TERMS               => 'sometimes|string|max:2048',
         Entity::NOTES               => 'sometimes|notes',
+        Entity::COMMENT             => 'sometimes|string|max:2048',
         Entity::RECEIPT             => 'sometimes|string|min:1|max:40',
     ];
 
@@ -143,7 +162,6 @@ class Validator extends Base\Validator
     ];
 
     protected static $createIssuedValidators = [
-        Entity::LINE_ITEMS,
         Entity::CURRENCY,
     ];
 
@@ -190,34 +208,6 @@ class Validator extends Base\Validator
         {
             throw new BadRequestValidationFailureException(
                 'amount should not be sent if line_items are being sent in the input.'
-            );
-        }
-    }
-
-    public function validateLineItems(array $input)
-    {
-        if (isset($input[Entity::LINE_ITEMS]) === false)
-        {
-            return;
-        }
-
-        $lineItemsCount = count($input[Entity::LINE_ITEMS]);
-
-        if ($lineItemsCount === 0)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice must contain at least one line item.'
-            );
-        }
-
-        //
-        // We are currently not allowing more than 10 line items
-        // in the input. There's no concrete reason for this though.
-        //
-        if ($lineItemsCount > 10)
-        {
-            throw new BadRequestValidationFailureException(
-                'Invoice cannot have more than 10 line items.'
             );
         }
     }
@@ -270,9 +260,10 @@ class Validator extends Base\Validator
 
         if ($invoice->lineItems()->count() > 0)
         {
-            throw new BadRequestValidationFailureException(
-                'amount cannot be updated if invoice has line_items'
-            );
+            $message = 'amount cannot be updated if ' .
+                       $invoice->getTypeLabel() .  ' has line_items';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 
@@ -332,7 +323,15 @@ class Validator extends Base\Validator
 
     public function validateOperation(string $operation)
     {
-        assert(in_array($operation, $this->entity->getValidOperations(), true));
+        $invoice = $this->entity;
+
+        if (in_array($operation, $invoice->getValidOperations(), true) === false)
+        {
+            throw new LogicException(
+                "Invoice validator: $operation is not a valid",
+                null,
+                ['id' => $invoice->getId()]);
+        }
 
         switch ($operation)
         {
@@ -345,6 +344,7 @@ class Validator extends Base\Validator
                 break;
 
             case 'sendNotification':
+            case 'expireInvoice':
                 $allowedStatuses = [
                     Status::ISSUED,
                 ];
@@ -357,19 +357,21 @@ class Validator extends Base\Validator
                 ];
         }
 
-        $invoiceStatus = $this->entity->getStatus();
+        $invoiceStatus = $invoice->getStatus();
 
         if (in_array($invoiceStatus, $allowedStatuses, true) === false)
         {
-            throw new BadRequestValidationFailureException(
-                'Operation not allowed for invoice in ' . $invoiceStatus . ' status.'
-            );
+            $message = 'Operation not allowed for ' . $invoice->getTypeLabel() .
+                       ' in ' . $invoiceStatus . ' status.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 
     /**
      * Validates if an invoice can be issued or not.
      * It has the following checks:
+     *  - Gap between invoice issue and expired by should be greater that a min
      *  - Invoice should have amount set to a non-zero value
      *  - Either description (minimal invoice) or non-zero line items should exist
      */
@@ -388,6 +390,57 @@ class Validator extends Base\Validator
             default:
                 $this->validateInvoiceIssueForOtherTypes($invoice);
                 break;
+        }
+
+        $this->validateInvoiceIssueExpireBy();
+    }
+
+    public function validateInvoiceIssueExpireBy()
+    {
+        $invoice = $this->entity;
+
+        $now = Carbon::now('Asia/Kolkata');
+        $minExpireBy = $now->copy()->addSeconds(self::MIN_EXPIRY_SECS);
+
+        if ($invoice->getExpireBy() < $minExpireBy->timestamp)
+        {
+            $message = 'expire_by should be at least ' .
+                        $minExpireBy->diffForHumans($now) . ' the time of issue.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateInvoicePayable()
+    {
+        $invoice = $this->entity;
+
+        if ($invoice->trashed())
+        {
+            throw new BadRequestValidationFailureException(
+                $invoice->getTypeLabel() . ' is not payable as it is deleted.');
+        }
+
+        if ($invoice->isIssued() === false)
+        {
+            $message = $invoice->getTypeLabel() . ' is not payable in ' .
+                       $invoice->getStatus() . ' status.';
+
+            throw new BadRequestValidationFailureException($message);
+        }
+    }
+
+    public function validateInvoiceMaxAllowedLineItems()
+    {
+        $invoice        = $this->entity;
+        $lineItemsCount = $invoice->lineItems()->count();
+
+        if ($lineItemsCount >= self::MAX_ALLOWED_LINE_ITEMS)
+        {
+            $message = 'The line items may not have more than ' .
+                        self::MAX_ALLOWED_LINE_ITEMS . ' items in total.';
+
+            throw new BadRequestValidationFailureException($message);
         }
     }
 

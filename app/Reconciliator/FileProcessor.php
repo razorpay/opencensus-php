@@ -2,12 +2,15 @@
 
 namespace RZP\Reconciliator;
 
+use Requests;
+use SplFileInfo;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
+use ZipArchive;
+use Storage;
+
 use RZP\Trace\TraceCode;
 use RZP\Exception;
 use RZP\Models\Base\UniqueIdEntity;
-
-use Symfony\Component\HttpFoundation\File\UploadedFile;
-use ZipArchive;
 
 class FileProcessor
 {
@@ -44,6 +47,13 @@ class FileProcessor
         self::CSV   => ['txt', 'csv', 'text']
     ];
 
+    /******************************
+     * csv file handling constants
+     ******************************/
+
+    const LINES_FROM_TOP    = 'lines_from_top';
+    const LINES_FROM_BOTTOM = 'lines_from_bottom';
+
     const SETTLEMENT_STORAGE_PATH = 'files/settlement';
 
     /********************
@@ -78,7 +88,7 @@ class FileProcessor
      * @param UploadedFile $file
      * @return array
      */
-    protected function getUploadedFileDetails($file)
+    protected function getUploadedFileDetails(UploadedFile $file)
     {
         $fileName = strtolower($file->getClientOriginalName());
         $extension = strtolower($file->getClientOriginalExtension());
@@ -99,7 +109,7 @@ class FileProcessor
      * @param $file
      * @return array
      */
-    protected function getStorageFileDetails($file)
+    protected function getStorageFileDetails(SplFileInfo $file)
     {
         $fileName = strtolower($file->getFilename());
         $extension = strtolower($file->getExtension());
@@ -164,12 +174,22 @@ class FileProcessor
      * Also validates the (mime type + extension) combination.
      *
      * @param UploadedFile $file
+     * @param              $fileLocationType
+     *
      * @return string Extension of the file
      */
-    public function getTypeOfFile($file)
+    public function getTypeOfFile($file, $fileLocationType)
     {
-        $mimeType = $file->getMimeType();
-        $extension = $file->getClientOriginalExtension();
+        if ($fileLocationType === self::UPLOADED)
+        {
+            $mimeType = $file->getMimeType();
+            $extension = $file->getClientOriginalExtension();
+        }
+        else
+        {
+            $mimeType = mime_content_type($file->getRealPath());
+            $extension = $file->getExtension();
+        }
 
         // Validates the mime type + extension.
         $this->validator->validateExtensionMimeType($extension, $mimeType);
@@ -264,5 +284,47 @@ class FileProcessor
     public function getFolderFromFilePath($filePath)
     {
         return pathinfo(realpath($filePath), PATHINFO_DIRNAME);
+    }
+
+    /**
+     * Downloads and stores the file in the storage directory
+     *
+     * @param string $link
+     *
+     * @return SplFileInfo
+     */
+    public function getAndStoreFileFromLink(string $link)
+    {
+        $request = [
+            'url'     => stripcslashes($link),
+            'method'  => 'GET',
+            'headers' => [],
+            'content' => [],
+            'options' => [
+                'timeout'          => 60,
+                'follow_redirects' => true,
+                'verify'           => true,
+            ],
+        ];
+
+        $response = Requests::request(
+            $request['url'],
+            $request['headers'],
+            $request['content'],
+            $request['method'],
+            $request['options']);
+
+        $contentType = $response->headers->getValues('Content-Type')[0];
+
+        $extension = $this->validator->getExtensionFromContentType($contentType);
+
+        $fileName = (string) time() . '.' . $extension;
+
+        $filePath = storage_path(self::SETTLEMENT_STORAGE_PATH);
+        $filePath .= '/' . $fileName;
+
+        Storage::disk('settlements')->put($fileName, $response->body);
+
+        return new SplFileInfo($filePath);
     }
 }

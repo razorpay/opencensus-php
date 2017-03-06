@@ -21,9 +21,9 @@ class Options
         $this->setMultiple();
     }
 
-    public function setMultiple()
+    public function setMultiple($multiple = true)
     {
-        $this->hasMultiple = true;
+        $this->hasMultiple = $multiple;
     }
 
     public function getMultiple()

@@ -11,29 +11,34 @@ use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
+use RZP\Models\Feature;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
 use RZP\Models\Payment\Verify;
 use RZP\Models\Transaction;
+use RZP\Models\Invoice;
+use RZP\Base\BuilderEx;
 
 class Repository extends Base\Repository
 {
     protected $entity = 'payment';
 
     // These are merchant allowed params to search on. These also act as default params.
-    protected $entityFetchParamRules = array(
+    protected $entityFetchParamRules = [
+        Entity::EMAIL              => 'sometimes|email',
         Entity::ORDER_ID           => 'sometimes|string|size:20',
-    );
+    ];
 
     // These are proxy allowed params to search on.
-    protected $proxyFetchParamRules = array(
+    protected $proxyFetchParamRules = [
         Entity::EMAIL              => 'sometimes',
         Entity::STATUS             => 'sometimes|string',
         Entity::NOTES              => 'sometimes|string|max:500',
-    );
+        Entity::INVOICE_ID         => 'sometimes|string|max:18',
+    ];
 
     // These are admin allowed params to search on.
-    protected $appFetchParamRules = array(
+    protected $appFetchParamRules = [
         Entity::STATUS             => 'sometimes|string',
         Entity::VERIFIED           => 'sometimes|in:null,0,1,2',
         Entity::REFUND_STATUS      => 'sometimes|in:null,partial,full',
@@ -43,6 +48,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY            => 'sometimes',
         Entity::EMAIL              => 'sometimes|email',
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
+        Entity::TRANSFER_ID        => 'sometimes|alpha_num|size:14',
         Entity::CARD_ID            => 'sometimes|alpha_num|size:14',
         Entity::CAPTURED           => 'sometimes|in:0,1',
         Entity::WALLET             => 'sometimes|custom',
@@ -55,10 +61,17 @@ class Repository extends Base\Repository
         Entity::GLOBAL_TOKEN_ID    => 'sometimes|alpha_num|size:14',
         Entity::SAVE               => 'sometimes|in:0,1',
         Entity::LATE_AUTHORIZED    => 'sometimes|in:0,1',
-    );
+        Entity::AMOUNT             => 'sometimes|integer',
+        Entity::TERMINAL_ID        => 'sometimes|alpha_num|size:14',
+    ];
 
     protected $esWhitelistedParams = [
         Entity::NOTES
+    ];
+
+    protected $signedIds = [
+        Entity::ORDER_ID,
+        Entity::INVOICE_ID,
     ];
 
     public function getRecentMerchantPaymentsForCheckoutId($checkoutId)
@@ -141,7 +154,18 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function lockForUpdate($id)
+    /**
+     * Fetches entity with given id with a mysql lock for update
+     *
+     * @param string       $id
+     * @param bool|boolean $withTrashed
+     *
+     * withTrashed: Method signature changed to make it compatible
+     *              with Base/Repository's method.
+     *
+     * @return Entity
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
     {
         return $this->newQuery()
                     ->lockForUpdate()->findOrFail($id);
@@ -170,7 +194,7 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->status(Payment\Status::CREATED)
                     ->where(Payment\Entity::CREATED_AT, '<=', $timestamp)
-                    ->with('merchant')
+                    ->with(['merchant', 'merchant.features'])
                     ->get();
     }
 
@@ -180,7 +204,7 @@ class Repository extends Base\Repository
      *
      * @param $timestamp
      *
-     * @return RZP\Models\Base\PublicCollection
+     * @return Base\PublicCollection
      */
     public function getAuthorizedPaymentsBeforeTimestamp($timestamp)
     {
@@ -201,7 +225,7 @@ class Repository extends Base\Repository
      * This function is used to fetch the authorized payments with
      * merchant auto delay delay
      *
-     * @return RZP\Models\Base\PublicCollection
+     * @return Base\PublicCollection
      */
     public function getAuthorizedPaymentsWithAutoRefundDelay()
     {
@@ -248,20 +272,22 @@ class Repository extends Base\Repository
     /**
      * Return Payments object(s) which should be verified
      *
-     * @param string $minimumTime filter to remove Payments which are created before $ts seconds
+     * @param array  $minMaxArray    Min/Max array
      * @param string $verifyBoundary array of [VERIFY_BUCKET and timestamp] values
-     * @param string $verifyStatus value for filter of VerifyStatus
-     * @param string $paymentStatus value for filter of paymentStatus
-     * @param bool   $random
+     * @param string $verifyStatus   value for filter of VerifyStatus
+     * @param string $paymentStatus  value for filter of paymentStatus
+     * @param bool   $random         Db should take param in random value or not
+     * @param int    $rowsToFetch    Rows to fetch
+     *
      * @return Collection of Payment
      */
     public function getPaymentsToVerify(
-                        $minimumTime,
-                        $verifyBoundary,
+                        array $minMaxArray,
+                        array $verifyBoundary,
                         $verifyStatus = null,
                         $paymentStatus = null,
-                        $random = true,
-                        $rowsToFetch = 100)
+                        bool $random = true,
+                        int $rowsToFetch = 100)
     {
         $verifyEnabledGateways = Payment\Gateway::$verifyEnabled;
 
@@ -283,15 +309,14 @@ class Repository extends Base\Repository
             $query->inRandomOrder();
         }
 
-        // For created, we only look at the payment status.
-        if (($paymentStatus !== Payment\Status::CREATED) and
-            ($verifyStatus !== Verify\Status::ERROR))
+        // For verify Error, we only look at the payment status.
+        if ($verifyStatus !== Verify\Status::ERROR)
         {
-            $this->addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundary, $query);
+            $this->addWhereConditionsUsingVerifyBoundary($minMaxArray, $verifyBoundary, $query);
         }
         else
         {
-            $this->addWhereConditionsUsingMinimumTime($minimumTime, $query);
+            $this->addWhereConditionsUsingMinimumTime($minMaxArray, $query);
         }
 
         // Sample Query
@@ -321,6 +346,7 @@ class Repository extends Base\Repository
         $verifiableCount = $query->count();
 
         $payments = $query->take($rowsToFetch)
+                          ->with('merchant')
                           ->get();
 
         return ['payments' => $payments, 'verifiable_count' => $verifiableCount];
@@ -329,28 +355,50 @@ class Repository extends Base\Repository
     /**
      * Add Where Condition for Created Payments, And Verify Failed Payments
      *
-     * @param int       $minimumTime  filter to remove Payments which are created before $ts seconds
-     * @param BuilderEx $query        original query
+     * @param array     $minMaxArray Min Max array to filter payments created $ts sec before and $tx time after
+     * @param BuilderEx $query       original query
+     *
      * @return void
      */
-    protected function addWhereConditionsUsingMinimumTime($minimumTime, $query)
+    protected function addWhereConditionsUsingMinimumTime(array $minMaxArray, BuilderEx $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minimumTime);
+        $query->where(Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']);
+    }
+
+    protected function addWhereClauseForMinAndMaxTime(array $minMaxArray, array & $whereConditions)
+    {
+        $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($minMaxArray['max'] !== null)
+        {
+            $whereConditions[] = [
+                [Payment\Entity::CREATED_AT, '<=', $currentTime - $minMaxArray['min']],
+                [Payment\Entity::CREATED_AT, '>=', $currentTime - $minMaxArray['max']]
+            ];
+        }
     }
 
     /**
      * Process min_time and verify_boundary array and return where and orWhere Condition
      *
-     * @param int       $minimumTime      filter to remove Payments which are created before $ts seconds
+     * @param array     $minMaxArray      Min Max array to filter payments created $ts sec before and $tx time after
      * @param array     $verifyBoundaries array with Key as bucket and value as time for that bucket
      * @param BuilderEx $query            original query
+     *
      * @return void
      */
-    protected function addWhereConditionsUsingVerifyBoundary($minimumTime, $verifyBoundaries, $query)
+    protected function addWhereConditionsUsingVerifyBoundary(
+                                                    array $minMaxArray,
+                                                    array $verifyBoundaries,
+                                                    BuilderEx $query)
     {
         $currentTime = Carbon::now('Asia/Kolkata')->timestamp;
+
+        $whereConditions = [];
+
+        $this->addWhereClauseForMinAndMaxTime($minMaxArray, $whereConditions);
 
         // Each or condition will fetch payments which are
         // in next Verify Bucket and not processed by previous cron
@@ -388,13 +436,14 @@ class Repository extends Base\Repository
                     ->whereNotNull(Payment\Entity::CAPTURED_AT)
                     ->skip($skip)
                     ->take(10)
+                    ->with('merchant', 'card')
                     ->get();
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['card']);
+                        $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchReconciledPaymentsForGateway($from, $to, $gateway, $status)
@@ -494,6 +543,13 @@ class Repository extends Base\Repository
         $query->whereIn(Entity::STATUS, $status);
     }
 
+    protected function addQueryParamAmount($query, $params)
+    {
+        $amount = $this->getAttributeWithTableName(Entity::AMOUNT);
+
+        $query->where($amount, '=', $params[Entity::AMOUNT]);
+    }
+
     protected function addQueryParamIin($query, $params)
     {
         $this->joinQueryCard($query);
@@ -533,11 +589,18 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryParamOrderId($query, $params)
+    protected function addQueryParamEmail($query, $params)
     {
-        $orderId = (new Order\Entity)->verifyIdAndSilentlyStripSign($params[Entity::ORDER_ID]);
+        $merchant = $this->auth->getMerchant();
 
-        $query->where(Entity::ORDER_ID, '=', $orderId);
+        if (($this->auth->isPrivateAuth() === true) and
+            ($this->auth->isProxyAuth() === false) and
+            ($merchant->isFeatureEnabled(Feature\Constants::PAYMENT_EMAIL_FETCH) === false))
+        {
+            throw new Exception\ExtraFieldsException('email');
+        }
+
+        return parent::addQueryParamEmail($query, $params);
     }
 
     protected function joinQueryCard($query)
@@ -618,7 +681,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -645,7 +708,7 @@ class Repository extends Base\Repository
                         Merchant\Entity::NAME,
                         Merchant\Entity::WEBSITE)
                     ->orderBy('volume', 'desc')
-                    ->limit(50)
+                    ->limit(60)
                     ->get();
     }
 
@@ -658,6 +721,14 @@ class Repository extends Base\Repository
                        'SUM(' . Entity::AMOUNT . ') AS sum' . ','.
                        'COUNT(*) AS count')
                     ->get();
+    }
+
+    public function findByTransferIdAndMerchant(string $transferId, string $accountId)
+    {
+        return $this->newQuery()
+                    ->where(Entity::TRANSFER_ID, $transferId)
+                    ->merchantId($accountId)
+                    ->firstOrFailPublic();
     }
 
     public function fetchCapturedSummaryBetweenTimestamp($from, $to)

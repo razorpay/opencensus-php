@@ -262,7 +262,7 @@ return [
         'amount'                => 50000,
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
-        'status_code'           => 'Success',
+        'status_code'           => 'SUCCESS',
         'entity'                => 'wallet',
     ],
 
@@ -273,7 +273,7 @@ return [
         'amount'                => 25000,
         'contact'               => '9918899029',
         'gateway_merchant_id'   => 'random_id',
-        'status_code'           => 'Success',
+        'status_code'           => 'SUCCESS',
         'entity'                => 'wallet',
     ],
 
@@ -323,5 +323,5 @@ return [
             'class'               => RZP\Exception\BadRequestException::class,
             'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_ALREADY_PROCESSED
         ],
-    ]
+    ],
 ];

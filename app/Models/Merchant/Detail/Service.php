@@ -28,6 +28,8 @@ class Service extends Base\Service
 
         $merchantDetails = $this->getMerchantDetails($merchant);
 
+        $signedUrls = [];
+
         foreach (Entity::UPLOADED_FIELDS as $key)
         {
             if (isset($merchantDetails[$key]))
@@ -67,7 +69,13 @@ class Service extends Base\Service
             $this->markSubmitted($merchantDetails);
         }
 
-        return $this->createResponse($merchantDetails);
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
+        $this->repo->saveOrFail($merchantDetails);
+
+        return $response;
     }
 
     public function uploadActivationFile(array $input)
@@ -96,9 +104,13 @@ class Service extends Base\Service
 
         $merchantDetails->fill($params);
 
+        $response = $this->createResponse($merchantDetails);
+
+        $merchantDetails->setActivationProgress($response['verification']['activation_progress']);
+
         $this->repo->saveOrFail($merchantDetails);
 
-        return $this->createResponse($merchantDetails);
+        return $response;
     }
 
     public function editMerchantDetails($id, array $input)
@@ -160,7 +172,7 @@ class Service extends Base\Service
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Detail\Entity::SUBMIT]) === true) and
-                    ($input[Detail\Entity::SUBMIT] === '1'));
+                ($input[Detail\Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -209,7 +221,16 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
-        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
+        $validationFields = ValidationFields::DASHBOARD_FIELDS;
+
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+        }
+
+        $totalFields = count($validationFields);
+
+        foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                (is_null($merchantDetailsArr[$key]) === true) or
@@ -222,17 +243,23 @@ class Service extends Base\Service
 
         if (count($requiredFields) > 0)
         {
+            $remainingFields = count($requiredFields);
+
             $response['verification'] = [
-                'status'            => 'disabled',
-                'disabled_reason'   => 'required_fields',
-                'required_fields'   => $requiredFields
+                'status'              => 'disabled',
+                'disabled_reason'     => 'required_fields',
+                'required_fields'     => $requiredFields,
+                'activation_progress' => 100 - intval($remainingFields * 100 / $totalFields),
             ];
 
             $response['can_submit'] = false;
         }
         else
         {
-            $response['verification'] = ['status' => 'pending'];
+            $response['verification'] = [
+                'status'              => 'pending',
+                'activation_progress' => 100,
+            ];
 
             $response['can_submit'] = true;
         }

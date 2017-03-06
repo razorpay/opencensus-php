@@ -32,12 +32,10 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToTextFileH2H($txt)
+    public function writeToTextFileH2H($name, $txt)
     {
         try
         {
-            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
-
             $fullpath = $this->saveLocally($name, $txt);
 
             $bucket = 'h2h_bucket';
@@ -57,19 +55,9 @@ trait FileHandlerTrait
         }
     }
 
-    public function writeToCsvFile($data, $name, $fullName = null)
+    public function writeToCsvFile($data, $name, $fullName = null, $dir = 'files/settlement')
     {
-        $excelObject = $this->createExcelObject($data, $name);
-
-        $fileMetadata = $excelObject->store('csv', storage_path('files/settlement'), true);
-
-        $fullpath = $fileMetadata['full'];
-
-        if ($fullName != null)
-        {
-            rename($fullpath, $fullName);
-            $fullpath = $fullName;
-        }
+        $fullpath = $this->createCsvFile($data, $name, $fullName, $dir);
 
         $url = $this->saveToAws($name, $fullpath, 'text/csv');
 
@@ -79,15 +67,7 @@ trait FileHandlerTrait
 
     public function writeToExcelFile($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
-
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -97,16 +77,9 @@ trait FileHandlerTrait
     }
 
 
-    public function writeToExcelFileH2H($data, $name)
+    public function writeToExcelFileH2H($data, $name, $dir = 'files/settlement')
     {
-        \Config::set('excel::export.calculate', true);
-
-        $columnFormat = $this->getColumnFormatForExcel();
-
-        $excel = $this->createExcelObject($data, $name, $columnFormat);
-
-        $fileMetadata = $excel->store('xlsx', storage_path('files/settlement'), true);
-        $fullpath = $fileMetadata['full'];
+        $fullpath = $this->createExcelFile($data, $name, $dir);
 
         $xlsxMimeType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
 
@@ -119,6 +92,65 @@ trait FileHandlerTrait
         return $url;
     }
 
+    public function createExcelFile($data, $name, $dir)
+    {
+        \Config::set('excel::export.calculate', true);
+
+        $columnFormat = $this->getColumnFormatForExcel();
+
+        $excel = $this->createExcelObject($data, $name, $columnFormat);
+
+        $fileMetadata = $excel->store('xlsx', storage_path($dir), true);
+
+        $fullpath = $fileMetadata['full'];
+
+        return $fullpath;
+    }
+
+    public function createCsvFile($data, $name, $fullName, $dir, $append = false)
+    {
+        $dir = storage_path($dir);
+
+        if (file_exists($dir) === false)
+        {
+            mkdir($dir);
+        }
+
+        $fullpath = $dir . '/' . $name . '.csv';
+
+        // open the file in append mode
+        $handle = fopen($fullpath, 'a');
+
+        $first = true;
+
+        foreach ($data as $row)
+        {
+            if (($append === false) and ($first === true))
+            {
+                $headers = array_keys($row);
+
+                fputcsv($handle, $headers);
+
+                $first = false;
+            }
+
+            $row = $this->flatten($row);
+
+            fputcsv($handle, $row);
+        }
+
+        fclose($handle);
+
+        if ($fullName !== null)
+        {
+            rename($fullpath, $fullName);
+
+            $fullpath = $fullName;
+        }
+
+        return $fullpath;
+    }
+
     public function getH2HFileFromAws($key)
     {
         $bucket = 'h2h_bucket';
@@ -128,6 +160,26 @@ trait FileHandlerTrait
         $fullPath = $this->getFullFilePath($name);
 
         return $this->getFileFromAws($key, $fullPath, $bucket);
+    }
+
+    /**
+     * Flattens an array recursively
+     * Concatenating keys using periods
+     * @param  array $array  input array
+     * @param  string $prefix prefix used to concat keys
+     * @return array flat version of input array
+     */
+    protected function flatten(array $row)
+    {
+        foreach ($row as &$value)
+        {
+            if (is_array($value))
+            {
+                $value = json_encode($value);
+            }
+        }
+
+        return $row;
     }
 
     protected function createExcelObject($data, $name, $columnFormat = [], $sheetName = 'Sheet 1')
@@ -371,7 +423,7 @@ trait FileHandlerTrait
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException(
+            $this->trace()->traceException(
                 $e,
                 Trace::WARNING,
                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,

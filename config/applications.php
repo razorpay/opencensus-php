@@ -2,41 +2,41 @@
 
 return array(
     'dashboard' => array(
-        'url'       =>  env('APP_DASHBOARD_URL'),
-        'secret'    =>  env('APP_DASHBOARD_SECRET'),
-        'pretend'   =>  env('APP_DASHBOARD_PRETEND'),
-        'cloud'     =>  true,
+        'url'       => env('APP_DASHBOARD_URL'),
+        'secret'    => env('APP_DASHBOARD_SECRET'),
+        'pretend'   => env('APP_DASHBOARD_PRETEND'),
+        'cloud'     => true,
     ),
 
     'mock_gateways' => array(
-        'secret'    =>  env('MOCK_GATEWAY_SECRET'),
+        'secret'    => env('MOCK_GATEWAY_SECRET'),
     ),
 
     'cron' => array(
-        'secret'    =>  env('CRON_PASSWORD'),
+        'secret'    => env('CRON_PASSWORD'),
     ),
 
     'h2h' => array(
-        'secret'   =>  env('APP_H2H_SECRET'),
+        'secret'   => env('APP_H2H_SECRET'),
     ),
 
     'mailgun' => array(
-        'url'       =>  'razorpay.com',
-        'key'       =>  env('MAILGUN_SECRET'),
-        'mock'      =>  env('MAILGUN_MOCK'),
-        'secret'    =>  env('APP_MAILGUN_SECRET'),
-        'from_name' =>  'Team Razorpay',
+        'url'       => 'razorpay.com',
+        'key'       => env('MAILGUN_SECRET'),
+        'mock'      => env('MAILGUN_MOCK'),
+        'secret'    => env('APP_MAILGUN_SECRET'),
+        'from_name' => 'Team Razorpay',
         'from_email' => 'support@razorpay.com'
     ),
 
     'emi' => array(
-        'password'  =>  env('EMI_FILE_PASSWORD')
+        'password'  => env('EMI_FILE_PASSWORD')
     ),
 
     'slack' => array(
         'team'      => 'razorpay',
-        'token'     =>  env('SLACK_TOKEN'),
-        'mock'      =>  env('SLACK_MOCK'),
+        'token'     => env('SLACK_TOKEN'),
+        'mock'      => env('SLACK_MOCK'),
     ),
 
     'hosted' => array(
@@ -58,7 +58,9 @@ return array(
 
     'maxmind' => array(
         'mock'      => env('MAXMIND_MOCK', false),
-        'secret'    => env('MAXMIND_SECRET')
+        'id'        => '115820',
+        'secret'    => env('MAXMIND_SECRET'),
+        'secretv2'  => env('MAXMIND_V2_SECRET')
     ),
 
     'kotak' => array(
@@ -66,8 +68,11 @@ return array(
     ),
 
     'lumberjack' => array(
-        'url'       => env('LUMBERJACK_URL'),
-        'secret'    => env('LUMBERJACK_SECRET')
+        'url'           => env('LUMBERJACK_URL'),
+        'secret'        => env('LUMBERJACK_SECRET'),
+        'key'           => env('LUMBERJACK_KEY'),
+        'is_mock'       => env('LUMBERJACK_MOCK', false),
+        'identifier'    => env('LUMBERJACK_API_IDENTIFIER')
     ),
 
     'elfin' => [

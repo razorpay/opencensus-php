@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
         $content = $this->jsonToArray($response->body);
 
         $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY,
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             [
                 'content' => $content,
                 'gateway' => 'payumoney',
@@ -188,7 +188,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_RESPONSE, $content);
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
@@ -213,7 +213,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::PAYMENT_TOPUP_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_RESPONSE, $content);
 
         if ($content['status'] === Status::SUCCESS)
         {
@@ -228,7 +228,7 @@ class Gateway extends Base\Gateway
 
     public function checkExistingUser($input)
     {
-        ;
+
     }
 
     public function otpGenerate($input)
@@ -241,7 +241,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_RESPONSE, $content);
 
         if ($content['status'] !== Status::SUCCESS)
         {
@@ -286,7 +286,7 @@ class Gateway extends Base\Gateway
             $content['result']['body']['refresh_token'] = '';
         }
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_RESPONSE, $content);
 
         if (($content['status'] !== Status::SUCCESS) or
             (isset($content['result']['body']['access_token']) === false))
@@ -317,8 +317,8 @@ class Gateway extends Base\Gateway
         if ((isset($content['status']) === false) or
             ($content['status'] !== Status::TOPUP_SUCCESS))
         {
-            $status = isset($content['status']) ? $content['status']: null;
-            $message = isset($content['error_Message']) ? $content['error_Message']: null;
+            $status = $content['status'] ?? null;
+            $message = $content['error_Message'] ?? null;
 
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
@@ -337,7 +337,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_DEBIT_RESPONSE, $content);
 
         if ($content['status'] !== Status::SUCCESS)
         {
@@ -391,7 +391,7 @@ class Gateway extends Base\Gateway
 
         $content = $this->jsonToArray($response->body);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, $content);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_BALANCE_RESPONSE, $content);
 
         if ((isset($content['status']) === true) and
             ($content['status'] === Status::SUCCESS) and
@@ -441,7 +441,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_CHECK_BALANCE_REQUEST, $request);
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
@@ -463,7 +463,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_REFUND_REQUEST, $request);
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
@@ -486,7 +486,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST, $request);
 
         $request['headers'] = array(
             'Accept'        => 'application/json',
@@ -499,20 +499,20 @@ class Gateway extends Base\Gateway
     protected function getRefundAttributesFromRefundResponse($input, $response)
     {
         $refundAttributes = array(
-            'payment_id'            =>  $input['payment']['id'],
-            'action'                =>  $this->action,
-            'amount'                =>  $input['refund']['amount'],
-            'wallet'                =>  $input['payment']['wallet'],
-            'email'                 =>  $input['payment']['email'],
-            'received'              =>  1,
-            'contact'               =>  $this->getFormattedContact($input['payment']['contact']),
-            'gateway_merchant_id'   =>  $this->getMerchantId($input['terminal']),
-            'refund_id'             =>  $input['refund']['id'],
-            'response_code'         =>  '',
-            'response_description'  =>  $response['message'],
-            'status_code'           =>  $response['status'],
-            'error_message'         =>  '',
-            'gateway_refund_id'     =>  $response['result']
+            'payment_id'            => $input['payment']['id'],
+            'action'                => $this->action,
+            'amount'                => $input['refund']['amount'],
+            'wallet'                => $input['payment']['wallet'],
+            'email'                 => $input['payment']['email'],
+            'received'              => 1,
+            'contact'               => $this->getFormattedContact($input['payment']['contact']),
+            'gateway_merchant_id'   => $this->getMerchantId($input['terminal']),
+            'refund_id'             => $input['refund']['id'],
+            'response_code'         => '',
+            'response_description'  => $response['message'],
+            'status_code'           => $response['status'],
+            'error_message'         => '',
+            'gateway_refund_id'     => $response['result']
         );
 
         return $refundAttributes;
@@ -551,7 +551,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_GENERATE_REQUEST, $request);
 
         return $request;
     }
@@ -569,7 +569,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_OTP_SUBMIT_REQUEST, $request);
 
         return $request;
     }
@@ -616,7 +616,7 @@ class Gateway extends Base\Gateway
 
         $request = $this->getStandardRequestArray($content);
 
-        $this->trace->info(TraceCode::PAYMENT_TOPUP_REQUEST, $request);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_TOPUP_REQUEST, $request);
 
         $request['headers'] = array(
             'Accept'        => 'application/json',

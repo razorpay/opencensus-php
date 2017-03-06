@@ -39,11 +39,70 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->assertArraySelectiveEquals(
             $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+    }
 
-        $this->assertArrayHasKey('bank_payment_id', $gatewayEntity);
+    public function testTpvPayment()
+    {
+        $this->fixtures->create('terminal:shared_netbanking_axis_tpv_terminal');
 
-        $this->assertTrue(filter_var($gatewayEntity['bank_payment_id'],
-            FILTER_VALIDATE_INT) !== false);
+        $this->ba->privateAuth();
+
+        $this->fixtures->merchant->enableTPV();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $order = $this->startTest();
+
+        $order = $this->getLastEntity('order');
+
+        $this->payment['order_id'] = $order['id'];
+
+        $this->doAuthPayment($this->payment);
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($payment['terminal_id'], '100NbAxisTpvTl');
+
+        $this->fixtures->merchant->disableTPV();
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $this->assertArraySelectiveEquals(
+            $this->testData['testPaymentNetbankingEntity'], $gatewayEntity);
+
+        $this->assertEquals($gatewayEntity['account_number'],
+                            $data['request']['content']['account_number']);
+
+        $this->assertEquals($gatewayEntity['status'], 'Y');
+
+        $order = $this->getLastEntity('order', true);
+
+        $this->assertArraySelectiveEquals($data['request']['content'], $order);
+    }
+
+    public function testTpvVerifyPayment()
+    {
+        $this->testTpvPayment();
+
+        $payment = $this->getLastEntity('payment', true);
+
+        $this->mockSetBankPaymentId();
+
+        $verify = $this->verifyPayment($payment['id']);
+
+        assert($verify['payment']['verified'] === 1);
+
+        $gatewayEntity = $this->getLastEntity('netbanking', true);
+
+        $order = $this->getLastEntity('order', true);
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertEquals($gatewayEntity['account_number'], $data['account_number']);
+
+        $this->assertEquals($gatewayEntity['status'], 'Y');
+
+        $this->assertArraySelectiveEquals($data, $order);
     }
 
     public function testPaymentVerify()
@@ -55,6 +114,10 @@ class NetbankingAxisGatewayTest extends TestCase
         $content = $this->verifyPayment($payment['razorpay_payment_id']);
 
         assert($content['payment']['verified'] === 1);
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['status'], 'Y');
     }
 
     public function testRefundInFull()
@@ -85,12 +148,15 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $refund = $this->refundPayment($payment['id'], 100000);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $refund = $this->refundPayment($payment['id'], 100000);
+            });
     }
 
-    public function testRefundFileGeneration()
+    public function testDailyFileGeneration()
     {
         $payments = $this->createPaymentsToClaim();
 
@@ -103,15 +169,29 @@ class NetbankingAxisGatewayTest extends TestCase
         $this->checkRefundTextData($data);
     }
 
+    public function testEmptyDailyFileGeneration()
+    {
+        $payments = $this->createPaymentsToClaim();
+
+        $this->checkEmptyRefundsMailQueue();
+
+        $data = $this->generateRefundsExcelForNB('UTIB');
+
+        $this->checkEmptyRefundTextData($data);
+    }
+
     public function testFailedAuthPayment()
     {
         $this->mockPaymentFailure();
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function(){
-            $this->doAuthPayment($this->payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     public function testVerifyMismatch()
@@ -122,9 +202,12 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $this->mockVerifyStatusFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['razorpay_payment_id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['razorpay_payment_id']);
+            });
     }
 
     // Auth fails but verify shows success
@@ -136,9 +219,16 @@ class NetbankingAxisGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
+
+        $gatewayPayment = $this->getLastEntity('netbanking', true);
+
+        $this->assertEquals($gatewayPayment['status'], 'Y');
     }
 
     protected function createPaymentsToClaim()
@@ -194,22 +284,61 @@ class NetbankingAxisGatewayTest extends TestCase
               ->with(
                     Mockery::any(),
                     Mockery::on(function ($data)
-                        {
-                            $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
 
-                            // Amounts are in rupees
-                            $testData = array(
-                                'subject' => 'Axis Netbanking claims and refund files for '.$date,
-                                'amount' => [
-                                    'claims' => 1500,
-                                    'refunds' => 500,
-                                    'total' => 1000,
-                                ]);
+                        // Amounts are in rupees
+                        $testData = array(
+                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                            'amount' => [
+                                'claims'  => 1500,
+                                'refunds' => 500,
+                                'total'   => 1000,
+                            ],
+                            'count'   => [
+                                'claims'  => 3,
+                                'refunds' => 2,
+                                'total'   => 5
+                            ]
+                        );
 
-                            $this->assertArraySelectiveEquals($testData, $data);
+                        $this->assertArraySelectiveEquals($testData, $data);
 
-                            return true;
-                        }),
+                        return true;
+                    }),
+                    Mockery::any()
+                );
+    }
+
+    protected function checkEmptyRefundsMailQueue()
+    {
+        Mail::shouldReceive('queue')
+              ->once()
+              ->with(
+                    Mockery::any(),
+                    Mockery::on(function ($data)
+                    {
+                        $date = Carbon::today('Asia/Kolkata')->format('d-m-Y');
+
+                        // Amounts are in rupees
+                        $testData = array(
+                            'subject' => 'Axis Netbanking claims and refund files for '.$date,
+                            'amount' => [
+                                'claims'  => 1500,
+                                'refunds' => 0,
+                                'total'   => 1500,
+                            ],
+                            'count'   => [
+                                'claims'  => 3,
+                                'refunds' => 0,
+                                'total'   => 3
+                            ]
+                        );
+
+                        $this->assertArraySelectiveEquals($testData, $data);
+
+                        return true;
+                    }),
                     Mockery::any()
                 );
     }
@@ -241,29 +370,49 @@ class NetbankingAxisGatewayTest extends TestCase
         assert(count($claimsFileLine1) === 7);
     }
 
+    protected function checkEmptyRefundTextData($data)
+    {
+        $this->assertTrue(file_exists($data['netbanking_axis']['refunds']) === false);
+
+        $this->assertTrue(file_exists($data['netbanking_axis']['claims']));
+
+        $claimsFileContents = file($data['netbanking_axis']['claims']);
+
+        // 3 claims + 1 initial line
+        assert(count($claimsFileContents) === 4);
+
+        $claimsFileLine1 = explode('~~', $claimsFileContents[1]);
+
+        // Each line should have 7 columns
+        assert(count($claimsFileLine1) === 7);
+    }
+
     protected function mockPaymentFailure()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $content['PAID'] = 'N';
-        });
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content['PAID'] = 'N';
+            });
     }
 
     protected function mockVerifyStatusFailure()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $content['PaymentStatus'] = 'F';
-        });
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $content['PaymentStatus'] = 'F';
+            });
     }
 
     protected function mockSetBankPaymentId()
     {
-        $this->mockServerContentFunction(function(& $content, $action = null)
-        {
-            $gatewayEntity = $this->getLastEntity('netbanking', true);
+        $this->mockServerContentFunction(
+            function(& $content, $action = null)
+            {
+                $gatewayEntity = $this->getLastEntity('netbanking', true);
 
-            $content['BID'] = $gatewayEntity['bank_payment_id'];
-        });
+                $content['BID'] = $gatewayEntity['bank_payment_id'];
+            });
     }
 }

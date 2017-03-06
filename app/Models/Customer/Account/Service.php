@@ -65,9 +65,7 @@ class Service extends Base\Service
      */
     public function edit($id, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $customer = $this->core->edit($customer, $input);
 
@@ -82,9 +80,7 @@ class Service extends Base\Service
      */
     public function fetch($id)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         return $customer->toArrayPublic();
     }
@@ -109,9 +105,7 @@ class Service extends Base\Service
      */
     public function delete($id)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $customer = $this->repo->customer->deleteOrFail($customer);
 
@@ -123,9 +117,7 @@ class Service extends Base\Service
 
     public function addBankAccount($id, $input)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $ba = (new BankAccount\Core)->addOrUpdateBankAccountForCustomer($input, $customer);
 
@@ -134,9 +126,7 @@ class Service extends Base\Service
 
     public function getBankAccounts($id)
     {
-        Customer\Entity::verifyIdAndStripSign($id);
-
-        $customer = $this->repo->customer->findByIdAndMerchantId($id, $this->merchant->getId());
+        $customer = $this->repo->customer->findByPublicIdAndMerchant($id, $this->merchant);
 
         $accounts = $this->repo->bank_account->getBankAccountsForCustomer($customer);
 
@@ -393,9 +383,8 @@ class Service extends Base\Service
 
     public function createAddress($customerId, array $input)
     {
-        Entity::verifyIdAndStripSign($customerId);
-
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+        $customer = $this->repo->customer->findByPublicIdAndMerchant(
+                                            $customerId, $this->merchant);
 
         $address = (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input);
 
@@ -550,5 +539,35 @@ class Service extends Base\Service
         $accounts = $this->repo->bank_account->getBankAccountsForCustomer($this->device->customer, $ifsc);
 
         return $accounts->toArrayPublic();
+    }
+
+    /**
+     * Fetch balance details for a customer wallet account
+     *
+     * @param  string $customerId
+     * @return array
+     */
+    public function getCustomerBalance(string $customerId) : array
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        $balance = $this->repo
+                        ->customer_balance
+                        ->findByIdAndMerchant($customerId, $this->merchant);
+
+        return $balance->toArrayPublic();
+    }
+
+    public function getCustomerBalanceStatement(string $customerId, array $input = []) : array
+    {
+        Entity::verifyIdAndStripSign($customerId);
+
+        $customerBalance = $this->repo
+                                ->customer_balance
+                                ->findByIdAndMerchant($customerId, $this->merchant);
+
+        $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
+
+        return $records->toArrayPublic();
     }
 }

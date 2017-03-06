@@ -53,7 +53,7 @@ class ItemTest extends TestCase
 
         $this->startTest();
 
-        $this->assertUpdateResponseWithLastEntity('item', __FUNCTION__);
+        $this->assertResponseWithLastEntity('item', __FUNCTION__);
     }
 
     public function testDeleteItem()

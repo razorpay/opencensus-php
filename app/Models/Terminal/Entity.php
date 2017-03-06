@@ -253,7 +253,9 @@ class Entity extends Base\PublicEntity
 
     public function isShared()
     {
-        return (bool) $this->getAttribute(self::SHARED);
+        $merchantId = $this->getAttribute(self::MERCHANT_ID);
+
+        return ($merchantId === Merchant\Account::SHARED_ACCOUNT);
     }
 
     public function getCurrency()

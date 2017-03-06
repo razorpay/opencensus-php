@@ -303,6 +303,31 @@ EOT;
         $this->assertSame($this->payment['payment']['verified'], 1);
     }
 
+    /**
+     * Make sure a 5006 is taken as a gateway failure
+     */
+    public function testVerifyMissingPayment()
+    {
+        $payment = $this->getDefaultUpiPaymentArray();
+
+        // TODO: Stop using notes for status
+        // Instead use something like `status_code_success_etc@icici`
+        // To encode all expected information in the VPA itself
+        //
+        // Will work on this in #1997
+        $payment['notes']['status'] = 'failed';
+        $payment['vpa'] = 'missingpayment@icici';
+
+        $authPayment = $this->doAuthPaymentViaAjaxRoute($payment);
+
+        $upiEntity = $this->getLastEntity('upi', true);
+        $payment = $this->getEntityById('payment', $authPayment['payment_id'], true);
+
+        $this->payment = $this->verifyPayment($payment['id']);
+
+        $this->assertSame($this->payment['payment']['verified'], 1);
+    }
+
     public function testVerifyPaymentWithEncryptedResponse()
     {
         $payment = $this->getDefaultUpiPaymentArray();
@@ -339,54 +364,6 @@ EOT;
         $upi = $this->getLastEntity('upi', true);
         $this->assertTestResponse($upi, 'testPaymentUpiEntity');
         $this->assertArrayHasKey('gateway_payment_id', $upi);
-    }
-
-    public function testUpiEntityMigrationForUnknownProviderCode()
-    {
-        $this->ba->publicAuth();
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $payment['vpa'] = 'handle@unknownprovider';
-
-        $this->doAuthPaymentViaAjaxRoute($payment);
-
-        $request = [
-            'url'       => '/gateway/upi_fill_provider',
-            'method'    => 'put',
-        ];
-
-        $this->ba->appAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        $upi = $this->getLastEntity('upi', true);
-
-        $this->assertTestResponse($upi, 'testUpiEntityMigrationUnknownProviderCode');
-    }
-
-    public function testUpiEntityMigrationForKnownProviderCode()
-    {
-        $this->ba->publicAuth();
-
-        $payment = $this->getDefaultUpiPaymentArray();
-
-        $payment['vpa'] = 'handle@hdfcbank';
-
-        $this->doAuthPaymentViaAjaxRoute($payment);
-
-        $request = [
-            'url'       => '/gateway/upi_fill_provider',
-            'method'    => 'put',
-        ];
-
-        $this->ba->appAuth();
-
-        $this->makeRequestAndGetContent($request);
-
-        $upi = $this->getLastEntity('upi', true);
-
-        $this->assertTestResponse($upi, 'testUpiEntityMigrationKnownProviderCode');
     }
 
     public function testRefundExcelFile()

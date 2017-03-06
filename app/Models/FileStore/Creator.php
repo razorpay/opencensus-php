@@ -2,56 +2,79 @@
 
 namespace RZP\Models\FileStore;
 
+use Config;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
-use RZP\Models\Merchant\Account;
 use RZP\Models\FileStore\Formatter;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 
 class Creator extends Base\Core
 {
     /**
+     * Entity Instance
+     *
      * @var Entity
      */
     protected $file;
 
     /**
      * Local file instance
+     *
      * @var UploadedFile
      */
     protected $localFile;
 
     /**
-     * @var string delimiter used in file
+     * Delimiter used in file
+     *
+     * @var string delimiter
      */
     protected $delimiter;
 
     /**
-     * @var array column Formatter used in file
+     * Column Formatter used in file
+     *
+     * @var array columnFormat
      */
     protected $columnFormat = [];
 
     /**
-     * @var string file Path of local file
+     * File Path of Local File
+     *
+     * @var string filePath
      */
     protected $filePath;
 
     /**
-     * @var string content to be used for file
+     * Content of File
+     *
+     * @var string content
      */
     protected $content;
 
     /**
-     * @var file entity to be created with given id
+     * Pre-assigned Id of entity
+     *
+     * @var string file entity to be created with given id
      */
     protected $id;
 
     /**
+     * Storage Handler instance
+     *
      * @var Store Handler
      */
     protected $storageHandler;
+
+    /**
+     * Store the environment value
+     *
+     * @var string Environment
+     */
+    protected $env;
 
     const DEFAULT_STORE    = 's3';
     const DEFAULT_METADATA = [];
@@ -62,9 +85,14 @@ class Creator extends Base\Core
 
         $this->file = new Entity;
 
+        $this->env = $this->app->environment();
+
         $this->setDefaults();
     }
 
+    /**
+     * Set the default Value for store and metadata
+     */
     public function setDefaults()
     {
         $this->store(self::DEFAULT_STORE);
@@ -102,6 +130,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Local file
+     *
+     * @param UploadedFile $file Local File Instance
+     *
      * @return Creator object
      */
     public function localFile($file)
@@ -127,6 +158,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Mime of File Store
+     *
+     * @param string $mime Mime
+     *
      * @return Creator object
      */
     public function mime($mime)
@@ -169,8 +203,9 @@ class Creator extends Base\Core
     /**
      * Set the metadata of S3 file entity
      *
-     * @param  string $metadata metadata value
-     * @return Creater object
+     * @param array $metadata metadata value
+     *
+     * @return Creator
      */
     public function metadata(array $metadata)
     {
@@ -182,8 +217,9 @@ class Creator extends Base\Core
     /**
      * Set the id of File Store entity
      *
-     * @param  string $id id value
-     * @return Creater object
+     * @param string $id id value
+     *
+     * @return Creator object
      */
     public function id(string $id)
     {
@@ -194,6 +230,9 @@ class Creator extends Base\Core
 
     /**
      * Set the Entity of File Store
+     *
+     * @param Base\Entity $entity entity object
+     *
      * @return Creator object
      */
     public function entity(Base\Entity $entity)
@@ -219,11 +258,28 @@ class Creator extends Base\Core
 
     /**
      * Set the Column Format used for creation of file
+     *
+     * @param array $columnFormat format of column
+     *
      * @return Creator object
      */
     public function columnFormat($columnFormat = [])
     {
         $this->columnFormat = $columnFormat;
+
+        return $this;
+    }
+
+    /**
+     * Sets merchant which is used for association later.
+     *
+     * @param Merchant\Entity $merchant Merchant Entity
+     *
+     * @return Creator
+     */
+    public function merchant(Merchant\Entity $merchant)
+    {
+        $this->merchant = $merchant;
 
         return $this;
     }
@@ -244,7 +300,7 @@ class Creator extends Base\Core
         }
         else
         {
-            $this->filePath = $this->localFile->getPathName();
+            $this->filePath = $this->localFile->getPathname();
         }
 
         $this->mime($this->localFile->getMimeType());
@@ -253,7 +309,7 @@ class Creator extends Base\Core
 
         $this->upload();
 
-        $this->associateMerchantWithFile();
+        $this->associateMerchantToFile();
 
         $this->file->setSize(filesize($this->filePath));
 
@@ -276,6 +332,11 @@ class Creator extends Base\Core
         return $data;
     }
 
+    /**
+     * Validates the Content before saving
+     *
+     * @throws Exception\LogicException
+     */
     protected function validateBeforeSave()
     {
         Format::validateContentTypeForExtension($this->content, $this->file->getExtension());
@@ -283,6 +344,11 @@ class Creator extends Base\Core
         Type::validateType($this->file->getType());
     }
 
+    /**
+     * Validates the Mime and Extension before uploading
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     protected function validateBeforeUpload()
     {
         $extension = $this->file->getExtension();
@@ -300,9 +366,8 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        $bucket = $this->storageHandler->getBucketName($this->file->getType());
-
-        $this->file->setBucket($bucket);
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
 
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
@@ -313,9 +378,13 @@ class Creator extends Base\Core
             'metadata'  => $this->file->getMetadata(),
         ];
 
-        $location = $this->storageHandler->save($bucket, $fileDetails);
+        $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
+
+        $this->file->setBucket($bucketConfig['name']);
+
+        $this->file->setRegion($bucketConfig['region']);
     }
 
     /**
@@ -332,18 +401,19 @@ class Creator extends Base\Core
         {
             case Format::TXT:
             case Format::ENC:
+            case Format::PDF:
                 $this->writeTextFile();
                 break;
 
             case Format::XLSX:
-                \Config::set('excel::export.calculate', true);
+                Config::set('excel::export.calculate', true);
 
             case Format::CSV:
                 $this->writeToExcelFile();
 
                 break;
 
-            case 'default':
+            default:
                 throw new Exception\LogicException('Not A Valid Extension');
         }
     }
@@ -358,7 +428,7 @@ class Creator extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            mkdir($dir, 0777, true);
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
         $file = fopen($fullPath, 'w');
@@ -367,7 +437,14 @@ class Creator extends Base\Core
 
         try
         {
-            chmod($fullPath, 0777);  // keep it 0777. This step is important
+            //
+            // This step is important because file can be created
+            // via different users (www-data or ubuntu (via queue))
+            //
+            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
+            {
+                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
+            }
         }
         catch (\Exception $e)
         {
@@ -406,7 +483,7 @@ class Creator extends Base\Core
         $this->filePath = $filePath;
     }
 
-    protected function associateMerchantWithFile()
+    protected function associateMerchantToFile()
     {
         if ($this->merchant !== null)
         {
@@ -424,9 +501,9 @@ class Creator extends Base\Core
         $this->file->merchant()->associate($merchant);
     }
 
-    protected function getFullFilePath()
+    public function getFullFilePath()
     {
-        return $this->getStorageDir() . $this->file->getName() . '.' .$this->file->getExtension();
+        return $this->getStorageDir() . $this->file->getName() . '.' . $this->file->getExtension();
     }
 
     protected function getStorageDir()

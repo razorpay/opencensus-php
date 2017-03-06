@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -19,6 +20,8 @@ class Entity extends Base\PublicEntity
     const PAYUMONEY         = 'payumoney';
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
+    const JIOMONEY          = 'jiomoney';
+    const OPENWALLET        = 'openwallet';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -45,6 +48,8 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -64,6 +69,8 @@ class Entity extends Base\PublicEntity
         self::FREECHARGE,
         self::MOBIKWIK,
         self::OLAMONEY,
+        self::JIOMONEY,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -84,6 +91,8 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY   => false,
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
+        self::JIOMONEY      => false,
+        self::OPENWALLET    => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
@@ -95,6 +104,23 @@ class Entity extends Base\PublicEntity
     protected $wallets = array(
         self::MOBIKWIK,
         self::PAYTM,
+        self::PAYZAPP,
+        self::PAYUMONEY,
+        self::OLAMONEY,
+        self::AIRTELMONEY,
+        self::FREECHARGE,
+        self::JIOMONEY,
+        self::OPENWALLET,
+    );
+
+    protected static $methods = array(
+        self::CARD,
+        self::EMI,
+        self::AMEX,
+        self::UPI,
+        self::NETBANKING,
+        self::PAYTM,
+        self::MOBIKWIK,
         self::PAYZAPP,
         self::PAYUMONEY,
         self::OLAMONEY,
@@ -115,6 +141,8 @@ class Entity extends Base\PublicEntity
         self::PAYUMONEY   => 'bool',
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
+        self::JIOMONEY    => 'bool',
+        self::OPENWALLET  => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
     ];
@@ -218,14 +246,29 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
+    public function isOpenwalletEnabled()
+    {
+        return $this->getAttribute(self::OPENWALLET);
+    }
+
+    public function isJiomoneyEnabled()
+    {
+        return $this->getAttribute(self::JIOMONEY);
+    }
+
     public function isEmiEnabled()
     {
         return $this->getAttribute(self::EMI);
     }
 
+    public function isTransferEnabled()
+    {
+        return $this->merchant->isLinkedAccount();
+    }
+
     public function isMethodEnabled($method)
     {
-        $func = 'is'.ucfirst($method).'Enabled';
+        $func = 'is' . ucfirst($method) . 'Enabled';
 
         return $this->$func();
     }
@@ -236,7 +279,7 @@ class Entity extends Base\PublicEntity
 
         foreach ($this->wallets as $wallet)
         {
-            $func = 'is'.ucfirst($wallet).'Enabled';
+            $func = 'is' . ucfirst($wallet) . 'Enabled';
 
             if ($this->$func())
             {
@@ -284,6 +327,11 @@ class Entity extends Base\PublicEntity
     public function getFreecharge()
     {
         return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function getOpenwallet()
+    {
+        return $this->getAttribute(self::OPENWALLET);
     }
 
     public function getEmi()
@@ -365,6 +413,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::FREECHARGE, $value);
     }
 
+    public function setOpenwallet($value)
+    {
+        $this->setAttribute(self::OPENWALLET, $value);
+    }
+
     public function setCreditCard($card)
     {
         $this->setAttribute(self::CREDIT_CARD, $card);
@@ -403,6 +456,9 @@ class Entity extends Base\PublicEntity
 
         $names = \RZP\Models\Payment\Processor\Netbanking::getNames($banks);
 
+        // Unsetting AIRP for now
+        unset($names['AIRP']);
+
         return $names;
     }
 
@@ -420,20 +476,6 @@ class Entity extends Base\PublicEntity
 
     public static function getAllMethodNames()
     {
-        return array(
-            self::CARD,
-            self::EMI,
-            self::AMEX,
-            self::NETBANKING,
-            self::PAYTM,
-            self::MOBIKWIK,
-            self::PAYZAPP,
-            self::PAYUMONEY,
-            self::OLAMONEY,
-            self::AIRTELMONEY,
-            self::EMI,
-            self::UPI,
-            self::FREECHARGE,
-        );
+        return self::$methods;
     }
 }

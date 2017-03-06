@@ -4,6 +4,7 @@ namespace RZP\Models\Card\IIN;
 
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Bank\Name;
 
 class Entity extends Base\PublicEntity
 {
@@ -27,11 +28,15 @@ class Entity extends Base\PublicEntity
 
     protected $primaryKey = self::IIN;
 
-    protected $appends = array(self::INTERNATIONAL);
+    protected $appends = [self::INTERNATIONAL];
 
-    protected static $modifiers = array('inputRemoveBlanks');
+    protected static $modifiers = ['inputRemoveBlanks'];
 
-    protected $fillable = array(
+    protected static $generators = [
+        self::ISSUER_NAME
+    ];
+
+    protected $fillable = [
         self::IIN,
         self::CATEGORY,
         self::NETWORK,
@@ -41,9 +46,9 @@ class Entity extends Base\PublicEntity
         self::ISSUER_NAME,
         self::TRIVIA,
         self::EMI
-    );
+    ];
 
-    protected $public = array(
+    protected $public = [
         self::IIN,
         self::ENTITY,
         self::CATEGORY,
@@ -57,11 +62,11 @@ class Entity extends Base\PublicEntity
         self::TRIVIA,
         self::CREATED_AT,
         self::UPDATED_AT,
-    );
+    ];
 
-    protected $defaults = array(
+    protected $defaults = [
         self::EMI => false,
-    );
+    ];
 
     public function isEmiAvailable()
     {
@@ -169,5 +174,14 @@ class Entity extends Base\PublicEntity
     protected function getEmiAttribute()
     {
         return (bool) $this->attributes[self::EMI];
+    }
+
+    protected function generateIssuerName($input)
+    {
+        if ((isset($input[self::ISSUER]) === true) and
+            (isset($input[self::ISSUER_NAME]) === false))
+        {
+            $this->setAttribute(self::ISSUER_NAME, Name::getName($input[self::ISSUER]));
+        }
     }
 }

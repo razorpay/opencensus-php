@@ -41,6 +41,7 @@ class Metadata
     const MACOS         = 'macos';
     const ANDROID       = 'android';
     const IOS           = 'ios';
+    const UBUNTU        = 'ubuntu';
 
     const OS_VALUES = array(
         self::LINUX       => 1,
@@ -48,6 +49,7 @@ class Metadata
         self::MACOS       => 3,
         self::ANDROID     => 4,
         self::IOS         => 5,
+        self::UBUNTU      => 6,
     );
 
     // Library values
@@ -55,11 +57,11 @@ class Metadata
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
 
-    const LIBRARY_VALUES = array(
+    const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
         self::DIRECT        => 3,
-    );
+    ];
 
     // Browser values
     const CHROME        = 'chrome';
@@ -126,7 +128,7 @@ class Metadata
 
     public static function getValueForIntegration($integration)
     {
-        if ($integration === null)
+        if (empty($integration) === true)
         {
             return;
         }
@@ -148,7 +150,7 @@ class Metadata
 
     public static function getValueForPlatform($platform)
     {
-        if ($platform === null)
+        if (empty($platform) === true)
         {
             return;
         }
@@ -170,7 +172,7 @@ class Metadata
 
     public static function getValueForOs($os)
     {
-        if ($os === null)
+        if (empty($os) === true)
         {
             return;
         }
@@ -192,7 +194,7 @@ class Metadata
 
     public static function getValueForLibrary($library)
     {
-        if ($library === null)
+        if (empty($library) === true)
         {
             return;
         }
@@ -214,7 +216,7 @@ class Metadata
 
     public static function getValueForBrowser($browser)
     {
-        if ($browser === null)
+        if (empty($browser) === true)
         {
             return;
         }

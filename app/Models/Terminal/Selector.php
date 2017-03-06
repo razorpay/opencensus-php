@@ -104,7 +104,6 @@ class Selector
         // In case there are failed terminals, this comes in as an exclusion list from the
         // payment. We want to now place the excluded terminals at the bottom of the sorted
         // list thereby hoping a successful payment through the non failed terminals
-
         $failedTerminals = $options->getFailedTerminals();
 
         if ((count($failedTerminals) > 0))
@@ -187,6 +186,18 @@ class Selector
             (is_array($opts[Options::FAILED]) === true))
         {
             $options->setFailedTerminals($opts[Options::FAILED]);
+        }
+
+        // Disabling rotation in case of netbanking. This is with the
+        // understanding that the terminal that is selected is the only
+        // relevant terminal that should be used.
+        //
+        // Also removes failed terminals from exclusion list. This will
+        // ensure the terminal is not rotated below the original terminals
+        if ($this->payment->isNetbanking())
+        {
+            $options->setMultiple(false);
+            $options->setFailedTerminals([]);
         }
 
         $terminalsSelected = $this->select($options);

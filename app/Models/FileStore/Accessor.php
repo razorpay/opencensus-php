@@ -4,7 +4,9 @@ namespace RZP\Models\FileStore;
 
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\Base\Collection;
 use RZP\Models\Merchant\Account;
+use RZP\Trace\TraceCode;
 
 class Accessor extends Base\Core
 {
@@ -17,6 +19,8 @@ class Accessor extends Base\Core
      * Id for which entity has to be fetched
      */
     protected $id = null;
+
+    protected $merchantId;
 
     /**
      * Set the Id in Query Param
@@ -101,7 +105,7 @@ class Accessor extends Base\Core
      */
     public function getFile()
     {
-        $file = $this->getEntity();
+        $file = $this->get();
 
         if ($file instanceof Base\PublicCollection)
         {
@@ -110,15 +114,32 @@ class Accessor extends Base\Core
             $file = $file->first();
         }
 
-        $storageHandler = Store::getHandler($file->store);
+        $storageHandler = Store::getHandler($file->getStore());
 
-        $filePath = $this->createFullFilePath($file->location);
+        $filePath = $this->createFullFilePath($file->getLocation());
 
-        $storageHandler->saveAs($file->bucket, $file->location, $filePath);
+        $dir = dirname($filePath);
+
+        if (file_exists($dir) === false)
+        {
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
+        }
+
+        $bucketConfig = [
+            'name'   => $file->getBucket(),
+            'region' => $file->getRegion(),
+        ];
+
+        $storageHandler->saveAs($bucketConfig, $file->getLocation(), $filePath);
 
         return $filePath;
     }
 
+    /**
+     * Get Signed URL for single and/or multiple file entities
+     *
+     * @return array array with entity id as key and signed url as value
+     */
     public function getSignedUrl()
     {
         $urls = [];
@@ -138,20 +159,40 @@ class Accessor extends Base\Core
         return $urls;
     }
 
+    /**
+     * Get Signed URL for single file entity
+     *
+     * @param Entity $fileStore Entity object
+     *
+     * @return string signed url
+     */
     protected function getUrl(Entity $fileStore)
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
 
-        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+        $bucketConfig = [
+            'name'   => $fileStore->getBucket(),
+            'region' => $fileStore->getRegion(),
+        ];
+
+        $url = $storageHandler->getSignedUrl($bucketConfig, $fileStore->getLocation());
 
         return $url;
     }
 
+    /**
+     * @param string $location location
+     *
+     * @return string full path url
+     */
     protected function createFullFilePath(string $location)
     {
         return $this->getStorageDir() . $location;
     }
 
+    /**
+     * @return string storage directory
+     */
     protected function getStorageDir()
     {
         return storage_path(Store::STORAGE_DIRECTORY);
@@ -160,7 +201,7 @@ class Accessor extends Base\Core
     /**
      * Throws Exception if Invalid No of files are found
      *
-     * @param Base\PublicCollection
+     * @param Base\PublicCollection $files files
      *
      * @return void
      * @throws Exception\LogicException
@@ -188,9 +229,7 @@ class Accessor extends Base\Core
     {
         if ($this->merchantId === null)
         {
-            $merchant = $this->repo->merchant->getSharedAccount();
-
-            $this->merchantId($merchant->getId());
+            $this->merchantId(Account::SHARED_ACCOUNT);
         }
     }
 }

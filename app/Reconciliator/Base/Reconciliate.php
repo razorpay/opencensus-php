@@ -28,16 +28,20 @@ class Reconciliate
      * Internal Header Names
      *************************/
 
-    const PAYMENT_ID            = 'payment_id';
-    const REFUND_ID             = 'refund_id';
-    const CARD_TYPE             = 'card_type';
-    const CARD_LOCALE           = 'card_locale';
-    const CARD_TRIVIA           = 'card_trivia';
-    const CARD_DETAILS          = 'card_details';
-    const GATEWAY_SERVICE_TAX   = 'gateway_service_tax';
-    const GATEWAY_FEE           = 'gateway_fee';
-    const GATEWAY_SETTLED_AT    = 'gateway_settled_at';
-    const ISSUER                = 'issuer';
+    const PAYMENT_ID          = 'payment_id';
+    const REFUND_ID           = 'refund_id';
+    const CARD_TYPE           = 'card_type';
+    const CARD_LOCALE         = 'card_locale';
+    const CARD_TRIVIA         = 'card_trivia';
+    const CARD_DETAILS        = 'card_details';
+    const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
+    const GATEWAY_FEE         = 'gateway_fee';
+    const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
+    const ISSUER              = 'issuer';
+    const REFERENCE_NUMBER    = 'reference_number';
+    const CUSTOMER_DETAILS    = 'customer_details';
+    const CUSTOMER_ID         = 'customer_id';
+    const CUSTOMER_NAME       = 'customer_name';
 
     /*************************
      * Card types
@@ -190,7 +194,6 @@ class Reconciliate
         $subReconciliatorClassName = $this->getSubReconciliatorClassName($reconciliationType);
 
         $this->subReconciliator = new $subReconciliatorClassName;
-
     }
 
     protected function getSubReconciliatorClassName($reconciliationType)
@@ -215,5 +218,20 @@ class Reconciliate
     public function getColumnHeadersForType($type)
     {
         return [];
+    }
+
+    /**
+     * This method returns the number of lines to be skipped from end or from
+     * beginning while reading csv files. Should be overriden by any gateway
+     * specific child classes.
+     *
+     * @return  int number of lines to skip from end
+     */
+    public function getNumLinesToSkip()
+    {
+        return [
+            FileProcessor::LINES_FROM_TOP    => 0,
+            FileProcessor::LINES_FROM_BOTTOM => 0
+        ];
     }
 }

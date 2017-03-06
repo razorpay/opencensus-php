@@ -32,11 +32,21 @@ class AdminAccess
     {
         if ($this->ba->isAdminAuth())
         {
-            // $adminAuthRoutes = Route::$admin;
+            $admin = $this->ba->getAdmin();
+
+            if ($admin->isLocked() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_ACCOUNT_LOCKED);
+            }
 
             $routeName = $this->router->currentRouteName();
 
-            $admin = $this->ba->getAdmin();
+            if ($admin->isDisabled() === true)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_USER_ACCOUNT_DISABLED);
+            }
 
             $this->validateAdminBelongsToSameOrg($routeName, $admin, $request);
 

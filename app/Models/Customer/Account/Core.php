@@ -73,15 +73,39 @@ class Core extends Base\Core
             // Hence, it's required that the customer is saved.
             $this->repo->saveOrFail($customer);
 
-            if (empty($input[Entity::SHIPPING_ADDRESS]) === false)
-            {
-                $input[Entity::SHIPPING_ADDRESS][Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
+            $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
 
-                (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS]);
-            }
         });
 
         return $customer;
+    }
+
+    /**
+     * Creates customer addresses if address input keys has been sent as part of
+     * create customer request.
+     *
+     * @param Entity $customer
+     * @param array  $input
+     *
+     * @return null
+     */
+    protected function createCustomerAddressesIfValuesSetInInput(Entity $customer, array $input)
+    {
+        $addressCore = new Address\Core;
+
+        $addressKeys = Address\Type::getValidTypes(Address\Type::CUSTOMER);
+
+        foreach ($addressKeys as $addressKey)
+        {
+            if (empty($input[$addressKey]) === true)
+            {
+                continue;
+            }
+
+            $input[$addressKey][Address\Entity::TYPE] = $addressKey;
+
+            $addressCore->create($customer, Address\Type::CUSTOMER, $input[$addressKey]);
+        }
     }
 
     public function edit($customer, $input)
@@ -220,15 +244,12 @@ class Core extends Base\Core
     public function getCustomerAndApp(array $input, Merchant\Entity $merchant)
     {
         $customerId = null;
-        $merchantId = null;
         $customer = null;
         $appToken = null;
 
         if (empty($input[Payment\Entity::CUSTOMER_ID]) === false)
         {
             $customerId = $input[Payment\Entity::CUSTOMER_ID];
-
-            $merchantId = $merchant->getId();
 
             Customer\Entity::verifyIdAndStripSign($customerId);
         }
@@ -244,13 +265,13 @@ class Core extends Base\Core
             {
                 $customerId = $appToken->getCustomerId();
 
-                $merchantId = Account::SHARED_ACCOUNT;
+                $merchant = $this->repo->merchant->getSharedAccount();
             }
         }
 
         if ($customerId !== null)
         {
-            $customer = $this->repo->customer->findByIdAndMerchantId($customerId, $merchantId);
+            $customer = $this->repo->customer->findByIdAndMerchant($customerId, $merchant);
         }
 
         $this->trace->info(

@@ -12,8 +12,10 @@ use RZP\Trace\TraceCode;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
+use RZP\Models\Payout;
 use RZP\Models\Adjustment;
 use RZP\Models\Settlement;
+use RZP\Constants\MailTags;
 use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
@@ -132,27 +134,27 @@ class Reconciler3
         $collection = new Base\PublicCollection;
         $failures = new Base\PublicCollection;
 
-        $this->repo->settlement->beginTransaction();
+        $this->repo->beginTransaction();
 
         try
         {
             foreach ($data as $row)
             {
-                $setl = $this->reconcileSetl($row);
+                $entity = $this->reconcileEntity($row);
 
-                $collection->push($setl);
+                $collection->push($entity);
 
-                if ($setl->isStatusFailed())
+                if ($entity->isStatusFailed())
                 {
-                    $failures->push($setl);
+                    $failures->push($entity);
                 }
             }
 
-            $this->repo->settlement->commit();
+            $this->repo->commit();
         }
         catch (\Exception $e)
         {
-            $this->repo->settlement->rollback();
+            $this->repo->rollback();
 
             (new SlackNotification)->failure('setl_reconciliation', $e);
 
@@ -162,7 +164,7 @@ class Reconciler3
         $failureIds = implode(',', $failures->getPublicIds());
 
         $response = [
-            'setl_count'     => $collection->count(),
+            'total_count'    => $collection->count(),
             'failures_count' => $failures->count(),
             'failure ids'    => $failureIds
         ];
@@ -171,29 +173,35 @@ class Reconciler3
         return $response;
     }
 
-    protected function reconcileSetl($row)
+    protected function reconcileEntity($row)
     {
-        $setl = $this->loadSettlementAndRelations($row);
+        $entity = $this->loadEntityAndRelations($row);
 
-        $setl = $this->processSettlementStatus($setl, $row);
+        $entity = $this->processEntityStatus($entity, $row);
 
-        return $setl;
+        return $entity;
     }
 
-    protected function processSettlementStatus($setl, $row)
+    protected function processEntityStatus($entity, $row)
     {
         // get reconciliation data
         $utr = null;
 
+        $type = $entity->getEntity();
+
+        $class = '\\RZP\\Models\\' . ucfirst($type) . '\\Status';
+
         $status = $row['Status Of transaction'];
 
-        $failureReason = $row['Reject Reason'];
+        $remarks = substr($row['Reject Reason'], 0, 255);
 
         $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
         $tenPm = $recordDate->hour(22)->timestamp;
+
+        $failureReason = null;
 
         if ($status === 'P')
         {
@@ -208,73 +216,67 @@ class Reconciler3
             // processed and update only the utr
             if ($now < $tenPm)
             {
-                $status = Settlement\Status::CREATED;
-
-                $failureReason = null;
+                $status = $entity->getStatus();
             }
-            else if ((empty($failureReason) === true) or
-                (in_array($failureReason, self::SUCCESS_STATUS) === true))
+            else if ((empty($remarks) === true) or
+                (in_array($remarks, self::SUCCESS_STATUS) === true))
             {
-                $status = Settlement\Status::PROCESSED;
-
-                $failureReason = null;
+                $status = $class::PROCESSED;
             }
             else
             {
-                $status = Settlement\Status::FAILED;
+                $status = $class::FAILED;
 
                 $failureReason = 'Reconciliation';
             }
         }
         else
         {
-            $status = Settlement\Status::FAILED;
+            $status = $class::FAILED;
 
             $failureReason = 'Reconciliation';
         }
 
         // if already processed
-        if ($setl->isStatusCreated() === false)
+        if ($entity->isPendingReconciliation() === false)
         {
-            $oldStatus = $setl->getStatus();
+            $oldStatus = $entity->getStatus();
 
             if ($oldStatus !== $status)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Old and new status not matching. ' .
                     'Old status: ' . $oldStatus . ' New status: ' . $status .
-                    'Settlement Id: ' . $setl->getId());
+                    'Settlement Id: ' . $entity->getId());
             }
         }
         else
         {
-            $setl->setUtr($utr);
+            $entity->setUtr($utr);
 
-            $setl->setStatus($status);
+            $entity->setStatus($status);
 
-            $setl->setFailureReason($failureReason);
+            $entity->setFailureReason($failureReason);
 
-            $holdMerchantFunds = ($status === Settlement\Status::FAILED);
+            $entity->setRemarks($remarks);
 
-            $setlHandler = (new Settlement\Handler($setl));
+            $this->repo->saveOrFail($entity);
 
-            $setlHandler->process($holdMerchantFunds);
+            $entity->transaction->setReconciledAt($this->reconciledAt);
 
-            $this->repo->saveOrFail($setl);
-
-            $setl->transaction->setReconciledAt($this->reconciledAt);
-            $this->repo->saveOrFail($setl->transaction);
+            $this->repo->saveOrFail($entity->transaction);
         }
 
-        return $setl;
+        return $entity;
     }
 
-    protected function loadSettlementAndRelations($row)
+    protected function loadEntityAndRelations($row)
     {
-        $setlId = $row['Payment_Ref_No.'];
-        $setlId = str_replace(' ', '_', $setlId);
+        $entityId = $row['Payment_Ref_No.'];
 
-        if ($setlId === '')
+        $entityId = str_replace(' ', '_', $entityId);
+
+        if ($entityId === '')
         {
             // Check if row is empty.
             if (strlen(implode($row)) === 0)
@@ -283,20 +285,39 @@ class Reconciler3
             }
         }
 
-        Settlement\Entity::verifyIdAndStripSign($setlId);
+        $entity = $this->getEntityById($entityId);
 
-        $setl = $this->repo->settlement->findOrFail($setlId);
-
-        $merchantId = $setl->getMerchantId();
+        $merchantId = $entity->getMerchantId();
 
         $merchant = $this->repo->merchant->findOrFail($merchantId);
 
-        $txn = $this->repo->transaction->findOrFail($setl->getTransactionId());
+        $txn = $this->repo->transaction->findOrFail($entity->getTransactionId());
 
-        $setl->merchant()->associate($merchant);
-        $setl->transaction()->associate($txn);
+        $entity->merchant()->associate($merchant);
 
-        return $setl;
+        $entity->transaction()->associate($txn);
+
+        return $entity;
+    }
+
+    protected function getEntityById($entityId)
+    {
+        $entity = null;
+
+        if (strpos($entityId, Settlement\Entity::getSign(), 0) === 0)
+        {
+            Settlement\Entity::verifyIdAndStripSign($entityId);
+
+            $entity = $this->repo->settlement->findOrFail($entityId);
+        }
+        else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
+        {
+            Payout\Entity::verifyIdAndStripSign($entityId);
+
+            $entity = $this->repo->payout->findOrFail($entityId);
+        }
+
+        return $entity;
     }
 
     protected function sendReconciliationMail($date, $response)
@@ -325,6 +346,10 @@ class Reconciler3
             $message->subject($data['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::KOTAK_BENEFICIARY_MAIL);
         });
     }
 

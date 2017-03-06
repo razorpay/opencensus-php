@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Fixtures\Entity;
 
 use RZP\Models\Base\PublicCollection;
+use RZP\Models\Transaction;
 
 class Payment extends Base
 {
@@ -17,6 +18,15 @@ class Payment extends Base
         }
 
         return $this->fixtures->create('payment:card_captured', $attributes);
+    }
+
+    public function createSettled(array $attributes = [])
+    {
+        $payment = $this->createCaptured($attributes);
+
+        $this->fixtures->edit('transaction', $payment->getTransactionId(), ['settled' => 1]);
+
+        return $payment;
     }
 
     public function createStatusCreated(array $attributes = array())
@@ -185,6 +195,7 @@ class Payment extends Base
         $card = $this->fixtures->create('card');
 
         $defaultValues = array(
+            'merchant_id' => '10000000000000',
             'authorized_at' => time(),
             'status' => 'authorized',
             'terminal_id' => '1n25f6uN5S1Z5a',
@@ -195,6 +206,10 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->create($attributes);
+        $merchant = (new \RZP\Models\Merchant\Repository)->find($attributes['merchant_id']);
+
+        $payment->merchant()->associate($merchant);
+        $payment->setRelation('card', $card);
 
         $hdfcPayment = $this->fixtures->create('hdfc:authorized',
             array(
@@ -278,6 +293,28 @@ class Payment extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         $payment = $this->create($attributes);
+
+        return $payment;
+    }
+
+    public function createMethodTransfer(array $attributes = [])
+    {
+        $defaultValues = [
+            'status'        => 'captured',
+            'method'        => 'transfer',
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        $payment = $this->create($attributes);
+
+        list($txn, $feesSplit) = $this->createTransactionOnPaymentMethodTransfer($payment);
+
+        $txn->setAttribute(Transaction\Entity::SETTLED_AT, $payment->getCreatedAt());
+
+        $txn->saveOrFail();
+
+        $payment->saveOrFail();
 
         return $payment;
     }

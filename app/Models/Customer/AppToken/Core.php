@@ -78,11 +78,15 @@ class Core extends Base\Core
 
     protected function getAppByAppTokenIdAndMerchant($appTokenId, Merchant\Entity $merchant)
     {
-        $app = null;
+        $appToken = null;
 
         try
         {
-            $app = $this->repo->app_token->findByIdAndMerchantId($appTokenId, $merchant->getId());
+            $appToken = $this->repo->app_token->findByIdAndMerchant(
+                                            $appTokenId, $merchant);
+
+            // Fetches customer and associates with app token
+            $customer = $this->repo->customer->fetchByAppToken($appToken);
         }
         catch (Exception\BadRequestException $ex)
         {
@@ -90,6 +94,6 @@ class Core extends Base\Core
             // 2 merchant accounts and one will always fail so it will be noisy
         }
 
-        return $app;
+        return $appToken;
     }
 }

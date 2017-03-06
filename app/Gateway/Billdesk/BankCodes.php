@@ -37,7 +37,6 @@ class BankCodes
         IFSC::ORBC => 'OBC',                    // Oriental Bank Of Commerce
         IFSC::PMCB => 'PMC',                    // Punjab And Maharashtra Co-Op Bank Ltd
         IFSC::PSIB => 'PSB',                    // Punjab And Sind Bank
-        IFSC::ABNA => 'RBS',                    // Royal Bank Of Scotland
         IFSC::RATN => 'RTN',                    // Ratnakar Bank Ltd. (RBL Bank)
         IFSC::SIBL => 'SIB',                    // South Indian Bank
         IFSC::SVCB => 'SVC',                    // Shamrao Vithal Co-Op Bank Ltd

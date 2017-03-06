@@ -580,8 +580,10 @@ return [
         ],
         'response' => [
             'content' => [
-                'status' => 'failed',
-                'authorized_at' => null
+                'success_count' => 1,
+                'failure_count' => 0,
+                'failure_payments' => [],
+                'total' => 1,
             ],
         ],
     ],

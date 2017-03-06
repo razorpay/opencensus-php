@@ -26,9 +26,13 @@ class NetbankingKotakGatewayTest extends TestCase
 
         $this->setMockGatewayTrue();
 
-        $terminal = $this->fixtures->create('terminal:netbanking_kotak_terminal');
+        $terminalAttrs = [
+            'id'               => 'DrctNbKtkTrmnl',
+        ];
 
-        $this->fixtures->on('test')->create('terminal:shared_netbanking_kotak_terminal');
+        $this->fixtures->create(
+                        'terminal:netbanking_kotak_terminal',
+                        $terminalAttrs);
 
         $terminalAttrs = [
             'id'               => 'TpvNbKotakTmnl',
@@ -264,7 +268,7 @@ class NetbankingKotakGatewayTest extends TestCase
                         { return $payment['terminal_id'] === 'TpvNbKotakTmnl'; });
 
         $nonTpvPayments = array_filter($payments['items'], function($payment)
-                        { return $payment['terminal_id'] === '100NbKotakTmnl'; });
+                        { return $payment['terminal_id'] === 'DrctNbKtkTrmnl'; });
 
         $tpvPayments = array_values($tpvPayments);
 

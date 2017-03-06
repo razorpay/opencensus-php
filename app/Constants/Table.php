@@ -14,6 +14,7 @@ class Table
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
@@ -30,6 +31,8 @@ class Table
     const MERCHANT              = 'merchants';
     const CUSTOMER              = 'customers';
     const EMI_PLAN              = 'emi_plans';
+    const TRANSFER              = 'transfers';
+    const REVERSAL              = 'reversals';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
@@ -38,6 +41,8 @@ class Table
     const FEE_BREAKUP           = 'fees_breakup';
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const BATCH_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
@@ -90,9 +95,13 @@ class Table
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
 
     protected static $entityToTableMap = array(
-        Entity::AXIS_MIGS       => self::MIGS,
-        Entity::AXIS_GENIUS     => self::MIGS,
-        Entity::AMEX            => self::MIGS,
+        Entity::AXIS_MIGS           => self::MIGS,
+        Entity::AXIS_GENIUS         => self::MIGS,
+        Entity::AMEX                => self::MIGS,
+        Entity::WALLET_FREECHARGE   => self::WALLET,
+        Entity::WALLET_OLAMONEY     => self::WALLET,
+        Entity::WALLET_AIRTELMONEY  => self::WALLET,
+        Entity::WALLET_PAYUMONEY    => self::WALLET,
     );
 
     public static function getTableNameForEntity(string $entity)
@@ -104,6 +113,6 @@ class Table
             return self::$entityToTableMap[$entity];
         }
 
-        return constant(Table::class.'::'.strtoupper($entity));
+        return constant(Table::class . '::' . strtoupper($entity));
     }
 }

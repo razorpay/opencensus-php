@@ -261,12 +261,10 @@ class AdminTest extends TestCase
 
         $admin->roles()->sync([Org::ADMIN_ROLE]);
 
-        $adminToken = $this->fixtures->create(
-            'admin_token',
-            [
-                'token' => 'secondToken',
-                'admin_id' => $admin->getId(),
-            ]);
+        $adminToken = $this->fixtures->create('admin_token', [
+            'token' => 'secondToken',
+            'admin_id' => $admin->getId(),
+        ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -287,26 +285,80 @@ class AdminTest extends TestCase
         $now_minus_120 = $now->subDays(120);
         $now_minus_40 = $now->subDays(40);
 
-        $admins = $this->fixtures->times(2)->create(
-            'admin',
-            [
-                'org_id' => $this->orgId,
-                'last_login_at' => $now_minus_120->timestamp,
-                'created_at' => $now_minus_120->timestamp,
-                'updated_at' => $now_minus_120->timestamp,
-            ]);
+        $admins = $this->fixtures->times(2)->create('admin', [
+            'org_id' => $this->orgId,
+            'last_login_at' => $now_minus_120->timestamp,
+            'created_at' => $now_minus_120->timestamp,
+            'updated_at' => $now_minus_120->timestamp,
+        ]);
 
         // Unactivated Accounts
-        $this->fixtures->times(2)->create(
-            'admin',
-            [
-                'org_id' => $this->orgId,
-                'last_login_at' => null,
-                'created_at' => $now_minus_40->timestamp,
-                'updated_at' => $now_minus_40->timestamp,
-            ]);
+        $this->fixtures->times(2)->create('admin', [
+            'org_id' => $this->orgId,
+            'last_login_at' => null,
+            'created_at' => $now_minus_40->timestamp,
+            'updated_at' => $now_minus_40->timestamp,
+        ]);
 
         $this->ba->appAuth();
+
+        $this->startTest();
+    }
+
+    public function testDisabledAdminAccess()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'disabled' => true,
+            'org_id' => $this->orgId
+        ]);
+
+        $now = Carbon::now();
+
+        $token = $this->fixtures->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'created_at' => $now->timestamp,
+            'expires_at' => $now->addYear(1)->timestamp,
+        ]);
+
+        $token = $token->getValidToken();
+
+        // Replace auth with this route
+        $this->ba->adminAuth('test', $token);
+
+        $this->testData[__FUNCTION__]['request']['url'] =
+            '/orgs/' .
+            $this->org->getPublicId() .
+            '/admins/' .
+            $admin->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testLockedAdminAccess()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'locked' => true,
+            'org_id' => $this->orgId
+        ]);
+
+        $now = Carbon::now();
+
+        $token = $this->fixtures->create('admin_token', [
+            'admin_id'   => $admin->getId(),
+            'created_at' => $now->timestamp,
+            'expires_at' => $now->addYear(1)->timestamp,
+        ]);
+
+        $token = $token->getValidToken();
+
+        // Replace auth with this route
+        $this->ba->adminAuth('test', $token);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->orgId, $admin->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
 
         $this->startTest();
     }
@@ -371,16 +423,14 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testLoginOAuth()
+    public function testLoginOauth()
     {
-        $admin = $this->fixtures->create(
-            'admin',
-            [
-                'org_id' => $this->orgId,
-                'email' => 'test@email.com',
-                'oauth_access_token' => 'test oauth token',
-                'oauth_provider_id'  => 'test oauth provider id',
-            ]);
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $this->orgId,
+            'email' => 'test@email.com',
+            'oauth_access_token' => 'test oauth token',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -393,16 +443,14 @@ class AdminTest extends TestCase
         $this->startTest();
     }
 
-    public function testFailedLoginOAuth()
+    public function testFailedLoginOauth()
     {
-        $admin = $this->fixtures->create(
-            'admin',
-            [
-                'org_id' => $this->orgId,
-                'email' => 'test@email.com',
-                'oauth_access_token' => 'test oauth token 2',
-                'oauth_provider_id'  => 'test oauth provider id',
-            ]);
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $this->orgId,
+            'email' => 'test@email.com',
+            'oauth_access_token' => 'test oauth token 2',
+            'oauth_provider_id'  => 'test oauth provider id',
+        ]);
 
         $url = $this->testData[__FUNCTION__]['request']['url'];
 
@@ -527,26 +575,95 @@ class AdminTest extends TestCase
 
         $this->ba->appAuth();
 
-        $result = $this->startTest();
+        $this->startTest();
 
-        if ((isset($result['success']) === true) and
-            ($result['success'] === true))
-        {
-            $admin = $this->repo->findOrFailPublic($admin->getId());
+        $admin = $this->repo->findOrFailPublic($admin->getId());
 
-            $this->assertTrue(Hash::check($newPassword, $admin['password']));
+        $this->assertTrue(Hash::check($newPassword, $admin['password']));
 
-            // Check that token has then been expired
-            $token = Cache::get($key);
+        // Check that token has then been expired
+        $token = Cache::get($key);
 
-            $this->assertNull($token);
-        }
+        $this->assertNull($token);
+    }
+
+    public function testAdminUnlockOnResetPasswordSuccess()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $this->orgId,
+            'email' => 'abc@razorpay.com',
+            'failed_attempts' => 10,
+            'locked' => true
+        ]);
+
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $key = sprintf(Admin\Service::ADMIN_PASSWORD_RESET_TOKEN_KEY, $this->orgId, $admin->getId());
+
+        $token = Cache::get($key);
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->testData[__FUNCTION__]['request']['content']['token'] = $token;
+
+        $newPassword = $this->testData[__FUNCTION__]['request']['content']['password'];
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertTrue(Hash::check($newPassword, $admin['password']));
+
+        $this->assertEquals(0, $admin['failed_attempts']);
+
+        $this->assertEquals(0, $admin['locked']);
+
+        // Check that token has then been expired
+        $token = Cache::get($key);
+
+        $this->assertNull($token);
+    }
+
+    public function testAdminUnlockFailOnPasswordResetFail()
+    {
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $this->orgId,
+            'email' => 'abc@razorpay.com',
+            'failed_attempts' => 10,
+            'locked' => 1
+        ]);
+
+        $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
+
+        $url = $this->testData[__FUNCTION__]['request']['url'];
+
+        $url = sprintf($url, $this->org->getPublicId());
+
+        $this->testData[__FUNCTION__]['request']['url'] = $url;
+
+        $this->ba->appAuth();
+
+        $this->startTest();
+
+        $admin = $this->repo->findOrFailPublic($admin->getId());
+
+        $this->assertEquals(10, $admin['failed_attempts']);
+
+        $this->assertEquals(1, $admin['locked']);
     }
 
     public function testPasswordResetTokenMismatch()
     {
-        $admin = $this->fixtures->create(
-            'admin', ['org_id' => $this->orgId, 'email' => 'abc@razorpay.com']);
+        $admin = $this->fixtures->create('admin', [
+            'org_id' => $this->orgId,
+            'email' => 'abc@razorpay.com',
+        ]);
 
         $this->adminForgotPassword($this->org->getPublicId(), $admin->getEmail());
 
@@ -734,7 +851,7 @@ class AdminTest extends TestCase
         // Check if the associated token is deleted on logout
         $allTokens = $this->getEntities('admin_token', [], true);
 
-        $remainingTokens =[];
+        $remainingTokens = [];
 
         foreach ($allTokens['items'] as $t)
         {
@@ -745,10 +862,10 @@ class AdminTest extends TestCase
         }
 
         $this->assertArrayNotHasKey($token, $remainingTokens);
-     }
+    }
 
-     public function testGetAdminByEmailOnAppAuth()
-     {
+    public function testGetAdminByEmailOnAppAuth()
+    {
         $admin = $this->fixtures->create('admin', [
             Admin\Entity::ORG_ID  => $this->orgId,
             Admin\Entity::EMAIL   => 'testadmin@rzp.com',
@@ -758,10 +875,10 @@ class AdminTest extends TestCase
         $this->ba->appAuth();
 
         $result = $this->startTest();
-     }
+    }
 
-     public function testEditAdminOnAppAuth()
-     {
+    public function testEditAdminOnAppAuth()
+    {
         $this->ba->appAuth();
 
         $admin = $this->fixtures->create('admin', [
@@ -796,5 +913,5 @@ class AdminTest extends TestCase
         $this->assertEquals($result['roles'][0]['id'], $managerRole);
 
         $this->assertEquals($result['groups'][0]['id'], $group);
-     }
+    }
 }

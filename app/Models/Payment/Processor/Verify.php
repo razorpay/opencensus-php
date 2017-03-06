@@ -26,7 +26,7 @@ trait Verify
     {
         $this->setPayment($payment);
 
-        $refunds = $payment->refunds;
+        $refunds = $this->repo->refund->findForPayment($payment);
 
         $data = [
             'payment' => $payment->toArrayGateway(),
@@ -36,7 +36,7 @@ trait Verify
 
         if ($payment->isMethodCardOrEmi())
         {
-            $data['card'] = $payment->card->toArray();
+            $data['card'] = $this->repo->card->fetchForPayment($payment)->toArray();
         }
 
         try

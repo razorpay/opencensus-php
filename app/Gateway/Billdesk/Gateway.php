@@ -215,7 +215,7 @@ class Gateway extends Base\Gateway
         //
         // There should be exactly one record for the payment ID.
         // This one record should be of a successful authorization.
-        // Anything more than one is not expected and could be som
+        // Anything more than one is not expected and could be some
         // kind of bug.
         //
 
@@ -839,7 +839,7 @@ class Gateway extends Base\Gateway
         if (count($fields) !== count($content))
         {
             throw new Exception\GatewayErrorException(
-                ErrorCode::GATEWAY_ERROR_UNKNOWN_ERROR);
+                ErrorCode::GATEWAY_ERROR_INVALID_RESPONSE);
         }
 
         $content = array_combine($fields, $content);
@@ -980,17 +980,6 @@ class Gateway extends Base\Gateway
 
     protected function getSecurityId()
     {
-        if ((isset($this->input['merchant']) === true) and
-            ($this->input['merchant']->getId() !== '6c8G0gmswoEMh4'))
-        {
-            if ($this->isTPVEnabled())
-            {
-                return $this->config['live_access_code_sec'];
-            }
-
-            return $this->config['live_access_code'];
-        }
-
         $accountType = $this->accountType;
 
         switch ($accountType)
@@ -1013,18 +1002,6 @@ class Gateway extends Base\Gateway
 
     public function getSecret()
     {
-        if ((isset($this->input['merchant']) === true) and
-            ($this->input['merchant']->getId() !== '6c8G0gmswoEMh4'))
-        {
-            if ($this->isTPVEnabled())
-            {
-                $this->trace->info(TraceCode::GATEWAY_TERMINAL_TPV);
-
-                return $this->config['live_hash_secret_sec'];
-            }
-            return $this->config['live_hash_secret'];
-        }
-
         $accountType = $this->accountType;
 
         switch ($accountType)

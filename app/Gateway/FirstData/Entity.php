@@ -9,6 +9,7 @@ class Entity extends Base\Entity
 {
     const ID                      = 'id';
     const AMOUNT                  = 'amount';
+    const CURRENCY                = 'currency';
     const GATEWAY_PAYMENT_ID      = 'gateway_payment_id';
     const TDATE                   = 'tdate';
     const STATUS                  = 'status';
@@ -26,6 +27,7 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::ACTION,
         self::AMOUNT,
+        self::CURRENCY,
         self::GATEWAY_PAYMENT_ID,
         self::TDATE,
         self::STATUS,

@@ -49,31 +49,64 @@ class Server extends Base\Mock\Server
 
         $merchantTxnId = $input[RequestFields::MERCHANT_TXN_ID];
 
-        $wallet = (new WalletBase\Repository)->fetchWalletByPaymentId(
-            $merchantTxnId);
+        $response = [
+            ResponseFields::MERCHANT_TXN_ID => $merchantTxnId,
+            ResponseFields::STATUS          => 'SUCCESS',
+        ];
 
-        // We send Freecharge Transaction ID if it exists,
-        // It exists if freecharge acknowledged our TxnId
-        // It can mark our transaction as failure later though
-        if (isset($input[RequestFields::TXN_ID]) === true)
+        // To verify transaction records
+        if (($input[RequestFields::TXN_TYPE] === Freecharge\TxnType::CANCELLATION_REFUND))
         {
-            $response = [
-                ResponseFields::MERCHANT_TXN_ID => $merchantTxnId,
-                ResponseFields::TXN_ID          => $input[RequestFields::TXN_ID],
-                ResponseFields::AMOUNT          => $wallet['amount'],
-                ResponseFields::STATUS          => Freecharge\Status::TRANSACTION_SUCCESS,
-            ];
+            $response[ResponseFields::TXN_ID] = 'dummyFreechargeRefundId';
+
+            // dummy amount as we do not validate it for
+            // verification of refund records
+            $response[ResponseFields::AMOUNT] = 100;
+
+            // To throw failed refund data flow
+            switch($merchantTxnId)
+            {
+                case 'failedRefund12':
+                    $response[ResponseFields::STATUS] = 'FAILED';
+                    break;
+
+                case 'pendingRefund1':
+                    $response[ResponseFields::STATUS] = 'PENDING';
+                    break;
+
+                case 'initiatedRfnd1':
+                    $response[ResponseFields::STATUS] = 'INITIATED';
+                    break;
+
+                case 'failedRefund13':
+                    // throw transaction does not exist error
+                    $response = $this->getErrorResponse('E008');
+                    return $response;
+
+                default:
+                    $response[ResponseFields::STATUS] = 'SUCCESS';
+            }
 
             $response['checksum'] = $this->generateHash($response);
         }
-        else
+        else if (($input[RequestFields::TXN_TYPE] === Freecharge\TxnType::CUSTOMER_PAYMENT))
         {
-            $errMsg = Freecharge\ResponseCode::getResponseMessage('E008');
+            if (isset($input[RequestFields::TXN_ID]) === false)
+            {
+                return $this->getErrorResponse('E008');
+            }
 
-            $response = [
-                ResponseFields::ERROR_CODE => 'E008',
-                ResponseFields::ERROR_MESSAGE => $errMsg,
-            ];
+            // We send Freecharge Transaction ID if it exists,
+            // It exists if freecharge acknowledged our TxnId
+            // It can mark our transaction as failure later though
+            $response[ResponseFields::TXN_ID] = $input[RequestFields::TXN_ID];
+
+            $wallet = (new WalletBase\Repository)->fetchWalletByPaymentId(
+                $merchantTxnId);
+
+            $response[ResponseFields::AMOUNT] = $wallet['amount'];
+
+            $response['checksum'] = $this->generateHash($response);
         }
 
         return $this->makeResponse($response);
@@ -87,16 +120,21 @@ class Server extends Base\Mock\Server
 
         $this->validateActionInput($input, 'refund');
 
-        $response = array(
-            ResponseFields::STATUS                 => Freecharge\Status::REFUND_SUCCESS,
+        $response = [
+            ResponseFields::STATUS                 => Freecharge\Status::TRANSACTION_INITIATED,
             ResponseFields::REFUND_TXN_ID          => random_integer(5),
-            ResponseFields::REFUND_MERCHANT_TXN_ID => uniqid(),
+            ResponseFields::REFUND_MERCHANT_TXN_ID => $input[RequestFields::REFUND_MERCHANT_TXN_ID],
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,
-        );
+        ];
 
         $response['checksum'] = $this->generateHash($response);
+
+        if ($input['refundAmount'] === '1')
+        {
+            return $this->getErrorResponse('E018');
+        }
 
         return $this->makeResponse($response);
     }
@@ -108,7 +146,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpGenerate');
 
         $response = array(
-            ResponseFields::OTP_ID         => '1asda2345',
+            ResponseFields::OTP_ID         => '1daea2345',
             ResponseFields::REDIRECT_URL   => '',
             ResponseFields::IS_IVR_ENABLED => 'false',
             ResponseFields::STATUS         => 'VERIFY',
@@ -149,30 +187,12 @@ class Server extends Base\Mock\Server
 
         if ($input[RequestFields::OTP] === Otp::EXPIRED)
         {
-            $response = array(
-                ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E701'),
-                ResponseFields::ERROR_CODE     => 'E701',
-            );
-
-            $response = $this->makeResponse($response);
-
-            $response->setStatusCode(202);
-
-            return $response;
+            return $this->getErrorResponse('E701');
         }
 
         if ($input[RequestFields::OTP] === Otp::INCORRECT)
         {
-            $response = array(
-                ResponseFields::ERROR_MESSAGE  => Freecharge\ResponseCode::getResponseMessage('E702'),
-                ResponseFields::ERROR_CODE => 'E702',
-            );
-
-            $response = $this->makeResponse($response);
-
-            $response->setStatusCode(202);
-
-            return $response;
+            return $this->getErrorResponse('E702');
         }
 
         $response = [
@@ -231,6 +251,22 @@ class Server extends Base\Mock\Server
         $response = parent::makeResponse($json);
 
         $response->headers->set('Content-Type', 'application/json; charset=UTF-8');
+
+        return $response;
+    }
+
+    protected function getErrorResponse($errCode)
+    {
+        $errMsg = Freecharge\ResponseCode::getResponseMessage($errCode);
+
+        $response = [
+            ResponseFields::ERROR_CODE    => $errCode,
+            ResponseFields::ERROR_MESSAGE => $errMsg,
+        ];
+
+        $response = $this->makeResponse($response);
+
+        $response->setStatusCode(202);
 
         return $response;
     }

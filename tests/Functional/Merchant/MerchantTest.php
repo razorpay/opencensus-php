@@ -133,7 +133,9 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
     }
 
     public function testEditMerchantEditGroups()
@@ -646,6 +648,8 @@ class MerchantTest extends TestCase
 
     public function testGetCheckoutPreferencesWithOffer()
     {
+        $this->markTestSkipped('Skipping till new offers changes are merged');
+
         $this->ba->publicAuth();
 
         $offer = $this->fixtures->offer->createCardOffer();

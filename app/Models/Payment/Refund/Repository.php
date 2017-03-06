@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Payment\Refund;
 
+use RZP\Gateway\Wallet\Base\Entity as WalletEntity;
+use RZP\Gateway\Wallet\Freecharge;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Terminal;
@@ -14,7 +16,7 @@ class Repository extends Base\Repository
     protected $entity = 'refund';
 
     protected $entityFetchParamRules = array(
-        Entity::PAYMENT_ID      => 'sometimes|alpha_num|max:14',
+        Entity::PAYMENT_ID      => 'sometimes|alpha_dash|min:14|max:18',
     );
 
     protected $proxyFetchParamRules = [
@@ -23,13 +25,16 @@ class Repository extends Base\Repository
 
     protected $appFetchParamRules = array(
         Entity::MERCHANT_ID     => 'sometimes|alpha_num',
-        Entity::PAYMENT_ID      => 'sometimes|alpha_num',
-        Entity::TRANSACTION_ID  => 'sometimes|alpha_num',
+        Entity::TRANSACTION_ID  => 'sometimes|alpha_dash|min:14|max:18',
         Entity::NOTES           => 'sometimes|string|max:500',
     );
 
     protected $esWhitelistedParams = [
         Entity::NOTES
+    ];
+
+    protected $signedIds = [
+        Entity::PAYMENT_ID
     ];
 
     public function findOrFailPublicByParams($id, $merchantId, $paymentId = null)
@@ -44,11 +49,18 @@ class Repository extends Base\Repository
         return $query->findOrFailPublic($id);
     }
 
-    public function findForPayment($payment, $merchant)
+    public function findForPaymentAndMerchant($payment, $merchant)
     {
         return $this->newQuery()
                     ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->merchantId($merchant->getId())
+                    ->get();
+    }
+
+    public function findForPayment($payment)
+    {
+        return $this->newQuery()
+                    ->where(Refund\Entity::PAYMENT_ID, '=', $payment->getId())
                     ->get();
     }
 
@@ -79,10 +91,10 @@ class Repository extends Base\Repository
                     ->findOrFailPublic($id);
     }
 
-    public function fetchEntitiesForReport($merchantId, $from, $to)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
         return $this->fetchBetweenTimestampWithRelations(
-                        $merchantId, $from, $to, ['payment']);
+                        $merchantId, $from, $to, $count, $skip, $relations);
     }
 
     public function fetchRefundSummaryBetweenTimestamp($from, $to)
@@ -237,7 +249,7 @@ class Repository extends Base\Repository
 
         $paymentTable = Table::PAYMENT;
         $refundTable = Table::REFUND;
-        $gatewayTable = constant(Table::class . '::' . strtoupper($gateway));
+        $gatewayTable = Table::getTableNameForEntity($gateway);
 
         $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
         $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
@@ -273,6 +285,52 @@ class Repository extends Base\Repository
         return $response;
     }
 
+    public function fetchWalletFreechargeRefundsForValidation()
+    {
+        //
+        //    SELECT `refunds`.*
+        //    FROM `refunds`
+        //    INNER JOIN `payments` ON `refunds`.`payment_id` = `payments`.`id`
+        //    INNER JOIN `wallet` ON `wallet`.refund_id = `refunds`.`id`
+        //    WHERE `payments`.`gateway` = 'wallet_freecharge'
+        //        AND `refunds`.`transaction_id` IS NOT NULL
+        //        AND `wallet`.`status_code` = 'INITIATED';
+        //
+
+        $gateway = Payment\Gateway::WALLET_FREECHARGE;
+        $gatewayTable = Table::getTableNameForEntity($gateway);
+        $paymentTable = Table::PAYMENT;
+
+        $refundIdAttr = $this->getAttributeWithTableName(Entity::ID);
+        $refundPaymentIdAttr = $this->getAttributeWithTableName(Entity::PAYMENT_ID);
+        $refundTransactionIdAttr = $this->getAttributeWithTableName(Entity::TRANSACTION_ID);
+
+        $paymentIdAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::ID);
+        $paymentGatewayAttr = $this->manager->payment->getAttributeWithTableName(Payment\Entity::GATEWAY);
+
+        $gatewayStatusCodeAttr = $this->manager
+                                      ->wallet
+                                      ->getAttributeWithTableName(WalletEntity::STATUS_CODE);
+
+        $gatewayRefundIdAttr = $this->manager
+                                    ->wallet
+                                    ->getAttributeWithTableName(WalletEntity::REFUND_ID);
+
+        $refundAttributes = $this->getAttributeWithTableName('*');
+
+        $response = $this->newQuery()
+                         ->select($refundAttributes)
+                         ->join($paymentTable, $refundPaymentIdAttr, '=', $paymentIdAttr)
+                         ->join($gatewayTable, $refundIdAttr, '=', $gatewayRefundIdAttr)
+                         ->where($paymentGatewayAttr, '=', $gateway)
+                         ->whereNotNull($refundTransactionIdAttr)
+                         ->where($gatewayStatusCodeAttr, '=', Freecharge\Status::TRANSACTION_INITIATED)
+                         ->limit(300)
+                         ->get();
+
+        return $response;
+    }
+
     public function fetchRefundsByBatchAndPayment($batch, $payment)
     {
         return $this->newQuery()
@@ -280,14 +338,5 @@ class Repository extends Base\Repository
                     ->where(Refund\Entity::MERCHANT_ID, '=', $batch->getMerchantId())
                     ->where(Refund\Entity::BATCH_ID, '=', $batch->getId())
                     ->get();
-    }
-
-    protected function addQueryParamPaymentId($query, $params)
-    {
-        $paymentId = $params[Refund\Entity::PAYMENT_ID];
-
-        Payment\Entity::verifyIdAndSilentlyStripSign($paymentId);
-
-        $query->where(Refund\Entity::PAYMENT_ID, '=', $paymentId);
     }
 }

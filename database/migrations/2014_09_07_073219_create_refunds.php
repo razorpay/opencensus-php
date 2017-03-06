@@ -29,7 +29,8 @@ class CreateRefunds extends Migration
 
             $table->char(Refund::MERCHANT_ID, Refund::ID_LENGTH);
 
-            $table->integer(Refund::AMOUNT);
+            $table->integer(Refund::AMOUNT)
+                  ->unsigned();
 
             $table->char(Refund::CURRENCY, Payment\Entity::CURRENCY_LENGTH);
 

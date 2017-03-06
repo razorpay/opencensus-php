@@ -43,9 +43,7 @@ class OrderTest extends TestCase
 
     public function testCreateOrderWithNegativeAmount()
     {
-        $order = $this->startTest();
-
-        return $order;
+        $this->startTest();
     }
 
     public function testCreateAutoCaptureOrder()
@@ -60,6 +58,11 @@ class OrderTest extends TestCase
         $order = $this->startTest();
 
         return $order;
+    }
+
+    public function testCreateTPVOrderWithInvalidAccountNumber()
+    {
+        $this->startTest();
     }
 
     public function testGetOrder()
@@ -232,7 +235,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+        $payment['bank'] = 'UTIB';
 
         // Not adding order_id in payment
 
@@ -280,7 +283,7 @@ class OrderTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
-        $payment['bank'] = 'ANDB';
+        $payment['bank'] = 'UTIB';
 
         $payment['order_id'] = $order['id'];
 

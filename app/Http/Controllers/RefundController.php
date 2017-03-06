@@ -18,6 +18,15 @@ class RefundController extends Controller
         $this->refund = new Payment\Refund\Service;
     }
 
+    public function postRefundCreate()
+    {
+        $input = Request::all();
+
+        $refund = $this->refund->create($input);
+
+        return ApiResponse::json($refund);
+    }
+
     public function getRefund($id)
     {
         $refunds = $this->refund->fetch($id);
@@ -71,11 +80,11 @@ class RefundController extends Controller
 
         return ApiResponse::json($summary);
     }
-    
+
     public function postGatewayRefundedTransactions()
     {
         $data = $this->refund->createMissingTransactionsForGatewayRefunded();
-        
+
         return ApiResponse::json($data);
     }
 
@@ -115,12 +124,19 @@ class RefundController extends Controller
      * But, in case a refund is made before the money is settled to us,
      * the refund is in cancelled state and not in refunded state. This
      * means that we do not get it in the recon files.
-     * 
+     *
      */
     public function postCreateBilldeskCancelledRefunds()
     {
         $data = $this->refund->createBilldeskCancelledRefunds();
-        
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGatewayValidateRefund(string $gateway)
+    {
+        $data = $this->refund->validateUnknownGatewayRefunds($gateway);
+
         return ApiResponse::json($data);
     }
 }

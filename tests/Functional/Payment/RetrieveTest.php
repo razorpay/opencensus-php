@@ -102,6 +102,7 @@ class PaymentRetrieveTest extends TestCase
         //WHEN
         $payment = $this->makeRequestAndGetContent($request);
 
+        $this->assertEquals(1, $payment['count']);
         $this->assertEquals($email, $payment['items'][0]['email']);
     }
 
@@ -264,7 +265,12 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $payment = $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $payment = $this->fixtures->create('payment:authorized', [
+            'notes' => [
+                'order_id' => 'es_random_1'
+            ]
+        ]);
+
         $paymentId = $payment->getId();
 
         $mockEs = $this->mockEsClient();
@@ -279,8 +285,8 @@ class PaymentRetrieveTest extends TestCase
                             'body' => [
                                 'size' => 10,
                                 'query' => [
-                                    'filtered' => [
-                                        'query' => [
+                                    'bool' => [
+                                        'must' => [
                                             'multi_match' => [
                                                 'query' => 'es_random_1',
                                                 'type' => 'cross_fields',
@@ -311,7 +317,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -324,7 +330,7 @@ class PaymentRetrieveTest extends TestCase
 
     public function testSearchEsForNotesOnAdminAuth()
     {
-        $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes'=>['order_id' => 'es_random_1']]);
+        $payments = $this->fixtures->times(4)->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         foreach ($payments as $payment)
         {
@@ -343,8 +349,8 @@ class PaymentRetrieveTest extends TestCase
                         'body' => [
                             'size' => 1000,
                             'query' => [
-                                'filtered' => [
-                                    'query' => [
+                                'bool' => [
+                                    'must' => [
                                         'multi_match' => [
                                             'query' => 'es',
                                             'type' => 'cross_fields',
@@ -385,7 +391,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -403,7 +409,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->privateAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -418,7 +424,7 @@ class PaymentRetrieveTest extends TestCase
     {
         $this->ba->proxyAuth();
 
-        $this->fixtures->create('payment:authorized', ['notes'=>['order_id'=>'es_random_1']]);
+        $this->fixtures->create('payment:authorized', ['notes' => ['order_id' => 'es_random_1']]);
 
         $mockEs = $this->mockEsClient();
 
@@ -431,7 +437,8 @@ class PaymentRetrieveTest extends TestCase
 
     protected function mockEsClient()
     {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
+        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
+                                ->makePartial();
 
         $this->app->instance('es', $clientBuilder);
 
