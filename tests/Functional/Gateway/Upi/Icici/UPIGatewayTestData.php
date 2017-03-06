@@ -205,36 +205,6 @@ return [
         'entity'                => 'upi',
     ],
 
-    'testUpiEntityMigrationUnknownProviderCode' => [
-        'action'                => 'authorize',
-        'amount'                => 50000,
-        'bank'                  => null,
-        'acquirer'              => 'icici',
-        'received'              => true,
-        'email'                 => null,
-        'contact'               => null,
-        'gateway_merchant_id'   => '123456',
-        'status_code'           => '92',
-        'vpa'                   => 'handle@unknownprovider',
-        'provider'              => 'unknownprovider',
-        'entity'                => 'upi',
-    ],
-
-    'testUpiEntityMigrationKnownProviderCode' => [
-        'action'                => 'authorize',
-        'amount'                => 50000,
-        'bank'                  => ProviderCode::getBankCode('hdfcbank'),
-        'acquirer'              => 'icici',
-        'received'              => true,
-        'email'                 => null,
-        'contact'               => null,
-        'gateway_merchant_id'   => '123456',
-        'status_code'           => '92',
-        'vpa'                   => 'handle@hdfcbank',
-        'provider'              => 'hdfcbank',
-        'entity'                => 'upi',
-    ],
-
     'testCreateAutoCaptureOrder' => [
         'request' => [
             'content' => [

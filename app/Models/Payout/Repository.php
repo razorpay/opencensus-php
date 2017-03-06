@@ -12,7 +12,8 @@ class Repository extends Base\Repository
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID        => 'sometimes|alpha_num',
-        Entity::CUSTOMER_ID        => 'sometimes|alpha_num|size:14',
+        Entity::CUSTOMER_ID        => 'sometimes|string|max:19',
+        Entity::DESTINATION        => 'sometimes|string|max:20',
         Entity::METHOD             => 'sometimes|string',
     ];
 
@@ -52,5 +53,14 @@ class Repository extends Base\Repository
         }
 
         return $updatedCount;
+    }
+
+    public function addQueryParamDestination($query, $params)
+    {
+        $destinationId = $params[Entity::DESTINATION];
+
+        Entity::stripSignWithoutValidation($destinationId);
+
+        $query->where(Entity::DESTINATION_ID, $destinationId);
     }
 }

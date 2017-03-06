@@ -123,6 +123,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
+    public function transfers()
+    {
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
+    }
+
     // ----------------------------------- END GETTERS -----------------------------------
 
     // ----------------------------------- ACCESSORS -----------------------------------

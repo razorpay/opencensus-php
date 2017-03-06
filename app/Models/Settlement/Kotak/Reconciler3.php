@@ -216,16 +216,16 @@ class Reconciler3
             // processed and update only the utr
             if ($now < $tenPm)
             {
-                $status = Settlement\Status::CREATED;
+                $status = $entity->getStatus();
             }
             else if ((empty($remarks) === true) or
                 (in_array($remarks, self::SUCCESS_STATUS) === true))
             {
-                $status = Settlement\Status::PROCESSED;
+                $status = $class::PROCESSED;
             }
             else
             {
-                $status = Settlement\Status::FAILED;
+                $status = $class::FAILED;
 
                 $failureReason = 'Reconciliation';
             }

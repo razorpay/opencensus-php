@@ -15,11 +15,11 @@ class Validator extends Base\Validator
         Entity::CURRENCY        =>  'required|size:3|in:INR,USD',
         Entity::RECEIPT         =>  'required|string|max:40',
         Entity::PAYMENT_CAPTURE =>  'sometimes|boolean',
-        Entity::CUSTOMER_ID     =>  'sometimes',
+        Entity::CUSTOMER_ID     =>  'sometimes|filled',
         Entity::NOTES           =>  'sometimes|notes',
         Entity::METHOD          =>  'sometimes|in:netbanking',
-        Entity::BANK            =>  'sometimes|custom',
-        Entity::ACCOUNT_NUMBER  =>  'sometimes|string|max:50|min:5',
+        Entity::BANK            =>  'sometimes|filled|custom',
+        Entity::ACCOUNT_NUMBER  =>  'sometimes|filled|string|max:50|min:5',
     );
 
     protected static $createValidators = [

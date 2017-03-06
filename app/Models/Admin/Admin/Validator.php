@@ -14,11 +14,12 @@ class Validator extends Base\Validator
     const TOKEN = 'token';
     const RESET_PASSWORD_URL = 'reset_password_url';
 
-    const SUSPENDED = 'suspended';
-    const ARCHIVED  = 'archived';
-    const ACTIVATED = 'activated';
-    const PENDING   = 'pending';
-    const DEAD      = 'dead';
+    const SUSPENDED     = 'suspended';
+    const ARCHIVED      = 'archived';
+    const ACTIVATED     = 'activated';
+    const PENDING       = 'pending';
+    const DEAD          = 'dead';
+    const SUB_ACCOUNTS  = 'sub_accounts';
 
     protected static $createRules = [
         // The unique validation on email will run only on rows that have deleted_at = NULL
@@ -82,11 +83,12 @@ class Validator extends Base\Validator
     ];
 
     protected static $filterRules = [
-        self::SUSPENDED => 'sometimes|boolean',
-        self::ARCHIVED  => 'sometimes|boolean',
-        self::ACTIVATED => 'sometimes|boolean',
-        self::PENDING   => 'sometimes|boolean',
-        self::DEAD      => 'sometimes|boolean',
+        self::SUSPENDED         => 'sometimes|boolean',
+        self::ARCHIVED          => 'sometimes|boolean',
+        self::ACTIVATED         => 'sometimes|boolean',
+        self::PENDING           => 'sometimes|boolean',
+        self::DEAD              => 'sometimes|boolean',
+        self::SUB_ACCOUNTS      => 'sometimes',
     ];
 
     protected static $createValidators = [

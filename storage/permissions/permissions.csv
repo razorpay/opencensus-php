@@ -114,3 +114,8 @@
 6mPyoxYii0lQRW,"delete_org_fieldmap","org_fieldmap","org"
 7MRG5CjJewKiiF,"create_merchant_invite","merchant","merchant"
 7MRGGzKxLyOGog,"view_merchant_invite","merchant","merchant"
+7PAjIFRwfAMyu6,"schedule_update","permission",""
+7PAjXWk8bYXEr9,"schedule_create","permission",""
+7PAjeUBsDQAy9m,"schedule_assign","permission",""
+7PAk1DaDjM36pf,"schedule_migration","permission",""
+7PAk88uX3g6JQp,"schedule_delete","permission",""
