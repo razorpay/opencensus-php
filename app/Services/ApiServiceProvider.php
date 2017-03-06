@@ -11,6 +11,9 @@ use RZP\Models\Adjustment;
 use RZP\Models\Invoice;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Transfer;
+use RZP\Models\Customer;
+use RZP\Models\Reversal;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Settlement;
 use RZP\Models\Payout;
@@ -243,6 +246,11 @@ class ApiServiceProvider extends BaseServiceProvider
 
             // line items
             'invoice'         => Invoice\Entity::class,
+
+            // transfers
+            'transfer'        => Transfer\Entity::class,
+            'reversal'        => Reversal\Entity::class,
+            'customer'        => Customer\Entity::class,
 
             // file store
             'merchant'        => Merchant\Entity::class,

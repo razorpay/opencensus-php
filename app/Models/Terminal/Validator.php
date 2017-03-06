@@ -135,6 +135,7 @@ class Validator extends Base\Validator
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:billdesk',
         Entity::TPV                         => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $hdfcEditTerminalRules = [

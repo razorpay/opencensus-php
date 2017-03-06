@@ -52,10 +52,11 @@ class BasicAuth
      * basic auth.
      * @var array
      */
-    private $creds = array(
-        'key' => '',
-        'public_key' => '',
-        'secret' => '');
+    private $creds = [
+        'key'           => '',
+        'public_key'    => '',
+        'secret'        => '',
+    ];
 
     /**
      * Key used for authentication
@@ -202,6 +203,7 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+
         $this->creds['public_key'] = $key;
 
         return $this->checkAndSetKeyId($key);
@@ -488,21 +490,28 @@ class BasicAuth
 // --------------------- Verifiers ---------------------------------------------
 
     /**
-     * Checks if the accessed route is a beta feature route, if yes
+     * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
      */
     public function verifyFeatureAccess()
     {
-        $route = $this->getCurrentRouteName();
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        $features = $this->route->getFeaturesForRoute();
 
-        if ($this->route->isCurrentRouteInFeatureMap() === true)
+        if (empty($features) === false)
         {
             //
-            // Current route is in feature map list.
+            // If the merchant has at least one of the features
+            // in the $features array enabled, we allow the request
             //
-            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-            if ($this->merchant->isFeatureEnabled($accessedFeature))
+            $commonFeatures = array_intersect($merchantFeatures, $features);
+
+            if (empty($commonFeatures) === false)
             {
                 return null;
             }
@@ -634,7 +643,6 @@ class BasicAuth
         $device = $this->repo->device->findByAuthToken($deviceToken);
 
         $this->device = $device;
-
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))

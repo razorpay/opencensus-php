@@ -32,6 +32,19 @@ return [
         ],
     ],
 
+    'testTimedSchedule' => [
+        'schedule' => [
+            'name'        => 'Basic T3 with time set',
+            'merchant_id' => '100000Razorpay',
+            'type'        => 'settlement',
+            'period'      => 'daily',
+            'interval'    => 1,
+            'anchor'      => null,
+            'hour'        => 12,
+            'delay'       => 3,
+        ],
+    ],
+
     'testTwoHourSchedule' => [
         'cases' => [
             //Initial at 8.57pm. Delay one hour, so expected is 10pm

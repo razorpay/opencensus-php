@@ -802,6 +802,22 @@ class Terminal extends Base
         return $this->createEntityInTestAndLive('terminal', $attributes);
     }
 
+    public function createSharedOpenwalletTerminal(array $attributes = [])
+    {
+        $terminalId = Shared::OPENWALLET_RAZORPAY_TERMINAL;
+
+        $defaultValues = [
+            'id'                        => $terminalId,
+            'merchant_id'               => '1MercShareTerm',
+            'gateway'                   => 'wallet_openwallet',
+            'shared'                    => 1,
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return $this->createEntityInTestAndLive('terminal', $attributes);
+    }
+
     public function createDirectTerminalForNonTestMerchant(array $attributes)
     {
         $defaultValues = [

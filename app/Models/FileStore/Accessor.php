@@ -114,36 +114,32 @@ class Accessor extends Base\Core
             $file = $file->first();
         }
 
-        $storageHandler = Store::getHandler($file->store);
+        $storageHandler = Store::getHandler($file->getStore());
 
-        $filePath = $this->createFullFilePath($file->location);
+        $filePath = $this->createFullFilePath($file->getLocation());
 
         $dir = dirname($filePath);
 
         if (file_exists($dir) === false)
         {
-            $oldmask = umask(0);
-
-            $result = mkdir($dir, 0777, true);
-
-            umask($oldmask);
-
-            if ($result === false)
-            {
-                $this->trace->warning(
-                    TraceCode::FILE_STORE_MKDIR_FAILED,
-                    [
-                        'dir'  => $dir,
-                        'path' => $filePath,
-                    ]);
-            }
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
-        $storageHandler->saveAs($file->bucket, $file->location, $filePath);
+        $bucketConfig = [
+            'name'   => $file->getBucket(),
+            'region' => $file->getRegion(),
+        ];
+
+        $storageHandler->saveAs($bucketConfig, $file->getLocation(), $filePath);
 
         return $filePath;
     }
 
+    /**
+     * Get Signed URL for single and/or multiple file entities
+     *
+     * @return array array with entity id as key and signed url as value
+     */
     public function getSignedUrl()
     {
         $urls = [];
@@ -163,20 +159,40 @@ class Accessor extends Base\Core
         return $urls;
     }
 
+    /**
+     * Get Signed URL for single file entity
+     *
+     * @param Entity $fileStore Entity object
+     *
+     * @return string signed url
+     */
     protected function getUrl(Entity $fileStore)
     {
         $storageHandler = Store::getHandler($fileStore->getStore());
 
-        $url = $storageHandler->getSignedUrl($fileStore->getBucket(), $fileStore->getLocation());
+        $bucketConfig = [
+            'name'   => $fileStore->getBucket(),
+            'region' => $fileStore->getRegion(),
+        ];
+
+        $url = $storageHandler->getSignedUrl($bucketConfig, $fileStore->getLocation());
 
         return $url;
     }
 
+    /**
+     * @param string $location location
+     *
+     * @return string full path url
+     */
     protected function createFullFilePath(string $location)
     {
         return $this->getStorageDir() . $location;
     }
 
+    /**
+     * @return string storage directory
+     */
     protected function getStorageDir()
     {
         return storage_path(Store::STORAGE_DIRECTORY);
@@ -185,7 +201,7 @@ class Accessor extends Base\Core
     /**
      * Throws Exception if Invalid No of files are found
      *
-     * @param Base\PublicCollection $files
+     * @param Base\PublicCollection $files files
      *
      * @return void
      * @throws Exception\LogicException

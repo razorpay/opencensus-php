@@ -195,6 +195,7 @@ class BasicAuthTest extends TestCase
     public function startTest($testDataToReplace = array())
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
+
         $name = $trace[1]['function'];
 
         $testData = $this->testData[$name];

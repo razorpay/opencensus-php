@@ -24,6 +24,9 @@ class CreateDailySettlements extends Migration
             $table->char(BatchSettlement::ID, BatchSettlement::ID_LENGTH)
                   ->primary();
 
+            $table->char(BatchSettlement::TYPE, 50)
+                  ->nullable();
+
             $table->integer(BatchSettlement::DATE);
 
             $table->string(BatchSettlement::CHANNEL, 8);
@@ -41,7 +44,7 @@ class CreateDailySettlements extends Migration
 
             $table->integer(BatchSettlement::GATEWAY_FEE);
 
-            $table->integer(BatchSettlement::SETTLEMENT_COUNT);
+            $table->integer(BatchSettlement::TOTAL_COUNT);
 
             $table->integer(BatchSettlement::TRANSACTION_COUNT);
 

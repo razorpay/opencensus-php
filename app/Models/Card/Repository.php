@@ -84,41 +84,39 @@ class Repository extends Base\Repository
         $count = $this->newQueryWithoutTimestamps()
                       ->join('iins', 'iins.iin', '=', 'cards.iin')
                       ->whereNotNull('cards.vault')
+                      ->where(function ($q)
+                      {
+                         $q->where('cards.issuer', '!=', 'iins.issuer')
+                           ->orWhere('cards.network', '!=', 'iins.network');
+                      })
+                      ->update([
+                         'cards.issuer'  => DB::raw('iins.issuer'),
+                         'cards.network' => DB::raw('iins.network'),
+                      ]);
+
+        $countryCount = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
                       ->where('cards.network', '!=', NetworkName::AMEX)
                       ->where(function ($q)
                       {
-                         $q->where('cards.issuer', '!=', 'iins.issuer')
-                           ->orWhere('cards.network', '!=', 'iins.network')
-                           ->orWhere('cards.type', '!=', 'iins.type')
-                           ->orWhere('cards.country', '!=', 'iins.country');
+                         $q->where('cards.country', '!=', 'iins.country')
+                           ->orWhereNull('cards.country');
                       })
                       ->update([
-                         'cards.issuer'  => DB::raw('iins.issuer'),
-                         'cards.type'    => DB::raw('iins.type'),
-                         'cards.network' => DB::raw('iins.network'),
                          'cards.country' => DB::raw('iins.country'),
                       ]);
 
-        $amexCount = $this->newQueryWithoutTimestamps()
+        $typeCount = $this->newQueryWithoutTimestamps()
                       ->join('iins', 'iins.iin', '=', 'cards.iin')
                       ->whereNotNull('cards.vault')
-                      ->where('cards.network', '=', NetworkName::AMEX)
-                      ->where(function ($q)
-                      {
-                         $q->where('cards.issuer', '!=', 'iins.issuer')
-                           ->orWhere('cards.network', '!=', 'iins.network')
-                           ->orWhere('cards.type', '!=', 'iins.type');
-                      })
+                      ->where('cards.type', '!=', 'iins.type')
+                      ->whereNotNull('iins.type')
                       ->update([
-                         'cards.issuer'  => DB::raw('iins.issuer'),
-                         'cards.network' => DB::raw('iins.network'),
                          'cards.type'    => DB::raw('iins.type'),
                       ]);
 
-        return [
-            'count'     => $count,
-            'amexCount' => $amexCount,
-        ];
+        return compact('count', 'countryCount', 'typeCount');
     }
 
     protected function addQueryParamInternational($query, $params)

@@ -101,7 +101,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
 
-    protected function assignSubMerchant(string $tid ,string $mid)
+    protected function assignSubMerchant(string $tid, string $mid)
     {
         $url = '/terminals/' . $tid . '/merchants/' . $mid;
 
@@ -157,7 +157,7 @@ class TerminalSelectionTest extends TestCase
 
         $url = '/terminals/' . $tid . '/reassign';
 
-        $requestContent = ['merchant_id' =>  $mid];
+        $requestContent = ['merchant_id' => $mid];
 
         $request = [
             'url'    => $url,
@@ -177,7 +177,7 @@ class TerminalSelectionTest extends TestCase
 
         $url = '/terminals/' . $tid . '/reassign';
 
-        $requestContent = ['merchant_id' =>  '1MercShareTerm'];
+        $requestContent = ['merchant_id' => '1MercShareTerm'];
 
         $request = [
             'url'     => $url,
@@ -294,12 +294,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 76 to 100 should give AxisMigs
+            // Chance from 56 to 100 should give AxisMigs
             [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            // Chance from 66 to 75 should give Cybersource
-            [ 'chanceValue' => 69, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 60 to 65 should give First Data
-            [ 'chanceValue' => 63,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 46 to 55 should give Cybersource
+            [ 'chanceValue' => 49, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 40 to 45 should give First Data
+            [ 'chanceValue' => 42,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
