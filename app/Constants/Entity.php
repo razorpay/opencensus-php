@@ -54,6 +54,7 @@ class Entity
     const GATEWAY_ABSENCE       = 'gateway_absence';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const BATCH_SETTLEMENT      = 'batch_settlement';
+    const MERCHANT_SCHEDULE     = 'merchant_schedule';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
     const TERMINAL_ANALYTICS    = 'terminal_analytics';
     const ORG                   = 'org';
@@ -154,6 +155,7 @@ class Entity
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
+        self::MERCHANT_SCHEDULE     => \RZP\Models\Merchant\Schedule::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
