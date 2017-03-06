@@ -286,7 +286,7 @@ class ErrorCode
         self::RP00011   => 'Result Code is CANCELED. This happens mostly when user cancels the payment on RuPay 3dsecure page.',
         self::RP00012   => 'Enroll result code is NOT SUPPORTED. This happens most probably when card network is not supported',
         self::RP00013   => 'Operation timed out while making the request',
-        self::RP00014   => 'Gatewqy request failed due to some issue.',
+        self::RP00014   => 'Gateway request failed due to some issue.',
     );
 
     /**
@@ -389,5 +389,10 @@ class ErrorCode
         }
 
         return self::$invalidResultErrorCode;
+    }
+
+    public static function getInvalidResultCodeErrorCode()
+    {
+        return self::RP00002;
     }
 }

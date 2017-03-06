@@ -18,8 +18,10 @@ trait Authorize
      * 3.   In case of card not enrolled, this funciton next calls
      *      for submission of request for auth.
      *
-     * @param $enrollStatus
+     * @param       $enrollStatus
+     *
      * @return mixed
+     * @throws Exception\InvalidArgumentException
      * @throws Exception\LogicException
      */
     protected function decideAuthStepAfterEnroll($enrollStatus)
@@ -31,7 +33,9 @@ trait Authorize
 
             case Payment\Result::NOT_ENROLLED:
                 $this->validateMerchantInternationalEnabled();
-                return $this->postAuthNotEnrolledRequestToBank();
+                $this->postAuthNotEnrolledRequestToBank();
+
+                return null;
 
             case Payment\Result::INITIALIZED:
                 return $this->getFieldsForFormSubmitForRupay();
@@ -54,7 +58,7 @@ trait Authorize
      */
     protected function getFieldsForFormSubmitToBankACS()
     {
-        $content['TermUrl'] = $this->callbackUrl;
+        $content['TermUrl'] = $this->input['callbackUrl'];
         $content['MD'] = $this->enrollResponse['data']['paymentid'];
         $content['PaReq'] = $this->enrollResponse['data']['PAReq'];
 
@@ -98,20 +102,23 @@ trait Authorize
             TraceCode::GATEWAY_ENROLLED_AUTH_REQUEST,
             $this->authEnrolledRequest);
 
-        $this->runRequestResponseFlow(
-            $this->authEnrolledRequest,
-            $this->authEnrolledResponse);
+        $error = $this->runRequestResponseFlow(
+                    $this->authEnrolledRequest,
+                    $this->authEnrolledResponse);
 
-        $this->verifyAuthResponse($this->authEnrolledResponse);
+        $this->verifyAuthResponse($this->authEnrolledResponse, $error);
     }
 
-    protected function verifyAuthResponse(array & $authResponse)
+    protected function verifyAuthResponse(array & $authResponse, $error = false)
     {
-        $this->isAuthSuccess($authResponse);
+        if ($error === false)
+        {
+            $error = ! ($this->isAuthSuccess($authResponse));
+        }
 
-        $this->traceAuthEnrolledResponse($authResponse);
+        $this->traceAuthEnrolledResponse($authResponse, $error);
 
-        if (($this->error === true) and
+        if (($error === true) and
             ($this->callbackAlreadyProcessed($authResponse) === true))
         {
             // We don't want to silently return here because that would mean
@@ -125,9 +132,9 @@ trait Authorize
             $this->throwException($authResponse['error']);
         }
 
-        $this->persistAfterAuthEnrolled($authResponse);
+        $this->persistAfterAuthEnrolled($authResponse, $error);
 
-        if ($this->error)
+        if ($error)
         {
             $this->throwException($authResponse['error']);
         }
@@ -135,7 +142,7 @@ trait Authorize
 
     protected function callbackAlreadyProcessed($authResponse)
     {
-        // This function is called only if $this->error is set.
+        // This function is called only if upstream error has occurred.
         // Hence, it is okay to reload here, since it will be done
         // only in case of an error in the authorize flow.
         $this->repo->reload($this->model);
@@ -160,20 +167,22 @@ trait Authorize
 
         $this->createAuthNotEnrolledRequestFields();
 
-        $this->runRequestResponseFlow(
-            $this->authNotEnrolledRequest,
-            $this->authNotEnrolledResponse);
+        $error = $this->runRequestResponseFlow(
+                    $this->authNotEnrolledRequest,
+                    $this->authNotEnrolledResponse);
 
-        if ($this->isAuthSuccess($this->authNotEnrolledResponse) === true)
+        if ($error === false)
         {
+            $error = ! ($this->isAuthSuccess($this->authNotEnrolledResponse));
+
             $this->validateAuthNotEnrolledResponse();
         }
 
-        $this->traceAuthNotEnrolledResponse();
+        $this->traceAuthNotEnrolledResponse($this->authNotEnrolledResponse, $error);
 
-        $this->persistAfterAuthNotEnrolled();
+        $this->persistAfterAuthNotEnrolled($error);
 
-        if ($this->error)
+        if ($error)
         {
             $this->throwException($this->authNotEnrolledResponse['error']);
         }
@@ -181,11 +190,6 @@ trait Authorize
 
     protected function isAuthSuccess(array & $authResponse)
     {
-        if ($this->error)
-        {
-            return false;
-        }
-
         $result = '';
         $errorCode = null;
 
@@ -247,11 +251,12 @@ trait Authorize
 
         if ($errorCode !== null)
         {
-            Hdfc\ErrorHandler::setErrorInResponse($authResponse, $errorCode);
-            $this->error = true;
+            $authResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
+
+            return false;
         }
 
-        return ! ($this->error);
+        return true;
     }
 
     protected function createAuthNotEnrolledRequestFields()
@@ -277,30 +282,27 @@ trait Authorize
             $this->authNotEnrolledRequest);
     }
 
-    protected function traceAuthNotEnrolledResponse()
+    protected function traceAuthNotEnrolledResponse($authNotEnrolledResponse, $error)
     {
-        $response = &$this->authNotEnrolledResponse;
-
-        if ($this->error === false)
+        if ($error === false)
         {
             $this->trace(
                 Trace::INFO,
                 TraceCode::GATEWAY_NOT_ENROLLED_RESPONSE,
-                $response);
+                $authNotEnrolledResponse);
         }
         else
         {
             $this->trace(
                 Trace::ERROR,
                 TraceCode::GATEWAY_NOT_ENROLLED_ERROR,
-                $response);
+                $authNotEnrolledResponse);
         }
-
     }
 
-    protected function traceAuthEnrolledResponse($authResponse)
+    protected function traceAuthEnrolledResponse($authResponse, $error)
     {
-        if ($this->error)
+        if ($error)
         {
             $this->trace(
                 Trace::ERROR,
@@ -316,9 +318,9 @@ trait Authorize
         }
     }
 
-    protected function persistAfterAuthNotEnrolled()
+    protected function persistAfterAuthNotEnrolled($error)
     {
-        if ($this->error)
+        if ($error)
         {
             $this->repo->persistAfterAuthNotEnrolledError(
                 $this->model,
@@ -332,9 +334,9 @@ trait Authorize
         }
     }
 
-    protected function persistAfterAuthEnrolled($authEnrolledResponse)
+    protected function persistAfterAuthEnrolled($authEnrolledResponse, $error)
     {
-        if ($this->error)
+        if ($error)
         {
             $this->repo->persistAfterAuthEnrolledError(
                 $this->model,

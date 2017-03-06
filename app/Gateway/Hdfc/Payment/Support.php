@@ -44,7 +44,7 @@ trait Support
         if (($result === Result::CAPTURED) and
             ($type === 'capture'))
         {
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if (in_array($input['card']['network_code'], $this->purchaseNetworks))
             {
                 return;
             }
@@ -88,7 +88,7 @@ trait Support
             $status = Status::AUTHORIZED;
 
             // For purchase transactions, status will be captured.
-            if (in_array($input['card']['network_code'], $this->purchase))
+            if (in_array($input['card']['network_code'], $this->purchaseNetworks))
             {
                 $status = Status::CAPTURED;
             }
@@ -108,8 +108,6 @@ trait Support
             $this->model = $this->repo->retrieveByPaymentIdAndStatusOrFail(
                                             $input['payment']['id'], $status);
         }
-
-        $this->id = $input['payment']['id'];
 
         return $this->model;
     }
@@ -160,7 +158,7 @@ trait Support
         {
             $errorCode = Hdfc\ErrorCode::getErrorCodeForResult($result);
 
-            Hdfc\ErrorHandler::setErrorInResponse($response, $errorCode);
+            $response['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
 
             $this->error = true;
 

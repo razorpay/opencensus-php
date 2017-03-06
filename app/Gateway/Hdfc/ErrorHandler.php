@@ -7,16 +7,6 @@ use RZP\Gateway\Hdfc;
 
 class ErrorHandler
 {
-    public static function unknownError()
-    {
-        return static::$invalidErrorCode;
-    }
-
-    public static function getInvalidError()
-    {
-        return self::getErrorDetailsHdfc(ErrorCode::$invalidErrorCode);
-    }
-
     public static function getErrorMessage($code)
     {
         return Hdfc\ErrorCode::$errorMessages[$code];
@@ -67,14 +57,7 @@ class ErrorHandler
         return array('code' => $code, 'text' => $text);
     }
 
-    public static function setErrorInResponse(array & $response, $code)
-    {
-        self::checkErrorCode($code);
-
-        $response['error'] = self::getErrorDetails($code);
-    }
-
-    public static function setTimeoutError(array & $response, $curlMessage = null)
+    public static function setTimeoutError($curlMessage = null)
     {
         $code = Hdfc\ErrorCode::RP00003;
 
@@ -84,32 +67,35 @@ class ErrorHandler
             $code = Hdfc\ErrorCode::RP00013;
         }
 
-        $response['error'] = self::getErrorDetails($code);
+        return self::getErrorDetails($code);
     }
 
-    public static function setRequestError(array & $response, $curlMessage = null)
+    public static function setRequestError()
     {
         $code = Hdfc\ErrorCode::RP00014;
 
-        $response['error'] = self::getErrorDetails($code);
-        $response['text'] = $curlMessage;
+        return self::getErrorDetails($code);
     }
 
-    public static function setGatewayWrongStatusCode(array & $response, $status_code)
+    public static function getGatewayWrongStatusCodeError($statusCode)
     {
         $code = Hdfc\ErrorCode::RP00008;
 
-        $response['error'] = self::getErrorDetails($code);
+        $error = self::getErrorDetails($code);
 
-        $response['error']['text'] .= ' status_code: ' . $status_code;
+        $error['text'] .= ' status_code: ' . $statusCode;
+
+        return $error;
     }
 
-    public static function setGatewayWrongContentType(array & $response, $contentType)
+    public static function getGatewayWrongContentTypeError($contentType)
     {
         $code = Hdfc\ErrorCode::RP00009;
 
-        $response['error'] = self::getErrorDetails($code);
+        $error = self::getErrorDetails($code);
 
-        $response['error']['text'] .= ' content-type: ' . $contentType;
+        $error['text'] .= ' content-type: ' . $contentType;
+
+        return $error;
     }
 }
