@@ -122,25 +122,14 @@ class Validator extends Base\Validator
 
         $endsAt = $input[Entity::ENDS_AT];
 
-        if (isset($input[Entity::STARTS_AT]) === true)
-        {
-            $startsAt = $input[Entity::STARTS_AT];
+        $startsAt = $input[Entity::STARTS_AT] ?? $now;
 
-            if (($startsAt <= $now) or
-                ($endsAt <= $now) or
-                ($startsAt >= $endsAt))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
-            }
-        }
-        else
+        if (($startsAt < $now) or
+            ($endsAt <= $now) or
+            ($startsAt >= $endsAt))
         {
-            if ($endsAt <= $now)
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
         }
     }
 
@@ -197,7 +186,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateIins(array $input)
+    protected function validateIins(array $input)
     {
         if (isset($input[Entity::IINS]) === false)
         {
