@@ -476,7 +476,9 @@ app.controller('EntitiesCtrl', [
         enabled: booleanList,
         gateway: gatewayList,
         merchant_id: ['Merchant Id'],
-        shared: booleanList
+        shared: booleanList,
+        gateway_merchant_id: ['Gateway Merchant Id'],
+        network_category: ['Network Category']
       },
       transaction: {
         entity_id: ['Payment/Refund/Settlement Id'],
