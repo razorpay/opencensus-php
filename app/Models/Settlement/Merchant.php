@@ -159,19 +159,21 @@ class Merchant
         {
             $details[$componentType]['amount'] = 0;
 
-            $details[$componentType]['count'] = null;
+            $details[$componentType]['count'] = 0;
 
-            if (in_array(
-                    $componentType,
-                    [
-                        SetlComponent::PAYMENT,
-                        SetlComponent::ADJUSTMENT,
-                        SetlComponent::REFUND,
-                        SetlComponent::PAYOUT,
-                    ]) === true)
-            {
-                $details[$componentType]['count'] = 0;
-            }
+            // if (in_array(
+            //         $componentType,
+            //         [
+            //             SetlComponent::PAYMENT,
+            //             SetlComponent::ADJUSTMENT,
+            //             SetlComponent::REFUND,
+            //             SetlComponent::PAYOUT,
+            //             SetlComponent::TRANSFER,
+            //             SetlComponent::REVERSAL,
+            //         ]) === true)
+            // {
+            //     $details[$componentType]['count'] = 0;
+            // }
         }
 
         foreach ($txns as $txn)
@@ -242,7 +244,7 @@ class Merchant
                 default:
                     $txnType = $detail['amount'] < 0 ? 'debit' : 'credit';
 
-                    if ($detail['count'] !== 0)
+                    if (empty($detail['count']) === false)
                     {
                         $this->createSetlDetailsEntity(
                             $componentType,
