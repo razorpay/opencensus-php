@@ -337,6 +337,11 @@ class Entity extends Base\PublicEntity
             'RZP\Models\Schedule\Entity', self::SETTLEMENT_SCHEDULE_ID);
     }
 
+    public function schedules()
+    {
+        return $this->hasMany('RZP\Models\Merchant\Schedule');
+    }
+
     public function payments()
     {
         return $this->hasMany('RZP\Models\Payment\Entity');
