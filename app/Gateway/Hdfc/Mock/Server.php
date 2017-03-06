@@ -466,7 +466,12 @@ class Server extends Base\Mock\Server
         $this->gateway = new Gateway;
         $fields = $this->gateway->getRequestFields($name);
 
-        $this->data = Hdfc\Utility::getFieldsFromXML($input, $fields);
+        $this->data = [];
+
+        Hdfc\Utility::getFieldsFromXML(
+            $input,
+            $fields,
+            $this->data);
     }
 
     protected function copyUdfValues(array & $res)

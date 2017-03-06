@@ -126,11 +126,6 @@ class Gateway
      */
     protected $route;
 
-    /**
-     * The gateway terminal on which to make
-     * the request
-     * @var array
-     */
     protected $terminal;
 
     /**
