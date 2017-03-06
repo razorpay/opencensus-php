@@ -13,7 +13,7 @@ class Offer extends Base
             'payment_method_type' => 'credit',
             'payment_network'     => 'VISA',
             'issuer'              => 'HDFC',
-            'iins'                => ["123456"],
+            'iins'                => ['123456'],
 
         ];
 

@@ -27,7 +27,7 @@ class Entity extends Base\PublicEntity
     const PAYMENT_COUNT             = 'payment_count';
 
     // Processing time denotes the number of seconds required for offer cashback to be
-    // settled to customer's account. Not being used now, could be useful in future
+    // settled to customer's account. Not being used now, may
     const PROCESSING_TIME           = 'processing_time';
     const STARTS_AT                 = 'starts_at';
     const ENDS_AT                   = 'ends_at';
@@ -256,10 +256,10 @@ class Entity extends Base\PublicEntity
 
         if ($existingIins !== null)
         {
-            $iins = array_unique(array_mergerge($existingIins, $iins));
+            $iins = array_unique(array_merge($existingIins, $iins));
         }
 
-        $this->attributes[self::IINS] = $iins;
+        $this->attributes[self::IINS] = json_encode(array_values($iins));
     }
 
     protected function generateStartsAt(array $input)
