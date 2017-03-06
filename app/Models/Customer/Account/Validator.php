@@ -71,9 +71,12 @@ class Validator extends Base\Validator
      * Wallets can only be created for customers having
      * Indian mobile numbers
      */
-    public function validateIndianContact()
+    public function validateIndianContact($number = null)
     {
-        $number = $this->entity->getContact();
+        if ($number === null)
+        {
+            $number = $this->entity->getContact();
+        }
 
         if (empty($number) === true)
         {

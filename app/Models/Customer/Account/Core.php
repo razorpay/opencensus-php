@@ -189,7 +189,7 @@ class Core extends Base\Core
 
         $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
 
-        (new Customer\Balance\Core)->validateIndianContact($input[Entity::CONTACT]);
+        (new Customer\Validator)->validateIndianContact($input[Entity::CONTACT]);
 
         // Verify the otp with raven service
         $this->verifyRavenOtp($input, $merchant);

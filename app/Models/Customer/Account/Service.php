@@ -561,22 +561,36 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        $balance = $this->repo
-                        ->customer_balance
-                        ->findByIdAndMerchant($customerId, $this->merchant);
+        $customerBalance = $this->repo
+                                ->customer_balance
+                                ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
-        return $balance->toArrayPublic();
+        // If no customer balance entity exists, return a default empty entity
+        if ($customerBalance === null)
+        {
+            $customerBalance = (new Customer\Balance\Entity)->build();
+        }
+
+        return $customerBalance->toArrayPublic();
     }
 
     public function getCustomerBalanceStatement(string $customerId, array $input = []) : array
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
+        $customerBalance = $this->repo
+                                ->customer_balance
+                                ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
-        $customerBalance = (new Customer\Balance\Core)->fetchOrCreate($customer, $this->merchant);
-
-        $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
+        if ($customerBalance !== null)
+        {
+            $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
+        }
+        else
+        {
+            // If no customer balance entity exists, return an empty collection
+            $records = new Base\PublicCollection;
+        }
 
         return $records->toArrayPublic();
     }
