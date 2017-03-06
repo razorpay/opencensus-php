@@ -8,7 +8,7 @@ use RZP\Models\Merchant\Schedule\Entity as MerchantSchedule;
 use RZP\Models\Merchant\Entity as Merchant;
 use RZP\Models\Schedule\Entity as Schedule;
 
-class CreateMerchantSchedule extends Migration
+class CreateMerchantSchedules extends Migration
 {
     /**
      * Run the migrations.

@@ -49,7 +49,7 @@ class Table
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const MERCHANT_SCHEDULE     = 'merchant_schedule';
+    const MERCHANT_SCHEDULE     = 'merchant_schedules';
     const MERCHANT_OFFER        = 'merchant_offer';
 
     // organization roles permissions
