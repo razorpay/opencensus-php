@@ -225,6 +225,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPricingRuleForEmi($rules);
         }
+        // else if ($method === Payment\Method::TRANSFER)
+        // {
+        //     $rule = $this->getRelevantPricingRuleForTransfer($rules);
+        // }
         else
         {
             $rule = $this->getRelevantPricingRuleForMethod($rules);

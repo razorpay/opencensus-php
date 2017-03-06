@@ -1721,3 +1721,29 @@ ALTER TABLE daily_settlements
 
 ALTER TABLE files
     ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;
+
+# --- Marketplace + Openwallet ---
+
+ALTER TABLE merchant_banks
+    ADD COLUMN openwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
+
+ALTER TABLE payments
+    ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER vpa,
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold
+    ADD COLUMN transfer_id CHAR(14) DEFAULT NULL AFTER invoice_id,
+    ADD CONSTRAINT payments_transfer_id_foreign FOREIGN KEY (transfer_id) REFERENCES transfers(id) ON DELETE RESTRICT;
+
+ALTER TABLE merchants
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER email,
+    ADD CONSTRAINT merchants_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES merchants(id) ON DELETE RESTRICT;
+
+ALTER TABLE transfers
+    ADD COLUMN currency CHAR(3) NOT NULL AFTER amount,
+    ADD COLUMN amount_reversed INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER currency,
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER amount_reversed,
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold;
+
+ALTER TABLE transactions
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type
+    ADD INDEX transactions_on_hold_index (on_hold);

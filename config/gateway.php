@@ -35,7 +35,8 @@ return array(
         'wallet_payumoney',
         'wallet_airtelmoney',
         'wallet_freecharge',
-        'wallet_jiomoney'
+        'wallet_jiomoney',
+        'wallet_openwallet'
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),

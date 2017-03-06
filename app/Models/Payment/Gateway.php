@@ -34,6 +34,7 @@ class Gateway
     const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
     const WALLET_FREECHARGE  = 'wallet_freecharge';
     const WALLET_JIOMONEY    = 'wallet_jiomoney';
+    const WALLET_OPENWALLET  = 'wallet_openwallet';
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
@@ -73,7 +74,7 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
-    public static $channels = array(
+    public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,
         self::AXIS_GENIUS        => Settlement\Channel::KOTAK,
@@ -94,10 +95,11 @@ class Gateway
         self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
         self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
         self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK
-    );
+        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+    ];
 
     /**
      * Mapping of method to gateways supporting that method
@@ -105,8 +107,8 @@ class Gateway
      *
      * @var array
      */
-    public static $methodMap = array(
-        Method::CARD => array(
+    public static $methodMap = [
+        Method::CARD => [
             self::HDFC,
             self::ATOM,
             self::AXIS_MIGS,
@@ -115,9 +117,9 @@ class Gateway
             self::AMEX,
             self::CYBERSOURCE,
             self::FIRST_DATA,
-        ),
+        ],
 
-        Method::NETBANKING => array(
+        Method::NETBANKING => [
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
@@ -125,9 +127,9 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
-        ),
+        ],
 
-        Method::WALLET => array(
+        Method::WALLET => [
             self::MOBIKWIK,
             self::PAYTM,
             self::WALLET_OLAMONEY,
@@ -135,19 +137,20 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
-        ),
+            self::WALLET_OPENWALLET,
+        ],
 
-        Method::EMI => array(
+        Method::EMI => [
             self::AMEX,
             self::HDFC,
             self::FIRST_DATA,
-        ),
+        ],
 
-        Method::UPI => array(
+        Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
-        ),
-    );
+        ],
+    ];
 
     /**
      * Card gateways which support auth and capture mechanism for at
@@ -156,15 +159,16 @@ class Gateway
      * @var array
      */
     public static $authAndCapture = [
-        self::HDFC => [
+        self::HDFC                  => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY, Network::DICL]
         ],
-        self::AXIS_MIGS => [],
-        self::AMEX => [],
-        self::CYBERSOURCE => [],
-        self::FIRST_DATA => [
+        self::AXIS_MIGS             => [],
+        self::AMEX                  => [],
+        self::CYBERSOURCE           => [],
+        self::FIRST_DATA            => [
             self::NOT_SUPPORTED => [Network::MAES, Network::RUPAY]
         ],
+        self::WALLET_OPENWALLET     => [],
     ];
 
     /**
@@ -176,6 +180,7 @@ class Gateway
         self::CYBERSOURCE,
         self::FIRST_DATA,
         self::AXIS_MIGS,
+        self::WALLET_OPENWALLET,
     ];
 
 
@@ -248,6 +253,7 @@ class Gateway
         Wallet::AIRTELMONEY => Gateway::WALLET_AIRTELMONEY,
         Wallet::FREECHARGE  => Gateway::WALLET_FREECHARGE,
         Wallet::JIOMONEY    => Gateway::WALLET_JIOMONEY,
+        Wallet::OPENWALLET  => Gateway::WALLET_OPENWALLET
     );
 
     public static $upiToGatewayMap = array(
