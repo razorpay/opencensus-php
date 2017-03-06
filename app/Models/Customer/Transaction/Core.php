@@ -125,7 +125,11 @@ class Core extends Base\Core
         return $entities;
     }
 
-    protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId)
+    protected function createEntityForType(
+        string $type,
+        Merchant\Entity $merchant,
+        int $amount,
+        string $customerId) : Entity
     {
         $customerTxn = new Entity;
 

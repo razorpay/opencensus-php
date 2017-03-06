@@ -167,8 +167,7 @@ class Service extends Base\Service
     }
 
     /**
-     * @param  otp verification data
-     * @return success with tokens or failure
+     * Used by the Open Wallet demo app
      */
     public function verifyOtpApp($input)
     {
@@ -572,10 +571,6 @@ class Service extends Base\Service
     public function getCustomerBalanceStatement(string $customerId, array $input = []) : array
     {
         Entity::verifyIdAndStripSign($customerId);
-
-        // $customerBalance = $this->repo
-        //                         ->customer_balance
-        //                         ->findByIdAndMerchant($customerId, $this->merchant);
 
         $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
 

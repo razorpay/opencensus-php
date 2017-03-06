@@ -235,6 +235,11 @@ class CustomerController extends Controller
         return ApiResponse::json($data);
     }
 
+    /**
+     * Used by the Open Wallet demo app
+     *
+     * @return mixed
+     */
     public function verifyOtpApp()
     {
         $input = Request::all();

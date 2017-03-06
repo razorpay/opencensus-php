@@ -174,9 +174,6 @@ class Entity extends Base\PublicEntity
 
         $entity = E::getEntityClass($sourceType);
 
-        if ($sourceId !== null)
-        {
-            $attributes[self::SOURCE]    = $entity::getSignedId($sourceId);
-        }
+        $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
     }
 }

@@ -170,6 +170,19 @@ class Core extends Base\Core
         return $response;
     }
 
+    /**
+     * Used for the Open Wallet demo app - for customer authentication and creation
+     * via OTP
+     *
+     * App sends a request to `/otp/create` to generate an OTP.
+     * The OTP and customer contact are sent to `/otp/verify/app` which
+     * fetches or creates, and returns a local customer
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
     public function verifyOtpApp(array $input, Merchant\Entity $merchant)
     {
         Customer\Validator::validateWalletAppCustomerCreateInput($input);
