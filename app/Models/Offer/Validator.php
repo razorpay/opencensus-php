@@ -2,8 +2,9 @@
 
 namespace RZP\Models\Offer;
 
-use RZP\Base;
 use Carbon\Carbon;
+
+use RZP\Base;
 use RZP\Exception;
 use RZP\Models\Card;
 use RZP\Models\Payment;

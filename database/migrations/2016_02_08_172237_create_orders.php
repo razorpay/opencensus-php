@@ -120,9 +120,6 @@ class CreateOrders extends Migration
         {
             $table->dropForeign(
                 Table::ORDER . '_' . Order::MERCHANT_ID.'_foreign');
-
-            $table->dropForeign(
-                Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
         });
 
         Schema::drop(Table::ORDER);

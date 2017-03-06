@@ -25,6 +25,9 @@ class Entity extends Base\PublicEntity
     const MAX_CASHBACK              = 'max_cashback';
     const FLAT_CASHBACK             = 'flat_cashback';
     const PAYMENT_COUNT             = 'payment_count';
+
+    // Processing time denotes the number of seconds required for offer cashback to be
+    // settled to customer's account. Not being used now, could be useful in future
     const PROCESSING_TIME           = 'processing_time';
     const STARTS_AT                 = 'starts_at';
     const ENDS_AT                   = 'ends_at';
@@ -246,21 +249,6 @@ class Entity extends Base\PublicEntity
     }
 
 // ----------------------- Mutators --------------------------------------------
-    /**
-     * Since wallet validation is not case sensitive, we convert to lowercase
-     * and set in entity
-     *
-     * @param string $paymentNetwork Input payment networl
-     */
-    protected function setPaymentNetworkAttribute(string $paymentNetwork)
-    {
-        if ($this->getPaymentMethod() === Payment\Method::WALLET)
-        {
-            $paymentNetwork = strtolower($paymentNetwork);
-        }
-
-        $this->attributes[self::PAYMENT_NETWORK] = $paymentNetwork;
-    }
 
     protected function setIinsAttribute(array $iins)
     {
@@ -268,10 +256,10 @@ class Entity extends Base\PublicEntity
 
         if ($existingIins !== null)
         {
-            $iins = array_unique(array_merge($existingIins, $iins));
+            $iins = array_unique(array_mergerge($existingIins, $iins));
         }
 
-        $this->attributes[self::IINS] = json_encode(array_values($iins));
+        $this->attributes[self::IINS] = $iins;
     }
 
     protected function generateStartsAt(array $input)

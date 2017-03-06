@@ -54,12 +54,11 @@ class Core extends Base\Core
 
         if ($offerChecker->checkOfferApplicableOnOrder($order) === false)
         {
-            $this->trace->info(TraceCode::OFFER_NOT_APPLIED_ON_ORDER, [
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER, null,
+            [
                 'offer_id' => $offerId,
                 'order_id' => $order->getId()
             ]);
-
-            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ORDER_INVALID_OFFER);
         }
 
         $this->trace->info(
