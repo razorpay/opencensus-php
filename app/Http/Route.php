@@ -346,7 +346,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
+        'upi_fill_bank'                           => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
         'offer_update'                            => ['patch',    'offers/{id}',                                    'OfferController@updateOffer'                                       ],
@@ -728,19 +728,12 @@ final class Route
         'gateway_validate_unknown_refund',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'schedule_create',
-        'schedule_fetch',
-        'schedule_fetch_multiple',
-        'schedule_delete',
-        'schedule_update',
-        'schedule_assign',
-        'schedule_migration',
         'feature_get_multiple',
         'feature_add',
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
-        'upi_fill_provider',
+        'upi_fill_bank',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
         'adj_add_reverse',
@@ -765,6 +758,8 @@ final class Route
         'billdesk_create_cancelled_refunds',
         'offer_deactivate',
         'merchant_patch_beneficiary_code',
+        'schedule_fetch',
+        'schedule_fetch_multiple',
     );
 
     public static $proxy = array(
@@ -863,6 +858,11 @@ final class Route
         'permission_delete',
         'auditlog_search',
         'admin_logout',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     public static $adminPermission = [
@@ -889,8 +889,6 @@ final class Route
         'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
-        'schedule_fetch'                 => [Permission::SCHEDULE_FETCH],
-        'schedule_fetch_multiple'        => [Permission::SCHEDULE_FETCH_MULTIPLE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
         'schedule_update'                => [Permission::SCHEDULE_UPDATE],
         'schedule_assign'                => [Permission::SCHEDULE_ASSIGN],
@@ -1051,6 +1049,11 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     const RAZORPAYJS_ROUTES = array(

@@ -91,6 +91,11 @@ class Entity extends Base\PublicEntity
     {
         $expiredAt = $this->getAttribute(self::EXPIRED_AT);
 
+        if ($expiredAt === null)
+        {
+            return false;
+        }
+
         return ($expiredAt <= time());
     }
 
