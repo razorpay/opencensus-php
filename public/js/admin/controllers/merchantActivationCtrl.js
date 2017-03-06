@@ -16,9 +16,33 @@ app.controller('MerchantActivationCtrl', [
     $scope.companyInfo = null;
     $scope.panVerified = false;
 
-    // This decides whether the admin context options will be shown
-    // or not.
+    // This decides whether the admin context
+    // options will be shown or not.
     $scope.admin = true;
+
+    $scope.verificationToolTip = {
+      true: 'Business Name matches Company Register',
+      false: "Business Name doesn't match company register",
+      'pending': "Click the verify button to fetch company data and verify"
+    }
+    $scope.verifyBusinessName = function() {
+      var company = null;
+      try {
+        company = $scope.companyInfo.company['Company Name'];
+      }
+      catch(TypeError) {
+        return 'pending';
+      }
+
+      var canonicalize = function(str) {
+        return str.replace(/\s/g, '').toUpperCase();
+      };
+
+      var bn1 = canonicalize($scope.data.business_name);
+      var bn2 = canonicalize(company);
+
+      return (bn1 === bn2);
+    }
 
     $scope.getUrl = function(name, params) {
       switch(name) {
@@ -50,7 +74,7 @@ app.controller('MerchantActivationCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.companyInfo = data.data;
-          $scope.verifyPAN(data.data.signatories, $scope.data['2'].promoter_pan_name, $scope.data['2'].promoter_pan);
+          $scope.verifyPAN(data.data.signatories, $scope.data.promoter_pan_name, $scope.data.promoter_pan);
         } else {
           $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
         }
