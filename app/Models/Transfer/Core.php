@@ -1,0 +1,378 @@
+<?php
+
+namespace RZP\Models\Transfer;
+
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
+use RZP\Models\Base;
+use RZP\Models\Merchant;
+use RZP\Models\Transfer;
+use RZP\Models\Transaction;
+use RZP\Models\Customer;
+use RZP\Models\Payment;
+use RZP\Models\Feature;
+
+class Core extends Base\Core
+{
+    protected $mutex;
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->mutex = $this->app['api.mutex'];
+    }
+
+    /**
+     * Create a direct transfer from Merchant balance
+     *
+     * @param  array                    $input
+     * @param  Merchant\Entity          $merchant
+     * @return Transfer\Entity
+     */
+    public function createForMerchant(array $input, Merchant\Entity $merchant) : Entity
+    {
+        $this->trace->info(
+            TraceCode::TRANSFER_CREATE_REQUEST,
+            ['input' => $input]);
+
+        return $this->repo->transaction(function () use ($input, $merchant)
+        {
+            $transfer = $this->makeTransfer($input, $merchant, $merchant);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_CREATE_SUCCESS,
+                ['transfer_id' => $transfer->getId()]);
+
+            return $transfer;
+        });
+    }
+
+    /**
+     * Create a transfer from a captured payment source
+     *
+     * @param   Payment\Entity          $payment
+     * @param   array                   $input
+     * @param   Merchant\Entity         $merchant
+     * @return  Base\PublicCollection
+     */
+    public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant)
+    {
+        $transfers = new Base\PublicCollection;
+
+        $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
+
+        (new Validator)->validateTransfers($payment, $merchantBalance, $input);
+
+        $totalTransferAmount = 0;
+
+        foreach ($input as $transfer)
+        {
+            $transfer = $this->makeTransfer($transfer, $payment, $merchant);
+
+            $totalTransferAmount += $transfer['amount'];
+
+            $transfers->push($transfer);
+        }
+
+        $this->updatePaymentAmountTransferred($payment, $totalTransferAmount);
+
+        return $transfers;
+    }
+
+    /**
+     * Edit the attributes of a transfer entity
+     * Currently allowed for on_hold and on_hold_until fields
+     *
+     * @param  Transfer\Entity $transfer
+     * @param  array           $input
+     *
+     * @return Entity
+     */
+    public function edit(Transfer\Entity $transfer, array $input) : Entity
+    {
+        $transfer->edit($input);
+
+        // if ($transfer->getOnHold() === false)
+        // {
+        //     $transfer->setOnHoldUntil(null);
+        // }
+
+        return $this->repo->transaction(function () use ($transfer, $input)
+        {
+            $this->repo->saveOrFail($transfer);
+
+            $this->updatePaymentHold($transfer, $input);
+
+            $this->trace->info(
+                TraceCode::TRANSFER_EDIT_SUCCESS,
+                ['transfer_id' => $transfer->getId()]);
+
+            return $transfer;
+        });
+    }
+
+    /**
+     * Creates and saves a new transfer entity
+     *
+     * @param Base\Entity     $source Source entity for transfer
+     * @param Base\Entity     $to     Receiving entity for transfer
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    protected function createTransfer(
+        Base\Entity $source,
+        Base\Entity $to,
+        array $input,
+        Merchant\Entity $merchant) : Entity
+    {
+        $transfer = new Entity;
+
+        $transfer->generateId();
+
+        $transfer->build($input);
+
+        $transfer->merchant()->associate($merchant);
+
+        $transfer->source()->associate($source);
+
+        $transfer->to()->associate($to);
+
+        // Create a transaction for the transfer; debits the source merchant
+        $txn = (new Transaction\Core)->createFromTransfer($transfer);
+
+        $this->repo->saveOrFail($txn);
+
+        $this->repo->saveOrFail($transfer);
+
+        return $transfer;
+    }
+
+    /**
+     * If a transfer hold is modified, also update its corresponding payment
+     * and transaction records with the new hold values
+     *
+     * @param  Entity $transfer
+     * @param  array  $input
+     */
+    protected function updatePaymentHold(Entity $transfer, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_HOLD,
+            [
+                'transfer_id' => $transfer->getId(),
+                'input'       => $input,
+            ]);
+
+        $payment = $this->repo
+                        ->payment
+                        ->findByTransferIdAndMerchant(
+                            $transfer->getId(),
+                            $transfer->getToId());
+
+        $payment->setOnHold($transfer->getOnHold());
+
+        // $payment->setOnHoldUntil($transfer->getOnHoldUntil());
+
+        $txn = (new Transaction\Core)->updateOnHoldToggle($payment);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->repo->saveOrFail($txn);
+    }
+
+    /**
+     * Called on payment transfer operation
+     * Updates the value of amount_transferred in Payments
+     *
+     * @param  Payment\Entity $payment
+     * @param  int            $amount
+     */
+    protected function updatePaymentAmountTransferred(Payment\Entity $payment, int $amount)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_UPDATE_AMOUNT_TRANSFERRED,
+            [
+                'payment_id'    => $payment->getId(),
+                'amount'        => $amount,
+            ]);
+
+        $payment->transferAmount($amount);
+
+        $this->repo->saveOrFail($payment);
+    }
+
+    /**
+     * Create and process a transfer
+     *
+     * @param  array                $input
+     * @param  Base\Entity          $source
+     * @param  Merchant\Entity      $merchant
+     * @return Transfer\Entity
+     */
+    protected function makeTransfer(array $input, Base\Entity $source, Merchant\Entity $merchant) : Entity
+    {
+        $validator = new Validator;
+
+        $validator->validateInput('transfer', $input);
+
+        if (isset($input[ToType::CUSTOMER]) === true)
+        {
+            $id = $input[ToType::CUSTOMER];
+
+            return $this->customerTransfer($id, $source, $input, $merchant);
+        }
+        else if (isset($input[ToType::ACCOUNT]) === true)
+        {
+            $id = $input[ToType::ACCOUNT];
+
+            return $this->accountTransfer($id, $source, $input, $merchant);
+        }
+    }
+
+    /**
+     * Transfer to a customer wallet account
+     *
+     * @param  string               $customerId
+     * @param  Base\Entity          $source
+     * @param  array                $input
+     * @param  Merchant\Entity      $merchant
+     * @return Transfer\Entity
+     */
+    protected function customerTransfer(
+        string $customerId,
+        Base\Entity $source,
+        array $input,
+        Merchant\Entity $merchant) : Entity
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_TO_CUSTOMER,
+            ['transfer' => $input]);
+
+        $this->verifyFeatureAllowed(Feature\Constants::OPENWALLET, $merchant);
+
+        $to = $this->repo
+                   ->customer
+                   ->findByPublicIdAndMerchant($customerId, $merchant);
+
+        // Create a transfer its corresponding txn - debits the merchant
+        $transfer = $this->createTransfer($source, $to, $input, $merchant);
+
+        $txn = $transfer->transaction;
+
+        // Fetch customer balance and credit
+        $balance = (new Customer\Balance\Core)->fetchOrCreate($to, $merchant);
+
+        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
+
+        $customerTxn = (new Customer\Transaction\Core)
+                            ->createForCustomerCredit($transfer, $input['amount'], $to->getId(), $merchant);
+
+        $this->repo->saveOrFail($customerTxn);
+
+        return $transfer;
+    }
+
+    /**
+     * Transfer to a Marketplace account
+     *
+     * @param string           $accountId
+     * @param  Base\Entity     $source
+     * @param  array           $input
+     * @param  Merchant\Entity $merchant
+     *
+     * @return Entity
+     * @throws Exception\BadRequestException
+     * @throws Exception\BadRequestValidationFailureException
+     */
+    protected function accountTransfer(string $accountId, Base\Entity $source, array $input, Merchant\Entity $merchant)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_TO_ACCOUNT,
+            ['transfer' => $input]);
+
+        $this->verifyFeatureAllowed(Feature\Constants::MARKETPLACE, $merchant);
+
+        $originPayment = null;
+
+        $to = $this->repo
+                   ->merchant
+                   ->fetchByAccountIdAndMerchant($accountId, $merchant);
+
+        $merchant->getValidator()->validateMerchantForMarketplaceTransfer($to, $this->mode);
+
+        $originPayment = $this->checkAndSetSourcePayment($source, $accountId, $merchant);
+
+        $transfer = $this->createTransfer($source, $to, $input, $merchant);
+
+        $transferPayment = (new Payment\Processor\Processor($to))->processTransfer($input, $originPayment);
+
+        $transferPayment->transfer()->associate($transfer);
+
+        $this->repo->saveOrFail($transferPayment);
+
+        return $transfer;
+    }
+
+    protected function verifyFeatureAllowed(string $feature, Merchant\Entity $merchant)
+    {
+        if ($merchant->isFeatureEnabled($feature) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                    'This transfer is not supported');
+        }
+    }
+
+    /**
+     * If the transfer source is a Payment, set
+     * $originPayment for the transfer and validate
+     * Returns null if not.
+     *
+     * @param  mixed                  $source
+     * @param  string                 $accountId
+     * @param  Merchant\Entity        $merchant
+     * @return mixed
+     */
+    protected function checkAndSetSourcePayment($source, string $accountId, Merchant\Entity $merchant)
+    {
+        $originPayment = null;
+
+        if (($source instanceof Payment\Entity) === true)
+        {
+            $originPayment = $source;
+
+            $this->checkMultipleMarketplaceTransfer($originPayment->getId(), $accountId, $merchant);
+        }
+
+        return $originPayment;
+    }
+
+    /**
+     * A transfer can only be done once to an account
+     * from a source payment. This function validates that.
+     *
+     * @param  string         $paymentId
+     * @param  string         $accountId
+     * @param Merchant\Entity $merchant
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function checkMultipleMarketplaceTransfer(string $paymentId, string $accountId, Merchant\Entity $merchant)
+    {
+        Merchant\AccountEntity::verifyIdAndStripSign($accountId);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourcePaymentToAccountAndMerchant(
+                            $paymentId, $accountId, $merchant);
+
+        if (count($transfers) !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
+        }
+    }
+}

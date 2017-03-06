@@ -43,7 +43,7 @@ class Service extends Base\Service
 
             $batchFees = 0;
 
-            assertTrue($batch->getSettlementCountAttribute() === $settlements->count());
+            assertTrue($batch->getTotalCountAttribute() === $settlements->count());
 
             foreach ($settlements as $setl)
             {
@@ -86,7 +86,7 @@ class Service extends Base\Service
 
                 $batchServiceTax = 0;
 
-                assertTrue($batch->getSettlementCount() === $settlements->count());
+                assertTrue($batch->getTotalCount() === $settlements->count());
 
                 foreach ($settlements as $setl)
                 {

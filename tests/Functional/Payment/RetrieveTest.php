@@ -285,8 +285,8 @@ class PaymentRetrieveTest extends TestCase
                             'body' => [
                                 'size' => 10,
                                 'query' => [
-                                    'filtered' => [
-                                        'query' => [
+                                    'bool' => [
+                                        'must' => [
                                             'multi_match' => [
                                                 'query' => 'es_random_1',
                                                 'type' => 'cross_fields',
@@ -349,8 +349,8 @@ class PaymentRetrieveTest extends TestCase
                         'body' => [
                             'size' => 1000,
                             'query' => [
-                                'filtered' => [
-                                    'query' => [
+                                'bool' => [
+                                    'must' => [
                                         'multi_match' => [
                                             'query' => 'es',
                                             'type' => 'cross_fields',
@@ -437,7 +437,8 @@ class PaymentRetrieveTest extends TestCase
 
     protected function mockEsClient()
     {
-        $clientBuilder = Mockery::mock('RZP\Services\EsClient')->makePartial();
+        $clientBuilder = Mockery::mock('RZP\Services\EsClient', [$this->app])
+                                ->makePartial();
 
         $this->app->instance('es', $clientBuilder);
 

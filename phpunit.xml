@@ -27,5 +27,6 @@
   </filter>
   <php>
     <ini name="memory_limit" value="3072M"/>
+    <const name="MCRYPT_RIJNDAEL_128" value="MCRYPT_RIJNDAEL_128"/>
   </php>
 </phpunit>

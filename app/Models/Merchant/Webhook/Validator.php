@@ -17,7 +17,7 @@ class Validator extends Base\Validator
     protected static $createValidators = array('events', 'url');
 
     protected static $editRules = array(
-        Entity::URL     => 'sometimes|string|url|max:255|min:3',
+        Entity::URL     => 'sometimes|filled|string|url|max:255|min:3',
         Entity::EVENTS  => 'sometimes|array',
         Entity::ACTIVE  => 'sometimes|in:0,1',
         Entity::SECRET  => 'sometimes|string|max:255',

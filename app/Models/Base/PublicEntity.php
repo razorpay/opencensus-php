@@ -364,7 +364,7 @@ class PublicEntity extends UniqueIdEntity
 
     public function getDateInFormatDMYHMS($attribute)
     {
-        return $this->getDateInFormat($attribute, 'd/m/y h:i:s');
+        return $this->getDateInFormat($attribute, 'd/m/y H:i:s');
     }
 
     /**

@@ -437,10 +437,9 @@ trait Support
             }
         }
 
-        $hasValidRefundOrCaptureEntityForAllowingRefund = $this->hasValidRefundOrCaptureEntityForAllowingRefund(
-                                                                            $refundId, $paymentId);
+        $valid = $this->hasValidRefundOrCaptureEntityForAllowingRefund($refundId, $paymentId);
 
-        if ($hasValidRefundOrCaptureEntityForAllowingRefund === false)
+        if ($valid === false)
         {
             return false;
         }
@@ -458,6 +457,7 @@ trait Support
 
         $gatewayRefundEntities = $this->repo->findByRefundIdOrderedById($refundId);
 
+        //
         // If there is only one refund entity and we are running manual refund, this should
         // be in refunded state with error code denied by risk (because of a previous bug in the code).
         // If there are multiple refund entities, it means that it was denied by risk multiple times
@@ -467,6 +467,7 @@ trait Support
         //
         // This is with the assumption that multiple attempts for the refund were not made during
         // the bug period (where status is refunded and error code is denied by risk)
+        //
         if ($gatewayRefundEntities->count() !== 0)
         {
             if ($gatewayRefundEntities->count() === 1)
