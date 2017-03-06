@@ -65,6 +65,10 @@ class Table
     const ROLE_MAP              = 'role_map';
     const LOGIN_ATTEMPT         = 'login_attempts';
 
+    // Workflows
+    const WORKFLOW              = 'workflows';
+    const WORKFLOW_STEP         = 'workflow_steps';
+
     // Gateway related
     const EBS                   = 'ebs';
     const UPI                   = 'upi';
