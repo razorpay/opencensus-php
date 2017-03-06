@@ -87,8 +87,10 @@ class Repository extends Base\Repository
     /**
      * Build a query based upon the attribute set in the new offer entity,
      * to check whether an offer exists with the same condition.
+     *
      * @param  Entity $newOffer
      * @param  string $merchantId
+     *
      * @return $query
      */
     protected function buildQuery(Entity $newOffer, string $merchantId)

@@ -37,8 +37,8 @@ class Validator extends Base\Validator
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
         Entity::TYPE                      => 'sometimes|in:instant,deferred',
-        Entity::STARTS_AT                 => 'sometimes|integer',
-        Entity::ENDS_AT                   => 'required|integer',
+        Entity::STARTS_AT                 => 'sometimes|epoch',
+        Entity::ENDS_AT                   => 'required|epoch',
         Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
         Entity::TERMS                     => 'required|string'
     ];
@@ -202,14 +202,9 @@ class Validator extends Base\Validator
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER);
         }
 
-        if ($this->isAssociativeArray($iins) === true)
+        if (is_associative_array($iins) === true)
         {
             throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS);
         }
-    }
-
-    protected function isAssociativeArray(array $input)
-    {
-        return array_keys($input) !== range(0, count($input) - 1);
     }
 }
