@@ -610,7 +610,10 @@ class Entity extends Base\PublicEntity
 
     public function setReferer($input)
     {
-        $this->metadata['referer'] = $input['referer'] ?? null;
+        if (isset($input['referer']) === true)
+        {
+            $this->metadata['referer'] = $input['referer'];
+        }
     }
 
     public function setUserAgent($input)
