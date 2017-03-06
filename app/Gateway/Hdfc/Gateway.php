@@ -24,7 +24,6 @@
 
 namespace RZP\Gateway\Hdfc;
 
-use Requests_Response;
 use RZP\Base\JitValidator;
 use RZP\Constants\Mode;
 use RZP\Error;
@@ -48,6 +47,12 @@ class Gateway extends Base\Gateway
     protected $gateway = 'hdfc';
 
     /**
+     * App payment id
+     * @var string
+     */
+    protected $id;
+
+    /**
      * Curent Hdfc Payment Model
      * @var Hdfc\Entity
      */
@@ -60,6 +65,13 @@ class Gateway extends Base\Gateway
      * @var boolean
      */
     protected $error = false;
+
+    /**
+     * The gateway terminal on which to make
+     * the request
+     * @var array
+     */
+    protected $terminal;
 
     const TIMEOUT = 60;
 
@@ -170,7 +182,8 @@ class Gateway extends Base\Gateway
         'fields'    => array('action', 'amt', 'member', 'transid', 'trackid', 'udf5'),
         'type'      => 'inquiry',
         'xml'       => '',
-        'data'      => array());
+        'data'      => array(),
+        'error'     => null);
 
     protected $inquiryResponse = array(
         'type' => 'inquiry',
@@ -186,7 +199,7 @@ class Gateway extends Base\Gateway
      * @var array
      */
     protected $stripFieldsList = array(
-        'password', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
+        'password', 'currencycode', 'id', 'udf1', 'udf2', 'udf3', 'udf4',
         'card', 'expmonth', 'expyear', 'cvv2', 'PAReq', 'zip', 'addr', 'PaRes', 'number', 'cvv'
     );
 
@@ -227,7 +240,7 @@ class Gateway extends Base\Gateway
      */
     protected $authorize = true;
 
-    protected $purchaseNetworks = array(
+    protected $purchase = array(
         Card\Network::MAES,
         Card\Network::RUPAY,
         Card\Network::DICL,
@@ -315,16 +328,17 @@ class Gateway extends Base\Gateway
 
         $this->validateCallbackGatewayFields($input, $network);
 
+        $this->id = $input['payment']['id'];
+
         $this->model = $this->repo->findByGatewayTransactionIdOrFail(
             $input['gateway']['MD']);
 
         $paymentId = $this->model->getPaymentId();
 
-        if ($input['payment']['id'] !== $paymentId)
+        if ($this->id !== $paymentId)
         {
             throw new Exception\LogicException(
-                'api payment '. $input['payment']['id'] .
-                ' should be equal to payment id . '. $paymentId);
+                'app payment '. $this->id . ' should be equal to payment id . '. $paymentId);
         }
 
         $this->postAuthEnrolledRequest($input);
@@ -355,10 +369,6 @@ class Gateway extends Base\Gateway
 
     /**
      * HDFC gateway does not provide void
-     *
-     * @param array $input
-     *
-     * @throws Exception\LogicException
      */
     public function void(array $input)
     {
@@ -483,7 +493,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function runRequestResponseFlow(array & $request, array & $response)
+    protected function runRequestResponseFlow(array &$request, array &$response)
     {
         $this->setTerminalInRequest($request);
 
@@ -492,6 +502,8 @@ class Gateway extends Base\Gateway
 
         $domain = ($this->mode === Mode::LIVE) ? Urls::LIVE_DOMAIN : Urls::TEST_DOMAIN;
         $request['url'] = $domain . $request['url'];
+
+        $this->requestVar = $request;
 
         try
         {
@@ -506,38 +518,39 @@ class Gateway extends Base\Gateway
                 throw $e;
             }
 
+            $this->error = true;
+
             $response['content'] = '';
 
             $curlErrorMessage = strtolower($e->getData()['message']);
 
             if ($e instanceof Exception\GatewayTimeoutException)
             {
-                $response['error'] = Hdfc\ErrorHandler::setTimeoutError($curlErrorMessage);
+                Hdfc\ErrorHandler::setTimeoutError($response, $curlErrorMessage);
             }
             else
             {
-                $response['error'] = Hdfc\ErrorHandler::setRequestError();
+                Hdfc\ErrorHandler::setRequestError($response, $curlErrorMessage);
             }
 
-            $this->error = true;
-
-            return $this->error;
+            return;
         }
 
         $response['xml'] = $response['response']->body;
 
-        $this->error = $this->checkResponseStatusCodeAndContentType($response);
+        $this->checkResponseStatusCode($response);
 
-        if ($this->error === true)
+        if ($this->error === false)
         {
-            return $this->error;
+            $this->checkResponseContentType($response);
         }
 
-        Utility::parseResponseXml($response);
+        if ($this->error === false)
+        {
+            Utility::parseResponseXml($response);
 
-        $this->error = $this->checkResponseErrorCode($response);
-
-        return $this->error;
+            $this->checkResponseErrorCode($response);
+        }
     }
 
     protected function checkForServiceUnavailability($response)
@@ -547,35 +560,23 @@ class Gateway extends Base\Gateway
         return (strpos($body, 'Service Unavailable') !== false);
     }
 
-    protected function checkResponseStatusCodeAndContentType(& $response)
-    {
-        // Checks status code and content type
-        $error = (($this->checkResponseStatusCode($response)) or
-                  ($this->checkResponseContentType($response)));
-
-        return $error;
-    }
-
     protected function checkResponseStatusCode(& $response)
     {
         $statusCode = (int) $response['response']->status_code;
 
         if ($statusCode >= 500)
         {
-            // This is an error, set respective error code/desc.
             if ($this->checkForServiceUnavailability($response) === true)
             {
-                $response['error'] = Hdfc\ErrorHandler::setTimeoutError();
+                Hdfc\ErrorHandler::setTimeoutError($response);
             }
             else
             {
-                $response['error'] = Hdfc\ErrorHandler::getGatewayWrongStatusCodeError($statusCode);
+                Hdfc\ErrorHandler::setGatewayWrongStatusCode($response, $statusCode);
             }
 
-            return true;
+            $this->error = true;
         }
-
-        return false;
     }
 
     protected function checkResponseContentType(& $response)
@@ -584,16 +585,14 @@ class Gateway extends Base\Gateway
 
         if (strpos($contentType, 'application/xml') === false)
         {
-            $response['error'] = Hdfc\ErrorHandler::getGatewayWrongContentTypeError($contentType);
+            Hdfc\ErrorHandler::setGatewayWrongContentType($response, $contentType);
 
             $this->trace->info(
                 TraceCode::GATEWAY_VERIFY_INVALID_HEADER,
                 $contentType);
 
-            return true;
+            $this->error = true;
         }
-
-        return false;
     }
 
     protected function setTerminalInRequest(array & $request)
@@ -618,32 +617,32 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * This step is very crucial for deciding future steps in
-     * payment flow.
-     * For any operation, whether enroll, auth or support,
-     * the success or failure at different stages is decided on the basis of
-     * $this->error variable.
-     * Be careful before making any change around here.
-     *
-     * @param $response
-     *
-     * @return bool
-     */
     protected function checkResponseErrorCode($response)
     {
-        return isset($response['error']['code']);
+        //
+        // This step is very crucial for deciding future steps in
+        // payment flow.
+        //
+        // For any operation, whether enroll, auth or support,
+        // the success or failure at different stages is decided on the basis of
+        // $this->error variable.
+        // Be careful before making any change around here.
+        //
+        if (isset($response['error']['code']))
+        {
+            $this->error = true;
+        }
     }
 
     public function postRequest($request)
     {
         $request['options'] = $this->getRequestOptions();
 
-        $response = $this->sendGatewayRequest($request);
+        $this->response = $this->sendGatewayRequest($request);
 
-        $response = $this->processResponse($response);
+        $this->processResponse($this->response);
 
-        return $response;
+        return $this->response;
     }
 
     protected function getRequestOptions()
@@ -668,17 +667,20 @@ class Gateway extends Base\Gateway
     protected function getModel($id)
     {
         $this->model = $this->repo->retrieve($id);
+
+        $this->id = $id;
+    }
+
+    protected function setId($id)
+    {
+        $this->id = $id;
     }
 
     /**
      * Strips sensitive data before calling trace class to
      * prevent sensitive data from being traced
-     *
-     * @param string $level
-     * @param string $message
-     * @param array  $context
      */
-    protected function trace(string $level, string $message, array $context)
+    protected function trace($level, $message, array $context)
     {
         if (isset($context['data']))
         {
@@ -768,17 +770,11 @@ class Gateway extends Base\Gateway
         throw $exception;
     }
 
-    // -------------------------Exceptions Ends ------------------------------------
+// -------------------------Exceptions Ends ------------------------------------
 
-    /**
-     * Removes the card number in case it comes in response.
-     * If card number comes, then it's always under <pan></pan> tags
-     * @param  Requests_Response $response
-     * @return array
-     */
     protected function processResponse($response)
     {
-        $body = $response->body;
+        $body = $this->response->body;
 
         $ix = strpos($body, '<pan>');
 
@@ -787,10 +783,9 @@ class Gateway extends Base\Gateway
             $eix = strrpos($body, '</pan>') + 6;
             $body = substr($body, 0, $ix) . substr($body, $eix);
 
-            $response->body = $body;
-            $response->raw = null;
+            $this->response->body = $body;
+            $this->response->raw = null;
         }
-
-        return $response;
     }
+
 }

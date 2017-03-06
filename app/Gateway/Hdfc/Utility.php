@@ -18,44 +18,41 @@ class Utility extends \RZP\Gateway\Utility
         return $xml;
     }
 
-    /**
-     * First checks for error code field.
-     * If it's set then gets error related fields otherwise
-     * gets other normal field values.
-     *
-     * @param array $response
-     */
-    public static function parseResponseXml(array & $response)
+    public static function getAndParseError(array &$response)
     {
-        $xml = $response['xml'];
+        $error = self::getFieldFromXML($response['xml'], 'error_code_tag');
 
-        $errorCode = self::getFieldFromXML($xml, 'error_code_tag');
+        if ($error === null)
+        {
+            return false;
+        }
 
-        if ($errorCode !== null)
-        {
-            // There is an error, only set error fields.
-            $response['error'] = [
-                'code' => $errorCode,
-                'text' => self::getFieldFromXML($xml, 'error_text'),
-                'result' => self::getFieldFromXML($xml, 'result'),
-            ];
-        }
-        else
-        {
-            $response['data'] = self::getFieldsFromXML($xml, $response['fields']);
-        }
+        $response['error']['code'] = $error;
+        $response['error']['text'] = self::getFieldFromXML($response['xml'], 'error_text');
+        $response['error']['result'] = self::getFieldFromXML($response['xml'], 'result');
+
+        return true;
     }
 
-    public static function getFieldsFromXML($xml, $fields)
+    public static function parseResponseXml(array &$response)
     {
-        $data = [];
-
-        foreach ($fields as $field)
+        if (self::getAndParseError($response))
         {
-            $data[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
+            return;
         }
 
-        return $data;
+        self::getFieldsFromXML(
+            $response['xml'],
+            $response['fields'],
+            $response['data']);
+    }
+
+    public static function getFieldsFromXML($xml, $fields, &$array)
+    {
+        foreach ($fields as $field)
+        {
+            $array[$field] = getTextBetweenStrings($xml, "<$field>", "</$field>");
+        }
     }
 
     public static function getFieldFromXML($xml, $field)
@@ -65,18 +62,11 @@ class Utility extends \RZP\Gateway\Utility
 
     /**
      * Unsets specified fields
-     *
-     * @param $data
-     * @param $fields
-     *
-     * @return null
      */
     public static function unsetFields($data, $fields)
     {
         if ($data === null)
-        {
             return null;
-        }
 
         $data = array_diff_key($data, array_flip($fields));
 

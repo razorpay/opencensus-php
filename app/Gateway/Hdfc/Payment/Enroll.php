@@ -31,10 +31,13 @@ trait Enroll
      * @param  array $input
      * Should contain 'payment' and 'card' arrays
      *
-     * @return string
      */
     protected function enrollCard(array $input)
     {
+        $this->setId($input['payment']['id']);
+
+        $this->callbackUrl = $input['callbackUrl'];
+
         //
         // Fields to be sent to HDFC gateway for card-enrollment
         //
@@ -47,13 +50,11 @@ trait Enroll
 
         $network = $input['card']['network_code'];
 
-        //
         // Only required in case of Rupay
         // TODO: This currently does not honour our PROXY_ENABLED
         // setting, which is set to false in production.
         //
         // We will shift it back once we have whitelisted FSS
-        //
         if ($network === Card\Network::RUPAY)
         {
             $this->enrollRequest['options']['proxy'] = $this->proxy;
@@ -64,16 +65,16 @@ trait Enroll
         // This function also checks for and sets
         // generic error
         //
-        $error = $this->runRequestResponseFlow(
-                    $this->enrollRequest,
-                    $this->enrollResponse);
+        $this->runRequestResponseFlow(
+            $this->enrollRequest,
+            $this->enrollResponse);
 
         //
-        // If there is an error then just throw an exception
+        // If there is an error then just return
         //
-        if ($error)
+        if ($this->error)
         {
-            $this->persistAfterEnrollError();
+            $this->persistAfterEnroll();
 
             $this->throwException($this->enrollResponse['error'], true);
         }
@@ -88,7 +89,7 @@ trait Enroll
         //
         if ($this->isEnrollSuccess() === false)
         {
-            $this->persistAfterEnrollError();
+            $this->persistAfterEnroll();
 
             $this->throwException($this->enrollResponse['error'], true);
         }
@@ -120,33 +121,58 @@ trait Enroll
 
         $this->enrollRequest['url'] = Hdfc\Urls::ENROLL_URL;
 
-        $data = & $this->enrollRequest['data'];
+        $data = &$this->enrollRequest['data'];
+
+        $data['trackid'] = $payment['id'];
+
+        // Convert amount from integer to decimal
+        $data['amt'] = $payment['amount']/100;
+
+        // Collect udf fields
+        $data['udf1'] = 'test';
+
+        $data['udf2'] = $payment['email'];
+
+        $data['udf3'] = $payment['contact'];
+
+        $data['udf4'] = 'test';
+
+        $data['udf5'] = 'test';
+
+        $this->udfCheckAndMeetHdfcRequirements($data);
+
+        $this->udfRemoveHackCharacters($data);
+
+        // Collect fields related to the card
+        $this->mapKeys($card, $this->cardKeyMappings, $data);
 
         // set the iso numeric currency code
         $currency = $payment['currency'];
 
-        $data = [
-            'trackid'       => $payment['id'],
-            'amt'           => $payment['amount'] / 100,
-            'currencycode'  => Currency::ISO_NUMERIC_CODES[$currency],
-            'action'        => $this->getActionForEnrollRequest($card),
-        ];
+        $data['currencycode'] = Currency::ISO_NUMERIC_CODES[$currency];
 
-        $this->addUdfFieldsToEnrollRequest($payment, $data);
+        $network = $input['card']['network_code'];
 
-        $this->addCardDetailsToEnrollRequest($card, $data);
+        $data['action'] = Action::AUTHORIZE;
+
+        if (in_array($network, $this->purchase))
+        {
+            $data['action'] = Action::PURCHASE;
+        }
 
         $url = $input['callbackUrl'];
 
-        // This is required in case of rupay for handling
-        // s2s callback during development.
         if ($this->env === 'dev')
         {
-            $url = $this->getCallbackUrlForDev($url);
+            $parts = parse_url($url);
+            // $parts['host'] = 'https://dev.razorpay.com';
+            // $url = $parts['host'] . $parts['path'];
+            $parts['host'] = 'rzp.ngrok.com';
+            $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
         }
 
         // Only required in case of Rupay. Weird! But ... !
-        if ($card['network_code'] === Card\Network::RUPAY)
+        if ($network === Card\Network::RUPAY)
         {
             $data['merchantResponseUrl'] = $url;
             $data['merchantErrorUrl'] = $url;
@@ -154,53 +180,6 @@ trait Enroll
 
         // This is crucial, please do not remove it
         unset($this->enrollRequest['content']);
-    }
-
-    protected function getCallbackUrlForDev($url)
-    {
-        $parts = parse_url($url);
-
-        // $parts['host'] = 'https://dev.razorpay.com';
-        // $url = $parts['host'] . $parts['path'];
-
-        $parts['host'] = 'rzp.ngrok.com';
-        $url = $parts['scheme'] . '://' . $parts['host'] . $parts['path'];
-
-        return $url;
-    }
-
-    protected function getActionForEnrollRequest($card)
-    {
-        $action = Action::AUTHORIZE;
-
-        if (in_array($card['network_code'], $this->purchaseNetworks))
-        {
-            $action = Action::PURCHASE;
-        }
-
-        return $action;
-    }
-
-    protected function addCardDetailsToEnrollRequest($card, & $data)
-    {
-        foreach ($this->cardKeyMappings as $rzpKey => $hdfcKey)
-        {
-            $data[$hdfcKey] = $card[$rzpKey];
-        }
-    }
-
-    protected function addUdfFieldsToEnrollRequest($payment, & $data)
-    {
-        $udfData = [
-            'udf1'      => 'test',
-            'udf2'      => $payment['email'],
-            'udf3'      => $payment['contact'],
-            'udf4'      => 'test',
-        ];
-
-        $this->udfCheckAndMeetHdfcRequirements($udfData);
-
-        $data = array_merge($data, $udfData);
     }
 
     /**
@@ -215,91 +194,97 @@ trait Enroll
      * 4. (Space)
      * 5. .(dot)
      *
-     * @param  array $udfData
+     * @param  array      $data [description]
      */
-    protected function udfCheckAndMeetHdfcRequirements(array & $udfData)
+    protected function udfCheckAndMeetHdfcRequirements(array & $data)
     {
         //
         // First remove the 'so-called bs' hack characters
         //
-        $this->udfRemoveHackCharacters($udfData);
+        $this->udfRemoveHackCharacters($data);
 
         //
         // Now, check the lengths and strip it up if above 250.
         //
-        $this->udfStripExtraLength($udfData);
+        $this->udfStripExtraLength($data);
     }
 
-    protected function udfRemoveHackCharacters(array & $udfData)
+    protected function udfRemoveHackCharacters(array & $data)
     {
         $hdfcHackChars = array(
             '<','>','(',')','{','}','[',']','?','&','*','~',
             '`','!','#','$','%','^','=','+','|','\\','/',':',
             '\'','"',',',';');
 
-        foreach ($udfData as $udfKey => $udfValue)
+        foreach (range(1,5,1) as $i)
         {
-            $data[$udfKey] = str_replace($hdfcHackChars, ' ', $udfValue);
+            $data['udf'.$i] = str_replace($hdfcHackChars, ' ', $data['udf'.$i]);
         }
     }
 
-    protected function udfStripExtraLength(array & $udfData)
+    protected function udfStripExtraLength(array & $data)
     {
-        foreach ($udfData as $udfKey => $udfValue)
+        foreach (range(1,5,1) as $i)
         {
-            $len = strlen($udfValue);
+            $udf = & $data['udf'.$i];
+
+            $len = strlen($udf);
 
             if ($len > 250)
             {
                 $start = $len - 250;
 
-                $udfData[$udfKey] = substr($udfValue, $start);
+                $udf = substr($udf, $start);
             }
         }
     }
 
     protected function validateEnrollResponse()
     {
-        $trackId = $this->enrollResponse['data']['trackid'];
+        $trackid = $this->enrollResponse['data']['trackid'];
 
-        $paymentId = $this->input['payment']['id'];
-
-        if ($trackId !== $paymentId)
+        if ($trackid !== $this->id)
         {
             throw new Exception\LogicException(
-                'Gateway Exception: Track id do not match: ' . $trackId . ' ' . $paymentId);
+                'Gateway Exception: Track id do not match: ' . $trackid . ' ' . $this->id);
         }
     }
 
     /**
      * Stores relevant enroll response
-     * fields in db on enroll success
+     * fields in db depending on whether
+     * enroll succeded or there was an
+     * error.
      *
      * @return void
      */
     protected function persistAfterEnroll()
     {
-        $this->trace(
-            Trace::INFO,
-            TraceCode::GATEWAY_ENROLL_RESPONSE,
-            $this->enrollResponse);
+        if ($this->error)
+        {
+            $this->trace(
+                Trace::ERROR,
+                TraceCode::GATEWAY_ENROLL_ERROR,
+                $this->enrollResponse);
 
-        $this->model = $this->repo->persistAfterEnroll(
-                $this->enrollRequest['data'],
-                $this->enrollResponse['data']);
+            $this->model = $this->repo->persistAfterEnrollError(
+                            $this->id,
+                            $this->enrollResponse['error'],
+                            $this->enrollRequest['data']);
 
-    }
+            $this->id = $this->model->id;
+        }
+        else
+        {
+            $this->trace(
+                Trace::INFO,
+                TraceCode::GATEWAY_ENROLL_RESPONSE,
+                $this->enrollResponse);
 
-    protected function persistAfterEnrollError()
-    {
-        $this->trace(
-            Trace::ERROR,
-            TraceCode::GATEWAY_ENROLL_ERROR,
-            $this->enrollResponse);
-
-        $this->model = $this->repo->persistAfterEnrollError(
-            $this->enrollRequest['data'],
-            $this->enrollResponse['error']);
+            $this->model = $this->repo->persistAfterEnroll(
+                    $this->enrollRequest['data'],
+                    $this->enrollResponse['data']);
+        }
     }
 
     /**
@@ -315,7 +300,7 @@ trait Enroll
 
         if (isset($this->enrollResponse['data']['eci']))
         {
-            $eci = & $this->enrollResponse['data']['eci'];
+            $eci = &$this->enrollResponse['data']['eci'];
         }
 
         //
@@ -337,9 +322,7 @@ trait Enroll
         // ECI checks only need to be done for NOT_ENROLLED cases
         //
         if ($notEnrolled === false)
-        {
             return;
-        }
 
         $visaOrDiners = (($network === Card\Network::VISA) or
                          ($network === Card\Network::DICL));
@@ -350,9 +333,7 @@ trait Enroll
             // For visa and diners, eci should be 6.
             //
             if ($eci === '6')
-            {
                 return;
-            }
 
             throw new Exception\LogicException('eci value should be 6. Eci: ' . $eci);
         }
@@ -366,9 +347,7 @@ trait Enroll
             // For mastercard and maestro, eci should be 1.
             //
             if ($eci === '1')
-            {
                 return;
-            }
 
             throw new Exception\LogicException('eci value should be 1. Eci: ' . $eci);
         }
@@ -387,7 +366,12 @@ trait Enroll
      */
     protected function isEnrollSuccess()
     {
-        $result = & $this->enrollResponse['data']['result'];
+        if ($this->error)
+        {
+            return false;
+        }
+
+        $result = &$this->enrollResponse['data']['result'];
 
         //
         // Check enroll result code.
@@ -415,12 +399,18 @@ trait Enroll
      */
     protected function setErrorOnEnrollFailure()
     {
+        assert($this->error === false);
+
         $enrollResult = $this->enrollResponse['data']['enroll_result'];
+
+        $this->error = true;
 
         switch ($enrollResult)
         {
             case Payment\Result::FSS0001_ENROLLED:
-                $errorCode = Hdfc\ErrorCode::FSS0001;
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::FSS0001);
                 break;
 
             case Payment\Result::UNKNOWN_ERROR_ENROLLED:
@@ -428,22 +418,26 @@ trait Enroll
                 // If enroll failed with an invalid code, set error
                 // for that and mark the operation as failure.
                 //
-                $errorCode = Hdfc\ErrorCode::getInvalidResultCodeErrorCode();
+
+                $this->enrollResponse['error'] =
+                    Hdfc\ErrorHandler::getInvalidResultCodeError();
                 break;
 
             case Payment\Result::AUTH_ERROR:
-                $errorCode = Hdfc\ErrorCode::RP00010;
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::RP00010);
                 break;
 
             case Payment\Result::NOT_SUPPORTED:
-                $errorCode = Hdfc\ErrorCode::RP00012;
+                Hdfc\ErrorHandler::setErrorInResponse(
+                    $this->enrollResponse,
+                    Hdfc\ErrorCode::RP00012);
                 break;
 
             default:
                 throw new Exception\LogicException('Should not reach here');
         }
-
-        $this->enrollResponse['error'] = Hdfc\ErrorHandler::getErrorDetails($errorCode);
 
         $this->enrollResponse['error']['enroll_result'] = $this->enrollResponse['data']['enroll_result'];
 
@@ -454,14 +448,31 @@ trait Enroll
     }
 
     /**
-     * Sets enroll status.
-     * Allowed values are 'ENROLLED'
+     * Sets enroll status. In case of error it's false
+     * The other allowed values are 'ENROLLED'
      * and NOT_ENROLLED
      *
      * @return  string
      */
     protected function getEnrollStatus()
     {
-        return $this->enrollResponse['data']['enroll_result'];
+        if ($this->error)
+        {
+            $enrollStatus = false;
+        }
+        else
+        {
+            $enrollStatus = $this->enrollResponse['data']['enroll_result'];
+        }
+
+        return $enrollStatus;
+    }
+
+    protected function mapKeys($array, $map, &$data)
+    {
+        foreach ($map as $keyOld => $keyNew)
+        {
+            $data[$keyNew] = $array[$keyOld];
+        }
     }
 }
