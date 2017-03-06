@@ -7,7 +7,6 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundFile extends Base\Core
 {
@@ -40,5 +39,17 @@ class RefundFile extends Base\Core
                 ->save();
 
         return $creator;
+    }
+
+    protected function getFileToWriteName($ext = '.txt')
+    {
+        return $this->getFileToWriteNameWithoutExt() . $ext;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        return static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
 }
