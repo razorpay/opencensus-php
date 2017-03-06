@@ -16,6 +16,7 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
 use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
@@ -387,6 +388,39 @@ class Service extends Base\Service
         $payment = $this->getNewProcessor()->capture($id, $input);
 
         return $payment->toArrayPublic();
+    }
+
+    /**
+     * Transfers a payment
+     * /payment/:id/transfer
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function transfer(string $id, array $input) : array
+    {
+        $transfers = $this->getNewProcessor()->transfer($id, $input);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Get Transfers for a payment_id
+     *
+     * @param  string $id   Payment ID
+     * @return array
+     */
+    public function getTransfers(string $id) : array
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+
+        return $transfers->toArrayPublic();
     }
 
     /**

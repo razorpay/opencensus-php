@@ -46,7 +46,7 @@ class Core extends Base\Core
     {
         // We only check for email uniqueness if the email
         // address is provided
-        if (isset($input['email']))
+        if (isset($input['email']) === true)
         {
             $email['email'] = $input['email'];
             (new Validator)->validateInput('unique_email', $email);
@@ -61,6 +61,11 @@ class Core extends Base\Core
         $subMerchant->setAuditAction(Action::CREATE_SUBMERCHANT);
 
         $subMerchant->setPricingPlan($aggregatorMerchant->getPricingPlanId());
+
+        if ($aggregatorMerchant->isMarketplace() === true)
+        {
+            $subMerchant->parent()->associate($aggregatorMerchant);
+        }
 
         $aggregatorOrgId = $aggregatorMerchant->getOrgId();
 
