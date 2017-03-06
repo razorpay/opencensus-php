@@ -283,35 +283,4 @@ return [
             'status_code' => 400,
         ],
     ],
-
-    'testAccountAuth' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/payments',
-        ],
-        'response' => [
-            'content' => [
-                'entity' => 'collection',
-                'count'  => 1,
-                'items'  => []
-            ],
-            'status_code' => 200,
-        ]
-    ],
-
-    'testAccountAuthInvalid' => [
-        'request' => [
-            'method' => 'GET',
-            'url' => '/payments/1kKG3wHhnPdcg8',
-        ],
-        'response' => [
-            'content' => [
-                'error' => [
-                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
-                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT
-                ],
-            ],
-            'status_code' => 401,
-        ],
-    ],
 ];

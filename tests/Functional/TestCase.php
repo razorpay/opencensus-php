@@ -86,7 +86,7 @@ class TestCase extends ParentTestCase
     }
 
     /**
-     * After update api call, only response is asserted for update via base code.
+     * After insert/update api call, only response is asserted for update via base code.
      * This method helps in asserting the same expected response with db's last
      * entity.
      * This ensures following failing case: If entity is build but saveOrFail()
@@ -98,9 +98,7 @@ class TestCase extends ParentTestCase
      *
      * @return null
      */
-    protected function assertUpdateResponseWithLastEntity(
-        string $entity,
-        string $methodName)
+    protected function assertResponseWithLastEntity(string $entity, string $methodName)
     {
         $entity   = $this->getLastEntity($entity);
 

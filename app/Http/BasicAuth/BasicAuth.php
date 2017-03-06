@@ -40,8 +40,6 @@ class BasicAuth
 
     const HMAC_ALGO = 'sha256';
 
-    const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
-
     /**
      * The application instance.
      *
@@ -58,7 +56,6 @@ class BasicAuth
         'key'           => '',
         'public_key'    => '',
         'secret'        => '',
-        'account_key'   => '',
     ];
 
     /**
@@ -199,8 +196,6 @@ class BasicAuth
 
         $secret = $this->request->getPassword();
 
-        $linkedAccId = $this->request->headers->get(self::ACCOUNT_HEADER_KEY);
-
         if (($key === null) and
             ($secret === null))
         {
@@ -210,13 +205,6 @@ class BasicAuth
         $this->creds['secret'] = $secret;
 
         $this->creds['public_key'] = $key;
-
-        $account = $this->checkAndSetAccountKey($linkedAccId);
-
-        if ($account !== null)
-        {
-            return $account;
-        }
 
         return $this->checkAndSetKeyId($key);
     }
@@ -239,28 +227,6 @@ class BasicAuth
         }
 
         $this->creds['key'] = $keyId;
-    }
-
-    /**
-     * Validate and store if an account_id was sent in the request
-     *
-     * @param  mixed $accountKey
-     */
-    protected function checkAndSetAccountKey($accountKey)
-    {
-        if ($accountKey === null)
-        {
-            $this->creds['account_key'] = '';
-
-            return;
-        }
-
-        if ($this->verifyAccountKey($accountKey) === false)
-        {
-            return $this->invalidAccountKey();
-        }
-
-        $this->creds['account_key'] = $accountKey;
     }
 
 // --------------------- Basic Auths -------------------------------------------
@@ -289,6 +255,8 @@ class BasicAuth
         }
         else if ($this->verifyInternalAppAsProxy() === true)
         {
+            $this->setDashboardHeaders();
+
             $this->setProxyTrue();
 
             return;
@@ -527,8 +495,6 @@ class BasicAuth
      */
     public function verifyFeatureAccess()
     {
-        $route = $this->getCurrentRouteName();
-
         //
         // A route can belong to multiple features
         // This fetches an array of all features mapped to the route
@@ -538,7 +504,7 @@ class BasicAuth
         if (empty($features) === false)
         {
             //
-            // If the merchant has atleast one of the features
+            // If the merchant has at least one of the features
             // in the $features array enabled, we allow the request
             //
             $merchantFeatures = $this->merchant->getEnabledFeatures();
@@ -566,13 +532,6 @@ class BasicAuth
     protected function verifyKeyPrefix($key)
     {
         return (substr($key, 0, 4) === 'rzp_');
-    }
-
-    protected function verifyAccountKey($key)
-    {
-        $accountId = $key;
-
-        return Merchant\AccountEntity::stripSign($accountId);
     }
 
     protected function verifyAndSetMode($key)
@@ -656,31 +615,6 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($keyEntity);
-
-        //
-        // For Marketplace account auth:
-        // We accept account_id in a customer header - X-Razorpay-Account
-        // The account ID is used in private auth requests from Marketplace
-        // merchants to allow them to use their key-secret to access APIs as
-        // the linked account
-        //
-        $accountKey = $this->getAccountKey();
-
-        //
-        // If account_id was sent, fetch the entity that corresponds to the
-        // account_id provided and set that as the merchant for the request.
-        // This validates that the account is a child of the Merchant whose
-        // key-secret was sent in the request
-        //
-        if ($accountKey !== '')
-        {
-            $account = $this->fetchAccountForMerchant($accountKey, $this->merchant);
-
-            if ($account !== null)
-            {
-                return $this->invalidAccountKey();
-            }
-        }
 
         return true;
     }
@@ -823,7 +757,9 @@ class BasicAuth
         $this->dashboardHeaders = array(
             'dashboard'     => $headers->get('X-Dashboard'),
             'merchant'      => $headers->get('X-Dashboard-Merchant'),
-            'admin_user'    => $headers->get('X-Dashboard-Username')
+            'admin_user'    => $headers->get('X-Dashboard-Username'),
+            'user_id'       => $headers->get('X-Dashboard-User-Id'),
+            'user_role'     => $headers->get('X-Dashboard-User-Role'),
         );
     }
 
@@ -875,11 +811,6 @@ class BasicAuth
     private function getSecret()
     {
         return $this->creds['secret'];
-    }
-
-    protected function getAccountKey()
-    {
-        return $this->creds['account_key'];
     }
 
     public function getMode()
@@ -1069,25 +1000,6 @@ class BasicAuth
         return $this->merchant;
     }
 
-    /**
-     * Used in account auth: Fetches a Marketplace account and sets it as the
-     * Merchant for the scope of the current request.
-     *
-     * @param  string          $accountId
-     * @param  Merchant\Entity $merchant
-     */
-    protected function fetchAccountForMerchant(string $accountId, Merchant\Entity $merchant)
-    {
-        $merchant = $this->repo->merchant->fetchByAccountIdAndMerchant($accountId, $merchant);
-
-        if ($merchant === null)
-        {
-            return $this->invalidAccountKey();
-        }
-
-        $this->merchant = $merchant;
-    }
-
     protected function fetchAdminToken($token)
     {
         $this->adminToken = $this->repo->admin_token->findOrFailToken($token);
@@ -1118,18 +1030,6 @@ class BasicAuth
 
         return ApiResponse::unauthorized(
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
-    }
-
-    protected function invalidAccountKey()
-    {
-        $this->trace->info(
-            TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER, [
-                'key_id' => $this->getKey(),
-                'account_id' => $this->getAccountKey()
-            ]);
-
-        return ApiResponse::unauthorized(
-            ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_ACCOUNT);
     }
 
     protected function isKeyBlank()

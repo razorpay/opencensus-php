@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Payment;
+namespace RZP\Tests\Functional\Refund;
 
 use DB;
 use Mockery;
@@ -59,6 +59,19 @@ class RefundTest extends TestCase
         $this->assertEquals(true, $refund['gateway_refunded']);
     }
 
+    public function testRefundDirect()
+    {
+        $payment = $this->fixtures->create('payment:captured');
+
+        $refund = $this->refund(
+            [
+                'payment_id' => $payment->getPublicId(),
+                'notes'      => ['a' => 'b'],
+            ]);
+
+        $this->assertEquals('refund', $refund['entity']);
+    }
+
     public function testMultipleRefunds()
     {
         $payment = $this->defaultAuthPayment();
@@ -73,7 +86,10 @@ class RefundTest extends TestCase
 
         $this->testData[__FUNCTION__]['request']['url'] = '/payments/'.$payment['id'];
 
-        return $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__]);
+
+        $refunds = $this->getEntities('refund', ['payment_id' => $payment['id']]);
+        $this->assertEquals($refunds['count'], 4);
     }
 
     public function testRefundWithHigherAmount()
@@ -422,6 +438,14 @@ class RefundTest extends TestCase
                 ]
             ]
         ];
+    }
+
+
+    public function testRefundValidationOnWrongGateway()
+    {
+        $this->ba->appAuth();
+
+        parent::startTest();
     }
 
     public function startTest($paymentId = null, $amount = null)

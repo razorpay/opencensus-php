@@ -2,10 +2,12 @@
 
 namespace RZP\Services;
 
-use CreditCardFraudDetection;
-use RZP\Constants\Mode;
+use Carbon\Carbon;
 use RZP\Models\Card;
+use MaxMind\MinFraud;
+use RZP\Constants\Mode;
 use RZP\Trace\TraceCode;
+use RZP\Models\Payment\Entity as Payment;
 
 class MaxMind
 {
@@ -29,57 +31,73 @@ class MaxMind
 
         $this->request = $app['request'];
 
-        $this->config = $app['config']->get('applications.maxmind');
-
-        $this->licenseKey = $this->config['secret'];
+        $config = $app['config']->get('applications.maxmind');
 
         $this->basicauth = $app['basicauth'];
 
-        $this->maxmind = new CreditCardFraudDetection;
+        $this->maxmind = new MinFraud($config['id'], $config['secret']);
     }
 
-    public function query($payment)
+    public function query(Payment $payment)
     {
+        $card = $payment->card;
+
+        $ip = $this->request->getRealClientIp();
+        $ua = $this->request->header('User-Agent');
+
+        if ($this->basicauth->isPrivateAuth() === true)
+        {
+            $ip = $payment->getMetadata('ip');
+            $ua = $payment->getMetadata('user_agent');
+        }
+
+        // We don't use maxmind if payment doesn't have IP and UserAgent
+        // in case of s2s integration
         if (($this->mode === Mode::TEST) or
-            ($this->basicauth->isPrivateAuth() === true))
+            ($ua === null) or
+            ($ip === null))
         {
             return;
         }
 
         $card = $payment->card;
 
-        $input = array(
-            'license_key'       => $this->licenseKey,
-            'i'                 => $this->request->getRealClientIp(),
-            'user_agent'        => $this->request->header('User-Agent'),
-            'accept_language'   => $this->request->header('Accept-Language'),
-            'domain'            => $this->getEmailDomain($payment),
-            'custPhone'         => $payment->getContact(),
-            'emailMD5'          => md5($payment->getEmail()),
-            'bin'               => $payment->card->getIin(),
-            'txnID'             => $payment->getId(),
-            'shopID'            => $payment->getMerchantId(),
-            'order_amount'      => $this->getFormattedAmount($payment),
-            'order_currency'    => $payment->getCurrency(),
-            'txn_type'          => Card\Type::getMaxmindCardType($card->getType()),
-            'requested_type'    => 'standard'
-        );
+        $request = $this->maxmind->withDevice([
+            'ip_address'       => $ip,
+            'user_agent'       => $ua,
+            'accept_language'  => $this->request->header('Accept-Language'),
+        ])->withEvent([
+            'transaction_id'   => $payment->getId(),
+            'shop_id'          => $payment->getMerchantId(),
+            'time'             => Carbon::now()->toIso8601String(),
+            'type'             => $payment->isRecurring() ? 'recurring_purchase' : 'purchase',
+        ])->withEmail([
+            'address'          => md5($payment->getEmail()),
+            'domain'           => $this->getEmailDomain($payment)
+        ])->withBilling([
+            'first_name'       => $card->getFirstName(),
+            'last_name'        => $card->getLastName(),
+        ])->withCreditCard([
+            'issuer_id_number' => $card->getIin(),
+            'last_4_digits'    => $card->getLast4(),
+        ])->withOrder([
+            'amount'           => $this->getFormattedAmount($payment),
+            'currency'         => $payment->getCurrency(),
+        ]);
 
-        $this->maxmind->input($input);
-        $this->maxmind->query();
-
-        $response = $this->maxmind->output();
-
-        unset($input['license_key']);
+        $response = $request->score();
 
         $this->trace->info(TraceCode::MAXMIND_RESPONSE, [
-                'input' => $input,
-                'payment_id' => $payment->getId(),
-                'merchant_id' => $payment->getMerchantId(),
-                'merchant' => $payment->merchant->getBillingLabelElseName(),
-                'response' => $response]);
+            'payment_id' => $payment->getId(),
+            'merchant_id' => $payment->getMerchantId(),
+            'merchant' => $payment->merchant->getBillingLabelElseName(),
+            'response' => $response->jsonSerialize()]);
 
-        return $response;
+        $jsonResponse = $response->jsonSerialize();
+
+        $jsonResponse['riskScore'] = $jsonResponse['risk_score'];
+
+        return $jsonResponse;
     }
 
     protected function getFormattedAmount($payment)

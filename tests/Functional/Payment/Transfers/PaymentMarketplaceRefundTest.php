@@ -36,6 +36,8 @@ class PaymentMarketplaceRefundTest extends TestCase
      */
     public function testRefundTransferPayment()
     {
+        $this->markTestSkipped('Account auth disabled temporarily');
+
         $transfers[0] = [
             'account' => 'acc_10000000000001',
             'amount'  => 1000,
@@ -59,6 +61,8 @@ class PaymentMarketplaceRefundTest extends TestCase
         });
     }
 
+
+
     public function testRefundAmountGreaterThanTransferred()
     {
         ; // ?
@@ -81,6 +85,12 @@ class PaymentMarketplaceRefundTest extends TestCase
         $this->assertEquals(0, $this->getAccountBalance('10000000000001'));
 
         $this->checkReversalsSingle($transfers['items']);
+
+        $transferPayment = $this->getLastEntity('payment', true);
+
+        $this->assertEquals($transferId, $transferPayment['transfer_id']);
+
+        $this->assertEquals(1000, $transferPayment['amount_refunded']);
 
         $paymentEntity = $this->getEntityById('payment', explode('_', $this->payment['id'])[1], true);
 

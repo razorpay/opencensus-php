@@ -42,8 +42,8 @@ class HdfcGatewayCaptureTest extends TestCase
         $this->assertTestResponse($hdfc);
 
         $payment = $this->getLastPayment(true);
-        $this->assertEquals($payment['status'], 'failed');
-        $this->assertEquals($payment['internal_error_code'], ErrorCode::BAD_REQUEST_PAYMENT_DECLINED_BY_BANK_DUE_TO_RISK);
+        $this->assertEquals($payment['status'], 'authorized');
+        $this->assertNull($payment['internal_error_code']);
     }
 
     /**

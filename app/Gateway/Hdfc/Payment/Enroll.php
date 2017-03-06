@@ -91,7 +91,7 @@ trait Enroll
         {
             $this->persistAfterEnroll();
 
-            $this->throwException($this->enrollResponse['error']);
+            $this->throwException($this->enrollResponse['error'], true);
         }
 
         //

@@ -4,11 +4,14 @@ namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Reversal;
 use RZP\Models\Currency;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
@@ -28,8 +31,6 @@ class Core extends Base\Core
     protected $merchantBalance = null;
 
     protected $nodalBalance = null;
-
-    protected $customerBalance = null;
 
     protected $merchant;
 
@@ -91,6 +92,12 @@ class Core extends Base\Core
     {
         $txn = $payment->transaction;
 
+        if ($txn->isSettled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
+        }
+
         $settledAt = $this->getSettledAtTimestamp($payment);
 
         // $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
@@ -127,19 +134,9 @@ class Core extends Base\Core
 
         $this->updateCredits($txn, $payment);
 
-        $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
+        $this->updateBalances($txn);
 
         return [$txn, $feesSplit];
-    }
-
-    public function shouldUpdateNodalBalance(Payment\Entity $payment) : bool
-    {
-        if ($payment->isOpenwalletPayment() === true)
-        {
-            return false;
-        }
-
-        return true;
     }
 
     /**
@@ -156,16 +153,18 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
             [
-                'type'          => 'account_credit',
+                'type'          => 'linked_account_credit',
                 'payment_id'     => $payment->getId(),
                 'transaction_id' => $txn->getId()
             ]);
 
         $settledAt = $this->getSettledAtTimestamp($payment);
 
+        $onHold = $payment->getOnHold() ?? false;
+
         $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
 
-        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+        $txn->setAttribute(Entity::ON_HOLD, $onHold);
 
         $this->updateCredits($txn, $payment);
 
@@ -448,8 +447,7 @@ class Core extends Base\Core
 
     protected function checkIfOldPayment($payment)
     {
-        if (($payment->exists === true) and
-            ($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
+        if (($payment->getCreatedAt() < self::JULY_FIRST_EPOCH) and
             ($payment->transaction === null) and
             ($payment->isAuthorized() === true))
         {
@@ -516,7 +514,18 @@ class Core extends Base\Core
 
         if ($payment->hasBeenCaptured())
         {
-            $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            $paymentTxn = $payment->transaction;
+
+            if ($paymentTxn->isSettled() === true)
+            {
+                $txnData[Transaction\Entity::SETTLED_AT] = $settledAt;
+            }
+            else
+            {
+                $paymentSettledAt = $paymentTxn->getSettledAt();
+
+                $txnData[Transaction\Entity::SETTLED_AT] = $paymentSettledAt;
+            }
         }
 
         $txnData[Transaction\Entity::CHANNEL] = $channel;
@@ -532,18 +541,12 @@ class Core extends Base\Core
         switch($paymentStatus)
         {
             case Payment\Status::AUTHORIZED:
-                // Openwallet refunds are internal, and wont change Nodal balance
-                if ($payment->isOpenwalletPayment() === true)
-                {
-                    break;
-                }
-
                 // When refunding authorized payments, we do not charge merchants
                 //$this->updateNodalBalance($txn);
 
                 break;
             case Payment\Status::CAPTURED:
-                $this->updateBalances($txn, $this->shouldUpdateNodalBalance($payment));
+                $this->updateBalances($txn);
 
                 break;
             case Payment\Status::REFUNDED:
@@ -610,10 +613,9 @@ class Core extends Base\Core
      * Record and associate a transaction for a payment transfer.
      *
      * @param  Transfer\Entity      $transfer Transfer entity
-     * @param  Base\Entity          $to       Entity that is receiving the transfer (customer/merchant)
      * @return Transaction\Entity
      */
-    public function createFromTransfer($transfer, $to)
+    public function createFromTransfer(Transfer\Entity $transfer)
     {
         $txn = new Transaction\Entity;
 
@@ -624,7 +626,7 @@ class Core extends Base\Core
         $values = [
             Transaction\Entity::DEBIT         => $amount,
             Transaction\Entity::CREDIT        => 0,
-            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => time(),
@@ -642,7 +644,7 @@ class Core extends Base\Core
         $this->trace->info(
             TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
             [
-                'type'           => 'marketplace_debit',
+                'type'           => 'merchant_debit',
                 'transaction_id' => $txn->getId()
             ]);
 
@@ -650,7 +652,7 @@ class Core extends Base\Core
 
         $txn->sourceAssociate($transfer);
 
-        $this->creditBalancesForTransfer($to, $txn);
+        $this->updateBalances($txn, false);
 
         return $txn;
     }
@@ -673,7 +675,7 @@ class Core extends Base\Core
         $data = [
             Transaction\Entity::DEBIT         => 0,
             Transaction\Entity::CREDIT        => $amount,
-            Transaction\Entity::CURRENCY      => 'INR',
+            Transaction\Entity::CURRENCY      => Currency\Currency::INR,
             Transaction\Entity::GATEWAY_FEE   => 0,
             Transaction\Entity::API_FEE       => 0,
             Transaction\Entity::RECONCILED_AT => $nowTimestamp,
@@ -697,19 +699,48 @@ class Core extends Base\Core
         return $txn;
     }
 
+    public function createFromPayout(Payout\Entity $payout)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $payout->getAmount();
+
+        list($fee, $serviceTax, $feesSplit) =
+            (new Pricing\Fee)->calculateMerchantFees($payout, false);
+
+        $settledAt = time();
+
+        $payoutAmount = abs($amount + $fee);
+
+        $values = array(
+            Transaction\Entity::DEBIT               => $payoutAmount,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::CURRENCY            => 'INR',
+            Transaction\Entity::GATEWAY_FEE         => 0,
+            Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
+            Transaction\Entity::API_FEE             => $fee,
+            Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::SETTLED             => 0,
+            Transaction\Entity::SETTLED_AT          => $settledAt,
+            Transaction\Entity::FEE                 => $fee,
+            Transaction\Entity::SERVICE_TAX         => $serviceTax,
+            Transaction\Entity::AMOUNT              => $payoutAmount,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+        );
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($payout->merchant);
+
+        $txn->sourceAssociate($payout);
+
+        return $txn;
+    }
+
     protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);
-    }
-
-    protected function creditBalancesForTransfer($to, $txn)
-    {
-        if ($to instanceof Customer\Entity)
-        {
-            $this->creditCustomerBalance($to, $txn);
-        }
-
-        $this->updateBalances($txn, false);
     }
 
     public function updateBalances(Transaction\Entity $txn, $updateNodalBalance = true)
@@ -755,13 +786,6 @@ class Core extends Base\Core
 
     //     return $txn;
     // }
-
-    public function creditCustomerBalance(Customer\Entity $customer, Transaction\Entity $txn)
-    {
-        $balance = $this->getCustomerBalanceLockForUpdate($customer, $txn->merchant);
-
-        (new Customer\Balance\Core)->credit($balance, $txn->getAmount());
-    }
 
     public function updateAmountCredits(Transaction\Entity $txn, Payment\Entity $payment)
     {
@@ -873,27 +897,6 @@ class Core extends Base\Core
         return $merchantBalance;
     }
 
-    protected function getCustomerBalanceLockForUpdate(Customer\Entity $customer, Merchant\Entity $merchant)
-    {
-        if ($this->customerBalance !== null)
-        {
-            return $this->customerBalance;
-        }
-
-        $customerId = $customer->getId();
-
-        // Try to create the customer_balance entity first - if not already exists
-        $balance = (new Customer\Balance\Core)->fetchOrCreate($customer, $merchant);
-
-        $balance = $this->repo
-                        ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId);
-
-        $this->customerBalance = $balance;
-
-        return $balance;
-    }
-
     protected function getSettledAtTimestamp($payment)
     {
         $capturedAt = $payment->getAttribute(Payment\Entity::CAPTURED_AT);
@@ -913,6 +916,7 @@ class Core extends Base\Core
             $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
 
+        // Implements delayed settlements, commented temporarily
         // $onHoldUntilTime = $payment->getOnHoldUntil();
 
         // return max($returnTime, $onHoldUntilTime);

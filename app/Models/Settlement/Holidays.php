@@ -82,6 +82,7 @@ class Holidays
                 26 => 'Republic Day',
             ],
             2 => [
+                21 => 'BMC Elections 2017',
                 24 => 'Mahashivratri',
             ],
             3 => [

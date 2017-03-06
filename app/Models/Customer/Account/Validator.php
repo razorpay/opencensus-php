@@ -2,9 +2,13 @@
 
 namespace RZP\Models\Customer;
 
+use Lib\PhoneBook;
+use libphonenumber\PhoneNumberFormat;
+
 use App;
 use RZP\Base;
-use libphonenumber\PhoneNumberFormat;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -14,6 +18,7 @@ class Validator extends Base\Validator
         Entity::EMAIL               => 'sometimes|email',
         Entity::NOTES               => 'sometimes|notes',
         Entity::SHIPPING_ADDRESS    => 'sometimes',
+        Entity::BILLING_ADDRESS     => 'sometimes',
     );
 
     protected static $editRules = array(
@@ -60,6 +65,31 @@ class Validator extends Base\Validator
         $contact = $phoneNumberLib->format($phoneNumber, PhoneNumberFormat::E164);
 
         return $contact;
+    }
+
+    /**
+     * Wallets can only be created for customers having
+     * Indian mobile numbers
+     */
+    public function validateIndianContact()
+    {
+        $number = $this->entity->getContact();
+
+        if (empty($number) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
+        $number = new PhoneBook($number, true);
+
+        $country = $number->getRegionCodeForNumber();
+
+        if ($country !== 'IN')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+        }
     }
 
     public static function validateFetchCustomerPaymentsInput($input)

@@ -178,6 +178,10 @@ class FeeCalculator
         {
             $rule = $this->getRelevantPaymentPricingRule($rules, $method);
         }
+        else if ($feature === Pricing\Feature::PAYOUT)
+        {
+            $rule = $this->getRelevantPayoutPricingRule($rules, $method);
+        }
 
         if ($rule === null)
         {
@@ -188,6 +192,13 @@ class FeeCalculator
         }
 
         $this->pricingRules->push($rule);
+    }
+
+    protected function getRelevantPayoutPricingRule($rules, $method)
+    {
+        $rule = $this->getRelevantPricingRuleForMethod($rules);
+
+        return $rule;
     }
 
     protected function getRelevantPaymentPricingRule($rules, $method)
@@ -608,7 +619,7 @@ class FeeCalculator
             $totalTaxPercentage += $taxPercentage;
         }
 
-        $totalTaxes = (int) ceil(($fee * $totalTaxPercentage) / 10000);
+        $totalTaxes = (int) round(($fee * $totalTaxPercentage) / 10000);
 
         foreach ($taxComponents as $name => $percentage)
         {

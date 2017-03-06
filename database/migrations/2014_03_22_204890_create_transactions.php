@@ -61,6 +61,10 @@ class CreateTransactions extends Migration
                   ->unsigned()
                   ->nullable();
 
+            $table->integer(Transaction::GATEWAY_AMOUNT)
+                  ->unsigned()
+                  ->nullable();
+
             $table->integer(Transaction::GATEWAY_FEE)
                   ->unsigned()
                   ->nullable();

@@ -2,37 +2,86 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Base\PublicCollection;
 use RZP\Models\Payment;
+use RZP\Models\Reversal\Entity as ReversalEntity;
 use RZP\Models\Reversal\Core as ReversalCore;
 use RZP\Models\Transfer;
+use RZP\Models\Transaction;
 
 trait Reversal
 {
     /**
-     * Refund the transfer payment and
+     * Fetches and refunds the transfer payment and
      * create a reversal for the transfer
      *
-     * @param  Payment\Entity $payment
-     * @param  string         $accountId
-     * @param  int            $amount
+     * @param  Transfer\Entity  $transfer
+     * @param  int              $amount
+     * @return ReversalEntity
      */
     public function refundPaymentAndReverseTransfer(Transfer\Entity $transfer, int $amount)
     {
-
         $transferPayment = $this->repo
                                 ->payment
                                 ->findByTransferIdAndMerchant(
                                     $transfer->getId(), $transfer->getToId());
 
         // Refund the transfer payment - this debits the account balance
-        (new Processor($transferPayment->merchant))
-            ->refundTransferPayment($transferPayment, $amount);
+        $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($amount, $transferPayment)
+        {
+            (new Processor($transferPayment->merchant))
+                ->refundTransferPayment($transferPayment, $amount);
+        });
 
         // Reverse the associated transfer - this credits the marketplace balance
         return (new ReversalCore)
                     ->createForMarketplaceRefund($transfer, $this->merchant, $amount);
+    }
+
+    /**
+     * Refund an internal marketplace payment (method = transfer)
+     *
+     * @param  Payment\Entity $payment
+     * @param  int            $amount
+     *
+     * @throws Exception\BadRequestException
+     */
+    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
+    {
+        if ($payment->isTransfer() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
+        }
+
+        $this->validatePaymentForRefund($payment);
+
+        $input['amount'] = $amount;
+
+        $refund = (new Payment\Refund\Entity)->build($input, $payment);
+
+        $refund->merchant()->associate($this->merchant);
+
+        $refund->setBaseAmount();
+
+        $txn = (new Transaction\Core)->createFromRefund($refund);
+
+        $this->repo->saveOrFail($txn);
+
+        $amount = $refund->getAmount();
+
+        $baseAmount = $refund->getBaseAmount();
+
+        $payment = $this->repo->payment->lockForUpdate($payment->getKey());
+
+        $payment->refundAmount($amount, $baseAmount);
+
+        $this->repo->saveOrFail($payment);
+
+        $this->repo->saveOrFail($refund);
     }
 
     /**
@@ -44,30 +93,47 @@ trait Reversal
     {
         foreach ($reversals as $reversal)
         {
-            $transfer = $this->repo
-                             ->transfer
-                             ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
-
-            $amountUnreversed = $transfer->getAmountUnreversed();
-
-            if ($reversal['amount'] > $amountUnreversed)
+            if ($reversal['transfer'] instanceof Transfer\Entity)
             {
-                $message = 'Reversal amount exceeds the unreversed amount for transfer_id: ' . $transfer->getPublicId();
-
-                throw new Exception\BadRequestValidationFailureException(
-                    $message,
-                    'reversal_amount',
-                    ['unreversed_amount' => $amountUnreversed]
-                    );
+                $transfer = $reversal['transfer'];
+            }
+            else
+            {
+                $transfer = $this->repo
+                                 ->transfer
+                                 ->findByPublicIdAndMerchant($reversal['transfer'], $this->merchant);
             }
 
-            $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+            $this->mutex->acquireAndRelease(
+                $transfer->getId(),
+                function() use ($transfer, $reversal)
+                {
+                    $amountUnreversed = $transfer->getAmountUnreversed();
+
+                    if ($reversal['amount'] > $amountUnreversed)
+                    {
+                        throw new Exception\LogicException(
+                            'Reversal amount exceeds the unreversed amount',
+                            null,
+                            [
+                                'transfer_id'       => $transfer->getId(),
+                                'amount'            => $reversal['amount'],
+                                'unreversed_amount' => $amountUnreversed,
+                            ]
+                        );
+                    }
+
+                    $this->refundPaymentAndReverseTransfer($transfer, $reversal['amount']);
+                });
         }
     }
 
     /**
      * Check if the refund should be processed with Marketplace transfer reversals,
      * This also modifies the input array to add reversals, if required
+     *
+     * Documented here:
+     * https://docs.google.com/document/d/1Tz_apm6NU0SJPl6z4ctZ9PRfvmf-nliT1Xz1rhJfoPA/edit#heading=h.tu2zrnpp106m
      *
      * @param  Payment\Entity   $payment
      * @param  array            $input
@@ -78,17 +144,22 @@ trait Reversal
         //
         // Don't process if either:
         //  - Payment has not been transferred (amount_transferred = 0), or
-        //  - Payment method = 'transfer', or
-        //  - Payment is fully refunded
+        //  - Payment method = 'transfer'
         //
         if (($payment->isTransferred() === false) or
-            ($payment->isTransfer() === true) or
-            ($payment->getRefundStatus() === Payment\Refund\Status::FULL))
+            ($payment->isTransfer() === true))
         {
             return false;
         }
 
         $transfers = null;
+
+        $validator = new Payment\Refund\Validator;
+
+        $validator->setPayment($payment);
+
+        // Validating here to verify reversal attributes in the refund request
+        $validator->validateInput('create', $input);
 
         //
         // @todo: Commenting this block of code for now, in favor of the reverse_all
@@ -108,16 +179,16 @@ trait Reversal
         {
             $transfers = $this->repo
                               ->transfer
-                              ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+                              ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
 
-            $refundType = $this->getPaymentRefundType($payment, $input);
+            $refundType = $this->getPaymentRefundType($input);
 
-            (new Payment\Refund\Validator)->validateReverseAll($refundType, $transfers);
+            $validator->validateReverseAll($refundType, $transfers);
 
             $this->implicitAddReversalsForFullRefund($transfers, $input);
         }
 
-        return true;
+        return $reverseAll;
     }
 
     /**
@@ -125,20 +196,23 @@ trait Reversal
      * `reversals` array in input may be optional or mandatory. This
      * function validates the logic around this.
      *
-     * @param  Payment\Entity    $payment
-     * @param  array             $input
-     * @param  PublicCollection  $transfers
+     * @param  Payment\Entity   $payment
+     * @param  array            $input
+     * @param  PublicCollection $transfers
+     *
      * @return bool
+     * @throws Exception\BadRequestValidationFailureException
+     * @throws Exception\LogicException
      */
     protected function checkReversalsOnRefundType(Payment\Entity $payment, array $input, & $transfers) : bool
     {
-        $refundType = $this->getPaymentRefundType($payment, $input);
+        $refundType = $this->getPaymentRefundType($input);
 
         $reverseAll = false;
 
         $transfers = $this->repo
                           ->transfer
-                          ->fetchBySourcePaymentIdAndMerchant($payment->getId(), $this->merchant);
+                          ->fetchBySourceTypeAndIdAndMerchant($payment->getEntity(), $payment->getId(), $this->merchant);
 
         if ($refundType === Payment\Refund\Status::FULL)
         {
@@ -148,7 +222,10 @@ trait Reversal
         {
             $transferCount = $transfers->count();
 
-            assert ($transferCount !== 0);
+            if ($transferCount === 0)
+            {
+                throw new Exception\LogicException('Zero transfers found for reversal');
+            }
 
             if ($transferCount > 1)
             {
@@ -179,7 +256,7 @@ trait Reversal
         }
         else
         {
-            assert (false);
+            throw new Exception\LogicException('Payment transfer reversal - Invalid refund type : ' . $refundType);
         }
 
         return $reverseAll;
@@ -208,7 +285,7 @@ trait Reversal
 
     /**
      * When reversals are to be processed but not provided in input, we
-     * implicitly add reversals for the transfers corresponding to the paymment
+     * implicitly add reversals for the transfers corresponding to the payment
      * being refunded
      *
      * @param  PublicCollection     $transfers
@@ -228,7 +305,7 @@ trait Reversal
             }
 
             $reversals[] = [
-                'transfer'  => $transfer->getPublicId(),
+                'transfer'  => $transfer,
                 'amount'    => $amountToReverse,
             ];
         }

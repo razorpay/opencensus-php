@@ -107,7 +107,7 @@ class Validator extends Base\Validator
 
     protected static $axisMigsTerminalRules = [
         Entity::GATEWAY                     => 'required|in:axis_migs',
-        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:8',
+        Entity::GATEWAY_MERCHANT_ID         => 'required|alpha_num|min:6',
         Entity::GATEWAY_SECURE_SECRET       => 'required|alpha_num|size:32',
         Entity::GATEWAY_ACCESS_CODE         => 'required|alpha_num|size:8',
         Entity::GATEWAY_TERMINAL_ID         => 'required',
@@ -135,6 +135,7 @@ class Validator extends Base\Validator
     protected static $billdeskEditTerminalRules = [
         Entity::GATEWAY                     => 'sometimes|in:billdesk',
         Entity::TPV                         => 'sometimes|boolean|in:0,1',
+        Entity::NETWORK_CATEGORY            => 'sometimes|string|max:30',
     ];
 
     protected static $hdfcEditTerminalRules = [
@@ -202,7 +203,6 @@ class Validator extends Base\Validator
     protected static $netbankingAirtelTerminalRules = [
         Entity::GATEWAY                     => 'required|in:netbanking_airtel',
         Entity::GATEWAY_MERCHANT_ID         => 'required|string',
-        Entity::GATEWAY_SECURE_SECRET       => 'required|string',
     ];
 
     protected static $netbankingAxisTerminalRules = [

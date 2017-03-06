@@ -12,13 +12,26 @@ use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
+    protected static $createRules = [
+        ToType::ACCOUNT        => 'required_without:customer|string|size:18',
+        ToType::CUSTOMER       => 'required_without:account|string|size:19',
+        Entity::AMOUNT         => 'required|integer|min:100',
+        Entity::CURRENCY       => 'required|size:3|in:INR',
+        Entity::ON_HOLD        => 'sometimes|boolean',
+        // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+    ];
+
     protected static $transferRules = [
         ToType::ACCOUNT        => 'required_without:customer|string|size:18',
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
-        Entity::AMOUNT         => 'required|integer',
-        Entity::CURRENCY       => 'required|size:3',
+        Entity::AMOUNT         => 'required|integer|min:100',
+        Entity::CURRENCY       => 'required|size:3|in:INR',
         Entity::ON_HOLD        => 'sometimes|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
+    ];
+
+    protected static $transferValidators = [
+        'hold_parameters'
     ];
 
     protected static $editRules = [
@@ -43,13 +56,15 @@ class Validator extends Base\Validator
 
         foreach ($transfers as $transfer)
         {
-            $transferSum += $transfer['amount'];
+            $this->validateInput('transfer', $transfer);
 
-            $this->validateTransferCurrency($payment, $transfer['currency']);
+            $transferSum += (int) $transfer[Entity::AMOUNT];
+
+            $this->validateTransferCurrency($payment, $transfer[Entity::CURRENCY]);
 
             $keySet = false;
 
-            ++$transferCount;
+            $transferCount++;
 
             foreach (ToType::$allowedTypes as $type)
             {
@@ -60,7 +75,7 @@ class Validator extends Base\Validator
                 }
             }
 
-            // Fail if atleast one of the values in
+            // Fail if at least one of the values in
             // ToType::$allowedTypes is not set for a transfer
             if ($keySet === false)
             {
@@ -101,6 +116,8 @@ class Validator extends Base\Validator
      *
      * @param  Payment\Entity $payment
      * @param  string         $currency
+     *
+     * @throws Exception\BadRequestException
      */
     protected function validateTransferCurrency(Payment\Entity $payment, string $currency)
     {
@@ -147,15 +164,15 @@ class Validator extends Base\Validator
 
     public function validateHoldParameters(array $input)
     {
-        if ((isset($input['on_hold']) === false) and
-            (isset($input['on_hold_until']) === false))
+        if ((isset($input[Entity::ON_HOLD]) === false) and
+            (isset($input[Entity::ON_HOLD]) === false))
         {
             return;
         }
 
-        if (isset($input['on_hold_until']) === true)
+        if (isset($input[Entity::ON_HOLD_UNTIL]) === true)
         {
-            if ($input['on_hold'] === '0')
+            if ($input[Entity::ON_HOLD] === '0')
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold field must be set to 1, if on_hold_until is sent');
@@ -163,7 +180,7 @@ class Validator extends Base\Validator
 
             $now = Carbon::now('Asia/Kolkata');
 
-            if ($input['on_hold_until'] < $now->timestamp)
+            if ($input[Entity::ON_HOLD_UNTIL] < $now->timestamp)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'The on_hold_until timestamp cannot be less than the current timestamp');

@@ -22,8 +22,6 @@ class Entity extends Base\PublicEntity
     const UPDATED_AT            = 'updated_at';
     const DELETED_AT            = 'deleted_at';
 
-    const SHIPPING_ADDRESS      = 'shipping_address';
-
     const FAIL_EXISTING         = 'fail_existing';
 
     const VPAS                  = 'vpas';
@@ -32,6 +30,12 @@ class Entity extends Base\PublicEntity
     protected static $sign      = 'cust';
 
     protected $entity           = 'customer';
+
+    //
+    // Additional input keys. Not attributes of entity.
+    //
+    const BILLING_ADDRESS       = 'billing_address';
+    const SHIPPING_ADDRESS      = 'shipping_address';
 
     protected $generateIdOnCreate = true;
 
@@ -119,19 +123,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::ACTIVE);
     }
 
-    public function getCurrentShippingAddressId()
+    public function transfers()
     {
-        $app = App::getFacadeRoot();
-
-        $shippingAddress = $app['repo']->address
-            ->fetchPrimaryAddressOfEntityOfType($this, Address\Type::SHIPPING_ADDRESS);
-
-        if ($shippingAddress !== null)
-        {
-            return $shippingAddress->getId();
-        }
-
-        return null;
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
     }
 
     // ----------------------------------- END GETTERS -----------------------------------

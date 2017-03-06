@@ -15,7 +15,7 @@ class Validator extends Base\Validator
         'notes'                 => 'sometimes|notes',
         'reverse_all'           => 'sometimes|boolean',
         'reversals'             => 'sometimes|array',
-        'reversals.*.transfer'  => 'required|string|size:18',
+        'reversals.*.transfer'  => 'required',
         'reversals.*.amount'    => 'required|integer|min:100',
     ];
 
@@ -23,6 +23,12 @@ class Validator extends Base\Validator
         'paymentStatus',
         'paymentRefundStatus',
         'refundAmount'
+    ];
+
+    protected static $directRules = [
+        'payment_id'    => 'required',
+        'amount'        => 'sometimes|integer|min:100',
+        'notes'         => 'sometimes|notes'
     ];
 
     protected static $verifyRefundGateways = [
@@ -136,6 +142,17 @@ class Validator extends Base\Validator
         }
     }
 
+    /**
+     * If there is only one transfer, we support reversals, irrespective
+     * of whether the refund is partial or full.
+     * If there are multiple transfers, we support reversals ONLY IF
+     * it's a full refund.
+     *
+     * @param string           $refundType
+     * @param PublicCollection $transfers
+     *
+     * @throws Exception\BadRequestValidationFailureException
+     */
     public function validateReverseAll(string $refundType, PublicCollection $transfers)
     {
         $transferCount = $transfers->count();
@@ -144,7 +161,12 @@ class Validator extends Base\Validator
             ($refundType === Payment\Refund\Status::PARTIAL))
         {
             throw new Exception\BadRequestValidationFailureException(
-                    'The reverse_all parameter is not supported for this refund');
+                'The reverse_all parameter is not supported for this refund',
+                'reverse_all',
+                [
+                    'transfer_count' => $transferCount,
+                    'refund_type'    => $refundType,
+                ]);
         }
     }
 }

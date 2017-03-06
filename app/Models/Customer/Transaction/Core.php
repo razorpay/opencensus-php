@@ -2,11 +2,10 @@
 
 namespace RZP\Models\Customer\Transaction;
 
-use Carbon\Carbon;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Customer;
+use RZP\Models\Transfer;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 
@@ -33,13 +32,16 @@ class Core extends Base\Core
 
         $customerTxn->setDescription($input['payment']['description'] ?? 'No description');
 
-        $balance = (new Customer\Balance\Service)->debit($customerId, $amount);
+        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
+        {
+            $balance = (new Customer\Balance\Core)->debit($customerId, $amount);
 
-        $customerTxn->setBalance($balance->getBalance());
+            $customerTxn->setBalance($balance->getBalance());
 
-        $this->repo->saveOrFail($customerTxn);
+            $this->repo->saveOrFail($customerTxn);
 
-        return $customerTxn;
+            return $customerTxn;
+        });
     }
 
     /**
@@ -50,20 +52,19 @@ class Core extends Base\Core
      * @param  Customer\Entity  $customer
      * @return Entity
      */
-    public function createForCustomerCredit($transfer, int $amount, string $customerId, Merchant\Entity $merchant)
+    public function createForCustomerCredit(
+        Transfer\Entity $transfer,
+        int $amount,
+        string $customerId,
+        Merchant\Entity $merchant) : Entity
     {
         $customerTxn = $this->createEntityForType(Entity::CREDIT, $this->merchant, $amount, $customerId);
-
-        $customerTxn->setEntityType(Constants\Entity::TRANSFER);
-
-        $customerTxn->setEntityId($transfer->getId());
 
         $customerTxn->entity()->associate($transfer);
 
         $balance = $this->repo
                         ->customer_balance
-                        ->findByIdAndMerchant(
-                            $customerId, $merchant);
+                        ->findByIdAndMerchant($customerId, $merchant);
 
         $customerTxn->setBalance($balance->getBalance());
 
@@ -93,13 +94,35 @@ class Core extends Base\Core
 
         $customerTxn->setEntityId($refundId);
 
-        $balance = (new Customer\Balance\Core)->refund($customerId, $amount);
+        return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
+        {
+            $balance = (new Customer\Balance\Core)->refund($customerId, $amount);
 
-        $customerTxn->setBalance($balance->getBalance());
+            $customerTxn->setBalance($balance->getBalance());
 
-        $this->repo->saveOrFail($customerTxn);
+            $this->repo->saveOrFail($customerTxn);
 
-        return $customerTxn;
+            return $customerTxn;
+        });
+    }
+
+    /**
+     * Fetches a collection of customer_transactions
+     *
+     * @param  Customer\Balance\Entity $customerBalance
+     * @param  Merchant\Entity         $merchant
+     * @param  array                   $input
+     * @return Base\PublicCollection
+     */
+    public function getStatement(Customer\Balance\Entity $customerBalance, Merchant\Entity $merchant, array $input = [])
+    {
+        $input[Entity::CUSTOMER_ID] = $customerBalance->getCustomerId();
+
+        $entities = $this->repo
+                         ->customer_transaction
+                         ->fetch($input, $merchant->getId());
+
+        return $entities;
     }
 
     protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId)
@@ -115,6 +138,17 @@ class Core extends Base\Core
             Entity::CUSTOMER_ID         => $customerId
         ];
 
+        $this->setAmounts($type, $amount, $customerTxn);
+
+        $customerTxn->merchant()->associate($merchant);
+
+        $customerTxn->fillAndGenerateId($txnData);
+
+        return $customerTxn;
+    }
+
+    protected function setAmounts(string $type, int $amount, Entity $customerTxn)
+    {
         if ($type === Entity::DEBIT)
         {
             $customerTxn->setDebit($amount);
@@ -129,24 +163,7 @@ class Core extends Base\Core
         }
         else
         {
-            assert (false);
+            throw new Exception\LogicException('Openwallet: Invalid Txn Type - ' . $type);
         }
-
-        $customerTxn->merchant()->associate($merchant);
-
-        $customerTxn->fillAndGenerateId($txnData);
-
-        return $customerTxn;
-    }
-
-    public function getStatement(Customer\Balance\Entity $customerBalance, Merchant\Entity $merchant, array $input = [])
-    {
-        $input[Entity::CUSTOMER_ID] = $customerBalance->getCustomerId();
-
-        $entities = $this->repo
-                         ->customer_transaction
-                         ->fetch($input, $merchant->getId());
-
-        return $entities;
     }
 }

@@ -15,7 +15,7 @@ class Gateway extends Base\Gateway
     protected $topup = true;
 
     /**
-     * Pay from wallet: openwallet
+     * Authorize flow when payment method=wallet, wallet=openwallet
      *
      * @param  array  $input
      * @return void
@@ -23,49 +23,24 @@ class Gateway extends Base\Gateway
     public function authorize(array $input)
     {
         $this->trace->info(
-                TraceCode::GATEWAY_AUTHORIZE_REQUEST,
-                [
-                    'gateway'    => $this->gateway,
-                    'payment_id' => $input['payment']['id'],
-                ]);
+            TraceCode::GATEWAY_AUTHORIZE_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
 
         parent::authorize($input);
 
-        $txnId = $this->walletPayment($input);
+        $txnId = (new Customer\Transaction\Service)
+                    ->createForDebit($input);
 
         $this->trace->info(
-                TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
-                [
-                    'gateway'    => $this->gateway,
-                    'success'    => true,
-                    'payment_id' => $input['payment']['id'],
-                    'ctxn_id'    => $txnId,
-                ]);
-    }
-
-    protected function walletPayment(array $input)
-    {
-        try
-        {
-            return (new Customer\Transaction\Service)
-                    ->createForDebit($input);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->info(
-                    TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
-                    [
-                        'gateway'       => $this->gateway,
-                        'payment_id'    => $input['payment']['id'],
-                        'success'       => false,
-                        'error_code'    => $ex->getCode(),
-                        'error_message' => $ex->getMessage(),
-                    ]);
-
-            throw $ex;
-        }
-
-        return NULL;
+            TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
+            [
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+                'ctxn_id'    => $txnId,
+            ]);
     }
 
     /**
@@ -77,49 +52,24 @@ class Gateway extends Base\Gateway
      */
     public function refund(array $input)
     {
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_REQUEST,
+            [
+                'gateway'    => $this->gateway,
+                'refund_id'  => $input['refund']['id'],
+            ]);
+
         parent::refund($input);
 
-        $this->trace->info(
-                TraceCode::GATEWAY_REFUND_REQUEST,
-                [
-                    'gateway'    => $this->gateway,
-                    'refund_id'  => $input['refund']['id'],
-                ]);
-
-        $txnId = $this->walletRefund($input);
+        $txnId = (new Customer\Transaction\Service)->createForRefund($input);
 
         $this->trace->info(
-                TraceCode::GATEWAY_REFUND_RESPONSE,
-                [
-                    'gateway'       => $this->gateway,
-                    'refund_id'     => $input['refund']['id'],
-                    'ctxn_id'       => $txnId,
-                    'success'       => true,
-                ]);
-    }
-
-    protected function walletRefund(array $input)
-    {
-        try
-        {
-            return (new Customer\Transaction\Service)->createForRefund($input);
-        }
-        catch (\Throwable $ex)
-        {
-            $this->trace->info(
-                    TraceCode::GATEWAY_REFUND_RESPONSE,
-                    [
-                        'gateway'       => $this->gateway,
-                        'refund_id'     => $input['refund']['id'],
-                        'success'       => false,
-                        'error_code'    => $ex->getCode(),
-                        'error_message' => $ex->getMessage(),
-                    ]);
-
-            throw $ex;
-        }
-
-        return NULL;
+            TraceCode::GATEWAY_REFUND_RESPONSE,
+            [
+                'gateway'       => $this->gateway,
+                'refund_id'     => $input['refund']['id'],
+                'ctxn_id'       => $txnId,
+            ]);
     }
 
     /**

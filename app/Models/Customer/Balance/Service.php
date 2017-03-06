@@ -13,49 +13,4 @@ class Service extends Base\Service
 
         $this->core = new Core;
     }
-
-    /**
-     * Fetch balance details for a customer wallet account
-     *
-     * @param  string $customerId
-     * @return array
-     */
-    public function getBalance(string $customerId) : array
-    {
-        // $balance = $this->repo
-        //                 ->customer_balance
-        //                 ->findByIdAndMerchant($customerId, $this->merchant);
-
-        $customer = $this->repo->customer->findByIdAndMerchant($customerId, $this->merchant);
-
-        $balance = $this->core->fetchOrCreate($customer, $this->merchant);
-
-        return $balance->toArrayPublic();
-    }
-
-    /**
-     * Debit customer wallet account
-     *
-     * @param  string $customerId
-     * @param  int    $amount
-     */
-    public function debit(string $customerId, int $amount)
-    {
-        $balance = $this->repo
-                        ->customer_balance
-                        ->getCustomerBalanceLockForUpdate($customerId);
-
-        return $this->core->debit($balance, $amount);
-    }
-
-    /**
-     * Refund an amount to customer wallet account
-     *
-     * @param  Customer\Entity $customer
-     * @param  int             $amount
-     */
-    public function refund(Customer\Entity $customer, int $amount)
-    {
-        return $this->core->refund($customer->getPublicId(), $amount);
-    }
 }

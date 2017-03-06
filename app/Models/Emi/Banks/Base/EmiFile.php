@@ -8,6 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Constants\MailTags;
 use Str;
 
 class EmiFile extends Base\Core
@@ -51,7 +52,7 @@ class EmiFile extends Base\Core
 
         $cardToken = $card->getVaultToken();
 
-        $cardNumber = Card\Tokenex::getCardNumber($cardToken);
+        $cardNumber = (new Card\Tokenex)->getCardNumber($cardToken);
 
         return $cardNumber;
     }
@@ -139,6 +140,10 @@ class EmiFile extends Base\Core
             $message->to($data['emails']);
 
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
         });
     }
 
@@ -161,6 +166,10 @@ class EmiFile extends Base\Core
             $message->subject($data['subject']);
 
             $message->to($data['emails']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::EMI_FILE);
         });
     }
 }

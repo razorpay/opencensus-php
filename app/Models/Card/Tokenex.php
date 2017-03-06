@@ -3,17 +3,23 @@
 namespace RZP\Models\Card;
 
 use RZP\Exception;
+use RZP\Models\Base;
 use RZP\Trace\TraceCode;
 
-class Tokenex
+class Tokenex extends Base\Core
 {
-    public static function getCardNumber($vaultToken)
+    public function __construct()
     {
-        $app = \App::getFacadeRoot();
+        parent::__construct();
 
+        $this->tokenex = $this->app['card.tokenex'];
+    }
+
+    public function getCardNumber($vaultToken)
+    {
         try
         {
-            $cardNumber = $app['card.tokenex']->detokenize($vaultToken);
+            $cardNumber = $this->tokenex->detokenize($vaultToken);
 
             assertTrue(empty($cardNumber) === false);
 
@@ -23,7 +29,7 @@ class Tokenex
         }
         catch (\Exception $e)
         {
-            $app['trace']->error(
+            $this->trace->error(
                 TraceCode::TOKENEX_REQUEST,
                 [
                     'vault_token'   => $vaultToken,
@@ -35,22 +41,20 @@ class Tokenex
         }
     }
 
-    public static function getVaultToken($cardNumber)
+    public function getVaultToken($cardNumber)
     {
-        $app = \App::getFacadeRoot();
-
         try
         {
-            $token = $app['card.tokenex']->tokenize($cardNumber);
+            $token = $this->tokenex->tokenize($cardNumber);
 
             return $token;
         }
         catch (\Exception $e)
         {
-            $app['trace']->error(
+            $this->trace->error(
                 TraceCode::TOKENEX_REQUEST,
                 [
-                    'message'       => 'Failed to tokenize data'
+                    'message' => 'Failed to tokenize data'
                 ]
             );
 

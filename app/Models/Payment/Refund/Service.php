@@ -4,6 +4,8 @@ namespace RZP\Models\Payment\Refund;
 
 use Config;
 use Carbon\Carbon;
+
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Base;
 use RZP\Constants;
@@ -24,6 +26,17 @@ class Service extends Base\Service
      */
     const GATEWAY_REFUND_RECORDS_TIME_LIMIT = 8640000;
 
+    public function create(array $input)
+    {
+        (new Validator)->validateInput('direct', $input);
+
+        $paymentId = $input[Entity::PAYMENT_ID];
+
+        unset($input[Entity::PAYMENT_ID]);
+
+        return (new Payment\Service)->refund($paymentId, $input);
+    }
+
     public function getRefundsFile(array $input = array())
     {
         list($from, $to) = $this->getTimestamps($input);
@@ -37,7 +50,7 @@ class Service extends Base\Service
         switch ($method)
         {
             case Payment\Method::NETBANKING:
-                $gateways = Payment\Gateway::$netbankingToGatewayMap;
+                $gateways = Payment\Gateway::$refundFileNetbankingGateways;
 
                 $type = Payment\Entity::BANK;
 
@@ -48,9 +61,11 @@ class Service extends Base\Service
                     $gateway = $gateways[$gatewayCode];
                 }
 
-                // Removing kotak from gateways list/
-                // Should not be run along with others.
+                // Removing kotak and axis from gateways list
+                // These gateways go through a reconciliation process
+                // Please refer POST /reconciliate
                 unset($gateways[IFSC::KKBK]);
+                unset($gateways[IFSC::UTIB]);
                 break;
 
             case Payment\Method::WALLET:
@@ -556,5 +571,67 @@ class Service extends Base\Service
         $processor = new Payment\Processor\Processor($merchant);
 
         return $processor;
+    }
+
+    public function validateUnknownGatewayRefunds(string $gateway)
+    {
+        $supportedGateways = Payment\Gateway::UNKNOWN_REFUNDS_VALIDATION_GATEWAYS;
+
+        if (in_array($gateway, $supportedGateways, true) === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVALID_GATEWAY,
+                [
+                    'gateway' => $gateway,
+                ]);
+        }
+
+        $repoFunc = 'fetch' . studly_case($gateway) . 'RefundsForValidation';
+
+        $refunds = $this->repo->refund->$repoFunc();
+
+        $failed = $unknown = $success = 0;
+        $failedRefundData = [];
+
+        foreach ($refunds as $refund)
+        {
+            $refundData = $this->getNewProcessor($refund->merchant)
+                               ->validateUnknownGatewayRefund($refund);
+
+            if ($refundData['success'] === true)
+            {
+                $success++;
+            }
+            else if ($refundData['success'] === false)
+            {
+                $failed++;
+            }
+            else if ($refundData['success'] === 'unknown')
+            {
+                $unknown++;
+            }
+        }
+
+        $summary = [
+            'gateway'               => $gateway,
+            'total_refunds'         => count($refunds),
+            'total_failed_refunds'  => $failed,
+            'total_success_refunds' => $success,
+            'total_unknown_refunds' => $unknown,
+            'failed_refunds'        => $failedRefundData,
+        ];
+
+        $this->trace->info(
+            TraceCode::GATEWAY_VALIDATE_REFUND_SUMMARY,
+            $summary);
+
+        $message = "Gateway refund records validation";
+
+        $this->app['slack']->queue(
+            $message,
+            $summary,
+            ['channel' => Config::get('slack.channels.tech_logs')]);
+
+        return $summary;
     }
 }

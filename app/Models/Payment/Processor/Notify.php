@@ -2,22 +2,29 @@
 
 namespace RZP\Models\Payment\Processor;
 
+use Illuminate\Foundation\Bus\DispatchesJobs;
+
 use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use Mail;
 use RZP\Models\Payment;
-use RZP\Models\Invoice;
 use RZP\Trace\TraceCode;
+use RZP\Models\Invoice;
+use RZP\Constants\MailTags;
+use RZP\Jobs\InvoiceAction;
 
 class Notify
 {
-    const AUTHORIZED = 'authorized';
-    const CARD_SAVED = 'card_saved';
-    const CAPTURED   = 'captured';
-    const REFUNDED   = 'refunded';
-    const FAILED_TO_AUTHORIZED = 'failed_to_authorized';
-    const INVOICE_PAID = 'invoice_paid';
+    use DispatchesJobs;
+
+    const AUTHORIZED                 = 'authorized';
+    const CARD_SAVED                 = 'card_saved';
+    const CAPTURED                   = 'captured';
+    const REFUNDED                   = 'refunded';
+    const FAILED_TO_AUTHORIZED       = 'failed_to_authorized';
+    const INVOICE_PAYMENT_AUTHORIZED = 'invoice_payment_authorized';
+    const INVOICE_PAYMENT_CAPTURED   = 'invoice_payment_captured';
 
     /**
      * The minimum amount for a transaction to be considered risky
@@ -43,6 +50,15 @@ class Notify
         self::AUTHORIZED,
         self::REFUNDED,
         self::FAILED_TO_AUTHORIZED
+    ];
+
+    const MAIL_TAG_MAP = [
+        self::AUTHORIZED                 => MailTags::PAYMENT_SUCCESSFUL,
+        self::REFUNDED                   => MailTags::REFUND_SUCCESSFUL,
+        self::INVOICE_PAYMENT_AUTHORIZED => MailTags::INVOICE,
+        self::INVOICE_PAYMENT_CAPTURED   => MailTags::INVOICE,
+        self::FAILED_TO_AUTHORIZED       => MailTags::FAILED_TO_AUTHORIZED,
+        self::CARD_SAVED                 => MailTags::CARD_SAVING,
     ];
 
     // TODO: Shift to constants once we update PHP
@@ -94,11 +110,18 @@ class Notify
                 'view' => 'emails.payment.cardsaving',
             ]
         ],
-        self::INVOICE_PAID => [
+        self::INVOICE_PAYMENT_AUTHORIZED => [
+            'customer' => [
+                'from' => 'care',
+                'view' => [
+                    'html' => 'emails.invoice.customer.notification',
+                ],
+            ],
+        ],
+        self::INVOICE_PAYMENT_CAPTURED => [
             'merchant' => [
                 'view' => [
-                    'html' => 'emails.invoice.merchant',
-                    'text' => 'emails.invoice.merchant_text',
+                    'html' => 'emails.invoice.merchant.captured',
                 ]
             ]
         ],
@@ -109,27 +132,31 @@ class Notify
     protected $mode;
     protected $trace;
     protected $template;
-    protected $invoice;
+    protected $invoice = null;
 
     /**
      * Creates a new Notify instance
      *
      * @param Payment\Entity $payment The payment associated with the Notify
-     * @param Invoice\Entity $invoice The invoice associated with the Notify
      */
-    function __construct(Payment\Entity $payment, Invoice\Entity $invoice = null)
+    function __construct(Payment\Entity $payment)
     {
         $this->app = App::getFacadeRoot();
 
         $this->payment = $payment;
-        $this->invoice = $invoice;
-        $this->refreshTemplate();
+
+        if ($this->payment->hasInvoice())
+        {
+            $this->invoice = $this->payment->invoice;
+        }
 
         $this->mode = $this->app['rzp.mode'];
 
         $this->trace = $this->app['trace'];
 
         $this->domain = $this->app['config']->get('applications.mailgun.url');
+
+        $this->refreshTemplate();
     }
 
     /**
@@ -162,7 +189,7 @@ class Notify
      *
      * @return null
      */
-    protected function sendMail($view, $subject, $to, $from = 'reports')
+    protected function sendMail($view, $subject, $label, $to, $from = 'reports')
     {
         $from       = $this->getCompleteEmail($from);
         $replyTo    = $this->getCompleteEmail('support');
@@ -173,7 +200,7 @@ class Notify
         Mail::queue(
             $view,
             $this->template,
-            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId)
+            function ($message) use ($subject, $to, $from, $fromHeader, $replyTo, $domain, $paymentId, $label)
             {
                 // Bug fix because some from addresses were
                 // not generated properly and are in the queue
@@ -185,7 +212,9 @@ class Notify
 
                 $headers = $message->getHeaders();
 
-                $headers->addTextHeader('x-mailgun-tag', $paymentId);
+                $headers->addTextHeader(MailTags::HEADER, $paymentId);
+
+                $headers->addTextHeader(MailTags::HEADER, $label);
 
                 // to might be an array
                 if (is_array($to))
@@ -240,16 +269,18 @@ class Notify
 
             $from = (isset($struct['from'])) ? $struct['from'] : null;
 
+            $label = $this->getLabel($event);
+
             // This finally sends the mail
             if ($this->isMailEnabled($event, $isMerchant))
             {
                 if ($from !== null)
                 {
-                    $this->sendMail($view, $subject, $to, $from);
+                    $this->sendMail($view, $subject, $label, $to, $from);
                 }
                 else
                 {
-                    $this->sendMail($view, $subject, $to);
+                    $this->sendMail($view, $subject, $label, $to);
                 }
 
             }
@@ -351,6 +382,14 @@ class Notify
      */
     public function trigger($event)
     {
+        if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
+        {
+            (new Invoice\Core)->dispatchQueueJob(
+                                    $this->mode,
+                                    InvoiceAction::AUTHORIZED,
+                                    $this->invoice->getId());
+        }
+
         /**
          * This is wrapped in a try-catch block as this is not
          * critical path for the payment operation
@@ -378,6 +417,11 @@ class Notify
 
             $this->trace->traceException($e);
         }
+    }
+
+    protected function getLabel($event)
+    {
+        return self::MAIL_TAG_MAP[$event] ?? MailTags::PAYMENT_SUCCESSFUL;
     }
 
     protected function getSubject($event, $merchant = true)
@@ -427,8 +471,9 @@ class Notify
             case self::REFUNDED:
                 $action = 'Refund';
                 break;
-            case self::INVOICE_PAID:
-                $action = 'Invoice';
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
+                $action = ucwords($this->invoice->getTypeLabel()) . '\'s Payment';
                 break;
             default:
                 $action = 'Payment';
@@ -505,7 +550,8 @@ class Notify
                 $data = $this->template['payment'];
                 break;
 
-            case self::INVOICE_PAID:
+            case self::INVOICE_PAYMENT_AUTHORIZED:
+            case self::INVOICE_PAYMENT_CAPTURED:
                 $data = $this->template['invoice'];
                 break;
 
@@ -599,24 +645,19 @@ class Notify
         {
             $data['refund'] = [
                 'id'        =>  $this->refund->getId(),
-                'amount'    =>  "INR ".number_format($this->refund->getAmount()/100, 2),
+                'amount'    =>  'INR ' . number_format($this->refund->getAmount() / 100, 2),
                 'timestamp' =>  $this->refund->getCreatedAt(),
                 'payment_id'=>  $this->refund->payment->getId(),
                 'public_id' =>  $this->refund->getPublicId(),
             ];
         }
 
-        if ($this->invoice)
+        if ($this->payment->hasInvoice() === true)
         {
-            $data['invoice'] = [
-                'id'    => $this->invoice->getId(),
-                'amount' => "INR ".number_format($this->invoice->getAmount()/100, 2),
-                'timestamp' => $this->invoice->getCreatedAt(),
-                'payment_id' => $this->invoice->getPaymentId(),
-                'public_id' => $this->invoice->getPublicId(),
-                'paid_at' => $this->invoice->getPaidAt(),
-                'issued_at' => $this->invoice->getIssuedAt(),
-            ];
+            $payloadForInvoice = (new Invoice\Notifier($this->invoice))->getInvoicePaidMailPayload();
+
+            $data['invoice'] = $payloadForInvoice['invoice'];
+            $data['merchant'] += $payloadForInvoice['merchant'];
         }
 
         return $data;

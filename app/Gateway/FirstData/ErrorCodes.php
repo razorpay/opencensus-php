@@ -60,7 +60,7 @@ class ErrorCodes
         'N:30'     => 'Format error',
         'N:33'     => 'Expired card',
         'N:400'    => 'User Inactive',
-        'N:408'    => 'Missing Mandatory Field: terminal_state_code has exceeded the maximum length 2',
+        'N:408'    => 'terminal_state_code exceeded. Usually means Rupay not enabled for this terminal.',
         'N:41'     => 'Lost card',
         'N:410'    => 'Failed Initiate CheckBin - Error with Bin Check',
         'N:412'    => 'Issuer Authentication Server failure',
@@ -94,7 +94,7 @@ class ErrorCodes
         // Not part of originally provided list of error codes
         // Added by us to handle unexpected behaviour
 
-        'N:100'    => 'Internal Error',
+        'N:100'    => 'Internal Error on FirstData side, contact pghelpdesk with payment id',
         'N:5003'   => 'The order already exists in the database.',
         'N:tmout'  => 'Gateway timed out',
     ];
@@ -121,7 +121,7 @@ class ErrorCodes
         'N:-5002'  => ErrorCode::BAD_REQUEST_MERCHANT_RECURRING_PAYMENTS_NOT_SUPPORTED,
         'N:-5003'  => ErrorCode::BAD_REQUEST_ORDER_EXISTS,
         'N:-5004'  => ErrorCode::BAD_REQUEST_PAYMENT_INVALID_CAPTURE,
-        'N:-5005'  => ErrorCode::BAD_REQUEST_PAYMENT_BLOCKED_DUE_TO_FRAUD,
+        'N:-5005'  => ErrorCode::BAD_REQUEST_PAYMENT_CARD_INTERNATIONAL_NOT_ALLOWED,
         'N:-5008'  => ErrorCode::BAD_REQUEST_ORDER_DOES_NOT_EXIST,
         'N:-5009'  => ErrorCode::BAD_REQUEST_NO_RECORDS_FOUND,
         'N:-5014'  => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
@@ -192,6 +192,17 @@ class ErrorCodes
         'N:tmout'  => ErrorCode::GATEWAY_ERROR_TIMED_OUT,
     ];
 
+    protected static $specialCases = [
+        // Internal Error
+        // FirstData is down, and should be notified with the order id
+        'N:100',
+
+        // terminal_state_code error
+        // Usually happens when Rupay/Maestro are not enabled for the terminal
+        // Notify pghelpdesk, with the gateway_merchant_id
+        'N:408',
+    ];
+
     public static function getMappedCode($code = null)
     {
         if (isset(self::$errorCodeMap[$code]))
@@ -210,6 +221,11 @@ class ErrorCodes
         }
 
         return null;
+    }
+
+    public static function isSpecialCase($code)
+    {
+         return in_array($code, self::$specialCases, true);
     }
 
     public static function getTimeoutCode()

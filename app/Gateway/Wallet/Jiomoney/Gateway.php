@@ -79,7 +79,7 @@ class Gateway extends Base\Gateway
             Entity::PAYMENT_ID          => $input['payment'][Payment::ID],
             Entity::AMOUNT              => $input['payment'][Payment::AMOUNT],
             Entity::EMAIL               => $input['payment'][Payment::EMAIL],
-            Entity::CONTACT             => $input['payment'][Payment::CONTACT],
+            Entity::CONTACT             => $this->getFormattedContact($input['payment'][Payment::CONTACT]),
             Entity::RECEIVED            => false
         ];
 
@@ -158,25 +158,25 @@ class Gateway extends Base\Gateway
         $timestamp = $this->getFormattedDateFromTimeStamp($payment[Payment::CREATED_AT]);
 
         $amount = $this->getFormattedAmount($payment[Payment::AMOUNT]);
+        $contact = $this->getFormattedContact($payment[Payment::CONTACT]);
 
-        $transaction = RequestFields::TRANSACTION;
-
-        $subscriber = RequestFields::SUBSCRIBER;
+        $txn = RequestFields::TRANSACTION;
+        $sub = RequestFields::SUBSCRIBER;
 
         $content = [
-            RequestFields::MERCHANT_ID                                             => $this->getMerchantId(),
-            RequestFields::CLIENT_ID                                               => $this->getClientId(),
-            RequestFields::CHANNEL                                                 => self::TXN_CHANNEL,
-            RequestFields::CALLBACK_URL                                            => $callbackUrl,
-            RequestFields::TOKEN                                                   => '',
-            RequestFields::getFormatted($transaction, RequestFields::PAYMENT_ID)   => $payment[Payment::ID],
-            RequestFields::getFormatted($transaction, RequestFields::TIMESTAMP)    => $timestamp,
-            RequestFields::getFormatted($transaction, RequestFields::TXN_TYPE)     => strtoupper(Action::PURCHASE),
-            RequestFields::getFormatted($transaction, RequestFields::AMOUNT)       => $amount,
-            RequestFields::getFormatted($transaction, RequestFields::CURRENCY)     => $payment[Payment::CURRENCY],
-            RequestFields::getFormatted($subscriber, RequestFields::CUSTOMER_NAME) => $payment[Payment::EMAIL],
-            RequestFields::getFormatted($subscriber, RequestFields::EMAIL)         => $payment[Payment::EMAIL],
-            RequestFields::getFormatted($subscriber, RequestFields::CONTACT)       => $payment[Payment::CONTACT]
+            RequestFields::MERCHANT_ID                                      => $this->getMerchantId(),
+            RequestFields::CLIENT_ID                                        => $this->getClientId(),
+            RequestFields::CHANNEL                                          => self::TXN_CHANNEL,
+            RequestFields::CALLBACK_URL                                     => $callbackUrl,
+            RequestFields::TOKEN                                            => '',
+            RequestFields::getFormatted($txn, RequestFields::PAYMENT_ID)    => $payment[Payment::ID],
+            RequestFields::getFormatted($txn, RequestFields::TIMESTAMP)     => $timestamp,
+            RequestFields::getFormatted($txn, RequestFields::TXN_TYPE)      => strtoupper(Action::PURCHASE),
+            RequestFields::getFormatted($txn, RequestFields::AMOUNT)        => $amount,
+            RequestFields::getFormatted($txn, RequestFields::CURRENCY)      => $payment[Payment::CURRENCY],
+            RequestFields::getFormatted($sub, RequestFields::CUSTOMER_NAME) => $payment[Payment::EMAIL],
+            RequestFields::getFormatted($sub, RequestFields::EMAIL)         => $payment[Payment::EMAIL],
+            RequestFields::getFormatted($sub, RequestFields::CONTACT)       => $contact
         ];
 
         $hashArray = $this->getPurchaseRequestArrayToHash($content);
@@ -249,7 +249,7 @@ class Gateway extends Base\Gateway
     protected function handleCallbackFailure(array $content)
     {
         throw new Exception\GatewayErrorException(
-            ErrorCode::GATEWAY_ERROR_FATAL_ERROR,
+            ErrorCode::BAD_REQUEST_PAYMENT_FAILED,
             $content[ResponseFields::RESPONSE_CODE],
             $content[ResponseFields::RESPONSE_DESCRIPTION]
         );
@@ -348,7 +348,7 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_REFUND_ID    => $content[ResponseFields::GATEWAY_PAYMENT_ID],
             Entity::REFUND_ID            => $input['refund']['id'],
             Entity::EMAIL                => $input['payment']['email'],
-            Entity::CONTACT              => $input['payment']['contact'],
+            Entity::CONTACT              => $this->getFormattedContact($input['payment']['contact']),
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             Entity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION]
@@ -469,9 +469,19 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ($this->checkPaymentStatusResponseFailed($content) !== true)
+        if ($this->checkPaymentStatusResponseFailed($content) === false)
         {
-            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
+            // Temporarily hardcoding this payment id here to manually pass verify
+            // and change payment status to authorized, as this payment was successfully
+            // processed by Jiomoney but marked as failed by timeout cron as callback was received late
+            if ($input['payment']['id'] === '7LaaHWTPMl9PQL')
+            {
+                $verify->gatewaySuccess = true;
+            }
+            else
+            {
+                $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
+            }
         }
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
@@ -495,11 +505,11 @@ class Gateway extends Base\Gateway
             Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
             Entity::RECEIVED             => true,
             Entity::EMAIL                => $payment[Payment::EMAIL],
-            Entity::CONTACT              => $payment[Payment::CONTACT],
+            Entity::CONTACT              => $this->getFormattedContact($payment[Payment::CONTACT]),
             Entity::STATUS_CODE          => StatusCode::SUCCESS,
             Entity::RESPONSE_CODE        => StatusCode::API_SUCCESS,
             Entity::RESPONSE_DESCRIPTION => 'APPROVED',
-            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
+            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content, $payment)
         );
 
         return $contentToSave;
@@ -534,8 +544,12 @@ class Gateway extends Base\Gateway
     {
         if ($this->statusQueryValid === false)
         {
-            return ($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]
-                    [ResponseFields::STATUS] !== StatusCode::API_SUCCESS);
+            $response = $content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER];
+
+            if (isset($response[ResponseFields::STATUS]) === true)
+            {
+                return ($response[ResponseFields::STATUS] !== StatusCode::API_SUCCESS);
+            }
         }
 
         return false;
@@ -552,8 +566,15 @@ class Gateway extends Base\Gateway
                 [ResponseFields::TXN_STATUS];
     }
 
-    protected function getGatewayPaymentId(array $content)
+    protected function getGatewayPaymentId(array $content, array $payment)
     {
+        // Temporarily hardcoding the gateway payment id here for this specific payment to
+        // manually pass verify flow
+        if ($payment['id'] === '7LaaHWTPMl9PQL')
+        {
+            return '301005129694';
+        }
+
         if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
@@ -597,7 +618,6 @@ class Gateway extends Base\Gateway
     protected function getStatusQueryRequestArray(array $input)
     {
         $this->action = Action::PAYMENT_STATUS;
-        $this->domainType = $this->mode . '_' . $this->action;
 
         $content = [
             StatusQueryRequestFields::REQUEST_HEADER => [
@@ -622,17 +642,15 @@ class Gateway extends Base\Gateway
 
         $content = json_encode($content);
 
-        $this->action = Action::PAYMENT_STATUS;
-
         $request = $this->getStandardRequestArray($content);
-
-        $this->action = Action::VERIFY;
 
         $request['headers'] = $this->getRequestHeaders($content);
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
             $request);
+
+        $this->action = Action::VERIFY;
 
         return $request;
     }

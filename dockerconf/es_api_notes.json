@@ -1,0 +1,44 @@
+{
+  "settings": {
+    "number_of_shards": 5,
+    "number_of_replicas": 1
+  },
+  "mappings": {
+    "payment": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "merchant_id": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "notes": {
+          "type": "object"
+        },
+        "created": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||epoch_millis"
+        }
+      }
+    },
+    "refund": {
+      "_all": {
+        "enabled": false
+      },
+      "properties": {
+        "merchant_id": {
+          "type": "string",
+          "index": "not_analyzed"
+        },
+        "notes": {
+          "type": "object"
+        },
+        "created": {
+          "type": "date",
+          "format": "yyyy-MM-dd HH:mm:ss||epoch_millis"
+        }
+      }
+    }
+  }
+}

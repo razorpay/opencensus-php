@@ -13,8 +13,10 @@ trait Transfer
     /**
      * Create a transfer payment entity and a corresponding transaction
      *
-     * @param  array           $input
-     * @param  Payment\Entity  $originPayment
+     * @param  array          $input
+     * @param  Payment\Entity $originPayment
+     *
+     * @return Payment\Entity
      */
     public function processTransfer(array $input, Payment\Entity $originPayment = null) : Payment\Entity
     {
@@ -24,17 +26,9 @@ trait Transfer
 
         $this->trace->info(TraceCode::PAYMENT_CREATED, ['payment_id' => $payment->getId(), 'input' => $input]);
 
+        $this->setPaymentAttributes($payment);
+
         $this->processCurrencyConversionsForTransfer($originPayment, $payment);
-
-        $payment->setStatus(Payment\Status::CAPTURED);
-
-        $payment->setMarketplaceGateway();
-
-        $payment->setGatewayCaptured(true);
-
-        $payment->setAuthorizeTimestamp();
-
-        $payment->setCaptureTimestamp();
 
         list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentTransferred($payment);
 
@@ -51,6 +45,19 @@ trait Transfer
         $this->saveFeeDetails($txn, $feesSplit);
 
         return $payment;
+    }
+
+    protected function setPaymentAttributes(Payment\Entity $payment)
+    {
+        $payment->setStatus(Payment\Status::CAPTURED);
+
+        $payment->setGatewayCaptured(true);
+
+        $payment->setAuthorizeTimestamp();
+
+        $payment->setCaptureTimestamp();
+
+        $payment->setAttribute(Payment\Entity::CREATED_AT, time());
     }
 
     protected function getTransferPaymentData(array $input, $originPayment)
@@ -94,11 +101,18 @@ trait Transfer
         }
         else if ($originPayment->getCurrency() === $transferPayment->getCurrency())
         {
+            //
+            // Note: This will need change for currencies other than INR. For the last
+            // possible transfer on a payment, the transferBaseAmount generated may
+            // not match the actual amount untransferred, caused by (floor) $amount
+            //
             $conversionFactor = $originPayment->getCurrencyConversionRate();
 
             $transferBaseAmount = $transferPayment->getAmount() * $conversionFactor;
 
-            $transferPayment->setBaseAmount(floor($transferBaseAmount));
+            $transferBaseAmount = (int) floor($transferBaseAmount);
+
+            $transferPayment->setBaseAmount($transferBaseAmount);
         }
         else
         {
@@ -106,7 +120,7 @@ trait Transfer
             //
             // Validate if 1. currency supported and 2. convert allowed for marketplace.
             //
-            // If orignial payment date = today:
+            // If original payment date = today:
             // call processCurrencyConversions()
             //
             // else:

@@ -14,6 +14,7 @@ class Table
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';

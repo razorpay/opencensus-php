@@ -8,6 +8,13 @@ use Requests;
 
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
+use Http\Discovery\HttpClientDiscovery;
+use Http\Client\Common\PluginClient;
+use Http\Client\Common\Plugin\ErrorPlugin;
+use Http\Client\Common\Exception\ClientErrorException;
+use Http\Client\Common\Exception\ServerErrorException;
+use Http\Client\Exception\HttpException;
 
 class Inferno
 {
@@ -106,6 +113,8 @@ class Inferno
 
         $subjectName = $webhook->merchant->getBillingLabelElseName();
 
+        $webhookId = $webhook->getPublicId();
+
         $subject = 'Razorpay | ';
 
         $mailData['url'] = $webhook->getUrl();
@@ -136,7 +145,7 @@ class Inferno
         $mailData['subject'] = $subject;
         $mailData['mode'] = $this->mode;
 
-        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData)
+        Mail::send('emails.webhook.'.$type, $mailData, function($message) use ($mailData, $webhookId)
         {
             $emails = $mailData['to_emails'];
 
@@ -147,6 +156,12 @@ class Inferno
             $message->subject($mailData['subject']);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WEBHOOK);
+
+            $headers->addTextHeader(MailTags::HEADER, $webhookId);
         });
     }
 
@@ -196,15 +211,31 @@ class Inferno
 
     public function makeRequest($request)
     {
-        $method = $request['method'];
+        $factory = app()->make('httplug.message_factory.default');
 
-        $response = Requests::$method(
-                    $request['url'],
-                    $request['headers'],
-                    $request['content'],
-                    $request['options']);
+        $req = $factory->createRequest('POST', $request['url'], $request['headers'], $request['content']);
+
+        $httpClient = $this->createHttpClient();
+
+        $response = $httpClient->sendRequest($req);
 
         return $response;
+    }
+
+    protected function createHttpClient()
+    {
+        // Plugin to get error-exceptions from responses of httpClient
+        $errorPlugin = new ErrorPlugin();
+
+        // PluginClient is the decorator around the httpClient that manages plugins
+        // HttpClientDiscovery finds a suitable installed client that -
+        // extends HttpClient (in this case Guzzle6 client)
+        $pluginClient = new PluginClient(
+            HttpClientDiscovery::find(),
+            [$errorPlugin]
+        );
+
+        return $pluginClient;
     }
 
     public function sendRequest($request, $webhook)
@@ -223,51 +254,58 @@ class Inferno
         {
             $response = $this->makeRequest($request);
         }
-        catch (\Requests_Exception $e)
+        catch (ClientErrorException $e)
         {
-            //
-            // Some error occurred.
-            // Check that whether the gateway response timed out.
-            // Mostly it should be gateway timeout only
-            //
-            if (\RZP\Gateway\Utility::checkTimeout($e))
-            {
-                $this->errorMessage = 'Webhook request timed out. We keep the timeout duration as ' .
-                    round(self::WEBHOOK_TIMEOUT * 0.75) .
-                    ' seconds. We will retry only a few times before deactivating webhook.';
-            }
-            else if ($this->isKnownRequestsException($e))
-            {
-                $this->errorMessage = $e->getMessage();
-            }
-            else
-            {
-                $this->errorMessage = 'Internal Server Error. Please contact the Razorpay team for more details.';
-                $this->trace->traceException($e);
-            }
+            $this->errorMessage = 'Client error: '. $e->getResponse()->getReasonPhrase();
 
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
                     'webhook' => $webhook->getId(),
-                    'exception' => $e->getMessage(),
+                    'exception' => $this->errorMessage,
+                ]);
+
+            return false;
+        }
+        catch (ServerErrorException $e)
+        {
+            $this->errorMessage = 'Server error: '. $e->getResponse()->getReasonPhrase();
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'exception' => $this->errorMessage,
+                ]);
+
+            return false;
+        }
+        catch (HttpException $e)
+        {
+            $this->errorMessage = 'Some error occurred: '. $e->getResponse()->getReasonPhrase();
+
+            $this->trace->info(
+                TraceCode::WEBHOOK_RESPONSE_FAILURE,
+                [
+                    'webhook' => $webhook->getId(),
+                    'exception' => $this->errorMessage,
                 ]);
 
             return false;
         }
 
-        if ($response->success === false)
+        if ($response->getStatusCode() !== 200)
         {
             $this->trace->info(
                 TraceCode::WEBHOOK_RESPONSE_FAILURE,
                 [
                     'webhook' => $webhook->getId(),
-                    'response_code' => $response->status_code,
-                    'response_body' => $response->body,
+                    'response_code' => $response->getStatusCode(),
+                    'response_body' => $response->getReasonPhrase(),
                 ]
             );
 
-            $this->errorMessage = $response->body;
+            $this->errorMessage = $response->getReasonPhrase();
 
             $success = false;
         }
@@ -277,7 +315,7 @@ class Inferno
                 TraceCode::WEBHOOK_FIRED,
                 [
                     'webhook' => $webhook->getId(),
-                    'response_code' => $response->status_code,
+                    'response_code' => $response->getStatusCode(),
                 ]);
         }
 

@@ -16,7 +16,17 @@ return [
     |
     */
 
-    'default' => env('QUEUE_DRIVER', 'sync'),
+    'default'               => env('QUEUE_DRIVER', 'sync'),
+
+    'mock'                  => env('QUEUE_MOCK', false),
+
+    'sqs_general_test'      => env('AWS_GENERAL_TEST_QUEUE'),
+    'sqs_general_failure'   => env('AWS_GENERAL_FAILURE_QUEUE'),
+    'sqs_webhooks_live'     => env('AWS_WEBHOOK_LIVE_QUEUE'),
+    'sqs_webhooks_test'     => env('AWS_WEBHOOK_TEST_QUEUE'),
+    'sqs_webhooks_failure'  => env('AWS_WEBHOOK_FAILURE_QUEUE'),
+    'sqs_invoice_emails'    => env('AWS_INVOICE_EMAILS_QUEUE'),
+
 
     /*
     |--------------------------------------------------------------------------
@@ -55,6 +65,15 @@ return [
             'secret' => env('AWS_KEY_SECRET'),
             'prefix' => env('AWS_QUEUE_URL'),
             'queue'  => env('AWS_QUEUE_NAME'),
+            'region' => env('AWS_REGION'),
+        ],
+
+        'sqs_multi_default' => [
+            'driver' => 'sqs',
+            'key'    => env('AWS_KEY_ID'),
+            'secret' => env('AWS_KEY_SECRET'),
+            'prefix' => env('AWS_QUEUE_PREFIX'),
+            'queue'  => env('AWS_GENERAL_LIVE_QUEUE'),
             'region' => env('AWS_REGION'),
         ],
 

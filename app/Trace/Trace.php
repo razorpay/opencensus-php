@@ -8,6 +8,7 @@ use Monolog\Logger;
 use Monolog\Processor;
 use Monolog\Handler;
 use Monolog\Formatter;
+use RZP\Constants\MailTags;
 
 class Trace extends Logger
 {
@@ -180,6 +181,9 @@ class Trace extends Logger
                     $message->from('errors@razorpay.com');
                     $message->subject('Razorpay | Critical error occurred');
                     $message->replyTo('developers@razorpay.com');
+
+                    $headers = $message->getHeaders();
+                    $headers->addTextHeader(MailTags::HEADER, MailTags::CRITICAL_ERROR);
                 }
             );
         }

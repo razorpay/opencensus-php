@@ -552,11 +552,21 @@ class Service extends Base\Service
         return $accounts->toArrayPublic();
     }
 
+    /**
+     * Fetch balance details for a customer wallet account
+     *
+     * @param  string $customerId
+     * @return array
+     */
     public function getCustomerBalance(string $customerId) : array
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        return (new Customer\Balance\Service)->getBalance($customerId);
+        $balance = $this->repo
+                        ->customer_balance
+                        ->findByIdAndMerchant($customerId, $this->merchant);
+
+        return $balance->toArrayPublic();
     }
 
     public function getCustomerBalanceStatement(string $customerId, array $input = []) : array

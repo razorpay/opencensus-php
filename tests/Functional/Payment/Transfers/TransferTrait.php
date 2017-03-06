@@ -9,8 +9,7 @@ trait TransferTrait
     protected function checkLastTransferEntity($toId, $toType, int $amount)
     {
         $testData = [
-            'to_type'   => $toType,
-            'to_id'     => $toId,
+            'recipient' => $toId,
             'amount'    => $amount
         ];
 
@@ -52,7 +51,7 @@ trait TransferTrait
             $id = $this->payment['id'];
         }
 
-        $url = '/payments/' . $id . '/transfer';
+        $url = '/payments/' . $id . '/transfers';
 
         $this->setRequestUrlAndMethod($request, $url, 'POST');
     }

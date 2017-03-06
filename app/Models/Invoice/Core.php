@@ -2,25 +2,50 @@
 
 namespace RZP\Models\Invoice;
 
-use Mail;
+use Config;
+use Carbon\Carbon;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
 use RZP\Models\Order;
 use RZP\Models\LineItem;
-use RZP\Models\Customer;
+use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
+use RZP\Jobs\InvoiceAction;
+use RZP\Models\FileStore;
 
 class Core extends Base\Core
 {
+    const MAX_ALLOWED_PDF_GEN_ATTEMPTS = 2;
+    const MAX_EXPECTED_QUEUE_DELAY     = 360; // In seconds (= 6 minutes)
+
+    use DispatchesJobs;
+
     protected $lineItemCore;
+    protected $pdfGenerator;
+    protected $slack;
+    protected $slackTechLogsChannel;
 
     public function __construct()
     {
         parent::__construct();
 
         $this->lineItemCore = new LineItem\Core;
+
+        $this->pdfGenerator = null;
+
+        $this->slack = $this->app['slack'];
+
+        $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+    }
+
+    public function setPdfGenerator(Entity $invoice)
+    {
+        $this->pdfGenerator = new PdfGenerator($invoice);
     }
 
     public function create(array $input, Merchant\Entity $merchant)
@@ -36,6 +61,11 @@ class Core extends Base\Core
             TraceCode::INVOICE_CREATED,
             $invoice->toArrayPublic()
         );
+
+        if ($invoice->isIssued())
+        {
+            (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
+        }
 
         return $invoice;
     }
@@ -78,6 +108,11 @@ class Core extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $invoice, $input);
         }
 
+        if ($invoice->isIssued())
+        {
+            $this->dispatchQueueJob($this->mode, InvoiceAction::UPDATED, $invoice->getId());
+        }
+
         return $invoice;
     }
 
@@ -98,21 +133,21 @@ class Core extends Base\Core
                 $this->repo->saveOrFail($invoice);
             });
 
-        (new Notifier($invoice))->sendNotificationToCustomer();
+        (new InvoiceAction($this->mode, InvoiceAction::ISSUED, $invoice->getId()))->handle();
 
         return $invoice;
     }
 
     public function delete(Entity $invoice)
     {
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
-
         $this->trace->info(
             TraceCode::INVOICE_DELETE_REQUEST,
             [
                 'invoice_id'     => $invoice->getId(),
                 'invoice_status' => $invoice->getStatus(),
             ]);
+
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         return $this->repo->invoice->deleteOrFail($invoice);
     }
@@ -122,8 +157,6 @@ class Core extends Base\Core
         array $input,
         Merchant\Entity $merchant)
     {
-        $invoice->getValidator()->validateOperation(__FUNCTION__);
-
         $this->trace->info(
             TraceCode::INVOICE_ADD_LINE_ITEM_REQUEST,
             [
@@ -131,6 +164,8 @@ class Core extends Base\Core
                 'invoice_status' => $invoice->getStatus(),
                 'input'          => $input,
             ]);
+
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
 
         $this->repo->transaction(
             function() use ($invoice, $input, $merchant)
@@ -239,35 +274,94 @@ class Core extends Base\Core
 
         $invoice->getValidator()->validateSendNotificationRequest($medium);
 
-        $notifier = new Notifier($invoice);
-        $commFunc = 'send' . studly_case($medium) . 'NotificationToCustomer';
+        $func = studly_case($medium) . 'InvoiceIssuedToCustomer';
 
-        $response = $notifier->$commFunc();
+        $pdfPath = null;
+
+        if ($medium === NotifyMedium::EMAIL)
+        {
+            $pdfPath = $this->getFreshInvoicePdf($invoice);
+        }
+
+        $response = (new Notifier($invoice, $pdfPath))->$func();
 
         $this->repo->saveOrFail($invoice);
 
         return ['success' => $response];
     }
 
+    public function expireInvoice(Entity $invoice)
+    {
+        $this->trace->info(
+            TraceCode::EXPIRE_INVOICE,
+            [
+                'invoice_id' => $invoice->getId(),
+            ]);
+
+        $invoice->getValidator()->validateOperation(__FUNCTION__);
+
+        $this->repo->transaction(
+            function () use ($invoice)
+            {
+                $this->repo->invoice->lockForUpdateAndReload($invoice);
+
+                $this->validateIfInvoiceCanBeExpired($invoice);
+
+                $invoice->setStatus(Status::EXPIRED);
+
+                $this->repo->saveOrFail($invoice);
+            });
+
+        (new InvoiceAction($this->mode, InvoiceAction::EXPIRED, $invoice->getId()))->handle();
+
+        return $invoice;
+    }
+
+    /**
+     * Called from cron.
+     * Expires all invoices which are issued and past expire_by.
+     *
+     * @return array
+     */
     public function expireInvoices()
     {
-        $expiredInvoices = $this->repo->invoice->getExpiredInvoices();
+        $time = time();
 
-        foreach ($expiredInvoices as $expiredInvoice)
-        {
-            $expiredInvoice->setStatus(Status::EXPIRED);
-            $this->repo->saveOrFail($expiredInvoice);
-        }
+        $invoices = $this->repo->invoice->getIssuedAndPastExpiredByInvoices();
 
         $summary = [
-            'total'         => $expiredInvoices->count(),
-            'invoice_ids'   => $expiredInvoices->getIds(),
+            'total_invoices_count' => $invoices->count(),
+            'failed_invoice_ids'   => [],
         ];
 
-        $this->trace->info(
-            TraceCode::EXPIRE_INVOICES,
-            $summary
-        );
+        foreach ($invoices as $invoice)
+        {
+            try
+            {
+                $this->expireInvoice($invoice);
+            }
+            catch (\Exception $e)
+            {
+                $summary['failed_invoice_ids'][] = $invoice->getId();
+
+                $this->trace->traceException(
+                    $e,
+                    Trace::ERROR,
+                    TraceCode::INVOICE_EXPIRE_VIA_CRON_FAILED,
+                    ['id' => $invoice->getId()]
+                );
+            }
+        }
+
+        $time = time() - $time;
+
+        $summary['time_taken'] = $time . ' secs';
+
+        $this->trace->debug(TraceCode::INVOICES_EXPIRE_CRON_SUMMARY, $summary);
+
+        $slackMessage = 'Invoices past expire_by, marked expired via cron.';
+
+        $this->slack->queue($slackMessage, $summary, ['channel' => $this->slackTechLogsChannel]);
 
         return $summary;
     }
@@ -350,6 +444,121 @@ class Core extends Base\Core
         $this->repo->saveOrFail($invoice);
     }
 
+    /**
+     * Gets fresh invoice pdf.
+     * Considers MAX_EXPECTED_QUEUE_DELAY as the max time our queue can take to
+     * process job and update the invoice, and if pdf needs to be viewed (sync
+     * call, non frequent) directly we use this method to ensure we see the updated
+     * version.
+     *
+     * @param Entity $invoice
+     *
+     * @return string
+     */
+    public function getFreshInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($now - $invoice->getUpdatedAt() <= self::MAX_EXPECTED_QUEUE_DELAY)
+        {
+            $this->trace->debug(TraceCode::INVOICE_PDF_GEN_SYNC, ['id' => $invoice->getId()]);
+
+            return $this->createInvoicePdf($invoice);
+        }
+        else
+        {
+            return $this->getInvoicePdfIfExistsOrCreate($invoice);
+        }
+    }
+
+    public function getInvoicePdfIfExistsOrCreate(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        $pdfPath = $this->getInvoicePdf($invoice);
+
+        if ($pdfPath !== null)
+        {
+            return $pdfPath;
+        }
+
+        return $this->createInvoicePdf($invoice);
+    }
+
+    public function getInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        $pdf = $invoice->pdf();
+
+        if ($pdf === null)
+        {
+            return null;
+        }
+
+        return (new FileStore\Accessor)
+                    ->id($pdf->getId())
+                    ->merchantId($invoice->getMerchantId())
+                    ->getFile();
+    }
+
+    public function createInvoicePdf(Entity $invoice)
+    {
+        if ($invoice->isTypeInvoice() === false)
+        {
+            return null;
+        }
+
+        //
+        // Single PdfGenerator instance created as part of this class's member,
+        // used multiple times in following line with retry.
+        //
+
+        $this->setPdfGenerator($invoice);
+
+        return $this->generatePdfWithRetry($invoice->getId());
+    }
+
+    /**
+     * Dispatches invoice queue job.
+     *
+     * @param string $mode   - Taking mode as argument just if this method gets
+     *                         invoked from another async queue job.
+     *                         ENHANCEMENT: Long term/Permanent solution is to have all such
+     *                         app variables to be initialized in abstract way.
+     *                         And then we will not have to do such things everywhere.
+     * @param string $action
+     * @param string $id
+     *
+     * @return void
+     */
+    public function dispatchQueueJob(string $mode, string $action, string $id)
+    {
+        $job = (new InvoiceAction($mode, $action, $id));
+
+        $mock = Config::get('queue.mock');
+
+        if ($mock === false)
+        {
+            $queue = Config::get('queue.sqs_invoice_emails');
+
+            $job->onConnection('sqs_multi_default')->onQueue($queue);
+        }
+
+        $this->dispatch($job);
+    }
+
     // -------------------- Protected methods --------------------
 
     protected function updateDraftInvoice(Merchant\Entity $merchant, Entity $invoice, array $input)
@@ -403,6 +612,54 @@ class Core extends Base\Core
         if (isset($input[Entity::SMS_NOTIFY]))
         {
             $invoice->generateSmsStatus($input);
+        }
+
+        if (isset($input[Entity::DRAFT]))
+        {
+            $invoice->generateStatus($input);
+        }
+    }
+
+    protected function validateIfInvoiceCanBeExpired(Entity $invoice)
+    {
+        $count = $this->repo->invoice->getNonFailedPaymentsCount($invoice);
+
+        if ($count !== 0)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_INVOICE_EXPIRE_FAILED,
+                null,
+                [
+                    'invoice_id' => $invoice->getId(),
+                ]);
+        }
+    }
+
+    protected function generatePdfWithRetry(string $id, int $attempt = 0)
+    {
+        $attempt++;
+
+        if ($attempt > self::MAX_ALLOWED_PDF_GEN_ATTEMPTS)
+        {
+            return null;
+        }
+
+        try
+        {
+            return $this->pdfGenerator->generate();
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException(
+                $e,
+                Trace::ERROR,
+                TraceCode::INVOICE_PDF_GEN_FAILED,
+                [
+                    'id'       => $id,
+                    'attempts' => $attempt,
+                ]);
+
+            $this->generatePdfWithRetry($id, $attempt);
         }
     }
 }

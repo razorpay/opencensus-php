@@ -18,6 +18,15 @@ class RefundController extends Controller
         $this->refund = new Payment\Refund\Service;
     }
 
+    public function postRefundCreate()
+    {
+        $input = Request::all();
+
+        $refund = $this->refund->create($input);
+
+        return ApiResponse::json($refund);
+    }
+
     public function getRefund($id)
     {
         $refunds = $this->refund->fetch($id);
@@ -120,6 +129,13 @@ class RefundController extends Controller
     public function postCreateBilldeskCancelledRefunds()
     {
         $data = $this->refund->createBilldeskCancelledRefunds();
+
+        return ApiResponse::json($data);
+    }
+
+    public function postGatewayValidateRefund(string $gateway)
+    {
+        $data = $this->refund->validateUnknownGatewayRefunds($gateway);
 
         return ApiResponse::json($data);
     }

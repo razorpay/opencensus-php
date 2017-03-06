@@ -92,9 +92,6 @@ class Entity extends Base\PublicEntity
     {
         $transferId = $this->getAttribute(self::TRANSFER_ID);
 
-        if ($transferId !== null)
-        {
-            $attributes[self::TRANSFER_ID] = Transfer\Entity::getSignedId($transferId);
-        }
+        $attributes[self::TRANSFER_ID] = Transfer\Entity::getSignedId($transferId);
     }
 }

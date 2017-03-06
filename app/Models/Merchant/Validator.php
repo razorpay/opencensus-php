@@ -146,11 +146,11 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateMerchantForMarketplaceTransfer($account, Entity $merchant, $mode)
+    public function validateMerchantForMarketplaceTransfer($account, $mode)
     {
         if (($account === null) or
-            ($account->isAccount() === false) or
-            ($account->getParentId() !== $merchant->getId()))
+            ($account->isLinkedAccount() === false) or
+            ($account->getParentId() !== $this->entity->getId()))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID,
@@ -190,7 +190,7 @@ class Validator extends Base\Validator
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
         // Dont validate these attributes for Marketplace accounts
-        if ($merchant->isAccount() === true)
+        if ($merchant->isLinkedAccount() === true)
         {
             return;
         }
@@ -234,6 +234,11 @@ class Validator extends Base\Validator
 
     protected function validateAutoRefundDelay($attribute, $autoRefundDelayPeriod)
     {
+        if ($autoRefundDelayPeriod === null)
+        {
+            return;
+        }
+
         $autoRefundDelay = explode(' ', $autoRefundDelayPeriod);
 
         $min = $max = null;

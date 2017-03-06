@@ -159,7 +159,7 @@ class Core extends Base\Core
         $methods->merchant()->associate($merchant);
 
         // No default methods are enabled for Marketplace accounts
-        if ($merchant->isAccount() === false)
+        if ($merchant->isLinkedAccount() === false)
         {
             $methods->setCreditCard(true);
             $methods->setDebitCard(true);

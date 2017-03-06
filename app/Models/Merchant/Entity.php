@@ -49,6 +49,7 @@ class Entity extends Base\PublicEntity
 
     // constants
     const AUTO_REFUND_DELAY_DEFAULT = 432000; // 5 days
+    const SETTLEMENT_SCHEDULE_DEFAULT_DELAY = 3;
 
     /**
      * Refers to methods relation and not a property;
@@ -153,7 +154,7 @@ class Entity extends Base\PublicEntity
         self::ACTIVATED_AT           => null,
         self::RECEIPT_EMAIL_ENABLED  => true,
         self::HOLD_FUNDS             => false,
-        self::SETTLEMENT_SCHEDULE    => 3,
+        self::SETTLEMENT_SCHEDULE    => self::SETTLEMENT_SCHEDULE_DEFAULT_DELAY,
         self::SETTLEMENT_SCHEDULE_ID => null,
         self::FEE_BEARER             => FeeBearer::PLATFORM,
         self::BRAND_COLOR            => null,
@@ -231,8 +232,8 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::LIVE);
     }
 
-    // Is the merchant a sub-account under Marketplace
-    public function isAccount()
+    // Is the merchant a linked-account under Marketplace
+    public function isLinkedAccount()
     {
         return $this->isAttributeNotNull(self::PARENT_ID);
     }
@@ -270,7 +271,7 @@ class Entity extends Base\PublicEntity
     public function getEnabledFeatures()
     {
         return $this->features
-                    ->pluck(\RZP\Models\Feature\Entity::NAME)
+                    ->pluck(Feature\Entity::NAME)
                     ->toArray();
     }
 
@@ -422,7 +423,7 @@ class Entity extends Base\PublicEntity
 
     public function transfers()
     {
-        return $this->morphMany('RZP\Models\Transfer\Entity', 'source');
+        return $this->morphMany('RZP\Models\Transfer\Entity', 'to');
     }
 
     public function merchantDetail()
@@ -607,7 +608,7 @@ class Entity extends Base\PublicEntity
 
     /**
      * check if api or gateway should do currency conversion for merchant
-     * @return [type] [description]
+     * @return bool
      */
     public function convertOnApi()
     {

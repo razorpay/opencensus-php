@@ -298,7 +298,7 @@ trait Callback
         }
         else
         {
-            $this->setPaymentError($e);
+            $this->setPaymentError($e, TraceCode::PAYMENT_AUTH_PENDING);
         }
 
         switch ($code)

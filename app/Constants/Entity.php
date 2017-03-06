@@ -70,6 +70,7 @@ class Entity
     const CUSTOMER_TRANSACTION  = 'customer_transaction';
     const OFFER                 = 'offer';
     const COUPON                = 'coupon';
+    const PAYOUT                = 'payout';
 
     //
     // Gateway entities

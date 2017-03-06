@@ -38,7 +38,10 @@ class Gateway
     const WALLET_OLAMONEY    = 'wallet_olamoney';
     const WALLET_PAYUMONEY   = 'wallet_payumoney';
     const WALLET_PAYZAPP     = 'wallet_payzapp';
-    const MARKETPLACE        = 'marketplace';
+
+    const ACQUIRER_HDFC      = 'hdfc';
+    const ACQUIRER_ICIC      = 'icic';
+    const ACQUIRER_AXIS      = 'axis';
 
     const NOT_SUPPORTED      = 'not_supported';
     const SUPPORTED          = 'supported';
@@ -61,6 +64,14 @@ class Gateway
     const REFUND_TIMEOUT_HANDLED_GATEWAYS = [
         self::WALLET_FREECHARGE,
         self::BILLDESK,
+    ];
+
+    //
+    // Gateways for which we can validate the refunds
+    // if they are successful after they are 'initiated'
+    //
+    const UNKNOWN_REFUNDS_VALIDATION_GATEWAYS = [
+        self::WALLET_FREECHARGE
     ];
 
     public static $channels = [
@@ -88,7 +99,6 @@ class Gateway
         self::FIRST_DATA         => Settlement\Channel::KOTAK,
         self::UPI_ICICI          => Settlement\Channel::KOTAK,
         self::CYBERSOURCE        => Settlement\Channel::KOTAK,
-        self::MARKETPLACE        => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -139,10 +149,6 @@ class Gateway
         Method::UPI => [
             self::UPI_ICICI,
             self::UPI_IDFC,
-        ],
-
-        Method::TRANSFER => [
-            self::MARKETPLACE,
         ],
     ];
 
@@ -280,6 +286,7 @@ class Gateway
         self::WALLET_AIRTELMONEY,
         self::WALLET_OLAMONEY,
         self::WALLET_FREECHARGE,
+        self::WALLET_JIOMONEY,
         self::UPI_ICICI,
         self::UPI_IDFC,
     );
@@ -366,8 +373,18 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS,
-        IFSC::KKBK => Gateway::NETBANKING_KOTAK);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+
+    /**
+     * For the banks that require a refundfile generated everyday,
+     * we map IFSC codes to Gateways
+     *
+     * @var array
+     */
+    public static $refundFileNetbankingGateways = array(
+        IFSC::HDFC => Gateway::NETBANKING_HDFC,
+        IFSC::KKBK => Gateway::NETBANKING_KOTAK,
+        IFSC::UTIB => Gateway::NETBANKING_AXIS);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
@@ -450,7 +467,7 @@ class Gateway
      * @param string $networkCode
      * @return bool
      */
-    public static function supportsAuthAndCapture($gateway, $networkCode = null)
+    public static function supportsAuthAndCapture($gateway, $networkCode = null): bool
     {
         $arrayKeys = array_keys(self::$authAndCapture);
 

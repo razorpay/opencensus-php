@@ -16,23 +16,17 @@ class Service extends Base\Service
 
     public function createForRefund(array $input) : string
     {
-        return $this->repo->transaction(function () use ($input)
-        {
-            $customerTxn = $this->core
-                                ->createForCustomerRefund($input, $this->merchant);
+        $customerTxn = $this->core
+                            ->createForCustomerRefund($input, $this->merchant);
 
-            return $customerTxn->getId();
-        });
+        return $customerTxn->getId();
     }
 
     public function createForDebit(array $input) : string
     {
-        return $this->repo->transaction(function () use ($input)
-        {
-            $customerTxn = $this->core
-                                ->createForCustomerDebit($input, $this->merchant);
+        $customerTxn = $this->core
+                            ->createForCustomerDebit($input, $this->merchant);
 
-            return $customerTxn->getId();
-        });
+        return $customerTxn->getId();
     }
 }

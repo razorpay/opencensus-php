@@ -16,15 +16,13 @@ use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
-use RZP\Models\Transfer;
-use RZP\Models\Reversal;
 use RZP\Trace\TraceCode;
-use RZP\Models\Feature\Constants as Feature;
 
 trait Refund
 {
     /**
      * Refunds a payment
+     *
      * @param  Payment\Entity   $payment     Payment Id
      * @param  array            $input  Refund input params
      * @param  Batch\Entity     $batch
@@ -35,7 +33,7 @@ trait Refund
     {
         $refund = $this->buildRefundEntity($payment, $input, $batch);
 
-        $this->processRefund($input);
+        $this->processRefund();
 
         return $refund;
     }
@@ -234,17 +232,17 @@ trait Refund
     }
 
     /**
-     * Refund a payment that has Marketplace transfers
+     * Process refund on a payment that has Marketplace transfers
      *
-     * @param  array $input
+     * @param array $input
      *
      * @throws Exception\BadRequestValidationFailureException
      */
-    public function refundPaymentWithTransfers(array $input)
+    public function processRefundWithTransfers(array $input)
     {
         if (isset($input['reversals']) === false)
         {
-            $input['reversals'] = [];
+            return;
 
             // throw new Exception\BadRequestValidationFailureException(
             //         'The reversals parameter is required for this refund request');
@@ -253,6 +251,8 @@ trait Refund
         $this->repo->transaction(function () use ($input)
         {
             $this->processReversals($input['reversals']);
+
+            unset($input['reversals']);
         });
     }
 
@@ -346,18 +346,18 @@ trait Refund
 
     /**
      * Get the type of refund being processed - FULL / PARTIAL,
-     * based on the input amount and amount already refunded
+     * based on the refund amount and amount already refunded
      *
-     * @param  Payment\Entity $payment
-     * @param  array          $input
+     * @param array $input
+     *
      * @return string
      */
-    protected function getPaymentRefundType(Payment\Entity $payment, array $input)
+    protected function getPaymentRefundType(array $input)
     {
         $type = Payment\Refund\Status::PARTIAL;
 
         if ((isset($input['amount']) === false) or
-            ((int) $input['amount'] === $payment->getAmountUnrefunded()))
+            ((int) $input['amount'] === $this->payment->getAmountUnrefunded()))
         {
             $type = Payment\Refund\Status::FULL;
         }
@@ -437,6 +437,24 @@ trait Refund
         }
     }
 
+    protected function callGatewayForRefundValidation(array $data)
+    {
+        try
+        {
+            return $this->callGatewayFunction(
+                Payment\Action::VALIDATE_UNKNOWN_REFUND, $data);
+        }
+        catch (Exception\BaseException $ex)
+        {
+            $this->tracePaymentFailed(
+                $ex->getError(),
+                TraceCode::GATEWAY_REFUND_VALIDATION_FAILED
+            );
+
+            throw $ex;
+        }
+    }
+
     protected function refundOnGateway($data)
     {
         $gateway = $data['payment']['gateway'];
@@ -448,10 +466,7 @@ trait Refund
             $paymentId = $data['payment']['id'];
             $refAmount = $data['amount'];
 
-            if ((($paymentId === '76xxvf76XSDOhE') and ($refAmount === 25440)) or
-                (($paymentId === '76ucv3KB99NVjI') and ($refAmount === 45850)) or
-                (($paymentId === '76XitTS4KLTTP6') and ($refAmount === 21880)) or
-                (($paymentId === '76r7XQIVAJJSsX') and ($refAmount === 20768)))
+            if (($paymentId === '6pHu2RnPzTeI51') and ($refAmount === 784000))
             {
                 return;
             }
@@ -583,12 +598,7 @@ trait Refund
 
         $refund->setBaseAmount();
 
-        //
-        // For payments that have been transferred, we validate merchant
-        // balance after reversals have been processed for those transfers
-        //
-        if (($this->payment->isCaptured() === true) and
-            ($this->payment->isTransferred() === false))
+        if ($this->payment->isCaptured() === true)
         {
             $this->validateMerchantBalance($refund);
         }
@@ -600,7 +610,7 @@ trait Refund
         return $refund;
     }
 
-    protected function processRefund(array $input)
+    protected function processRefund()
     {
         $payment = $this->refund->payment;
 
@@ -613,23 +623,9 @@ trait Refund
             $data['card'] = $card->toArray();
         }
 
-        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment, $input)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($data, $payment)
         {
-            // Determine if transfer reversals should be processed along with the refund
-            $processReversals = $this->shouldProcessReversals($this->payment, $input);
-
-            if ($processReversals === true)
-            {
-                $this->refundPaymentWithTransfers($input);
-
-                $this->validateMerchantBalance($this->refund);
-            }
-
-            if ($payment->isTransfer() === true)
-            {
-                ; // Marketplace: do nothing, refunds on transfer payments are internal
-            }
-            else if ($payment->getTransactionId() !== null)
+            if ($payment->getTransactionId() !== null)
             {
                 $this->refundOnGateway($data);
 
@@ -776,37 +772,18 @@ trait Refund
     {
         $this->validatePaymentForRefund($payment);
 
-        if ($payment->isTransfer() === true)
+        $this->mutex->acquireAndRelease($payment->getId(), function() use ($input, $payment)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_REFUND_NOT_SUPPORTED);
-        }
+            // Determine if transfer reversals should be processed along with the refund
+            $processReversals = $this->shouldProcessReversals($payment, $input);
+
+            if ($processReversals === true)
+            {
+                $this->processRefundWithTransfers($input);
+            }
+        });
 
         return $this->refund($payment, $input, $batch);
-    }
-
-    /**
-     * Refund an internal marketplace payment (of method = transfer)
-     *
-     * @param  Payment\Entity $payment
-     * @param  int            $amount
-     *
-     * @return Payment\Refund\Entity
-     * @throws Exception\BadRequestException
-     */
-    protected function refundTransferPayment(Payment\Entity $payment, int $amount)
-    {
-        if ($payment->isTransfer() === false)
-        {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_METHOD_NOT_TRANSFER);
-        }
-
-        $this->validatePaymentForRefund($payment);
-
-        $input['amount'] = $amount;
-
-        return $this->refund($payment, $input);
     }
 
     protected function validatePaymentForRefund(Payment\Entity $payment)
@@ -894,5 +871,25 @@ trait Refund
         $this->refund->setGatewayRefunded(true);
 
         $this->recordTransactionAndUpdatePaymentForRefund();
+    }
+
+    public function validateUnknownGatewayRefund(Payment\Refund\Entity $refund)
+    {
+        $payment = $refund->payment;
+
+        $this->setPaymentAndRefundInfo($refund, $payment);
+
+        assert ($refund->getTransactionId() !== null);
+
+        assert ($payment->getTransactionId() !== null);
+
+        $data = [
+            'payment'   => $payment->toArrayGateway(),
+            'refund'    => $refund->toArrayGateway(),
+            'amount'    => $refund->getAmount(),
+            'currency'  => $refund->getCurrency()
+        ];
+
+        return $this->callGatewayForRefundValidation($data);
     }
 }

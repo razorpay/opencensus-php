@@ -71,11 +71,22 @@ class Merchant extends Base
                 'pricing_plan_id' => '1hDYlICobzOCYt'
             ]);
 
-        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => '0']);
+        $balance = 0;
 
-        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => '0']);
+        if (isset($data['balance']) === true)
+        {
+            $balance = $data['balance'];
+        }
 
-        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId]);
+        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test');
 
         return $merchant;
     }
@@ -156,7 +167,7 @@ class Merchant extends Base
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
 
-    public function holdFunds($id, $hold = true)
+    public function holdFunds($id = '10000000000000', $hold = true)
     {
         return $this->edit($id, ['hold_funds' => $hold]);
     }
