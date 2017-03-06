@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const STORE                 = 'store';
     const LOCATION              = 'location';
     const BUCKET                = 'bucket';
+    const REGION                = 'region';
     const PERMISSION            = 'permission';
     const ENCRYPTION_METHOD     = 'encryption_method';
     const PASSWORD              = 'password';
@@ -55,6 +56,7 @@ class Entity extends Base\PublicEntity
         self::STORE,
         self::LOCATION,
         self::BUCKET,
+        self::REGION,
         self::PERMISSION,
         self::ENCRYPTION_METHOD,
         self::PASSWORD,
@@ -75,6 +77,7 @@ class Entity extends Base\PublicEntity
         self::STORE,
         self::LOCATION,
         self::BUCKET,
+        self::REGION,
         self::PERMISSION,
         self::ENCRYPTION_METHOD,
         self::METADATA,
@@ -93,6 +96,7 @@ class Entity extends Base\PublicEntity
         self::COMMENTS          => null,
         self::MIME              => null,
         self::BUCKET            => null,
+        self::REGION            => null,
         self::PERMISSION        => null,
         self::ENCRYPTION_METHOD => null,
         self::PASSWORD          => null,
@@ -134,6 +138,11 @@ class Entity extends Base\PublicEntity
     public function setExtension($extension)
     {
         $this->setAttribute(self::EXTENSION, $extension);
+    }
+
+    public function setRegion($region)
+    {
+        $this->setAttribute(self::REGION, $region);
     }
 
     public function setBucket($bucket)
@@ -232,6 +241,11 @@ class Entity extends Base\PublicEntity
     public function getBucket()
     {
         return $this->getAttribute(self::BUCKET);
+    }
+
+    public function getRegion()
+    {
+        return $this->getAttribute(self::REGION);
     }
 
     public function getLocation()
