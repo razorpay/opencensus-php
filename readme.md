@@ -43,7 +43,7 @@
 ### Common Instruction
 
 * `chmod -R o+wx storage/`
-* `php composer.phar install` to install project dependencies
+* `composer install` to install project dependencies # Google online on how to install composer globally.
 * Create 2 databases (one is for live and another for test accounts). (`api_live`, `api_test` are sample names)
 * Copy over `environment/.env.sample` to `environment/.env.dev` and provide both database usernames and password
 * Copy over `environment/env.sample.php` to `environment/env.php`. This specifies the `dev` environment for local development.
