@@ -159,7 +159,7 @@ class Creator extends Base\Core
     /**
      * Set the Mime of File Store
      *
-     * @param $mime
+     * @param string $mime Mime
      *
      * @return Creator object
      */
@@ -309,7 +309,7 @@ class Creator extends Base\Core
 
         $this->upload();
 
-        $this->associateMerchantWithFile();
+        $this->associateMerchantToFile();
 
         $this->file->setSize(filesize($this->filePath));
 
@@ -334,6 +334,8 @@ class Creator extends Base\Core
 
     /**
      * Validates the Content before saving
+     *
+     * @throws Exception\LogicException
      */
     protected function validateBeforeSave()
     {
@@ -344,6 +346,8 @@ class Creator extends Base\Core
 
     /**
      * Validates the Mime and Extension before uploading
+     *
+     * @throws Exception\BadRequestValidationFailureException
      */
     protected function validateBeforeUpload()
     {
@@ -362,18 +366,8 @@ class Creator extends Base\Core
      */
     protected function upload()
     {
-        // For S3, we get Bucket Name
-        // For other drivers we get Directory name and store as Bucket
-        if ($this->file->getStore() === Store::S3)
-        {
-            $bucket = $this->storageHandler->getBucketName($this->file->getType(), $this->env);
-        }
-        else
-        {
-            $bucket = $this->storageHandler->getSubDirectory($this->file->getType(), $this->env);
-        }
-
-        $this->file->setBucket($bucket);
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(), $this->env);
 
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
@@ -384,9 +378,13 @@ class Creator extends Base\Core
             'metadata'  => $this->file->getMetadata(),
         ];
 
-        $location = $this->storageHandler->save($bucket, $fileDetails);
+        $location = $this->storageHandler->save($bucketConfig, $fileDetails);
 
         $this->file->setLocation($fileDetails['key']);
+
+        $this->file->setBucket($bucketConfig['name']);
+
+        $this->file->setRegion($bucketConfig['region']);
     }
 
     /**
@@ -420,13 +418,8 @@ class Creator extends Base\Core
         }
     }
 
-    /**
-     * Write to Text File
-     */
     protected function writeTextFile()
     {
-        $oldmask = umask(0);
-
         $fileName = $this->file->getName() . '.' . $this->file->getExtension();
 
         $fullPath = $this->getFullFilePath();
@@ -435,17 +428,7 @@ class Creator extends Base\Core
 
         if (file_exists($dir) === false)
         {
-            $result = mkdir($dir, 0777, true);
-
-            if ($result === false)
-            {
-                $this->trace->warning(
-                    TraceCode::FILE_STORE_MKDIR_FAILED,
-                    [
-                        'dir'  => $dir,
-                        'path' => $fullPath,
-                    ]);
-            }
+            (new Utility)->callFileOperation('mkdir', [$dir, 0777, true]);
         }
 
         $file = fopen($fullPath, 'w');
@@ -458,15 +441,9 @@ class Creator extends Base\Core
             // This step is important because file can be created
             // via different users (www-data or ubuntu (via queue))
             //
-            $result = chmod($fullPath, 0777);
-
-            if ($result === false)
+            if (substr(sprintf('%o', fileperms($fullPath)), -3) !== '777')
             {
-                $this->trace->warning(
-                    TraceCode::FILE_PERMISSION_CHANGE_FAILED,
-                    [
-                        'path' => $fullPath
-                    ]);
+                (new Utility)->callFileOperation('chmod', [$fullPath, 0777]);
             }
         }
         catch (\Exception $e)
@@ -479,8 +456,6 @@ class Creator extends Base\Core
                     'path' => $fullPath
                 ]);
         }
-
-        umask($oldmask);
 
         $this->createUploadedFile($fullPath, $fileName);
     }
@@ -508,7 +483,7 @@ class Creator extends Base\Core
         $this->filePath = $filePath;
     }
 
-    protected function associateMerchantWithFile()
+    protected function associateMerchantToFile()
     {
         if ($this->merchant !== null)
         {

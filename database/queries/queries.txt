@@ -1719,6 +1719,9 @@ ALTER TABLE daily_settlements
     ADD COLUMN type VARCHAR(50) DEFAULT NULL AFTER id,
     CHANGE COLUMN `settlement_count` `total_count` INTEGER NOT NULL;
 
+ALTER TABLE files
+    ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;
+
 # --- Marketplace + Openwallet ---
 
 ALTER TABLE merchant_banks
