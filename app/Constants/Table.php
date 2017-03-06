@@ -14,6 +14,8 @@ class Table
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const OFFER                 = 'offers';
+    const COUPON                = 'coupons';
     const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
@@ -47,8 +49,7 @@ class Table
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';
     const MERCHANT_TERMINAL     = 'merchant_terminal';
-    const OFFER                 = 'offers';
-    const COUPON                = 'coupons';
+    const MERCHANT_SCHEDULE     = 'merchant_schedule';
     const MERCHANT_OFFER        = 'merchant_offer';
 
     // organization roles permissions
