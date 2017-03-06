@@ -13,6 +13,8 @@ class Component
     const FEE           = 'fee';
     const SERVICE_TAX   = 'service_tax';
     const FEE_CREDITS   = 'fee_credits';
+    const TRANSFER      = 'transfer';
+    const REVERSAL      = 'reversal';
 
     public static function validateComponent($component)
     {

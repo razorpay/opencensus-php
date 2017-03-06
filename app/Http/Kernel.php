@@ -32,6 +32,7 @@ class Kernel extends HttpKernel
         ],
         'api' => [
             // 'throttle:60,1',
+            \RZP\Http\Middleware\EventTracker::class
         ],
     ];
 
@@ -42,6 +43,6 @@ class Kernel extends HttpKernel
      */
     protected $routeMiddleware = [
         'auth' => \RZP\Http\Middleware\Authenticate::class,
-        'admin_access' => \RZP\Http\Middleware\AdminAccess::class
+        'admin_access' => \RZP\Http\Middleware\AdminAccess::class,
     ];
 }

@@ -141,6 +141,60 @@ class CardTest extends TestCase
         $this->assertArrayNotHasKey('number', $card);
     }
 
+    public function testUpdateSavedCard()
+    {
+        // Create card with missing fields
+        $card = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => null,
+                    'country' => null,
+                    'network' => 'MasterCard',
+                ]);
+
+        // Create IIN with missing info relating to card
+        $iin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '453211',
+                    'issuer'  => 'ICIC',
+                    'country' => 'IN',
+                    'network' => 'Visa',
+                ]);
+
+        $amexCard = $this->fixtures->create(
+                'card',
+                [
+                    'iin'     => '553212',
+                    'country' => null,
+                    'network' => 'American Express',
+                ]);
+
+        $amexIin = $this->fixtures->create(
+                'iin',
+                [
+                    'iin'     => '553212',
+                    'country' => 'IN',
+                    'network' => 'American Express',
+                ]);
+
+        $this->ba->appAuthTest();
+
+        $this->startTest();
+
+        $card = $this->getEntityById('card', $card->getId(), true);
+
+        // Assert that card info has been populated
+        $this->assertEquals($iin->getCountry(), $card['country']);
+        $this->assertEquals($iin->getNetwork(), $card['network']);
+
+        $amexCard = $this->getEntityById('card', $amexCard->getId(), true);
+
+        // Assert that Amex country did not get updated
+        $this->assertNull($amexCard['country']);
+    }
+
     public function testCardWhenNotEnabledOnLive()
     {
         $this->fixtures->merchant->disableCard('10000000000000');

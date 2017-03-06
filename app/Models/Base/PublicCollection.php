@@ -92,7 +92,9 @@ class PublicCollection extends Collection
     /**
      * Get a dictionary keyed by given attribute
      *
+     * @param null                $field
      * @param  \ArrayAccess|array $items
+     *
      * @return array
      */
     public function getDictionaryByAttribute($field = null, $items = null)

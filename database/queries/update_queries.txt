@@ -1,4 +1,4 @@
-# Please add all entity update related queries here.
+# Please add all entity UPDATE related queries here.
 # Fixes freecharge payment auth overwritten due to timeout
 
 UPDATE payments
@@ -37,7 +37,7 @@ UPDATE transactions SET entity_id = '771SQRXMmIFk6z' WHERE id = '7BiS2ydjjEvYjX'
 UPDATE refunds SET id = '771SQape9i3V33' WHERE id = '7BiSeqyyAEJhG5';
 UPDATE transactions SET entity_id = '771SQape9i3V33' WHERE id = '7BiSes2dpFKCNT';
 
-# Update Terminals set gateway_acquirer
+# UPDATE Terminals set gateway_acquirer
 UPDATE terminals
     SET gateway_acquirer='hdfc'
     WHERE gateway='hdfc';
@@ -68,8 +68,26 @@ delete from fees_breakup where id in ('6ehOVBvjfuslSF','6ehOVCBNcL46LZ','6ehOVCQ
 '6ekSEIRqN28DEG','6ekSEIh2H3MsdS','6emnvYn7VY9t8t','6emnvZ32uGgYAc','6emnvZa5saFu6V','6esQVfmFCrRvyG','6esQVg0jdQnxkY',
 '6esQVgI6SQzYif')
 
-# update billdesk refund entity with gateway's txn id
-update billdesk set refundId = 'HICI5095780548' where id = 967024
+# UPDATE billdesk refund entity with gateway's txn id
+UPDATE billdesk SET RefundId = 'HICI5095780548' WHERE id = 967024
 
 # capture had timed out. it was actually successful
-update payments set gateway_captured = 1 where id = '7MkcS3XRIUhb5y'
+UPDATE payments SET gateway_captured = 1 WHERE id = '7MkcS3XRIUhb5y'
+
+# UPDATE billdesk refund entity with gateway's txn id
+UPDATE billdesk SET RefundId = 'HSBI51463839221' WHERE id = 980657;
+
+# delete duplicate txn and corresponding fees_breakup. These are fee breakup row ids
+DELETE FROM fees_breakup WHERE id in ('6eiJcKmIrQG524', '6eiJcLJwPXF9rZ', '6eiJcLrOXY7X0P') AND transaction_id = '58JNk9BtEJpaMh';
+DELETE FROM transactions WHERE id = '58JNk9BtEJpaMh';
+
+# two txns - copy reconciled data to settled txn
+UPDATE transactions SET reconciled_at = 1467718868, gateway_fee = 802, gateway_service_tax = 102 WHERE id = '55YfAhjCSJqV7m';
+UPDATE payments SET transaction_id = '55YfAhjCSJqV7m' WHERE id = '55YYZJBAaA3CIR'
+DELETE FROM fees_breakup WHERE id in ('6ehqW7TPPf6fhd', '6ehqW7iodAcZ1Y', '6ehqW7xZx9YHBV') AND transaction_id = '55YfEvFAPrmf72';
+DELETE FROM transactions WHERE id = '55YfEvFAPrmf72';
+
+UPDATE transactions SET reconciled_at = 1467719197, gateway_fee = 10320, gateway_service_tax = 1307 WHERE id = '59TRu4jEt06jxw';
+UPDATE payments SET transaction_id = '59TRu4jEt06jxw' WHERE id = '59TOmc805gVS7i'
+DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYxSVOCEEbXF') AND transaction_id = '59TRvHDeSgNyiX';
+DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';

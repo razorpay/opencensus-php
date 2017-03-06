@@ -144,7 +144,83 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function isRefundRequired(array $input)
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+
+        $this->trace->info(
+            TraceCode::MIGS_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
+
+    protected function canForceRefund(array $input)
+    {
+        $isRefundRequired = $this->isRefundRequired($input, false);
+
+        if ($isRefundRequired === false)
+        {
+            return false;
+        }
+
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayEntities = $this->repo->findByPaymentId($paymentId);
+
+        $gatewayEntitiesCount = $gatewayEntities->count();
+
+        //
+        // There can 2-3 records. For authorize, capture and reverse (?).
+        //
+        if (($gatewayEntitiesCount !== 2) and
+            ($gatewayEntitiesCount !== 3))
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_ENTITIES_COUNT_UNEXPECTED,
+                [
+                    'count' => $gatewayEntitiesCount,
+                ]);
+
+            return false;
+        }
+
+        foreach ($gatewayEntities as $gatewayEntity)
+        {
+            if ($gatewayEntity->getAction() === Base\Action::REFUND)
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_ENTITY_UNEXPECTED_ACTION,
+                    [
+                        'action' => $gatewayEntity->getAction(),
+                        'gateway_entity' => $gatewayEntity->toArrayPublic(),
+                    ]);
+
+                return false;
+            }
+        }
+
+        // The transaction id for the refund should be present. Otherwise, it means that
+        // the refund should come via normal flow and not via manualGatewayRefund.
+        assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
+    protected function isRefundRequired(array $input, bool $checkTransaction = true)
     {
         $paymentId = $input['payment']['id'];
         $refundAmount = $input['amount'];
@@ -167,7 +243,8 @@ class Gateway extends Base\Gateway
         // we assume that the payment has been refunded on gateway and refund should
         // not be called again.
         //
-        if (($input['payment']['transaction_id'] === null) or
+        if ((($input['payment']['transaction_id'] === null) and
+             ($checkTransaction === true))or
             ($refundedEntities->count() > 0) or
             ((isset($verifyContent['vpc_RefundedAmount']) === true) and
              ($verifyContent['vpc_RefundedAmount'] !== '0')))
