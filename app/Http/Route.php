@@ -3,6 +3,7 @@
 namespace RZP\Http;
 
 use ApiResponse;
+use RZP\Models\Feature\Constants as Feature;
 
 use RZP\Models\Admin\Permission\Name as Permission;
 
@@ -51,6 +52,8 @@ final class Route
         'batch_retry'                             => ['post',     'batches/{id}/retry',                             'BatchController@retryBatch'                                        ],
         'batch_download_file'                     => ['get',      'batches/{id}/download',                          'BatchController@downloadBatch'                                     ],
         'payment_capture'                         => ['post',     'payments/{id}/capture',                          'PaymentController@postCapture'                                     ],
+        'payment_fetch_transfers'                 => ['get',      'payments/{id}/transfers',                        'PaymentController@getTransfers'                                    ],
+        'payment_transfer'                        => ['post',     'payments/{id}/transfers',                        'PaymentController@postTransfer'                                    ],
         'payment_verify'                          => ['get',      'payments/{id}/verify',                           'PaymentController@getVerify'                                       ],
         'payment_force_authorize'                 => ['post',     'payments/{id}/force_authorize',                  'PaymentController@postForceAuthorize'                              ],
         'payment_cancel'                          => ['get',      'payments/{id}/cancel',                           'PaymentController@postCancel'                                      ],
@@ -291,6 +294,8 @@ final class Route
         'customer_delete_address'                 => ['delete',   'customers/{id}/addresses/{address_id}',          'CustomerController@deleteAddress'                                  ],
         'customer_fetch_addresses'                => ['get',      'customers/{id}/addresses',                       'CustomerController@getAddresses'                                   ],
         'customer_set_primary_address'            => ['put',      'customers/{id}/addresses/{address_id}/primary',  'CustomerController@putPrimaryAddress'                              ],
+        'customer_get_wallet_balance'             => ['get',      'customers/{id}/balance',                         'CustomerController@getCustomerWalletBalance'                       ],
+        'customer_get_wallet_statement'           => ['get',      'customers/{id}/statement',                       'CustomerController@getCustomerWalletStatement'                     ],
         'invoice_create'                          => ['post',     'invoices',                                       'InvoiceController@createInvoice'                                   ],
         'invoice_fetch'                           => ['get',      'invoices/{id}',                                  'InvoiceController@getInvoice'                                      ],
         'invoice_fetch_multiple'                  => ['get',      'invoices',                                       'InvoiceController@getInvoices'                                     ],
@@ -438,6 +443,11 @@ final class Route
         'payout_fetch_multiple'                   => ['get',      'payouts',                                        'PayoutController@getPayouts'                                       ],
         'payout_create'                           => ['post',     'payouts',                                        'PayoutController@postPayout'                                       ],
         'payout_initiate'                         => ['post',     'payouts/initiate/{channel?}',                    'PayoutController@postPayoutInitiate'                               ],
+        'transfer_fetch'                          => ['get',      'transfers/{id}',                                 'TransferController@getTransfer'                                    ],
+        'transfer_fetch_multiple'                 => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
+        'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
+        'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
+        'transfer_create_reversal'                => ['post',     'transfers/{id}/reversal',                        'TransferController@postTransferReversal'                           ],
     );
 
     public static $public = array(
@@ -532,6 +542,8 @@ final class Route
         'payment_create_upi',
         'payment_refund',
         'payment_capture',
+        'payment_fetch_transfers',
+        'payment_transfer',
         'payment_fetch_by_id',
         'payment_fetch_multiple',
         'payment_fetch_refunds',
@@ -572,6 +584,13 @@ final class Route
         'payout_fetch_by_id',
         'payout_fetch_multiple',
         'payout_create',
+        'customer_get_wallet_balance',
+        'customer_get_wallet_statement',
+        'transfer_fetch_multiple',
+        'transfer_fetch',
+        'transfer_edit',
+        'transfer_create',
+        'transfer_create_reversal',
     );
 
     public static $internal = array(
@@ -997,23 +1016,34 @@ final class Route
         'merchant_methods',
     );
 
-    public static $routeNameToFeatureMap = array(
-        'feature_dummy'                 => 'dummy',
-        'merchant_sub_create'           => 'aggregator',
-        'customer_delete'               => 'tokens',
-        'customer_delete_token'         => 'tokens',
-        'customer_fetch_tokens'         => 'tokens',
-        'payment_create_wallet'         => 's2swallet',
-        'payment_create_upi'            => 's2supi',
-        'payment_create_recurring'      => 'recurring',
-        'payment_create_private_old'    => 's2s',
-        'setl_combined_report'          => 'setl_report',
-        'reports_transaction_broking'   => 'broking_report',
-        'payment_payout'                => 'payout',
-        'payout_create'                 => 'payout',
-        'payout_fetch_by_id'            => 'payout',
-        'payout_fetch_multiple'         => 'payout',
-    );
+    /**
+     * A route can belong to multiple features, mapped here
+     */
+    public static $routeNameToFeaturesMap = [
+        'feature_dummy'                     => [Feature::DUMMY],
+        'merchant_sub_create'               => [Feature::AGGREGATOR, Feature::MARKETPLACE],
+        'customer_delete'                   => [Feature::TOKENS],
+        'customer_delete_token'             => [Feature::TOKENS],
+        'customer_fetch_tokens'             => [Feature::TOKENS],
+        'payment_create_wallet'             => [Feature::S2SWALLET],
+        'payment_create_upi'                => [Feature::S2SUPI],
+        'payment_create_recurring'          => [Feature::RECURRING],
+        'payment_create_private_old'        => [Feature::S2S],
+        'setl_combined_report'              => [Feature::SETL_REPORT],
+        'reports_transaction_broking'       => [Feature::BROKING_REPORT],
+        'payment_payout'                    => [Feature::PAYOUT],
+        'payout_create'                     => [Feature::PAYOUT],
+        'payout_fetch_by_id'                => [Feature::PAYOUT],
+        'payout_fetch_multiple'             => [Feature::PAYOUT],
+        'customer_get_wallet_balance'       => [Feature::OPENWALLET],
+        'customer_get_wallet_statement'     => [Feature::OPENWALLET],
+        'payment_transfer'                  => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'payment_fetch_transfers'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_create'                   => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_fetch_multiple'           => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_fetch'                    => [Feature::MARKETPLACE, Feature::OPENWALLET],
+        'transfer_create_reversal'          => [Feature::MARKETPLACE, Feature::OPENWALLET],
+    ];
 
     /*
      * Routes that can be accessed by other org admins.
@@ -1291,10 +1321,17 @@ final class Route
         return self::$apiRoutes[$name];
     }
 
-    public function isCurrentRouteInFeatureMap()
+    /**
+     * Returns an array of feature names to which the current route is mapped under
+     *
+     * @return array
+     */
+    public function getFeaturesForRoute() : array
     {
-        $route = $this->getCurrentRouteName();
+        $currentRoute = $this->getCurrentRouteName();
 
-        return (array_key_exists($route, self::$routeNameToFeatureMap));
+        $features = self::$routeNameToFeaturesMap;
+
+        return $features[$currentRoute] ?? [];
     }
 }

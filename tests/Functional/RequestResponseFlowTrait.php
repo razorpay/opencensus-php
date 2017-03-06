@@ -28,7 +28,6 @@ trait RequestResponseFlowTrait
             {
                 $response = $this->sendRequest($data['request']);
             }
-
         }
         catch (Exception\BaseException $e)
         {
@@ -228,6 +227,13 @@ trait RequestResponseFlowTrait
         if ($this->ba->isPublicAuth())
         {
             $request['content']['key_id'] = $this->ba->getKey();
+        }
+
+        if ($this->ba->isAccountAuth() === true)
+        {
+            $accountHeader = $this->ba->getAccountHeader();
+
+            $request['server'] += $this->transformHeadersToServerVars($accountHeader);
         }
 
         /**

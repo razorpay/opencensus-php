@@ -191,7 +191,14 @@ trait CommonTrait
 
         $shouldSettle = (($txn->getChannel() === $channel) and
                          ($merchant->holdFunds() === false));
-        assert ($merchant->bankAccount !== null);
+
+        if ($merchant->bankAccount === null)
+        {
+            throw new Exception\LogicException(
+                'No bank account mapped for merchant settlement',
+                null,
+                ['merchant_id' => $merchant->getId()]);
+        }
 
         if (($this->mode !== Mode::TEST) and
             ($merchant->bankAccount->getCreatedAt() > $lastWorkingDay->timestamp))

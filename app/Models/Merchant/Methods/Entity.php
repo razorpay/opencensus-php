@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Methods;
 
 use RZP\Models\Base;
+use RZP\Models\Feature;
 use RZP\Exception;
 
 class Entity extends Base\PublicEntity
@@ -20,6 +21,7 @@ class Entity extends Base\PublicEntity
     const AIRTELMONEY       = 'airtelmoney';
     const FREECHARGE        = 'freecharge';
     const JIOMONEY          = 'jiomoney';
+    const OPENWALLET        = 'openwallet';
     const EMI               = 'emi';
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
@@ -47,6 +49,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -67,6 +70,7 @@ class Entity extends Base\PublicEntity
         self::MOBIKWIK,
         self::OLAMONEY,
         self::JIOMONEY,
+        self::OPENWALLET,
         self::EMI,
         self::UPI,
         self::NETBANKING,
@@ -88,6 +92,7 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY      => false,
         self::FREECHARGE    => false,
         self::JIOMONEY      => false,
+        self::OPENWALLET    => false,
         self::BANKS         => [],
         self::EMI           => false,
         self::UPI           => true,
@@ -104,7 +109,8 @@ class Entity extends Base\PublicEntity
         self::OLAMONEY,
         self::AIRTELMONEY,
         self::FREECHARGE,
-        self::JIOMONEY
+        self::JIOMONEY,
+        self::OPENWALLET,
     );
 
     protected static $methods = array(
@@ -136,6 +142,7 @@ class Entity extends Base\PublicEntity
         self::AIRTELMONEY => 'bool',
         self::FREECHARGE  => 'bool',
         self::JIOMONEY    => 'bool',
+        self::OPENWALLET  => 'bool',
         self::EMI         => 'bool',
         self::UPI         => 'bool',
     ];
@@ -239,6 +246,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::MOBIKWIK);
     }
 
+    public function isOpenwalletEnabled()
+    {
+        return $this->getAttribute(self::OPENWALLET);
+    }
+
     public function isJiomoneyEnabled()
     {
         return $this->getAttribute(self::JIOMONEY);
@@ -249,9 +261,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::EMI);
     }
 
+    public function isTransferEnabled()
+    {
+        return $this->merchant->isLinkedAccount();
+    }
+
     public function isMethodEnabled($method)
     {
-        $func = 'is'.ucfirst($method).'Enabled';
+        $func = 'is' . ucfirst($method) . 'Enabled';
 
         return $this->$func();
     }
@@ -262,7 +279,7 @@ class Entity extends Base\PublicEntity
 
         foreach ($this->wallets as $wallet)
         {
-            $func = 'is'.ucfirst($wallet).'Enabled';
+            $func = 'is' . ucfirst($wallet) . 'Enabled';
 
             if ($this->$func())
             {
@@ -310,6 +327,11 @@ class Entity extends Base\PublicEntity
     public function getFreecharge()
     {
         return $this->getAttribute(self::FREECHARGE);
+    }
+
+    public function getOpenwallet()
+    {
+        return $this->getAttribute(self::OPENWALLET);
     }
 
     public function getEmi()
@@ -389,6 +411,11 @@ class Entity extends Base\PublicEntity
     public function setFreecharge($value)
     {
         $this->setAttribute(self::FREECHARGE, $value);
+    }
+
+    public function setOpenwallet($value)
+    {
+        $this->setAttribute(self::OPENWALLET, $value);
     }
 
     public function setCreditCard($card)

@@ -116,7 +116,11 @@ class Service extends Base\Service
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
         // This goes out to the aggregator
-        $this->sendSubMerchantCreationMail($subMerchant, $merchant);
+        // (skip if marketplace merchant)
+        if ($merchant->isMarketplace() === false)
+        {
+            $this->sendSubMerchantCreationMail($subMerchant, $merchant);
+        }
 
         return $subMerchant->toArrayPublic();
     }

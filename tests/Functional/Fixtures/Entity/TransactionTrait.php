@@ -20,6 +20,14 @@ trait TransactionTrait
         });
     }
 
+    protected function createTransactionOnPaymentMethodTransfer($payment)
+    {
+        return $this->transaction(function() use ($payment)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromPaymentTransferred($payment);
+        });
+    }
+
     protected function createTransactionOnRefund($refund)
     {
         return $this->transaction(function() use ($refund)
@@ -33,6 +41,22 @@ trait TransactionTrait
         return $this->transaction(function() use ($payout)
         {
             return (new \RZP\Models\Transaction\Core)->createFromPayout($payout);
+        });
+    }
+
+    protected function createTransactionOnTransfer($transfer)
+    {
+        return $this->transaction(function() use ($transfer)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromTransfer($transfer);
+        });
+    }
+
+    protected function createTransactionOnReversal($reversal)
+    {
+        return $this->transaction(function() use ($reversal)
+        {
+            return (new \RZP\Models\Transaction\Core)->createFromReversal($reversal);
         });
     }
 }

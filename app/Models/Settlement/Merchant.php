@@ -153,6 +153,8 @@ class Merchant
     {
         $entityTypes = SetlComponent::getAllComponents();
 
+        $details = [];
+
         foreach ($entityTypes as $componentType)
         {
             $details[$componentType]['amount'] = 0;
@@ -181,20 +183,19 @@ class Merchant
             switch ($componentType)
             {
                 case Transaction\Type::PAYMENT:
+                case Transaction\Type::REVERSAL:
                     $details[$componentType]['amount'] += $txn->getAmount();
                     break;
 
                 case Transaction\Type::REFUND:
+                case Transaction\Type::PAYOUT:
+                case Transaction\Type::TRANSFER:
                     $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
 
                 case Transaction\Type::ADJUSTMENT:
                     $details[$componentType]['amount'] += $txn->getCredit();
                     $details[$componentType]['amount'] -= $txn->getDebit();
-                    break;
-
-                case Transaction\Type::PAYOUT:
-                    $details[$componentType]['amount'] -= $txn->getAmount();
                     break;
             }
 
@@ -238,11 +239,7 @@ class Merchant
 
                     break;
 
-                case SetlDetails\Component::PAYMENT:
-                case SetlDetails\Component::REFUND:
-                case SetlDetails\Component::ADJUSTMENT:
-                case SetlDetails\Component::PAYOUT:
-
+                default:
                     $txnType = $detail['amount'] < 0 ? 'debit' : 'credit';
 
                     if ($detail['count'] !== 0)

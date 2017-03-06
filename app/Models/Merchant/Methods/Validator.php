@@ -22,6 +22,7 @@ class Validator extends Base\Validator
         Entity::PAYZAPP     => 'sometimes|boolean',
         Entity::PAYUMONEY   => 'sometimes|boolean',
         Entity::AIRTELMONEY => 'sometimes|boolean',
+        Entity::OPENWALLET  => 'sometimes|boolean',
         Entity::OLAMONEY    => 'sometimes|boolean',
         Entity::MOBIKWIK    => 'sometimes|boolean',
         Entity::FREECHARGE  => 'sometimes|boolean',
