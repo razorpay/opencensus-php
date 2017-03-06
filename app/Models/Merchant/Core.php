@@ -115,6 +115,12 @@ class Core extends Base\Core
         if (isset($input['groups']) === true)
         {
             $this->repo->sync($merchant, 'groups', $input['groups']);
+
+            // If groups has been edited, fetch the entity again with relations.
+            // Simple entity edit does not contain updated relations
+            $merchant = $this->repo
+                             ->merchant
+                             ->findOrFailPublicWithRelations($merchant->getId(), ['groups']);
         }
 
         $this->saveAndNotify($merchant);
