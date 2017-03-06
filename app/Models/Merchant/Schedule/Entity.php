@@ -8,7 +8,6 @@ class Entity extends Base\PublicEntity
 {
     const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
-    const TYPE              = 'type';
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
 
@@ -17,14 +16,12 @@ class Entity extends Base\PublicEntity
     protected $entity = 'merchant_schedule';
 
     protected $fillable = [
-        self::TYPE,
         self::METHOD,
     ];
 
     protected $visible = [
         self::ID,
         self::MERCHANT_ID,
-        self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID,
     ];
@@ -32,7 +29,6 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::MERCHANT_ID,
-        self::TYPE,
         self::METHOD,
         self::SCHEDULE_ID
     ];
@@ -54,10 +50,5 @@ class Entity extends Base\PublicEntity
     public function getMethod()
     {
         return $this->getAttribute(self::METHOD);
-    }
-
-    public function getType()
-    {
-        return $this->getAttribute(self::TYPE);
     }
 }
