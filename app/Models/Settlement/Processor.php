@@ -99,13 +99,11 @@ class Processor extends Base\Core
 
             foreach ($settlements as $setl)
             {
-                $merchant = $setl->merchant;
-
-                $merchantSettler = new Merchant($merchant, $channel, $this->repo);
-
                 $setlTxns = $setl->setlTransactions;
 
                 $setlTxnsCount = $setlTxns->count();
+
+                $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
 
                 list($setl, $bankTransferAtpt) = $this->repo->transaction(
                     function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)

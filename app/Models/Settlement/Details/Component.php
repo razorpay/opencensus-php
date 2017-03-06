@@ -22,4 +22,17 @@ class Component
                 'Not a valid settlemnt component: ' . $component);
         }
     }
+
+    public static function getAllComponents()
+    {
+        return [
+            self::PAYMENT,
+            self::REFUND,
+            self::ADJUSTMENT,
+            self::PAYOUT,
+            self::SERVICE_TAX,
+            self::FEE,
+            self::FEE_CREDITS,
+        ];
+    }
 }

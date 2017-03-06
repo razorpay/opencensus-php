@@ -62,7 +62,7 @@ trait CommonTrait
 
             // Settlement amount
             list($setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax, $setlGatewayFee) =
-                $this->getTransactionAmountsForMerchant($txns, $i, $txnsCount, $merchant);
+                $this->getSettlementAmountsForMerchant($txns, $i, $txnsCount, $merchant);
 
             //
             // settle only if settlement amount is more than INR 1 and greater than
@@ -95,7 +95,7 @@ trait CommonTrait
         return [$settlements, $txnsSettledCount, $setlAttempts];
     }
 
-    protected function getTransactionAmountsForMerchant($txns, & $i, $txnsCount, $merchant): array
+    protected function getSettlementAmountsForMerchant($txns, & $i, $txnsCount, $merchant): array
     {
         $setlAmount = $setlGatewayFee = $setlApiFee = 0;
         $setlFee = $serviceTax = 0;
@@ -127,13 +127,22 @@ trait CommonTrait
     }
 
     protected function settleForMerchant(
-        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
+        $merchant, $channel, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax): array
     {
         // create settlement and update batch settlement entity in transaction
         $merchantSettler = new Merchant($merchant, $channel, $this->repo);
 
+        $setlDetailAmounts = $merchantSettler->calculateSettlementDetailAmounts($setlTxns);
+
         list($setl, $bankTransferAtpt) = $this->repo->transaction(
-            function() use ($merchantSettler, $setlTxns, $setlAmount, $setlFee, $setlApiFee, $serviceTax)
+            function() use (
+                $merchantSettler,
+                $setlTxns,
+                $setlAmount,
+                $setlFee,
+                $setlApiFee,
+                $serviceTax,
+                $setlDetailAmounts)
             {
                 list($setl, $bankTransferAtpt) = $merchantSettler->settle(
                                                     $setlTxns,
@@ -141,7 +150,8 @@ trait CommonTrait
                                                     $setlFee,
                                                     $setlApiFee,
                                                     $serviceTax,
-                                                    $this->setlTime);
+                                                    $this->setlTime,
+                                                    $setlDetailAmounts);
 
                 list($setl, $bankTransferAtpt) = $this->createAndupdateBatchEntities(
                                                     $setl,
@@ -154,7 +164,7 @@ trait CommonTrait
         return [$setl, $bankTransferAtpt];
     }
 
-    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt)
+    protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt): array
     {
         $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxnsCount);
 
@@ -173,7 +183,7 @@ trait CommonTrait
      * Settlement is done only if funds are not on hold and bank account change
      * is not recent as we need some time till beneficiary is updated in kotak
      */
-    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant)
+    protected function shouldSettle(Transaction\Entity $txn, $channel, $merchant): bool
     {
         $today = Carbon::today('Asia/Kolkata');
 

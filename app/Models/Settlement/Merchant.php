@@ -13,6 +13,7 @@ use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
+use RZP\Models\Settlement\Details\Component as SetlComponent;
 use RZP\Models\Base\Traits\BatchSettlementTrait;
 
 class Merchant
@@ -30,6 +31,7 @@ class Merchant
     protected $fee;
     protected $serviceTax;
     protected $setlTime;
+    protected $setlDetailAmounts;
 
     public function __construct($merchant, $channel, $repo = null)
     {
@@ -58,7 +60,14 @@ class Merchant
         return $bankTransferAtpt;
     }
 
-    public function settle($txns, $amount, $fee, $apiFee, $serviceTax, $setlTime): array
+    public function settle(
+        $txns,
+        $amount,
+        $fee,
+        $apiFee,
+        $serviceTax,
+        $setlTime,
+        array $setlDetailAmounts): array
     {
         $this->amount = $amount;
         $this->apiFee = $apiFee;
@@ -66,6 +75,7 @@ class Merchant
         $this->txns = $txns;
         $this->serviceTax = $serviceTax;
         $this->setlTime = $setlTime;
+        $this->setlDetailAmounts = $setlDetailAmounts;
 
         $setl = $this->createSetlEntityAndTxn();
 
@@ -133,37 +143,42 @@ class Merchant
 
         $this->setlDetails = new Base\PublicCollection;
 
+        $this->setlDetailAmounts = $this->calculateSettlementDetailAmounts($this->txns);
         $this->createSettlementDetailsEntities();
 
         $this->repo->saveOrFailCollection($this->setlDetails);
     }
 
-    protected function createSettlementDetailsEntities()
+    public function calculateSettlementDetailAmounts($txns): array
     {
-        $entityTypes = [
-            SetlDetails\Component::PAYMENT,
-            SetlDetails\Component::REFUND,
-            SetlDetails\Component::ADJUSTMENT,
-            SetlDetails\Component::PAYOUT,
-        ];
-
-        $details = [];
-        $totalServiceTax = $totalFee = $totalFeeCredits = 0;
+        $entityTypes = SetlComponent::getAllComponents();
 
         foreach ($entityTypes as $componentType)
         {
             $details[$componentType]['amount'] = 0;
 
-            $details[$componentType]['count'] = 0;
+            $details[$componentType]['count'] = null;
+
+            if (in_array(
+                    $componentType,
+                    [
+                        SetlComponent::PAYMENT,
+                        SetlComponent::ADJUSTMENT,
+                        SetlComponent::REFUND,
+                        SetlComponent::PAYOUT,
+                    ]) === true)
+            {
+                $details[$componentType]['count'] = 0;
+            }
         }
 
-        foreach ($this->txns as $txn)
+        foreach ($txns as $txn)
         {
             $componentType = $txn->getType();
 
             $details[$componentType]['count'] += 1;
 
-            switch ($txn->getType())
+            switch ($componentType)
             {
                 case Transaction\Type::PAYMENT:
                     $details[$componentType]['amount'] += $txn->getAmount();
@@ -183,54 +198,64 @@ class Merchant
                     break;
             }
 
-            $totalServiceTax += $txn->getServiceTax();
+            $details[SetlComponent::SERVICE_TAX]['amount'] += $txn->getServiceTax();
 
-            $totalFee += ($txn->getFee() - $txn->getServiceTax());
+            $details[SetlComponent::FEE]['amount'] += ($txn->getFee() - $txn->getServiceTax());
 
             // FeeCredits is either zero or equal to fees.
-            $totalFeeCredits += $txn->getFeeCredits();
+            $details[SetlComponent::FEE_CREDITS]['amount'] += $txn->getFeeCredits();
         }
 
-        foreach ($entityTypes as $componentType)
+        return $details;
+    }
+
+    protected function createSettlementDetailsEntities()
+    {
+        foreach ($this->setlDetailAmounts as $componentType => $detail)
         {
-            $txnType = 'credit';
-
-            if ($details[$componentType]['amount'] < 0)
+            switch ($componentType)
             {
-                $details[$componentType]['amount'] = abs($details[$componentType]['amount']);
+                case SetlDetails\Component::FEE:
+                case SetlDetails\Component::SERVICE_TAX:
 
-                $txnType = 'debit';
+                    $this->createSetlDetailsEntity(
+                        $componentType,
+                        'debit',
+                        null,
+                        $detail['amount']);
+
+                    break;
+
+                case SetlDetails\Component::FEE_CREDITS:
+                    if ($detail['amount'] > 0)
+                    {
+                        $this->createSetlDetailsEntity(
+                            $componentType,
+                            'credit',
+                            null,
+                            $detail['amount']);
+                    }
+
+                    break;
+
+                case SetlDetails\Component::PAYMENT:
+                case SetlDetails\Component::REFUND:
+                case SetlDetails\Component::ADJUSTMENT:
+                case SetlDetails\Component::PAYOUT:
+
+                    $txnType = $detail['amount'] < 0 ? 'debit' : 'credit';
+
+                    if ($detail['count'] !== 0)
+                    {
+                        $this->createSetlDetailsEntity(
+                            $componentType,
+                            $txnType,
+                            $detail['count'],
+                            abs($detail['amount']));
+                    }
+
+                    break;
             }
-
-            if ($details[$componentType]['count'] !== 0)
-            {
-                $this->createSetlDetailsEntity(
-                    $componentType,
-                    $txnType,
-                    $details[$componentType]['count'],
-                    $details[$componentType]['amount']);
-            }
-        }
-
-        $this->createSetlDetailsEntity(
-            SetlDetails\Component::SERVICE_TAX,
-            'debit',
-            null,
-            $totalServiceTax);
-
-        $this->createSetlDetailsEntity(
-            SetlDetails\Component::FEE,
-            'debit',
-            null,
-            $totalFee);
-
-        if ($totalFeeCredits > 0)
-        {
-            $this->createSetlDetailsEntity(
-                SetlDetails\Component::FEE_CREDITS,
-                'credit',
-                null,
-                $totalFeeCredits);
         }
     }
 
