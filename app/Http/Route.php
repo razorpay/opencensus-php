@@ -729,13 +729,6 @@ final class Route
         'gateway_validate_unknown_refund',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'schedule_create',
-        'schedule_fetch',
-        'schedule_fetch_multiple',
-        'schedule_delete',
-        'schedule_update',
-        'schedule_assign',
-        'schedule_migration',
         'feature_get_multiple',
         'feature_add',
         'feature_delete',
@@ -769,6 +762,8 @@ final class Route
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
         'merchant_patch_beneficiary_code',
+        'schedule_fetch',
+        'schedule_fetch_multiple',
     );
 
     public static $proxy = array(
@@ -863,6 +858,11 @@ final class Route
         'permission_delete',
         'auditlog_search',
         'admin_logout',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     public static $adminPermission = [
@@ -889,8 +889,6 @@ final class Route
         'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
-        'schedule_fetch'                 => [Permission::SCHEDULE_FETCH],
-        'schedule_fetch_multiple'        => [Permission::SCHEDULE_FETCH_MULTIPLE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
         'schedule_update'                => [Permission::SCHEDULE_UPDATE],
         'schedule_assign'                => [Permission::SCHEDULE_ASSIGN],
@@ -1050,6 +1048,11 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     const RAZORPAYJS_ROUTES = array(
