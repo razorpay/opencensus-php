@@ -1854,6 +1854,7 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+
             $this->repo->saveOrFail($payment->terminal);
 
             $this->updateTokenOnAuthorized();

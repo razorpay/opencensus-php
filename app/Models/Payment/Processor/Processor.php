@@ -21,6 +21,7 @@ use RZP\Error\ErrorCode;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Customer;
+use RZP\Models\Transfer\Core as TransferCore;
 use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Models\Feature\Constants as Feature;
@@ -36,6 +37,8 @@ class Processor
     use Topup;
     use FraudDetector;
     use Payout;
+    use Reversal;
+    use Transfer;
 
     /**
      * Callback urls can be hit multiple times by customers.
@@ -290,6 +293,47 @@ class Processor
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_LIVE_ACTION_DENIED);
         }
+    }
+
+    /**
+     * Transfer a captured payment to customer/marketplace account
+     *
+     * @param  string $id    Payment ID
+     * @param  array  $input Input Array
+     * @throws Exception\BadRequestException
+     */
+    public function transfer(string $id, array $input)
+    {
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_REQUEST,
+            ['payment_id' => $id, 'input' => $input]);
+
+        $payment = $this->retrieve($id);
+
+        $validator = $payment->getValidator();
+
+        $validator->validateIsCaptured();
+
+        $validator->validateInput('transfer', $input);
+
+        return $this->mutex->acquireAndRelease(
+            $payment->getId(),
+            function() use ($payment, $input)
+            {
+                return $this->repo->transaction(function() use ($payment, $input)
+                {
+                    $transfers = (new TransferCore)->createForPayment(
+                                    $payment,
+                                    $input['transfers'],
+                                    $this->merchant);
+
+                    $this->trace->info(
+                        TraceCode::PAYMENT_TRANSFER_SUCCESS,
+                        ['transfer_ids' => $transfers->getIds()]);
+
+                    return $transfers;
+                });
+            });
     }
 
     /**

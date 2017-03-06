@@ -97,6 +97,9 @@ class CreateTransactions extends Migration
             $table->string(Transaction::CREDIT_TYPE, 25)
                   ->default(CreditType::DEFAULT);
 
+            $table->integer(Transaction::ON_HOLD)
+                  ->default(0);
+
             $table->tinyInteger(Transaction::SETTLED)
                   ->default(0);
 
@@ -123,6 +126,8 @@ class CreateTransactions extends Migration
             $table->index(Transaction::TYPE);
 
             $table->index(Transaction::SETTLED_AT);
+
+            $table->index(Transaction::ON_HOLD);
 
             $table->index(Transaction::SETTLED);
 

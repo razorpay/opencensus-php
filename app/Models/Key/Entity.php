@@ -186,7 +186,7 @@ class Entity extends Base\PublicEntity
         return $id;
     }
 
-    protected static function stripSign(& $id)
+    public static function stripSign(& $id)
     {
         $mode = \BasicAuth::getMode();
         $prefix = 'rzp_' . $mode . '_';
