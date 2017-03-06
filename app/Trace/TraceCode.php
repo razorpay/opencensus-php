@@ -570,6 +570,7 @@ class TraceCode
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
     const OFFER_IIN_DOES_NOT_EXISTS                 = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_DEACTIVATE                          = 'OFFER_DEACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
     const OFFER_APPLIED_ON_PAYMENT                  = 'OFFER_APPLIED_ON_PAYMENT';
     const OFFER_NOT_APPLIED_ON_PAYMENT              = 'OFFER_NOT_APPLIED_ON_PAYMENT';
@@ -721,6 +722,7 @@ class TraceCode
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
 
         self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
+        self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
     );
 
     /**

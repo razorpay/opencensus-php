@@ -284,9 +284,9 @@ class Entity extends Base\PublicEntity
     public function toArrayCheckout()
     {
         return [
-            self::PAYMENT_METHOD => $this->getAttribute(self::PAYMENT_METHOD),
+            self::NAME           => $this->getAttribute(self::NAME),
             self::DISPLAY_TEXT   => $this->getAttribute(self::DISPLAY_TEXT),
-            self::NAME => $this->getAttribute(self::NAME),
+            self::PAYMENT_METHOD => $this->getAttribute(self::PAYMENT_METHOD),
         ];
     }
 }

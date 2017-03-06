@@ -50,6 +50,12 @@ class Core extends Base\Core
 
         foreach ($activeExpiredOffers as $offer)
         {
+            $this->trace->info(
+                TraceCode::OFFER_DEACTIVATE,
+                [
+                    'offer_id'   => $offer->getPublicId(),
+                ]);
+
             $offer->deactivate();
 
             $this->repo->saveOrFail($offer);
