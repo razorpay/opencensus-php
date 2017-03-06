@@ -11,6 +11,11 @@ class Repository extends Base\Repository
 {
     protected $entity = 'settlement';
 
+    protected $signedIds = [
+        Entity::BANK_ACCOUNT_ID,
+        Entity::TRANSACTION_ID,
+    ];
+
     protected $appFetchParamRules = [
         Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
         Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_dash|min:14|max:17',

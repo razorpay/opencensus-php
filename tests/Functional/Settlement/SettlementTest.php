@@ -5,6 +5,7 @@ namespace RZP\Tests\Functional\Settlement;
 use Carbon\Carbon;
 
 use RZP\Models\Merchant\Account;
+use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Helpers\EntityActionTrait;
@@ -17,6 +18,8 @@ class SettlementTest extends TestCase
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/SettlementTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -109,7 +112,7 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content['kotak']['transaction_count']);
     }
 
-    public function createPaymentEntities(int $count = 5)
+    protected function createPaymentEntities(int $count = 5)
     {
         $prEntities = array();
 
@@ -381,7 +384,15 @@ class SettlementTest extends TestCase
         $content = $this->makeRequestAndGetContent($request);
 
         $setl = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
 
+        // Validate settlement txn entity
+        $setlTxn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertEquals($setl['id'], $setlTxn['entity_id']);
+        $this->assertNull($setlTxn['reconciled_at']);
+
+        // Validate settlement details entity
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
         $this->assertArrayHasKey('entity', $content);
@@ -404,13 +415,19 @@ class SettlementTest extends TestCase
 
         $this->assertSame($totalAmount, $setl['amount']);
 
+        // Validate batch settlement entity
         $batchSettlement = $this->getLastEntity('batch_settlement', true);
         $this->assertNotNull($batchSettlement['urls']['kotak_settlement_txt']);
         $this->assertNotNull($batchSettlement['urls']['kotak_settlement_excel']);
+        $this->assertTestResponse($batchSettlement, 'fetchAndMatchBatchDataSettlement');
+        $this->assertGreaterThanOrEqual($batchSettlement['initiated_at'], time());
+        $this->assertNull($batchSettlement['reconciled_at']);
 
+        // Validate bank_transfer_attempt entity
         $bta = $this->getLastEntity('bank_transfer_attempt', true);
-
-        $this->assertEquals('settlement', $bta['entity_type']);
+        $this->assertTestResponse($bta, 'matchSettlementAttempt');
+        $this->assertEquals($batchSettlement['id'], $bta['batch_transfer_id']);
+        $this->assertEquals(SettlementEntity::verifyIdAndStripSign($setl['id']), $bta['entity_id']);
     }
 
     public function testSettlementIgnoredTxns()

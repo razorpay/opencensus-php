@@ -45,19 +45,20 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function retryFailedSettlement($setl)
+    public function retryFailedSettlement($setl, $setlTime)
     {
         $this->setl = $setl;
         $this->txns = $this->setl->setlTransactions;
+        $this->setlTime = $setlTime;
 
         // Create Settlement attempt entity
-        $bankTransferAtpt = $this->createSettlementAttemptEntity();
+        $this->createSettlementAttemptEntity();
 
         $this->repo->saveOrFail($this->bankTransferAtpt);
 
         $this->updateTransactions();
 
-        return $bankTransferAtpt;
+        return $this->bankTransferAtpt;
     }
 
     public function settle(
@@ -73,14 +74,15 @@ class Merchant
         $this->apiFee = $apiFee;
         $this->fee = $fee;
         $this->txns = $txns;
+
         $this->serviceTax = $serviceTax;
         $this->setlTime = $setlTime;
         $this->setlDetailAmounts = $setlDetailAmounts;
 
-        $setl = $this->createSetlEntityAndTxn();
+        $this->createSetlEntityAndTxn();
 
         // Create Settlement attempt entity
-        $bankTransferAtpt = $this->createSettlementAttemptEntity();
+        $this->createSettlementAttemptEntity();
 
         // Create Settlement Details entity
         $this->setlDetails = new Base\PublicCollection;
@@ -94,7 +96,7 @@ class Merchant
         // Update transactions
         $this->updateTransactions();
 
-        return [$setl, $bankTransferAtpt];
+        return [$this->setl, $this->bankTransferAtpt];
     }
 
     protected function updateTransactions()
@@ -160,20 +162,6 @@ class Merchant
             $details[$componentType]['amount'] = 0;
 
             $details[$componentType]['count'] = 0;
-
-            // if (in_array(
-            //         $componentType,
-            //         [
-            //             SetlComponent::PAYMENT,
-            //             SetlComponent::ADJUSTMENT,
-            //             SetlComponent::REFUND,
-            //             SetlComponent::PAYOUT,
-            //             SetlComponent::TRANSFER,
-            //             SetlComponent::REVERSAL,
-            //         ]) === true)
-            // {
-            //     $details[$componentType]['count'] = 0;
-            // }
         }
 
         foreach ($txns as $txn)
@@ -278,20 +266,18 @@ class Merchant
         return $setlDetailEntity;
     }
 
-    protected function createSetlEntityAndTxn(): Settlement\Entity
+    protected function createSetlEntityAndTxn()
     {
         // Create settlement transaction
-        $setlTransaction = $this->newSettlementTransaction();
+        $this->newSettlementTransaction();
 
         // Create settlement entity
-        $setl = $this->newSettlementEntity();
+        $this->newSettlementEntity();
 
-        $setlTransaction->source()->associate($setl);
-
-        return $setl;
+        $this->setlTransaction->source()->associate($this->setl);
     }
 
-    protected function newSettlementTransaction(): Transaction\Entity
+    protected function newSettlementTransaction()
     {
         $txn = new Transaction\Entity;
 
@@ -314,11 +300,9 @@ class Merchant
         $txn->merchant()->associate($this->merchant);
 
         $this->setlTransaction = $txn;
-
-        return $txn;
     }
 
-    protected function newSettlementEntity(): Settlement\Entity
+    protected function newSettlementEntity()
     {
         $setl = (new Settlement\Entity)->generateId();
 
@@ -337,11 +321,9 @@ class Merchant
         }
 
         $this->setl = $setl;
-
-        return $setl;
     }
 
-    protected function createSettlementAttemptEntity(): BankTransferAttempt\Entity
+    protected function createSettlementAttemptEntity()
     {
         $bankTransferAttempt = new BankTransferAttempt\Entity;
 
@@ -359,8 +341,6 @@ class Merchant
         $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
 
         $this->bankTransferAtpt = $bankTransferAttempt;
-
-        return $bankTransferAttempt;
     }
 
     protected function saveChangesToDb()

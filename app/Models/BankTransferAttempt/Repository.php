@@ -8,6 +8,10 @@ class Repository extends Base\Repository
 {
     protected $entity = 'bank_transfer_attempt';
 
+    protected $signedIds = [
+        Entity::BANK_ACCOUNT_ID,
+    ];
+
     // These are admin allowed params to search on.
     protected $appFetchParamRules = [
         Entity::ENTITY_TYPE         => 'sometimes|string|in:settlement',

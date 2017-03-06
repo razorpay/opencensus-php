@@ -1,7 +1,5 @@
 <?php
 
-use Carbon\Carbon;
-
 return [
     'fetchAndMatchBatchDataSettlement' => [
         'channel' => 'kotak',
