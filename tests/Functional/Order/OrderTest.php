@@ -389,13 +389,9 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableMobikwik();
     }
 
-    public function testPaymentWithFailedOfferCheckAllowedOnOrder()
+    public function testPaymentWithBlockPaymentDisabledOnOffer()
     {
-        $offer = $this->fixtures->create('offer:card');
-
-        $offer['block'] = false;
-
-        $offer->saveOrFail();
+        $offer = $this->fixtures->create('offer:card', ['block' => false]);
 
         $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
 

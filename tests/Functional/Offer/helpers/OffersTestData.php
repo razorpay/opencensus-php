@@ -525,7 +525,7 @@ return [
     'testAddIinsToCardOffer' => [
         'request' => [
             'content' => [
-                "iins"    => ["411111"]
+                'iins'    => ['411111']
             ],
             'url'     => '',
             'method'  => 'PATCH'
@@ -539,7 +539,7 @@ return [
                 'payment_method_type'       => 'credit',
                 'payment_network'           => 'VISA',
                 'issuer'                    => 'HDFC',
-                'iins'                      => ["123456", "411111"],
+                'iins'                      => ['123456', '411111'],
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,
@@ -552,7 +552,7 @@ return [
     'testAddIinsInvalidFormat' => [
         'request' => [
             'content' => [
-                "iins"    => [ 1  => "411111" ]
+                'iins'    => [ 1  => '411111' ]
             ],
             'url'     => '',
             'method'  => 'PATCH'
@@ -575,7 +575,7 @@ return [
     'testAddIinsToNonCardOffer' => [
         'request' => [
             'content'  => [
-                "iins" => [411111]
+                'iins' => ['411111']
             ],
             'url'    => '',
             'method' => 'PATCH'
@@ -600,7 +600,7 @@ return [
             'url'      => '',
             'method'   => 'PATCH',
             'content'  => [
-                "active" => 0
+                'active' => 0
             ]
         ],
         'response' => [
