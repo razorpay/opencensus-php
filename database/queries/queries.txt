@@ -1719,6 +1719,16 @@ ALTER TABLE daily_settlements
     ADD COLUMN type VARCHAR(50) DEFAULT NULL AFTER id,
     CHANGE COLUMN `settlement_count` `total_count` INTEGER NOT NULL;
 
+# permissions
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBUySeriKJuIb', 'schedule_create', 'schedule', 'Create a new schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBV5Or9YWZtXc', 'schedule_update', 'schedule', 'Update a schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVEaPUHQlMGC', 'schedule_delete', 'schedule', 'Delete a schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVKgguP22wTl', 'schedule_assign', 'schedule', 'Assign schedule to merchant', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVRggj0CjK3q', 'schedule_migration', 'schedule', 'Migration', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+ALTER TABLE files
+    ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;
+
 # --- Marketplace + Openwallet ---
 
 ALTER TABLE merchant_banks
