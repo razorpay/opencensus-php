@@ -18,7 +18,7 @@ class Core extends Base\Core
 
         $offer = (new Entity)->build($input);
 
-        $this->checkIfOfferCreateValid($offer, $merchant);
+        $this->checkConflictingOffers($offer, $merchant);
 
         $offer->merchant()->associate($merchant);
 
@@ -107,6 +107,11 @@ class Core extends Base\Core
     {
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
+        if ($order->getOfferId() === null)
+        {
+            return null;
+        }
+
         $offer = $this->repo->offer->fetchForOrder($order);
 
         return $offer;
@@ -119,7 +124,7 @@ class Core extends Base\Core
         return $offers;
     }
 
-    protected function checkIfOfferCreateValid(Entity $offer, Merchant\Entity $merchant)
+    protected function checkConflictingOffers(Entity $offer, Merchant\Entity $merchant)
     {
         // Check to see if there are any offers with same values for the set of attributes
         // required to uniquely define an offer

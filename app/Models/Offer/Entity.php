@@ -280,4 +280,13 @@ class Entity extends Base\PublicEntity
 
         $this->setAttribute(self::STARTS_AT, $startsAt);
     }
+
+    public function toArrayCheckout()
+    {
+        return [
+            self::PAYMENT_METHOD => $this->getAttribute(self::PAYMENT_METHOD),
+            self::DISPLAY_TEXT   => $this->getAttribute(self::DISPLAY_TEXT),
+            self::NAME => $this->getAttribute(self::NAME),
+        ];
+    }
 }
