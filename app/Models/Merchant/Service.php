@@ -342,26 +342,24 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        if (isset($input[Entity::SETTLEMENT_SCHEDULE_ID]) === true)
+        $merchant->getValidator()->validateInput('assign_schedule', $input);
+
+        $this->repo->transaction(function() use ($merchant, $input)
         {
-            $scheduleId = $input[Entity::SETTLEMENT_SCHEDULE_ID];
+            $method = $input[Merchant\Schedule::METHOD] ?? null;
 
-            $schedule = $this->repo->schedule->findByIdAndMerchantId($scheduleId, Account::SHARED_ACCOUNT);
-        }
-        else
-        {
-            $schedule = (new Schedule\Core)->createSchedule($input);
+            $currentSchedule = $merchant->schedules()
+                                      ->where(Merchant\Schedule::METHOD, $method)
+                                      ->first();
 
-            $this->trace->info(TraceCode::SCHEDULE_CREATED, $schedule->toArray());
-        }
+            $scheduleId = $input[Merchant\Schedule::SCHEDULE_ID];
 
-        $merchant->schedule()->associate($schedule);
+            $schedule = $this->repo->schedule->findByIdAndMerchant($scheduleId, Merchant\Account::SHARED_ACCOUNT);
 
-        $this->setSettlementScheduleIfNeeded($merchant, $schedule);
+            $merchant->schedules()->detach($existingSchedule);
 
-        $this->traceAndNotifyScheduleAssignment($schedule, $merchant);
-
-        $this->repo->saveOrFail($merchant);
+            $merchant->schedules()->attach($existingSchedule, [Merchant\Schedule::METHOD => $method]);
+        });
 
         return $merchant->toArrayPublic();
     }

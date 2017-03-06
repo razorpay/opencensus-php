@@ -4,15 +4,12 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Merchant\Schedule\Entity as MerchantSchedule;
 use RZP\Models\Merchant\Entity as Merchant;
-use RZP\Models\Schedule\Entity as Terminal;
+use RZP\Models\Schedule\Entity as Schedule;
 
 class CreateMerchantSchedule extends Migration
 {
-    const MERCHANT_ID = 'merchant_id';
-    const SCHEDULE_ID = 'schedule_id';
-    const METHOD      = 'method';
-
     /**
      * Run the migrations.
      *
@@ -24,20 +21,20 @@ class CreateMerchantSchedule extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(self::MERCHANT_ID, Merchant::ID_LENGTH);
+            $table->char(MerchantSchedule::MERCHANT_ID, MerchantSchedule::ID_LENGTH);
 
-            $table->char(self::METHOD, 20);
+            $table->char(MerchantSchedule::METHOD, 20);
 
-            $table->char(self::SCHEDULE_ID, Schedule::ID_LENGTH);
+            $table->char(MerchantSchedule::SCHEDULE_ID, MerchantSchedule::ID_LENGTH);
 
-            $table->foreign(self::MERCHANT_ID)
+            $table->foreign(MerchantSchedule::MERCHANT_ID)
                   ->references(Merchant::ID)
                   ->on(Table::MERCHANT)
                   ->onDelete('cascade');
 
-            $table->foreign(self::TERMINAL_ID)
-                  ->references(Terminal::ID)
-                  ->on(Table::TERMINAL)
+            $table->foreign(MerchantSchedule::SCHEDULE_ID)
+                  ->references(Schedule::ID)
+                  ->on(Table::SCHEDULE)
                   ->onDelete('cascade');
         });
     }
@@ -52,10 +49,10 @@ class CreateMerchantSchedule extends Migration
         Schema::table(Table::MERCHANT_SCHEDULE, function($table)
         {
             $table->dropForeign(
-                Table::MERCHANT_SCHEDULE.'_'.self::MERCHANT_ID.'_foreign');
+                Table::MERCHANT_SCHEDULE.'_'.MerchantSchedule::MERCHANT_ID.'_foreign');
 
             $table->dropForeign(
-                Table::MERCHANT_SCHEDULE.'_'.self::SCHEDULE_ID.'_foreign');
+                Table::MERCHANT_SCHEDULE.'_'.MerchantSchedule::SCHEDULE_ID.'_foreign');
         });
 
         Schema::drop(Table::MERCHANT_SCHEDULE);

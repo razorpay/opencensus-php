@@ -6,7 +6,6 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                = 'id';
     const MERCHANT_ID       = 'merchant_id';
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
