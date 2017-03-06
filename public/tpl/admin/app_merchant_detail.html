@@ -83,7 +83,7 @@
         <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()" ng-show="admin.permissions.indexOf('edit_merchant_pricing') !== -1">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item assign-schedule" ng-click="openAssignSchedule()">
+        <a href class="list-group-item assign-schedule" ng-show="admin.permissions.indexOf('schedule_assign') !== -1" ng-click="openAssignSchedule()">
           Assign Schedule <i class="pull-right fa fa-clock-o"></i>
         </a>
         <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()" ng-show="admin.permissions.indexOf('assign_merchant_terminal') !== -1">
