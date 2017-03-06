@@ -68,6 +68,9 @@ class Table
     // Workflows
     const WORKFLOW              = 'workflows';
     const WORKFLOW_STEP         = 'workflow_steps';
+    const WORKFLOW_ACTION       = 'workflow_actions';
+    const ACTION_PAYLOAD        = 'action_payloads';
+    const ACTION_COMMENT        = 'action_comments';
 
     // Gateway related
     const EBS                   = 'ebs';

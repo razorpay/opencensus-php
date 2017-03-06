@@ -4,7 +4,10 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
+use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
+use RZP\Models\Workflow\Action\Comment\Entity as Comment;
+use RZP\Models\Workflow\Entity as Workflow;
 
 class CreateWorkflowAction extends Migration
 {
@@ -15,7 +18,30 @@ class CreateWorkflowAction extends Migration
      */
     public function up()
     {
-        //
+        Schema::create(Table::WORKFLOW_ACTION, function (BluePrint $table)
+        {
+            $table->engine = 'InnoDB';
+
+            $table->char(Action::ID, Action::ID_LENGTH)
+                  ->primary();
+
+            $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
+            $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
+            $table->char(Action::PAYLOAD_ID, Action::ID_LENGTH);
+
+            $table->foreign(Action::WORKFLOW_ID)
+                  ->references(Workflow::ID)
+                  ->on(Table::WORKFLOW)
+                  ->on_delete('restrict');
+
+            $table->foreign(Action::ADMIN_ID)
+                  ->references(Admin::ID)
+                  ->on(Table::ADMIN)
+                  ->on_delete('restrict');
+
+            $table->integer(Action::CREATED_AT);
+            $table->integer(Action::UPDATED_AT);
+        });
     }
 
     /**
@@ -25,6 +51,13 @@ class CreateWorkflowAction extends Migration
      */
     public function down()
     {
-        //
+        Schema::table(Table::WORKFLOW_ACTION, function($table)
+        {
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::WORFLOW_ID . '_foreign');
+
+            $table->dropForeign(Table::WORKFLOW_ACTION . '_' . Action::ADMIN_ID . '_foreign');
+        });
+
+        Schema::drop(Table::WORKFLOW_ACTION);
     }
 }

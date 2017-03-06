@@ -24,17 +24,24 @@ class CreateWorkflowSteps extends Migration
             $table->char(Step::ID, Step::ID_LENGTH)
                   ->primary();
 
+            $table->char(Step::ROLE_ID, Step::ID_LENGTH);
+            $table->char(Step::WORKFLOW_ID, Step::ID_LENGTH);
+            $table->char(Step::PERMISSION_ID, Step::ID_LENGTH);
+
             $table->foreign(Step::ROLE_ID)
                   ->references(Role::ID)
-                  ->on(Table::ROLE);
+                  ->on(Table::ROLE)
+                  ->on_delete('restrict');
 
             $table->foreign(Step::WORKFLOW_ID)
                   ->references(Workflow::ID)
-                  ->on(Table::WORKFLOW);
+                  ->on(Table::WORKFLOW)
+                  ->on_delete('restrict');
 
             $table->foreign(Step::PERMISSION_ID)
                   ->references(Permission::ID)
-                  ->on(Table::PERMISSION);
+                  ->on(Table::PERMISSION)
+                  ->on_delete('restrict');
 
             $table->integer(Step::CREATED_AT);
             $table->integer(Step::UPDATED_AT);
