@@ -48,6 +48,7 @@ class Repository extends Base\Repository
                     ->where($upiId, '>', $lastId)
                     ->whereNull($upiBank)
                     ->limit($limit)
+                    ->orderBy($upiId)
                     ->get();
     }
 
