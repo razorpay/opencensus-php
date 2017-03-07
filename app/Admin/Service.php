@@ -2721,7 +2721,7 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
 
         try
         {
@@ -2795,7 +2795,7 @@ class Service extends Base\Service
     {
         $error = $data = null;
 
-        $this->setApiCredentials();
+        $this->setAdminCredentials();
 
         try
         {
