@@ -76,7 +76,7 @@ class Core extends Base\Core
     {
         $balance = $this->repo
                         ->customer_balance
-                        ->findByCustomerAndMerchantSilent($customer, $merchant);
+                        ->findByCustomerIdAndMerchantSilent($customer->getId(), $merchant, true);
 
         if ($balance !== null)
         {
