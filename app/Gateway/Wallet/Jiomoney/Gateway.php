@@ -474,17 +474,7 @@ class Gateway extends Base\Gateway
 
         if ($this->checkPaymentStatusResponseFailed($content) === false)
         {
-            // Temporarily hardcoding this payment id here to manually pass verify
-            // and change payment status to authorized, as this payment was successfully
-            // processed by Jiomoney but marked as failed by timeout cron as callback was received late
-            if ($input['payment']['id'] === '7LaaHWTPMl9PQL')
-            {
-                $verify->gatewaySuccess = true;
-            }
-            else
-            {
-                $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
-            }
+            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
         }
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
@@ -571,7 +561,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Fetches the gateway payment datte from the verify response
+     * Fetches the gateway payment date from the verify response
      * Jiomoney only returns the timestamp in CHECKPAYMENTSTATUS response and
      * not in STATUSQUERY response. So if verify response came through STATUSQUERY
      * API we return the payment created at timestamp, else we return null
@@ -582,13 +572,6 @@ class Gateway extends Base\Gateway
      */
     public function getGatewayPaymentDate(array $content, array $payment)
     {
-        // Temporarily hardcoding the gateway payment timestamp for this payment id
-        // as verify is no longer returning valid response for this
-        if ($payment['id'] === '7LaaHWTPMl9PQL')
-        {
-            return '1488009243';
-        }
-
         if ($this->statusQueryValid === false)
         {
             $date = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
@@ -603,13 +586,6 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayPaymentId(array $content, array $payment)
     {
-        // Temporarily hardcoding the gateway payment id here for this specific payment to
-        // manually pass verify flow
-        if ($payment['id'] === '7LaaHWTPMl9PQL')
-        {
-            return '301005129694';
-        }
-
         if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
