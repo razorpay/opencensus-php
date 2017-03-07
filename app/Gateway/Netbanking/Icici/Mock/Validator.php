@@ -63,7 +63,7 @@ class Validator extends Base\Validator
 
     protected function assertField(array $data, $field)
     {
-        if (!isset($data[$field]))
+        if (isset($data[$field]) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $field . ' not specified');

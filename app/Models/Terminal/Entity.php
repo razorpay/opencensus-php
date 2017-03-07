@@ -156,11 +156,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 
-    public function getId()
-    {
-        return $this->getAttribute(self::ID);
-    }
-
     public function getGatewayReconPassword()
     {
         $reconPassword = $this->attributes[self::GATEWAY_RECON_PASSWORD];

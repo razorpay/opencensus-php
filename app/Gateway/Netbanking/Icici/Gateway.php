@@ -66,7 +66,7 @@ class Gateway extends Base\Gateway
 
         $this->repo->saveOrFail($gatewayPayment);
 
-        $this->checkResponseStatus($attrs, $content);
+        $this->checkCallbackStatus($attrs, $content);
 
         return $this->getCallbackResponseData($input);
     }
@@ -113,16 +113,16 @@ class Gateway extends Base\Gateway
             TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
             $content);
 
-        $this->getVerifyStatus($verify);
+        $this->setVerifyStatus($verify);
     }
 
-    protected function getVerifyStatus(Verify $verify)
+    protected function setVerifyStatus(Verify $verify)
     {
         $status = VerifyResult::STATUS_MATCH;
 
-        $this->getApiSuccess($verify);
+        $this->setApiSuccess($verify);
 
-        $this->getGatewaySuccess($verify);
+        $this->setGatewaySuccess($verify);
 
         if ($verify->gatewaySuccess !== $verify->apiSuccess)
         {
@@ -134,7 +134,7 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH);
     }
 
-    protected function getApiSuccess(Verify $verify)
+    protected function setApiSuccess(Verify $verify)
     {
         $verify->apiSuccess = true;
 
@@ -149,7 +149,7 @@ class Gateway extends Base\Gateway
         }
     }
 
-    protected function getGatewaySuccess(Verify $verify)
+    protected function setGatewaySuccess(Verify $verify)
     {
         $verify->gatewaySuccess = false;
 
@@ -202,7 +202,7 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($data, $input);
 
-        $queryString = $this->createQueryString($data);
+        $queryString = urldecode(http_build_query($data));
 
         $masterKey = $this->getSecret();
 
@@ -264,30 +264,6 @@ class Gateway extends Base\Gateway
         }
     }
 
-    /**
-     * Converts array into a URL encoded query string
-     * Eg. Input: $data = ['key1' => $value1, 'key2' => $value2]
-     * Output: 'key1=$value1&key2=$value2'
-     * We cannot use http_build_query here as it will
-     * tamper with the format of the RU parameter
-     *
-     * @param array $data
-     * @return string $url
-     */
-    protected function createQueryString(array $data)
-    {
-        $urlArray = [];
-
-        foreach ($data as $key => $value)
-        {
-            $urlArray[] = $key . '=' . $value;
-        }
-
-        $url = implode('&', $urlArray);
-
-        return $url;
-    }
-
     protected function getDataFromResponse(array $data)
     {
         $masterKey = $this->getSecret();
@@ -299,6 +275,10 @@ class Gateway extends Base\Gateway
         $decryptedString = $aes->decryptString(base64_decode($string));
 
         parse_str($decryptedString, $content);
+
+        $this->trace->info(
+                TraceCode::NETBANKING_PAYMENT_CALLBACK,
+                ['decrypted_data' => $content]);
 
         if (empty($content) === true)
         {
@@ -327,7 +307,7 @@ class Gateway extends Base\Gateway
         ];
     }
 
-    protected function checkResponseStatus(array $attrs, array $content)
+    protected function checkCallbackStatus(array $attrs, array $content)
     {
         if ((isset($attrs[Constants::STATUS]) === false) or
             ($attrs[Constants::STATUS] !== Confirmation::YES))

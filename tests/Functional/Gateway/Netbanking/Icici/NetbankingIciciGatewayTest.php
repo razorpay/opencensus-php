@@ -43,7 +43,7 @@ class NetbankingIciciGatewayTest extends TestCase
             $this->testData['testPaymentNetbankingEntity'], $gatewayPayment);
 
         // Asserts that bank payment id exists in response and is an int
-        $this->assertEquals($gatewayPayment['bank_payment_id'], 9999999999);
+        $this->assertEquals(9999999999, $gatewayPayment['bank_payment_id']);
     }
 
     public function testPaymentVerify()
@@ -84,10 +84,13 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            // Refund double the amount
-            $refund = $this->refundPayment($payment['id'], 100000);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                // Refund double the amount
+                $refund = $this->refundPayment($payment['id'], 100000);
+            });
     }
 
     public function testRefundExcelFile()
@@ -161,9 +164,12 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() {
-            $this->doAuthPayment($this->payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     public function testVerifyMismatch()
@@ -174,9 +180,12 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $this->mockVerifyFailure();
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['razorpay_payment_id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['razorpay_payment_id']);
+            });
     }
 
     public function testAuthResponseDecryptionFailure()
@@ -185,10 +194,12 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function()
-        {
-            $this->doAuthPayment($this->payment);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function()
+            {
+                $this->doAuthPayment($this->payment);
+            });
     }
 
     // Authorization fails, but verify shows success
@@ -201,9 +212,12 @@ class NetbankingIciciGatewayTest extends TestCase
 
         $payment = $this->getLastEntity('payment', true);
 
-        $this->runRequestResponseFlow($data, function() use ($payment){
-            $this->verifyPayment($payment['id']);
-        });
+        $this->runRequestResponseFlow(
+            $data,
+            function() use ($payment)
+            {
+                $this->verifyPayment($payment['id']);
+            });
     }
 
     protected function checkRefundFileData($data)
