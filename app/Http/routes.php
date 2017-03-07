@@ -215,6 +215,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
         Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
+        Route::post('/admin/merchant/{id}/details', 'AdminController@putUpdateMerchantDetails');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');

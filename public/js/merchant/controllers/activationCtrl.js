@@ -110,16 +110,49 @@ app.controller('ActivationCtrl', [
       return url;
     };
 
+    var getDataFields = function(data) {
+      var fieldsToDrop = [
+        'steps_finished', 'activation_progress', 'locked',
+        'submitted', 'role', 'department', 'verification',
+        'can_submit', 'files'
+      ];
+
+      var isTimestampField = function(field) {
+        return (field.substr(-3) === '_at');
+      };
+
+      var isUrlField = function(field) {
+        return (field.substr(-4) === '_url');
+      };
+
+      // Reject any fields that match either of the
+      // three critera
+      return Object.keys(data).filter(function(key) {
+        return !((fieldsToDrop.indexOf(key) !== -1) ||
+          (isTimestampField(key)) ||
+          (isUrlField(key))
+        );
+      });
+    };
+
+
     $scope.getData = function() {
       var request = $http.get($scope.getUrl('fetch_details'));
       request.success(function (data) {
+
         var steps_finished = data.data.steps_finished;
+
         angular.forEach(steps_finished, function (value) {
           $scope.check[value] = true;
         });
+
         angular.forEach(data.data, function (value, key) {
           $scope.data[key] = value;
         });
+
+        // This is the list of data fields. These can be
+        // safely sent back whenever we edit something
+        $scope.dataFields = getDataFields(data.data);
         $scope.data.bank_account_number_confirmation = $scope.data.bank_account_number;
 
         angular.forEach(data.data.files, function (key) {
@@ -153,22 +186,38 @@ app.controller('ActivationCtrl', [
       });
     };
 
-    function saveStep(step) {
+    /**
+     * Returns an object with only save-able
+     * data fields inside it. This drops lots of
+     * fields as per $scope.dataFields
+     * which is set by getDataFields method above
+     * @return Object
+     */
+    var getDataToSave = function() {
+      var data = angular.copy($scope.data, {});
+
+      return $scope.dataFields.reduce(function (a, b){
+        a[b] = data[b];
+        return a;
+      },{});
+    };
+
+    function validateSave() {
       var data = $scope.data;
+      if (data.bank_account_number !== data.bank_account_number_confirmation) {
+        return 'Bank Account Number doesn\'t match';
+      }
+    }
 
-      var bankStep = 4;
-      if ($scope.accountDetails) {
-        bankStep = 2;
+    function saveStep(step) {
+      var error = validateSave();
+
+      if (error) {
+        $scope.alerts[step].addAlert('danger', error);
+        return;
       }
 
-      if (step === bankStep) {
-        if (data.bank_account_number !== data.bank_account_number_confirmation) {
-          $scope.alerts[step].addAlert('danger', 'Bank Account Number doesn\'t match');
-          return;
-        }
-        data = angular.copy(data, {});
-        delete data.bank_account_number_confirmation;
-      }
+      var data = getDataToSave();
 
       var request = $http({
         method: 'post',
@@ -176,11 +225,14 @@ app.controller('ActivationCtrl', [
         transformRequest: transformRequestAsFormPost,
         data: data
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts[step].addAlert('success', 'Step Saved Successfully', true);
           $scope.check[step] = true;
-          $scope.refreshUser(true);
+          if (!$scope.admin) {
+            $scope.refreshUser(true);
+          }
         } else {
           $scope.alerts[step].resetAlerts();
           angular.forEach(data.errors, function (value) {

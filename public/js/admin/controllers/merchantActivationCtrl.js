@@ -55,7 +55,7 @@ app.controller('MerchantActivationCtrl', [
       return (bn1 === bn2);
     };
 
-    $scope.getUrl = function(name, params) {
+    $scope.getUrl = function(name) {
       switch(name) {
         case 'fetch_details':
           return '/admin/merchant/' + $scope.merchant.id + '/activation';
@@ -70,7 +70,7 @@ app.controller('MerchantActivationCtrl', [
           return '/activation';
 
         case 'save_step':
-          return '/activation/save/step/' + params.step;
+          return '/admin/merchant/' + $scope.merchant.id + '/details';
       }
     };
 

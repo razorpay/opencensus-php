@@ -664,6 +664,11 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    public function updateMerchantDetails(string $id, array $input)
+    {
+        return (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($input, $id);
+    }
+
     /**
      * Logs a merchant being edited properly
      * @param  string $id Merchant Id
