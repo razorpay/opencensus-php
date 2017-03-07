@@ -79,14 +79,6 @@ app.controller('GenericEntityListCtrl', [
 
       $scope.query.skip = $scope.entity.skip;
 
-      // /live/payments
-      var baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 's';
-
-      // TODO: This is a hack, will need a proper pluralizer
-      if ($scope.entity.type === 'batch') {
-        baseURL = '/' + $scope.mode + '/' + $scope.entity.type + 'es';
-      }
-
       var request;
 
       var params = {};
