@@ -127,7 +127,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'success' => true,
+            ],
         ],
     ],
 
