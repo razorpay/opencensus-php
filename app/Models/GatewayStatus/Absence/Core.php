@@ -55,7 +55,10 @@ class Core extends Base\Core
 
             if ($needsUpdate === true)
             {
-                $editInput = $this->buildEditInput($input, $alreadyAvailable, $fieldsToBeUpdated);
+                $editInput = $this->buildEditInput(
+                    $input,
+                    $alreadyAvailable,
+                    $fieldsToBeUpdated);
 
                 return $this->edit($alreadyAvailable, $editInput);
             }
@@ -159,7 +162,7 @@ class Core extends Base\Core
         $scheduled = 0;
 
         if ((isset($input[Entity::SCHEDULED]) === true) and
-            ($input[Entity::SCHEDULED] === "1"))
+            ($input[Entity::SCHEDULED] === '1'))
         {
             $scheduled = 1;
         }
@@ -183,7 +186,7 @@ class Core extends Base\Core
             if ((in_array($network, [Entity::UNKNOWN, Entity::ALL], true) === true) and
                 (empty($input[Entity::NETWORK]) === false))
             {
-                $fieldsToBeUpdated [] = Entity::NETWORK;
+                $fieldsToBeUpdated[] = Entity::NETWORK;
 
                 $returnStatus = true;
             }
@@ -191,7 +194,7 @@ class Core extends Base\Core
             if ((in_array($cardType, [Entity::UNKNOWN, Entity::ALL], true) === true) and
                 (empty($input[Entity::CARD_TYPE]) === false))
             {
-                $fieldsToBeUpdated [] = Entity::CARD_TYPE;
+                $fieldsToBeUpdated[] = Entity::CARD_TYPE;
 
                 $returnStatus = true;
             }
@@ -199,7 +202,7 @@ class Core extends Base\Core
             if ((in_array($issuer, [Entity::UNKNOWN, Entity::ALL], true) === true) and
                 (empty($input[Entity::ISSUER]) === false))
             {
-                $fieldsToBeUpdated [] = Entity::ISSUER;
+                $fieldsToBeUpdated[] = Entity::ISSUER;
 
                 $returnStatus = true;
             }
@@ -220,12 +223,12 @@ class Core extends Base\Core
     {
         $editInput = $alreadyAvailable->toArray();
 
-        foreach($this->editableForDuplicate as $key)
+        foreach ($this->editableForDuplicate as $key)
         {
             $editInput[$key] = $input[$key];
         }
 
-        foreach($fieldsToBeUpdated as $key)
+        foreach ($fieldsToBeUpdated as $key)
         {
             $editInput[$key] = $input[$key];
         }

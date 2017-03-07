@@ -2,6 +2,7 @@
 
 namespace RZP\Models\GatewayStatus\Absence;
 
+use RZP\Exception\LogicException;
 use RZP\Models\Payment\Method;
 
 class InputFormatter
@@ -59,6 +60,9 @@ class InputFormatter
                     $input[Entity::ISSUER] = Entity::UNKNOWN;
                 }
                 break;
+
+            default:
+                throw new LogicalException("Unknown Method:". $input[Entity::METHOD]);
         }
 
         return $input;
