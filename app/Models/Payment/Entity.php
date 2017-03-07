@@ -426,7 +426,15 @@ class Entity extends Base\PublicEntity
         // Overriding extra attributes for S2S integration
         $this->metadata['ip'] = $input['ip'] ?? null;
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
-        $this->metadata['referer'] = $this->metdata['referer'] ?? $input['referer'];
+
+        // We should only set referer if input['referer'] is defined
+        // and metadata['referer'] is false because checkout also
+        // sends us the referer info and we don't want to override it
+        if ((isset($input['referer']) === true) and
+            (isset($this->metadata['referer']) === false))
+        {
+            $this->metadata['referer'] = $input['referer'];
+        }
     }
 
 // --------------------- Generators Ends ---------------------------------------
