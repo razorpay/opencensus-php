@@ -27,22 +27,15 @@ class CreateWorkflowActionComment extends Migration
             $table->char(Comment::ACTION_ID, Comment::ID_LENGTH);
             $table->char(Comment::ADMIN_ID, Comment::ID_LENGTH);
 
-
-            $table->boolean(Comment::ENCRYPTED)
-                  ->nullable();
-
-            $table->text(Comment::REQUEST);
-
             $table->foreign(Comment::ACTION_ID)
                   ->references(Action::ID)
-                  ->on(Table::ACTION_COMMENT)
+                  ->on(Table::WORKFLOW_ACTION)
                   ->on_delete('restrict');
 
             $table->foreign(Comment::ADMIN_ID)
                   ->references(Admin::ID)
-                  ->on(Table::ACTION_COMMENT)
+                  ->on(Table::ADMIN)
                   ->on_delete('restrict');
-
 
             $table->integer(Comment::CREATED_AT);
             $table->integer(Comment::UPDATED_AT);

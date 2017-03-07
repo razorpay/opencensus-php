@@ -5,6 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
+use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Workflow\Action\Timeline\Entity as Timeline;
 
 class CreateActionTimeline extends Migration
@@ -25,6 +26,8 @@ class CreateActionTimeline extends Migration
 
             $table->char(Timeline::ACTION_ID, Timeline::ID_LENGTH);
             $table->char(Timeline::ADMIN_ID, Timeline::ID_LENGTH);
+
+            $table->char(Timeline::STATE, 255);
 
             $table->foreign(Timeline::ACTION_ID)
                   ->references(Action::ID)

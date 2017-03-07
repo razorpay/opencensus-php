@@ -27,6 +27,12 @@ class CreateActionChecker extends Migration
             $table->char(Checker::ADMIN_ID, Checker::ID_LENGTH);
             $table->char(Checker::ACTION_ID, Checker::ID_LENGTH);
 
+            $table->tinyInteger(Checker::STEP)
+                  ->default(0);
+
+            $table->tinyInteger(Checker::APPROVED)
+                  ->default(0);
+
             $table->foreign(Checker::ACTION_ID)
                   ->references(Action::ID)
                   ->on(Table::WORKFLOW_ACTION)

@@ -6,6 +6,7 @@ use App;
 use Hash;
 use Carbon\Carbon;
 use RZP\Constants\Table;
+use RZP\Models\Base;
 use RZP\Models\Base\Traits\RevisionableTrait;
 
 class Entity extends Base\PublicEntity
