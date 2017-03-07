@@ -14,30 +14,41 @@
     </div>
     <div class="row wrapper">
       <div class="list-group">
-        <a href class="list-group-item">
+        <div class="list-group-item">
           <span class="pull-right">{{merchant.name}}</span>
           Name
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <a href="mailto:{{merchant.email}}" class="list-group-item">
           <span class="pull-right">{{merchant.email}}</span>
           Email
         </a>
-        <a href class="list-group-item">
+        <div href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.submitted == 1 ? 'Submitted' : 'Not Submitted'}}">
             <i class="fa" ng-class="{'fa-check text-success': merchant.submitted == 1, ' fa-times text-danger':merchant.submitted == 0}"></i>
           </span>
           Activation Form Submitted
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.locked == 1 ? 'Locked' : 'Unlocked'}}">
             <i class="fa" ng-class="{'fa-lock': merchant.locked == 1, ' fa-unlock':merchant.locked == 0}"></i>
           </span>
           Activation Form Status
-        </a>
-        <a href class="list-group-item">
+        </div>
+        <div href class="list-group-item">
           <span class="pull-right" tooltip="{{merchant.activated == 1 ? 'Activated' : 'Not Activated'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.activated == 1, 'fa-times text-danger':merchant.activated == 0}"></i></span>
           Activated
-        </a>
+        </div>
+        <div class="list-group-item" ng-show="data.locked">
+          <span class="pull-right">
+            <label class="i-switch m-t-xs m-r">
+              <input type="checkbox" name="admin_force_edit" ng-model="admin_force_edit"><i></i>
+            </label>
+          </span>
+          Force Edit
+          <span class="help-block">
+            The activation form is locked, please click this to confirm you want to edit the details.
+          </span>
+        </div>
       </div>
     </div>
   </div>

@@ -19,12 +19,23 @@ app.controller('MerchantActivationCtrl', [
     // This decides whether the admin context
     // options will be shown or not.
     $scope.admin = true;
+    $scope.admin_force_edit = false;
 
     $scope.verificationToolTip = {
       true: 'Business Name matches Company Register',
       false: "Business Name doesn't match company register",
       'pending': "Click the verify button to fetch company data and verify"
-    }
+    };
+
+    /**
+     * Either the edits must be forced, or the form must
+     * be unlocked
+     * @return bool
+     */
+    $scope.editable = function() {
+      return ($scope.admin_force_edit || $scope.data.locked === false);
+    };
+
     $scope.verifyBusinessName = function() {
       var company = null;
       try {
@@ -42,12 +53,15 @@ app.controller('MerchantActivationCtrl', [
       var bn2 = canonicalize(company);
 
       return (bn1 === bn2);
-    }
+    };
 
     $scope.getUrl = function(name, params) {
       switch(name) {
         case 'fetch_details':
           return '/admin/merchant/' + $scope.merchant.id + '/activation';
+
+        case 'fetch_merchant_details':
+          return '/admin/merchant/' + $scope.merchant.id + '/details';
 
         case 'upload_file':
           return '/activation/save/file';
@@ -59,6 +73,21 @@ app.controller('MerchantActivationCtrl', [
           return '/activation/save/step/' + params.step;
       }
     };
+
+    var fetchMerchantDetails = function() {
+      var request = $http.get($scope.getUrl('fetch_merchant_details'));
+      request.success(function (data) {
+        if (data.success) {
+          $scope.merchant = data.data.merchant;
+        } else {
+          $scope.alerts.addAlert('danger', 'Merchant Info could not be fetched');
+        }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', 'Merchant Info could not be fetched');
+      });
+    };
+
+    fetchMerchantDetails();
 
     $scope.verifyPAN = function (signatories, pan_name, pan_number) {
       for (var i in signatories) {

@@ -24,6 +24,16 @@ app.controller('ActivationCtrl', [
       6: {}
     };
 
+    /**
+     * TODO: Fix the merchant activation page
+     * so this uses true/false as well
+     *
+     * @see $scope.editable in merchantActivationCtrl.js
+     */
+    $scope.editable = function() {
+      return ($scope.data.locked === 0);
+    };
+
     $scope.formAlerts = alertsFactory.getHandler();
     $scope.alerts = {
       1: alertsFactory.getHandler(),
