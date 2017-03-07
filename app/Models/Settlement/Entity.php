@@ -71,11 +71,6 @@ class Entity extends Base\PublicEntity
         self::PUBLIC_ID,
     ];
 
-    protected $signedIds = [
-        self::BANK_ACCOUNT_ID,
-        self::TRANSACTION_ID,
-    ];
-
     // --------------------------------- relations -------------------------------
 
     public function bankTransferAttempts()

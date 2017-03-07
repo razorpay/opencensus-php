@@ -24,9 +24,9 @@ class CreateBankTransferAttemptsTable extends Migration
             $table->char(BankTransferAttempt::ID, BankTransferAttempt::ID_LENGTH)
                   ->primary();
 
-            $table->string(BankTransferAttempt::ENTITY_TYPE);
+            $table->string(BankTransferAttempt::ENTITY_TYPE, 20);
 
-            $table->string(BankTransferAttempt::ENTITY_ID);
+            $table->string(BankTransferAttempt::ENTITY_ID, BankTransferAttempt::ID_LENGTH);
 
             $table->char(BankTransferAttempt::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
@@ -56,7 +56,7 @@ class CreateBankTransferAttemptsTable extends Migration
             $table->string(BankTransferAttempt::CMS_REF_NO)
                   ->nullable();
 
-            $table->string(BankTransferAttempt::BATCH_TRANSFER_ID)
+            $table->string(BankTransferAttempt::BATCH_TRANSFER_ID, BatchTransfer::ID_LENGTH)
                   ->nullable();
 
             $table->integer(BankTransferAttempt::CREATED_AT);
