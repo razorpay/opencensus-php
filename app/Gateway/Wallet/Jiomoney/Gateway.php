@@ -455,6 +455,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
+        $gatewayPayment = $verify->payment;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -491,21 +492,21 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $verify->content = $this->getVerifyWalletCreateAttributes($verify);
+        $verify->content = $this->getVerifyWalletAttributes($verify);
+
+        $gatewayPayment->fill($verify->content);
+
+        $gatewayPayment->saveOrFail();
     }
 
-    protected function getVerifyWalletCreateAttributes($verify)
+    protected function getVerifyWalletAttributes($verify)
     {
         $payment = $this->input['payment'];
 
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            Entity::AMOUNT               => $payment[Payment::AMOUNT],
-            Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
             Entity::RECEIVED             => true,
-            Entity::EMAIL                => $payment[Payment::EMAIL],
-            Entity::CONTACT              => $this->getFormattedContact($payment[Payment::CONTACT]),
             Entity::STATUS_CODE          => StatusCode::SUCCESS,
             Entity::RESPONSE_CODE        => StatusCode::API_SUCCESS,
             Entity::RESPONSE_DESCRIPTION => 'APPROVED',
