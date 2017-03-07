@@ -203,15 +203,6 @@ class RawApiRequest
 
             $urlParams = json_decode(Request::query('url_params'), true);
 
-            if (isset($urlParams) && array_key_exists('{id}', $urlParams)) {
-                $modifiedResponse = array(
-                    'count' => 1,
-                    'entity' => 'collection',
-                    'items' => array($response)
-                );
-                $response = $modifiedResponse;
-            }
-
             return [null, $response];
         }
         // This captures all the errors that might happen for now

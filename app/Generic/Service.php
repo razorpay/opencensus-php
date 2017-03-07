@@ -25,7 +25,7 @@ class Service extends Base\Service
 
     public function makeRawApiCall($input, $path, $auth)
     {
-        $input['mode'] = 'live';
+        $input['mode'] = Input::get('mode') ?? 'live';
 
         $input['auth'] = $auth;
 
@@ -42,7 +42,7 @@ class Service extends Base\Service
 
     public function makeRawApiCallInternal($input, $path)
     {
-        $input['mode'] = 'live';
+        $input['mode'] = Input::get('mode') ?? 'live';
 
         $input['auth'] = 'internal'; // app auth
 

@@ -108,6 +108,7 @@ app.controller('GenericEntityListCtrl', [
       }
 
       params.query_params = q;
+      params.mode = $scope.mode;
 
       if ($scope.entity.type === 'payment') {
         if ($scope.entity.id === '') {
@@ -123,12 +124,8 @@ app.controller('GenericEntityListCtrl', [
         });
       }
       else {
-        params.url_params = {
-          '{id}': $scope.entity.id
-        };
-        request = $http.get('/admin/generic', {
-          params: params
-        });
+        var url = location.origin + '/#/app/payments/' + $scope.entity.id;
+        window.open(url, '_blank');
       }
 
       request.success(function (data) {
