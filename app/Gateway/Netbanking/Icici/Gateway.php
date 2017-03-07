@@ -8,7 +8,6 @@ use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
 use RZP\Gateway\Base\Verify;
-use RZP\Gateway\Base\Action;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
@@ -186,7 +185,7 @@ class Gateway extends Base\Gateway
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;
 
-        $data[RequestFields::MODE]  = Mode::VERIFY;
+        $data[RequestFields::MODE]  = Action::INQUIRY;
 
         $additionalData = $this->getPaymentReferenceData($input);
 
@@ -249,7 +248,7 @@ class Gateway extends Base\Gateway
         $amount = $input['payment'][Payment\Entity::AMOUNT] / 100;
 
         $data = [
-            RequestFields::MODE       => Mode::PAY,
+            RequestFields::MODE       => Action::PAY,
             RequestFields::PAYEE_ID   => $this->getPid(),
             RequestFields::SPID       => $this->getSpid(),
         ];
