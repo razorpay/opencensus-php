@@ -201,8 +201,6 @@ class RawApiRequest
 
             $response = $this->client->$method($this->path, $this->params)->json();
 
-            $urlParams = json_decode(Request::query('url_params'), true);
-
             return [null, $response];
         }
         // This captures all the errors that might happen for now
