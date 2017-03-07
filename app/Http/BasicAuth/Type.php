@@ -5,7 +5,7 @@ namespace RZP\Http\BasicAuth;
 class Type
 {
     /**
-     * Admin auth when a razorpay admin (person) is making a request.
+     * Admin auth when a organization admin (person) is making a request.
      */
     const ADMIN_AUTH        = 'admin';
 

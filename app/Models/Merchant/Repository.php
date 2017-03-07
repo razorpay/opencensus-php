@@ -358,27 +358,4 @@ class Repository extends Base\Repository
 
         return $account;
     }
-
-    /**
-     * Fetch merchant entity for account auth scoping
-     *
-     *
-     * @param string                $id
-     * @param Merchant\Entity|null  $merchant
-     *
-     * @return Merchant\Entity|null
-     */
-    public function findMerchantForAccountAuth(string $id, $merchant)
-    {
-        $query = $this->newQuery();
-
-        if (isset($merchant) === true)
-        {
-            // @todo: Private auth use-case - merchant needs access to APIs as his linked account (marketplace)
-
-            return null;
-        }
-
-        return $query->find($id);
-    }
 }

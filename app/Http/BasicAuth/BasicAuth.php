@@ -45,8 +45,8 @@ class BasicAuth
      * To support Account Auth: Allows API requests to be served under the
      * scope of a merchant ID that is sent as the value to this header
      *
-     * With admin auth and privilege auth   - set scope to any merchant
-     * For private auth (marketplace)       - set scope to any linked account (@todo)
+     * With admin auth and privilege auth   - set scope to any merchant under the current org
+     * For private auth (marketplace)       - set scope to any linked account
      */
     const ACCOUNT_HEADER_KEY = 'X-Razorpay-Account';
 
@@ -304,7 +304,7 @@ class BasicAuth
 
             if ($response === true)
             {
-                return;
+                return $this->checkAndSetAccountScope();
             }
 
             return $response;
@@ -315,7 +315,7 @@ class BasicAuth
 
             $this->setProxyTrue();
 
-            return;
+            return $this->checkAndSetAccountScope();
         }
 
         return $this->invalidApiKey();
@@ -589,15 +589,13 @@ class BasicAuth
         return null;
     }
 
-    protected function verifyAccountId(string $accountId)
+    protected function verifyAccountId(string & $accountId)
     {
-        $id = $accountId;
-
-        PublicEntity::stripSignIfExists($id);
-
-        $match = PublicEntity::verifyUniqueId($id, false);
-
-        if ($match !== 1)
+        try
+        {
+            Merchant\AccountEntity::verifyIdAndSilentlyStripSign($accountId);
+        }
+        catch (\Exception $e)
         {
             return false;
         }
@@ -1131,9 +1129,10 @@ class BasicAuth
 
         $account = $this->repo
                         ->merchant
-                        ->findMerchantForAccountAuth($this->getAccountId(), $this->merchant);
+                        ->find($this->getAccountId());
 
-        if ($account == null)
+        if (($account === null) or
+            ($this->validateAccountForCurrentAuthType($account) === false))
         {
             return $this->invalidAccountId();
         }
@@ -1198,8 +1197,8 @@ class BasicAuth
     }
 
     /**
-     * Check conditions where setting account auth via
-     * the `X-Razorpay-Account` header is allowed
+     * Check pre-conditions for setting account auth via
+     * the `X-Razorpay-Account` header
      *
      * @return bool
      */
@@ -1208,23 +1207,58 @@ class BasicAuth
         $authType = $this->getAuthType();
 
         if (($this->getAccountId() === '') or
-            (isset($authType) === false))
+            (empty($authType) === true))
         {
             return false;
         }
 
-        if (($this->isAdminAuth() === true) or
-            ($this->isPrivilegeAuth() === true))
+        if ($this->isPrivilegeAuth() === true)
         {
             return true;
         }
 
+        // For Admin auth requests - $this->admin should be set
+        if (($this->isAdminAuth() === true) and
+            (empty($this->admin) === false))
+        {
+            return true;
+        }
+
+        // For Private auth requests - $this->merchant should be set
         if (($this->isPrivateAuth() === true) and
-            (isset($this->merchant) === false))
+            (empty($this->merchant) === false))
         {
             return true;
         }
 
         return false;
+    }
+
+    /**
+     * Returns true if the account fetched can be set as merchant
+     * for the current auth type
+     *
+     * @param $account
+     *
+     * @return bool
+     */
+    protected function validateAccountForCurrentAuthType(Merchant\Entity $account) : bool
+    {
+        $authType = $this->getAuthType();
+
+        switch ($authType)
+        {
+            case Type::PRIVATE_AUTH:
+                return ($account->getParentId() === $this->getMerchant()->getId());
+
+            case Type::ADMIN_AUTH:
+                return ($account->getOrgId() === $this->getAdmin()->getOrgId());
+
+            case Type::PRIVILEGE_AUTH:
+                return true;
+
+            default:
+                return false;
+        }
     }
 }
