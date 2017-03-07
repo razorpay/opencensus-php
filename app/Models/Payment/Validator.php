@@ -44,9 +44,9 @@ class Validator extends Base\Validator
         'on_hold'                 => 'sometimes|boolean',
         // 'on_hold_until'           => 'sometimes|integer',
         'ip'                      => 'sometimes|ip',
-        'referer'                 => 'sometimes|string',
+        'referer'                 => 'sometimes|string|max:2083',
         'user_agent'              => 'sometimes|string',
-        '_'                       => 'sometimes',
+        '_'                       => 'sometimes|array',
     ];
 
     protected static $captureRules = [

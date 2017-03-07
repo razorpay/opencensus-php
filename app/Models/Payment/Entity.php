@@ -233,17 +233,22 @@ class Entity extends Base\PublicEntity
         self::TOKEN_ID,
     ];
 
-    protected $guarded = array(self::ID);
+    protected $guarded = [self::ID];
 
-    protected $appends = array(self::PUBLIC_ID, self::CAPTURED);
+    protected $appends = [self::PUBLIC_ID, self::CAPTURED];
 
-    protected static $modifiers = array(
+    protected static $modifiers = [
         self::CONTACT,
         self::BANK,
         'method_based_input',
-        'convert_empty_strings_to_null');
+        'convert_empty_strings_to_null'
+    ];
 
-    protected $dates = array(self::AUTHORIZED_AT, self::CAPTURED_AT);
+    protected static $generators = [
+        'metadata',
+    ];
+
+    protected $dates = [self::AUTHORIZED_AT, self::CAPTURED_AT];
 
     protected $defaults = [
         self::STATUS               => Status::CREATED,
@@ -411,6 +416,20 @@ class Entity extends Base\PublicEntity
     }
 
 // --------------------- Modifiers Ends ----------------------------------------
+
+// --------------------- Generators Ends ---------------------------------------
+
+    protected function generateMetadata(&$input)
+    {
+        $this->metadata = $input['_'] ?? [];
+
+        // Overriding extra attributes for S2S integration
+        $this->metadata['ip'] = $input['ip'] ?? null;
+        $this->metadata['user_agent'] = $input['user_agent'] ?? null;
+        $this->metadata['referer'] = $this->metdata['referer'] ?? $input['referer'];
+    }
+
+// --------------------- Generators Ends ---------------------------------------
 
 // ----------------------- Setters ---------------------------------------------
 
@@ -596,29 +615,6 @@ class Entity extends Base\PublicEntity
     public function setEmailAttribute($email)
     {
         $this->attributes[self::EMAIL] = mb_strtolower($email);
-    }
-
-    public function setMetadata($metadata)
-    {
-        $this->metadata = $metadata;
-    }
-
-    public function setIpInMetadata($input)
-    {
-        $this->metadata['ip'] = $input['ip'] ?? null;
-    }
-
-    public function setRefererInMetadata($input)
-    {
-        if (isset($input['referer']) === true)
-        {
-            $this->metadata['referer'] = $input['referer'];
-        }
-    }
-
-    public function setUserAgentInMetadata($input)
-    {
-        $this->metadata['user_agent'] = $input['user_agent'] ?? null;
     }
 
     public function setSave($save)

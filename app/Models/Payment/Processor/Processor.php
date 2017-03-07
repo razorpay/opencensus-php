@@ -675,12 +675,7 @@ class Processor
 
         $this->setInvoiceDetails($payment);
 
-        $metadata = isset($input['_']) ? $input['_'] : null;
-
-        $payment->setMetadata($metadata);
-        $payment->setIpInMetadata($input);
-        $payment->setUserAgentInMetadata($input);
-        $payment->setRefererInMetadata($input);
+        $metadata = $payment->getMetadata();
 
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,

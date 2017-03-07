@@ -1753,3 +1753,6 @@ ALTER TABLE transfers
 ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
+
+ALTER TABLE payment_analytics
+    MODIFY COLUMN referer VARCHAR(2083) NULL;
