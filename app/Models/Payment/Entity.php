@@ -603,12 +603,12 @@ class Entity extends Base\PublicEntity
         $this->metadata = $metadata;
     }
 
-    public function setIp($input)
+    public function setIpInMetadata($input)
     {
         $this->metadata['ip'] = $input['ip'] ?? null;
     }
 
-    public function setReferer($input)
+    public function setRefererInMetadata($input)
     {
         if (isset($input['referer']) === true)
         {
@@ -616,7 +616,7 @@ class Entity extends Base\PublicEntity
         }
     }
 
-    public function setUserAgent($input)
+    public function setUserAgentInMetadata($input)
     {
         $this->metadata['user_agent'] = $input['user_agent'] ?? null;
     }
