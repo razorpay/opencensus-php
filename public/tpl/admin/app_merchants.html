@@ -35,12 +35,27 @@
         </div>
       </div>
     </div>
+    <div class="row wrapper">
+      <div class="col-md-3 m-b-xs">
+        <span tooltip="Show only Marketpace accounts">
+          <input type="checkbox" name="accounts" ng-model="sub_accounts.all" ng-change="sub_accounts.id='';filter()"/>
+          <label>Linked-accounts only</label>
+        </span>
+      </div>
+      <div class="col-md-4 m-b-xs">
+        <span tooltip="List sub-accounts created by a Marketplace merchant">
+          <label>Linked-accounts for ID:</label>
+          <input type="text" class="form-control input-sm w-sm inline m-r" name="accounts" ng-model="sub_accounts.id" ng-enter="filter()"/>
+        </span>
+      </div>
+    </div>
     <div class="table-responsive">
       <table ui-jq="footable" data-filter="#filter" data-page="false" class="merchants-table table-responsive table table-striped b-t b-light">
         <thead>
           <tr>
             <th>Merchant Id</th>
             <th>Referrer</th>
+            <th>Marketplace Owner</th>
             <th>Name</th>
             <th>Email</th>
             <th data-type="numeric">Activation Progress (%)</th>
@@ -55,6 +70,7 @@
           <tr ng-repeat="row in merchants" class="merchants-table-body">
             <td><a ui-sref="app.merchants.detail({id:row.id})" target="_blank">{{row.id}}</a></td>
             <td>{{row.referrer}}</td>
+            <td><a ui-sref="app.merchants.detail({id:row.parent_id})" target="_blank">{{row.parent_id}}</a></td>
             <td>{{row.name}}</td>
             <td>{{row.email}}</td>
             <td data-value="{{row.activation_progress}}">

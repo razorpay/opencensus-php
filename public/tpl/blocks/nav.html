@@ -90,7 +90,13 @@
       </a>
     </li>
 
-
+    <li ng-show="merchant && user.tags && user.tags.indexOf('Marketplace') != -1">
+      <a id="accountsNav" ui-sref="app.accounts">
+        <i class="fa fa-shopping-cart icon text-info-lter"></i>
+        <b class="badge bg-success dk pull-right ng-binding">beta</b>
+        <span>Accounts</span>
+      </a>
+    </li>
 <!--
     <li ng-show="merchant">
       <a id="plansNav" ui-sref="app.plans">

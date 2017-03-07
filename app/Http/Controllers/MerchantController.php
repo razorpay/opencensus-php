@@ -115,42 +115,74 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getActivationDetails()
+    public function getActivationDetails($accountId = null)
     {
-        $response = (new MerchantDetails\Service)->fetchDetails();
+        $service = new MerchantDetails\Service;
+
+        if ($accountId !== null)
+        {
+            $service->forAccount($accountId);
+        }
+
+        $response = $service->fetchDetails();
 
         return AppResponse::jsonResponse([], $response);
     }
 
-    public function postActivation()
+    public function postActivation($accountId = null)
     {
-        $error = (new MerchantDetails\Service)->submitDetails();
+        $service = new MerchantDetails\Service;
+
+        if ($accountId !== null)
+        {
+            $service->forAccount($accountId);
+        }
+
+        $error = $service->submitDetails();
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationStep($stepNumber)
+    public function postSaveActivationStep($stepNumber, $accountId = null)
     {
         $input = Input::all();
 
-        if ((int) $stepNumber !== 5)
+        $service = new MerchantDetails\Service;
+
+        $uploadStep = 5;
+
+        if ($accountId !== null)
         {
-            $error = (new MerchantDetails\Service)->saveDetails($stepNumber, $input);
+            $service->forAccount($accountId);
+
+            $uploadStep = 3;
+        }
+
+        if ((int) $stepNumber !== $uploadStep)
+        {
+            $error = $service->saveDetails($stepNumber, $input);
         }
         else
         {
-            $error = (new MerchantDetails\Service)->checkUploads();
+            $error = $service->checkUploads();
 
         }
 
         return AppResponse::jsonResponse($error);
     }
 
-    public function postSaveActivationFile()
+    public function postSaveActivationFile($accountId = null)
     {
         $input = Input::all();
 
-        $error = (new MerchantDetails\Service)->saveUploadedFile($input);
+        $service = new MerchantDetails\Service;
+
+        if ($accountId !== null)
+        {
+            $service->forAccount($accountId);
+        }
+
+        $error = $service->saveUploadedFile($input);
 
         return AppResponse::jsonResponse($error);
     }
@@ -622,6 +654,17 @@ class MerchantController extends Controller
         $input = $request->all();
 
         list($error, $data)  = (new Merchant\Service)->deleteItem($mode, $id);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
+    public function getAccounts(Request $request, $mode)
+    {
+        $this->checkMode($mode);
+
+        $input = $request->all();
+
+        list($error, $data) = (new Api\Service)->fetchCollectionForMarketplaceAccounts($input);
 
         return AppResponse::jsonResponse($error, $data);
     }

@@ -72,7 +72,7 @@
           ng-show="admin.permissions.indexOf('send_newsletter') !== -1">
           Send Merchant Newsletter
         </a>
-        <a href class="list-group-item" ng-click="openAddSchedule()">
+        <a href class="list-group-item" ng-click="openAddSchedule()" ng-show="admin.permissions.indexOf('schedule_create') !== -1">
           Create Schedule
         </a>
         <a href class="list-group-item" ng-click="triggerError()"

@@ -97,7 +97,7 @@ class RawApiRequest
         $this->params['auth'] = ["rzp_{$mode}_admin", $token];
     }
 
-    protected function setApiCredentials($mode, $merchantId='')
+    protected function setApiCredentials($mode, $merchantId = '')
     {
         $id = 'rzp_'.$mode;
 

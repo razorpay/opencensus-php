@@ -180,6 +180,9 @@ var app = angular.module('app', [
     }).state('app.profile', {
       url: '/profile',
       templateUrl: 'tpl/app_profile.html'
+    }).state('app.accounts', {
+      url: '/accounts',
+      templateUrl: 'tpl/app_accounts.html'
     })
 
     // React

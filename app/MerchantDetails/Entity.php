@@ -254,7 +254,7 @@ class Entity extends Base\Entity
         ];
     }
 
-    public function checkUploadedFiles()
+    public function checkUploadedFiles($isAccount = false)
     {
         $error = array();
 
@@ -293,7 +293,7 @@ class Entity extends Base\Entity
         return array_diff($steps, $stepsFinished);
     }
 
-    public function finishStep($step, $input)
+    public function finishStep($step, $input, $account = false)
     {
         $error = $this->edit($input, 'step'.$step);
 
