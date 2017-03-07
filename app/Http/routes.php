@@ -181,11 +181,6 @@ Route::group(['middleware' => ['web']], function () {
 
         Route::get('/features', 'MerchantController@getMerchantFeatures');
         Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
-
-        Route::get('/generic', 'GenericController@getGeneric');
-        Route::post('/generic', 'GenericController@postGeneric');
-        Route::put('/generic', 'GenericController@putGeneric');
-        Route::delete('/generic', 'GenericController@deleteGeneric');
     });
 
     Route::group(['middleware'  =>  'admin'], function()

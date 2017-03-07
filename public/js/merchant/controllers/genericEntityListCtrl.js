@@ -71,57 +71,6 @@ app.controller('GenericEntityListCtrl', [
       }
     }
 
-    user.identity().then(function (data) {
-      $scope.user = data;
-    });
-
-    // This stores the orderIds, since we can't maintain that inside items itself
-    $scope.orders = {};
-
-    $scope.$watch('entity.items', function (payments) {
-      for (var i = payments.length - 1; i >= 0; i--) {
-        var orderId = getOrderId(payments[i]);
-        if (orderId !== null) {
-          $scope.orders[payments[i].id] = orderId;
-        };
-      };
-    });
-
-    var getOrderId = function (payment) {
-      var notes = payment.notes;
-      if (notes === [] || notes === {}) {
-        return null;
-      };
-
-      var validOrderIds = ['order_id', 'orderId'];
-      var orderIdSuffix = "_order_id";
-
-      for (var i = validOrderIds.length - 1; i >= 0; i--) {
-        var validOrderId = validOrderIds[i];
-        if (typeof notes[validOrderId] !== 'undefined') {
-          return notes[validOrderId];
-        };
-      };
-
-      // Now we try for suffixes
-      var suffixLength = orderIdSuffix.length;
-      for (var key in notes) {
-        var index = -1 * suffixLength;
-        var suffix = key.substr(index);
-        if (suffix === orderIdSuffix) {
-          return notes[key];
-        };
-      };
-
-      // We couldn't find anything in payments
-      return null;
-    };
-
-    // If any payment has an Order Id, this will return true
-    $scope.hasOrderId = function () {
-      return Object.keys($scope.orders).length > 0;
-    };
-
     function generateTable() {
       if (!$scope.entity.type) {
         console.log('Error: No Entity Type Sepcified');
@@ -165,10 +114,11 @@ app.controller('GenericEntityListCtrl', [
       if (q.notes === '') {
         delete q.notes;
       }
+
       params.query_params = q;
 
       params.type = 'merchant';
-      params.merchant_id = '7O1Zj6BYJk3saU'; // To be made dynamic
+      params.merchant_id = user.getIdentity().current;
 
       if ($scope.entity.type === 'payment') {
         if ($scope.entity.id === '') {
@@ -176,24 +126,10 @@ app.controller('GenericEntityListCtrl', [
         } else {
           params.route_name = 'payment_fetch_by_id';
         }
-      } else if ($scope.entity.type === 'order') {
-        if ($scope.entity.id === '') {
-          params.route_name = 'order_fetch';
-        } else {
-          params.route_name = 'order_fetch_by_id';
-        }
-      } else if ($scope.entity.type === 'refund') {
-        if ($scope.entity.id === '') {
-          params.route_name = 'refund_fetch_multiple';
-        } else {
-          params.route_name = 'refund_fetch_by_id';
-        }
       }
 
-      // Figure out the proper URL to hit if we are fetching just a single
-      // entity or a collection
       if ($scope.entity.id === '') {
-        request = $http.get('/generic', {
+        request = $http.get('/admin/generic', {
           params: params
         });
       }
@@ -201,7 +137,7 @@ app.controller('GenericEntityListCtrl', [
         params.url_params = {
           '{id}': $scope.entity.id
         };
-        request = $http.get('/generic', {
+        request = $http.get('/admin/generic', {
           params: params
         });
       }
