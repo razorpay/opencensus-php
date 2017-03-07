@@ -9,6 +9,7 @@ use phpseclib\Crypt;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
 
 class NodalAccount extends Base\Core
 {
@@ -149,6 +150,10 @@ class NodalAccount extends Base\Core
             $message->to($emails);
 
             $message->attach($fullPath);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_SETTLEMENT_FILES);
         });
     }
 }

@@ -39,8 +39,6 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
-        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
-
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);

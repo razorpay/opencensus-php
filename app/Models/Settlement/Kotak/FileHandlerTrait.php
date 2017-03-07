@@ -32,12 +32,10 @@ trait FileHandlerTrait
         return $url;
     }
 
-    public function writeToTextFileH2H($txt)
+    public function writeToTextFileH2H($name, $txt)
     {
         try
         {
-            $name = 'RAZORNODAL\$\$'. Carbon::now('Asia/Kolkata')->format('dmYHis') . '.txt';
-
             $fullpath = $this->saveLocally($name, $txt);
 
             $bucket = 'h2h_bucket';
@@ -425,7 +423,7 @@ trait FileHandlerTrait
         }
         catch (\Exception $e)
         {
-            $this->trace->traceException(
+            $this->trace()->traceException(
                 $e,
                 Trace::WARNING,
                 TraceCode::FILE_PERMISSION_CHANGE_FAILED,

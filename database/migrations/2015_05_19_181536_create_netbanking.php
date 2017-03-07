@@ -27,6 +27,8 @@ class CreateNetbanking extends Migration
             $table->tinyInteger('received')->default(0);
             $table->string('client_code')->nullable();
             $table->string('merchant_code')->nullable();
+            $table->string('customer_id')->nullable();
+            $table->string('customer_name')->nullable();
             $table->string('bank_payment_id')->nullable();
             $table->bigInteger('int_payment_id')->nullable();
             $table->string('account_number')->nullable();

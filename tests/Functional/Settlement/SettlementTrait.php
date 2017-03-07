@@ -90,7 +90,7 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = true)
+    protected function generateSetlReconciliationFile($setlFile, $generateFailedReconciliations = false)
     {
         $uploadedFile = $this->createUploadedFile($setlFile);
 

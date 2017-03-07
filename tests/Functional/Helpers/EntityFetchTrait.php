@@ -23,7 +23,7 @@ trait EntityFetchTrait
         return null;
     }
 
-    protected function getEntities($entity, array $input = array(), $admin = false)
+    protected function getEntities(string $entity, array $input = array(), $admin = false)
     {
         $this->ba->proxyAuth();
 

@@ -53,6 +53,29 @@ class FirstDataGatewayTest extends TestCase
         $this->assertEquals($paymentRes['gateway'], 'first_data');
     }
 
+    public function testIciciCardIsFiltered()
+    {
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $payment = $this->payment;
+
+        $payment['card']['number'] = '6074667022059103';
+
+        $this->fixtures->create('iin',
+            [
+                'iin'    => '607466',
+                'issuer' => 'ICIC',
+            ]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentRes = $this->getLastPayment(true);
+
+        // FirstData is preferred over Sharp, but does not get selected
+        // as ICICI cards are disabled on FirstData
+        $this->assertNotEquals($paymentRes['gateway'], 'first_data');
+    }
+
     public function testPaymentVerify()
     {
         $payment = $this->doAuthAndCapturePayment($this->payment);

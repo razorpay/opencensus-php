@@ -23,7 +23,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '1000AxisMigsTl' => [
             'gateway'    => Gateway::AXIS_MIGS,
-            'load'       => 25,
+            'load'       => 45,
         ],
 
         '5yKTyCuDne8eiz' => [

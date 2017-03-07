@@ -329,8 +329,10 @@ class Gateway extends Base\Gateway
                 Trace::ERROR,
                 TraceCode::GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS,
                 [
-                    'payment_id' => $input['payment']['id'],
-                    'input' => $input
+                    'payment_id'    => $input['payment']['id'],
+                    'refund_id'     => $input['refund']['id'],
+                    'refund_amount' => $input['refund']['amount'],
+                    'gateway'       => $this->gateway
                 ]);
 
             //
@@ -345,7 +347,23 @@ class Gateway extends Base\Gateway
 
         $attributes = $this->getRefundAttributesFromRefundResponse($input, $content);
 
-        $this->createGatewayRefundEntity($attributes);
+        //
+        // This is required when we are marking the refund as successful from initiated.
+        // But, if the refund had initially failed, the verify refund would return
+        // back failed, in which case, we would RE-INITIATE the refund. When we re-initiate,
+        // we don't create a new refund entity, but update the existing refund
+        // entity (which has status = initiated).
+        //
+        $wallet = $this->repo->findByRefundId($input['refund']['id']);
+
+        if ($wallet !== null)
+        {
+            $this->updateGatewayRefundEntity($wallet, $attributes, false);
+        }
+        else
+        {
+            $this->createGatewayRefundEntity($attributes);
+        }
     }
 
     public function alreadyRefunded(array $input)
@@ -407,6 +425,79 @@ class Gateway extends Base\Gateway
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_WALLET_INSUFFICIENT_BALANCE);
         }
+    }
+
+    /**
+     * Validate if the refund was successfully processed on freecharge's end
+     *
+     * @param array $input
+     *
+     * @return array
+     * @throws Exception\GatewayErrorException
+     * @throws Exception\GatewayRequestException
+     * @throws Exception\GatewayTimeoutException
+     * @throws Exception\RuntimeException
+     */
+    public function validateUnknownRefund(array $input)
+    {
+        $this->action($input, Action::VERIFY);
+
+        $request = $this->getRefundVerifyRequestArray($input);
+
+        $response = $this->sendGatewayRequest($request);
+
+        $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_RESPONSE,
+            [
+                'content'    => $content,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        $this->handleRequestFailed($response);
+
+        $wallet = $this->repo->findByRefundId($input['refund']['id']);
+
+        $data = [
+            'success'    => null,
+            'refund_id'  => $input['refund']['id'],
+            'payment_id' => $input['payment']['id'],
+        ];
+
+        if (isset($content[ResponseFields::STATUS]) === false)
+        {
+            $data['success'] = false;
+
+            $this->handleRefundOnValidationFailure($input);
+
+            return $data;
+        }
+
+        switch ($content[ResponseFields::STATUS])
+        {
+            case Status::TRANSACTION_SUCCESS:
+                $data['success'] = $this->validateRefundOnSuccess($wallet);
+                break;
+
+            case Status::TRANSACTION_PENDING:
+            case Status::TRANSACTION_INITIATED:
+                $data['success'] = 'unknown';
+                break;
+
+            case Status::TRANSACTION_FAILED:
+                $data['success'] = false;
+
+                $this->handleRefundOnValidationFailure($input);
+
+                break;
+
+            default:
+                $data['success'] = 'unknown';
+        }
+
+        return $data;
     }
 
     public function createRefundRecord(array $input)
@@ -536,23 +627,7 @@ class Gateway extends Base\Gateway
     {
         $this->action($input, Action::VERIFY);
 
-        $requestContent = [
-            RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
-            RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
-            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
-        ];
-
-        $requestContent[RequestFields::CHECKSUM] = $this->getHashOfArray($requestContent);
-
-        $request = $this->getCustomRequestArray($requestContent, 'get');
-
-        $this->trace->info(
-            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
-            [
-                'request'    => $request,
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
-            ]);
+        $request = $this->getRefundVerifyRequestArray($input);
 
         $response = $this->sendGatewayRequest($request);
 
@@ -608,6 +683,16 @@ class Gateway extends Base\Gateway
         }
 
         return $terminal['gateway_merchant_id'];
+    }
+
+    protected function getDealerId($terminal)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            return $this->config['test_dealer_id'];
+        }
+
+        return $terminal['gateway_merchant_id2'];
     }
 
     protected function getUrlDomain()
@@ -760,14 +845,21 @@ class Gateway extends Base\Gateway
 
     protected function getDebitRequestArray($input)
     {
-        $content = array(
+        $content = [
             RequestFields::ACCESS_TOKEN    => '',
             RequestFields::AMOUNT          => (string) ($input['payment']['amount'] / 100),
             RequestFields::CHANNEL         => self::DEFAULT_TXN_CHANNEL,
             RequestFields::CURRENCY        => $input['payment']['currency'],
             RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
             RequestFields::MERCHANT_TXN_ID => $input['payment']['public_id'],
-        );
+        ];
+
+        $dealerId = $this->getDealerId($input['terminal']);
+
+        if (empty($dealerId) === false)
+        {
+            $content[RequestFields::DEALER_ID] = $dealerId;
+        }
 
         $this->traceGatewayPaymentRequest($content, $input, TraceCode::GATEWAY_PAYMENT_DEBIT_REQUEST);
 
@@ -1071,6 +1163,29 @@ class Gateway extends Base\Gateway
         return $contentToSave;
     }
 
+    protected function getRefundVerifyRequestArray(array $input)
+    {
+        $content = [
+            RequestFields::MERCHANT_ID     => $this->getMerchantId($input['terminal']),
+            RequestFields::MERCHANT_TXN_ID => $input['refund']['id'],
+            RequestFields::TXN_TYPE        => TxnType::CANCELLATION_REFUND,
+        ];
+
+        $content[RequestFields::CHECKSUM] = $this->getHashOfArray($content);
+
+        $request = $this->getCustomRequestArray($content, 'get');
+
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VERIFY_REQUEST,
+            [
+                'request'    => $request,
+                'gateway'    => $this->gateway,
+                'payment_id' => $input['payment']['id'],
+            ]);
+
+        return $request;
+    }
+
     protected function getVerifyRequestArray($input)
     {
         $wallet = $this->repo->findByPaymentIdAndActionOrFail(
@@ -1208,5 +1323,34 @@ class Gateway extends Base\Gateway
     protected function getBalanceKeyForCache($payment)
     {
         return self::BALANCE_CACHE_KEY . $payment['id'];
+    }
+
+    protected function validateRefundOnSuccess(WalletEntity $wallet)
+    {
+        // updateGatewayPaymentEntity takes mapped attributes
+        $refundAttr = [
+            RequestFields::STATUS => Status::TRANSACTION_SUCCESS,
+        ];
+
+        $this->updateGatewayRefundEntity($wallet, $refundAttr);
+
+        // return success as true
+        return true;
+    }
+
+    public function handleRefundOnValidationFailure(array $input)
+    {
+        $this->trace->info(
+            TraceCode::GATEWAY_REFUND_VALIDATION_FAILED,
+            [
+                'payment_id' => $input['payment']['id'],
+                'refund_id'  => $input['refund']['id'],
+                'gateway'    => $this->gateway,
+            ]);
+
+        //
+        // If the refund failed, attempt the refund again.
+        //
+        $this->refund($input);
     }
 }

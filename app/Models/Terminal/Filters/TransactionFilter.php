@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -15,21 +16,13 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
-    const CORPORATE_IFSC = [
-        IFSC::ICIC
-    ];
-
-    const MUTUAL_FUNDS_IFSC = [
-        IFSC::SBBJ,
-        IFSC::SBHY,
-        IFSC::SBIN,
-        IFSC::SBMY,
-        IFSC::SBTR,
-        IFSC::STBP,
-        IFSC::STCB,
-        Netbanking::PUNB_C,
-        Netbanking::PUNB_R,
-        IFSC::CNRB,
+    const DISALLOW_EDUCATION_IFSC = [
+        IFSC::ICIC,
+        IFSC::ALLA,
+        IFSC::DBSS,
+        IFSC::IDFB,
+        IFSC::SVCB,
+        IFSC::UTIB,
     ];
 
     protected $properties = [
@@ -38,9 +31,9 @@ class TransactionFilter extends Terminal\Filter
         'currency',
         'international',
         'bank',
+        'education_bank',
         'amount',
         'maestro',
-        'netbanking_billdesk',
         'recurring',
     ];
 
@@ -154,6 +147,34 @@ class TransactionFilter extends Terminal\Filter
 
             return in_array($terminalGateway, $gateways);
         }
+        else if ($input['payment']->isCard())
+        {
+            $issuer = $input['payment']->card->getIssuer();
+
+            if (($issuer === Issuer::ICIC) and
+                ($terminal->getGateway() === Gateway::FIRST_DATA))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function educationBankFilter($terminal, $input)
+    {
+        if (($input['payment']->isNetbanking() === true) and
+            ($terminal->getGateway() === Gateway::BILLDESK))
+        {
+            $bank = $input['payment']->getBank();
+
+            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
+            if (($terminal->getId() === '7KORSqVp2oR0GH') and
+                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
+            {
+                return false;
+            }
+        }
 
         return true;
     }
@@ -177,58 +198,6 @@ class TransactionFilter extends Terminal\Filter
         return true;
     }
 
-    public function netbankingBilldeskFilter($terminal, $input)
-    {
-        $bankIfsc = array_merge(self::CORPORATE_IFSC, self::MUTUAL_FUNDS_IFSC);
-
-        $bank = $input['payment']->getBank();
-
-        $gateway = $terminal->getGateway();
-
-        $category2 = $input['merchant']->getCategory2();
-
-        $networkCategory = $terminal->getNetworkCategory();
-
-        if (($input['payment']->isNetbanking()) and
-            (in_array($bank, $bankIfsc, true) === true) and
-            ($gateway === Gateway::BILLDESK))
-        {
-            // Two rules to be checked
-            switch ($category2)
-            {
-                // If securities or commodities then the shared terminal
-                // should not be used, i.e on the shared terminal return
-                // false.
-                case 'securities' :
-                case 'commodities' :
-                    return ($terminal->isShared() === false);
-                    break;
-
-                // If corporate or mutual_funds then the corresponding
-                // terminal should not be used, as ICIC is not being allowed
-                // on that terminal
-                case 'corporate':
-                    if (in_array($bank, self::CORPORATE_IFSC, true) === false)
-                    {
-                        return true;
-                    }
-
-                    return ($networkCategory !== $category2);
-                    break;
-
-                case 'mutual_funds':
-                    if (in_array($bank, self::MUTUAL_FUNDS_IFSC, true) === false)
-                    {
-                        return true;
-                    }
-
-                    return ($networkCategory !== $category2);
-                    break;
-            }
-        }
-
-        return true;
-    }
 
     public function recurringFilter($terminal, $input)
     {

@@ -50,21 +50,55 @@ class Gateway extends Base\Gateway
         return $refund;
     }
 
+    private function updateWalletEntity($wallet, $attributes)
+    {
+        $wallet->fill($attributes);
+
+        $this->repo->saveOrFail($wallet);
+
+        return $wallet;
+    }
+
     /*
      * Updates the gateway payment entity
      *
      * @param gatewayPayment Wallet\Base\Entity      Gateway Payment Entity
      * @param attributes     array
+     * @param mapped         boolean                 If the attrs are mapped to gateway codes
      */
-    protected function updateGatewayPaymentEntity($gatewayPayment, $attributes)
+    protected function updateGatewayPaymentEntity(
+        $gatewayPayment,
+        $attributes,
+        $mapped = true)
     {
-        $attr = $this->getMappedAttributes($attributes);
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
 
-        $gatewayPayment->fill($attr);
+        return $this->updateWalletEntity($gatewayPayment, $attributes);
+    }
 
-        $this->repo->saveOrFail($gatewayPayment);
+    /**
+     * Updates the gateway refund entity
+     *
+     * @param      $gatewayPayment
+     * @param      $attributes
+     * @param bool $mapped
+     *
+     * @return
+     */
+    protected function updateGatewayRefundEntity(
+        $gatewayPayment,
+        $attributes,
+        $mapped = true)
+    {
+        if ($mapped === true)
+        {
+            $attributes = $this->getMappedAttributes($attributes);
+        }
 
-        return $gatewayPayment;
+        return $this->updateWalletEntity($gatewayPayment, $attributes);
     }
 
     protected function getNewGatewayPaymentEntity()

@@ -64,16 +64,27 @@ class Server extends Base\Mock\Server
             $response[ResponseFields::AMOUNT] = 100;
 
             // To throw failed refund data flow
-            if ($merchantTxnId === 'failedRefund12')
+            switch($merchantTxnId)
             {
-                $response[ResponseFields::STATUS] = 'FAILED';
-            }
-            else if ($merchantTxnId === 'failedRefund13')
-            {
-                // throw transaction does not exist error
-                $response = $this->getErrorResponse('E008');
+                case 'failedRefund12':
+                    $response[ResponseFields::STATUS] = 'FAILED';
+                    break;
 
-                return $response;
+                case 'pendingRefund1':
+                    $response[ResponseFields::STATUS] = 'PENDING';
+                    break;
+
+                case 'initiatedRfnd1':
+                    $response[ResponseFields::STATUS] = 'INITIATED';
+                    break;
+
+                case 'failedRefund13':
+                    // throw transaction does not exist error
+                    $response = $this->getErrorResponse('E008');
+                    return $response;
+
+                default:
+                    $response[ResponseFields::STATUS] = 'SUCCESS';
             }
 
             $response['checksum'] = $this->generateHash($response);
@@ -112,7 +123,7 @@ class Server extends Base\Mock\Server
         $response = [
             ResponseFields::STATUS                 => Freecharge\Status::TRANSACTION_INITIATED,
             ResponseFields::REFUND_TXN_ID          => random_integer(5),
-            ResponseFields::REFUND_MERCHANT_TXN_ID => uniqid(),
+            ResponseFields::REFUND_MERCHANT_TXN_ID => $input[RequestFields::REFUND_MERCHANT_TXN_ID],
             ResponseFields::REFUNDED_AMOUNT        => $input[RequestFields::REFUND_AMOUNT],
             ResponseFields::ERROR_CODE             => null,
             ResponseFields::ERROR_MESSAGE          => null,
@@ -135,7 +146,7 @@ class Server extends Base\Mock\Server
         $this->validateActionInput($input, 'otpGenerate');
 
         $response = array(
-            ResponseFields::OTP_ID         => '1asda2345',
+            ResponseFields::OTP_ID         => '1daea2345',
             ResponseFields::REDIRECT_URL   => '',
             ResponseFields::IS_IVR_ENABLED => 'false',
             ResponseFields::STATUS         => 'VERIFY',

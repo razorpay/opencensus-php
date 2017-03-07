@@ -9,6 +9,7 @@ use RZP\Models;
 use RZP\Exception;
 use RZP\Constants\Entity as E;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class Repository extends \Razorpay\Spine\Repository
 {
@@ -40,7 +41,7 @@ class Repository extends \Razorpay\Spine\Repository
 
         //
         // Currently, using $this->manager because
-        // we have $this->repo being used for creting queries.
+        // we have $this->repo being used for creating queries.
         // Once we shift to the new way of querying via newQuery()
         // then we can change this back to $this->repo. Till then,
         // we will need to keep use of $this->manager to minimum.
@@ -67,6 +68,21 @@ class Repository extends \Razorpay\Spine\Repository
     public function findOrFailPublic($id, $columns = array('*'))
     {
         return $this->newQuery()->findOrFailPublic($id, $columns);
+    }
+
+    public function findOrFailPublicWithRelations(
+        string $id,
+        array $relations = [],
+        array $columns = array('*'))
+    {
+        $query = $this->newQuery();
+
+        if (empty($relations) === false)
+        {
+            $query->with($relations);
+        }
+
+        return $query->findOrFailPublic($id, $columns);
     }
 
     public function findMany($ids, $columns = array('*'))
@@ -129,6 +145,20 @@ class Repository extends \Razorpay\Spine\Repository
     public function getTableName()
     {
         return E::getTableNameForEntity($this->entity);
+    }
+
+    /**
+     * Instantiates a query with an entity having timestamps set to false.
+     * This is to avoid setting the updated_at field.
+     * @return Query\Builder queryBuilder object
+     */
+    public function newQueryWithoutTimestamps()
+    {
+        $entity = $this->getEntityObject();
+
+        $entity->timestamps = false;
+
+        return $entity->setConnection($this->connection)->newQuery();
     }
 
     protected function processDbQueryFailure($operation, $attributes = null)
@@ -225,10 +255,65 @@ class Repository extends \Razorpay\Spine\Repository
         return $entities;
     }
 
-    public function fetchBetweenTimestamp($merchantId, $from, $to, $relations = [])
+    public function fetchBetweenTimestamp($merchantId, $from, $to)
     {
         return $this->getFetchBetweenTimestampQuery($merchantId, $from, $to)
                     ->get();
+    }
+
+    /**
+     * Selects entity with FOR UPDATE lock.
+     * - If other sessions have already acquired LOCK FOR UPDATE on this entity,
+     *   this will wait till that gets free and so avoids bad reads.
+     * - If this session has acquired the lock first, others will wait (Same as
+     *   above).
+     *
+     * Also, setRawAttributes is being used because of the way PHP handles pass
+     * by reference for objects. If the passed object is ASSIGNED to another
+     * object/value, the original object from the calling function remains
+     * unaffected. Any change ON the passed object will affect the original
+     * object too.
+     *
+     * @param Models\Base\PublicEntity $entity
+     * @param bool|boolean             $withTrashed
+     *
+     * @return null
+     *
+     * @throws Exception\LogicException
+     */
+    public function lockForUpdateAndReload(
+        Models\Base\PublicEntity $entity,
+        bool $withTrashed = false)
+    {
+        $lockedEntity = $this->lockForUpdate($entity->getId(), $withTrashed);
+
+        $entity->setRawAttributes($lockedEntity->getAttributes(), true);
+    }
+
+    /**
+     * Fetches entity with given id with a MySQL lock for update
+     *
+     * @param string $id
+     * @param bool   $withTrashed - Whether to include soft deleted results?
+     *
+     * @return Models\Base\PublicEntity
+     * @throws Exception\LogicException
+     */
+    public function lockForUpdate(string $id, bool $withTrashed = false)
+    {
+        if ($this->isTransactionActive() === false)
+        {
+            throw new Exception\LogicException('Attempted lock-for-update outside a DB transaction');
+        }
+
+        $query = $this->newQuery()->lockForUpdate();
+
+        if ($withTrashed)
+        {
+            $query->withTrashed();
+        }
+
+        return $query->findOrFail($id);
     }
 
     protected function getFetchBetweenTimestampQuery($merchantId, $from, $to)
@@ -264,12 +349,12 @@ class Repository extends \Razorpay\Spine\Repository
         }
         catch (\Exception $ex)
         {
-            // Shouldn't fail for any reason
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::ES_SAVE_FAILED,
-                $entity->toArray());
-
-            $this->trace->traceException($ex);
+                $entity->toArray()
+            );
         }
     }
 

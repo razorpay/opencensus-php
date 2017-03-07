@@ -16,6 +16,8 @@ use RZP\Models\Card;
 use RZP\Models\Transaction;
 use RZP\Trace\Trace;
 use RZP\Trace\TraceCode;
+use RZP\Constants;
+use RZP\Constants\MailTags;
 use RZP\Models\Payment\Verify\Verify;
 
 class Service extends Base\Service
@@ -122,7 +124,7 @@ class Service extends Base\Service
      * @param  string $id
      * @param  array  $input
      *
-     * @return Payment\Entity
+     * @return array
      */
     public function refund($id, array $input)
     {
@@ -388,6 +390,53 @@ class Service extends Base\Service
         return $payment->toArrayPublic();
     }
 
+    /**
+     * Transfers a payment
+     * /payment/:id/transfer
+     *
+     * @param string $id
+     * @param array  $input
+     *
+     * @return array
+     */
+    public function transfer(string $id, array $input) : array
+    {
+        $transfers = $this->getNewProcessor()->transfer($id, $input);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Get Transfers for a payment_id
+     *
+     * @param  string $id   Payment ID
+     * @return array
+     */
+    public function getTransfers(string $id) : array
+    {
+        Payment\Entity::verifyIdAndStripSign($id);
+
+        $transfers = $this->repo
+                          ->transfer
+                          ->fetchBySourceTypeAndIdAndMerchant(Constants\Entity::PAYMENT, $id, $this->merchant);
+
+        return $transfers->toArrayPublic();
+    }
+
+    /**
+     * Create a payout from a payment
+     *
+     * @param string    $id
+     * @param array     $input
+     *
+     * @return array
+     */
+    public function payout(string $id, array $input) : array
+    {
+        $payout = $this->getNewProcessor()->payout($id, $input);
+
+        return $payout->toArrayPublic();
+    }
 
     /**
      * If a payment has been captured on gateway but not on the api side,
@@ -721,14 +770,6 @@ class Service extends Base\Service
 
                 $refunded++;
             }
-            catch (Exception\GatewayErrorException $e)
-            {
-                $failed++;
-
-                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
-
-                // Now Just continue
-            }
             catch (Exception\GatewayTimeoutException $e)
             {
                 $this->trace->info(
@@ -737,6 +778,14 @@ class Service extends Base\Service
 
                 // Just continue
                 $timedOut++;
+            }
+            catch (Exception\GatewayErrorException $e)
+            {
+                $failed++;
+
+                $this->trace->traceException($e, Trace::INFO, TraceCode::REFUND_EXCEPTION);
+
+                // Now Just continue
             }
             catch (\Exception $e)
             {
@@ -1030,8 +1079,10 @@ class Service extends Base\Service
 
                 $headers = $message->getHeaders();
 
+                $headers->addTextHeader(MailTags::HEADER, MailTags::AUTH_REMINDER);
+
                 foreach ($data['payments'] as $payment) {
-                    $headers->addTextHeader('x-mailgun-tag', $payment->getPublicId());
+                    $headers->addTextHeader(MailTags::HEADER, $payment->getPublicId());
                 }
             });
     }

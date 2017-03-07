@@ -29,7 +29,8 @@ class Service extends Base\Service
             'message' => null,
         ];
 
-        if (substr($input['payee_account'], 0, 3) !== 'RZP')
+        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
+            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
         {
             $data = [
                 'valid'   => false,
@@ -49,6 +50,8 @@ class Service extends Base\Service
 
         $this->validator->validateInput('pay', $input);
 
-        return [];
+        return [
+            'success' => true,
+        ];
     }
 }

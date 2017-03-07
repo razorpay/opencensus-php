@@ -17,9 +17,9 @@ class FakerProviderFrequent extends Base
         return array();
     }
 
-    public function timestamp()
+    public function timestamp($str = 'now')
     {
-        return time();
+        return strtotime($str);
     }
 
     public function name($n = 5)

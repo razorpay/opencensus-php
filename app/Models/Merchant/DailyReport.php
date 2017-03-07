@@ -13,6 +13,7 @@ use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Trace\TraceCode;
 use RZP\Trace\Trace;
+use RZP\Constants\MailTags;
 
 class DailyReport extends Base\Core
 {
@@ -202,7 +203,9 @@ class DailyReport extends Base\Core
 
             $headers = $message->getHeaders();
 
-            $headers->addTextHeader('x-mailgun-tag', $merchant->getPublicId());
+            $headers->addTextHeader(MailTags::HEADER, $merchant->getPublicId());
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::DAILY_REPORT);
         });
     }
 

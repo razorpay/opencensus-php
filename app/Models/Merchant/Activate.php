@@ -14,6 +14,7 @@ use RZP\Models\Payment;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 class Activate extends Base\Core
 {
@@ -93,6 +94,12 @@ class Activate extends Base\Core
 
         $config = $this->app->config->get('applications.mailgun');
 
+        // For marketplace accounts, send this email to the parent merchant
+        if ($merchant->isLinkedAccount() === true)
+        {
+            $data['merchant']['email'] = $merchant->parent->getEmail();
+        }
+
         // Send the activation email
         $this->app['mailer']->queue(
             [
@@ -106,6 +113,9 @@ class Activate extends Base\Core
                 $message->from($config['from_email'], $config['from_name']);
                 $message->cc('notifications@razorpay.com');
                 $message->subject($data['subject']);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ACCOUNT_ACTIVATED);
             }
         );
     }
@@ -278,6 +288,11 @@ class Activate extends Base\Core
         $merchantMethods = (new Methods\Core)->getMethods($merchant);
 
         foreach ($rules as $rule) {
+            // Don't add rules other than payment
+            if ($rule[Pricing\Entity::FEATURE] !== Pricing\Feature::PAYMENT)
+            {
+                continue;
+            }
 
             // Don't add international rule if merchant international not active
             if (($merchant->isInternational() === false) and

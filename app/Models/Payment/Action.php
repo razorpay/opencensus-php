@@ -11,22 +11,23 @@ use RZP\Trace\TraceCode;
 
 class Action
 {
-    const AUTHORIZE              = 'authorize';
-    const CALLBACK               = 'callback';
-    const CAPTURE                = 'capture';
-    const OTP_GENERATE           = 'otp_generate';
-    const REFUND                 = 'refund';
-    const VOID                   = 'void';
-    const REVERSE                = 'reverse';
-    const TOPUP                  = 'topup';
-    const DEBIT                  = 'debit';
-    const VERIFY                 = 'verify';
-    const VERIFY_REFUND          = 'verify_refund';
-    const VERIFY_CAPTURE         = 'verify_capture';
-    const MANUAL_GATEWAY_REFUND  = 'manual_gateway_refund';
-    const MANUAL_GATEWAY_CAPTURE = 'manual_gateway_capture';
-    const CREATE_REFUND_RECORD   = 'create_refund_record';
-    const ALREADY_REFUNDED       = 'already_refunded';
+    const AUTHORIZE               = 'authorize';
+    const CALLBACK                = 'callback';
+    const CAPTURE                 = 'capture';
+    const OTP_GENERATE            = 'otp_generate';
+    const REFUND                  = 'refund';
+    const VOID                    = 'void';
+    const REVERSE                 = 'reverse';
+    const TOPUP                   = 'topup';
+    const DEBIT                   = 'debit';
+    const VERIFY                  = 'verify';
+    const VERIFY_REFUND           = 'verify_refund';
+    const VERIFY_CAPTURE          = 'verify_capture';
+    const MANUAL_GATEWAY_REFUND   = 'manual_gateway_refund';
+    const MANUAL_GATEWAY_CAPTURE  = 'manual_gateway_capture';
+    const CREATE_REFUND_RECORD    = 'create_refund_record';
+    const ALREADY_REFUNDED        = 'already_refunded';
+    const VALIDATE_UNKNOWN_REFUND = 'validate_unknown_refund';
 
     protected $merchant;
 

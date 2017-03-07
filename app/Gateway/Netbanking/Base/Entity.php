@@ -13,6 +13,8 @@ class Entity extends Base\Entity
     const AMOUNT            = 'amount';
     const CLIENT_CODE       = 'client_code';
     const MERCHANT_CODE     = 'merchant_code';
+    const CUSTOMER_ID       = 'customer_id';
+    const CUSTOMER_NAME     = 'customer_name';
     const BANK_PAYMENT_ID   = 'bank_payment_id';
     const STATUS            = 'status';
     const ERROR_MESSAGE     = 'error_message';
@@ -33,6 +35,8 @@ class Entity extends Base\Entity
         self::AMOUNT,
         self::CLIENT_CODE,
         self::MERCHANT_CODE,
+        self::CUSTOMER_ID,
+        self::CUSTOMER_NAME,
         self::BANK_PAYMENT_ID,
         self::STATUS,
         self::ERROR_MESSAGE,
@@ -50,6 +54,8 @@ class Entity extends Base\Entity
         self::RECEIVED,
         self::CLIENT_CODE,
         self::MERCHANT_CODE,
+        self::CUSTOMER_ID,
+        self::CUSTOMER_NAME,
         self::BANK_PAYMENT_ID,
         self::ERROR_MESSAGE,
         self::DATE,
@@ -97,6 +103,21 @@ class Entity extends Base\Entity
     public function getBankPaymentId()
     {
         return $this->getAttribute(self::BANK_PAYMENT_ID);
+    }
+
+    public function setBankPaymentId($bankPaymentId)
+    {
+        $this->setAttribute(self::BANK_PAYMENT_ID, $bankPaymentId);
+    }
+
+    public function setCustomerId($customerId)
+    {
+        $this->setAttribute(self::CUSTOMER_ID, $customerId);
+    }
+
+    public function setCustomerName($customerName)
+    {
+        $this->setAttribute(self::CUSTOMER_NAME, $customerName);
     }
 
     public function getIntPaymentId()

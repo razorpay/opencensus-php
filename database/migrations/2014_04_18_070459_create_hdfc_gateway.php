@@ -37,6 +37,9 @@ class CreateHdfcGateway extends Migration
 
             $table->string('amount', 10);
 
+            $table->string('currency', 3)
+                  ->nullable();
+
             $table->string('enroll_result', Hdfc\Constants::ENROLL_RESULT_LENGTH)
                   ->nullable();
 

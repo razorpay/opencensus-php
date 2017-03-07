@@ -144,7 +144,83 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function isRefundRequired(array $input)
+    public function manualGatewayRefund(array $input)
+    {
+        $canManualRefund = $this->canForceRefund($input);
+
+        $this->trace->info(
+            TraceCode::MIGS_CAN_MANUAL_REFUND,
+            [
+                'can_manual_refund' => $canManualRefund,
+            ]);
+
+        if ($canManualRefund)
+        {
+            $this->refund($input);
+
+            // Successfully refunded on the gateway
+            return true;
+        }
+        else
+        {
+            // Did not refund on the gateway side
+            return false;
+        }
+    }
+
+    protected function canForceRefund(array $input)
+    {
+        $isRefundRequired = $this->isRefundRequired($input, false);
+
+        if ($isRefundRequired === false)
+        {
+            return false;
+        }
+
+        $paymentId = $input['payment'][Payment\Entity::ID];
+
+        $gatewayEntities = $this->repo->findByPaymentId($paymentId);
+
+        $gatewayEntitiesCount = $gatewayEntities->count();
+
+        //
+        // There can 2-3 records. For authorize, capture and reverse (?).
+        //
+        if (($gatewayEntitiesCount !== 2) and
+            ($gatewayEntitiesCount !== 3))
+        {
+            $this->trace->error(
+                TraceCode::GATEWAY_ENTITIES_COUNT_UNEXPECTED,
+                [
+                    'count' => $gatewayEntitiesCount,
+                ]);
+
+            return false;
+        }
+
+        foreach ($gatewayEntities as $gatewayEntity)
+        {
+            if ($gatewayEntity->getAction() === Base\Action::REFUND)
+            {
+                $this->trace->error(
+                    TraceCode::GATEWAY_ENTITY_UNEXPECTED_ACTION,
+                    [
+                        'action' => $gatewayEntity->getAction(),
+                        'gateway_entity' => $gatewayEntity->toArrayPublic(),
+                    ]);
+
+                return false;
+            }
+        }
+
+        // The transaction id for the refund should be present. Otherwise, it means that
+        // the refund should come via normal flow and not via manualGatewayRefund.
+        assert ($input['refund'][Payment\Refund\Entity::TRANSACTION_ID] !== null);
+
+        return true;
+    }
+
+    protected function isRefundRequired(array $input, bool $checkTransaction = true)
     {
         $paymentId = $input['payment']['id'];
         $refundAmount = $input['amount'];
@@ -167,7 +243,8 @@ class Gateway extends Base\Gateway
         // we assume that the payment has been refunded on gateway and refund should
         // not be called again.
         //
-        if (($input['payment']['transaction_id'] === null) or
+        if ((($input['payment']['transaction_id'] === null) and
+             ($checkTransaction === true))or
             ($refundedEntities->count() > 0) or
             ((isset($verifyContent['vpc_RefundedAmount']) === true) and
              ($verifyContent['vpc_RefundedAmount'] !== '0')))
@@ -475,11 +552,12 @@ class Gateway extends Base\Gateway
         {
             // Fill only important fields that change during payment auth/capture/refund
             // lifecycle.
-            $array = array(
+            $array = [
                 'vpc_AuthorisedAmount',
                 'vpc_CapturedAmount',
                 'vpc_RefundedAmount',
-                'vpc_ShopTransactionNo');
+                'vpc_ShopTransactionNo'
+            ];
 
             foreach ($array as $key)
             {
@@ -511,18 +589,18 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentAuthorizeRequestContent($input)
     {
-        $attributes = array(
-            'vpc_Command'               => Command::PAY,
-            'vpc_Amount'                => $input['payment']['amount'],
-            'vpc_Currency'              => $input['payment']['currency'],
-            'vpc_MerchTxnRef'           => $input['payment']['id'],
-        );
+        $attributes = [
+            'vpc_Command'     => Command::PAY,
+            'vpc_Amount'      => $input['payment']['amount'],
+            'vpc_Currency'    => $input['payment']['currency'],
+            'vpc_MerchTxnRef' => $input['payment']['id'],
+        ];
 
         $this->createGatewayPaymentEntity($attributes, $input);
 
         $network = $input['card']['network'];
 
-        $content = array(
+        $content = [
             'vpc_Version'           => '1',
             'vpc_ReturnURL'         => $input['callbackUrl'],
             'vpc_Locale'            => 'en',
@@ -532,7 +610,7 @@ class Gateway extends Base\Gateway
             'vpc_CardExp'           => $this->getFormattedCardExpiryDate($input),
             'vpc_CardSecurityCode'  => $input['card']['cvv'],
 //            'vpc_OrderInfo'             => 'testinfo',
-        );
+        ];
 
         $content = array_merge($attributes, $content);
 
@@ -554,47 +632,49 @@ class Gateway extends Base\Gateway
 
     protected function getPaymentCaptureRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => Command::CAPTURE,
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-            'vpc_Amount'        => $input['amount']
-        );
+            'vpc_Amount'        => $input['amount'],
+            'vpc_Currency'      => $input['currency'],
+        ];
 
         return $content;
     }
 
     protected function getPaymentVerifyRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::QUERYDR,
             'vpc_Amount'        => $input['payment']['amount'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
-        );
+        ];
 
         return $content;
     }
 
     protected function getPaymentRefundRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::REFUND,
             'vpc_Amount'        => $input['refund']['amount'],
+            'vpc_Currency'      => $input['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-        );
+        ];
 
         return $content;
     }
 
     protected function getPaymentReversalRequestContent($input, $payment)
     {
-        $content = array(
+        $content = [
             'vpc_Command'       => AxisMigs\Command::REVERSAL,
             'vpc_Currency'      => $input['payment']['currency'],
             'vpc_MerchTxnRef'   => $input['payment']['id'],
             'vpc_TransNo'       => $payment['vpc_TransactionNo'],
-        );
+        ];
 
         return $content;
     }
@@ -610,21 +690,23 @@ class Gateway extends Base\Gateway
 
     protected function getAuthRequestArray($content)
     {
-        $request = array(
+        $request = [
             'url'       => $this->getUrl(Command::PAY),
             'content'   => $content,
-            'method'    => 'post');
+            'method'    => 'post'
+        ];
 
         return $request;
     }
 
     protected function getAmaRequestArray($content)
     {
-        $request = array(
+        $request = [
             'action'    => $this->action,
             'url'       => $this->getUrl('ama'),
             'content'   => $content,
-            'method'    => 'post');
+            'method'    => 'post'
+        ];
 
         return $request;
     }

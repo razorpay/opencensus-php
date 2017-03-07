@@ -17,17 +17,53 @@ class Repository extends Base\Repository
         Entity::PRICING_RULE_ID         => 'sometimes|alpha_num|size:14',
     );
 
-    public function fetchFeesBreakupInvoice($merchantId, $from, $to)
+    public function fetchFeesBreakupForInvoice($merchantId, $from, $to)
     {
+        $feeBreakupAmount = $this->manager
+                                ->fee_breakup
+                                ->getAttributeWithTableName(Entity::AMOUNT);
+
+        $feeBreakupTransactionId = $this->manager
+                                        ->fee_breakup
+                                        ->getAttributeWithTableName(Entity::TRANSACTION_ID);
+
+        $transactionId = $this->manager
+                              ->transaction
+                              ->getAttributeWithTableName(Transaction\Entity::ID);
+
+        $entityId = $this->manager
+                         ->transaction
+                         ->getAttributeWithTableName(Transaction\Entity::ENTITY_ID);
+
+        $transactionMerchantId = $this->manager
+                                      ->transaction
+                                      ->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
+
+        $type = $this->manager
+                     ->transaction
+                     ->getAttributeWithTableName(Transaction\Entity::TYPE);
+
+        $transactionCreatedAt = $this->manager
+                                     ->transaction
+                                     ->getAttributeWithTableName(Transaction\Entity::CREATED_AT);
+
+        $paymentId = $this->manager
+                          ->payment
+                          ->getAttributeWithTableName(Payment\Entity::ID);
+
+        $capturedAt = $this->manager
+                           ->payment
+                           ->getAttributeWithTableName(Payment\Entity::CAPTURED_AT);
+
         $feesBreakup = $this->newQuery()
                        ->selectRaw(Entity::NAME . ','.
-                                'SUM(fees_breakup.amount) AS sum')
-                       ->join(Table::TRANSACTION, 'fees_breakup.transaction_id', '=', 'transactions.id')
-                       ->join(Table::PAYMENT, 'transactions.entity_id', '=', 'payments.id')
-                       ->where('transactions.merchant_id', $merchantId)
-                       ->where('transactions.type', 'payment')
-                       ->whereNotNull('payments.captured_at')
-                       ->whereBetween('transactions.created_at', [$from, $to])
+                                'SUM(' .$feeBreakupAmount .') AS sum')
+                       ->join(Table::TRANSACTION, $feeBreakupTransactionId, '=', $transactionId)
+                       ->join(Table::PAYMENT, $entityId, '=', $paymentId)
+                       ->where($transactionMerchantId, $merchantId)
+                       ->where($type, 'payment')
+                       ->whereNotNull($capturedAt)
+                       ->whereBetween($transactionCreatedAt, [$from, $to])
                        ->groupBy(Entity::NAME)
                        ->get();
 

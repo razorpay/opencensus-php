@@ -381,6 +381,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'openwallet'    => '1',
                     'jiomoney'      => '1',
                     'card'          => '1',
                     'upi'           => '1',
@@ -400,6 +401,7 @@ class DatabaseSeeder extends Seeder
                     'payzapp'       => '1',
                     'payumoney'     => '1',
                     'airtelmoney'   => '1',
+                    'openwallet'    => '1',
                     'jiomoney'      => '1',
                     'card'          => '1',
                     'emi'           => '1',
@@ -911,6 +913,7 @@ class DatabaseSeeder extends Seeder
         $this->createAirtelmoneyTerminals();
         $this->createFreechargeTerminals();
         $this->createJiomoneyTerminals();
+        $this->createOpenwalletTerminals();
     }
 
     protected function createNetbankingHdfcTerminals()
@@ -1421,6 +1424,38 @@ class DatabaseSeeder extends Seeder
                 'netbanking'                => '0',
                 'gateway_terminal_id'       => 'demo_terminal_freecharge',
                 'gateway_terminal_password' => Crypt::encrypt('demo_account_freecharge_terminal_pass'),
+                'created_at'                => time(),
+                'updated_at'                => time(),
+            )
+        );
+    }
+
+    protected function createOpenwalletTerminals()
+    {
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => '2baTHP2a9iDeXr',
+                'merchant_id'               => Account::TEST_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_OPENWALLET,
+                'card'                      => '0',
+                'gateway_terminal_id'       => null,
+                'gateway_terminal_password' => null,
+                'created_at'                => time(),
+                'updated_at'                => time(),
+                'category'                  => 1000,
+                'shared'                    => '1',
+            )
+        );
+
+        DB::table(Table::TERMINAL)->insert(
+            array(
+                'id'                        => Terminal\Shared::OPENWALLET_RAZORPAY_TERMINAL,
+                'merchant_id'               => Account::DEMO_ACCOUNT,
+                'gateway'                   => Gateway::WALLET_OPENWALLET,
+                'card'                      => '0',
+                'netbanking'                => '0',
+                'gateway_terminal_id'       => null,
+                'gateway_terminal_password' => null,
                 'created_at'                => time(),
                 'updated_at'                => time(),
             )

@@ -58,12 +58,12 @@ class Mailgun extends Base\Core
 
     protected function failureCallback($input)
     {
-        if (isset($input['X-Mailgun-Tag']) === false)
+        if (isset($input[MailTags::HEADER]) === false)
         {
             return 406;
         }
 
-        if (in_array($input['X-Mailgun-Tag'], MailTags::$notifyTags, true))
+        if (in_array($input[MailTags::HEADER], MailTags::$notifyTags, true))
         {
             $this->notifyFailureOnSlack($input);
 
@@ -77,7 +77,7 @@ class Mailgun extends Base\Core
     {
         $sentDate = Carbon::createFromTimestamp($input['timestamp'], 'Asia/Kolkata')->format('d-M-Y H:i:s');
 
-        $message = '*ALERT*: Email delivery failed/bounced, for tag: ' . $input['X-Mailgun-Tag'];
+        $message = '*ALERT*: Email delivery failed/bounced, for tag: ' . $input[MailTags::HEADER];
 
         $params = [
             'recipient' => $input['recipient'],
