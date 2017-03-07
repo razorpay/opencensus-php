@@ -50,6 +50,8 @@ class Service extends Base\Service
 
         $this->validator->validateInput('pay', $input);
 
-        return [];
+        return [
+            'success' => true,
+        ];
     }
 }
