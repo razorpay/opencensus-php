@@ -332,7 +332,7 @@ class Reconciler3
 
             $entity = $this->repo
                            ->settlement
-                           ->findByIdWithRelations($entityId, ['merchant', 'transaction']);
+                           ->findOrFailPublicWithRelations($entityId, ['merchant', 'transaction']);
         }
         else if(strpos($entityId, Payout\Entity::getSign(), 0) === 0)
         {
@@ -340,7 +340,7 @@ class Reconciler3
 
             $entity = $this->repo
                            ->payout
-                           ->findByIdWithRelations($entityId, ['merchant', 'transaction']);
+                           ->findOrFailPublicWithRelations($entityId, ['merchant', 'transaction']);
         }
 
         return $entity;

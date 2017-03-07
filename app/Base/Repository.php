@@ -70,10 +70,7 @@ class Repository extends \Razorpay\Spine\Repository
         return $this->newQuery()->findOrFailPublic($id, $columns);
     }
 
-    public function findOrFailPublicWithRelations(
-        string $id,
-        array $relations = [],
-        array $columns = array('*'))
+    public function findOrFailPublicWithRelations(string $id, array $relations, array $columns = array('*'))
     {
         $query = $this->newQuery();
 
@@ -100,18 +97,6 @@ class Repository extends \Razorpay\Spine\Repository
         }
 
         return $query->findMany($ids, $columns);
-    }
-
-    public function findByIdWithRelations($id, $relations, $columns = array('*'))
-    {
-        $query = $this->newQuery();
-
-        if (count($relations) > 0)
-        {
-            $query->with($relations);
-        }
-
-        return $query->findOrFailPublic($id, $columns);
     }
 
     public function findManyByPublicIds($ids)

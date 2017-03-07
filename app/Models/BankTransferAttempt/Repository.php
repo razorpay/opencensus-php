@@ -45,7 +45,7 @@ class Repository extends Base\Repository
         $type = $bta->getEntityType();
 
         // Find the source entity of bta, and fetch relevant relations
-        $entityWithRelations = $this->manager->$type->findByIdWithRelations(
+        $entityWithRelations = $this->manager->$type->findOrFailPublicWithRelations(
                                     $bta->getEntityId(),
                                     $relations);
 
