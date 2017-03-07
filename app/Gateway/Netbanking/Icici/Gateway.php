@@ -4,6 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
@@ -11,7 +12,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
-use RZP\Constants\Mode as RZPMode;
 use phpseclib\Crypt\Base as Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 
@@ -331,7 +331,7 @@ class Gateway extends Base\Gateway
 
     public function getPid()
     {
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             return $this->getTestMerchantId();
         }
@@ -341,7 +341,7 @@ class Gateway extends Base\Gateway
 
     public function getSpid()
     {
-        if ($this->mode === RZPMode::TEST)
+        if ($this->mode === Mode::TEST)
         {
             return $this->getTestMerchantId2();
         }
