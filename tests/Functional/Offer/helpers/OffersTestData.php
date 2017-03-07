@@ -16,8 +16,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -34,8 +34,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ]
@@ -50,8 +50,8 @@ return [
                 'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -65,8 +65,8 @@ return [
                 'iins'            => ['411111'],
                 'percent_rate'    => 1000,
                 'processing_time' => 86400,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -84,8 +84,8 @@ return [
                 'min_amount'      => 500,
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -103,8 +103,8 @@ return [
                 'percent_rate'    => 1000,
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -122,8 +122,8 @@ return [
                 'min_amount'      => 500,
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -141,8 +141,8 @@ return [
                 'percent_rate'    => 1000,
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -159,8 +159,8 @@ return [
                 'min_amount'      => 500,
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ],
@@ -177,8 +177,8 @@ return [
                 'payment_network' => 'airtelmoney',
                 'payment_count'   => 2,
                 'processing_time' => 172800,
-                'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'       => 1519457070,
+                'ends_at'         => 1550993070,
                 'display_text'    => 'Some more details',
                 'terms'           => 'Some more details'
             ]
@@ -196,8 +196,8 @@ return [
                 'percent_rate'        => 1000,
                 'payment_count'       => 2,
                 'processing_time'     => 86400,
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -229,8 +229,8 @@ return [
                 'issuer'              => 'HDFC',
                 'payment_count'       => 2,
                 'processing_time'     => 86400,
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -262,8 +262,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => 86400,
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -295,8 +295,8 @@ return [
                 'issuer'              => 'HDFC',
                 'percent_rate'        => 1000,
                 'processing_time'     => '1',
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -328,8 +328,8 @@ return [
                 'max_cashback'       => 200,
                 'payment_count'      => 2,
                 'processing_time'    => '2',
-                'starts_at'          => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'            => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'          => 1519457070,
+                'ends_at'            => 1550993070,
                 'display_text'       => 'Some more details',
                 'terms'              => 'Some more details'
             ],
@@ -362,8 +362,8 @@ return [
                 'min_amount'         => 500,
                 'payment_count'      => 2,
                 'processing_time'    => '2',
-                'starts_at'          => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'            => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'          => 1519457070,
+                'ends_at'            => 1550993070,
                 'display_text' => 'Some more details',
                 'terms' => 'Some more details'
             ],
@@ -396,8 +396,8 @@ return [
                 'percent_rate'        => 1000,
                 'payment_count'       => 2,
                 'processing_time'     => '1',
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -430,8 +430,8 @@ return [
                 'percent_rate'        => 1000,
                 'payment_count'       => 2,
                 'processing_time'     => '1',
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -465,8 +465,8 @@ return [
                 'flat_cashback'       => 200,
                 'payment_count'       => 2,
                 'processing_time'     => '1',
-                'starts_at'           => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1519457070,
+                'ends_at'             => 1550993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -499,8 +499,8 @@ return [
                 'percent_rate'        => 1000,
                 'payment_count'       => 2,
                 'processing_time'     => '1',
-                'starts_at'           => Carbon::createFromTimestamp(1419457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'             => Carbon::createFromTimestamp(1350993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'           => 1419457070,
+                'ends_at'             => 1350993070,
                 'display_text'        => 'Some more details',
                 'terms'               => 'Some more details'
             ],
@@ -543,8 +543,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,
-                'starts_at'                 => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'                   => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'                 => 1519457070,
+                'ends_at'                   => 1550993070,
             ]
         ]
     ],
@@ -615,8 +615,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,
-                'starts_at'                 => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'                   => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'                 => 1519457070,
+                'ends_at'                   => 1550993070,
             ]
         ]
     ],
@@ -641,8 +641,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,
-                'starts_at'                 => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'                   => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'                 => 1519457070,
+                'ends_at'                   => 1550993070,
             ]
         ]
     ],
@@ -664,8 +664,8 @@ return [
                 'percent_rate'              => 1000,
                 'processing_time'           => 86400,
                 'payment_count'             => 2,
-                'starts_at'                 => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                'ends_at'                   => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                'starts_at'                 => 1519457070,
+                'ends_at'                   => 1550993070,
             ]
         ]
     ],
@@ -691,8 +691,8 @@ return [
                         'percent_rate'              => 1000,
                         'processing_time'           => 86400,
                         'payment_count'             => 2,
-                        'starts_at'                 => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-                        'ends_at'                   => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+                        'starts_at'                 => 1519457070,
+                        'ends_at'                   => 1550993070,
                     ]
                 ]
             ]

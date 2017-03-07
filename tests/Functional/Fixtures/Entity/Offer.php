@@ -14,7 +14,6 @@ class Offer extends Base
             'payment_network'     => 'VISA',
             'issuer'              => 'HDFC',
             'iins'                => ['123456'],
-
         ];
 
         $attributes = array_merge($cardAttributes, $attributes);
@@ -42,9 +41,9 @@ class Offer extends Base
     {
         $offer = $this->fixtures->create('offer:card');
 
-        $offer['starts_at'] = Carbon::createFromTimestamp(1424762670, 'Asia/Kolkata')->timestamp;
+        $offer['starts_at'] = 1424762670;
 
-        $offer['ends_at'] = Carbon::createFromTimestamp(1456298670, 'Asia/Kolkata')->timestamp;
+        $offer['ends_at'] = 1456298670;
 
         $offer->saveOrFail();
 
@@ -69,8 +68,8 @@ class Offer extends Base
             'min_amount'      => 1000,
             'payment_count'   => 2,
             'processing_time' => 86400,
-            'starts_at'       => Carbon::createFromTimestamp(1519457070, 'Asia/Kolkata')->timestamp,
-            'ends_at'         => Carbon::createFromTimestamp(1550993070, 'Asia/Kolkata')->timestamp,
+            'starts_at'       => 1519457070,
+            'ends_at'         => 1550993070,
         ];
 
         $attributes = array_merge($defaultValues, $attributes);
