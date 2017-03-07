@@ -36,21 +36,4 @@ class Repository extends Base\Repository
 
         return $query->get();
     }
-
-    public function findByIdWithSourceAndRelations(string $id, $relations = [])
-    {
-        // Find the bta entity
-        $bta = $this->newQuery()->findOrFailPublic($id);
-
-        $type = $bta->getEntityType();
-
-        // Find the source entity of bta, and fetch relevant relations
-        $entityWithRelations = $this->manager->$type->findOrFailPublicWithRelations(
-                                    $bta->getEntityId(),
-                                    $relations);
-
-        $bta->setRelation('source', $entityWithRelations);
-
-        return $bta;
-    }
 }

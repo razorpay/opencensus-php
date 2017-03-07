@@ -106,7 +106,7 @@ class Reconciler3
         }
         else
         {
-            $date = Carbon::createFromFormat('d-M-y', $data[0]['Payment_Date']);
+            $date = Carbon::createFromFormat('d-M-y', $data[0][Headings::PAYMENT_DATE]);
 
             // update the format so that recon mail is appended to settlement mail
             $date = $date->format('d-m-Y');
@@ -348,7 +348,7 @@ class Reconciler3
 
     protected function loadEntityAndRelationsV2($row)
     {
-        $entityId = $row['Payment_Ref_No.'];
+        $entityId = $row[Headings::PAYMENT_REF_NO];
 
         $entityId = str_replace(' ', '_', $entityId);
 
@@ -365,7 +365,7 @@ class Reconciler3
 
         $entity = $this->repo
                        ->bank_transfer_attempt
-                       ->findByIdWithSourceAndRelations($entityId, ['transaction', 'merchant']);
+                       ->findOrFailPublicWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
 
         return $entity;
     }
