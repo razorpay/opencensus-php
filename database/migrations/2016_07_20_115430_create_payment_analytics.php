@@ -42,6 +42,9 @@ class CreatePaymentAnalytics extends Migration
             $table->tinyInteger(Analytics::BROWSER)
                   ->nullable();
 
+            $table->string(Analytics::BROWSER_VERSION, 50)
+                  ->nullable();
+
             $table->tinyInteger(Analytics::OS)
                   ->nullable();
 

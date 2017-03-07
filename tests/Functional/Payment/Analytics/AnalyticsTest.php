@@ -122,10 +122,6 @@ class AnalyticsTest extends TestCase
 
         $payment['_']['library_version'] = '3846fgjb';
 
-        $payment['_']['platform'] = 'browser';
-
-        $payment['_']['platform_version'] = '52.0.2743.116';
-
         $payment['_']['integration'] = 'woo_commerce';
 
         $payment['_']['integration_version'] = '0.1.2';
@@ -134,7 +130,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic, 'testHttpRequestDataForNonOtpBasedPayment');
+        $this->assertTestResponse($paymentAnalytic);
     }
 
     public function testHttpRequestDataForS2sPayments()
@@ -155,8 +151,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testHttpRequestDataForS2sPayments');
+        $this->assertTestResponse($paymentAnalytic);
     }
 
     public function testAnalyticsForS2sPayments()
@@ -176,8 +171,7 @@ class AnalyticsTest extends TestCase
 
         $paymentAnalytic = $this->getLastEntity(E::PAYMENT_ANALYTICS, true);
 
-        $this->assertTestResponse($paymentAnalytic,
-            'testAnalyticsForS2sPayments');
+        $this->assertTestResponse($paymentAnalytic);
     }
 
     public function testHttpRequestDataForOtpBasedPayment()
@@ -322,7 +316,7 @@ class AnalyticsTest extends TestCase
 
         $this->assertEquals(Metadata::FIREFOX, $paymentAnalytic[AnalyticsEntity::BROWSER]);
 
-        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::PLATFORM_VERSION]);
+        $this->assertEquals('46.0', $paymentAnalytic[AnalyticsEntity::BROWSER_VERSION]);
     }
 
     public function testHttpRefer1()

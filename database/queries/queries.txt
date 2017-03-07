@@ -1707,7 +1707,7 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE bank_accounts
     ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
-    
+
 # payouts - add batch settlement
 ALTER TABLE payouts
     CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0,
@@ -1754,3 +1754,6 @@ ALTER TABLE transfers
 ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type
     ADD INDEX transactions_on_hold_index (on_hold);
+
+ALTER TABLE payment_analytics
+    ADD COLUMN browser_version VARCHAR(50) AFTER `browser`;
