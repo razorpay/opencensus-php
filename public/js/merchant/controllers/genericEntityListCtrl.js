@@ -122,15 +122,6 @@ app.controller('GenericEntityListCtrl', [
       return Object.keys($scope.orders).length > 0;
     };
 
-    $scope.getStatusClass = function (status) {
-      var mapper = {
-        created: 'bg-light',
-        attempted: 'bg-info',
-        paid: 'bg-success'
-      };
-      return mapper[status];
-    };
-
     function generateTable() {
       if (!$scope.entity.type) {
         console.log('Error: No Entity Type Sepcified');
@@ -149,6 +140,7 @@ app.controller('GenericEntityListCtrl', [
 
       var request;
 
+      var params = {};
       var q = jQuery.extend({}, $scope.query);
 
       if (q.status === 'all') {
@@ -173,26 +165,28 @@ app.controller('GenericEntityListCtrl', [
       if (q.notes === '') {
         delete q.notes;
       }
-      q.type = 'merchant';
-      q.merchant_id = '7O1Zj6BYJk3saU'; // To be made dynamic
+      params.query_params = q;
+
+      params.type = 'merchant';
+      params.merchant_id = '7O1Zj6BYJk3saU'; // To be made dynamic
 
       if ($scope.entity.type === 'payment') {
         if ($scope.entity.id === '') {
-          q.route_name = 'payment_fetch_multiple';
+          params.route_name = 'payment_fetch_multiple';
         } else {
-          q.route_name = 'payment_fetch_by_id';
+          params.route_name = 'payment_fetch_by_id';
         }
       } else if ($scope.entity.type === 'order') {
         if ($scope.entity.id === '') {
-          q.route_name = 'order_fetch';
+          params.route_name = 'order_fetch';
         } else {
-          q.route_name = 'order_fetch_by_id';
+          params.route_name = 'order_fetch_by_id';
         }
       } else if ($scope.entity.type === 'refund') {
         if ($scope.entity.id === '') {
-          q.route_name = 'refund_fetch_multiple';
+          params.route_name = 'refund_fetch_multiple';
         } else {
-          q.route_name = 'refund_fetch_by_id';
+          params.route_name = 'refund_fetch_by_id';
         }
       }
 
@@ -200,13 +194,15 @@ app.controller('GenericEntityListCtrl', [
       // entity or a collection
       if ($scope.entity.id === '') {
         request = $http.get('/generic', {
-          params: q
+          params: params
         });
       }
       else {
-        q.id = $scope.entity.id;
+        params.url_params = {
+          '{id}': $scope.entity.id
+        };
         request = $http.get('/generic', {
-          params: q
+          params: params
         });
       }
 
