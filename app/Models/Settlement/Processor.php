@@ -138,7 +138,7 @@ class Processor extends Base\Core
 
             $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $setlTxnsCount);
 
-            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_RETRIED);
+            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_RETRY_SUCCEEDED);
         }
         catch (\Exception $e)
         {
