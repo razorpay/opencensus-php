@@ -20,10 +20,7 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
 
-    Route::get('/admin/generic', 'GenericController@getGeneric');
-    Route::post('/admin/generic', 'GenericController@postGeneric');
-    Route::put('/admin/generic', 'GenericController@putGeneric');
-    Route::delete('/admin/generic', 'GenericController@deleteGeneric');
+    Route::any('/generic', 'GenericController@handle');
 
     // Org
     Route::group(['prefix' => 'admin'], function () {

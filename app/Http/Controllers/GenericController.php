@@ -6,6 +6,7 @@ use Input;
 use Config;
 use App;
 use App\Generic;
+use Request;
 
 use App\Http\AppResponse;
 
@@ -22,42 +23,11 @@ class GenericController extends Controller
     |
     */
 
-    public function postGeneric()
+    public function handle()
     {
-        $input = ['method' => 'post'];
+        $method = Request::method();
 
-        list($auth, $route) = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getGeneric()
-    {
-        $input = ['method' => 'get'];
-
-        list($auth, $route) = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function putGeneric()
-    {
-        $input = ['method' => 'put'];
-
-        list($auth, $route) = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function deleteGeneric()
-    {
-        $input = ['method' => 'delete'];
+        $input = ['method' => $method];
 
         list($auth, $route) = $this->resolveRoute();
 

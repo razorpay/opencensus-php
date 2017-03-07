@@ -119,7 +119,7 @@ app.controller('GenericEntityListCtrl', [
       }
 
       if ($scope.entity.id === '') {
-        request = $http.get('/admin/generic', {
+        request = $http.get('/generic', {
           params: params
         });
       }

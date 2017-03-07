@@ -10,8 +10,8 @@ angular.module('app.services', [])
   '$timeout',
   '$idle',
   function ($q, $http, $timeout, $idle) {
-    var _identity, 
-        _isPreSignupDone = false, 
+    var _identity,
+        _isPreSignupDone = false,
         _isVerified = false,
         _authenticated = false;
 
@@ -332,7 +332,7 @@ angular.module('app.services', [])
 
         // Request for creating
         var request_data = {
-          url: '/admin/generic',
+          url: '/generic',
           method: 'POST',
           params: {
             route_name: 'role_create'
@@ -379,7 +379,7 @@ angular.module('app.services', [])
         }
 
         $http
-          .get('/admin/generic', {
+          .get('/generic', {
             ignoreErrors: true,
             params: {
               route_name: 'role_get_multiple'
@@ -405,7 +405,7 @@ angular.module('app.services', [])
 
         var groups = [];
 
-        $http.get('/admin/generic', {
+        $http.get('/generic', {
           params: {
             route_name: 'group_get_multiple',
           }
@@ -437,7 +437,7 @@ angular.module('app.services', [])
 
         var allowed_groups = [];
 
-        $http.get('/admin/generic', {
+        $http.get('/generic', {
           params: {
             route_name: 'group_get_allowed_groups',
             url_params: {
@@ -475,7 +475,7 @@ angular.module('app.services', [])
         }
 
         var perms = [];
-        $http.get('/admin/generic', {
+        $http.get('/generic', {
           ignoreErrors: true,
           params: {
             route_name: 'permission_get_multiple'
@@ -502,7 +502,7 @@ angular.module('app.services', [])
         }
 
         var users = [];
-        $http.get('/admin/generic', {
+        $http.get('/generic', {
           ignoreErrors: true,
           params: {
             route_name: 'admin_get_multiple'
