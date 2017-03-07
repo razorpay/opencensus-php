@@ -13,6 +13,7 @@ use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Constants\Mode as RZPMode;
+use phpseclib\Crypt\Base as Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
@@ -155,8 +156,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (isset($content[ResponseFields::STATE]) === true and
-            $content[ResponseFields::STATE] === Constants::SUCCESS)
+        if (isset($content[ResponseFields::STATUS]) === true and
+            $content[ResponseFields::STATUS] === Status::SUCCESS)
         {
             $verify->gatewaySuccess = true;
         }
@@ -206,7 +207,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(Constants::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(Crypto::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
     }
@@ -268,7 +269,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(Constants::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(Crypto::MODE_ECB, $masterKey);
 
         $string = str_replace(' ', '+', $data['ES']);
 
@@ -302,15 +303,15 @@ class Gateway extends Base\Gateway
     {
         return [
             Base\Entity::RECEIVED        => true,
-            Base\Entity::STATUS          => $content[ResponseFields::STATUS],
+            Base\Entity::STATUS          => $content[ResponseFields::PAID],
             Base\Entity::BANK_PAYMENT_ID => $content[ResponseFields::BANK_PAYMENT_ID]
         ];
     }
 
     protected function checkCallbackStatus(array $attrs, array $content)
     {
-        if ((isset($attrs[Constants::STATUS]) === false) or
-            ($attrs[Constants::STATUS] !== Confirmation::YES))
+        if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
+            ($attrs[ResponseFields::LC_STATUS] !== Confirmation::YES))
         {
             $this->trace->info(
                 TraceCode::PAYMENT_CALLBACK_FAILURE,

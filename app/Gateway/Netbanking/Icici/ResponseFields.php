@@ -4,7 +4,7 @@ namespace RZP\Gateway\Netbanking\Icici;
 
 class ResponseFields
 {
-    const STATUS          = 'PAID';
+    const PAID            = 'PAID';
     const BANK_PAYMENT_ID = 'BID';
     const PAYMENT_ID      = 'PRN';
     const ITEM_CODE       = 'ITC';
@@ -12,5 +12,6 @@ class ResponseFields
     const CURRENCY_CODE   = 'CRN';
     const CURRENCY        = 'CURRENCY';
     const PAYMENT_DATE    = 'PMTDATE';
-    const STATE           = 'STATUS';
+    const STATUS          = 'STATUS';
+    const LC_STATUS       = 'status';
 }

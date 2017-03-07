@@ -3,7 +3,8 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-use RZP\Gateway\Netbanking\Icici\Constants;
+use phpseclib\Crypt\Base as Crypto;
+use RZP\Gateway\Netbanking\Icici\Status;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Base as Netbanking;
 use RZP\Gateway\Netbanking\Icici\RequestFields;
@@ -50,7 +51,7 @@ class Server extends Base\Mock\Server
             ResponseFields::ITEM_CODE     => strtoupper($input[RequestFields::ITEM_CODE]),
             ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT],
             ResponseFields::CURRENCY_CODE => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::STATUS        => Confirmation::YES,
+            ResponseFields::PAID          => Confirmation::YES,
         ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
@@ -67,7 +68,7 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
+        $aes = new Netbanking\AESCrypto(Crypto::MODE_ECB, $masterKey);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
@@ -80,7 +81,7 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $aes = new Netbanking\AESCrypto(Constants::MODE_ECB, $masterKey);
+        $aes = new Netbanking\AESCrypto(Crypto::MODE_ECB, $masterKey);
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
@@ -115,7 +116,7 @@ class Server extends Base\Mock\Server
             ResponseFields::CURRENCY     => $input[RequestFields::CURRENCY_CODE],
             ResponseFields::PAYMENT_DATE => $input[RequestFields::PAYMENT_DATE],
             ResponseFields::AMOUNT       => $input[RequestFields::AMOUNT],
-            ResponseFields::STATE        => Constants::SUCCESS,
+            ResponseFields::STATUS       => Status::SUCCESS,
         ];
     }
 }
