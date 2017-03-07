@@ -30,7 +30,9 @@
         "guzzlehttp/promises": "1.2.0",
         "mikehaertl/phpwkhtmltopdf": "^2.2",
         "mustache/mustache": "^2.11",
-        "maxmind/minfraud": "^1.3"
+        "php-http/laravel-httplug": "^0.1.0",
+        "maxmind/minfraud": "^1.3",
+        "php-http/discovery": "^1.2"
     },
     "repositories": [
         {
@@ -53,7 +55,8 @@
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
         "tijsverkoyen/css-to-inline-styles": "^1.5",
-        "orchestra/testbench": "3.2.*"
+        "orchestra/testbench": "3.2.*",
+        "php-http/mock-client": "^0.3.3"
     },
     "autoload": {
         "classmap": [

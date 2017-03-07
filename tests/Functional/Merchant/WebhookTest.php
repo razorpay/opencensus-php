@@ -4,10 +4,16 @@ namespace RZP\Tests\Functional\Merchant;
 
 use Closure;
 use Mockery;
+use Http\Mock\Client;
 use RZP\Jobs\WebHook;
 use RZP\Tests\Functional\TestCase;
+use Http\Discovery\MessageFactoryDiscovery;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Models\Merchant\Webhook\Inferno;
+use Psr\Http\Message\ResponseInterface;
+use Http\Discovery\HttpClientDiscovery;
+use Http\Discovery\Strategy\MockClientStrategy;
+
 
 class WebhookTest extends TestCase
 {
@@ -71,17 +77,26 @@ class WebhookTest extends TestCase
 
         $testData = $this->testData[__FUNCTION__];
 
-        $this->mockInfernoFire(function ($data) use ($testData)
-            {
-                $data['event'] = json_decode($data['event'], true);
-                $this->assertArraySelectiveEquals($testData, $data);
-                $this->assertArrayHasKey('webhook_id', $data);
-                $this->assertArrayHasKey('created_at', $data['event']);
+        HttpClientDiscovery::prependStrategy(MockClientStrategy::class);
+        $messageFactory = MessageFactoryDiscovery::find();
 
-                return true;
-            });
+        $client = $this->app['webhook.inferno']->getClient();
+
+        $response = $messageFactory->createResponse(200);
+        $client->addResponse($response);
 
         $this->doAuthPayment();
+
+        $request = $client->getRequests()[0];
+
+        $this->assertEquals(['Razorpay-Webhook/v1'], $request->getHeader('User-Agent'));
+        $this->assertEquals(['application/json'], $request->getHeader('Content-Type'));
+        $this->assertEquals('http://localhost/v1/dummy/route', (string) $request->getUri());
+
+        $body = (string) $request->getBody();
+        $decodedBody = json_decode($body, true);
+
+        $this->assertArraySelectiveEquals($testData, $decodedBody);
     }
 
     public function testInvoicePaidWebhookEventData()
@@ -204,15 +219,15 @@ class WebhookTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $this->mockInfernoFire(function ($data) use ($testData)
-            {
-                $data['event'] = json_decode($data['event'], true);
+        {
+            $data['event'] = json_decode($data['event'], true);
 
-                $this->assertArraySelectiveEquals($testData, $data);
-                $this->assertArrayHasKey('webhook_id', $data);
-                $this->assertArrayHasKey('created_at', $data['event']);
+            $this->assertArraySelectiveEquals($testData, $data);
+            $this->assertArrayHasKey('webhook_id', $data);
+            $this->assertArrayHasKey('created_at', $data['event']);
 
-                return true;
-            });
+            return true;
+        });
 
         $order = $this->fixtures->create('order', ['amount' => 50000, 'receipt' => 'random']);
 
@@ -243,7 +258,7 @@ class WebhookTest extends TestCase
 
         $inferno = $this->mockInferno();
 
-        $response = new \Requests_Response;
+        $response = new \GuzzleHttp\Psr7\Response;
         $response->status_code = '501';
 
         $inferno->shouldReceive('makeRequest')
@@ -271,7 +286,7 @@ class WebhookTest extends TestCase
     {
         $webhook = $this->createWebhook();
 
-        $lastSuccessfulAt = time() - (23*3600);
+        $lastSuccessfulAt = time() - (23 * 3600);
 
         $this->fixtures->edit(
             'webhook', $webhook['id'], ['last_successful_at' => $lastSuccessfulAt, 'active' => 1]);
@@ -341,12 +356,13 @@ class WebhookTest extends TestCase
         $testData = $this->testData[__FUNCTION__];
 
         $this->mockInfernoMakeRequest(function ($request) use ($testData)
-            {
-                $request['content'] = json_decode($request['content'], true);
-                $this->assertArraySelectiveEquals($testData, $request);
-                $response = $this->getStandardWebhookResponse();
-                return $response;
-            });
+        {
+            $request['content'] = json_decode($request['content'], true);
+            $this->assertArraySelectiveEquals($testData, $request);
+            $response = $this->getStandardWebhookResponse();
+
+            return $response;
+        });
 
         $this->doAuthPayment();
     }
@@ -369,24 +385,24 @@ class WebhookTest extends TestCase
 
     public function testSecretValueInWebhookEventDataJustBeforeFiring()
     {
-        $webhook = $this->createWebhook(['secret'=>'test_secret']);
+        $webhook = $this->createWebhook(['secret' => 'test_secret']);
 
         $testData = $this->testData[__FUNCTION__];
 
         $this->mockInfernoMakeRequest(function ($request) use ($testData, $webhook)
-            {
-                $request['content'] = json_decode($request['content'], true);
+        {
+            $request['content'] = json_decode($request['content'], true);
 
-                $this->assertArraySelectiveEquals($testData, $request);
+            $this->assertArraySelectiveEquals($testData, $request);
 
-                $this->assertArrayHasKey('X-Razorpay-Signature', $request['headers']);
+            $this->assertArrayHasKey('X-Razorpay-Signature', $request['headers']);
 
-                $this->assertNotNull($request['headers']['X-Razorpay-Signature']);
+            $this->assertNotNull($request['headers']['X-Razorpay-Signature']);
 
-                $response = $this->getStandardWebhookResponse();
+            $response = $this->getStandardWebhookResponse();
 
-                return $response;
-            });
+            return $response;
+        });
 
         $this->doAuthPayment();
     }
@@ -406,7 +422,8 @@ class WebhookTest extends TestCase
     public function testGenerateHmacWithNullSecret()
     {
         $payload = 'a';
-        $actualValue = Inferno::generateHMAC($payload, NULL);
+        $actualValue = Inferno::generateHMAC($payload, null);
+
         $this->assertNull($actualValue);
     }
 
@@ -428,7 +445,7 @@ class WebhookTest extends TestCase
         self::fail();
     }
 
-    protected function mockInfernoWithResponseStatusCode($statusCode, $method='makeRequest')
+    protected function mockInfernoWithResponseStatusCode($statusCode, $method = 'makeRequest')
     {
         $inferno = $this->mockInferno();
 
@@ -475,9 +492,9 @@ class WebhookTest extends TestCase
         $this->app->instance('webhook.inferno', $inferno);
     }
 
-    protected function getStandardWebhookResponse($statusCode = 200)
+    protected function getStandardWebhookResponse($statusCode = 200): ResponseInterface
     {
-        $response = new \Requests_Response;
+        $response = new \GuzzleHttp\Psr7\Response;
         $response->status_code = $statusCode;
 
         $success = false;

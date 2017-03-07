@@ -61,7 +61,7 @@ class BasicAuth
      * Key and secret sent by client for
      * basic auth.
      *
-     * account_id -> value passed in the ACCOUNT_HEADER_KEY, for account auth
+     * account_id   -> value passed in the ACCOUNT_HEADER_KEY, for account auth
      *
      * @var array
      */
@@ -217,6 +217,7 @@ class BasicAuth
         }
 
         $this->creds['secret'] = $secret;
+
         $this->creds['public_key'] = $key;
 
         $keyError = $this->checkAndSetKeyId($key);
@@ -290,8 +291,15 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        if ($this->isKeyExisting() === true)
         {
+            $response = $this->verifyKeyNotExpired();
+
+            if ($response !== true)
+            {
+                return $response;
+            }
+
             $response = $this->verifySecret();
 
             if ($response === true)
@@ -371,9 +379,11 @@ class BasicAuth
                 return $res;
         }
 
-        if ($this->verifyKeyExistence() !== true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            return $this->invalidApiKey();
+            return $response;
         }
 
         if (($this->getSecret() !== '') and
@@ -469,21 +479,23 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            $this->fetchMerchantOfKey($this->key);
-
-            $response = $this->verifyDeviceToken();
-
-            if ($response === true)
-            {
-                return;
-            }
-
             return $response;
         }
 
-        return $this->invalidApiKey();
+        $this->fetchMerchantOfKey($this->key);
+
+        $response = $this->verifyDeviceToken();
+
+        if ($response === true)
+        {
+            return;
+        }
+
+        return $response;
     }
 
     /**
@@ -518,6 +530,13 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
+        $response = $this->verifyKeyNotExpired();
+
+        if ($response !== true)
+        {
+            return $response;
+        }
+
         if (($this->getSecret() !== '') and
             ($this->getSecret() !== null))
         {
@@ -538,22 +557,28 @@ class BasicAuth
 // --------------------- Verifiers ---------------------------------------------
 
     /**
-     * Checks if the accessed route is a beta feature route, if yes
+     * Checks if the accessed route is a feature route, if yes
      * checks if the merchant has access to the feature
      */
     public function verifyFeatureAccess()
     {
-        $route = $this->getCurrentRouteName();
+        //
+        // A route can belong to multiple features
+        // This fetches an array of all features mapped to the route
+        //
+        $features = $this->route->getFeaturesForRoute();
 
-        if ($this->route->isCurrentRouteInFeatureMap() === true)
+        if (empty($features) === false)
         {
             //
-            // Current route is in feature map list.
+            // If the merchant has at least one of the features
+            // in the $features array enabled, we allow the request
             //
+            $merchantFeatures = $this->merchant->getEnabledFeatures();
 
-            $accessedFeature = Route::$routeNameToFeatureMap[$route];
+            $commonFeatures = array_intersect($merchantFeatures, $features);
 
-            if ($this->merchant->isFeatureEnabled($accessedFeature))
+            if (empty($commonFeatures) === false)
             {
                 return null;
             }
@@ -626,10 +651,22 @@ class BasicAuth
      */
     protected function verifyKeyExistence()
     {
+        if ($this->isKeyExisting() === false)
+        {
+            return $this->invalidApiKey();
+        }
+
+        return $this->verifyKeyNotExpired();
+    }
+
+    protected function isKeyExisting()
+    {
         $keyId = $this->getKey();
 
         if ($keyId === '')
+        {
             return;
+        }
 
         //
         // For keys sent by merchants, make sure they exist in db.
@@ -677,6 +714,17 @@ class BasicAuth
         return true;
     }
 
+    protected function verifyKeyNotExpired()
+    {
+        if ($this->key->isExpired() === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
+        }
+
+        return true;
+    }
+
     /**
      * Used for device verification. Checks
      * that the device exists and belongs
@@ -701,7 +749,6 @@ class BasicAuth
         $device = $this->repo->device->findByAuthToken($deviceToken);
 
         $this->device = $device;
-
 
         if (($device === null) or
             ($keyEntity->merchant->getId() !== $device->merchant->getId()))
@@ -1048,7 +1095,7 @@ class BasicAuth
 
     protected function fetchKey($keyId)
     {
-        $this->key = $this->repo->key->findNotExpired($keyId);
+        $this->key = $this->repo->key->find($keyId);
 
         return $this->key;
     }

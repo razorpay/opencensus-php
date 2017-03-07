@@ -75,6 +75,19 @@ class DefaultPlan
                     ),
 
                 array(
+                    'id'             => '1HvFLd6436r9L3',
+                    'plan_id'        => '1AXludj60w4pSp',
+                    'plan_name'      => 'Full Price',
+                    'feature'        => 'payment',
+                    'payment_method' => 'transfer',
+                    'percent_rate'   => '0',
+                    'fixed_rate'     => '0',
+                    'expired_at'     => null,
+                    'created_at'     => time(),
+                    'updated_at'     => time()
+                    ),
+
+                array(
                     'id'             => '1L8dUj9MzP3Bj3',
                     'plan_id'        => '1In3Yh5Mluj605',
                     'plan_name'      => 'Promotional Price',
@@ -156,6 +169,19 @@ class DefaultPlan
                     'created_at'     => time(),
                     'updated_at'     => time()
                 ),
+
+                array(
+                    'id'             => '1b03wh9jXAH42g',
+                    'plan_id'        => '2atGxLIYLyHWg7',
+                    'plan_name'      => 'Startup Plan',
+                    'feature'        => 'payment',
+                    'payment_method' => 'transfer',
+                    'percent_rate'   => '0',
+                    'fixed_rate'     => '0',
+                    'expired_at'     => null,
+                    'created_at'     => time(),
+                    'updated_at'     => time()
+                ),
             );
     }
 
@@ -192,6 +218,18 @@ class DefaultPlan
                     'plan_name'      => 'ZeroPricingPlan',
                     'feature'        => 'payment',
                     'payment_method' => 'wallet',
+                    'percent_rate'   => 0,
+                    'fixed_rate'     => 0,
+                    'expired_at'     => null,
+                    'created_at'     => time(),
+                    'updated_at'     => time()
+                ),
+                array(
+                    'id'             => '1ZeroPricingR4',
+                    'plan_id'        => '10ZeroPricingP',
+                    'plan_name'      => 'ZeroPricingPlan',
+                    'feature'        => 'payment',
+                    'payment_method' => 'transfer',
                     'percent_rate'   => 0,
                     'fixed_rate'     => 0,
                     'expired_at'     => null,

@@ -455,6 +455,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
+        $gatewayPayment = $verify->payment;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -469,9 +470,19 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ($this->checkPaymentStatusResponseFailed($content) !== true)
+        if ($this->checkPaymentStatusResponseFailed($content) === false)
         {
-            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
+            // Temporarily hardcoding this payment id here to manually pass verify
+            // and change payment status to authorized, as this payment was successfully
+            // processed by Jiomoney but marked as failed by timeout cron as callback was received late
+            if ($input['payment']['id'] === '7LaaHWTPMl9PQL')
+            {
+                $verify->gatewaySuccess = true;
+            }
+            else
+            {
+                $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
+            }
         }
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
@@ -481,25 +492,25 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $verify->content = $this->getVerifyWalletCreateAttributes($verify);
+        $verify->content = $this->getVerifyWalletAttributes($verify);
+
+        $gatewayPayment->fill($verify->content);
+
+        $gatewayPayment->saveOrFail();
     }
 
-    protected function getVerifyWalletCreateAttributes($verify)
+    protected function getVerifyWalletAttributes($verify)
     {
         $payment = $this->input['payment'];
 
         $content = $verify->verifyResponseContent;
 
         $contentToSave = array(
-            Entity::AMOUNT               => $payment[Payment::AMOUNT],
-            Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
             Entity::RECEIVED             => true,
-            Entity::EMAIL                => $payment[Payment::EMAIL],
-            Entity::CONTACT              => $this->getFormattedContact($payment[Payment::CONTACT]),
             Entity::STATUS_CODE          => StatusCode::SUCCESS,
             Entity::RESPONSE_CODE        => StatusCode::API_SUCCESS,
             Entity::RESPONSE_DESCRIPTION => 'APPROVED',
-            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content)
+            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content, $payment)
         );
 
         return $contentToSave;
@@ -534,8 +545,12 @@ class Gateway extends Base\Gateway
     {
         if ($this->statusQueryValid === false)
         {
-            return ($content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER]
-                    [ResponseFields::STATUS] !== StatusCode::API_SUCCESS);
+            $response = $content[ResponseFields::RESPONSE][ResponseFields::RESPONSE_HEADER];
+
+            if (isset($response[ResponseFields::STATUS]) === true)
+            {
+                return ($response[ResponseFields::STATUS] !== StatusCode::API_SUCCESS);
+            }
         }
 
         return false;
@@ -552,8 +567,15 @@ class Gateway extends Base\Gateway
                 [ResponseFields::TXN_STATUS];
     }
 
-    protected function getGatewayPaymentId(array $content)
+    protected function getGatewayPaymentId(array $content, array $payment)
     {
+        // Temporarily hardcoding the gateway payment id here for this specific payment to
+        // manually pass verify flow
+        if ($payment['id'] === '7LaaHWTPMl9PQL')
+        {
+            return '301005129694';
+        }
+
         if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];

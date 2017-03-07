@@ -1366,7 +1366,6 @@ ALTER TABLE cybersource
 ALTER TABLE cybersource
     ADD COLUMN acquirer CHAR(10) DEFAULT NULL AFTER payment_id;
 
-
 ALTER TABLE cybersource
     MODIFY COLUMN collection_indicator CHAR(2) DEFAULT NULL AFTER eci;
 
@@ -1707,3 +1706,50 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE bank_accounts
     ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
+
+# payouts - add batch settlement
+ALTER TABLE payouts
+    CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0,
+    MODIFY COLUMN service_tax INT UNSIGNED DEFAULT 0,
+    ADD COLUMN batch_settlement_id CHAR(14) AFTER transaction_id,
+    ADD CONSTRAINT payouts_batch_settlement_id_foreign FOREIGN KEY(batch_settlement_id) REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE daily_settlements
+    ADD COLUMN type VARCHAR(50) DEFAULT NULL AFTER id,
+    CHANGE COLUMN `settlement_count` `total_count` INTEGER NOT NULL;
+
+# permissions
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBUySeriKJuIb', 'schedule_create', 'schedule', 'Create a new schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBV5Or9YWZtXc', 'schedule_update', 'schedule', 'Update a schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVEaPUHQlMGC', 'schedule_delete', 'schedule', 'Delete a schedule', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVKgguP22wTl', 'schedule_assign', 'schedule', 'Assign schedule to merchant', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+insert into permissions (id, name, category, description, created_at, updated_at) values ('7PBVRggj0CjK3q', 'schedule_migration', 'schedule', 'Migration', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());
+
+ALTER TABLE files
+    ADD COLUMN region  VARCHAR(255)  DEFAULT NULL AFTER bucket;
+
+# --- Marketplace + Openwallet ---
+
+ALTER TABLE merchant_banks
+    ADD COLUMN openwallet TINYINT(1) NOT NULL DEFAULT 0 AFTER payumoney;
+
+ALTER TABLE payments
+    ADD COLUMN amount_transferred INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER base_amount_refunded,
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER vpa,
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold,
+    ADD COLUMN transfer_id CHAR(14) DEFAULT NULL AFTER invoice_id,
+    ADD CONSTRAINT payments_transfer_id_foreign FOREIGN KEY (transfer_id) REFERENCES transfers(id) ON DELETE RESTRICT;
+
+ALTER TABLE merchants
+    ADD COLUMN parent_id CHAR(14) DEFAULT NULL AFTER email,
+    ADD CONSTRAINT merchants_parent_id_foreign FOREIGN KEY (parent_id) REFERENCES merchants(id) ON DELETE RESTRICT;
+
+ALTER TABLE transfers
+    ADD COLUMN currency CHAR(3) NOT NULL AFTER amount,
+    ADD COLUMN amount_reversed INTEGER UNSIGNED NOT NULL DEFAULT 0 AFTER currency,
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER amount_reversed,
+    ADD COLUMN on_hold_until INTEGER DEFAULT NULL AFTER on_hold;
+
+ALTER TABLE transactions
+    ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
+    ADD INDEX transactions_on_hold_index (on_hold);
