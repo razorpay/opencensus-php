@@ -27,47 +27,47 @@ class CreateOffers extends Migration
             $table->char(Offer::MERCHANT_ID, Offer::ID_LENGTH);
 
             $table->string(Offer::NAME, Offer::NAME_LENGTH)
-                    ->nullable();
+                  ->nullable();
 
             $table->string(Offer::PAYMENT_METHOD, Offer::PAYMENT_METHOD_LENGTH);
 
             $table->string(Offer::PAYMENT_METHOD_TYPE, Offer::PAYMENT_METHOD_TYPE_LENTH)
-                    ->nullable();
+                  ->nullable();
 
             $table->text(Offer::IINS)->nullable();
 
             $table->string(Offer::PAYMENT_NETWORK, Offer::PAYMENT_NETWORK_LENGTH)
-                    ->nullable();
+                  ->nullable();
 
             $table->string(Offer::ISSUER, Offer::ISSUER_LENGTH)
-                    ->nullable();
+                  ->nullable();
 
             $table->tinyInteger(Offer::ACTIVE)
-                    ->default(1);
+                  ->default(1);
 
             $table->tinyInteger(Offer::BLOCK)
-                    ->default(1);
+                  ->default(1);
 
             $table->string(Offer::TYPE, 15)
-                    ->default(Offer::DEFERRED);
+                  ->default(Offer::DEFERRED);
 
             $table->integer(Offer::PERCENT_RATE)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::MIN_AMOUNT)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::MAX_CASHBACK)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::FLAT_CASHBACK)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::PAYMENT_COUNT)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::PROCESSING_TIME)
-                    ->nullable();
+                  ->nullable();
 
             $table->integer(Offer::STARTS_AT);
 
@@ -97,18 +97,19 @@ class CreateOffers extends Migration
             $table->index(Offer::ACTIVE);
 
             $table->foreign(Offer::MERCHANT_ID)
-                    ->references(Merchant::ID)
-                    ->on(Table::MERCHANT)
-                    ->on_delete('restrict');
+                  ->references(Merchant::ID)
+                  ->on(Table::MERCHANT)
+                  ->on_delete('restrict');
         });
 
-        Schema::table(Table::ORDER, function ($table)
-        {
-            $table->foreign(Order::OFFER_ID)
-                    ->references(Offer::ID)
-                    ->on(Table::OFFER)
-                    ->on_delete('restrict');
-        });
+        // TODO: Uncomment this later: Adding foreign key in queries.txt
+        // Schema::table(Table::ORDER, function ($table)
+        // {
+        //     $table->foreign(Order::OFFER_ID)
+        //           ->references(Offer::ID)
+        //           ->on(Table::OFFER)
+        //           ->on_delete('restrict');
+        // });
     }
 
     /**
@@ -118,11 +119,12 @@ class CreateOffers extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ORDER, function ($table)
-        {
-            $table->dropForeign(
-                Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
-        });
+        // TODO: Uncomment this later: Adding foreign key in queries.txt
+        // Schema::table(Table::ORDER, function ($table)
+        // {
+        //     $table->dropForeign(
+        //         Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
+        // });
 
         Schema::table(Table::OFFER, function ($table)
         {

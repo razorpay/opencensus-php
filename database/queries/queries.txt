@@ -1683,11 +1683,12 @@ ALTER TABLE offers
     DROP INDEX offers_max_cashback_index,
     DROP INDEX offers_flat_cashback_index;
 
+SET FOREIGN_KEY_CHECKS=0;
 ALTER TABLE orders
     ADD COLUMN offer_id char(14) DEFAULT NULL AFTER merchant_id,
     ADD CONSTRAINT orders_offer_id_foreign
         FOREIGN KEY(offer_id) REFERENCES offers(id);
-
+SET FOREIGN_KEY_CHECKS=1;
 
 # Adding remarks in settlements
 ALTER TABLE settlements
@@ -1728,7 +1729,7 @@ ALTER TABLE bank_accounts
 
 ALTER TABLE bank_accounts
     ADD UNIQUE INDEX bank_accounts_beneficiary_code_unique (beneficiary_code);
-    
+
 # payouts - add batch settlement
 ALTER TABLE payouts
     CHANGE COLUMN fee fees INT UNSIGNED DEFAULT 0,
