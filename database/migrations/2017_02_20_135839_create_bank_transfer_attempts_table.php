@@ -35,7 +35,7 @@ class CreateBankTransferAttemptsTable extends Migration
 
             $table->string(BankTransferAttempt::VERSION, 3);
 
-            $table->char(BankTransferAttempt::BANK_STATUS_CODE)
+            $table->string(BankTransferAttempt::BANK_STATUS_CODE, 4)
                   ->nullable();
 
             $table->string(BankTransferAttempt::STATUS);

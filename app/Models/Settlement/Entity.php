@@ -71,7 +71,7 @@ class Entity extends Base\PublicEntity
 
     public function bankTransferAttempts()
     {
-        return $this->hasMany('RZP\Models\BankTransferAttempt\Entity');
+        return $this->morphMany('RZP\Models\BankTransferAttempt\Entity');
     }
 
     public function merchant()

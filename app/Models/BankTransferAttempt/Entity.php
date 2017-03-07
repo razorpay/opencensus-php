@@ -81,7 +81,7 @@ class Entity extends Base\PublicEntity
 
     public function getRemarks()
     {
-        return $this->getAttribute(self::remarks);
+        return $this->getAttribute(self::REMARKS);
     }
 
     public function getUtr()
