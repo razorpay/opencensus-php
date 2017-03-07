@@ -110,7 +110,7 @@ app.controller('ActivationCtrl', [
       return url;
     };
 
-    var getDataFields = function(data) {
+    $scope.getDataFields = function(data) {
       var fieldsToDrop = [
         'steps_finished', 'activation_progress', 'locked',
         'submitted', 'role', 'department', 'verification',
@@ -152,7 +152,7 @@ app.controller('ActivationCtrl', [
 
         // This is the list of data fields. These can be
         // safely sent back whenever we edit something
-        $scope.dataFields = getDataFields(data.data);
+        $scope.dataFields = $scope.getDataFields(data.data);
         $scope.data.bank_account_number_confirmation = $scope.data.bank_account_number;
 
         angular.forEach(data.data.files, function (key) {

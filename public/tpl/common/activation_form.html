@@ -87,6 +87,12 @@
         </div>
       </div>
       <div class="form-group">
+        <label for="company_cin" class="col-sm-3 control-label">Company CIN</label>
+        <div class="col-sm-8">
+          <input ng-readonly="!editable()" type="text" class="form-control" name="company_cin" ng-model="data.company_cin" placeholder="Company CIN">
+        </div>
+      </div>
+      <div class="form-group">
         <label for="business_dba" class="col-sm-3 control-label">Billing Label</label>
         <div class="col-sm-8">
           <input ng-readonly="!editable()" type="text" class="form-control" name="business_dba" ng-model="data.business_dba" placeholder="Acme Watches" >
