@@ -45,10 +45,14 @@ app.controller('MerchantsCtrl', [
           break;
       }
 
+      // Adds a `sub_account` filter flag to the request
+      // API will only return Marketplace sub-accounts
       if ($scope.sub_accounts.all === true) {
         query.sub_accounts = 1;
       }
 
+      // Adds a `sub_account` id to the request - API
+      // filters merchants against the parent_id field
       if ($scope.sub_accounts.id !== '') {
         query.sub_accounts = $scope.sub_accounts.id;
       }

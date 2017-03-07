@@ -37,14 +37,14 @@ app.controller('AccountListCtrl', [
       modalInstance.result.then($scope.createAccount, $.noop);
     };
 
-    $scope.addDetails = function (accId) {
+    $scope.addDetails = function (accountId) {
       var modalInstance = $modal.open({
         templateUrl: 'tpl/app_accounts_activation_modal.html',
         controller: 'AccountActivationCtrl',
         size: 'lg',
         scope: function() {
             var scope = $scope.$new();
-            scope.account = accId;
+            scope.account = accountId;
             return scope;
         }(),
       });
