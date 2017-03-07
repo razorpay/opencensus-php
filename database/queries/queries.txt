@@ -1756,3 +1756,7 @@ ALTER TABLE transactions
 
 ALTER TABLE payment_analytics
     MODIFY COLUMN referer VARCHAR(2083) NULL;
+
+ALTER TABLE terminals
+    ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
+    ADD INDEX terminals_network_category_index (network_category);
