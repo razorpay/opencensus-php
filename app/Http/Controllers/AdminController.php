@@ -936,6 +936,16 @@ class AdminController extends Controller
         return AppResponse::jsonResponse([], $company->fetch());
     }
 
+    public function verifySignatoryPAN(string $cin, string $pan)
+    {
+        $company = new Admin\Company($cin);
+        $info = $company->verifyDirector($pan);
+
+        $error = $info['match'] === true ? null : ['Not Found'];
+
+        return AppResponse::jsonResponse($error, $info);
+    }
+
     public function getMerchantBankAccount($merchantId)
     {
         list($error, $bankAccount) = (new Admin\Service)->fetchBankAccount($merchantId);

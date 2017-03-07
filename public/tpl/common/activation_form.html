@@ -315,7 +315,12 @@
                 </thead>
                 <tbody>
                   <tr ng-repeat="person in companyInfo.signatories">
-                    <td>{{person.Name}}</td>
+                    <td>
+                      <span tooltip="Verified Signatory" ng-show="(person.PAN_DIN === directorInfo.din)">
+                        <i class="fa fa-check text-success"></i>
+                      </span>
+                      {{person.Name}}
+                    </td>
                     <td>{{person.PAN_DIN}}</td>
                     <td>{{person.StartDate}}</td>
                     <td>{{person.EndDate}}</td>
@@ -388,8 +393,23 @@
         </div>
         <div class="form-group">
           <label for="promoter_pan_name" class="col-sm-3 control-label">Name on PAN Card</label>
-          <div class="col-sm-8">
-            <input ng-readonly="true" type="text" class="form-control" name="promoter_pan_name" ng-model="data.promoter_pan_name" placeholder="Name on PAN Card" required>
+          <div class="row">
+            <div class="col-sm-5">
+              <input ng-readonly="true" type="text" class="form-control" name="promoter_pan_name" ng-model="data.promoter_pan_name" placeholder="Name on PAN Card" required>
+            </div>
+            <div class="col-sm-2">
+              <a class="btn btn-primary" ng-click="verifySignatoryPAN(data.promoter_pan)">Verify</a>
+            </div>
+          </div>
+        </div>
+        <div class="row" ng-show="directorInfo">
+          <div class="col-sm-3"></div>
+          <div class="col-sm-7 panel-body">
+            <div class="list-group-item"><span class="pull-right">{{directorInfo.din | uppercase}}</span>DIN</div>
+            <div class="list-group-item"><span class="pull-right">{{directorInfo.pan | uppercase}}</span>PAN</div>
+            <div class="list-group-item"><span class="pull-right">{{directorInfo.directorFullName}}</span>Full Name</div>
+            <div class="list-group-item"><span class="pull-right">{{directorInfo.fatherFullName}}</span>Father's Name</div>
+            <div class="list-group-item"><span class="pull-right">{{directorInfo.dateOfBirth}}</span>Date of Birth</div>
           </div>
         </div>
 
@@ -398,7 +418,7 @@
           <div class="col-sm-8">
             <i class="fa fa-check text-success" ng-show="panVerified"></i>
             <i class="fa fa-times text-danger"  ng-show="!panVerified"></i>
-            <span class="help-block">This only verifies if the Signatory PAN Number and Name on the Card provided here matches an entry in the signatory table above.</span>
+            <span class="help-block">This only verifies if the Signatory PAN Number and Name on the Card provided here matches an entry in the signatory table above. You can use the date of birth for further verification.</span>
           </div>
         </div>
       </fieldset>
@@ -489,13 +509,6 @@
           <input ng-readonly="!editable()" type="text" class="form-control" name="website_pricing" ng-model="data.website_pricing" placeholder="http://www.website.com/pricing.html" >
         </div>
       </div>
-      <!-- <div class="form-group">
-        <label for="website_login" class="col-sm-3 control-label">Login Window URL</label>
-        <div class="col-sm-8">
-          <span class="help-block">If no login required, give us a page where you ask for customer details. Example: http://www.website.com/login.html</span>
-          <input ng-readonly="!editable()" type="text" class="form-control" name="website_login" ng-model="data.website_login" placeholder="http://www.website.com/login.html" >
-        </div>
-      </div> -->
       <div class="m-t m-b text-center prev-next">
         <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
@@ -654,22 +667,6 @@
             </div>
         </div>
       </div>
-      <!--
-      This is the business_operation_proof section
-      <div class="form-group">
-        <label for="business_operation_proof" class="col-sm-3 control-label">Business Operation Proof </label>
-        <div class="col-sm-8">
-          <span class="help-block">
-              Upload scan of following :
-            <li>MOA and AOA (Mandatory if private limited)</li>
-            <li>Sales tax/Service Tax or Shop Act Registration (Mandatory for Proprietership/Partnership/Trust/Society etc.) </li>
-          </span>
-            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_operation_proof" ng-file-select="onFileSelect($files, 'business_operation_proof')">
-            <div class="text-center m-t m-b alerts">
-              <alert ng-repeat="alert in fileAlerts.business_operation_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_operation_proof.closeAlert($index)">{{alert.msg}}</alert>
-            </div>
-        </div>
-      </div> -->
       <div class="form-group">
         <label for="business_pan_proof" class="col-sm-3 control-label">Business PAN <a href ng-click="isPANHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
         <div class="col-sm-8">
@@ -693,36 +690,6 @@
           </div>
         </div>
       </div>
-      <!--
-      promoter_proof
-      <div class="form-group">
-        <label for="promoter_proof" class="col-sm-3 control-label">Authorised Signatory Proof </label>
-        <div class="col-sm-8">
-          <span class="help-block">
-              Upload scan of a board resolution/parternship resolution declaring authorised signatory of the firm (not needed for proprietership) <br/>
-              <a href="https://docs.google.com/document/d/1fTp9pqbj1nZqsnAhjxz34yjdPK_k8Pibx8NkdvMvUSo/edit" target="_blank">Download a template here</a>
-          </span>
-            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_proof" ng-file-select="onFileSelect($files, 'promoter_proof')">
-            <div class="text-center m-t m-b alerts">
-              <alert ng-repeat="alert in fileAlerts.promoter_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_proof.closeAlert($index)">{{alert.msg}}</alert>
-            </div>
-        </div>
-      </div> -->
-      <!--
-      promoter_pan_proof
-      <div class="form-group">
-        <label for="promoter_pan_proof" class="col-sm-3 control-label">Authorised Signatory PAN</label>
-        <div class="col-sm-8">
-          <span class="help-block">
-          Upload PAN card scan of at least one authorised signatory, whose details have been filled earlier.
-          In case of sole proprietership, upload your personal PAN.
-          </span>
-          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_pan_proof" ng-file-select="onFileSelect($files, 'promoter_pan_proof')">
-          <div class="text-center m-t m-b alerts">
-            <alert ng-repeat="alert in fileAlerts.promoter_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
-          </div>
-        </div>
-      </div> -->
       <div class="form-group">
         <label for="promoter_address_proof" class="col-sm-3 control-label">Authorised Signatory Address Proof <a href ng-click="isPromoterAddressHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
         <div class="col-sm-8">

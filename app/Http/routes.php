@@ -233,6 +233,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/merchant/{id}/terminal', 'AdminController@postMerchantTerminal');
         Route::post('/admin/merchant/{id}/pricing', 'AdminController@postMerchantPricing');
         Route::get('/admin/companies/{cin}/info', 'AdminController@getCompanyInfo');
+        Route::get('/admin/companies/{cin}/signatories/{pan}', 'AdminController@verifySignatoryPAN');
         Route::get('/admin/merchant/{id}/credits_log', 'AdminController@getMerchantCreditsLog');
         Route::post('/admin/merchant/{id}/credits/add', 'AdminController@addMerchantCredits');
         Route::delete('/admin/merchant/{id}/credit/{cid}', 'AdminController@deleteMerchantCredit');

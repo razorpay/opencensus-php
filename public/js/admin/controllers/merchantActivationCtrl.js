@@ -89,13 +89,22 @@ app.controller('MerchantActivationCtrl', [
 
     fetchMerchantDetails();
 
-    $scope.verifyPAN = function (signatories, pan_name, pan_number) {
-      for (var i in signatories) {
-        var person = signatories[i];
-        if (person.PAN_DIN.toUpperCase() === pan_number.toUpperCase() && person.Name.toUpperCase() === pan_name.toUpperCase()) {
-          $scope.panVerified = true;
+    $scope.verifySignatoryPAN = function() {
+      var cin = $scope.data.company_cin;
+      var promoter_pan = $scope.data.promoter_pan;
+
+      var request = $http.get('/admin/companies/' + cin + '/signatories/' + promoter_pan);
+
+      request.success(function (data) {
+        if (data.success) {
+          $scope.directorInfo = data.data;
+          $scope.panVerified = data.data.match;
+        } else {
+          $scope.alerts.addAlert('danger', 'PAN could not be verified. The promoter PAN was not found in any of the company signatories');
         }
-      }
+      }).error(function () {
+        $scope.alerts.addAlert('danger', 'Director Info could not be fetched');
+      });
     };
 
     $scope.getCompanyData = function(cin) {
@@ -103,7 +112,6 @@ app.controller('MerchantActivationCtrl', [
       request.success(function (data) {
         if (data.success) {
           $scope.companyInfo = data.data;
-          $scope.verifyPAN(data.data.signatories, $scope.data.promoter_pan_name, $scope.data.promoter_pan);
         } else {
           $scope.alerts.addAlert('danger', 'Company Info could not be fetched');
         }
