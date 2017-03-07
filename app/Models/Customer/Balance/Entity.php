@@ -203,7 +203,7 @@ class Entity extends Base\PublicEntity
 
         $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
 
-        $now = Carbon::now();
+        $now = Carbon::now('Asia/Kolkata');
 
         if ($lastTxnTime->month !== $now->month)
         {
