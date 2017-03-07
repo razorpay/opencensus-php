@@ -329,6 +329,7 @@ final class Route
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',                   'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
+        'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
@@ -348,7 +349,7 @@ final class Route
         'feature_get_multiple'                    => ['get',      'features/{entityId}',                            'FeatureController@getFeatures'                                     ],
         'feature_bulk_assign'                     => ['post',     'features/assign',                                'FeatureController@multiAssignFeature'                              ],
         'feature_bulk_remove'                     => ['post',     'features/remove',                                'FeatureController@multiRemoveFeature'                              ],
-        'upi_fill_provider'                       => ['put',      'gateway/upi_fill_provider',                      'GatewayController@fillUpiProviderCode'                             ],
+        'upi_fill_bank'                           => ['patch',    'gateway/upi_fill_bank',                          'GatewayController@fillUpiBank'                                     ],
         'mailgun_webhook'                         => ['post',     'mailgun/callback/{type}',                        'AdminController@postMailgunCallback'                               ],
         'offers_update_merchants'                 => ['put',      'offers/{id}/merchants',                          'OfferController@updateMerchants'                                   ],
         'offer_create'                            => ['post',     'offers',                                         'OfferController@createOffer'                                       ],
@@ -501,6 +502,7 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
+        'otp_verify_app',
         'device_create',
     );
 
@@ -731,19 +733,12 @@ final class Route
         'gateway_validate_unknown_refund',
         'scorecard',
         'billdesk_reconcile_cancelled',
-        'schedule_create',
-        'schedule_fetch',
-        'schedule_fetch_multiple',
-        'schedule_delete',
-        'schedule_update',
-        'schedule_assign',
-        'schedule_migration',
         'feature_get_multiple',
         'feature_add',
         'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
-        'upi_fill_provider',
+        'upi_fill_bank',
         'methods_update_merchants',
         'payments_multiple_authorize_refund',
         'adj_add_reverse',
@@ -771,6 +766,8 @@ final class Route
         'transaction_create_fees_breakup',
         'billdesk_create_cancelled_refunds',
         'merchant_patch_beneficiary_code',
+        'schedule_fetch',
+        'schedule_fetch_multiple',
     );
 
     public static $proxy = array(
@@ -865,6 +862,11 @@ final class Route
         'permission_delete',
         'auditlog_search',
         'admin_logout',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     public static $adminPermission = [
@@ -891,8 +893,6 @@ final class Route
         'permission_get_multiple'        => [Permission::VIEW_ALL_PERMISSION],
         'group_get_allowed_groups'       => [Permission::GROUP_GET_ALLOWED_GROUPS],
         'schedule_create'                => [Permission::SCHEDULE_CREATE],
-        'schedule_fetch'                 => [Permission::SCHEDULE_FETCH],
-        'schedule_fetch_multiple'        => [Permission::SCHEDULE_FETCH_MULTIPLE],
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
         'schedule_update'                => [Permission::SCHEDULE_UPDATE],
         'schedule_assign'                => [Permission::SCHEDULE_ASSIGN],
@@ -1052,6 +1052,11 @@ final class Route
     public static $crossOrgRoutes = [
         'org_edit',
         'org_get',
+        'schedule_create',
+        'schedule_delete',
+        'schedule_update',
+        'schedule_assign',
+        'schedule_migration',
     ];
 
     const RAZORPAYJS_ROUTES = array(

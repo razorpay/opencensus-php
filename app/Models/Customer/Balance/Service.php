@@ -13,5 +13,4 @@ class Service extends Base\Service
 
         $this->core = new Core;
     }
-
 }

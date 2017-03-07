@@ -150,6 +150,7 @@ class PublicErrorDescription
     const BAD_REQUEST_UNAUTHORIZED_SECRET_NOT_PROVIDED                          = 'Please provide api secret';
     const BAD_REQUEST_UNAUTHORIZED_SECRET_SENT_ON_PUBLIC_ROUTE                  = 'Please do not provide your secret on public sided requests';
     const BAD_REQUEST_UNAUTHORIZED_API_KEY_NOT_PROVIDED                         = 'Please provide your Razorpay Api Key Id';
+    const BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED                              = 'The api key provided by you has expired and cannot be used. Please use correct key and secret.';
     const BAD_REQUEST_UNAUTHORIZED                                              = 'Authentication failed';
     const BAD_REQUEST_PRICING_ID_REQURED                                        = 'Pricing plan id is required';
     const BAD_REQUEST_PRICING_PLAN_ALREADY_EXISTS                               = 'Pricing plan name already exists. Are you trying a pricing plan rule instead?';
