@@ -10,6 +10,7 @@ use RZP\Models\Payment\Processor\Netbanking;
 use RZP\Models\Payment\Processor\Upi;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Settlement;
+use RZP\Models\Payment;
 
 class Gateway
 {
@@ -194,6 +195,7 @@ class Gateway
     public static $asynchronous = array(
         self::UPI_ICICI,
         self::UPI_IDFC,
+        self::SHARP,
     );
 
     /**
@@ -300,7 +302,8 @@ class Gateway
     public static $s2sCallbackGateways = array(
         Gateway::BILLDESK,
         Gateway::UPI_ICICI,
-        Gateway::WALLET_OLAMONEY
+        Gateway::WALLET_OLAMONEY,
+        Gateway::SHARP
     );
 
     /**
