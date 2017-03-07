@@ -170,6 +170,50 @@ class Service extends Base\Service
         }
     }
 
+    /**
+     * Sensitive function:
+     * Uses admin auth on merchant dashboard
+     *
+     * Used to retrieve data for the Markerplace accounts list page
+     * with API route - GET /merchants; filtered on field: parent_id
+     * This is temp, until we roll out account APIs.
+     * @todo Move to /account fetch, under private auth
+     */
+    public function fetchCollectionForMarketplaceAccounts($input)
+    {
+        if (isset($this->merchantId) === false)
+        {
+            return [['Internal error occurred'], null];
+        }
+
+        $error = (new Validator)->validateInput('fetch', $input)->messages();
+
+        if (empty($error) === false)
+        {
+            return [$error, null];
+        }
+
+        $collection = [];
+
+        // Fetch merchants filtered by parent_id field
+        $input['parent_id'] = $this->merchantId;
+
+        try
+        {
+            $this->setApiCredentials();
+
+            $collection = $this->api->merchant->all($input)->toArray();
+
+            $this->mapKeys($collection);
+        }
+        catch(\Razorpay\Api\Errors\BadRequestError $e)
+        {
+            $error[] = $e->getMessage();
+        }
+
+        return [$error, $collection];
+    }
+
     public function fetchPaymentRefunds($id, $mode)
     {
         $data = array();

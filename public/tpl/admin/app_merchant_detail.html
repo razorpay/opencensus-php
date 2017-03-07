@@ -83,7 +83,7 @@
         <a href class="list-group-item assign-pricing" ng-click="openAssignPricing()" ng-show="admin.permissions.indexOf('edit_merchant_pricing') !== -1">
           Assign Pricing <i class="pull-right fa fa-percent"></i>
         </a>
-        <a href class="list-group-item assign-schedule" ng-click="openAssignSchedule()">
+        <a href class="list-group-item assign-schedule" ng-show="admin.permissions.indexOf('schedule_assign') !== -1" ng-click="openAssignSchedule()">
           Assign Schedule <i class="pull-right fa fa-clock-o"></i>
         </a>
         <a href class="list-group-item assign-terminal" ng-click="openAssignTerminal()" ng-show="admin.permissions.indexOf('assign_merchant_terminal') !== -1">
@@ -192,6 +192,16 @@
         <div class="list-group-item" ng-show="referer!=false">
           <span class="pull-right">{{referer}}</span>
           Referer
+        </div>
+        <div class="list-group-item" ng-show="marketplace">
+          <span class="pull-right">
+            <i class="fa fa-check text-success"></i>
+          </span>
+          Is Marketplace Account?
+        </div>
+        <div class="list-group-item bg-success text-white" ng-show="marketplace">
+          <span class="pull-right" ui-sref="app.merchants.detail({id:marketplace})">{{marketplace}}</span>
+          Marketplace Merchant
         </div>
         <div class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
@@ -354,9 +364,17 @@
           </span>
           Fee Model
         </div>
-        <div class="list-group-item">
-          <span class="pull-right" tooltip="{{merchant.details.settlement_schedule}} Days">{{merchant.details.settlement_schedule}} Days</span>
-          Settlement Schedule <i class="fa fa-clock-o"></i>
+        <div class="list-group-item" ng-init="isScheduleCollapsed = false">
+          <span class="pull-right">
+            <button class="btn btn-default btn-xs pull-right"  ng-click="isScheduleCollapsed = !isScheduleCollapsed" >Show/Hide</button>
+          </span>
+          Settlement Schedule
+        </div>
+        <div ng-init="isScheduleCollapsed = true" collapse="isScheduleCollapsed" class="panel-body">
+          <div class="list-group-item" ng-repeat="key in scheduleKeys">
+            <span class="pull-right">{{displayValue(key, merchant.schedule[key])}}</span>
+            {{key|titlecase}}
+          </div>
         </div>
         <div class="list-group-item" ng-init="isMethodsCollapsed = false">
           <span class="pull-right">
@@ -1049,12 +1067,6 @@
             <option value="prepaid">Prepaid</option>
             <option value="postpaid">Postpaid</option>
           </select>
-        </div>
-      </div>
-      <div class="form-group">
-        <label for="settlement_schedule" class="col-lg-2 control-label">Settlement Schedule</label>
-        <div class="col-lg-10">
-          <input class="form-control m-b" name="settlement_schedule" ng-model="merchant.settlement_schedule" maxlength="3"/>
         </div>
       </div>
       <div class="form-group">

@@ -11,12 +11,14 @@ app.controller('MerchantDetailCtrl', [
   'admin',
   '$upload',
   'organization',
-  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization) {
+  'displayValue',
+  function ($scope, $http, $stateParams, alertsFactory, transformRequestAsFormPost, $modal, riskMap, admin, $upload, organization, displayValue) {
     admin.identity().then(function (data) {
       $scope.admin = data;
     });
 
     $scope.riskMap = riskMap;
+    $scope.displayValue = displayValue;
     // 5 Lac INR
     $scope.DEFAULT_MAX_PAYMENT_AMOUNT = 50000000;
     $scope.alerts = alertsFactory.getHandler();
@@ -940,9 +942,11 @@ app.controller('MerchantDetailCtrl', [
 
         if (data.success) {
           $scope.merchant = data.data;
+          $scope.scheduleKeys = Object.keys($scope.merchant.schedule);
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
+          $scope.marketplace = data.data.details.parent_id;
           $scope.merchant.details.international = data.data.details.international;
           var merchantGroups = data.data.groups || [];
           merchantGroups.map(function(group){
@@ -1110,7 +1114,8 @@ app.controller('MerchantDetailCtrl', [
       'netbanking',
       'debit_card',
       'credit_card',
-      'jiomoney'
+      'jiomoney',
+      'openwallet'
     ];
     $scope.methods = {};
 
