@@ -53,7 +53,7 @@ trait PaymentTrait
      */
     protected $failPaymentOnBankPage = false;
 
-    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency ='INR')
+    protected function doAuthAndCapturePayment($payment = null, $amount = 0, $currency = 'INR')
     {
         if ($payment === null)
         {
@@ -129,7 +129,7 @@ trait PaymentTrait
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
         $func = $trace[1]['function'];
 
-        $testData = $this->testData[$func] ?? [] ;
+        $testData = $this->testData[$func] ?? [];
 
         if (isset($testData['request']) === false)
             $testData['request'] = [];
@@ -808,12 +808,13 @@ trait PaymentTrait
         // default payment object
         //
         $payment = [
-            'amount'          =>  '50000',
-            'currency'        =>  'INR',
+            'amount'            => '50000',
+            'currency'          => 'INR',
             'email'             => 'a@b.com',
             'contact'           => '9918899029',
-            'notes'             => array(
-                'merchant_order_id' => 'random order id'),
+            'notes'             => [
+                'merchant_order_id' => 'random order id',
+            ],
             'description'       => 'random description',
             'bank'              => 'IDIB',
         ];

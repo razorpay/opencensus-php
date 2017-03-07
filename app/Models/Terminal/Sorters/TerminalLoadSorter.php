@@ -3,10 +3,7 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
-use RZP\Constants\Mode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class TerminalLoadSorter extends Terminal\Sorter

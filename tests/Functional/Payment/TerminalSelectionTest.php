@@ -8,8 +8,6 @@ use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Options;
-use RZP\Models\Payment\Gateway;
-use RZP\Models\Terminal\Sorters\TerminalLoadSorter;
 
 class TerminalSelectionTest extends TestCase
 {
