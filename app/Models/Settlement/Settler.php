@@ -14,7 +14,7 @@ use RZP\Models\Base\Traits\BatchSettlementTrait;
 
 class Settler
 {
-    use CommonTrait;
+    use SettlementTrait;
     use BatchSettlementTrait;
 
     protected $settlements;

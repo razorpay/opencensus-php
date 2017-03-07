@@ -168,7 +168,7 @@ class Reconciler3
     protected function reconcileEntity($row)
     {
         // reconciliation version
-        $version = ucfirst($row['Enrichment_2'] ?: 'v1');
+        $version = $row[Headings::VERSION] ?: BankTransferAttempt\Version::V1;
 
         // validate version
         BankTransferAttempt\Version::validateVersion($version);
@@ -238,8 +238,8 @@ class Reconciler3
         $entity->setFailureReason($failureReason);
         $entity->setRemarks($remarks);
         $entity->setBankStatusCode($statusCode);
-        $entity->setDateTime($row['DateTime']);
-        $entity->setCmsRefNo($row['Cms. ref no.']);
+        $entity->setDateTime($row[Headings::DATE_TIME]);
+        $entity->setCmsRefNo($row[Headings::CMS_REF_NO]);
 
         $this->repo->saveOrFail($entity);
 
@@ -260,11 +260,11 @@ class Reconciler3
     {
         $utr = null;
 
-        $statusCode = trim($row['Status Of transaction']);
+        $statusCode = trim($row[Headings::STATUS_OF_TRANSACTION]);
 
-        $remarks = trim($row['Remarks']);
+        $remarks = trim($row[Headings::REMARKS]);
 
-        $recordDate = Carbon::createFromFormat('d-M-y', $row['Payment_Date'], 'Asia/Kolkata');
+        $recordDate = Carbon::createFromFormat('d-M-y', $row[Headings::PAYMENT_DATE], 'Asia/Kolkata');
 
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
@@ -311,7 +311,7 @@ class Reconciler3
 
     protected function loadEntityAndRelationsV1($row)
     {
-        $entityId = $row['Payment_Ref_No.'];
+        $entityId = $row[Headings::PAYMENT_REF_NO];
 
         $entityId = str_replace(' ', '_', $entityId);
 

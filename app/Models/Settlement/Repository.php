@@ -28,8 +28,8 @@ class Repository extends Base\Repository
     public function getFailedSettlementsWithRelations($channel)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, '=', 'kotak')
-                    ->where(Entity::STATUS, '=', 'failed')
+                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->where(Entity::STATUS, '=', Status::FAILED)
                     ->with('merchant', 'bankAccount')
                     ->with(['setlTransactions' => function($query)
                     {

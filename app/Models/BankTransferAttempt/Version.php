@@ -4,8 +4,8 @@ namespace RZP\Models\BankTransferAttempt;
 
 class Version
 {
-    const V1    = 'v1'; // Reconciliation without bank_transfer_attempt
-    const V2    = 'v2'; // Reconciliaton using bank_transder_attempt
+    const V1    = 'V1'; // Reconciliation without bank_transfer_attempt
+    const V2    = 'V2'; // Reconciliaton using bank_transder_attempt
 
     public static function validateVersion(string $type)
     {

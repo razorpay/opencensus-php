@@ -15,7 +15,7 @@ use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
 {
-    use CommonTrait;
+    use SettlementTrait;
     use BatchSettlementTrait;
 
     protected $setlTime;
@@ -41,6 +41,13 @@ class Processor extends Base\Core
 
     public function processFailedSettlements(array $input, $channel)
     {
+        list($shouldProcess, $message) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === false)
+        {
+            return $message;
+        }
+
         $this->preSettlementProcessing($input, $channel);
 
         $data = $this->mutex->acquireAndRelease(
@@ -57,6 +64,13 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel, $schedule = true)
     {
+        list($shouldProcess, $message) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === false)
+        {
+            return $message;
+        }
+
         $this->preSettlementProcessing($input, $channel);
 
         $data = $this->mutex->acquireAndRelease(
@@ -109,7 +123,7 @@ class Processor extends Base\Core
                 list($setl, $bankTransferAtpt) = $this->repo->transaction(
                     function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
                 {
-                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl, $this->setlTime);
+                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
 
                     return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
                 });
@@ -212,13 +226,6 @@ class Processor extends Base\Core
     protected function preSettlementProcessing(array $input, $channel)
     {
         $this->inititalizeVariables($input, $channel);
-
-        list($shouldProcess, $message) = $this->shouldProcessSettlements();
-
-        if ($shouldProcess === false)
-        {
-            return $message;
-        }
 
         $this->increaseAllowedSystemLimits();
     }

@@ -45,18 +45,15 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function retryFailedSettlement($setl, $setlTime)
+    public function retryFailedSettlement($setl)
     {
         $this->setl = $setl;
         $this->txns = $this->setl->setlTransactions;
-        $this->setlTime = $setlTime;
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
 
         $this->repo->saveOrFail($this->bankTransferAtpt);
-
-        $this->updateTransactions();
 
         return $this->bankTransferAtpt;
     }
@@ -232,7 +229,7 @@ class Merchant
                 default:
                     $txnType = $detail['amount'] < 0 ? 'debit' : 'credit';
 
-                    if (empty($detail['count']) === false)
+                    if ($detail['count'] !== 0)
                     {
                         $this->createSetlDetailsEntity(
                             $componentType,
@@ -315,10 +312,7 @@ class Merchant
         $setl->transaction()->associate($this->setlTransaction);
         $setl->merchant()->associate($this->merchant);
 
-        if ($this->bankAccount->getId() !== null)
-        {
-            $setl->bankAccount()->associate($this->bankAccount);
-        }
+        $setl->bankAccount()->associate($this->bankAccount);
 
         $this->setl = $setl;
     }
@@ -329,14 +323,14 @@ class Merchant
 
         $values = [
             BankTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
-            BankTransferAttempt\Entity::CHANNEL         => $this->setl->getChannel(),
+            BankTransferAttempt\Entity::CHANNEL         => $this->channel,
             BankTransferAttempt\Entity::VERSION         => BankTransferAttempt\Version::V2,
             BankTransferAttempt\Entity::STATUS          => BankTransferAttempt\Status::CREATED,
         ];
 
         $bankTransferAttempt->fillAndGenerateId($values);
 
-        $bankTransferAttempt->sourceAssociate($this->setl);
+        $bankTransferAttempt->source()->associate($this->setl);
 
         $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
 

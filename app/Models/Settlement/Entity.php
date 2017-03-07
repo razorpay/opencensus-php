@@ -67,10 +67,6 @@ class Entity extends Base\PublicEntity
         self::SERVICE_TAX,
     );
 
-    protected $appends = [
-        self::PUBLIC_ID,
-    ];
-
     // --------------------------------- relations -------------------------------
 
     public function bankTransferAttempts()

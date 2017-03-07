@@ -11,7 +11,7 @@ use RZP\Models\Base;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
-trait CommonTrait
+trait SettlementTrait
 {
     protected function filterTransactionsForSettlement($txns, $channel)
     {

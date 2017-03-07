@@ -64,17 +64,6 @@ class Entity extends Base\PublicEntity
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 
-    /**
-     * Associates the entity id and validates that the entity id is unique.
-     * @param $entity
-     */
-    public function sourceAssociate($entity)
-    {
-        $this->setEntityType($entity->getEntityName());
-
-        $this->source()->associate($entity);
-    }
-
     public function bankAccount()
     {
         return $this->belongsTo(
