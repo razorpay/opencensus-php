@@ -52,4 +52,26 @@ class RefundFile extends Base\Core
 
         return static::$fileToWriteName . '_' . $this->mode . '_' . $time;
     }
+
+    protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
+    {
+        $txt = '';
+
+        $count = count($data);
+
+        foreach ($data as $row)
+        {
+            $txt .= implode($glue, array_values($row)) ;
+
+            $count--;
+
+           if (($ignoreLastNewline === false) or
+               (($ignoreLastNewline === true) and ($count > 0)))
+           {
+                $txt .= "\r\n";
+           }
+        }
+
+        return $txt;
+    }
 }
