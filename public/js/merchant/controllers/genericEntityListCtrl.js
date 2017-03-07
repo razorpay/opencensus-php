@@ -126,6 +126,8 @@ app.controller('GenericEntityListCtrl', [
       else {
         var url = location.origin + '/#/app/payments/' + $scope.entity.id;
         window.open(url, '_blank');
+
+        return;
       }
 
       request.success(function (data) {
