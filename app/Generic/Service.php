@@ -33,8 +33,6 @@ class Service extends Base\Service
 
         $input['file'] = null;
 
-        $input['merchant_id'] = Input::get('merchant_id') ?? '';
-
         $autoBuildQuery = false;
 
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
@@ -51,7 +49,6 @@ class Service extends Base\Service
         $input['file'] = null;
 
         $autoBuildQuery = false;
-
         $this->trace->info(TraceCode::MISC_TRACE_CODE, $input);
 
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);
