@@ -56,7 +56,8 @@ class Entity extends Base\Entity
     const WALLET  = 'WALLET';
     const UNKNOWN = 'UNKNOWN';
 
-    const AGGREGATOR = 'Aggregator';
+    const AGGREGATOR    = 'Aggregator';
+    const MARKETPLACE   = 'Marketplace';
 
     protected static $api_mappings = array(
         'American Express'  =>  self::AMEX,
@@ -100,7 +101,7 @@ class Entity extends Base\Entity
      * @param  string          $businessName   Merchant Business Name
      * @return App\Merchant\Entity Sub Merchant Entity
      */
-    public static function createFromMerchant(Entity $aggregator, $businessName, $email)
+    public static function createFromMerchant(Entity $aggregator, $businessName, $email, $isLinkedAccount = false)
     {
         $merchant = new static();
 
@@ -108,8 +109,11 @@ class Entity extends Base\Entity
         $merchant->name     = $businessName;
         $merchant->email    = $email;
 
-        // We tag the merchant as referred from the original merchant as well
-        $merchant->tag("ref-{$aggregator->id}");
+        if ($isLinkedAccount === false)
+        {
+            // We tag the merchant as referred from the original merchant as well
+            $merchant->tag("ref-{$aggregator->id}");
+        }
 
         return $merchant;
     }
@@ -124,6 +128,11 @@ class Entity extends Base\Entity
     public function isAggregator()
     {
         return in_array(self::AGGREGATOR, $this->tagNames());
+    }
+
+    public function isMarketplace()
+    {
+        return in_array(self::MARKETPLACE, $this->tagNames());
     }
 
     /**

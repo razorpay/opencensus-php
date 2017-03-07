@@ -193,6 +193,16 @@
           <span class="pull-right">{{referer}}</span>
           Referer
         </div>
+        <div class="list-group-item" ng-show="marketplace">
+          <span class="pull-right">
+            <i class="fa fa-check text-success"></i>
+          </span>
+          Is Marketplace Account?
+        </div>
+        <div class="list-group-item bg-success text-white" ng-show="marketplace">
+          <span class="pull-right" ui-sref="app.merchants.detail({id:marketplace})">{{marketplace}}</span>
+          Marketplace Merchant
+        </div>
         <div class="list-group-item">
           <span class="pull-right">{{merchant.balance.test/100 | rupee }}</span>
           Balance (Test)

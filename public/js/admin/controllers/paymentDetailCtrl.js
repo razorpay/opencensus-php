@@ -50,6 +50,7 @@ app.controller('PaymentDetailCtrl', [
       'signed',
       'status',
       'terminal_id',
+      'transfer_id',
       'transaction_id',
       'updated_at',
       'verified',
