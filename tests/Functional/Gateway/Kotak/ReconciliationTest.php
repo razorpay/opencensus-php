@@ -106,13 +106,15 @@ class ReconciliationTest extends TestCase
 
         // Resetting time
         Carbon::setTestNow();
+
+        return $settlement;
     }
 
     public function testRetryRecon()
     {
-        $this->testReconciliationFailure();
+        $settlement = $this->testReconciliationFailure();
 
-        $content = $this->retryIntiateSettlements('kotak');
+        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
 
         // Check settlement entities
         $setlAttempts = $this->getEntities('bank_transfer_attempt', [], true);

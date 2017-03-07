@@ -39,7 +39,7 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function processFailedSettlements(array $input, $channel)
+    public function processFailedSettlements(array $input, string $channel)
     {
         list($shouldProcess, $message) = $this->shouldProcessSettlements();
 
@@ -54,7 +54,7 @@ class Processor extends Base\Core
             self::MUTEX_RETRY_RESOURCE,
             function () use ($input, $channel)
             {
-                return $this->retryProcessFailedSettlements($channel);
+                return $this->retryProcessFailedSettlements($input, $channel);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -103,12 +103,17 @@ class Processor extends Base\Core
         return $response;
     }
 
-    // Is schedule needed here?
-    protected function retryProcessFailedSettlements($channel): array
+    protected function retryProcessFailedSettlements(array $input, string $channel): array
     {
         try
         {
-            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($channel);
+            $setlIds = $input['settlement_ids'];
+
+            Entity::verifyIdAndStripSignMultiple($setlIds);
+
+            assert(count($setlIds) > 0);
+
+            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($setlIds);
 
             $setlAttempts = new Base\PublicCollection;
 

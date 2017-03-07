@@ -75,11 +75,12 @@ trait SettlementTrait
         return $content;
     }
 
-    protected function retryIntiateSettlements($channel = 'kotak')
+    protected function retryIntiateSettlements(array $setlIds, string $channel = 'kotak')
     {
         $request = [
             'url' => '/settlements/retry/kotak',
             'method' => 'POST',
+            'content' => ['settlement_ids' => $setlIds]
         ];
 
         $this->ba->appAuthMode();

@@ -25,10 +25,10 @@ class Repository extends Base\Repository
         Entity::UTR                 => 'sometimes|alpha_num',
     ];
 
-    public function getFailedSettlementsWithRelations($channel)
+    public function getFailedSettlementsWithRelations(array $setlIds)
     {
         return $this->newQuery()
-                    ->where(Entity::CHANNEL, '=', $channel)
+                    ->whereIn(Entity::ID, $setlIds)
                     ->where(Entity::STATUS, '=', Status::FAILED)
                     ->with('merchant', 'bankAccount')
                     ->with(['setlTransactions' => function($query)
