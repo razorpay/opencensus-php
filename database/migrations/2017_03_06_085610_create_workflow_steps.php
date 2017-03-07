@@ -3,6 +3,7 @@
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+use RZP\Constants\Table;
 use RZP\Models\Admin\Permission\Entity as Permission;
 use RZP\Models\Admin\Role\Entity as Role;
 use RZP\Models\Workflow\Entity as Workflow;

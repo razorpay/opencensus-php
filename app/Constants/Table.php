@@ -71,6 +71,8 @@ class Table
     const WORKFLOW_ACTION       = 'workflow_actions';
     const ACTION_PAYLOAD        = 'action_payloads';
     const ACTION_COMMENT        = 'action_comments';
+    const ACTION_TIMELINE       = 'action_timeline';
+    const ACTION_CHECKER        = 'action_checker';
 
     // Gateway related
     const EBS                   = 'ebs';

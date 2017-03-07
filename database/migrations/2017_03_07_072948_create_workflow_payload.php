@@ -23,17 +23,10 @@ class CreateWorkflowPayload extends Migration
             $table->char(Payload::ID, Payload::ID_LENGTH)
                   ->primary();
 
-            $table->char(Payload::ACTION_ID, Payload::ID_LENGTH);
-
             $table->boolean(Payload::ENCRYPTED)
                   ->nullable();
 
             $table->text(Payload::REQUEST);
-
-            $table->foreign(Payload::ACTION_ID)
-                  ->references(Action::ID)
-                  ->on(Table::WORKFLOW_ACTION)
-                  ->on_delete('restrict');
 
             $table->integer(Payload::CREATED_AT);
             $table->integer(Payload::UPDATED_AT);
@@ -47,11 +40,6 @@ class CreateWorkflowPayload extends Migration
      */
     public function down()
     {
-        Schema::table(Table::ACTION_PAYLOAD, function($table)
-        {
-            $table->dropForeign(Table::ACTION_PAYLOAD . '_' . Payload::ACTION_ID . '_foreign');
-        });
-
         Schema::drop(Table::ACTION_PAYLOAD);
     }
 }
