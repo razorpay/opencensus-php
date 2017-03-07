@@ -26,9 +26,9 @@ class GenericController extends Controller
     {
         $input = ['method' => 'post'];
 
-        $route = $this->resolveRoute();
+        list($auth, $route) = $this->resolveRoute();
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -37,9 +37,9 @@ class GenericController extends Controller
     {
         $input = ['method' => 'get'];
 
-        $route = $this->resolveRoute();
+        list($auth, $route) = $this->resolveRoute();
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -48,9 +48,9 @@ class GenericController extends Controller
     {
         $input = ['method' => 'put'];
 
-        $route = $this->resolveRoute();
+        list($auth, $route) = $this->resolveRoute();
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -59,9 +59,9 @@ class GenericController extends Controller
     {
         $input = ['method' => 'delete'];
 
-        $route = $this->resolveRoute();
+        list($auth, $route) = $this->resolveRoute();
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -79,7 +79,17 @@ class GenericController extends Controller
             );
         }
 
-        $route = Config::get('api-route-map.'.$routeName);
+        $routeMap = Config::get('api-route-map');
+
+        foreach ($routeMap as $auth => $routes)
+        {
+            if (isset($routes[$routeName]))
+            {
+                $route = $routes[$routeName];
+
+                break;
+            }
+        }
 
         if (! isset($route))
         {
@@ -92,7 +102,7 @@ class GenericController extends Controller
 
         $route = $this->parseUrlParams($route);
 
-        return $route;
+        return [ $auth, $route ];
     }
 
     private function parseUrlParams($route)

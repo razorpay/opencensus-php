@@ -16,23 +16,18 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function call(array $input, $route)
+    public function call(array $input, $route, $auth)
     {
-        $type = Input::get('type') ?? 'admin';
-        list($error, $response) = $this->makeRawApiCall($input, $route, $type);
+        list($error, $response) = $this->makeRawApiCall($input, $route, $auth);
 
         return [$error, $response];
     }
 
-    public function makeRawApiCall($input, $path, $type)
+    public function makeRawApiCall($input, $path, $auth)
     {
         $input['mode'] = 'live';
 
-        if ($type === 'merchant') {
-            $input['auth'] = 'proxy';
-        } else {
-            $input['auth'] = 'admin'; // admin auth
-        }
+        $input['auth'] = $auth;
 
         $input['token'] = session('api_admin.token'); // admin auth token
 
@@ -56,6 +51,7 @@ class Service extends Base\Service
         $input['file'] = null;
 
         $autoBuildQuery = false;
+
         $this->trace->info(TraceCode::MISC_TRACE_CODE, $input);
 
         $request = new Admin\RawApiRequest($input, $path, $autoBuildQuery);

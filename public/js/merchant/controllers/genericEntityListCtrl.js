@@ -109,9 +109,6 @@ app.controller('GenericEntityListCtrl', [
 
       params.query_params = q;
 
-      params.type = 'merchant';
-      params.merchant_id = user.getIdentity().current;
-
       if ($scope.entity.type === 'payment') {
         if ($scope.entity.id === '') {
           params.route_name = 'payment_fetch_multiple';

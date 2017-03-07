@@ -20,6 +20,11 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
 
+    Route::get('/admin/generic', 'GenericController@getGeneric');
+    Route::post('/admin/generic', 'GenericController@postGeneric');
+    Route::put('/admin/generic', 'GenericController@putGeneric');
+    Route::delete('/admin/generic', 'GenericController@deleteGeneric');
+
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/auth', 'AdminController@initiateAuth');
@@ -339,10 +344,6 @@ Route::group(['middleware' => ['web']], function () {
         // Upload logos for orgs
         Route::post('/admin/org/{org_id}', 'AdminController@postUploadOrgLogo');
 
-        Route::get('/admin/generic', 'GenericController@getGeneric');
-        Route::post('/admin/generic', 'GenericController@postGeneric');
-        Route::put('/admin/generic', 'GenericController@putGeneric');
-        Route::delete('/admin/generic', 'GenericController@deleteGeneric');
         Route::post('/admin/merchants/invite', 'AdminController@postSendMerchantInvitation');
         Route::get('/admin/invitations', 'AdminController@getMerchantInvitations');
 
