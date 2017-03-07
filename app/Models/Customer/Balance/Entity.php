@@ -2,6 +2,8 @@
 
 namespace RZP\Models\Customer\Balance;
 
+use Carbon\Carbon;
+
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -45,6 +47,8 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::BALANCE,
+        self::MONTHLY_USAGE,
+        self::MAX_BALANCE,
     ];
 
     protected $defaults = [
@@ -57,6 +61,8 @@ class Entity extends Base\PublicEntity
 
     protected $publicSetters = [
         self::CUSTOMER_ID,
+        self::ENTITY,
+        self::MONTHLY_USAGE,
     ];
 
     protected $casts = [
@@ -189,10 +195,28 @@ class Entity extends Base\PublicEntity
         return (int) $balance;
     }
 
-    protected function setPublicCustomerIdAttribute(array & $array)
+    protected function setPublicMonthlyUsageAttribute(array & $attributes)
+    {
+        $monthlyUsage = $this->getMonthlyUsage();
+
+        $lastTxnTime = $this->getLastLoadedAt();
+
+        $lastTxnTime = Carbon::createFromTimestamp($lastTxnTime, 'Asia/Kolkata');
+
+        $now = Carbon::now('Asia/Kolkata');
+
+        if ($lastTxnTime->month !== $now->month)
+        {
+            $monthlyUsage = 0;
+        }
+
+        $attributes[self::MONTHLY_USAGE] = $monthlyUsage;
+    }
+
+    protected function setPublicCustomerIdAttribute(array & $attributes)
     {
         $customerId = $this->getAttribute(self::CUSTOMER_ID);
 
-        $array[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
+        $attributes[self::CUSTOMER_ID] = Customer\Entity::getSignedId($customerId);
     }
 }

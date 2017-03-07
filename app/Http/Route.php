@@ -328,6 +328,7 @@ final class Route
         'device_verify_token'                     => ['post',     'devices/{deviceToken}/verify',                   'CustomerController@validateDeviceToken'                            ],
         'otp_post'                                => ['post',     'otp/create',                                     'CustomerController@postOtp'                                        ],
         'otp_verify'                              => ['post',     'otp/verify',                                     'CustomerController@verifyOtp'                                      ],
+        'otp_verify_app'                          => ['post',     'otp/verify/app',                                 'CustomerController@verifyOtpApp'                                   ],
         'sms_callback'                            => ['post',     'sms/{id}/callback',                              'CustomerController@updateSmsStatus'                                ],
         'es_debug_read'                           => ['post',     'es/debug/{method}',                              'EsController@debug'                                                ],
         'es_migrate_entity'                       => ['post',     'es/migrate/{entityName}',                        'EsController@migrateEntity'                                        ],
@@ -503,6 +504,7 @@ final class Route
         'customer_logout_global',
         'otp_post',
         'otp_verify',
+        'otp_verify_app',
         'device_create',
     );
 
@@ -767,6 +769,7 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
+        'schedule_migration',
     );
 
     public static $proxy = array(
@@ -865,7 +868,6 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
-        'schedule_migration',
     ];
 
     public static $adminPermission = [
@@ -895,7 +897,6 @@ final class Route
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
         'schedule_update'                => [Permission::SCHEDULE_UPDATE],
         'schedule_assign'                => [Permission::SCHEDULE_ASSIGN],
-        'schedule_migration'             => [Permission::SCHEDULE_MIGRATION],
         'admin_fetch_merchant_ids'       => [Permission::VIEW_ALL_MERCHANTS],
         'admin_fetch_merchants'          => [Permission::VIEW_ALL_MERCHANTS],
         'permission_create'              => [Permission::CREATE_PERMISSION],
@@ -1056,7 +1057,6 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
-        'schedule_migration',
     ];
 
     const RAZORPAYJS_ROUTES = array(

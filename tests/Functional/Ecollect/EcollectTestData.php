@@ -24,8 +24,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => true,
-                'message' => null,
+                'valid'          => true,
+                'message'        => null,
+                'transaction_id' => 'vba_1234',
             ],
         ],
     ],
@@ -48,8 +49,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => true,
-                'message' => null,
+                'valid'          => true,
+                'message'        => null,
+                'transaction_id' => 'vba_1234',
             ],
         ],
     ],
@@ -72,8 +74,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'valid'   => false,
-                'message' => 'Invalid account number',
+                'valid'          => false,
+                'message'        => 'Invalid account number',
+                'transaction_id' => 'vba_1234',
             ],
         ],
     ],
@@ -127,7 +130,9 @@ return [
             ],
         ],
         'response' => [
-            'content' => [],
+            'content' => [
+                'success' => true,
+            ],
         ],
     ],
 

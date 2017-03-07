@@ -209,7 +209,7 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = Carbon::createFromFormat(self::DATE_FORMAT, $content[ResponseFields::DATE])->timestamp;
+        $date = Carbon::createFromFormat(self::DATE_FORMAT, $content[ResponseFields::DATE], 'Asia/Kolkata')->timestamp;
 
         $contentToSave = [
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
@@ -303,9 +303,11 @@ class Gateway extends Base\Gateway
 
     protected function generateRefundInfo($wallet)
     {
+        $gatewayPaymentDate = $wallet['date'] ?? $wallet['created_at'];
+
         $refundinfo = [
             $wallet['gateway_payment_id'],
-            $this->getFormattedDateFromTimeStamp($wallet['date']),
+            $this->getFormattedDateFromTimeStamp($gatewayPaymentDate),
             'NA'
         ];
 
@@ -455,6 +457,7 @@ class Gateway extends Base\Gateway
     {
         $input = $verify->input;
         $content = $verify->verifyResponseContent;
+        $gatewayPayment = $verify->payment;
 
         $verify->status = VerifyResult::STATUS_MATCH;
 
@@ -491,26 +494,27 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
-        $verify->content = $this->getVerifyWalletCreateAttributes($verify);
+        $verify->content = $this->getVerifyWalletAttributes($verify);
+
+        $gatewayPayment->fill($verify->content);
+
+        $gatewayPayment->saveOrFail();
     }
 
-    protected function getVerifyWalletCreateAttributes($verify)
+    protected function getVerifyWalletAttributes($verify)
     {
         $payment = $this->input['payment'];
 
         $content = $verify->verifyResponseContent;
 
-        $contentToSave = array(
-            Entity::AMOUNT               => $payment[Payment::AMOUNT],
-            Entity::GATEWAY_MERCHANT_ID  => $this->getMerchantId(),
+        $contentToSave = [
             Entity::RECEIVED             => true,
-            Entity::EMAIL                => $payment[Payment::EMAIL],
-            Entity::CONTACT              => $this->getFormattedContact($payment[Payment::CONTACT]),
             Entity::STATUS_CODE          => StatusCode::SUCCESS,
             Entity::RESPONSE_CODE        => StatusCode::API_SUCCESS,
             Entity::RESPONSE_DESCRIPTION => 'APPROVED',
+            Entity::DATE                 => $this->getGatewayPaymentDate($content, $payment),
             Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content, $payment)
-        );
+        ];
 
         return $contentToSave;
     }
@@ -564,6 +568,37 @@ class Gateway extends Base\Gateway
 
         return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
                 [ResponseFields::TXN_STATUS];
+    }
+
+    /**
+     * Fetches the gateway payment datte from the verify response
+     * Jiomoney only returns the timestamp in CHECKPAYMENTSTATUS response and
+     * not in STATUSQUERY response. So if verify response came through STATUSQUERY
+     * API we return the payment created at timestamp, else we return null
+     *
+     * @param  array  $content verify response content
+     * @param  array  $payment payment array
+     * @return string          gateway payment timestamp
+     */
+    public function getGatewayPaymentDate(array $content, array $payment)
+    {
+        // Temporarily hardcoding the gateway payment timestamp for this payment id
+        // as verify is no longer returning valid response for this
+        if ($payment['id'] === '7LaaHWTPMl9PQL')
+        {
+            return '1488009243';
+        }
+
+        if ($this->statusQueryValid === false)
+        {
+            $date = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                    [ResponseFields::TXN_TIME_STAMP];
+
+            return Carbon::createFromFormat(self::DATE_FORMAT, $date, 'Asia/Kolkata')
+                        ->timestamp;
+        }
+
+        return null;
     }
 
     protected function getGatewayPaymentId(array $content, array $payment)

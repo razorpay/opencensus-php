@@ -42,7 +42,7 @@ class MigrateNotesToEs extends Command
         $this->databaseMode = $this->option('mode');
         $this->entityType = $this->option('entity');
 
-        assertTrue(in_array($this->entityType, ['payments', 'refunds']));
+        assertTrue(in_array($this->entityType, ['orders', 'payments', 'refunds']));
         assertTrue(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
         assertTrue(!empty($this->databaseMode));
         assertTrue(!empty($this->entityType));
