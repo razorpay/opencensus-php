@@ -47,7 +47,7 @@
       </div>
       <div class="m-t m-b text-center prev-next">
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step2=true">Next</button>
-        <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        <button ng-disabled="!editable()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
       </div>
     </fieldset>
     </form>
@@ -236,7 +236,7 @@
       <div class="m-t m-b text-center prev-next">
         <button type="button" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step1=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step3=true">Next</button>
-        <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        <button ng-disabled="!editable()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
       </div>
     </fieldset>
     </form>
@@ -493,7 +493,7 @@
       <div class="m-t m-b text-center prev-next">
         <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step2=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step4=true">Next</button>
-        <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        <button ng-disabled="!editable()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
       </div>
     </fieldset>
     </form>
@@ -614,16 +614,10 @@
           <input ng-readonly="!editable()" ng-disabled="data.activated == 1" type="text" class="form-control" name="bank_beneficiary_pin" ng-model="data.bank_beneficiary_pin" placeholder="Beneficiary Address Pincode" required>
         </div>
       </div>
-      <!-- <div class="form-group">
-        <label for="bank_branch_address" class="col-sm-3 control-label">Branch Address</label>
-        <div class="col-sm-8">
-          <textarea class="form-control" name="bank_branch_address" ng-model="data.bank_branch" placeholder="Branch Address" required></textarea>
-        </div>
-      </div> -->
       <div class="m-t m-b text-center prev-next">
         <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step3=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step5=true">Next</button>
-        <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        <button ng-disabled="!editable()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
       </div>
     </fieldset>
     </form>
@@ -739,7 +733,7 @@
       <div class="m-t m-b text-center prev-next">
         <button type="submit" class="pull-left btn btn-prev btn-default btn-rounded" ng-click="steps.step4=true">Prev</button>
         <button type="submit" class="pull-right btn btn-next btn-default btn-rounded" ng-click="steps.step6=true">Next</button>
-        <button type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
+        <button ng-disabled="!editable()" type="submit" class="btn btn-save btn-default btn-rounded">Save</button>
       </div>
     </fieldset>
     </form>
