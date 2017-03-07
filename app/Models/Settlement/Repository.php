@@ -27,15 +27,15 @@ class Repository extends Base\Repository
 
     public function getFailedSettlementsWithRelations($channel)
     {
-        return $query = $this->newQuery()
-                      ->where('channel', '=', 'kotak')
-                      ->where('status', '=', 'failed')
-                      ->with('merchant', 'bankAccount')
-                      ->with(['setlTransactions' => function($query)
-                        {
-                            $query->where(Transaction\Entity::TYPE, '!=', Transaction\Type::SETTLEMENT);
-                        }])
-                      ->get();
+        return $this->newQuery()
+                    ->where(Entity::CHANNEL, '=', 'kotak')
+                    ->where(Entity::STATUS, '=', 'failed')
+                    ->with('merchant', 'bankAccount')
+                    ->with(['setlTransactions' => function($query)
+                    {
+                        $query->where(Transaction\Entity::TYPE, '!=', Transaction\Type::SETTLEMENT);
+                    }])
+                    ->get();
     }
 
     public function getSettlementWithFeesAsNullOrZero()

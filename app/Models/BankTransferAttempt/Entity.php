@@ -61,10 +61,6 @@ class Entity extends Base\PublicEntity
 
     public function source()
     {
-        $entityType = $this->getAttribute(self::ENTITY_TYPE);
-
-        Type::validateType($entityType);
-
         return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
     }
 

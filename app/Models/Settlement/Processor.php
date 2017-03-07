@@ -28,6 +28,8 @@ class Processor extends Base\Core
 
     const MUTEX_RESOURCE        = 'SETTLEMENT_PROCESSING';
 
+    const MUTEX_RETRY_RESOURCE  = 'SETTLEMENT_RETRY';
+
     const MUTEX_LOCK_TIMEOUT    = 900;
 
     public function __construct()
@@ -42,7 +44,7 @@ class Processor extends Base\Core
         $this->preSettlementProcessing($input, $channel);
 
         $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
+            self::MUTEX_RETRY_RESOURCE,
             function () use ($input, $channel)
             {
                 return $this->retryProcessFailedSettlements($channel);
@@ -92,8 +94,7 @@ class Processor extends Base\Core
     {
         try
         {
-            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($channel,
-                ['setlTransactions', 'merchant', 'bankAccount']);
+            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($channel);
 
             $setlAttempts = new Base\PublicCollection;
 
