@@ -23,4 +23,8 @@ class Schedule extends Entity
         return $res;
     }
 
+    public function fetch($id)
+    {
+        return parent::fetch($id);
+    }
 }

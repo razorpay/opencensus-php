@@ -774,7 +774,7 @@ angular.module('app.services', [])
     return function(key, value) {
       var entity = key.substr(0, key.length - 3);
       var isTimestamp = function (key) {
-        return key.substr(-3) === '_at';
+        return (key.substr(-3) === '_at' || key === 'next_run');
       };
       // These have their own views
       var specialEntities = [

@@ -538,15 +538,17 @@ class Service extends Base\Service
         {
             $details = $this->fetchMerchantDetails($id);
         }
-
         $terminal = $this->fetchMerchantTerminal($id);
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
+        $schedule = $this->fetchMerchantScheduleById($details['settlement_schedule_id']);
+
         $data = array(
                     'details' => $details,
                     'terminals' => $terminal,
-                    'pricing_plan' => $pricingPlan);
+                    'pricing_plan' => $pricingPlan,
+                    'schedule' => $schedule);
 
         return [$error, $data];
     }
@@ -1206,6 +1208,15 @@ class Service extends Base\Service
         $this->setApiCredentials();
 
         $response = $this->api->merchant->fetch($id)->fetchPricing()->toArray();
+
+        return $response;
+    }
+
+    public function fetchMerchantScheduleById($id)
+    {
+        $this->setApiCredentials();
+
+        $response = $this->api->schedule->fetch($id)->toArray();
 
         return $response;
     }
