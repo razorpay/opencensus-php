@@ -16,8 +16,8 @@ class Validator extends Base\Validator
 
         if ($newBalance > $maxBalance)
         {
-            throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYMENT_WALLET_MAX_AMOUNT_LIMIT_CROSSED_FOR_CUSTOMER);
+            throw new Exception\BadRequestValidationFailureException(
+                'Maximum wallet payment amount limit has been crossed for the customer');
         }
 
         // Check usage limits for wallet credits except for refunds
