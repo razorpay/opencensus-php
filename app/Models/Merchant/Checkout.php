@@ -42,8 +42,6 @@ class Checkout
 
         $data['gateway_status'] = (new Absence\Core)->getFormattedGatewayAbsenceCheckoutData($merchant);
 
-        $data['offers'] = (new Offer\Core)->getMerchantOffers($merchant);
-
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
         $this->checkAndAddOrderForTpv($merchant, $input, $data);
@@ -125,7 +123,7 @@ class Checkout
             $this->trace->traceException($ex);
         }
 
-        return $orderData ;
+        return $orderData;
     }
 
     protected function fetchCustomerData(array $input, Entity $merchant)
@@ -257,7 +255,7 @@ class Checkout
         {
             $this->trace->traceException($ex);
         }
-     }
+    }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
     {
