@@ -1755,7 +1755,18 @@ ALTER TABLE transactions
     ADD INDEX transactions_on_hold_index (on_hold);
 
 ALTER TABLE payment_analytics
-    MODIFY COLUMN referer VARCHAR(2083) NULL;
-
-ALTER TABLE payment_analytics
     ADD COLUMN browser_version VARCHAR(50) AFTER `browser`;
+
+UPDATE payment_analytics
+    SET browser_version = platform_version
+    WHERE browser is not NULL
+    AND platform_version is not NULL
+    AND platform = 'browser';
+
+UPDATE payment_analytics
+    SET platform_version = NULL
+    WHERE platform = 'browser'
+    AND platform_version is not NULL
+    AND browser is not NULL
+    AND browser_version is not NULL;
+
