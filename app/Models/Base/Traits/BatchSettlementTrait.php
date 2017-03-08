@@ -3,7 +3,7 @@
 namespace RZP\Models\Base\Traits;
 
 use RZP\Exception;
-use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
+use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
 
 trait BatchSettlementTrait
 {

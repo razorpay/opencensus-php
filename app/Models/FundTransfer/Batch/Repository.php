@@ -1,11 +1,10 @@
 <?php
 
-namespace RZP\Models\Settlement\Batch;
+namespace RZP\Models\FundTransfer\Batch;
 
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Settlement\Batch;
 
 class Repository extends Base\Repository
 {

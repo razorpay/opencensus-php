@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Batch;
+namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Models\Base;
 use Carbon\Carbon;

@@ -5,6 +5,7 @@ namespace RZP\Models\FundTransfer\Kotak;
 use RZP\Exception;
 use Excel;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
@@ -40,7 +41,7 @@ class ReturnTransactions
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->batchSetlRepo = new Settlement\Batch\Repository;
+        $this->batchSetlRepo = new Batch\Repository;
     }
 
     public function process($input)

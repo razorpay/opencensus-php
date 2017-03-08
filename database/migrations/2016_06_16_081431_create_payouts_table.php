@@ -8,7 +8,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payout\Entity as Payout;
-use RZP\Models\Settlement\Batch as BatchSettlement;
+use RZP\Models\FundTransfer\Batch as BatchSettlement;
 use RZP\Models\Transaction;
 
 class CreatePayoutsTable extends Migration

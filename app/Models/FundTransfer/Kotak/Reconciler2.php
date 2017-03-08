@@ -9,6 +9,7 @@ use Mail;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
@@ -52,7 +53,7 @@ class Reconciler2
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->batchSetlRepo = new Settlement\Batch\Repository;
+        $this->batchSetlRepo = new Batch\Repository;
         $this->trace = \App::make('trace');
     }
 

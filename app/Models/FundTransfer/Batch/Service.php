@@ -1,10 +1,9 @@
 <?php
 
-namespace RZP\Models\Settlement\Batch;
+namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Models\Base;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Batch;
 use Carbon\Carbon;
 
 class Service extends Base\Service

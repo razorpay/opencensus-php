@@ -6,7 +6,7 @@ use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
 use RZP\Models\FundTransfer\Attempt\Entity as FundTransferAttempt;
 use RZP\Models\BankAccount\Entity as BankAccount;
-use RZP\Models\Settlement\Batch\Entity as BatchTransfer;
+use RZP\Models\FundTransfer\Batch\Entity as BatchTransfer;
 
 class CreateFundTransferAttemptsTable extends Migration
 {

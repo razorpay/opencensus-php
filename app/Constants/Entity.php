@@ -154,7 +154,7 @@ class Entity
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
-        self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
+        self::BATCH_SETTLEMENT      => \RZP\Models\FundTransfer\Batch::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,

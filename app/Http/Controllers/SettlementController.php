@@ -132,14 +132,14 @@ class SettlementController extends Controller
 
     public function postSettlementCalculateFees()
     {
-        $data = (new Settlement\Batch\Service)->calculatePrevousSettlementFees();
+        $data = (new FundTransfer\Batch\Service)->calculatePrevousSettlementFees();
 
         return ApiResponse::json($data);
     }
 
     public function postBatchSettlementCalculatePreviousFees()
     {
-        $data = (new Settlement\Batch\Service)->calculatePreviousBatchSettlementFees();
+        $data = (new FundTransfer\Batch\Service)->calculatePreviousBatchSettlementFees();
 
         return ApiResponse::json($data);
     }

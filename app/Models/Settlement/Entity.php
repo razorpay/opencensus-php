@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
 
     public function batchSettlement()
     {
-        return $this->belongsTo('RZP\Models\Settlement\Batch\Entity');
+        return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
 
     // Fetches all types of transactions for the given settlement
