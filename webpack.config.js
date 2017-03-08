@@ -29,7 +29,8 @@ const webpackConfig = {
 // Entry Points
 // ------------------------------------
 webpackConfig.entry = {
-  merchant: './merchant'
+  merchant: './merchant',
+  admin: './admin'
 }
 
 // ------------------------------------

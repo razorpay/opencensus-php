@@ -203,6 +203,12 @@ var app = angular.module('app', [
       templateUrl: 'tpl/admin/app_invitations_list.html'
     })
 
+    // react routes
+    .state('app.workflows', {
+      url: '/workflows',
+      templateProvider: reactTemplateProvider('<workflows-list/>')
+    })
+
     //Guest Routes
     .state('access', {
       url: '/access',
@@ -261,3 +267,38 @@ var app = angular.module('app', [
     $keepaliveProvider.interval(15);
   }
 ]);
+
+var injectScript = (function () {
+  return function (src, callback) {
+    var script = document.createElement('script');
+    script.async = true;
+    script.src = src;
+    if (callback) {
+      script.onload = function() {
+        callback.call();
+      };
+    }
+    document.getElementsByTagName('head')[0].appendChild(script);
+  };
+})();
+
+var reactTemplateProvider = function(template) {
+  var calledOnce = false
+  var deferred = null
+  return ['$q', '$stateParams', function ($q) {
+    deferred = deferred || $q.defer();
+    if (!window.React) {
+      if (!calledOnce) {
+        calledOnce = true
+        var url = "<% asset('js/generated/admin_react.js') %>";
+        url = (url.indexOf('-') !== -1) ? url : 'js/generated/admin_react.js';
+        injectScript(url, function() {
+          deferred.resolve(template);
+        });
+      }
+    } else {
+      deferred.resolve(template);
+    }
+    return deferred.promise;
+  }];
+};
