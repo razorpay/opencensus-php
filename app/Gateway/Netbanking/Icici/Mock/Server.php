@@ -3,7 +3,7 @@
 namespace RZP\Gateway\Netbanking\Icici\Mock;
 
 use RZP\Gateway\Base;
-use phpseclib\Crypt\Base as Crypto;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Netbanking\Icici\Status;
 use RZP\Gateway\Netbanking\Icici\Confirmation;
 use RZP\Gateway\Netbanking\Base as Netbanking;
@@ -19,6 +19,8 @@ class Server extends Base\Mock\Server
         $this->validateAuthorizeInput($input);
 
         $decryptedData = $this->decryptData($input);
+
+        $this->validateActionInput($decryptedData, 'auth_decrypted');
 
         $postData = $this->createPostData($decryptedData);
 
@@ -68,7 +70,7 @@ class Server extends Base\Mock\Server
 
         $httpQuery = http_build_query($postData);
 
-        $aes = new Netbanking\AESCrypto(Crypto::MODE_ECB, $masterKey);
+        $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $content['ES'] = base64_encode($aes->encryptString($httpQuery));
 
@@ -81,7 +83,7 @@ class Server extends Base\Mock\Server
     {
         $masterKey = $this->getGatewayInstance()->getSecret();
 
-        $aes = new Netbanking\AESCrypto(Crypto::MODE_ECB, $masterKey);
+        $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
@@ -96,41 +98,7 @@ class Server extends Base\Mock\Server
 
         parse_str($string, $decryptedData);
 
-        $this->validateEs($decryptedData);
-
         return $decryptedData;
-    }
-
-    protected function validateEs(array $decryptedData)
-    {
-        $fields = $this->getEncryptedFields();
-
-        foreach ($fields as $field)
-        {
-            $this->assertField($decryptedData, $field);
-        }
-    }
-
-    protected function assertField(array $data, $field)
-    {
-        if (isset($data[$field]) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                $field . ' not specified');
-        }
-    }
-
-    protected function getEncryptedFields()
-    {
-        $fields = [
-            RequestFields::AMOUNT,
-            RequestFields::CURRENCY_CODE,
-            RequestFields::PAYMENT_ID,
-            RequestFields::ITEM_CODE,
-            RequestFields::RETURN_URL,
-        ];
-
-        return $fields;
     }
 
     protected function createXmlResponse(array $responseArray)

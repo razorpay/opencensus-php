@@ -8,11 +8,11 @@ use RZP\Constants\Mode;
 use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Error\ErrorCode;
+use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
 use RZP\Models\Currency\Currency;
 use RZP\Gateway\Base\VerifyResult;
-use phpseclib\Crypt\Base as Crypto;
 use RZP\Gateway\Base\AuthorizeFailed;
 
 class Gateway extends Base\Gateway
@@ -54,8 +54,6 @@ class Gateway extends Base\Gateway
 
         $this->assertPaymentId($input['payment']['id'],
                                $content[RequestFields::PAYMENT_ID]);
-
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_CALLBACK, $content);
 
         $gatewayPayment = $this->repo->findByPaymentIdAndActionOrFail(
             $input['payment'][Payment\Entity::ID], Action::AUTHORIZE);
@@ -206,7 +204,7 @@ class Gateway extends Base\Gateway
 
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(Crypto::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         return base64_encode($aes->encryptString($queryString));
     }
@@ -268,7 +266,7 @@ class Gateway extends Base\Gateway
     {
         $masterKey = $this->getSecret();
 
-        $aes = new Base\AESCrypto(Crypto::MODE_ECB, $masterKey);
+        $aes = new Base\AESCrypto(AES::MODE_ECB, $masterKey);
 
         $string = str_replace(' ', '+', $data['ES']);
 
@@ -277,16 +275,14 @@ class Gateway extends Base\Gateway
         parse_str($decryptedString, $content);
 
         $this->trace->info(
-                TraceCode::NETBANKING_PAYMENT_CALLBACK,
-                ['decrypted_data' => $content]);
+            TraceCode::NETBANKING_PAYMENT_CALLBACK,
+            [
+                'gateway' => $this->gateway,
+                'decrypted_data' => $content
+            ]);
 
         if (empty($content) === true)
         {
-            $errorContent = [
-                'msg' => 'decryption failure',
-                'encryptedString' => $data['ES']
-            ];
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
         }
@@ -308,11 +304,6 @@ class Gateway extends Base\Gateway
         if ((isset($attrs[ResponseFields::LC_STATUS]) === false) or
             ($attrs[ResponseFields::LC_STATUS] !== Confirmation::YES))
         {
-            $this->trace->info(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                ['content' => $content]);
-
-            // Payment fails, throw exception
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }

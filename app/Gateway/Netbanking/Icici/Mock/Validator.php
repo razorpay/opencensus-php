@@ -14,6 +14,16 @@ class Validator extends Base\Validator
         RequestFields::ENCRYPTED_STRING => 'required|string',
     ];
 
+    protected static $authDecryptedRules = [
+        RequestFields::AMOUNT        => 'required',
+        RequestFields::CONFIRMATION  => 'required|in:Y,N',
+        RequestFields::CURRENCY_CODE => 'required',
+        RequestFields::PAYMENT_ID    => 'required',
+        RequestFields::ITEM_CODE     => 'required',
+        RequestFields::RETURN_URL    => 'required',
+        RequestFields::ACCOUNT_NO    => 'sometimes',
+    ];
+
     protected static $verifyRules = [
         RequestFields::MODE          => 'required|alpha|size:1|in:V',
         RequestFields::PAYEE_ID      => 'required|string',
