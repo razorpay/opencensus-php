@@ -261,7 +261,7 @@ class MockGatewayController extends Controller
         return $server->authorize($input, $paymentId);
     }
 
-    public function postUPIPayment($bank)
+    public function postUpiPayment($bank)
     {
         $input = Request::all();
 

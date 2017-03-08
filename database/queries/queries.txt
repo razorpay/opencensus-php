@@ -1775,3 +1775,10 @@ ALTER TABLE transfers
 ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
+
+ALTER TABLE payment_analytics
+    MODIFY COLUMN referer VARCHAR(2083) NULL;
+
+ALTER TABLE terminals
+    ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
+    ADD INDEX terminals_network_category_index (network_category);

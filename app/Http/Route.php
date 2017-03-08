@@ -447,7 +447,7 @@ final class Route
         'transfer_fetch_multiple'                 => ['get',      'transfers/',                                     'TransferController@getTransfers'                                   ],
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
-        'transfer_create_reversal'                => ['post',     'transfers/{id}/reversal',                        'TransferController@postTransferReversal'                           ],
+        'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
     );
 
     public static $public = array(
@@ -762,6 +762,7 @@ final class Route
         'merchant_patch_beneficiary_code',
         'schedule_fetch',
         'schedule_fetch_multiple',
+        'schedule_migration',
     );
 
     public static $proxy = array(
@@ -864,7 +865,6 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
-        'schedule_migration',
     ];
 
     public static $adminPermission = [
@@ -894,7 +894,6 @@ final class Route
         'schedule_delete'                => [Permission::SCHEDULE_DELETE],
         'schedule_update'                => [Permission::SCHEDULE_UPDATE],
         'schedule_assign'                => [Permission::SCHEDULE_ASSIGN],
-        'schedule_migration'             => [Permission::SCHEDULE_MIGRATION],
         'admin_fetch_merchant_ids'       => [Permission::VIEW_ALL_MERCHANTS],
         'admin_fetch_merchants'          => [Permission::VIEW_ALL_MERCHANTS],
         'permission_create'              => [Permission::CREATE_PERMISSION],
@@ -1055,7 +1054,6 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
-        'schedule_migration',
     ];
 
     const RAZORPAYJS_ROUTES = array(

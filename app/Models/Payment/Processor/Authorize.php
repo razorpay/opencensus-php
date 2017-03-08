@@ -1127,7 +1127,8 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
-        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
         {
             return $this->getAsyncPaymentCreatedResponse($request, $payment);
         }

@@ -326,7 +326,7 @@ class TransferTest extends TestCase
     protected function getReversalRequestBody(string $id)
     {
         $request = [
-            'url'       => '/transfers/' . $id . '/reversal',
+            'url'       => '/transfers/' . $id . '/reversals',
             'method'    => 'POST',
             'content'   => []
         ];
