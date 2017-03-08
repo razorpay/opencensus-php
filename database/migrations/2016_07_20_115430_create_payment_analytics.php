@@ -70,7 +70,7 @@ class CreatePaymentAnalytics extends Migration
             $table->string(Analytics::IP, 45)
                   ->nullable();
 
-            $table->string(Analytics::REFERER, 2083)
+            $table->text(Analytics::REFERER)
                   ->nullable();
 
             $table->text(Analytics::USER_AGENT)
