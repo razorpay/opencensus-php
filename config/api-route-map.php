@@ -46,5 +46,11 @@ return [
         // Payments
         'payment_fetch_multiple'            => 'payments',
         'payment_fetch_by_id'               => 'payments/{id}',
+
+        // Payment Details
+        'payment_fetch_card_details'        => 'payments/{id}/card',
+        'payment_fetch_refunds'             => 'payments/{id}/refunds',
+        'payment_capture'                   => 'payments/{id}/capture',
+        'payment_refund'                    => 'payments/{id}/refund',
     ],
 ];
