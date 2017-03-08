@@ -90,11 +90,7 @@ class GenericController extends Controller
 
                 if (\Gate::has($routeName) and \Gate::denies($routeName))
                 {
-                    throw new \Razorpay\Api\Errors\BadRequestError(
-                        'Unauthorized',
-                        \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
-                        401
-                    );
+                    abort(401, 'Unauthorized');
                 }
             }
         }
