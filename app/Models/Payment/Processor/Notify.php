@@ -44,6 +44,7 @@ class Notify
 
     /**
      * When are receipt emails sent to the customer
+     *
      * @var array
      */
     protected static $receiptEmails = [
@@ -63,44 +64,44 @@ class Notify
 
     // TODO: Shift to constants once we update PHP
     protected $mailViews = [
-        self::AUTHORIZED    =>  [
+        self::AUTHORIZED    => [
             'customer'  => [
                 'from' => 'care',
                 'view' => [
-                    'html'=> 'emails.payment.customer',
-                    'text'=> 'emails.payment.customer_text'
+                    'html' => 'emails.payment.customer',
+                    'text' => 'emails.payment.customer_text'
                 ]
             ]
         ],
-        self::CAPTURED      =>  [
+        self::CAPTURED      => [
             'merchant'  => [
                 'view' => [
-                    'html'=> 'emails.payment.merchant',
-                    'text'=> 'emails.payment.merchant_text'
+                    'html' => 'emails.payment.merchant',
+                    'text' => 'emails.payment.merchant_text'
                 ]
             ]
         ],
-        self::REFUNDED      =>  [
+        self::REFUNDED      => [
             'customer'  => [
-                'from'  =>  'care',
-                'view'  =>  'emails.refund.common',
+                'from'  => 'care',
+                'view'  => 'emails.refund.common',
             ],
             'merchant'  => [
-                'view'  =>  'emails.refund.common',
+                'view'  => 'emails.refund.common',
             ]
         ],
         self::FAILED_TO_AUTHORIZED => [
             'customer'  => [
-                'from'  =>  'care',
+                'from'  => 'care',
                 'view' => [
-                    'html'  =>  'emails.payment.customer',
-                    'text'  =>  'emails.payment.customer_text'
+                    'html'  => 'emails.payment.customer',
+                    'text'  => 'emails.payment.customer_text'
                 ]
             ],
-            'merchant'  =>  [
+            'merchant'  => [
                 'view' => [
-                    'html'  =>  'emails.payment.failed_to_authorized',
-                    'text'  =>  'emails.payment.failed_to_authorized_text',
+                    'html'  => 'emails.payment.failed_to_authorized',
+                    'text'  => 'emails.payment.failed_to_authorized_text',
                 ],
             ],
         ],
@@ -133,6 +134,7 @@ class Notify
     protected $trace;
     protected $template;
     protected $invoice = null;
+    protected $slackEnabled = true;
 
     /**
      * Creates a new Notify instance
@@ -161,6 +163,7 @@ class Notify
 
     /**
      * Regenerates the entire template
+     *
      * @return null
      */
     protected function refreshTemplate()
@@ -170,6 +173,7 @@ class Notify
 
     /**
      * Allows the notifier to be used for a refund as well
+     *
      * @param Payment\Refund\Entity $refund Refund entity
      */
     public function addRefund(Payment\Refund\Entity $refund)
@@ -182,10 +186,10 @@ class Notify
      * Sends out a mail given the view, subject and email address
      * Uses Mail::queue to queue emails
      *
-     * @param  string $view    array or string of mail views to use
-     * @param  string $subject Subject of email
-     * @param  string $to      Email address to send to
-     * @param string  $from
+     * @param string $view    array or string of mail views to use
+     * @param string $subject Subject of email
+     * @param string $to      Email address to send to
+     * @param string $from
      *
      * @return null
      */
@@ -241,6 +245,7 @@ class Notify
 
     /**
      * Returns a complete email address
+     *
      * @param  string $user (reports)
      * @return string (reports@razorpay.com)
      */
@@ -251,6 +256,7 @@ class Notify
 
     /**
      * Sends out mails for a particular event trigger
+     *
      * @param  string $event
      * @return null
      */
@@ -294,8 +300,13 @@ class Notify
         // We don't send out a notification on capture
         $slackMessages = [
             self::FAILED_TO_AUTHORIZED => 'Failed Payment Authorized',
-            self::AUTHORIZED    =>  'Payment Authorized',
-            self::REFUNDED      =>  'Payment Refunded'
+            self::AUTHORIZED    => 'Payment Authorized',
+            self::REFUNDED      => 'Payment Refunded'
+        ];
+
+        $settings = [
+            'channel'   => $this->getSlackChannel(),
+            'color'     => $this->getSlackPostColor(),
         ];
 
         // Send out Slack notifications for the event
@@ -304,17 +315,13 @@ class Notify
         if ((array_key_exists($event, $slackMessages)) and
             ($this->isSlackEnabled()))
         {
-            $settings = [
-                'channel'   => $this->getSlackChannel(),
-                'color'     => $this->getSlackPostColor(),
-            ];
-
             $this->app['slack']->queue($slackMessages[$event], $slackData, $settings);
         }
     }
 
     /**
      * Returns color to use for slack posts
+     *
      * @return string
      */
     protected function getSlackPostColor()
@@ -343,8 +350,6 @@ class Notify
     {
         $config = $this->app['config'];
 
-        $channel = $config->get('slack.channels.low');
-
         $riskRating = $this->template['payment']['risk'];
 
         $amount = $this->template['payment']['raw_amount'];
@@ -352,31 +357,34 @@ class Notify
         // The priority order is important here
         if ($riskRating == self::MAX_HIGH_RISK_RATING)
         {
-            $channel = $config->get('slack.channels.highrisk');
+            return $config->get('slack.channels.highrisk');
         }
         else if ($riskRating === self::HIGH_RISK_RATING)
         {
-            $channel = $config->get('slack.channels.high_4');
+            return $config->get('slack.channels.high_4');
         }
         else if (($riskRating === self::MIN_HIGH_RISK_RATING) and
                 ($amount <= 1000))
         {
-            $channel = $config->get('slack.channels.lt_10');
+            return $config->get('slack.channels.lt_10');
         }
         else if ($riskRating >= self::MIN_HIGH_RISK_RATING)
         {
-            $channel = $config->get('slack.channels.risky');
+            return $config->get('slack.channels.risky');
         }
         else if ($this->payment->amount >= self::MIN_RISK_AMOUNT)
         {
-            $channel = $config->get('slack.channels.high');
+            return $config->get('slack.channels.high');
         }
 
-        return $channel;
+        // We did not find an appropriate channel, so mark
+        // slack as disabled
+        $this->slackEnabled = false;
     }
 
     /**
      * This is the primary public method for this class
+     *
      * @param  string $event Trigger notifications for this event
      * @return null
      */
@@ -385,9 +393,10 @@ class Notify
         if ($event === self::INVOICE_PAYMENT_AUTHORIZED)
         {
             (new Invoice\Core)->dispatchQueueJob(
-                                    $this->mode,
-                                    InvoiceAction::AUTHORIZED,
-                                    $this->invoice->getId());
+                $this->mode,
+                InvoiceAction::AUTHORIZED,
+                $this->invoice->getId()
+            );
         }
 
         /**
@@ -502,6 +511,7 @@ class Notify
 
     /**
      * Returns slack formatted version of a payment id
+     *
      * @param  string $id Payment Id
      * @return string
      */
@@ -512,6 +522,7 @@ class Notify
 
     /**
      * Returns slack formatted version of a refund id
+     *
      * @param  string $id Refund id
      * @return string     Formatted URL to Refund
      */
@@ -530,6 +541,7 @@ class Notify
      *  & payment.currency = INR
      *
      * Would be some common examples
+     *
      * @param  string $event Trigger event
      * @return array Flat array of data to be sent to Slack
      */
@@ -582,7 +594,7 @@ class Notify
         if ((isset($data['risk']) === true) and
             ($data['risk'] === self::MAX_HIGH_RISK_RATING))
         {
-            unset ($data['risk']);
+            unset($data['risk']);
             $data['email'] = $this->template['customer']['email'];
             $data['phone'] = $this->template['customer']['phone'];
         }
@@ -596,34 +608,35 @@ class Notify
      * Returns template data to be used for mail and slack templates
      *
      * Also includes refund information if provided via addRefund
+     *
      * @return array Template data
      */
     protected function templateData()
     {
         $data  = [
-            'customer'  =>  [
-                'email' =>  $this->payment->getEmail(),
-                'phone' =>  $this->payment->getContact()
+            'customer'  => [
+                'email' => $this->payment->getEmail(),
+                'phone' => $this->payment->getContact()
             ],
-            'merchant'  =>  [
-                'billing_label' =>  $this->payment->merchant->getBillingLabelElseName(),
-                'website'       =>  $this->payment->merchant->getWebsite(),
+            'merchant'  => [
+                'billing_label' => $this->payment->merchant->getBillingLabelElseName(),
+                'website'       => $this->payment->merchant->getWebsite(),
                 // This is the reporting email address for the merchant
-                'email'         =>  $this->payment->merchant->getTransactionReportEmail(),
-                'id'            =>  $this->payment->merchant->getId(),
+                'email'         => $this->payment->merchant->getTransactionReportEmail(),
+                'id'            => $this->payment->merchant->getId(),
             ],
-            'payment'   =>  [
-                'id'        =>  $this->payment->getId(),
-                'public_id' =>  $this->payment->getPublicId(),
-                'amount'    =>  "INR ".number_format($this->payment['amount']/100, 2),
-                'raw_amount' =>  $this->payment['amount'],
-                'timestamp' =>  $this->payment->getUpdatedAt(),
+            'payment'   => [
+                'id'        => $this->payment->getId(),
+                'public_id' => $this->payment->getPublicId(),
+                'amount'    => "INR ".number_format($this->payment['amount'] / 100, 2),
+                'raw_amount' => $this->payment['amount'],
+                'timestamp' => $this->payment->getUpdatedAt(),
                 'captured_at' => $this->payment->getAttribute('captured_at'),
 
                 // note that payment method is unavailable to the merchant
-                'method'    =>  $this->payment->getMethodWithDetail(),
-                'orderId'   =>  $this->payment->getOrderId(),
-                'risk'      =>  $this->payment->merchant->getRiskRating()
+                'method'    => $this->payment->getMethodWithDetail(),
+                'orderId'   => $this->payment->getOrderId(),
+                'risk'      => $this->payment->merchant->getRiskRating()
             ],
         ];
 
@@ -644,11 +657,11 @@ class Notify
         if ($this->refund)
         {
             $data['refund'] = [
-                'id'        =>  $this->refund->getId(),
-                'amount'    =>  'INR ' . number_format($this->refund->getAmount() / 100, 2),
-                'timestamp' =>  $this->refund->getCreatedAt(),
-                'payment_id'=>  $this->refund->payment->getId(),
-                'public_id' =>  $this->refund->getPublicId(),
+                'id'        => $this->refund->getId(),
+                'amount'    => 'INR ' . number_format($this->refund->getAmount() / 100, 2),
+                'timestamp' => $this->refund->getCreatedAt(),
+                'payment_id' => $this->refund->payment->getId(),
+                'public_id' => $this->refund->getPublicId(),
             ];
         }
 
@@ -666,8 +679,9 @@ class Notify
     /**
      * Returns whether a key value pair is a timestamp
      * Called after flattening the array
-     * @param  string  $key   key name
-     * @param  mixed  $value    value
+     *
+     * @param  string $key   key name
+     * @param  mixed  $value value
      * @return boolean
      */
     protected function isTimestamp($key, $value)
@@ -687,7 +701,8 @@ class Notify
      * Removes all null and false values from the array
      * Expects a flattened array (no nested arrays)
      * Also converts timestamps to proper datetime
-     * @param  array  $data data
+     *
+     * @param  array $data data
      * @return array data with all null values removed
      */
     protected function cleanData(array $data)
@@ -715,7 +730,8 @@ class Notify
     /**
      * Flattens an array recursively
      * Concatenating keys using periods
-     * @param  array $array  input array
+     *
+     * @param  array  $array  input array
      * @param  string $prefix prefix used to concat keys
      * @return array flat version of input array
      */
@@ -744,6 +760,7 @@ class Notify
      * on a succesful payment. This is currently just the following:
      *   - AUTHORIZED
      *   - FAILED_TO_AUTHORIZED
+     *
      * @param  string  $event      Event for which the mail is intended
      * @param  boolean $isMerchant Whether this mail is for the merchant.
      * @return boolean
@@ -762,7 +779,8 @@ class Notify
     /**
      * Whether or not we need to trigger the notifications
      * The order of conditions in this is imporant
-     * @param string $event Event triggered
+     *
+     * @param  string $event Event triggered
      * @return boolean
      */
     protected function isMailEnabled($event, $isMerchant = false)
@@ -781,6 +799,8 @@ class Notify
 
     /**
      * Whether to send notifications or not
+     * depending on the environment and the mode
+     *
      * @return boolean
      */
     protected function isEnabled()
@@ -803,10 +823,11 @@ class Notify
 
     /**
      * Whether to send slack notifications
+     *
      * @return boolean
      */
     protected function isSlackEnabled()
     {
-        return $this->isEnabled();
+        return ($this->isEnabled() and $this->slackEnabled);
     }
 }

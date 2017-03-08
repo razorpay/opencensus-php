@@ -50,6 +50,8 @@ class Checkout
 
         $this->checkAndAddDetailsForInvoice($input, $merchant, $data);
 
+        $this->checkAndFillOfferDetails($merchant, $input, $data);
+
         $this->tracePreferencesResponse($merchant, $data);
 
         return $data;
@@ -285,5 +287,29 @@ class Checkout
         }
 
         return $rememberCustomer;
+    }
+
+    public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
+    {
+        $offerCore = new Offer\Core;
+
+        $offers = new Base\PublicCollection;
+
+        // Temporaily commenting fetching shared offers
+        // $sharedOffers = $offerCore->fetchSharedOffers();
+
+        $orderId = $input[Payment\Entity::ORDER_ID] ?? null;
+
+        if ($orderId === null)
+        {
+            return;
+        }
+
+        $directOffer = $offerCore->fetchForOrder($orderId, $merchant);
+
+        if ($directOffer !== null)
+        {
+            $data['offers'] = $directOffer->toArrayCheckout();
+        }
     }
 }

@@ -209,14 +209,12 @@ class Gateway extends Base\Gateway
     {
         $content = $input['gateway'];
 
-        $date = Carbon::createFromFormat(self::DATE_FORMAT, $content[ResponseFields::DATE], 'Asia/Kolkata')->timestamp;
-
         $contentToSave = [
             Entity::STATUS_CODE          => $content[ResponseFields::STATUS_CODE],
             Entity::RESPONSE_CODE        => $content[ResponseFields::RESPONSE_CODE],
             Entity::RESPONSE_DESCRIPTION => $content[ResponseFields::RESPONSE_DESCRIPTION],
             Entity::GATEWAY_PAYMENT_ID   => $content[ResponseFields::GATEWAY_PAYMENT_ID],
-            Entity::DATE                 => $date,
+            Entity::DATE                 => $content[ResponseFields::DATE],
             Entity::RECEIVED             => true
         ];
 
@@ -303,11 +301,11 @@ class Gateway extends Base\Gateway
 
     protected function generateRefundInfo($wallet)
     {
-        $gatewayPaymentDate = $wallet['date'] ?? $wallet['created_at'];
+        $gatewayPaymentDate = $wallet['date'] ?? $this->getFormattedDateFromTimeStamp($wallet['created_at']);
 
         $refundinfo = [
             $wallet['gateway_payment_id'],
-            $this->getFormattedDateFromTimeStamp($gatewayPaymentDate),
+            $gatewayPaymentDate,
             'NA'
         ];
 
@@ -432,6 +430,13 @@ class Gateway extends Base\Gateway
 
         $response = $statusQueryResponse;
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'content'  => $content,
+                'api_type' => ApiName::STATUSQUERY
+            ]);
+
         if ($this->validStatusQueryResponse($content) === false)
         {
             return $this->verifyUsingCheckPaymentStatus($input);
@@ -449,6 +454,13 @@ class Gateway extends Base\Gateway
         $response = $checkPaymentStatusResponse;
 
         $content = $this->jsonToArray($response->body);
+
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            [
+                'content'  => $content,
+                'api_type' => ApiName::CHECKPAYMENTSTATUS
+            ]);
 
         return [$content, $response];
     }
@@ -474,17 +486,7 @@ class Gateway extends Base\Gateway
 
         if ($this->checkPaymentStatusResponseFailed($content) === false)
         {
-            // Temporarily hardcoding this payment id here to manually pass verify
-            // and change payment status to authorized, as this payment was successfully
-            // processed by Jiomoney but marked as failed by timeout cron as callback was received late
-            if ($input['payment']['id'] === '7LaaHWTPMl9PQL')
-            {
-                $verify->gatewaySuccess = true;
-            }
-            else
-            {
-                $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
-            }
+            $verify->gatewaySuccess = ($this->getGatewayTxnStatus($content) === StatusCode::API_SUCCESS);
         }
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
@@ -571,7 +573,7 @@ class Gateway extends Base\Gateway
     }
 
     /**
-     * Fetches the gateway payment datte from the verify response
+     * Fetches the gateway payment date from the verify response
      * Jiomoney only returns the timestamp in CHECKPAYMENTSTATUS response and
      * not in STATUSQUERY response. So if verify response came through STATUSQUERY
      * API we return the payment created at timestamp, else we return null
@@ -582,20 +584,16 @@ class Gateway extends Base\Gateway
      */
     public function getGatewayPaymentDate(array $content, array $payment)
     {
-        // Temporarily hardcoding the gateway payment timestamp for this payment id
-        // as verify is no longer returning valid response for this
-        if ($payment['id'] === '7LaaHWTPMl9PQL')
-        {
-            return '1488009243';
-        }
-
         if ($this->statusQueryValid === false)
         {
-            $date = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                    [ResponseFields::TXN_TIME_STAMP];
+            if (isset($content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]) === true)
+            {
+                $date = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
+                        [ResponseFields::TXN_TIME_STAMP];
 
-            return Carbon::createFromFormat(self::DATE_FORMAT, $date, 'Asia/Kolkata')
-                        ->timestamp;
+                return Carbon::createFromFormat(self::DATE_FORMAT, $date, 'Asia/Kolkata')
+                            ->timestamp;
+            }
         }
 
         return null;
@@ -603,13 +601,6 @@ class Gateway extends Base\Gateway
 
     protected function getGatewayPaymentId(array $content, array $payment)
     {
-        // Temporarily hardcoding the gateway payment id here for this specific payment to
-        // manually pass verify flow
-        if ($payment['id'] === '7LaaHWTPMl9PQL')
-        {
-            return '301005129694';
-        }
-
         if ($this->statusQueryValid === true)
         {
             return $content[StatusQueryResponseFields::PAYLOAD_DATA][StatusQueryResponseFields::JM_TRAN_REF_NO];
@@ -645,7 +636,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            [
+                'request'  => $request,
+                'api_type' => ApiName::CHECKPAYMENTSTATUS
+            ]);
 
         return $request;
     }
@@ -683,7 +677,10 @@ class Gateway extends Base\Gateway
 
         $this->trace->info(
             TraceCode::GATEWAY_PAYMENT_VERIFY_REQUEST,
-            $request);
+            [
+                'request'  => $request,
+                'api_type' => ApiName::STATUSQUERY
+            ]);
 
         $this->action = Action::VERIFY;
 
