@@ -287,10 +287,6 @@ class Gateway extends Base\Gateway
                 'encryptedString' => $data['ES']
             ];
 
-            $this->trace->error(
-                TraceCode::PAYMENT_CALLBACK_FAILURE,
-                $errorContent);
-
             throw new Exception\GatewayErrorException(
                 ErrorCode::BAD_REQUEST_PAYMENT_BANK_SYSTEM_ERROR);
         }
