@@ -3,17 +3,15 @@
 namespace RZP\Models\Offer;
 
 use DB;
-
-use RZP\Constants\Table;
-use RZP\Models\Base;
-use RZP\Models\Merchant;
 use Carbon\Carbon;
+use RZP\Models\Base;
+use RZP\Constants\Table;
+use RZP\Models\Merchant;
+use RZP\Models\Order;
+use RZP\Models\Merchant\Account;
 
 class Repository extends Base\Repository
 {
-    const OFFER_ID    = 'offer_id';
-    const MERCHANT_ID = 'merchant_id';
-
     protected $entity = 'offer';
 
     protected $appFetchParamRules = [
@@ -21,23 +19,12 @@ class Repository extends Base\Repository
         Entity::PAYMENT_METHOD_TYPE       => 'sometimes|alpha',
         Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
         Entity::ISSUER                    => 'sometimes|alpha',
-        Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
-        Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
-        Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::STARTS_AT                 => 'sometimes|integer',
-        Entity::ENDS_AT                   => 'sometimes|integer',
-        Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
-        Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
     ];
 
     /**
      * set of attributes required to uniquely define an offer
      */
-    protected $offerFetchAttributes = [
+    const OFFER_FETCH_ATTRIBUTES = [
         Entity::PAYMENT_METHOD,
         Entity::PAYMENT_METHOD_TYPE,
         Entity::PAYMENT_NETWORK,
@@ -45,54 +32,80 @@ class Repository extends Base\Repository
         Entity::PERCENT_RATE,
         Entity::MIN_AMOUNT,
         Entity::MAX_CASHBACK,
-        Entity::FLAT_CASHBACK
+        Entity::FLAT_CASHBACK,
     ];
 
-    public function fetchExistingOffers(array $input)
+    public function fetchForOrder(Order\Entity $order)
     {
-        $offerFetchParams = [];
-
-        foreach ($this->offerFetchAttributes as $attribute)
+        if ($order->hasRelation('offer'))
         {
-            if (isset($input[$attribute]) === true)
-            {
-                $offerFetchParams[$attribute] = $input[$attribute];
-            }
+            return $order->offer;
         }
 
-        return $this->fetch($offerFetchParams);
+        $offerId = $order->getOfferId();
+
+        $offer = $this->findOrFail($offerId);
+
+        $order->offer()->associate($offer);
+
+        return $offer;
     }
 
-    public function fetchActiveOfferByMerchantAndMethod(Merchant\Entity $merchant, string $method)
+    public function fetchExistingOffers(Entity $newOffer, string $merchantId)
+    {
+        $query = $this->buildQuery($newOffer, $merchantId);
+
+        $query->where(Entity::ACTIVE, '=', true)
+              ->where(Entity::STARTS_AT, '<=', $newOffer->getAttribute(Entity::ENDS_AT))
+              ->where(Entity::ENDS_AT, '>=', $newOffer->getAttribute(Entity::STARTS_AT));
+
+        return $query->get();
+    }
+
+    public function fetchSharedOffers()
     {
         $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $offers = $this->fetchMerchantOffersQuery($merchant)
-                        ->where(Entity::PAYMENT_METHOD, '=', $method)
-                        ->where(Entity::STARTS_AT, '<=', $now)
-                        ->where(Entity::ENDS_AT, '>', $now)
-                        ->where(Entity::ACTIVE, '=', 1)
-                        ->get();
-
-        return $offers;
-    }
-
-    public function fetchOffersForMerchant(Merchant\Entity $merchant)
-    {
-        $offers = $this->fetchMerchantOffersQuery($merchant)
-                        ->get();
-
-        return $offers;
-    }
-
-    private function fetchMerchantOffersQuery(Merchant\Entity $merchant)
-    {
         return $this->newQuery()
-                    ->leftJoin('merchant_offer', 'offers.id', '=', 'merchant_offer.offer_id')
-                    ->where(function ($query) use ($merchant)
-                    {
-                        $query->whereNull('merchant_offer.merchant_id')
-                              ->orWhere('merchant_offer.merchant_id', '=', $merchant->getId());
-                    });
+                    ->where(Entity::MERCHANT_ID, '=', Account::SHARED_ACCOUNT)
+                    ->where(Entity::ACTIVE, '=', true)
+                    ->where(Entity::STARTS_AT, '<=', $now)
+                    ->where(Entity::ENDS_AT, '>=', $now)
+                    ->get();
+    }
+
+    public function fetchActiveExpiredOffers()
+    {
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
+
+        return $this->newQuery()
+                    ->where(Entity::ACTIVE, '=', true)
+                    ->where(Entity::ENDS_AT, '<', $now)
+                    ->get();
+    }
+
+    /**
+     * Build a query based upon the attribute set in the new offer entity,
+     * to check whether an offer exists with the same condition.
+     *
+     * @param  Entity $newOffer
+     * @param  string $merchantId
+     *
+     * @return $query
+     */
+    protected function buildQuery(Entity $newOffer, string $merchantId)
+    {
+        $query = $this->newQuery()
+                      ->where(Entity::MERCHANT_ID, '=', $merchantId);
+
+        foreach (self::OFFER_FETCH_ATTRIBUTES as $attribute)
+        {
+            if ($newOffer->getAttribute($attribute) !== null)
+            {
+                $query->where($attribute, '=', $newOffer->getAttribute($attribute));
+            }
+        }
+
+        return $query;
     }
 }
