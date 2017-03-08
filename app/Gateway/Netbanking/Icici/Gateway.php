@@ -155,8 +155,8 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
-        if (isset($content[ResponseFields::STATUS]) === true and
-            $content[ResponseFields::STATUS] === Status::SUCCESS)
+        if ((isset($content[ResponseFields::STATUS]) === true) and
+            ($content[ResponseFields::STATUS] === Status::SUCCESS))
         {
             $verify->gatewaySuccess = true;
         }
@@ -180,7 +180,7 @@ class Gateway extends Base\Gateway
 
         $data = $this->createDefaultRequestData($input);
 
-        $paymentDate = Carbon::createFromTimestamp($payment['original']['created_at'])
+        $paymentDate = Carbon::createFromTimestamp($payment['created_at'])
                                                    ->format('Y-m-d');
 
         $data[RequestFields::PAYMENT_DATE] = $paymentDate;

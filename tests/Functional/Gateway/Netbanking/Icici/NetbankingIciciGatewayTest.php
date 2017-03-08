@@ -95,30 +95,14 @@ class NetbankingIciciGatewayTest extends TestCase
 
     public function testRefundExcelFile()
     {
-        // Refund the payment above in full
-        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+        // Generate 2 payments
+        $this->createRefundsForExcel();
 
-        // Create a new payment #2
-        $payment = $this->doAuthAndCapturePayment($this->payment);
+        $this->alterRefundsDateToYesterday();
 
-        // Do a partial refund of 10000 of payment #2
-        $refund = $this->refundPayment($payment['id'], 10000);
-        // Refund the remaining amount of the 2nd payment
-        $refund = $this->refundPayment($payment['id']);
-
-        // Get all pending refunds
-        $refunds = $this->getEntities('refund', [], true);
-
-        // Convert the created_at dates to yesterday's so that they are picked
-        // up during refund excel generation
-        foreach ($refunds['items'] as $refund)
-        {
-            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
-            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
-        }
-
-        // Generating 3rd payment and leaving its created_at date to now unlike payments 1 and 2
-        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+        // Generating 3rd payment and leaving its created_at
+        // date to now unlike first 2 payments
+        $this->doAuthCaptureAndRefundPayment($this->payment);
 
         $this->checkMailQueue();
 
@@ -220,6 +204,34 @@ class NetbankingIciciGatewayTest extends TestCase
             });
     }
 
+    protected function createRefundsForExcel()
+    {
+        // Refund the payment above in full
+        $refund = $this->doAuthCaptureAndRefundPayment($this->payment);
+
+        // Create a new payment #2
+        $payment = $this->doAuthAndCapturePayment($this->payment);
+
+        // Do a partial refund of 10000 of payment #2
+        $this->refundPayment($payment['id'], 10000);
+        // Refund the remaining amount of the 2nd payment
+        $this->refundPayment($payment['id']);
+    }
+
+    protected function alterRefundsDateToYesterday()
+    {
+        // Get all pending refunds
+        $refunds = $this->getEntities('refund', [], true);
+
+        // Convert the created_at dates to yesterday's so that they are picked
+        // up during refund excel generation
+        foreach ($refunds['items'] as $refund)
+        {
+            $createdAt = Carbon::yesterday('Asia/Kolkata')->timestamp + 10;
+            $this->fixtures->edit('refund', $refund['id'], ['created_at' => $createdAt]);
+        }
+    }
+
     protected function checkRefundFileData($data)
     {
         $filePath = $data['netbanking_icici']['file'];
@@ -235,6 +247,8 @@ class NetbankingIciciGatewayTest extends TestCase
         $this->assertEquals($sheet[0]['refund_amount'], 500);
         $this->assertEquals($sheet[1]['refund_amount'], 100);
         $this->assertEquals($sheet[2]['refund_amount'], 400);
+
+        unlink($filePath);
     }
 
     protected function checkMailQueue()

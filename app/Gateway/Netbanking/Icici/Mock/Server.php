@@ -85,12 +85,52 @@ class Server extends Base\Mock\Server
 
         $decryptedString = $aes->decryptString(base64_decode($input['ES']));
 
+        if ($decryptedString === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Encrypted string not decryptable');
+        }
+
         // Removing the %22 tags in the return URL
         $string = str_replace('%22', '', $decryptedString);
 
         parse_str($string, $decryptedData);
 
+        $this->validateEs($decryptedData);
+
         return $decryptedData;
+    }
+
+    protected function validateEs(array $decryptedData)
+    {
+        $fields = $this->getEncryptedFields();
+
+        foreach ($fields as $field)
+        {
+            $this->assertField($decryptedData, $field);
+        }
+    }
+
+    protected function assertField(array $data, $field)
+    {
+        if (isset($data[$field]) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                $field . ' not specified');
+        }
+    }
+
+    protected function getEncryptedFields()
+    {
+        $fields = [
+            RequestFields::AMOUNT,
+            RequestFields::CURRENCY_CODE,
+            RequestFields::PAYMENT_ID,
+            RequestFields::ITEM_CODE,
+            RequestFields::RETURN_URL,
+        ];
+
+        return $fields;
     }
 
     protected function createXmlResponse(array $responseArray)
