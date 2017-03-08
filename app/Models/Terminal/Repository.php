@@ -25,6 +25,7 @@ class Repository extends Base\Repository
         Entity::GATEWAY_TERMINAL_ID => 'sometimes|alpha_num',
         Entity::EMI                 => 'sometimes|in:0,1',
         Entity::ENABLED             => 'sometimes|in:0,1',
+        Entity::NETWORK_CATEGORY    => 'sometimes|string|max:50',
     );
 
     public function fetchForPayment(Payment\Entity $payment)
