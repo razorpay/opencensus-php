@@ -22,6 +22,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
@@ -56,6 +57,8 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
+
+        $this->validateOfferIfApplicable($payment);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -487,6 +490,11 @@ trait Authorize
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_CARD_RECURRING_NOT_SUPPORTED);
         }
+    }
+
+    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    {
+        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
     }
 
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
@@ -1119,7 +1127,8 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
-        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
         {
             return $this->getAsyncPaymentCreatedResponse($request, $payment);
         }

@@ -2,8 +2,6 @@
 
 namespace RZP\Models\Customer\Transaction;
 
-use Carbon\Carbon;
-
 use RZP\Constants;
 use RZP\Models\Base;
 use RZP\Models\Customer;
@@ -31,6 +29,8 @@ class Core extends Base\Core
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
         $customerTxn->setEntityId($input['payment']['id']);
+
+        $customerTxn->setDescription($input['payment']['description'] ?? 'No description');
 
         return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
         {
@@ -125,7 +125,11 @@ class Core extends Base\Core
         return $entities;
     }
 
-    protected function createEntityForType(string $type, Merchant\Entity $merchant, int $amount, string $customerId) : Entity
+    protected function createEntityForType(
+        string $type,
+        Merchant\Entity $merchant,
+        int $amount,
+        string $customerId) : Entity
     {
         $customerTxn = new Entity;
 

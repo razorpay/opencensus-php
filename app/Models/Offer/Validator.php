@@ -6,78 +6,62 @@ use Carbon\Carbon;
 
 use RZP\Base;
 use RZP\Exception;
-use RZP\Error\ErrorCode;
-use RZP\Models\Card\Network;
+use RZP\Models\Card;
 use RZP\Models\Payment;
-use RZP\Models\Payment\Processor\Wallet;
+use RZP\Error\ErrorCode;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Card\Network;
+use RZP\Models\Payment\Processor\Wallet;
 
 class Validator extends Base\Validator
 {
-    const CASHBACK_CALCULATION_PARAMS = 'cashback_calculation_params';
-    const OFFER_PERIOD                = 'offer_period';
+    const CASHBACK_CRITERIA = 'cashback_criteria';
+    const OFFER_PERIOD      = 'offer_period';
+
+    const CASHBACK_CRITERIA_PARAMS = [
+        Entity::PERCENT_RATE,
+        Entity::MAX_CASHBACK,
+        Entity::FLAT_CASHBACK,
+    ];
 
     protected static $createRules = [
-        Entity::NAME                      => 'required|alpha_space_num|max:25',
+        Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
         Entity::PAYMENT_METHOD            => 'required|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE       => 'required_if:payment_method,card|in:debit,credit',
-        ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes|alpha',
+        Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
+        Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
+        Entity::ISSUER                    => 'sometimes_if:payment_method,card|alpha|custom',
+        Entity::IINS                      => 'sometimes_if:payment_method,card|array',
         Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
         Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
         Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
         Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
         Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
         Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::STARTS_AT                 => 'required|integer',
-        Entity::ENDS_AT                   => 'required|integer',
-        Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
-        Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
+        Entity::TYPE                      => 'sometimes|in:instant,deferred',
+        Entity::STARTS_AT                 => 'sometimes|epoch',
+        Entity::ENDS_AT                   => 'required|epoch',
+        Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::TERMS                     => 'required|string'
     ];
 
     protected static $editRules = [
         Entity::NAME                      => 'sometimes|alpha_space_num|max:25',
-        Entity::PAYMENT_METHOD            => 'sometimes|alpha|custom',
-        Entity::PAYMENT_METHOD_TYPE       => 'sometimes_if:payment_method,card|in:debit,credit',
-        ENTITY::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes',
-        Entity::PERCENT_RATE              => 'sometimes|integer|min:0|max:10000',
-        Entity::MAX_CASHBACK              => 'sometimes|integer|min:0',
-        Entity::FLAT_CASHBACK             => 'sometimes|integer|min:0',
-        Entity::MIN_AMOUNT                => 'sometimes|integer|min:0',
-        Entity::PAYMENT_COUNT             => 'sometimes|integer|min:1',
-        Entity::PROCESSING_TIME           => 'sometimes|integer',
-        Entity::STARTS_AT                 => 'sometimes|integer',
-        Entity::ENDS_AT                   => 'sometimes|integer',
-        Entity::ACTIVE                    => 'sometimes|boolean',
-        Entity::ADDITIONAL_DETAILS        => 'sometimes|string|max:40',
-        Entity::CUSTOM_LONG_DISPLAY_TEXT  => 'sometimes|string|max:200',
-        Entity::CUSTOM_SHORT_DISPLAY_TEXT => 'sometimes|string|max:50'
-    ];
-
-    protected static $merchantRules = [
-        'merchant_ids'      => 'required|array',
-        'action'            => 'required|string|in:add,remove'
+        Entity::IINS                      => 'sometimes|array',
+        Entity::ACTIVE                    => 'sometimes|in:0',
+        Entity::DISPLAY_TEXT              => 'sometimes|string|max:255',
+        Entity::TERMS                     => 'sometimes|string'
     ];
 
     protected static $createValidators = [
-        self::CASHBACK_CALCULATION_PARAMS,
+        self::CASHBACK_CRITERIA,
         self::OFFER_PERIOD,
         Entity::FLAT_CASHBACK,
         Entity::PAYMENT_NETWORK,
+        Entity::IINS,
     ];
 
     protected static $editValidators = [
-        self::OFFER_PERIOD,
-        Entity::FLAT_CASHBACK,
-        Entity::PAYMENT_NETWORK
-    ];
-
-    protected $cashbackCalculationParams = [
-        Entity::PERCENT_RATE,
-        Entity::MAX_CASHBACK,
-        Entity::FLAT_CASHBACK,
+        Entity::IINS,
     ];
 
     protected function validatePaymentNetwork(array $input)
@@ -87,34 +71,42 @@ class Validator extends Base\Validator
             return;
         }
 
-        $paymentMethod =  $input[Entity::PAYMENT_METHOD] ?? $this->entity->getPaymentMethod();
+        $paymentMethod =  $input[Entity::PAYMENT_METHOD];
+        $network = $input[Entity::PAYMENT_NETWORK];
 
-        if ($paymentMethod === Payment\Method::WALLET)
+        switch ($paymentMethod)
         {
-            Wallet::validateExists($input[Entity::PAYMENT_NETWORK]);
-        }
-        elseif ($paymentMethod === Payment\Method::CARD)
-        {
-            $this->validateCardNetwork($input);
-        }
-        elseif ($paymentMethod === Payment\Method::NETBANKING)
-        {
-            $this->validateNetbanking($input);
+            case Payment\Method::CARD:
+            case Payment\Method::EMI:
+                $this->validateCardNetwork($network);
+                break;
+
+            case Payment\Method::WALLET:
+                Wallet::validateExists($network);
+                break;
+
+            case Payment\Method::NETBANKING:
+                $this->validateNetbanking($network);
+                break;
+
+            default:
+                throw new Exception\BadRequestException("Invalid payment method");
+                break;
         }
     }
 
-    protected function validateCashbackCalculationParams(array $input)
+    protected function validateCashbackCriteria(array $input)
     {
-        if ($this->cashbackCalculationParamsPresent($input) === false)
+        if ($this->cashbackCriteriaPresent($input) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_CASHBACK_CALCULATION_PARAMS_MISSING);
+                ErrorCode::BAD_REQUEST_CASHBACK_CRITERIA_MISSING);
         }
     }
 
-    private function cashbackCalculationParamsPresent(array $input)
+    protected function cashbackCriteriaPresent(array $input)
     {
-        foreach ($this->cashbackCalculationParams as $param)
+        foreach (self::CASHBACK_CRITERIA_PARAMS as $param)
         {
             if (isset($input[$param]) === true)
             {
@@ -127,11 +119,15 @@ class Validator extends Base\Validator
 
     protected function validateOfferPeriod(array $input)
     {
-        $startsAt = $input[Entity::STARTS_AT] ?? $this->entity->getAttribute(Entity::STARTS_AT);
+        $now = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $endsAt = $input[Entity::ENDS_AT] ?? $this->entity->getAttribute(Entity::ENDS_AT);
+        $endsAt = $input[Entity::ENDS_AT];
 
-        if ($startsAt >= $endsAt)
+        $startsAt = $input[Entity::STARTS_AT] ?? $now;
+
+        if (($startsAt < $now) or
+            ($endsAt <= $now) or
+            ($startsAt >= $endsAt))
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_INVALID_OFFER_DURATION);
@@ -140,7 +136,7 @@ class Validator extends Base\Validator
 
     protected function validatePaymentMethod(string $attribute, string $value)
     {
-        if (in_array($value, Payment\Method::getAllPaymentMethods()) === false)
+        if (in_array($value, Payment\Method::getAllPaymentMethods(), true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 "Invalid payment method: $value", $attribute);
@@ -149,57 +145,67 @@ class Validator extends Base\Validator
 
     protected function validateFlatCashback(array $input)
     {
-        if ($this->flatCashbackPresent($input))
+        if ((isset($input[Entity::FLAT_CASHBACK]) === true) and
+            ((isset($input[Entity::PERCENT_RATE]) === true) or
+             (isset($input[Entity::MAX_CASHBACK]) === true)))
         {
-            if ($this->percentRatePresent($input) or $this->maxCashbackPresent($input))
-            {
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
-            }
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_FLAT_CASHBACK_WITH_PERCENT_RATE_OR_MAX_CASHBACK);
         }
     }
 
-    private function flatCashbackPresent(array $input)
+    protected function validateCardNetwork($network)
     {
-        $flatCashback = $input[Entity::FLAT_CASHBACK] ?? 0;
-
-        return ($flatCashback > 0);
-    }
-
-    private function percentRatePresent(array $input)
-    {
-        $percentRate = $input[Entity::PERCENT_RATE] ?? 0;
-
-        return ($percentRate > 0);
-    }
-
-    private function maxCashbackPresent(array $input)
-    {
-        $maxCashback = $input[Entity::MAX_CASHBACK] ?? 0;
-
-        return ($maxCashback > 0);
-    }
-
-    private function validateCardNetwork(array $input)
-    {
-        if (Network::isValidNetwork($input[Entity::PAYMENT_NETWORK]) === false)
+        if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment network for card should be a valid card network');
         }
-        else if (Network::isUnsupportedNetwork($input[Entity::PAYMENT_NETWORK]) === true)
+
+        if (Network::isUnsupportedNetwork($network) === true)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'This card payment network is not supported');
         }
     }
 
-    private function validateNetbanking(array $input)
+    protected function validateNetbanking($network)
     {
-        if (IFSC::exists($input[Entity::PAYMENT_NETWORK]) === false)
+        if (IFSC::exists($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Payment network for bank should be a valid bank name');
+        }
+    }
+
+    protected function validateIssuer(string $attribute, string $value)
+    {
+        if (IFSC::exists($value) === false)
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid Issuer name : '. $value);
+        }
+    }
+
+    protected function validateIins(array $input)
+    {
+        if (isset($input[Entity::IINS]) === false)
+        {
+            return;
+        }
+
+        $iins = $input[Entity::IINS];
+
+        $paymentMethod = $this->entity->getPaymentMethod() ?? $input[Entity::PAYMENT_METHOD];
+
+        if ($paymentMethod !== Payment\Method::CARD)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_IINS_EDITABLE_FOR_CARD_OFFER);
+        }
+
+        if (is_associative_array($iins) === true)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_INVALID_FORMAT_FOR_IINS);
         }
     }
 }

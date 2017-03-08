@@ -30,7 +30,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '6qJd4PFKxZwFbL' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 5,
+            'load'       => 1,
         ],
 
         // Test terminals, won't be used on prod.

@@ -3,6 +3,7 @@
 namespace RZP\Models\Customer\Transaction;
 
 use RZP\Models\Base;
+use RZP\Constants\Entity as E;
 
 class Entity extends Base\PublicEntity
 {
@@ -19,6 +20,9 @@ class Entity extends Base\PublicEntity
     const DEBIT             = 'debit';
     const BALANCE           = 'balance';
     const DESCRIPTION       = 'description';
+
+    // Public
+    const SOURCE            = 'source';
 
     protected static $sign = 'ctxn';
 
@@ -61,6 +65,7 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::ENTITY,
+        self::SOURCE,
         self::STATUS,
         self::TYPE,
         self::AMOUNT,
@@ -70,6 +75,12 @@ class Entity extends Base\PublicEntity
         self::BALANCE,
         self::DESCRIPTION,
         self::CREATED_AT,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::SOURCE
     ];
 
     protected $casts = [
@@ -91,10 +102,12 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Merchant\Entity');
     }
 
+    // @codingStandardsIgnoreStart
     public function entity()
     {
         return $this->morphTo();
     }
+    // @codingStandardsIgnoreEnd
 
     // -------------------- End Relations -----------------------
 
@@ -138,6 +151,11 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::TYPE, $type);
     }
 
+    public function setDescription(string $description)
+    {
+        $this->setAttribute(self::DESCRIPTION, $description);
+    }
+
     public function setEntityType($type)
     {
         $this->setAttribute(self::ENTITY_TYPE, $type);
@@ -146,5 +164,16 @@ class Entity extends Base\PublicEntity
     public function setEntityId($id)
     {
         $this->setAttribute(self::ENTITY_ID, $id);
+    }
+
+    public function setPublicSourceAttribute(array & $attributes)
+    {
+        $sourceId = $this->getAttribute(self::ENTITY_ID);
+
+        $sourceType = $this->getAttribute(self::ENTITY_TYPE);
+
+        $entity = E::getEntityClass($sourceType);
+
+        $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
     }
 }

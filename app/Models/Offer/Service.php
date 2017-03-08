@@ -8,58 +8,51 @@ use RZP\Trace\TraceCode;
 
 class Service extends Base\Service
 {
-    public function createOffer(array $input)
+    public function __construct()
+    {
+        parent::__construct();
+
+        $this->core = new Core;
+    }
+
+    public function create(array $input)
     {
         $this->trace->info(TraceCode::OFFER_CREATE_REQUEST, $input);
 
-        $offer = (new Core)->create($input);
+        $offer = $this->core->create($input);
 
-        return $offer->toArrayAdmin();
+        return $offer->toArrayPublic();
     }
 
-    public function updateOffer(string $id, array $input)
+    public function update(string $id, array $input)
     {
         $this->trace->info(TraceCode::OFFER_UPDATE_REQUEST, $input);
 
-        $offer = $this->repo->offer->findOrFailPublic($id);
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $offer = (new Core)->update($offer, $input);
+        $offer = $this->core->update($offer, $input);
 
-        return $offer->toArrayAdmin();
+        return $offer->toArrayPublic();
     }
 
-    public function deleteOffer(string $id)
+    public function fetch(string $id)
     {
-        $offer = $this->repo->offer->findOrFailPublic($id);
+        $offer = $this->repo->offer->findByPublicIdAndMerchant($id, $this->merchant);
 
-        $data = (new Core)->delete($offer);
-
-        return $data;
+        return $offer->toArrayPublic();
     }
 
-    public function updateMerchants(string $id, array $input)
+    public function fetchMultiple(array $input)
     {
-        $this->trace->info(TraceCode::OFFER_MERCHANT_UPDATE_REQ, $input);
+        $offers = $this->repo->offer->fetch($input, $this->merchant->getId());
 
-        $offer = $this->repo->offer->findOrFailPublic($id);
+        return $offers->toArrayPublic();
+    }
 
-        $offer->validateInput('merchant', $input);
+    public function deactivate()
+    {
+        $disabledOffers = $this->core->deactivate();
 
-        $merchantIds = $input['merchant_ids'];
-
-        $action = $input['action'];
-
-        if ($action === 'add')
-        {
-            $offer->merchants()->attach($merchantIds);
-        }
-        else
-        {
-            $offer->merchants()->detach($merchantIds);
-        }
-
-        $this->repo->saveOrFail($offer);
-
-        return $offer->toArrayAdmin();
+        return $disabledOffers;
     }
 }

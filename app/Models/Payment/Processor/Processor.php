@@ -675,9 +675,7 @@ class Processor
 
         $this->setInvoiceDetails($payment);
 
-        $metadata = isset($input['_']) ? $input['_'] : null;
-
-        $payment->setMetadata($metadata);
+        $metadata = $payment->getMetadata();
 
         $this->trace->info(
             TraceCode::PAYMENT_METADATA,
@@ -1095,7 +1093,6 @@ class Processor
         $invoice = $payment->invoice;
 
         $this->repo->invoice->lockForUpdateAndReload($invoice);
-
 
         //
         // There could be a case where the current time is greater

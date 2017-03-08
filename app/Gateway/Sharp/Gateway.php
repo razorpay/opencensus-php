@@ -8,6 +8,7 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Models\Payment;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -42,12 +43,42 @@ class Gateway extends Base\Gateway
 
         $request = $this->getRequestArray($content, $input);
 
+        if ($input['payment']['method'] === Payment\Method::UPI)
+        {
+            $this->processTestUpiPayment($input['payment']);
+
+            $request = true;
+        }
+
         return $request;
+    }
+
+    protected function processTestUpiPayment($payment)
+    {
+        $server = $this->app['gateway']->server('sharp');
+
+        $input = $server->s2sRequestContent($payment);
+
+        $paymentId = Payment\Entity::getSignedId($payment['id']);
+
+        try
+        {
+            (new Payment\Service)->s2scallback($paymentId, $input);
+        }
+        catch (Exception\GatewayErrorException $ex)
+        {
+            $this->trace->info(
+                TraceCode::PAYMENT_FAILED,
+                [
+                    'payment_id'        => $paymentId,
+                    'message'           => $ex->getMessage(),
+                ]
+            );
+        }
     }
 
     public function checkExistingUser(array $input)
     {
-        ;
     }
 
     public function otpGenerate(array $input)
