@@ -70,7 +70,40 @@ class GenericController extends Controller
             );
         }
 
-        $route = $this->parseUrlParams($route);
+        /**
+         * 2 different formats:
+         * 'payment_fetch_multiple' => 'payments'
+         *
+         * 'payment_fetch_multiple' => [
+         *      'url'       => 'payments',
+         *      'routeName' => 'get_payments'
+         * ],
+         */
+        if (is_array($route))
+        {
+            $endpointUrl = $route['url'];
+
+            // Permission checker
+            if ( isset($route['routeName']) )
+            {
+                $routeName = $route['routeName'];
+
+                if (\Gate::has($routeName) and \Gate::denies($routeName))
+                {
+                    throw new \Razorpay\Api\Errors\BadRequestError(
+                        'Unauthorized',
+                        \Razorpay\Api\Errors\ErrorCode::SERVER_ERROR,
+                        401
+                    );
+                }
+            }
+        }
+        else
+        {
+            $endpointUrl = $route;
+        }
+
+        $route = $this->parseUrlParams($endpointUrl);
 
         return [ $auth, $route ];
     }

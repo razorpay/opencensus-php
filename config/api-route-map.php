@@ -1,6 +1,7 @@
 <?php
 
 return [
+    // auth
     'admin' => [
         'org_create'                        => 'orgs',
         'org_get_multiple'                  => 'orgs',
@@ -42,15 +43,34 @@ return [
         'merchant_attach_admin'             => 'merchants/{id}/admins',
     ],
 
+    // auth
     'proxy' => [
         // Payments
-        'payment_fetch_multiple'            => 'payments',
-        'payment_fetch_by_id'               => 'payments/{id}',
+        'payment_fetch_multiple'            => [
+            'url'       => 'payments',
+            'routeName' => 'get_payments'
+        ],
+        'payment_fetch_by_id'               => [
+            'url'       => 'payments/{id}',
+            'routeName' => 'payment_get_single'
+        ],
 
         // Payment Details
-        'payment_fetch_card_details'        => 'payments/{id}/card',
-        'payment_fetch_refunds'             => 'payments/{id}/refunds',
-        'payment_capture'                   => 'payments/{id}/capture',
-        'payment_refund'                    => 'payments/{id}/refund',
+        'payment_fetch_card_details'        => [
+            'url'       => 'payments/{id}/card',
+            'routeName' => 'card_get_single'
+        ],
+        'payment_fetch_refunds'             => [
+            'url'       => 'payments/{id}/refunds',
+            'routeName' => 'payment_get_refunds'
+        ],
+        'payment_capture'                   => [
+            'url'       => 'payments/{id}/capture',
+            'routeName' => 'post_capture'
+        ],
+        'payment_refund'                    => [
+            'url'       => 'payments/{id}/refund',
+            'routeName' => 'post_refund'
+        ],
     ],
 ];
