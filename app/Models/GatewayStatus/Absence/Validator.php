@@ -189,7 +189,7 @@ class Validator extends Base\Validator
 
     public function validateCardType(array $input)
     {
-        $cardType = $input[Entity::CARD_TYPE] ?? null;
+        $cardType = $input[Entity::CARD_TYPE] ?? $this->entity->getCardType();
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
 
