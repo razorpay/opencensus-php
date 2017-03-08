@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement;
+namespace RZP\Models\FundTransfer\Attempt;
 
 class BankStatusCode
 {

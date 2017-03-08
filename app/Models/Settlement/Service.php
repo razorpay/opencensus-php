@@ -43,8 +43,8 @@ class Service extends Base\Service
 
         // TODO: Send relations to avoid n+1 query
         $setlAttmepts = $this->repo
-                      ->bank_transfer_attempt
-                      ->getBankTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId);
+                      ->fund_transfer_attempt
+                      ->getFundTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId);
 
         $urls = (new Kotak\Service)->generateSettlementFile($setlAttmepts);
 

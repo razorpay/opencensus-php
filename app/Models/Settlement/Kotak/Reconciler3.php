@@ -10,7 +10,7 @@ use Mail;
 use RZP\Trace;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base;
-use RZP\Models\BankTransferAttempt;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Payout;
@@ -168,10 +168,10 @@ class Reconciler3
     protected function reconcileEntity($row)
     {
         // reconciliation version
-        $version = $row[Headings::VERSION] ?: BankTransferAttempt\Version::V1;
+        $version = $row[Headings::VERSION] ?: FundTransferAttempt\Version::V1;
 
         // validate version
-        BankTransferAttempt\Version::validateVersion($version);
+        FundTransferAttempt\Version::validateVersion($version);
 
         $loadEntityAndRelationsMethod = 'loadEntityAndRelations' . $version;
         $entity = $this->$loadEntityAndRelationsMethod($row);
@@ -272,9 +272,8 @@ class Reconciler3
 
         $failureReason = null;
 
-        $type = $entity->getEntity();
-
-        $class = '\\RZP\\Models\\' . studly_case($type) . '\\Status';
+        $class = get_class($entity);
+        $class = str_replace('\\Entity', '\\Status', $class);
 
         $status = $class::FAILED;
 
@@ -361,10 +360,10 @@ class Reconciler3
             }
         }
 
-        BankTransferAttempt\Entity::verifyIdAndStripSign($entityId);
+        FundTransferAttempt\Entity::verifyIdAndStripSign($entityId);
 
         $entity = $this->repo
-                       ->bank_transfer_attempt
+                       ->fund_transfer_attempt
                        ->findOrFailPublicWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
 
         return $entity;

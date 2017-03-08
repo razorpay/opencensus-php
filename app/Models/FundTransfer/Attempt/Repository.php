@@ -1,12 +1,12 @@
 <?php
 
-namespace RZP\Models\BankTransferAttempt;
+namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'bank_transfer_attempt';
+    protected $entity = 'fund_transfer_attempt';
 
     protected $signedIds = [
         Entity::BANK_ACCOUNT_ID,
@@ -22,7 +22,7 @@ class Repository extends Base\Repository
         Entity::VERSION             => 'sometimes|string|in:v1,v2',
     ];
 
-    public function getBankTransferAttemptsByBatchSettlementIdWithRelations(
+    public function getFundTransferAttemptsByBatchSettlementIdWithRelations(
         $batchSettlementId,
         $relations = [])
     {

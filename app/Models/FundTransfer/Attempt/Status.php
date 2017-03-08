@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BankTransferAttempt;
+namespace RZP\Models\FundTransfer\Attempt;
 
 class Status
 {

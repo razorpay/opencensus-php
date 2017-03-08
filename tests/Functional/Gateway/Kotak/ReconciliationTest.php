@@ -46,7 +46,7 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate settlement attempt entity
-        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
 
@@ -95,7 +95,7 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
 
         // Validate settlement attempt entity
-        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
         $this->assertNotNull($settlementAttempt['utr']);
 
@@ -117,7 +117,7 @@ class ReconciliationTest extends TestCase
         $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
 
         // Check settlement entities
-        $setlAttempts = $this->getEntities('bank_transfer_attempt', [], true);
+        $setlAttempts = $this->getEntities('fund_transfer_attempt', [], true);
         $this->assertEquals(2, $setlAttempts['count']);
 
         // Check reconciliation
@@ -137,7 +137,7 @@ class ReconciliationTest extends TestCase
         $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconSuccess');
 
         // Validate settlement attempt entity
-        $settlementAttempt = $this->getLastEntity('bank_transfer_attempt', true);
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
         $this->assertNotNull($settlementAttempt['utr']);
 

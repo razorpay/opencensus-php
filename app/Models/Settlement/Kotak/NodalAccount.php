@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Excel;
 use Mail;
 use RZP\Exception;
-use RZP\Models\BankTransferAttempt;
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;

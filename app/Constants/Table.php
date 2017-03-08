@@ -50,7 +50,7 @@ class Table
     const OFFER                 = 'offers';
     const COUPON                = 'coupons';
     const MERCHANT_OFFER        = 'merchant_offer';
-    const BANK_TRANSFER_ATTEMPT = 'bank_transfer_attempts';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempts';
 
     // organization roles permissions
     const ORG                   = 'orgs';

@@ -425,8 +425,8 @@ class SettlementTest extends TestCase
         $this->assertGreaterThanOrEqual($batchSettlement['initiated_at'], time());
         $this->assertNull($batchSettlement['reconciled_at']);
 
-        // Validate bank_transfer_attempt entity
-        $bta = $this->getLastEntity('bank_transfer_attempt', true);
+        // Validate fund_transfer_attempt entity
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
         $this->assertEquals($batchSettlement['id'], $bta['batch_transfer_id']);
         $this->assertEquals(SettlementEntity::verifyIdAndStripSign($setl['id']), $bta['entity_id']);

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\BankTransferAttempt;
+namespace RZP\Models\FundTransfer\Attempt;
 
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
@@ -21,9 +21,9 @@ class Entity extends Base\PublicEntity
     const FAILURE_REASON        = 'failure_reason';
     const BATCH_TRANSFER_ID     = 'batch_transfer_id';
 
-    protected static $sign = 'bta';
+    protected static $sign = 'fta';
 
-    protected $entity = 'bank_transfer_attempt';
+    protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
         self::ENTITY_ID,

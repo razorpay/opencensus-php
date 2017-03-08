@@ -177,7 +177,7 @@ final class FactoryData
             'return_utr' => null,
         ]);
 
-        $factory(\RZP\Models\BankTransferAttempt\Entity::class, [
+        $factory(\RZP\Models\FundTransfer\Attempt\Entity::class, [
             'id' => $faker->uniqueid,
             'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
             'entity_type' => 'settlement',

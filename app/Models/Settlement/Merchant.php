@@ -8,7 +8,7 @@ use RZP\Models;
 use RZP\Models\Base;
 use RZP\Exception;
 use RZP\Models\Adjustment;
-use RZP\Models\BankTransferAttempt;
+use RZP\Models\FundTransfer\Attempt as FundTransferAttempt;
 use RZP\Models\BankAccount;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
@@ -319,22 +319,22 @@ class Merchant
 
     protected function createSettlementAttemptEntity()
     {
-        $bankTransferAttempt = new BankTransferAttempt\Entity;
+        $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            BankTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
-            BankTransferAttempt\Entity::CHANNEL         => $this->channel,
-            BankTransferAttempt\Entity::VERSION         => BankTransferAttempt\Version::V2,
-            BankTransferAttempt\Entity::STATUS          => BankTransferAttempt\Status::CREATED,
+            FundTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
+            FundTransferAttempt\Entity::CHANNEL         => $this->channel,
+            FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
+            FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
         ];
 
-        $bankTransferAttempt->fillAndGenerateId($values);
+        $fundTransferAttempt->fillAndGenerateId($values);
 
-        $bankTransferAttempt->source()->associate($this->setl);
+        $fundTransferAttempt->source()->associate($this->setl);
 
-        $bankTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
+        $fundTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
 
-        $this->bankTransferAtpt = $bankTransferAttempt;
+        $this->bankTransferAtpt = $fundTransferAttempt;
     }
 
     protected function saveChangesToDb()

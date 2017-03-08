@@ -63,7 +63,7 @@ class Entity
     const GROUP                 = 'group';
     const ADMIN                 = 'admin';
     const ADMIN_TOKEN           = 'admin_token';
-    const BANK_TRANSFER_ATTEMPT = 'bank_transfer_attempt';
+    const FUND_TRANSFER_ATTEMPT = 'fund_transfer_attempt';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const TRANSFER              = 'transfer';
     const REVERSAL              = 'reversal';
@@ -174,6 +174,7 @@ class Entity
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
     ];
 
     protected static $repository = [
@@ -251,6 +252,7 @@ class Entity
 
         if (class_exists($class) === false)
         {
+            s($class);
             if (isset(self::$repository[$entity]))
             {
                 $class = self::$repository[$entity] . '\\' . $repositoryType;
