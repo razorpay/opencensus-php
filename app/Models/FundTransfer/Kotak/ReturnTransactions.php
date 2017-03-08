@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use RZP\Exception;
 use Excel;
@@ -8,12 +8,11 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
 class ReturnTransactions
 {
-    use Kotak\FileHandlerTrait;
+    use FileHandlerTrait;
 
     protected static $fileToReadName = 'Kotak_Return_Transaction';
 

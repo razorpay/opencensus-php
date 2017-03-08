@@ -1,13 +1,12 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use App;
 use Carbon\Carbon;
 use Excel;
 use RZP\Exception;
 use RZP\Models\Merchant;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Transaction;
 use RZP\Trace\TraceCode;
 
@@ -66,7 +65,7 @@ class ReconciliationGenerator
 
     public static function getHeadings()
     {
-        return Kotak\NodalAccount::getHeadings();
+        return NodalAccount::getHeadings();
     }
 
     protected function addNewFields($data, $generateFailedReconciliations = false)

@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use RZP\Exception;
 use RZP\Trace;
@@ -9,7 +9,6 @@ use RZP\Models\Base;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
 class Reconciler

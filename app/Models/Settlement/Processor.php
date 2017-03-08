@@ -10,7 +10,7 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 use RZP\Models\Base\Traits\BatchSettlementTrait;
-use RZP\Models\Settlement\Kotak;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core

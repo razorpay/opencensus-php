@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 class Headings
 {

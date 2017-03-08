@@ -8,6 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Settlement\Batch\Entity as BatchSettlement;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\Traits\BatchSettlementTrait;

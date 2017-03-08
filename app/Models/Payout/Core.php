@@ -11,7 +11,7 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
 use RZP\Models\Base\Traits\BatchSettlementTrait;
 

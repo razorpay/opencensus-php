@@ -1,8 +1,7 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Base;
 
 class Service extends Base\Service
@@ -16,42 +15,42 @@ class Service extends Base\Service
         // @todo: Write tests for the newer format
         //
 
-        $collection = (new Kotak\Reconciler2)->process($input);
+        $collection = (new Reconciler2)->process($input);
 
         return $collection->toArray();
     }
 
     public function reconcileH2HSettlements($input)
     {
-        $data = (new Kotak\Reconciler3)->process($input);
+        $data = (new Reconciler3)->process($input);
 
         return $data;
     }
 
     public function generateSettlementReconciliation($input)
     {
-        $filename = (new Kotak\ReconciliationGenerator)->generateReconcileFile($input);
+        $filename = (new ReconciliationGenerator)->generateReconcileFile($input);
 
         return ['setlReconciliationFile' => $filename];
     }
 
     public function returnSettlements($input)
     {
-        $data = (new Kotak\ReturnTransactions)->process($input);
+        $data = (new ReturnTransactions)->process($input);
 
         return $data;
     }
 
     public function generateSettlementReturn($input)
     {
-        $filename = (new Kotak\ReturnTransactionsGenerator)->generate($input);
+        $filename = (new ReturnTransactionsGenerator)->generate($input);
 
         return ['setlReturnFile' => $filename];
     }
 
     public function generateSettlementFile($setlAttempts)
     {
-        $urls = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts, false);
+        $urls = (new NodalAccount)->generateSettlementFile($setlAttempts, false);
 
         return $urls;
     }

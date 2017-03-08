@@ -7,8 +7,8 @@ use RZP\Models\Base;
 use RZP\Models\Report\BasicEntityReport;
 use RZP\Constants\Entity as E;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Icici;
-use RZP\Models\Settlement\Kotak;
+use RZP\Models\FundTransfer\Icici;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
 use RZP\Exception;
 

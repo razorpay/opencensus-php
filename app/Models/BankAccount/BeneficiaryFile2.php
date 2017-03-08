@@ -4,7 +4,7 @@ namespace RZP\Models\BankAccount;
 
 use RZP\Exception;
 use RZP\Models\BankAccount;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class BeneficiaryFile2
 {
