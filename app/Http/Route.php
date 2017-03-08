@@ -338,8 +338,8 @@ final class Route
         'gateway_fetch_priorities'                => ['get',      'gateway/priorities',                             'GatewayController@getGatewayPriority'                              ],
         'gateway_update_priorities'               => ['patch',    'gateway/priorities/{method}/add',                'GatewayController@addOrUpdateGatewayPriority'                      ],
         'gateway_remove_priorities'               => ['patch',    'gateway/priorities/{method}/remove',             'GatewayController@removeGatewayPriority'                           ],
-        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postCreateGatewayAbsence'                        ],
-        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putUpdateGatewayAbsence'                         ],
+        'gateway_create_absence'                  => ['post',     'gateway/absence',                                'GatewayController@postGatewayAbsence'                              ],
+        'gateway_update_absence'                  => ['put',      'gateway/absence/{id}',                           'GatewayController@putGatewayAbsence'                               ],
         'gateway_delete_absence'                  => ['delete',   'gateway/absence/{id}',                           'GatewayController@deleteGatewayAbsence'                            ],
         'gateway_fetch_absence'                   => ['get',      'gateway/absence',                                'GatewayController@getAbsentGateways'                               ],
         'statuscake_gateway_webhook'              => ['post',     'statuscake/callback',                            'GatewayController@postStatusCakeCallback'                          ],
@@ -1225,7 +1225,7 @@ final class Route
 
         $url = $schema . $auth . $host;
 
-        if ((int)$port !== 80)
+        if ((int) $port !== 80)
         {
             $url .= ':' . $port;
         }
