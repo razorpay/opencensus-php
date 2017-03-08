@@ -158,12 +158,13 @@ class AnalyticsTest extends TestCase
     {
         $payment = $this->getDefaultPaymentArray();
 
+        $payment['ip']         = '52.34.123.23';
+        $payment['referer']    = 'https://pay.com/demo';
+        $payment['user_agent'] = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36';
+
         $payment['_'] = [
             'library'    => 'direct',
             'device'     => 'desktop',
-            'ip'         => '52.34.123.23',
-            'referer'    => 'https://pay.com/demo',
-            'user_agent' => 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/55.0.2883.87 Safari/537.36',
         ];
 
         $this->fixtures->merchant->addFeatures(['s2s']);
