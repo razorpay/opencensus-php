@@ -1776,6 +1776,9 @@ ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
 
+# The below query was executed on 8th Sept 2016. Refer https://github.com/razorpay/brahma/issues/433
+ALTER TABLE payment_analytics MODIFY referer text;
+
 ALTER TABLE payment_analytics
     ADD COLUMN browser_version VARCHAR(50) AFTER `browser`;
 
