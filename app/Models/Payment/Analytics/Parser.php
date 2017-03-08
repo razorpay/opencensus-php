@@ -162,7 +162,7 @@ class Parser extends Base\Core
 
         $pa->setIp($this->getIp($pa));
 
-        $pa->setReferer($this->getRefererUrl($pa));
+        $pa->setReferer($this->getRefererUrl());
 
         $ua = $ua ?: $this->request->header(RequestHeader::USER_AGENT);
 
@@ -224,14 +224,9 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getRefererUrl(Entity $pa)
+    protected function getRefererUrl()
     {
         $reqReferer = $this->request->header(RequestHeader::REFERER);
-
-        if ($this->ba->isPrivateAuth() === true)
-        {
-            $reqReferer = $pa->payment->getMetadata('referer', $reqReferer);
-        }
 
         if ($reqReferer === null)
         {

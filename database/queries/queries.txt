@@ -1667,6 +1667,28 @@ ALTER TABLE merchants
 ALTER TABLE merchants
     ADD COLUMN auto_capture_late_auth TINYINT(1) NOT NULL DEFAULT 0 AFTER brand_color;
 
+# Query for offers tabble modifications
+ALTER TABLE offers
+    ADD COLUMN merchant_id CHAR(14) AFTER id,
+    MODIFY COLUMN name VARCHAR(20) NULL,
+    ADD COLUMN iins TEXT DEFAULT NULL AFTER payment_method_type,
+    ADD COLUMN fail_payment tinyint DEFAULT 1 AFTER active,
+    MODIFY COLUMN processing_time INT NULL,
+    ADD COLUMN TYPE varchar(15) DEFAULT 'deferred' AFTER fail_payment,
+    ADD CONSTRAINT offers_merchant_id_foreign
+        FOREIGN KEY(merchant_id) REFERENCES merchants(id),
+    DROP INDEX offers_percent_rate_index,
+    DROP INDEX offers_min_amount_index,
+    DROP INDEX offers_max_cashback_index,
+    DROP INDEX offers_flat_cashback_index;
+
+SET FOREIGN_KEY_CHECKS=0;
+ALTER TABLE orders
+    ADD COLUMN offer_id char(14) DEFAULT NULL AFTER merchant_id,
+    ADD CONSTRAINT orders_offer_id_foreign
+        FOREIGN KEY(offer_id) REFERENCES offers(id);
+SET FOREIGN_KEY_CHECKS=1;
+
 # Adding remarks in settlements
 ALTER TABLE settlements
     ADD COLUMN remarks VARCHAR(255) DEFAULT NULL AFTER failure_reason;
@@ -1753,3 +1775,10 @@ ALTER TABLE transfers
 ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
+
+ALTER TABLE payment_analytics
+    MODIFY COLUMN referer VARCHAR(2083) NULL;
+
+ALTER TABLE terminals
+    ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
+    ADD INDEX terminals_network_category_index (network_category);
