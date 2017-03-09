@@ -45,7 +45,7 @@ return [
     ],
 
     'matchSettlementAttemptForReconSuccess' => [
-        'entity_type' => 'settlement',
+        'source_type' => 'settlement',
         'channel' => 'kotak',
         'version' => 'V2',
         'bank_status_code' => 'P',
@@ -55,7 +55,7 @@ return [
     ],
 
     'matchSettlementAttemptForReconFailure' => [
-        'entity_type' => 'settlement',
+        'source_type' => 'settlement',
         'channel' => 'kotak',
         'version' => 'V2',
         'bank_status_code' => 'P',

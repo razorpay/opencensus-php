@@ -7,8 +7,8 @@ use RZP\Models\BankAccount;
 
 class Entity extends Base\PublicEntity
 {
-    const ENTITY_TYPE           = 'entity_type';
-    const ENTITY_ID             = 'entity_id';
+    const SOURCE_TYPE           = 'source_type';
+    const SOURCE_ID             = 'source_id';
     const BANK_ACCOUNT_ID       = 'bank_account_id';
     const CHANNEL               = 'channel';
     const VERSION               = 'version';
@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
-        self::ENTITY_ID,
+        self::SOURCE_ID,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
@@ -34,8 +34,8 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::ENTITY_TYPE,
-        self::ENTITY_ID,
+        self::SOURCE_TYPE,
+        self::SOURCE_ID,
         self::BANK_ACCOUNT_ID,
         self::CHANNEL,
         self::VERSION,
@@ -53,15 +53,15 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
-        self::ENTITY_TYPE,
-        self::ENTITY_ID,
+        self::SOURCE_TYPE,
+        self::SOURCE_ID,
         self::STATUS,
         self::UTR,
     ];
 
     public function source()
     {
-        return $this->morphTo('source', self::ENTITY_TYPE, self::ENTITY_ID);
+        return $this->morphTo('source', self::SOURCE_TYPE, self::SOURCE_ID);
     }
 
     public function bankAccount()
@@ -104,9 +104,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::STATUS);
     }
 
-    public function getEntityType()
+    public function getSourceType()
     {
-        return $this->getAttribute(self::ENTITY_TYPE);
+        return $this->getAttribute(self::SOURCE_TYPE);
     }
 
     // ------------------------------- setters ---------------------------------
@@ -121,14 +121,14 @@ class Entity extends Base\PublicEntity
         $this->setAttribute(self::UTR, $utr);
     }
 
-    public function setEntityType($type)
+    public function setSourceType($type)
     {
-        $this->setAttribute(self::ENTITY_TYPE, $type);
+        $this->setAttribute(self::SOURCE_TYPE, $type);
     }
 
-    public function setEntityId($id)
+    public function setSourceId($id)
     {
-        $this->setAttribute(self::ENTITY_ID, $id);
+        $this->setAttribute(self::SOURCE_ID, $id);
     }
 
     public function setStatus($status)

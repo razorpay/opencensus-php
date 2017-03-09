@@ -24,9 +24,9 @@ class CreateFundTransferAttemptsTable extends Migration
             $table->char(FundTransferAttempt::ID, FundTransferAttempt::ID_LENGTH)
                   ->primary();
 
-            $table->string(FundTransferAttempt::ENTITY_TYPE, 20);
+            $table->string(FundTransferAttempt::SOURCE_TYPE, 20);
 
-            $table->string(FundTransferAttempt::ENTITY_ID, FundTransferAttempt::ID_LENGTH);
+            $table->string(FundTransferAttempt::SOURCE_ID, FundTransferAttempt::ID_LENGTH);
 
             $table->char(FundTransferAttempt::BANK_ACCOUNT_ID, BankAccount::ID_LENGTH)
                   ->nullable();
@@ -65,7 +65,7 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->index(FundTransferAttempt::STATUS);
 
-            $table->index([FundTransferAttempt::ENTITY_ID, FundTransferAttempt::ENTITY_TYPE]);
+            $table->index([FundTransferAttempt::SOURCE_ID, FundTransferAttempt::SOURCE_TYPE]);
 
             $table->index(FundTransferAttempt::CHANNEL);
 

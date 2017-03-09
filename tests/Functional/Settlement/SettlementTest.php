@@ -428,7 +428,7 @@ class SettlementTest extends TestCase
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
         $this->assertEquals($batchSettlement['id'], $bta['batch_transfer_id']);
-        $this->assertEquals(SettlementEntity::verifyIdAndStripSign($setl['id']), $bta['entity_id']);
+        $this->assertEquals(SettlementEntity::verifyIdAndStripSign($setl['id']), $bta['source_id']);
     }
 
     public function testSettlementIgnoredTxns()

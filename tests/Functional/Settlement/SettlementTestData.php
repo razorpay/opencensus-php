@@ -25,7 +25,7 @@ return [
     ],
 
     'matchSettlementAttempt' => [
-        'entity_type' => 'settlement',
+        'source_type' => 'settlement',
         'channel' => 'kotak',
         'version' => 'V2',
         'bank_status_code' => 'P',

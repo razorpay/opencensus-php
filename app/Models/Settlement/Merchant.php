@@ -322,7 +322,7 @@ class Merchant
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::ENTITY_ID       => $this->setl->getId(),
+            FundTransferAttempt\Entity::SOURCE_ID       => $this->setl->getId(),
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
