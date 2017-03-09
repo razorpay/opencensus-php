@@ -22,9 +22,9 @@ class Repository extends Base\Repository
         Entity::VERSION             => 'sometimes|string|in:v1,v2',
     ];
 
-    public function getFundTransferAttemptsByBatchSettlementIdWithRelations(
-        $batchSettlementId,
-        $relations = [])
+    public function getFundTransferAttemptsByBatchIdWithRelations(
+        string $batchSettlementId,
+        array $relations = [])
     {
         $query = $this->newQuery()
                       ->where(Entity::BATCH_TRANSFER_ID, '=', $batchSettlementId);

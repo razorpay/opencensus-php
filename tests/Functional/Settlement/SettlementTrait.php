@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\FundTransfer\Attempt;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 

@@ -153,7 +153,7 @@ class SettlementController extends Controller
 
     public function postComputeBatchSettlementServiceTax()
     {
-        $data = (new Settlement\Batch\Service)->computeBatchSettlementServiceTax();
+        $data = (new FundTransfer\Batch\Service)->computeBatchSettlementServiceTax();
 
         return ApiResponse::json($data);
     }

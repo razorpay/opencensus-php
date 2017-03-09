@@ -4,6 +4,7 @@ namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
 
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
 use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
@@ -114,10 +115,8 @@ class SettlementTest extends TestCase
 
     protected function createPaymentEntities(int $count = 5)
     {
-        $prEntities = array();
-
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 10;
 
         $payments = $this->fixtures->times($count)->create(
             'payment:captured',
@@ -480,7 +479,7 @@ class SettlementTest extends TestCase
 
     public function testSettlementFileGeneration()
     {
-        $this->testMerchantSettlement();
+        $this->testMerchantSettlementV2();
 
         $setl = $this->getLastEntity('settlement', true);
 
@@ -489,6 +488,55 @@ class SettlementTest extends TestCase
             'method' => 'POST',
             'content' => [
                 'batch_settlement_id' => $setl['batch_settlement_id']
+            ]
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($content, null);
+    }
+
+    public function testSettlementFileGenerationV1()
+    {
+        $this->ba->adminAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $this->ba->appAuth();
+
+        // Create payments for old date
+        $createdAt = 1481500800; // 12th Dec 2016
+        $capturedAt = $createdAt + 10;
+
+        $this->fixtures->times(2)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        // Generate settlements for above transactions
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        // Modify created_at of batch so that the old settlement file generation can kick in
+        $batch = $this->getLastEntity('batch_settlement', true);
+
+        $this->fixtures->edit('batch_settlement', $batch['id'], ['created_at' => $capturedAt + 50]);
+
+        // Generate settlement-file generation
+        $request = array(
+            'url' => '/settlements/file/generate',
+            'method' => 'POST',
+            'content' => [
+                'batch_settlement_id' => $batch['id']
             ]
         );
 

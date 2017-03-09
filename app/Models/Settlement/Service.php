@@ -35,18 +35,39 @@ class Service extends Base\Service
         return $data;
     }
 
+    /** Generates settlement file for a given batch_settlement_id
+      * Uses settlement entities / fund_transfer_attempt entities to generate
+      * file depending on the created_at timestamp of the batch.
+      * If the batch was created before the timestamp (i.e. before rolling out
+      * attempt base file generation) settlement entities are used.
+      * Else corresponding attempt entities are used.
+      */
     public function generateSettlementFile($input)
     {
         (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
-        $batchSettlementId = $input['batch_settlement_id'];
+        $batchId = $input['batch_settlement_id'];
 
-        // TODO: Send relations to avoid n+1 query
-        $setlAttmepts = $this->repo
-                      ->fund_transfer_attempt
-                      ->getFundTransferAttemptsByBatchSettlementIdWithRelations($batchSettlementId);
+        $batch = $this->repo->batch_settlement->findOrFailPublic($batchId);
 
-        $urls = (new Kotak\Service)->generateSettlementFile($setlAttmepts);
+        $versionV2RolloutTimestamp = 1488326400; // Date 1st March 2017
+
+        $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
+
+        if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
+        {
+            $entities = $this->repo->settlement->getSettlementsByBatchSettlementId($batchId);
+        }
+        else
+        {
+            $entities = $this->repo
+                             ->fund_transfer_attempt
+                             ->getFundTransferAttemptsByBatchIdWithRelations(
+                                $batchId,
+                                ['source', 'source.merchant', 'source.merchant.bankAccount']);
+        }
+
+        $urls = (new Kotak\Service)->generateSettlementFile($entities);
 
         return $urls;
     }

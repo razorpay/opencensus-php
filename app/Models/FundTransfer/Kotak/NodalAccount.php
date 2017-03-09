@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
 use RZP\Constants\MailTags;
@@ -36,21 +37,34 @@ class NodalAccount
         return Headings::getRequestFileHeadings();
     }
 
-    public function generateSettlementFile($setlAttempts, $h2h = true)
+    public function generateSettlementFile($entities, $h2h = true)
     {
-        $textData = [];
-        $excelData = [];
+        $textData = $excelData = [];
 
         $row = 2; // row number
 
         $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = $totalAttemptCount = 0;
+        $neftCount   = $iftCount   = $totalCount = 0;
 
-        foreach ($setlAttempts as $attempt)
+        foreach ($entities as $entity)
         {
-            $totalAttemptCount++;
+            $totalCount++;
+            $version = Attempt\Version::V1;
 
-            $settlement = $attempt->source;
+            if ($entity instanceof Attempt\Entity)
+            {
+                $version = Attempt\Version::V2;
+
+                $settlement = $entity->source;
+
+                $paymentRefNo = $entity->getPublicId();
+            }
+            else if ($entity instanceof Settlement\Entity)
+            {
+                $settlement = $entity;
+
+                $paymentRefNo = $settlement->getPublicId();
+            }
 
             $merchant = $settlement->merchant;
 
@@ -89,7 +103,7 @@ class NodalAccount
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
                 Headings::PRODUCT_CODE            => 'MERPAY',
                 Headings::PAYMENT_TYPE            => $type,
-                Headings::PAYMENT_REF_NO          => $attempt->getPublicId(),
+                Headings::PAYMENT_REF_NO          => $paymentRefNo,
                 Headings::PAYMENT_DATE            => $this->date,
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => $amount,
@@ -100,7 +114,7 @@ class NodalAccount
                 Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
                 Headings::PAYMENT_DETAILS_3       => $ba->getId(),
                 Headings::SOURCE_ID               => $settlement->getPublicId(),
-                Headings::VERSION                 => $attempt->getVersion(),
+                Headings::VERSION                 => $version,
             ];
 
             $array = $this->getAllFields($array);
@@ -119,7 +133,7 @@ class NodalAccount
         $amounts['neft'] = $neftAmount;
         $amounts['ift'] = $iftAmount;
 
-        $count['total'] = $totalAttemptCount;
+        $count['total'] = $totalCount;
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
 
