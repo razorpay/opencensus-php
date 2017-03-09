@@ -111,7 +111,7 @@ class GenericController extends Controller
         // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
 
         // Will be JSON string / array
-        $urlParams = Input::get('url_params');
+        $urlParams = Input::get('url_params') ?? [];
 
         if (! is_array($urlParams))
         {
