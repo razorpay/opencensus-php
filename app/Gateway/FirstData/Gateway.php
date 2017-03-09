@@ -66,6 +66,13 @@ class Gateway extends Base\Gateway
 
                 return $this->callback($input);
             }
+
+            // Caching original termUrl for 15 mins
+            $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
+
+            // Setting Razorpay callback as TermUrl to receive ACS response on
+            // Razorpay and send it to IPG via s2s call
+            $request['content']['TermUrl'] = $input['callbackUrl'];
         }
 
         return $request;
@@ -103,6 +110,14 @@ class Gateway extends Base\Gateway
     {
         parent::callback($input);
 
+        // Enabling optimized flow only for test merchant
+        // We'll enable it for all the merchants once we
+        // test this flow properly
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        {
+            $input['gateway'] = $this->getCallbackGatewayContent($input);
+        }
+
         $this->traceGatewayCallback($input['gateway']);
 
         $this->assertPaymentId($input['payment']['id'], $input['gateway'][ConnectResponseFields::ORDER_ID]);
@@ -122,6 +137,21 @@ class Gateway extends Base\Gateway
         $this->repo->saveOrFail($gatewayPayment);
 
         $this->checkApprovalCode($gatewayPayment);
+    }
+
+    protected function getCallbackGatewayContent(array $input)
+    {
+        $originalTermUrl =  $this->app['cache']->get($this->getCacheKey($input));
+
+        $request = [
+            'url' => $originalTermUrl,
+            'method' => 'post',
+            'content' => $input['gateway']
+        ];
+
+        $response = $this->makeRequestAndGetFormData($request);
+
+        return $response['content'];
     }
 
     public function capture(array $input)
