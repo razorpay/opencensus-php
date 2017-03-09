@@ -449,7 +449,7 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function putUpdateMerchantDetails(string $id)
+    public function postUpdateMerchantDetails(string $id)
     {
         $input = Input::all();
 

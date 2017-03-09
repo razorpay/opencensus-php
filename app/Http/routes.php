@@ -58,8 +58,8 @@ Route::group(['middleware' => ['web']], function () {
         // This returns all the needed information
         Route::get('/user', 'UserController@getUserDetails');
         Route::get('/user/details', 'UserController@getUserDetails');
-        Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
-        Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
+
+        Route::get('/activation/details/{accountId?}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 
         // Batch Refund Routes
         Route::group(['prefix' => '{mode}/batches'], function () {
@@ -125,12 +125,10 @@ Route::group(['middleware' => ['web']], function () {
         Route::delete('settings/invitations/{invite}/reject', 'InvitationsController@deleteRejectMerchantInvitation');
 
         Route::post('/password', 'UserController@postPassword');
-        Route::post('/activation', 'MerchantController@postActivation')->name('post_activation'); // ePOS
-        Route::post('/activation/{merchantId}', 'MerchantController@postActivation')->name('post_activation');
-        Route::post('/activation/save/step/{id}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step'); // ePOS
-        Route::post('/activation/save/step/{id}/{merchantId}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
-        Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file'); // ePOS
-        Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
+        Route::post('/activation/{accountId?}', 'MerchantController@postActivation')->name('post_activation'); // ePOS
+        Route::post('/activation/save/step/{id}/{accountId?}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step'); // ePOS
+        Route::post('/activation/save/file/{accountId?}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file'); // ePOS
+
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all'); // ePOS
         Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
@@ -215,7 +213,7 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
         Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
-        Route::post('/admin/merchant/{id}/details', 'AdminController@putUpdateMerchantDetails');
+        Route::post('/admin/merchant/{id}/details', 'AdminController@postUpdateMerchantDetails');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');
