@@ -60,7 +60,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/user/details', 'UserController@getUserDetails');
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
-        Route::get('/{mode}/payments', 'TransactionController@getPayments')->name('get_payments');
 
         // Order Routes
         Route::get('/{mode}/orders', 'TransactionController@getOrders')->name('get_orders');
@@ -79,10 +78,6 @@ Route::group(['middleware' => ['web']], function () {
 
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
-
-        Route::get('/{mode}/payments/{id}', 'TransactionController@getPayment')->name('payment_get_single');
-        Route::get('/{mode}/payments/{id}/card', 'TransactionController@getPaymentCardData')->name('card_get_single');
-        Route::get('/{mode}/payments/{id}/refunds', 'TransactionController@getPaymentRefunds')->name('payment_get_refunds');
 
         Route::get('/{mode}/refunds', 'TransactionController@getRefunds')->name('refunds_fetch_multiple');
         Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund')->name('refunds_fetch_single');
@@ -153,8 +148,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
         Route::post('/{mode}/keys', 'MerchantController@postKeys')->name('post_keys');
         Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
-        Route::post('/{mode}/payments/{id}/capture', 'TransactionController@postCapturePayment')->name('post_capture');
-        Route::post('/{mode}/payments/{id}/refund', 'TransactionController@postRefundPayment')->name('post_refund');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
         Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');

@@ -89,17 +89,6 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPayments($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'payment');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getOrders($mode)
     {
         $this->checkMode($mode);
@@ -120,38 +109,11 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getPayment($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'payment');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPaymentCardData($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchCardDetails($id, $mode);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function getOrder($mode, $id = null)
     {
         $this->checkMode($mode);
 
         list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'order');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getPaymentRefunds($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchPaymentRefunds($id, $mode);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -182,28 +144,6 @@ class TransactionController extends Controller
         }
 
         $file->download('xlsx');
-    }
-
-    public function postCapturePayment($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        $error = (new Api\Service)->capturePayment($id, $mode, $input);
-
-        return AppResponse::jsonResponse($error);
-    }
-
-    public function postRefundPayment($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        $error = (new Api\Service)->refundPayment($id, $input, $mode);
-
-        return AppResponse::jsonResponse($error);
     }
 
     public function getRefunds($mode)

@@ -64,22 +64,6 @@ class Service extends Base\Service
         return array($error, $collection);
     }
 
-    public function fetchCardDetails($paymentId, $mode)
-    {
-        $data = $error = [];
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment->fetch($paymentId)->card()->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error = $e->getMessage();
-        }
-
-        return [$error, $data];
-    }
-
     public function fetchCollection(array $input, $mode, $entity)
     {
         $method = 'fetchCollection' . $entity;
@@ -214,34 +198,6 @@ class Service extends Base\Service
         return [$error, $collection];
     }
 
-    public function fetchPaymentRefunds($id, $mode)
-    {
-        $data = array();
-
-        $error = (new Validator)->validateInput('fetch', array('id' => $id), '')->messages();
-
-        if (empty($error))
-        {
-            try
-            {
-                $this->setApiCredentials($this->merchantId, $mode);
-                $collection = $this->api->payment
-                                        ->fetch($id)
-                                        ->refunds()
-                                        ->all()
-                                        ->toArray();
-
-                $data = $collection['items'];
-            }
-            catch(\Razorpay\Api\Errors\BadRequestError $e)
-            {
-                $error[] = $e->getMessage();
-            }
-        }
-
-        return array($error, $data);
-    }
-
     public function fetchOrderPayments($id, $mode)
     {
         $data = $error = [];
@@ -327,32 +283,6 @@ class Service extends Base\Service
         });
 
         return $file;
-    }
-
-    public function refundPayment($id, $input, $mode)
-    {
-        $error = array();
-
-        try
-        {
-            $this->setApiCredentials($this->merchantId, $mode);
-            $data = $this->api->payment
-                              ->fetch($id)
-                              ->refund($input)
-                              ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-            return $error;
-        }
-
-        if ($data['entity'] !== "refund" or $data['amount'] !== (int) $input['amount'])
-        {
-            $error[] = "Refund Failed";
-        }
-
-        return $error;
     }
 
     /**
