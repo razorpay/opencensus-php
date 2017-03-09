@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Generic Entities Listing Controller [Currently handling Payments]
+ * Generic Entities Listing Controller [Currently handling Payments, Orders, Refunds, Settlements]
  */
 app.controller('GenericEntityListCtrl', [
   '$scope',
@@ -62,6 +62,21 @@ app.controller('GenericEntityListCtrl', [
       generateTable();
     };
 
+    $scope.showSettlementBreakup = function (settlement_id) {
+      $modal.open({
+        templateUrl: 'settlementBreakupModalContent.html',
+        controller: 'settlementBreakupModalCtrl',
+        resolve: {
+          settlement_id: function () {
+            return settlement_id;
+          },
+          mode: function () {
+            return $scope.mode;
+          }
+        }
+      });
+    };
+
     function clear(field) {
       if (field === 'id') {
         $scope.entity.id = '';
@@ -110,21 +125,39 @@ app.controller('GenericEntityListCtrl', [
       params.query_params = q;
       params.mode = $scope.mode;
 
-      if ($scope.entity.type === 'payment') {
-        if ($scope.entity.id === '') {
-          params.route_name = 'payment_fetch_multiple';
-        } else {
-          params.route_name = 'payment_fetch_by_id';
-        }
-      }
-
       if ($scope.entity.id === '') {
+        if ($scope.entity.type === 'payment') {
+          params.route_name = 'payment_fetch_multiple';
+        }
+        else if ($scope.entity.type === 'refund') {
+          params.route_name = 'refund_fetch_multiple';
+        }
+        else if ($scope.entity.type === 'order') {
+          params.route_name = 'order_fetch';
+        }
+        else if ($scope.entity.type === 'settlement') {
+          params.route_name = 'setl_fetch_multiple';
+        }
+
         request = $http.get('/generic', {
           params: params
         });
       }
       else {
-        var url = location.origin + '/#/app/payments/' + $scope.entity.id;
+        var url = '';
+        if ($scope.entity.type === 'payment') {
+          var url = location.origin + '/#/app/payments/' + $scope.entity.id;
+        }
+        else if ($scope.entity.type === 'refund') {
+          var url = location.origin + '/#/app/refunds/' + $scope.entity.id;
+        }
+        else if ($scope.entity.type === 'order') {
+          var url = location.origin + '/#/app/orders/' + $scope.entity.id;
+        }
+        else if ($scope.entity.type === 'settlement') {
+          var url = location.origin + '/#/app/settlements/' + $scope.entity.id;
+        }
+
         window.open(url, '_blank');
 
         return;
@@ -156,5 +189,38 @@ app.controller('GenericEntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+  }
+])
+.controller('settlementBreakupModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'settlement_id',
+  'mode',
+  function($scope, $modalInstance, $http, settlement_id, mode) {
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.settlement_id = settlement_id;
+
+    var params = {};
+    params.route_name = 'setl_get_details';
+    params.mode = mode;
+    params.url_params = {
+      '{id}': $scope.settlement_id
+    };
+
+    var request = $http.get('/generic', {
+      params: params
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.breakupDetails = data.data.items;
+      }
+    }).error(function () {
+      $scope.alerts.addAlert('danger', null, true);
+    });
   }
 ]);
