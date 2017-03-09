@@ -458,6 +458,15 @@ class AdminController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
+    public function postSaveActivationFile(string $merchantId)
+    {
+        $input = Input::all();
+
+        list($error, $data) = (new Admin\Service)->saveActivationFile($merchantId, $input);
+
+        return AppResponse::jsonResponse($error, $data);
+    }
+
     public function putEditMerchantEmail($id)
     {
         $input = Input::all();

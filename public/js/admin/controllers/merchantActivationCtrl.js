@@ -64,7 +64,7 @@ app.controller('MerchantActivationCtrl', [
           return '/admin/merchant/' + $scope.merchant.id + '/details';
 
         case 'upload_file':
-          return '/activation/save/file';
+          return '/admin/merchant/' + $scope.merchant.id + '/files';
 
         case 'submit_form':
           return '/activation';

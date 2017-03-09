@@ -210,10 +210,12 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/admin/emi', 'AdminController@postAddEMIPlan');
 
         // Admin merchant actions
+        // TODO: Make lock/unlock use POST instead
         Route::get('/admin/merchant/{id}/lock', 'AdminController@getLockMerchantDetails');
         Route::get('/admin/merchant/{id}/unlock', 'AdminController@getUnlockMerchantDetails');
         Route::post('/admin/merchant/{id}/edit', 'AdminController@postEditMerchant');
         Route::post('/admin/merchant/{id}/details', 'AdminController@postUpdateMerchantDetails');
+        Route::post('/admin/merchant/{id}/files', 'AdminController@postSaveActivationFile');
         Route::post('/admin/merchant/{id}/tags', 'AdminController@postTagMerchant');
         Route::post('/admin/merchant/{id}/comment/edit', 'AdminController@postEditMerchantComment');
         Route::post('/admin/merchant/{id}/banks', 'AdminController@postMerchantBanks');

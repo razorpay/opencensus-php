@@ -328,11 +328,7 @@ class Service extends Base\Service
         {
             $data = Entity::getFileUploadData($input);
 
-            $params = [
-                $data['field'] => $data['file']
-            ];
-
-            $this->uploadFileToAPI($params);
+            $this->uploadFileToAPI($data);
         }
 
         return $error;
@@ -461,6 +457,8 @@ class Service extends Base\Service
         return [$error, $merchantDetails];
     }
 
+    // TODO: Move this from MerchantDetails/Core
+    // @see https://razorpay.slack.com/archives/tech_dashboard/p1489045480941705
     public function updateMerchantByAdminOnAPI(array $input, $merchantId)
     {
         $input = $this->unsetExtraValues($input);

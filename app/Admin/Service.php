@@ -664,9 +664,40 @@ class Service extends Base\Service
         return array($error, $data);
     }
 
+    /**
+     * Posts to the API and updates the merchant details
+     */
     public function updateMerchantDetails(string $id, array $input)
     {
         return (new MerchantDetails\Service)->updateMerchantByAdminOnAPI($input, $id);
+    }
+
+    /**
+     * Admin uploaded activation form file
+     * @param  array $input Input array
+     * @return array
+     */
+    public function saveActivationFile(string $merchantId, array $input)
+    {
+        $error = MerchantDetails\Validator::checkFileUpload($input);
+
+        if (empty($error) === true)
+        {
+            $data = MerchantDetails\Entity::getFileUploadData($input);
+
+            return [null, $this->uploadFileToAPI($merchantId, $data)];
+        }
+
+        return [$error, null];
+    }
+
+    protected function uploadFileToAPI(string $merchantId, array $data)
+    {
+        $this->setApiCredentials($merchantId);
+
+        return $this->api
+                    ->merchantDetail
+                    ->uploadActivationFile($merchantId, $data);
     }
 
     /**
