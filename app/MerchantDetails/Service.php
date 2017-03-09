@@ -174,9 +174,9 @@ class Service extends Base\Service
             }
         }
 
-        $merchantDetails['submitted'] = (int) $merchantDetails['submitted'] ?? 0;
+        $merchantDetails['submitted'] = (int) ($merchantDetails['submitted'] ?? 0);
 
-        $merchantDetails['locked'] = (int) $merchantDetails['locked'] ?? 0;
+        $merchantDetails['locked'] = (int) ($merchantDetails['locked'] ?? 0);
 
         $merchantDetails['files'] = $this->getFileDetails($merchantDetails);
 
