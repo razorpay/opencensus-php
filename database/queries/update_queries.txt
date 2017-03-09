@@ -93,6 +93,7 @@ DELETE FROM fees_breakup WHERE id in ('6eiYxS2iRdjiiX', '6eiYxSHKXXuhSw', '6eiYx
 DELETE FROM transactions WHERE id = '59TRvHDeSgNyiX';
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 UPDATE billdesk SET RefundId = 'IICI51854029631' WHERE id = 1075644;
 UPDATE billdesk SET RefundId = 'IYBK51905388691' WHERE id = 1087859;
 UPDATE billdesk SET RefundId = 'IICI51813818221' WHERE id = 1083918;
@@ -180,7 +181,7 @@ AND s1.remarks IS NULL;
 
 UPDATE billdesk SET RefundId = 'HUBI51422263431' WHERE id = 1177651;
 
-# query to correct date format stored in wallett entity for some jiomoney payments
+# query to correct date format stored in wallet entity for some jiomoney payments
 UPDATE wallet
 SET date = (CASE id WHEN 395660 THEN "20170213210920"
                     WHEN 397342 THEN "20170214023856"
