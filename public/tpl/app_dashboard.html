@@ -158,7 +158,7 @@
       <!-- tasks -->
       <div class="panel wrapper">
         <div class="row">
-          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="EntityListCtrl" ng-init="generate('payment')">
+          <div class="col-md-4 b-r b-light no-border-xs" ng-controller="GenericEntityListCtrl" ng-init="generate('payment')">
             <a ui-sref="app.payments.list" tooltip="See All Payments" class="text-muted pull-right text-lg"><i class="icon-arrow-right"></i></a>
             <h4 class="font-thin m-t-none m-b-md text-muted">Recent Payments</h4>
               <div class="m-b m-l row" ng-repeat="row in entity.items | limitTo: 5" ng-controller="PaymentListCtrl">

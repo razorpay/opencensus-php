@@ -1,3 +1,4 @@
+"use strict";
 /**
  * Generic Entities Listing Controller [Currently handling Payments]
  */
@@ -8,8 +9,7 @@ app.controller('GenericEntityListCtrl', [
   '$state',
   'statusClass',
   '$modal',
-  'user',
-  function ($scope, $http, alertsFactory, $state, getStatusClass, $modal, user) {
+  function ($scope, $http, alertsFactory, $state, getStatusClass, $modal) {
     // Intialise alerts and scope functions
     $scope.getStatusClass = getStatusClass;
     $scope.alerts = alertsFactory.getHandler();
