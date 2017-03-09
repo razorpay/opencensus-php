@@ -85,7 +85,6 @@ class Server extends Base\Mock\Server
 
     protected function authorize($input)
     {
-        s('authorize');
         $this->validateAuthorizeInput($input);
 
         $response = [];

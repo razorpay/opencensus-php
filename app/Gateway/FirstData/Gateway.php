@@ -47,33 +47,26 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // Enabling optimized flow only for test merchant
-        // We'll enable it for all the merchants once we
-        // test this flow properly
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        // Ideally, we could have returned the request array from
+        // here only.
+        //
+        // However, we prevent one network call on client side by
+        // doing it on the server side here.
+        $request = $this->makeRequestAndGetFormData($request);
+
+        if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
         {
-            // Ideally, we could have returned the request array from
-            // here only.
-            //
-            // However, we prevent one network call on client side by
-            // doing it on the server side here.
+            $input['gateway'] = $request['content'];
 
-            $request = $this->makeRequestAndGetFormData($request);
-
-            if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
-            {
-                $input['gateway'] = $request['content'];
-
-                return $this->callback($input);
-            }
-
-            // Caching original termUrl for 15 mins
-            $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
-
-            // Setting Razorpay callback as TermUrl to receive ACS response on
-            // Razorpay and send it to IPG via s2s call
-            $request['content']['TermUrl'] = $input['callbackUrl'];
+            return $this->callback($input);
         }
+
+        // Caching original termUrl for 15 mins
+        $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
+
+        // Setting Razorpay callback as TermUrl to receive ACS response on
+        // Razorpay and send it to IPG via s2s call
+        $request['content']['TermUrl'] = $input['callbackUrl'];
 
         return $request;
     }
@@ -113,7 +106,7 @@ class Gateway extends Base\Gateway
         // Enabling optimized flow only for test merchant
         // We'll enable it for all the merchants once we
         // test this flow properly
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        if (isset($input['gateway']['PaRes']) === true)
         {
             $input['gateway'] = $this->getCallbackGatewayContent($input);
         }
@@ -252,7 +245,7 @@ class Gateway extends Base\Gateway
     // In these cases, we mock the code and handle it appropriately.
     protected function mockApprovalCodeIfNeeded(& $gatewayCallback)
     {
-        if (isset($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === true)
+        if (empty($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === false)
         {
             $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
 
