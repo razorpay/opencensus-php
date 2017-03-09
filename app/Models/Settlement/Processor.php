@@ -54,7 +54,7 @@ class Processor extends Base\Core
             self::MUTEX_RETRY_RESOURCE,
             function () use ($input, $channel)
             {
-                return $this->retryProcessFailedSettlements($input, $channel);
+                return $this->retryProcessFailedSettlements($input);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -75,7 +75,7 @@ class Processor extends Base\Core
 
         $data = $this->mutex->acquireAndRelease(
             self::MUTEX_RESOURCE,
-            function () use ($input, $channel, $schedule)
+            function () use ($input, $schedule)
             {
                 return $this->processSettlements($input, $schedule);
             },
@@ -89,7 +89,7 @@ class Processor extends Base\Core
     {
         try
         {
-            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($this->channel, $schedule);
+            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($schedule);
 
             $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
 
@@ -103,7 +103,7 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function retryProcessFailedSettlements(array $input, string $channel): array
+    protected function retryProcessFailedSettlements(array $input): array
     {
         try
         {
@@ -123,7 +123,7 @@ class Processor extends Base\Core
 
                 $setlTxnsCount = $setlTxns->count();
 
-                $merchantSettler = new Merchant($setl->merchant, $channel, $this->repo);
+                $merchantSettler = new Merchant($setl->merchant, $this->channel, $this->repo);
 
                 list($setl, $bankTransferAtpt) = $this->repo->transaction(
                     function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
@@ -178,14 +178,14 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function createSettlements($channel, $schedule): array
+    protected function createSettlements($schedule): array
     {
         if ($schedule === false)
         {
             $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
 
             list($settlements, $settledTxnsCount, $setlAttempts) =
-                $this->processUnsettledTransactions($txns, $channel);
+                $this->processUnsettledTransactions($txns);
         }
         else
         {
@@ -194,7 +194,7 @@ class Processor extends Base\Core
             $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
 
             list($settlements, $settledTxnsCount, $setlAttempts) =
-                $this->processUnsettledTransactions($txns, $channel);
+                $this->processUnsettledTransactions($txns);
 
             $schedules->callOnEveryItem('updateNextRun');
 
@@ -206,12 +206,12 @@ class Processor extends Base\Core
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function processUnsettledTransactions($txns, $channel): array
+    protected function processUnsettledTransactions($txns): array
     {
-        $txns = $this->filterTransactionsForSettlement($txns, $channel);
+        $txns = $this->filterTransactionsForSettlement($txns, $this->channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
-            $this->createSettlementsFromTxns($txns, $channel);
+            $this->createSettlementsFromTxns($txns, $this->channel);
 
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
