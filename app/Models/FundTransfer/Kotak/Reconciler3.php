@@ -184,8 +184,14 @@ class Reconciler3
 
     protected function processEntityStatusV1($entity, $row)
     {
-        list($utr, $statusCode, $remarks, $recordDate, $failureReason, $status) =
-            $this->parseDataFromRow($entity, $row);
+        $parsedData = $this->parseDataFromRow($entity, $row);
+
+        $utr = $parsedData['utr'] ?? null;
+        $statusCode = $parsedData['status_code'] ?? null;
+        $remarks = $parsedData['remarks'] ?? null;
+        $recordDate = $parsedData['record_date'] ?? null;
+        $failureReason = $parsedData['failure_reason'] ?? null;
+        $status = $parsedData['status'] ?? null;
 
         // if already processed
         if ($entity->isPendingReconciliation() === false)
@@ -216,8 +222,14 @@ class Reconciler3
 
     protected function processEntityStatusV2($entity, $row)
     {
-        list($utr, $statusCode, $remarks, $recordDate, $failureReason, $status) =
-            $this->parseDataFromRow($entity, $row);
+        $parsedData = $this->parseDataFromRow($entity, $row);
+
+        $utr = $parsedData['utr'] ?? null;
+        $statusCode = $parsedData['status_code'] ?? null;
+        $remarks = $parsedData['remarks'] ?? null;
+        $recordDate = $parsedData['record_date'] ?? null;
+        $failureReason = $parsedData['failure_reason'] ?? null;
+        $status = $parsedData['status'] ?? null;
 
         // if already processed
         if ($entity->isPendingReconciliation() === false)
@@ -305,7 +317,14 @@ class Reconciler3
             }
         }
 
-        return [$utr, $statusCode, $remarks, $recordDate, $failureReason, $status];
+        return [
+            'utr' => $utr,
+            'status_code' => $statusCode,
+            'remarks' => $remarks,
+            'record_date' => $recordDate,
+            'failure_reason' => $failureReason,
+            'status' => $status
+        ];
     }
 
     protected function loadEntityAndRelationsV1($row)
