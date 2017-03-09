@@ -11,12 +11,12 @@ use RZP\Models\Base;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
 use RZP\Trace\TraceCode;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Settler
 {
     use SettlementTrait;
-    use BatchSettlementTrait;
+    use BatchFundTransferTrait;
 
     protected $settlements;
 

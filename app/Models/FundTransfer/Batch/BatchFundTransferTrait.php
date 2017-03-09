@@ -1,11 +1,10 @@
 <?php
 
-namespace RZP\Models\Base\Traits;
+namespace RZP\Models\FundTransfer\Batch;
 
 use RZP\Exception;
-use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
 
-trait BatchSettlementTrait
+trait BatchFundTransferTrait
 {
     protected $batchSettlement = null;
 
@@ -44,22 +43,22 @@ trait BatchSettlementTrait
         $this->repo->saveOrFail($this->batchSettlement);
     }
 
-    protected function createBatchSettlementEntity($entity, $txnsCount) : BatchSettlement
+    protected function createBatchSettlementEntity($entity, $txnsCount) : Entity
     {
-        $batchSettlement = new BatchSettlement;
+        $batchSettlement = new Entity;
 
         $input = [
-            BatchSettlement::TYPE              => $entity->getEntity(),
-            BatchSettlement::CHANNEL           => $entity->getChannel(),
-            BatchSettlement::AMOUNT            => $entity->getAmount(),
-            BatchSettlement::FEES              => $entity->getFees(),
-            BatchSettlement::SERVICE_TAX       => $entity->getServiceTax(),
-            BatchSettlement::TOTAL_COUNT       => 1,
-            BatchSettlement::TRANSACTION_COUNT => $txnsCount,
-            BatchSettlement::INITIATED_AT      => time(),
-            BatchSettlement::API_FEE           => 0,
-            BatchSettlement::GATEWAY_FEE       => 0,
-            BatchSettlement::URLS              => null,
+            Entity::TYPE              => $entity->getEntity(),
+            Entity::CHANNEL           => $entity->getChannel(),
+            Entity::AMOUNT            => $entity->getAmount(),
+            Entity::FEES              => $entity->getFees(),
+            Entity::SERVICE_TAX       => $entity->getServiceTax(),
+            Entity::TOTAL_COUNT       => 1,
+            Entity::TRANSACTION_COUNT => $txnsCount,
+            Entity::INITIATED_AT      => time(),
+            Entity::API_FEE           => 0,
+            Entity::GATEWAY_FEE       => 0,
+            Entity::URLS              => null,
         ];
 
         $batchSettlement->build($input);

@@ -9,14 +9,14 @@ use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Trace\TraceCode;
 
 class Processor extends Base\Core
 {
     use SettlementTrait;
-    use BatchSettlementTrait;
+    use BatchFundTransferTrait;
 
     protected $setlTime;
 

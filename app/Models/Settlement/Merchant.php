@@ -14,11 +14,11 @@ use RZP\Models\Transaction;
 use RZP\Models\Settlement;
 use RZP\Models\Settlement\Details as SetlDetails;
 use RZP\Models\Settlement\Details\Component as SetlComponent;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Merchant
 {
-    use BatchSettlementTrait;
+    use BatchFundTransferTrait;
 
     protected $merchant;
     protected $amount;

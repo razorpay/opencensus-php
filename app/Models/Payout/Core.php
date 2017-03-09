@@ -13,11 +13,11 @@ use RZP\Models\Payment;
 use RZP\Models\Settlement;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Core extends Base\Core
 {
-    use BatchSettlementTrait;
+    use BatchFundTransferTrait;
 
     const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
 
