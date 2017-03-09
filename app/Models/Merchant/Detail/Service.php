@@ -264,6 +264,8 @@ class Service extends Base\Service
             $response['can_submit'] = true;
         }
 
+        $response['activated'] = $merchantDetails->merchant->isActivated();
+
         return $response;
     }
 }
