@@ -49,9 +49,8 @@ class Gateway extends Base\Gateway
 
         // Ideally, we could have returned the request array from
         // here only.
-        //
-        // However, we prevent one network call on client side by
-        // doing it on the server side here.
+        // However, we prevent three network calls on client side
+        // by doing it on the server side here.
         $request = $this->makeRequestAndGetFormData($request);
 
         if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
