@@ -3,7 +3,6 @@
 namespace RZP\Models\Terminal\Sorters;
 
 use RZP\Models\Payment\Gateway;
-use RZP\Models\Payment\Method;
 use RZP\Models\Terminal;
 use RZP\Trace\TraceCode;
 
@@ -21,7 +20,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '1000AxisMigsTl' => [
             'gateway'    => Gateway::AXIS_MIGS,
-            'load'       => 25,
+            'load'       => 45,
         ],
 
         '5yKTyCuDne8eiz' => [
@@ -31,14 +30,14 @@ class TerminalLoadSorter extends Terminal\Sorter
 
         '6qJd4PFKxZwFbL' => [
             'gateway'    => Gateway::CYBERSOURCE,
-            'load'       => 5,
+            'load'       => 1,
         ],
 
         // Test terminals, won't be used on prod.
         //
         // Because of the way applicableRules are computed, the terminals
         // in this list are assigned chance ranges in ascending order,
-        // i.e. here 1000FrstDataTl will be selected for chance = 86=>90,
+        // i.e. here 1000FrstDataTl will be selected for chance = 86->90,
         // while 1000CybrsTrmnl will be selected for chance = 91->100.
 
         '1000FrstDataTl' => [
@@ -48,7 +47,7 @@ class TerminalLoadSorter extends Terminal\Sorter
         '1000CybrsTrmnl' => [
             'gateway'    => Gateway::CYBERSOURCE,
             'load'       => 10,
-        ]
+        ],
     ];
 
     public function getRules()
@@ -116,7 +115,7 @@ class TerminalLoadSorter extends Terminal\Sorter
 
             // Checking >100-p, rather than simply <p
             // because in test cases we're always setting
-            // p to zero, to avoid unexpected bheaviour.
+            // p to zero, to avoid unexpected behaviour.
             if ($chancePercent > (100 - $cumulativeProbabity))
             {
                 return $terminalId;

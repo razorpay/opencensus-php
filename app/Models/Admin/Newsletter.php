@@ -8,6 +8,7 @@ use Config;
 use Mail;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 use TijsVerkoyen\CssToInlineStyles\CssToInlineStyles;
 
 /**
@@ -246,7 +247,7 @@ class Newsletter
         sleep(self::WAIT_BEFORE_RETRY);
 
         $iterations = 0;
-        
+
         do{
             $iterations = $iterations + 1;
 
@@ -325,6 +326,10 @@ class Newsletter
             $message->from($from, $config['from_name']);
 
             $message->subject('Razorpay | '.$this->data['subject']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::HOLIDAY_NOTIFICATION);
         });
 
         return [

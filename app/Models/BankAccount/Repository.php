@@ -90,6 +90,15 @@ class Repository extends Base\Repository
                     ->get();
     }
 
+    public function fetchBankAccountsWithoutBeneCode()
+    {
+        return $this->newQuery()
+                    ->where(BankAccount\Entity::TYPE, '=', BankAccount\Type::MERCHANT)
+                    ->whereNull(BankAccount\Entity::BENEFICIARY_CODE)
+                    ->take(1000)
+                    ->get();
+    }
+
     public function getAllActivatedMerchantAccountsOrderedByCreatedAt()
     {
         return $this->newQuery()

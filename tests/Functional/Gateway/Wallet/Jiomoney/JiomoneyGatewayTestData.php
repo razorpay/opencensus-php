@@ -37,14 +37,14 @@ return [
         'response'  => [
             'content'     => [
                 'error' => [
-                    'code'        => PublicErrorCode::GATEWAY_ERROR,
+                    'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
                 ],
             ],
-            'status_code' => 502,
+            'status_code' => 400,
         ],
         'exception' => [
             'class'               => RZP\Exception\GatewayErrorException::class,
-            'internal_error_code' => ErrorCode::GATEWAY_ERROR_FATAL_ERROR
+            'internal_error_code' => ErrorCode::BAD_REQUEST_PAYMENT_FAILED
         ],
     ],
 
@@ -53,7 +53,7 @@ return [
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
         'amount'               => 50000,
-        'contact'              => '+919918899029',
+        'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '000',
         'response_code'        => 'SUCCESS',
@@ -114,7 +114,7 @@ return [
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
         'amount'               => 50000,
-        'contact'              => '+919918899029',
+        'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '500',
         'response_code'        => 'FAILED',
@@ -127,7 +127,7 @@ return [
         'wallet'               => 'jiomoney',
         'email'                => 'a@b.com',
         'amount'               => 25000,
-        'contact'              => '+919918899029',
+        'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '000',
         'response_code'        => 'SUCCESS',
@@ -141,7 +141,7 @@ return [
         'wallet'               => 'jiomoney',
         'received'             => true,
         'email'                => 'a@b.com',
-        'contact'              => '+919918899029',
+        'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '000',
         'response_code'        => 'SUCCESS',
@@ -155,7 +155,7 @@ return [
         'wallet'               => 'jiomoney',
         'received'             => false,
         'email'                => 'a@b.com',
-        'contact'              => '+919918899029',
+        'contact'              => '9918899029',
         'gateway_merchant_id'  => 'random_id',
         'status_code'          => '500',
         'response_code'        => 'FAILED',

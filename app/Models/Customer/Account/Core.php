@@ -73,15 +73,39 @@ class Core extends Base\Core
             // Hence, it's required that the customer is saved.
             $this->repo->saveOrFail($customer);
 
-            if (empty($input[Entity::SHIPPING_ADDRESS]) === false)
-            {
-                $input[Entity::SHIPPING_ADDRESS][Address\Entity::TYPE] = Address\Type::SHIPPING_ADDRESS;
+            $this->createCustomerAddressesIfValuesSetInInput($customer, $input);
 
-                (new Address\Core)->create($customer, Address\Type::CUSTOMER, $input[Entity::SHIPPING_ADDRESS]);
-            }
         });
 
         return $customer;
+    }
+
+    /**
+     * Creates customer addresses if address input keys has been sent as part of
+     * create customer request.
+     *
+     * @param Entity $customer
+     * @param array  $input
+     *
+     * @return null
+     */
+    protected function createCustomerAddressesIfValuesSetInInput(Entity $customer, array $input)
+    {
+        $addressCore = new Address\Core;
+
+        $addressKeys = Address\Type::getValidTypes(Address\Type::CUSTOMER);
+
+        foreach ($addressKeys as $addressKey)
+        {
+            if (empty($input[$addressKey]) === true)
+            {
+                continue;
+            }
+
+            $input[$addressKey][Address\Entity::TYPE] = $addressKey;
+
+            $addressCore->create($customer, Address\Type::CUSTOMER, $input[$addressKey]);
+        }
     }
 
     public function edit($customer, $input)
@@ -144,6 +168,42 @@ class Core extends Base\Core
         }
 
         return $response;
+    }
+
+    /**
+     * Used for the Open Wallet demo app - for customer authentication and creation
+     * via OTP
+     *
+     * App sends a request to `/otp/create` to generate an OTP.
+     * The OTP and customer contact are sent to `/otp/verify/app` which
+     * fetches or creates, and returns a local customer
+     *
+     * @param array           $input
+     * @param Merchant\Entity $merchant
+     *
+     * @return Entity
+     */
+    public function verifyOtpApp(array $input, Merchant\Entity $merchant)
+    {
+        Customer\Validator::validateWalletAppCustomerCreateInput($input);
+
+        $input[Entity::CONTACT] = Customer\Validator::validateAndParseContact($input[Entity::CONTACT]);
+
+        (new Customer\Validator)->validateIndianContact($input[Entity::CONTACT]);
+
+        // Verify the otp with raven service
+        $this->verifyRavenOtp($input, $merchant);
+
+        unset($input['otp']);
+
+        $customer = $this->repo->customer->findByContactAndMerchant($input[Entity::CONTACT], $this->merchant);
+
+        if ($customer === null)
+        {
+            $customer = $this->createLocalCustomer($input, $this->merchant);
+        }
+
+        return $customer;
     }
 
     protected function createCustomerAppToken($customer, $input, $merchant)

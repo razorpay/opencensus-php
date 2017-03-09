@@ -6,9 +6,9 @@ use RZP\Base\Repository as BaseRepository;
 
 class Repository extends BaseRepository
 {
-    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip)
+    public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
-        return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip);
+        return $this->fetchBetweenTimestampWithRelations($merchantId, $from, $to, $count, $skip, $relations);
     }
 
     /**

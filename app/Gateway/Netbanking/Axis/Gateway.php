@@ -4,9 +4,9 @@ namespace RZP\Gateway\Netbanking\Axis;
 
 use RZP\Exception;
 use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
-use phpseclib\Crypt\AES;
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Netbanking\Base;
@@ -93,34 +93,31 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['gateway_response' => $response->body]);
+
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
     public function verifyPayment(Verify $verify)
     {
-        // Response XML
-        $content = $verify->verifyResponseContent;
+        $this->setVerifyStatus($verify);
 
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $content);
-
-        $this->getVerifyStatus($verify, $content);
-
-        $this->saveVerifyResponseIfNeeded($verify, $content);
+        $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
     }
 
-    protected function getVerifyStatus(Verify $verify, array $response)
+    protected function setVerifyStatus(Verify $verify)
     {
         $this->checkApiSuccess($verify);
 
-        $this->checkGatewaySuccess($verify, $response);
+        $this->checkGatewaySuccess($verify);
 
         $status = VerifyResult::STATUS_MATCH;
 
         if ($verify->apiSuccess !== $verify->gatewaySuccess)
         {
-            $status = VerifyResult::STATUS_MISMATCH;
+            $status = $this->returnVerifyStatusOrThrowException($verify);
         }
 
         $verify->status = $status;
@@ -134,15 +131,17 @@ class Gateway extends Base\Gateway
 
         $input = $verify->input;
 
-        if ($input['payment']['status'] === 'failed' or
-            $input['payment']['status'] === 'created')
+        if (($input['payment']['status'] === Payment\Status::FAILED) or
+            ($input['payment']['status'] === Payment\Status::CREATED))
         {
             $verify->apiSuccess = false;
         }
     }
 
-    protected function checkGatewaySuccess(Verify $verify, array $response)
+    protected function checkGatewaySuccess(Verify $verify)
     {
+        $response = $verify->verifyResponseContent;
+
         $verify->gatewaySuccess = false;
 
         if ((isset($response[ResponseFields::PAYMENT_STATUS]) === true) and
@@ -152,20 +151,34 @@ class Gateway extends Base\Gateway
         }
     }
 
+    protected function returnVerifyStatusOrThrowException(Verify $verify)
+    {
+        //
+        // In this case, there's a bug in the code
+        // The payment was incorrectly marked as authorized.
+        //
+        if (($verify->apiSuccess === true) and
+            ($verify->gatewaySuccess === false))
+        {
+            throw new Exception\GatewayErrorException(
+                ErrorCode::GATEWAY_ERROR_FALSE_AUTHORIZE);
+        }
+
+        return VerifyResult::STATUS_MISMATCH;
+    }
+
     protected function getPaymentVerifyData(Verify $verify)
     {
-        $payment = $verify->payment;
+        $input = $verify->input;
 
-        $timestamp = $payment['original']['created_at'];
-
-        $date = date('Y-m-d', $timestamp);
+        $date = date('Y-m-d', $input['payment']['created_at']);
 
         $data = [
             RequestFields::VERIFY_PAYEE_ID => $this->getMerchantId(),
-            RequestFields::VERIFY_ITC      => strtoupper($payment['payment_id']),
-            RequestFields::VERIFY_PRN      => $payment['payment_id'],
+            RequestFields::VERIFY_ITC      => strtoupper($input['payment']['id']),
+            RequestFields::VERIFY_PRN      => $input['payment']['id'],
             RequestFields::VERIFY_DATE     => $date,
-            RequestFields::VERIFY_AMT      => $payment['amount'],
+            RequestFields::VERIFY_AMT      => $input['payment']['amount'] / 100,
         ];
 
         return $data;
@@ -259,7 +272,7 @@ class Gateway extends Base\Gateway
 
     protected function checkDecryptionFailure(string $encryptedString, array $content)
     {
-        if (empty($content) ===  true)
+        if (empty($content) === true)
         {
             $this->trace->error(TraceCode::PAYMENT_CALLBACK_FAILURE,
                 ['encrypted_string' => $encryptedString,
@@ -288,23 +301,22 @@ class Gateway extends Base\Gateway
     protected function getCallbackAttributes(array $content)
     {
         return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::STATUS],
-            'amount'            => $content[ResponseFields::AMOUNT],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+            'received'        => true,
+            'status'          => $content[ResponseFields::STATUS],
+            'bank_payment_id' => $content[ResponseFields::BANK_REFERENCE_ID],
         ];
     }
 
-    protected function saveVerifyResponseIfNeeded(Verify $verify, array $content)
+    protected function saveVerifyResponseIfNeeded(Verify $verify)
     {
+        $content = $verify->verifyResponseContent;
+
         $gatewayPayment = $verify->payment;
 
-        $bankPaymentId = $gatewayPayment->getBankPaymentId();
-
-        $attributes = $this->getVerifyAttributes($content);
-
-        if ($bankPaymentId === null)
+        if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
         {
+            $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
+
             $gatewayPayment->fill($attributes);
 
             $this->repo->saveOrFail($gatewayPayment);
@@ -313,14 +325,23 @@ class Gateway extends Base\Gateway
         return $gatewayPayment;
     }
 
-    protected function getVerifyAttributes(array $content)
+    protected function getVerifyAttributes(Verify $verify, $gatewayPayment)
     {
-        return [
-            'received'          => true,
-            'status'            => $content[ResponseFields::PAYMENT_STATUS],
-            'amount'            => $content[ResponseFields::VERIFY_RESPONSE_AMT],
-            'bank_payment_id'   => $content[ResponseFields::BANK_REFERENCE_ID],
+        $content = $verify->verifyResponseContent;
+
+        $bankPaymentId = $gatewayPayment->getBankPaymentId();
+
+        $attributes = [
+            Base\Entity::RECEIVED => true,
+            Base\Entity::STATUS   => Constants::YES,
         ];
+
+        if (empty($bankPaymentId) === true)
+        {
+            $attributes[Base\Entity::BANK_PAYMENT_ID] = $content[ResponseFields::BANK_REFERENCE_ID];
+        }
+
+        return $attributes;
     }
 
     protected function parseResponseXml(string $response)

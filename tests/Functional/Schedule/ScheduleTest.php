@@ -16,7 +16,7 @@ class ScheduleTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $this->testScheduleBody = $request = $this->testData['testScheduleBody'];
     }
@@ -87,11 +87,70 @@ class ScheduleTest extends TestCase
         });
     }
 
+    public function testScheduleInvalidHour()
+    {
+        $request = $this->testData['createSchedule'];
+
+        $request['content'] = $this->testData['timedScheduleBody'];
+
+        $request['content']['period'] = 'hourly';
+        $request['content']['delay'] = 0;
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function() use ($request) {
+            $this->makeRequestAndGetContent($request);
+        });
+    }
+
+    public function testSettledAtTimestampForTimedMerchant()
+    {
+        $request = $this->testData['testAssignSchedule'];
+
+        $request['content'] = $this->testData['timedScheduleBody'];
+
+        // Assigned a timed schedule having hour set to 5
+        $response = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotNull($response['settlement_schedule_id']);
+
+        $this->fixtures->create('pricing:zero_pricing_plan');
+
+        $data = [
+            'amount' => 100,
+        ];
+
+        $payment = $this->fixtures->create(
+                            'payment:authorized',
+                            $data);
+
+        $this->ba->privateAuth();
+
+        $request = $this->testData['capturePayment'];
+
+        $request['content'] = $data;
+        $request['url'] .= $payment->getPublicId() . '/capture';
+
+        // Capturing this payment should result in settled_at still set to midnight
+        $response = $this->makeRequestAndGetContent($request);
+
+        $txn = $this->getLastTransaction(true);
+
+        $time = Carbon::createFromTimestamp($txn['settled_at'], 'Asia/Kolkata');
+
+        // Check if time is midnight
+        $this->assertEquals(0, $time->hour);
+    }
+
     public function testGetSchedule()
     {
         $schedule = $this->createSchedule();
 
+        $this->ba->appAuth();
+
         $response = $this->fetchSchedule($schedule['id']);
+
+        $this->ba->adminAuth();
 
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }
@@ -134,7 +193,11 @@ class ScheduleTest extends TestCase
 
         $this->assertNotNull($response['settlement_schedule_id']);
 
+        $this->ba->appAuth();
+
         $response = $this->fetchSchedule($response['settlement_schedule_id']);
+
+        $this->ba->adminAuth();
 
         $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
     }

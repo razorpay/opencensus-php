@@ -313,7 +313,7 @@ class NetbankingAirtelGatewayTest extends TestCase
             if($action === 'hash')
             {
                 // Shuffling the hash so that hash verification fails
-                $content['HASH'] = str_shuffle($content['HASH']);
+                $content['HASH'] = 'this_is_a_random_hash_string';
             }
         });
     }

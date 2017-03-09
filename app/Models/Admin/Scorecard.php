@@ -7,6 +7,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models;
 use RZP\Models\Base;
+use RZP\Constants\MailTags;
 
 class Scorecard extends Base\Core
 {
@@ -50,6 +51,10 @@ class Scorecard extends Base\Core
             $message->subject($subject);
 
             $message->to($emails);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::SCORECARD);
         });
 
         return ['success' => true];

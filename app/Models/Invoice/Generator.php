@@ -91,25 +91,6 @@ class Generator extends Base\Core
             ExceptionHandler::handleMySqlUniqueError($e, $this->invoice, $input);
         }
 
-        //
-        // In case notification to the customer throws any kind of exception,
-        // we should not fail the invoice creation.
-        //
-        try
-        {
-            (new Notifier($this->invoice))->sendNotificationToCustomer();
-        }
-        catch (\Exception $ex)
-        {
-            $this->trace->traceException(
-                $ex,
-                null,
-                null,
-                [
-                    'invoice_id' => $this->invoice->getId()
-                ]);
-        }
-
         return $this->invoice;
     }
 
@@ -137,19 +118,22 @@ class Generator extends Base\Core
     {
         $this->associateCustomerWithInvoice($input);
 
-        if (isset($input[Entity::LINE_ITEMS]) === false)
+        if (isset($input[Entity::LINE_ITEMS]) === true)
         {
-            return;
+            $this->lineItemCore->updateLineItemsAsPut(
+                $input[Entity::LINE_ITEMS],
+                $this->merchant,
+                $this->invoice);
+
+            $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
+
+            $this->invoice->setAmount($totalAmount);
         }
 
-        $this->lineItemCore->updateLineItemsAsPut(
-            $input[Entity::LINE_ITEMS],
-            $this->merchant,
-            $this->invoice);
-
-        $totalAmount = $this->lineItemCore->getTotalAmountOfLineItems($this->invoice);
-
-        $this->invoice->setAmount($totalAmount);
+        if ($this->invoice->getStatus() === Status::ISSUED)
+        {
+            $this->issueInvoice();
+        }
     }
 
     /**

@@ -24,6 +24,7 @@ return array(
         'paytm',
         'netbanking_hdfc',
         'netbanking_kotak',
+        'netbanking_icici',
         'netbanking_airtel',
         'netbanking_axis',
         'sharp',
@@ -35,7 +36,8 @@ return array(
         'wallet_payumoney',
         'wallet_airtelmoney',
         'wallet_freecharge',
-        'wallet_jiomoney'
+        'wallet_jiomoney',
+        'wallet_openwallet'
     ),
 
     'mock_amex'               => env('AMEX_MOCK'),
@@ -50,6 +52,7 @@ return array(
     'mock_paytm'              => env('PAYTM_MOCK'),
     'mock_netbanking_hdfc'    => env('NETBANKING_HDFC_MOCK'),
     'mock_netbanking_kotak'   => env('NETBANKING_KOTAK_MOCK'),
+    'mock_netbanking_icici'   => env('NETBANKING_ICICI_MOCK'),
     'mock_netbanking_airtel'  => env('NETBANKING_AIRTEL_MOCK'),
     'mock_netbanking_axis'    => env('NETBANKING_AXIS_MOCK'),
     'mock_billdesk'           => env('BILLDESK_MOCK'),
@@ -147,7 +150,7 @@ return array(
         'test_hash_secret'  => env('PAYTM_GATEWAY_TEST_HASH_SECRET'),
     ),
 
-    'upi_icici' =>  array(
+    'upi_icici' => array(
         'test_merchant_id'       => env('UPI_ICICI_GATEWAY_TEST_MERCHANT_ID'),
         'test_public_key'        => env('UPI_ICICI_TEST_PUBLIC_KEY'),
         'test_private_key'       => env('UPI_ICICI_TEST_PRIVATE_KEY'),
@@ -156,15 +159,15 @@ return array(
         'live_private_key'       => env('UPI_ICICI_LIVE_PRIVATE_KEY'),
     ),
 
-    'upi_idfc'  =>  [
+    'upi_idfc' => [
         'test_kek'               => env('UPI_IDFC_TEST_KEK'),
         'test_password'          => env('UPI_IDFC_TEST_PASSWORD'),
     ],
 
     'upi_npci' => [
-        'test_decryption_key'    => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
-        'test_signing_key'       => env('UPI_NPCI_TEST_SIGNING_KEY'),
-        'test_signing_public_key'=> env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
+        'test_decryption_key'     => env('UPI_NPCI_TEST_DECRYPTION_KEY'),
+        'test_signing_key'        => env('UPI_NPCI_TEST_SIGNING_KEY'),
+        'test_signing_public_key' => env('UPI_NPCI_TEST_SIGNING_PUBLIC_KEY'),
     ],
 
     'wallet_payzapp' => array(
@@ -178,7 +181,7 @@ return array(
         'live_pg_instance_id'       => env('PAYZAPP_WALLET_LIVE_PG_INSTANCE_ID'),
     ),
 
-    'wallet_olamoney'  =>array(
+    'wallet_olamoney' => array(
         'test_merchant_id'      => env('OLAMONEY_WALLET_TEST_MERCHANT_ID'),
         'test_hash_secret'      => env('OLAMONEY_WALLET_TEST_HASH_SECRET'),
         'test_access_code'      => env('OLAMONEY_WALLET_TEST_CLIENT_ID'),
@@ -202,6 +205,7 @@ return array(
     'wallet_freecharge' => array(
         'test_hash_secret'      => env('FREECHARGE_WALLET_TEST_HASH_SECRET'),
         'test_merchant_id'      => env('FREECHARGE_WALLET_TEST_MERCHANT_ID'),
+        'test_dealer_id'        => env('FREECHARGE_WALLET_TEST_DEALER_ID'),
     ),
 
     'wallet_jiomoney' => array(
@@ -224,6 +228,12 @@ return array(
         'live_hash_secret_sec' => env('NETBANKING_KOTAK_GATEWAY_SEC_LIVE_HASH_SECRET'),
     ),
 
+    'netbanking_icici' => [
+        'test_hash_secret'  => env('NETBANKING_ICICI_GATEWAY_TEST_HASH_SECRET'),
+        'test_merchant_id'  => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID'),
+        'test_merchant_id2' => env('NETBANKING_ICICI_GATEWAY_TEST_MERCHANT_ID2'),
+    ],
+
     'netbanking_axis' => array(
         'live_hash_secret' => env('NETBANKING_AXIS_GATEWAY_LIVE_HASH_SECRET'),
         'test_hash_secret' => env('NETBANKING_AXIS_GATEWAY_TEST_HASH_SECRET'),
@@ -233,6 +243,7 @@ return array(
     'netbanking_airtel' => [
         'test_merchant_id'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_MERCHANT_ID'),
         'test_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_TEST_HASH_SECRET'),
+        'live_hash_secret'  => env('NETBANKING_AIRTEL_GATEWAY_LIVE_HASH_SECRET'),
     ],
 
     'sharp' => array(

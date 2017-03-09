@@ -17,16 +17,58 @@ class EntityReportTest extends TestCase
 
         $dt = Carbon::today('Asia/Kolkata');
 
-        $input = array(
+        $input = [
             'year' => $dt->year,
             'month' => $dt->month,
-            'day' => $dt->day);
+            'day' => $dt->day
+        ];
 
         $paymentReport = $this->fetchReport('payment', $input);
         $refundReport =  $this->fetchReport('refund', $input);
         $combinedReport = $this->fetchReport('transaction', $input);
 
-        assert((count($paymentReport) + count($refundReport)) === count($combinedReport));
+        assert(count($paymentReport) === 2);
+        assert(count($refundReport) === 1);
+        assert(count($combinedReport) === 3);
+    }
+
+    public function testTransactionReport()
+    {
+        $this->doAuthAndCapturePayment();
+        $this->doAuthCaptureAndRefundPayment();
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = [
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day
+        ];
+
+        $combinedReport = $this->fetchMonthlyTransactionsReport($input);
+
+        assert(count($combinedReport) === 3);
+    }
+
+    public function testOrderReport()
+    {
+        $order = $this->createOrder();
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $rzpPayment = $this->doAuthPayment($payment);
+
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+
+        $orderReport = $this->fetchReport('order', $input);
+
+        assert(count($orderReport) === 1);
     }
 
     /**
@@ -85,9 +127,9 @@ class EntityReportTest extends TestCase
 
         $invoice = $this->fetchInvoice($input);
 
-        $this->assertEquals($invoice['total_fee'], '2300');
-        $this->assertEquals($invoice['tax'], '300');
-        $this->assertEquals($invoice['razorpay_fee'], 2000);
+        $this->assertEquals('2300', $invoice['total_fee']);
+        $this->assertEquals('300', $invoice['tax']);
+        $this->assertEquals(2000, $invoice['razorpay_fee']);
     }
 
     public function testBrokingReport()
@@ -120,7 +162,7 @@ class EntityReportTest extends TestCase
             'Merchant Txn Id' => null,
             'Product' => 'NSE',
             'Discriminator' => 'NB',
-            'Bank Name' => 'ICICI Bank Ltd',
+            'Bank Name' => 'Indian Bank',
             'Card Type' => null,
             'Card No' => null,
             'Card Issuing Bank' => null,

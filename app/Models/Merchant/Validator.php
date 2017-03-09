@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant;
 
 use RZP\Base;
+use RZP\Constants\Mode;
 use RZP\Models\Merchant;
 use RZP\Models\Terminal;
 use RZP\Exception;
@@ -145,6 +146,27 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateMerchantForMarketplaceTransfer($account, $mode)
+    {
+        if (($account === null) or
+            ($account->isLinkedAccount() === false) or
+            ($account->getParentId() !== $this->entity->getId()))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_INVALID_ACCOUNT_ID,
+                'transfers.account'
+            );
+        }
+
+        if (($mode === Mode::LIVE) and
+            ($account->isActivated() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_TRANSFER_ACCOUNT_NOT_ACTIVATED
+            );
+        }
+    }
+
     protected function validateCsvEmail($input)
     {
         if (isset($input[Entity::TRANSACTION_REPORT_EMAIL]) === false)
@@ -167,17 +189,24 @@ class Validator extends Base\Validator
 
     public function validateBeforeActivate(Merchant\Entity $merchant)
     {
-        $attributes = array(
+        // Dont validate these attributes for Marketplace accounts
+        if ($merchant->isLinkedAccount() === true)
+        {
+            return;
+        }
+
+        $attributes = [
             Entity::WEBSITE,
             Entity::CATEGORY,
             Entity::BILLING_LABEL,
-            Entity::TRANSACTION_REPORT_EMAIL);
+            Entity::TRANSACTION_REPORT_EMAIL
+        ];
 
         foreach ($attributes as $attribute)
         {
             $value = $merchant->getAttribute($attribute);
 
-            if (empty($value))
+            if (empty($value) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Please set value for attribute: ' . $attribute);
@@ -205,6 +234,11 @@ class Validator extends Base\Validator
 
     protected function validateAutoRefundDelay($attribute, $autoRefundDelayPeriod)
     {
+        if ($autoRefundDelayPeriod === null)
+        {
+            return;
+        }
+
         $autoRefundDelay = explode(' ', $autoRefundDelayPeriod);
 
         $min = $max = null;

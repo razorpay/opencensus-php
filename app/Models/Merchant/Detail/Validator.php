@@ -35,7 +35,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
-        Entity::COMPANY_PAN_NAME                => 'sometimes|max:255|required_with:company_pan',
+        Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -97,7 +97,7 @@ class Validator extends Base\Validator
         Entity::BUSINESS_DOE                    => 'sometimes|date_format:"Y-m-d"|before:"today"',
         Entity::COMPANY_CIN                     => 'sometimes|alpha_num|max:21',
         Entity::COMPANY_PAN                     => 'sometimes|alpha_num|max:15',
-        Entity::COMPANY_PAN_NAME                => 'sometimes|max:255|required_with:company_pan',
+        Entity::COMPANY_PAN_NAME                => 'sometimes|max:255',
         Entity::TRANSACTION_VOLUME              => 'sometimes|numeric|digits_between:1,4',
         Entity::TRANSACTION_VALUE               => 'sometimes|numeric|min:0|max:10000000',
         Entity::PROMOTER_PAN                    => 'sometimes|alpha_num|max:15',
@@ -140,6 +140,15 @@ class Validator extends Base\Validator
         Entity::LOCKED                          => 'sometimes|boolean',
         Entity::TRANSACTION_REPORT_EMAIL        => 'sometimes|custom',
         Entity::COMMENT                         => 'sometimes|max:255',
+        Entity::BANK_BRANCH_IFSC                => 'sometimes|alpha_num|max:11|custom',
+        Entity::BANK_ACCOUNT_NAME               => 'sometimes|alpha_space_num|max:40',
+        Entity::BANK_ACCOUNT_NUMBER             => 'sometimes|alpha_num|between:5,20',
+        Entity::BANK_BENEFICIARY_ADDRESS1       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS2       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_ADDRESS3       => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_CITY           => 'sometimes|max:30',
+        Entity::BANK_BENEFICIARY_STATE          => 'sometimes|max:2',
+        Entity::BANK_BENEFICIARY_PIN            => 'sometimes|max:15',
     ];
 
     protected static $migrateRules = [

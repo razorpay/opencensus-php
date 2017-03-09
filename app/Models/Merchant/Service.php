@@ -26,6 +26,7 @@ use RZP\Models\Feature;
 use RZP\Trace\TraceCode;
 use RZP\Models\Admin;
 use RZP\Models\Admin\Group;
+use RZP\Constants\MailTags;
 
 class Service extends Base\Service
 {
@@ -57,6 +58,8 @@ class Service extends Base\Service
 
         $merchant = (new Merchant\Core)->create($input);
 
+        $this->assignDefaultSettlementSchedule($merchant);
+
         // Once the merchant is created we must tag him to
         // the admin referral
         if (isset($adminId) === true)
@@ -77,11 +80,20 @@ class Service extends Base\Service
 
             // Update merchant org
             $merchant->org()->associate($org);
-
-            $this->repo->saveOrFail($merchant);
         }
 
+        $this->repo->saveOrFail($merchant);
+
         return $merchant->toArrayPublic();
+    }
+
+    protected function assignDefaultSettlementSchedule($merchant)
+    {
+        $defaultDelay = Entity::SETTLEMENT_SCHEDULE_DEFAULT_DELAY;
+
+        $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
+
+        $merchant->schedule()->associate($schedule);
     }
 
     protected function attachAdmin($merchantId, $adminId)
@@ -104,7 +116,11 @@ class Service extends Base\Service
         $subMerchant = (new Merchant\Core)->createSubMerchant($input, $merchant);
 
         // This goes out to the aggregator
-        $this->sendSubMerchantCreationMail($subMerchant, $merchant);
+        // (skip if marketplace merchant)
+        if ($merchant->isMarketplace() === false)
+        {
+            $this->sendSubMerchantCreationMail($subMerchant, $merchant);
+        }
 
         return $subMerchant->toArrayPublic();
     }
@@ -718,6 +734,13 @@ class Service extends Base\Service
         return $webhooks->toArrayPublic();
     }
 
+    public function patchMerchantBeneficiaryCode()
+    {
+        $data = (new BankAccount\Core)->updateBeneficiaryCodes();
+
+        return $data;
+    }
+
     public function getMerchantBeneficiaryFile()
     {
         $file = (new BankAccount\BeneficiaryFile3)->generate();
@@ -804,6 +827,10 @@ class Service extends Base\Service
             {
                 $message->cc($data['cc_email'], $data['name']);
             }
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::WELCOME);
         });
     }
 

@@ -36,7 +36,8 @@ class XLSImporter
     {
         if (isset($input['network']) === false)
         {
-            throw new Exception\BadRequestException("please pass network name as input for given file");
+            throw new Exception\BadRequestValidationFailureException(
+                'Please pass network name as input for given file');
         }
 
         // Extracts and returns the columns and data
@@ -66,7 +67,6 @@ class XLSImporter
     public function importWithoutNetwork($file)
     {
         $ret = (new XLSFileHandler)->getCsvData($file);
-
 
         // Header of Csv data
         $ret['columns'] = array(
@@ -136,8 +136,8 @@ class XLSImporter
             'Debit Card'        => $formatter->debitCard,
             'Other Card'        => $formatter->otherCardType,
             'Unknown Network'   => $formatter->unknownNetworkType,
-            'Failed Count'      => sizeof($errArray),
-            'Sucessful Entries' => sizeof($formattedData) - sizeof($errArray),
+            'Failed Count'      => count($errArray),
+            'Sucessful Entries' => count($formattedData) - count($errArray),
         );
     }
     /**
@@ -171,7 +171,8 @@ class XLSImporter
 
         foreach ($conflicts as $iinId => $entry)
         {
-            list($input, $conflict, $diff) = $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
+            list($input, $conflict, $diff) =
+                $this->getInputForIinUpdate($entry['db_entry'], $entry['file_entry'], $columns);
 
             if (($conflict === false) and
                 (empty($input) === false))

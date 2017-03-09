@@ -28,6 +28,7 @@ class Base
         'hdfc'          => \RZP\Gateway\Hdfc\Entity::class,
         'token'         => \RZP\Models\Customer\Token\Entity::class,
         'order'         => \RZP\Models\Order\Entity::class,
+        'payout'        => \RZP\Models\Payout\Entity::class,
         'refund'        => \RZP\Models\Payment\Refund\Entity::class,
         'webhook'       => \RZP\Models\Merchant\Webhook\Entity::class,
         'methods'       => \RZP\Models\Merchant\Methods\Entity::class,
@@ -55,6 +56,7 @@ class Base
         'invoice'       => \RZP\Models\Invoice\Entity::class,
         'line_item'     => \RZP\Models\LineItem\Entity::class,
         'device'        => \RZP\Models\Device\Entity::class,
+        'transfer'      => \RZP\Models\Transfer\Entity::class,
     );
 
     protected static $liveAndTest = array(
@@ -205,7 +207,7 @@ class Base
         });
     }
 
-    protected function stripSign(& $id)
+    public function stripSign(& $id)
     {
         $ix = strpos($id, '_');
 

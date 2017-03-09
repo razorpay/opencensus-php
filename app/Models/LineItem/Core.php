@@ -24,6 +24,8 @@ class Core extends Base\Core
             ]
         );
 
+        $morphEntity->getValidator()->validateInvoiceMaxAllowedLineItems();
+
         $lineItem = new Entity;
 
         //

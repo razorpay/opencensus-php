@@ -24,6 +24,7 @@ class Entity extends Base\PublicEntity
     const SERVICE_TAX         = 'service_tax';
     const PRICING_RULE_ID     = 'pricing_rule_id';
     const BALANCE             = 'balance';
+    const GATEWAY_AMOUNT      = 'gateway_amount';
     const GATEWAY_FEE         = 'gateway_fee';
     const GATEWAY_SERVICE_TAX = 'gateway_service_tax';
     const GATEWAY_SETTLED_AT  = 'gateway_settled_at';
@@ -36,6 +37,7 @@ class Entity extends Base\PublicEntity
     const FEE_MODEL           = 'fee_model';
     const FEE_BEARER          = 'fee_bearer';
     const CREDIT_TYPE         = 'credit_type';
+    const ON_HOLD             = 'on_hold';
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
@@ -72,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL,
         self::FEE_BEARER,
         self::CREDIT_TYPE,
+        self::ON_HOLD,
         self::SETTLED_AT,
         self::SERVICE_TAX);
 
@@ -86,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::FEE,
         self::SERVICE_TAX,
+        self::ON_HOLD,
         self::SETTLED,
         self::CREATED_AT,
         self::SETTLED_AT,
@@ -104,6 +108,7 @@ class Entity extends Base\PublicEntity
     protected $defaults = array(
         self::GRATIS                => false,
         self::GATEWAY_SETTLED_AT    => null,
+        self::GATEWAY_AMOUNT        => null,
         self::GATEWAY_FEE           => null,
         self::GATEWAY_SERVICE_TAX   => null,
         self::BALANCE               => null,
@@ -113,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_AT            => null,
         self::SETTLEMENT_ID         => null,
         self::RECONCILED_AT         => null,
+        self::ON_HOLD               => 0,
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
@@ -144,10 +150,20 @@ class Entity extends Base\PublicEntity
     );
 
     protected $casts = [
-        self::GRATIS        => 'boolean',
-        self::FEE_CREDITS   => 'integer',
-        self::FEE_MODEL     => 'integer',
-        self::FEE_BEARER    => 'integer',
+        self::CREDIT              => 'int',
+        self::DEBIT               => 'int',
+        self::AMOUNT              => 'int',
+        self::FEE                 => 'int',
+        self::SERVICE_TAX         => 'int',
+        self::BALANCE             => 'int',
+        self::GATEWAY_AMOUNT      => 'int',
+        self::GATEWAY_FEE         => 'int',
+        self::GATEWAY_SERVICE_TAX => 'int',
+        self::GRATIS              => 'bool',
+        self::FEE_CREDITS         => 'int',
+        self::FEE_MODEL           => 'int',
+        self::FEE_BEARER          => 'int',
+        self::ON_HOLD             => 'bool',
     ];
 
     public function merchant()
@@ -185,12 +201,12 @@ class Entity extends Base\PublicEntity
 
     public function getCredit()
     {
-        return (int) $this->getAttribute(self::CREDIT);
+        return $this->getAttribute(self::CREDIT);
     }
 
     public function getDebit()
     {
-        return (int) $this->getAttribute(self::DEBIT);
+        return $this->getAttribute(self::DEBIT);
     }
 
     public function getNetAmount()
@@ -200,7 +216,7 @@ class Entity extends Base\PublicEntity
 
     public function getAmount()
     {
-        return (int) $this->getAttribute(self::AMOUNT);
+        return $this->getAttribute(self::AMOUNT);
     }
 
     public function getType()
@@ -213,6 +229,11 @@ class Entity extends Base\PublicEntity
         return (int) $this->getAttribute(self::BALANCE);
     }
 
+    public function getOnHold()
+    {
+        return $this->getAttribute(self::ON_HOLD);
+    }
+
     public function getSettledAt()
     {
         return $this->getAttribute(self::SETTLED_AT);
@@ -221,6 +242,11 @@ class Entity extends Base\PublicEntity
     public function getEntityId()
     {
         return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getGatewayAmount()
+    {
+        return $this->getAttribute(self::GATEWAY_AMOUNT);
     }
 
     public function getGatewayFee()
@@ -250,16 +276,6 @@ class Entity extends Base\PublicEntity
 
 /* ----------------------------- Accessors -----------------------------------*/
 
-    protected function getAmountAttribute()
-    {
-        return (int) $this->attributes[self::AMOUNT];
-    }
-
-    protected function getFeeAttribute()
-    {
-        return (int) $this->attributes[self::FEE];
-    }
-
     protected function getApiFeeAttribute()
     {
         return (int) $this->attributes[self::API_FEE];
@@ -273,16 +289,6 @@ class Entity extends Base\PublicEntity
     protected function getGatewayServiceTaxAttribute()
     {
         return (int) $this->attributes[self::GATEWAY_SERVICE_TAX];
-    }
-
-    protected function getDebitAttribute()
-    {
-        return (int) $this->attributes[self::DEBIT];
-    }
-
-    protected function getCreditAttribute()
-    {
-        return (int) $this->attributes[self::CREDIT];
     }
 
     protected function getBalanceAttribute()
@@ -407,6 +413,11 @@ class Entity extends Base\PublicEntity
     public function setGatewaySettledAt($timestamp)
     {
         $this->setAttribute(self::GATEWAY_SETTLED_AT, $timestamp);
+    }
+
+    public function setGatewayAmount($gatewayAmount)
+    {
+        $this->setAttribute(self::GATEWAY_AMOUNT, $gatewayAmount);
     }
 
     public function setGatewayFee($gatewayFee)
@@ -549,6 +560,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::ADJUSTMENT);
     }
 
+    public function isTypeTransfer()
+    {
+        return ($this->getType() === Type::TRANSFER);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -557,6 +573,11 @@ class Entity extends Base\PublicEntity
     public function isFeeCredits()
     {
         return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isOnHold()
+    {
+        return $this->getOnHold();
     }
 
     public function isSettled()
@@ -612,6 +633,7 @@ class Entity extends Base\PublicEntity
         else if ($this->isTypeRefund())
         {
             $refund = $this->source;
+
             $payment = $refund->payment;
 
             // Skip if the payment was not captured.

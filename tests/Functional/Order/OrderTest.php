@@ -315,6 +315,108 @@ class OrderTest extends TestCase
         $this->fixtures->merchant->disableTPV();
     }
 
+    public function testCreateOrderWithOffer()
+    {
+        $offer = $this->fixtures->create('offer:live_card', ['iins' => ["401200"]]);
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->testData[__FUNCTION__]['response']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithNotApplicableOffer()
+    {
+        $offer = $this->fixtures->create('offer:card');
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testCreateOrderWithExpiredOffer()
+    {
+        $offer = $this->fixtures->create('offer:expired');
+
+        $this->testData[__FUNCTION__]['request']['content']['offer_id'] = $offer->getPublicId();
+
+        $this->startTest();
+    }
+
+    public function testPaymentWithOfferAppliedOnOrder()
+    {
+        $this->testCreateOrderWithOffer();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $rzpPayment = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+        $this->assertEquals($order['id'], $rzpPayment['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+    }
+
+    public function testPaymentWithFailedOfferCheck()
+    {
+        $this->fixtures->merchant->enableMobikwik();
+
+        $this->testCreateOrderWithOffer();
+
+        $order = $this->getLastEntity('order', true);
+        $this->assertEquals($order['status'], 'created');
+
+        $payment = $this->getDefaultWalletPaymentArray();
+        $payment['order_id'] = $order['id'];
+        $payment['amount'] = $order['amount'];
+
+        $testData = $this->testData[__FUNCTION__];
+        $this->runRequestResponseFlow($testData, function () use ($payment)
+        {
+            $this->doAuthPayment($payment);
+        });
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
+    public function testPaymentWithBlockPaymentDisabledOnOffer()
+    {
+        $offer = $this->fixtures->create('offer:card', ['block' => false]);
+
+        $order = $this->fixtures->order->createOrderWithOfferApplied(['offer_id' => $offer->getId()]);
+
+        $this->fixtures->merchant->enableMobikwik();
+
+        $payment = $this->getDefaultWalletPaymentArray();
+        $payment['order_id'] = $order->getPublicId();
+        $payment['amount'] = $order->getAmount();
+
+        $this->fixtures->terminal->createSharedMobikwikTerminal();
+
+        $rzpPayment = $this->doAuthPayment($payment);
+        $this->assertArrayHasKey('razorpay_order_id', $rzpPayment);
+        $this->assertArrayHasKey('razorpay_signature', $rzpPayment);
+        $this->assertEquals($order->getPublicId(), $rzpPayment['razorpay_order_id']);
+
+        $payment = $this->getLastEntity('payment');
+        $this->capturePayment($rzpPayment['razorpay_payment_id'], $payment['amount']);
+
+        $order = $this->getLastEntity('order');
+        $this->assertEquals($order['status'], 'paid');
+
+        $this->fixtures->merchant->disableMobikwik();
+    }
+
     protected function retrieveOrdersDefault(array $content = [], $method = 'GET')
     {
         $request = array(

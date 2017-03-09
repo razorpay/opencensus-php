@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Terminal\Filters;
 
+use RZP\Error;
 use RZP\Exception;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
@@ -36,6 +37,7 @@ class MerchantFilter extends Terminal\Filter
         'billdesk_merchant',
         'incompatible',
         'category',
+        'pharma',
         'gateway',
         'wallet',
     ];
@@ -165,7 +167,7 @@ class MerchantFilter extends Terminal\Filter
         $merchantTerminalCategory = $input['merchant']->getCategory2();
 
         if ((isset($merchantTerminalCategory) === true) and
-            (Terminal\Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
+            (Category::isMerchantCategoryIncompatible($merchantTerminalCategory) === true))
         {
             $category = $terminal->getNetworkCategory();
 
@@ -179,7 +181,7 @@ class MerchantFilter extends Terminal\Filter
 
             $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-            $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+            $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
             // If category is a defaultCategory don't allow,
             if ($category === $defaultCategory)
@@ -207,7 +209,7 @@ class MerchantFilter extends Terminal\Filter
 
         $network = $input['payment']->isMethodCardOrEmi() ? $input['payment']->card->getNetworkCode() : null;
 
-        $defaultCategory = Terminal\Category::getDefaultForMethodAndNetwork($method, $network);
+        $defaultCategory = Category::getDefaultForMethodAndNetwork($method, $network);
 
         // If category is a defaultCategory allow,
         // no need to compute merchant category
@@ -219,12 +221,56 @@ class MerchantFilter extends Terminal\Filter
         $category2 = $input['merchant']->getCategory2();
 
         // Use Merchant specific category for method, network or maybe overridden for gateway
-        $merchantTerminalCategory = Terminal\Category::getCategoryForMethodAndNetwork(
+        $merchantTerminalCategory = Category::getCategoryForMethodAndNetwork(
                                                                         $method,
                                                                         $network,
                                                                         $category2);
 
         return ($category === $merchantTerminalCategory);
+    }
+
+    /**
+     * Disallow pharma merchants from being sent on
+     * terminals with acquirer as HDFC, if the card
+     * network is Visa or Master
+     *
+     * @param Terminal\Entity $terminal
+     * @param Array $input Combined input
+     * @return boolean Whether a terminal is to be chosen or
+     * */
+    public function pharmaFilter($terminal, $input)
+    {
+        $category2 = $input['merchant']->getCategory2();
+
+        $acquirer = $terminal->getGatewayAcquirer();
+
+        if (($category2 === Category::PHARMA) and
+            ($input['payment']->isMethodCardOrEmi()))
+        {
+            if (($terminal->isShared() === true) and
+                ($acquirer === Gateway::ACQUIRER_HDFC))
+            {
+                // This check is for all the card networks which are
+                // supported by gateways from other acquirers that also
+                // have a shared terminal.
+                // Currently, we don't have a shared terminal RuPay and
+                // Maestro. We are doing a workaround using the
+                // merchant descriptor feature of FirstData
+                return false;
+            }
+            // Terminal ID for Aala first data terminal is 76lEBqibDvhOzY
+            else if ($terminal->getId() === '76lEBqibDvhOzY')
+            {
+                 $network = $input['payment']->card->getNetworkCode();
+
+                 if (in_array($network, [Network::RUPAY, Network::MAES], true) === false)
+                 {
+                    return false;
+                 }
+            }
+        }
+
+        return true;
     }
 
     public function gatewayFilter($terminal, $input)

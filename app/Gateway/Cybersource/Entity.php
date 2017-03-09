@@ -11,6 +11,7 @@ class Entity extends Base\Entity
     const ACQUIRER               = 'acquirer';
     const VERES_ENROLLED         = 'veresEnrolled';
     const AMOUNT                 = 'amount';
+    const CURRENCY               = 'currency';
     const STATUS                 = 'status';
     const CAVV                   = 'cavv';
     const ECI                    = 'eci';
@@ -36,6 +37,7 @@ class Entity extends Base\Entity
         self::ID,
         self::VERES_ENROLLED,
         self::AMOUNT,
+        self::CURRENCY,
         self::STATUS,
         self::ECI,
         self::PARES_STATUS,
@@ -192,6 +194,11 @@ class Entity extends Base\Entity
     public function setAmount($amount)
     {
         $this->setAttribute(self::AMOUNT, $amount);
+    }
+
+    public function setCurrency($currency)
+    {
+        $this->setAttribute(self::CURRENCY, $currency);
     }
 
     public function setAcquirer($acquirer)

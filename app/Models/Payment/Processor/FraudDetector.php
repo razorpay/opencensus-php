@@ -36,7 +36,7 @@ trait FraudDetector
         {
             $response = $this->app['maxmind']->query($payment);
         }
-        catch (\Exception $e)
+        catch (\Throwable $e)
         {
             $this->trace->traceException($e, Trace::WARNING, TraceCode::RECOVERABLE_EXCEPTION);
         }

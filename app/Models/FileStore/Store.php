@@ -36,8 +36,9 @@ class Store
     /**
      * Returns the Store Handler Object
      *
-     * @param  string   $store
-     * @return instance of Store Object
+     * @param string $store Store
+     *
+     * @return Store instance of Store Object
      * @throws Exception\LogicException
      */
     public static function getHandler($store)

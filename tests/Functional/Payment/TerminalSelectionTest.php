@@ -6,6 +6,7 @@ use RZP\Exception\RuntimeException;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use RZP\Models\Merchant;
+use RZP\Models\Terminal\Category;
 use RZP\Models\Terminal\Options;
 
 class TerminalSelectionTest extends TestCase
@@ -100,7 +101,7 @@ class TerminalSelectionTest extends TestCase
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }
 
-    protected function assignSubMerchant(string $tid ,string $mid)
+    protected function assignSubMerchant(string $tid, string $mid)
     {
         $url = '/terminals/' . $tid . '/merchants/' . $mid;
 
@@ -156,7 +157,7 @@ class TerminalSelectionTest extends TestCase
 
         $url = '/terminals/' . $tid . '/reassign';
 
-        $requestContent = ['merchant_id' =>  $mid];
+        $requestContent = ['merchant_id' => $mid];
 
         $request = [
             'url'    => $url,
@@ -176,7 +177,7 @@ class TerminalSelectionTest extends TestCase
 
         $url = '/terminals/' . $tid . '/reassign';
 
-        $requestContent = ['merchant_id' =>  '1MercShareTerm'];
+        $requestContent = ['merchant_id' => '1MercShareTerm'];
 
         $request = [
             'url'     => $url,
@@ -293,12 +294,12 @@ class TerminalSelectionTest extends TestCase
         $this->mockTokenex();
 
         $chances = [
-            // Chance from 76 to 100 should give AxisMigs
+            // Chance from 56 to 100 should give AxisMigs
             [ 'chanceValue' => 92, 'expected_terminal_id' => '1000AxisMigsTl' ],
-            // Chance from 66 to 75 should give Cybersource
-            [ 'chanceValue' => 69, 'expected_terminal_id' => '1000CybrsTrmnl' ],
-            // Chance from 60 to 65 should give First Data
-            [ 'chanceValue' => 63,  'expected_terminal_id' => '1000FrstDataTl' ],
+            // Chance from 46 to 55 should give Cybersource
+            [ 'chanceValue' => 49, 'expected_terminal_id' => '1000CybrsTrmnl' ],
+            // Chance from 40 to 45 should give First Data
+            [ 'chanceValue' => 42,  'expected_terminal_id' => '1000FrstDataTl' ],
             // Chance 80 or below should give HDFC
             [ 'chanceValue' => 0,   'expected_terminal_id' => '1n25f6uN5S1Z5a' ],
 
@@ -691,6 +692,8 @@ class TerminalSelectionTest extends TestCase
 
         $payment = $this->getDefaultNetbankingPaymentArray();
 
+        $payment['bank'] = 'ICIC';
+
         $this->doAuthAndCapturePayment($payment);
 
         $payment1 = $this->getLastEntity('payment', true);
@@ -699,5 +702,35 @@ class TerminalSelectionTest extends TestCase
         // But because of the newly added icici billdesk filter,
         // the ecommerce one should get picked.
         $this->assertEquals('SharNbBdkTmnl2', $payment1['terminal_id']);
+    }
+
+    public function testPharmaMerchantTerminalSelection()
+    {
+        $this->fixtures->merchant->editCategory2(Category::PHARMA);
+        $this->mockTokenex();
+
+        $this->fixtures->create('terminal:disable_default_hdfc_terminal');
+
+        $this->fixtures->create('terminal:shared_cybersource_hdfc_terminal');
+        $this->fixtures->create('terminal:shared_cybersource_axis_terminal');
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('1000CybAxTrmnl', $payment1['terminal_id']);
+
+        $terminalAttrs = [
+            'id' => 'DrctHDFCTermnl',
+            'merchant_id' => '10000000000000',
+            'shared' => 0,
+        ];
+        $this->fixtures->create('terminal:shared_hdfc_terminal', $terminalAttrs);
+
+        $payment = $this->getDefaultPaymentArray();
+        $this->doAuthAndCapturePayment($payment);
+
+        $payment1 = $this->getLastEntity('payment', true);
+        $this->assertEquals('DrctHDFCTermnl', $payment1['terminal_id']);
     }
 }

@@ -6,6 +6,7 @@ use App;
 use Carbon\Carbon;
 use RZP\Constants\Mode;
 use RZP\Exception\LogicException;
+use RZP\Jobs\InvoiceAction;
 use RZP\Trace\TraceCode;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
@@ -227,7 +228,11 @@ class Charge
 
     protected function sendInvoiceEmail(Invoice\Entity $invoice)
     {
-        (new Invoice\Core)->sendNotification($invoice, Invoice\NotifyMedium::EMAIL);
+        (new Invoice\Core)->dispatchQueueJob(
+            $this->mode,
+            InvoiceAction::SUBSCRIPTION_CHARGED,
+            $invoice->getId()
+        );
     }
 
     protected function setInvoiceBillingPeriod(Entity $subscription, Invoice\Entity $invoice)

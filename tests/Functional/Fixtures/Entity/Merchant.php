@@ -59,6 +59,38 @@ class Merchant extends Base
         $apiBalance = $this->createEntityInTestAndLive('balance', ['id' => Account::API_FEE_ACCOUNT, 'balance' => '1000000']);
     }
 
+    public function createMarketplaceAccount($data = null)
+    {
+        $accountId = $data['id'] ?? '10000000000001';
+
+        $merchant = $this->fixtures->create(
+            'merchant',
+            [
+                'id' => $accountId,
+                'parent_id' => '10000000000000',
+                'pricing_plan_id' => '1hDYlICobzOCYt'
+            ]);
+
+        $balance = 0;
+
+        if (isset($data['balance']) === true)
+        {
+            $balance = $data['balance'];
+        }
+
+        $this->fixtures->on('test')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('balance', ['id' => $accountId, 'balance' => $balance]);
+
+        $this->fixtures->on('live')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test')->create('bank_account', ['merchant_id' => $accountId, 'entity_id' => $accountId]);
+
+        $this->fixtures->on('test');
+
+        return $merchant;
+    }
+
     public function createWithBalanceTerminalsStandardPricing()
     {
         $merchant = $this->fixtures->create('merchant', ['pricing_plan_id' => '1A0Fkd38fGZPVC']);
@@ -135,7 +167,7 @@ class Merchant extends Base
         return $this->edit($id, ['activated' => 1, 'live' => 1]);
     }
 
-    public function holdFunds($id, $hold = true)
+    public function holdFunds($id = '10000000000000', $hold = true)
     {
         return $this->edit($id, ['hold_funds' => $hold]);
     }

@@ -5,6 +5,7 @@ namespace RZP\Gateway\Upi\Icici;
 use Carbon\Carbon;
 use RZP\Gateway\Base;
 use RZP\Models\FileStore;
+use RZP\Constants\MailTags;
 
 class RefundFile extends Base\RefundFile
 {
@@ -75,6 +76,10 @@ class RefundFile extends Base\RefundFile
             $message->to($emails);
 
             $message->attach($data['file']);
+
+            $headers = $message->getHeaders();
+
+            $headers->addTextHeader(MailTags::HEADER, MailTags::ICICI_UPI_REFUNDS_MAIL);
         });
     }
 

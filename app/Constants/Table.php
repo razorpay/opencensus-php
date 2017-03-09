@@ -16,6 +16,7 @@ class Table
     const BATCH                 = 'batches';
     const ORDER                 = 'orders';
     const TOKEN                 = 'tokens';
+    const PAYOUT                = 'payouts';
     const REFUND                = 'refunds';
     const INVOICE               = 'invoices';
     const BALANCE               = 'balance';
@@ -32,6 +33,8 @@ class Table
     const FEATURE               = 'features';
     const TERMINAL              = 'terminals';
     const CUSTOMER              = 'customers';
+    const TRANSFER              = 'transfers';
+    const REVERSAL              = 'reversals';
     const LINE_ITEM             = 'line_items';
     const APP_TOKEN             = 'customer_apps';
     const FILE_STORE            = 'files';
@@ -41,7 +44,8 @@ class Table
     const TRANSACTION           = 'transactions';
     const BANK_ACCOUNT          = 'bank_accounts';
     const SUBSCRIPTION          = 'subscriptions';
-    const DAILY_SETTLEMENT      = 'daily_settlements';
+    const CUSTOMER_BALANCE      = 'customer_balance';
+    const CUSTOMER_TRANSACTION  = 'customer_transactions';
     const BATCH_SETTLEMENT      = 'daily_settlements';
     const SETTLEMENT_DETAILS    = 'settlement_details';
     const MERCHANT_DETAIL       = 'merchant_details';

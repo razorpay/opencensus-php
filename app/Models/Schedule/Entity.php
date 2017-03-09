@@ -16,6 +16,7 @@ class Entity extends Base\PublicEntity
     const PERIOD      = 'period';
     const INTERVAL    = 'interval';
     const ANCHOR      = 'anchor';
+    const HOUR        = 'hour';
     const DELAY       = 'delay';
     const NEXT_RUN    = 'next_run';
 
@@ -27,6 +28,7 @@ class Entity extends Base\PublicEntity
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
+        self::HOUR,
         self::DELAY,
         self::NEXT_RUN,
     ];
@@ -39,6 +41,7 @@ class Entity extends Base\PublicEntity
         self::PERIOD,
         self::INTERVAL,
         self::ANCHOR,
+        self::HOUR,
         self::DELAY,
         self::NEXT_RUN,
     ];
@@ -51,6 +54,7 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::INTERVAL => 'int',
         self::ANCHOR   => 'int',
+        self::HOUR     => 'int',
         self::DELAY    => 'int',
         self::NEXT_RUN => 'int',
     ];
@@ -69,7 +73,7 @@ class Entity extends Base\PublicEntity
 
         if($this->getPeriod() !== Period::HOURLY)
         {
-            $nextRun->hour(0);
+            $nextRun->hour($this->getHour());
         }
 
         $nextRun->minute(0)->second(0);
@@ -151,6 +155,11 @@ class Entity extends Base\PublicEntity
     public function getAnchor()
     {
         return $this->getAttribute(self::ANCHOR);
+    }
+
+    public function getHour()
+    {
+        return $this->getAttribute(self::HOUR);
     }
 
     public function getDelay()

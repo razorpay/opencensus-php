@@ -23,6 +23,7 @@ use RZP\Models\Base;
 use RZP\Models\Base\EsDao;
 use RZP\Models\Merchant;
 use RZP\Trace\TraceCode;
+use RZP\Constants\MailTags;
 
 
 class Service extends Base\Service
@@ -156,6 +157,9 @@ class Service extends Base\Service
                 $message->from($from, $fromHeader);
                 $message->subject($subject);
                 $message->replyTo($replyTo);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::FORGOT_PASSWORD);
             }
         );
     }
@@ -330,6 +334,9 @@ class Service extends Base\Service
                 $message->from($from, $fromHeader);
                 $message->subject($subject);
                 $message->replyTo($replyTo);
+
+                $headers = $message->getHeaders();
+                $headers->addTextHeader(MailTags::HEADER, MailTags::ADMIN_CREATE);
             }
         );
     }
@@ -573,7 +580,12 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
+            $merchant['is_marketplace'] = $merchant->isMarketplace();
+
             $merchant['referrer'] = $responseHash[$merchant->getId()];
+
+            // Unset eager loaded relations
+            unset ($merchant['features']);
         }
 
         return $merchants->toArray();

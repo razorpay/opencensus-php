@@ -82,6 +82,7 @@ add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants
 
 # Migration
 add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants/schedules/migrate"                                      $LIVE_AUTH
 
 # Refund
 add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH
@@ -91,7 +92,9 @@ add_cron "6-51/15 * * * *"  "order_refund_multiple_aut"      POST "$BASE_URL/ord
 add_cron "48 3-21/6 * * *"  "batch_processor_prod"           POST "$BASE_URL/batches/process"                            ""                              $LIVE_AUTH
 add_cron "7 10,22 * * *"    "gateway_create_refund_rec"      POST "$BASE_URL/refunds/billdesk/create_record"             ""                              $LIVE_AUTH
 add_cron "7 10,22 * * *"    "freecharge_create_refund_rec"   POST "$BASE_URL/refunds/wallet_freecharge/create_record"    ""                              $LIVE_AUTH
+add_cron "7 * * * *"        "freecharge_validate_refund_rec" POST "$BASE_URL/refunds/wallet_freecharge/validate"         ""                              $LIVE_AUTH
 add_cron "30 * * * *"       "refund_gateway_refunded_txns"   POST "$BASE_URL/refunds/gateway_refunded/transaction"       ""                              $LIVE_AUTH
+add_cron "*/15 * * * *"     "invoice_expire_bulk"            POST "$BASE_URL/invoices/expire"                            ""                              $LIVE_AUTH
 
 # Install the generated crontab
 crontab $TMP_CRONTAB

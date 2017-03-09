@@ -9,7 +9,7 @@ class Constants
     const YES            = 'Y';
     const NO             = 'N';
     const SUCCESS        = 'S';
-    const FALURE         = 'F';
+    const FAILURE        = 'F';
     const PAYEE_NAME     = 'RAZORPAY';
     const AUTH_MENU_ID   = 'CIMSHP';
     const AUTH_CALL_MODE = '2';

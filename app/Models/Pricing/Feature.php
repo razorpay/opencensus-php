@@ -10,6 +10,12 @@ class Feature
     const PAYOUT            = 'payout';
     const RECURRING         = 'recurring';
 
+    const FEATURE_LIST = [
+        self::PAYMENT,
+        self::PAYOUT,
+        self::RECURRING,
+    ];
+
     public static function validateFeature($feature)
     {
         if (defined(__CLASS__.'::'.strtoupper($feature)) === false)

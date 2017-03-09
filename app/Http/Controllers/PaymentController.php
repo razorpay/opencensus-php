@@ -139,6 +139,15 @@ class PaymentController extends Controller
         return ApiResponse::json($data);
     }
 
+    public function postPayout(string $id)
+    {
+        $input = Request::all();
+
+        $data = $this->payment->payout($id, $input);
+
+        return ApiResponse::json($data);
+    }
+
     /**
      * @deprecated
      * @return mixed
@@ -188,6 +197,15 @@ class PaymentController extends Controller
     public function getCard($id)
     {
         $data = (new Card\Service)->fetchById($id);
+
+        return ApiResponse::json($data);
+    }
+
+    public function getCardRecurring()
+    {
+        $input = Request::all();
+
+        $data = (new Card\Service)->getCardRecurring($input);
 
         return ApiResponse::json($data);
     }
@@ -280,5 +298,31 @@ class PaymentController extends Controller
         $data = $this->payment->authorizeLockTimeOutPayments($paymentIds);
 
         return ApiResponse::json($data);
+    }
+
+    /**
+     * Create new transfers on a payment
+     *
+     * @param  string   $paymentId
+     */
+    public function postTransfer(string $paymentId)
+    {
+        $input = Request::all();
+
+        $transfers = $this->payment->transfer($paymentId, $input);
+
+        return ApiResponse::json($transfers);
+    }
+
+    /**
+     * Get all transfers made on a payment
+     *
+     * @param  string   $paymentId
+     */
+    public function getTransfers(string $paymentId)
+    {
+        $transfers = $this->payment->getTransfers($paymentId);
+
+        return ApiResponse::json($transfers);
     }
 }

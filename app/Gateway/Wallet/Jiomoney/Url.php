@@ -10,9 +10,6 @@ class Url
     const TEST_VERIFY_DOMAIN         = 'https://testbill.rpay.co.in:8443/';
     const LIVE_VERIFY_DOMAIN         = 'https://pp2bill.jiomoney.com:8443/';
 
-    const TEST_PAYMENT_STATUS_DOMAIN = 'https://testpg.rpay.co.in/reliance-webpay/';
-    const LIVE_PAYMENT_STATUS_DOMAIN = 'https://pp2bill.jiomoney.com:8443/reliance-webpay/';
-
     const AUTHORIZE                  = 'v1.0/jiopayments';
     const REFUND                     = 'jiorefund';
     const VERIFY                     = 'Services/TransactionInquiry';

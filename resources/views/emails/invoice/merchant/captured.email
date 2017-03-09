@@ -1,0 +1,24 @@
+<! -- >
+  @extends('emails.invoice.notification')
+
+  @section('header')
+    <div class="text-center">
+         <h2 style="color: {{ $merchant['brand_text_color'] }}">
+            {{ $invoice['type_label'] }}: {{ $invoice['receipt'] or $invoice['id'] }} paid successfully
+        </h2>
+        <div style="color: {{ $merchant['brand_text_color'] }}; margin-top: 8px;">
+            {{ $invoice['receipt'] or $invoice['id'] }} issued on {{ $invoice['issued_at_formatted'] }} has been paid
+        </div>
+    </div>
+  @endsection
+
+  @section('footerCTA')
+      <a class="footer--cta" href="{{ $invoice['dashboard_url'] }}" target="_blank" style="
+        color: {{ $merchant['brand_text_color'] }};
+        background-color: {{ $merchant['brand_color'] }};
+        border: 1px solid {{ $merchant['brand_color'] }};
+      ">
+        VIEW ON DASHBOARD
+      </a>
+  @endsection
+<! -- >

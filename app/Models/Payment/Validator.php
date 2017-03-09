@@ -6,6 +6,7 @@ use Cache;
 use Lib\PhoneBook;
 use RZP\Base;
 use RZP\Exception;
+use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Models\Upi;
 use RZP\Models\Card;
@@ -17,31 +18,36 @@ use RZP\Models\Payment\Processor\Wallet;
 class Validator extends Base\Validator
 {
     protected static $createRules = [
-        'amount'                  =>  'required|integer',
-        'currency'                =>  'required|size:3',
-        'method'                  =>  'custom',
-        'vpa'                     =>  'required_if:method,upi|max:100|custom',
-        'card'                    =>  'sometimes',
-        'bank'                    =>  'required_if:method,netbanking',
-        'wallet'                  =>  'required_if:method,wallet|custom',
-        'emi_duration'            =>  'required_if:method,emi|integer|in:3,6,9,12,18,24',
-        'description'             =>  'sometimes',
-        'email'                   =>  'sometimes|email',
-        'contact'                 =>  'sometimes|contact_syntax',
-        'signature'               =>  'sometimes',
-        'notes'                   =>  'sometimes|notes',
-        'notes.merchant_order_id' =>  'required_with:signature',
-        'callback_url'            =>  'sometimes|url',
-        'order_id'                =>  'sometimes',
-        'customer_id'             =>  'sometimes',
+        'amount'                  => 'required|integer',
+        'currency'                => 'required|size:3',
+        'method'                  => 'custom',
+        'vpa'                     => 'required_if:method,upi|max:100|custom',
+        'card'                    => 'sometimes',
+        'bank'                    => 'required_if:method,netbanking',
+        'wallet'                  => 'required_if:method,wallet|custom',
+        'emi_duration'            => 'required_if:method,emi|integer|in:3,6,9,12,18,24',
+        'description'             => 'sometimes',
+        'email'                   => 'sometimes|email',
+        'contact'                 => 'sometimes|contact_syntax',
+        'signature'               => 'sometimes',
+        'notes'                   => 'sometimes|notes',
+        'notes.merchant_order_id' => 'required_with:signature',
+        'callback_url'            => 'sometimes|url',
+        'order_id'                => 'sometimes|filled',
+        'customer_id'             => 'required_if:wallet,openwallet|public_id|filled',
         'subscription_id'         =>  'sometimes|string|size:18',
-        'app_token'               =>  'sometimes',
-        'token'                   =>  'sometimes',
-        'save'                    =>  'sometimes|in:0,1',
-        'recurring'               =>  'sometimes_if:method,card|in:0,1',
-        'fee'                     =>  'sometimes|integer|max:50000000',
-        'service_tax'             =>  'sometimes|integer|max:50000000',
-        '_'                       =>  'sometimes'
+        'app_token'               => 'sometimes',
+        'token'                   => 'sometimes',
+        'save'                    => 'sometimes|in:0,1',
+        'recurring'               => 'sometimes_if:method,card|in:0,1',
+        'fee'                     => 'sometimes|filled|integer|max:50000000',
+        'service_tax'             => 'sometimes|filled|integer|max:50000000',
+        'on_hold'                 => 'sometimes|boolean',
+        // 'on_hold_until'           => 'sometimes|integer',
+        'ip'                      => 'sometimes|ip',
+        'referer'                 => 'sometimes|string|max:2083',
+        'user_agent'              => 'sometimes|string',
+        '_'                       => 'sometimes|array',
     ];
 
     protected static $captureRules = [
@@ -50,8 +56,22 @@ class Validator extends Base\Validator
     ];
 
     protected static $refundRules = [
-        'amount'        => 'sometimes|integer',
-        'notes'         => 'sometimes|notes'
+        'amount'                  => 'sometimes|integer',
+        'notes'                   => 'sometimes|notes',
+        'reverse_all'             => 'sometimes|boolean',
+        'reversals'               => 'sometimes|array',
+        'reversals.*.transfer'    => 'required|public_id',
+        'reversals.*.amount'      => 'required|integer|min:100'
+    ];
+
+    protected static $transferRules = [
+        'transfers'                  => 'required|array',
+        'transfers.*.customer'       => 'sometimes|public_id',
+        'transfers.*.account'        => 'sometimes|public_id',
+        'transfers.*.amount'         => 'required|integer|min:100',
+        'transfers.*.currency'       => 'required|string|size:3',
+        'transfers.*.on_hold'        => 'sometimes|boolean',
+        // 'transfers.*.on_hold_until'  => 'sometimes|integer',
     ];
 
     protected static $createValidators = [
@@ -65,9 +85,14 @@ class Validator extends Base\Validator
         'email',
     ];
 
-    protected function validateEmail($input)
+    protected function validateEmail(array $input)
     {
-        if (($input[Entity::METHOD] !== 'aeps') and
+        $allowedPaymentMethods = [
+            'aeps',
+            Payment\Method::TRANSFER,
+        ];
+
+        if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
             (empty($input[Entity::EMAIL]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -102,7 +127,7 @@ class Validator extends Base\Validator
         Wallet::validateExists($value);
     }
 
-    protected function validateCardKey($input)
+    protected function validateCardKey(array $input)
     {
         if (($input['method'] !== Payment\Method::CARD) and
             ($input['method'] !== Payment\Method::EMI))
@@ -131,7 +156,7 @@ class Validator extends Base\Validator
         }
     }
 
-    protected function validateAmount($input)
+    protected function validateAmount(array $input)
     {
         $amount = $input['amount'];
 
@@ -169,7 +194,7 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateUpiVpaPsp($vpa, $excludedPsps)
+    public function validateUpiVpaPsp(string $vpa, array $excludedPsps)
     {
         $vpaParts = explode('@', $vpa);
 
@@ -205,6 +230,22 @@ class Validator extends Base\Validator
         }
     }
 
+    public function validateForPayout(string $mode)
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
+
+        if (($mode === MODE::LIVE) and
+            ($this->entity->transaction->isSettled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_PAYOUT_BEFORE_SETTLEMENT);
+        }
+    }
+
     protected function validateBank($input)
     {
         if ($input['method'] !== Payment\Method::NETBANKING)
@@ -228,7 +269,12 @@ class Validator extends Base\Validator
 
     protected function validateContact($input)
     {
-        if (($input[Entity::METHOD] !== 'aeps') and
+        $allowedPaymentMethods = [
+            'aeps',
+            Payment\Method::TRANSFER,
+        ];
+
+        if ((in_array($input[Entity::METHOD], $allowedPaymentMethods, true) === false) and
             (empty($input[Entity::CONTACT]) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
@@ -338,6 +384,15 @@ class Validator extends Base\Validator
     public function cancelValidate($payment)
     {
         $this->failIfNotCreated($payment);
+    }
+
+    public function validateIsCaptured()
+    {
+        if ($this->entity->isCaptured() === false)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_STATUS_NOT_CAPTURED);
+        }
     }
 
     public function captureAmountValidate(Payment\Entity $payment, int $amount)
