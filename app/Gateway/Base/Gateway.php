@@ -718,6 +718,16 @@ class Gateway
         return $this->input['terminal']['gateway_merchant_id'];
     }
 
+    protected function getTestMerchantId2()
+    {
+        return $this->config['test_merchant_id2'];
+    }
+
+    protected function getLiveMerchantId2()
+    {
+        return $this->input['terminal']['gateway_merchant_id2'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];

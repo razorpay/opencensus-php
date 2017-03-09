@@ -28,6 +28,7 @@ class TerminalTest extends TestCase
         $payment = $this->doAuthAndCapturePayment($payment);
 
         $payment = $this->getLastEntity('payment', true);
+
         $this->assertEquals('billdesk', $payment['gateway']);
         $this->assertEquals('1000BdeskTrmnl', $payment['terminal_id']);
     }

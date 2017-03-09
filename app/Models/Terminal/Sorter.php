@@ -67,9 +67,7 @@ class Sorter extends Base\Core
 
             $traceData = ['count' => count($terminals), 'terminals' => $terminalIds, 'msg' => $msg];
 
-            $trace = Trace::getFacadeRoot();
-
-            $trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
+            $this->trace->info(TraceCode::TERMINAL_SELECTION, $traceData);
         }
     }
 }

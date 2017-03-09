@@ -573,8 +573,22 @@ class TraceCode
 
     // Trace codes for offers
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
+    const OFFER_IIN_DOES_NOT_EXISTS                 = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_DEACTIVATE                          = 'OFFER_DEACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
+    const OFFER_APPLIED_ON_PAYMENT                  = 'OFFER_APPLIED_ON_PAYMENT';
+    const OFFER_NOT_APPLIED_ON_PAYMENT              = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_APPLIED_ON_ORDER                    = 'OFFER_APPLIED_ON_ORDER';
+    const OFFER_ORDER_AMOUNT_CHECK                  = 'OFFER_ORDER_AMOUNT_CHECK';
+    const OFFER_PAYMENT_AMOUNT_CHECK                = 'OFFER_PAYMENT_AMOUNT_CHECK';
+    const OFFER_PERIOD_CHECK                        = 'OFFER_PERIOD_CHECK';
+    const OFFER_WALLET_CHECK                        = 'OFFER_WALLET_CHECK';
+    const OFFER_NETBANKING_CHECK                    = 'OFFER_NETBANKING_CHECK';
+    const OFFER_CARD_IIN_CHECK                      = 'OFFER_CARD_IIN_CHECK';
+    const OFFER_CARD_TYPE_CHECK                     = 'OFFER_CARD_TYPE_CHECK';
+    const OFFER_CARD_NETWORK_CHECK                  = 'OFFER_CARD_NETWORK_CHECK';
+    const OFFER_CARD_ISSUER_CHECK                   = 'OFFER_CARD_ISSUER_CHECK';
 
     // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST              = 'ADD_GATEWAY_PRIORITY_REQUEST';
@@ -710,6 +724,9 @@ class TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
+
+        self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
+        self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
     );
 
     /**
