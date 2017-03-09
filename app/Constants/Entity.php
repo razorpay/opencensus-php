@@ -255,7 +255,6 @@ class Entity
 
         if (class_exists($class) === false)
         {
-            s($class);
             if (isset(self::$repository[$entity]))
             {
                 $class = self::$repository[$entity] . '\\' . $repositoryType;

@@ -65,6 +65,11 @@ class NodalAccount
 
                 $paymentRefNo = $settlement->getPublicId();
             }
+            else
+            {
+                throw new Exception\InvalidArgumentException(
+                    'Not a valid entity for Settlement-file generation: ' . get_class($entity));
+            }
 
             $merchant = $settlement->merchant;
 
