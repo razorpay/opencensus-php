@@ -808,6 +808,11 @@ class Gateway
         return $this->app['repo']->$gateway;
     }
 
+    protected function getCacheKey($input)
+    {
+        return $this->gateway . '_' . $input['payment']['id'];
+    }
+
     protected function getMappedAttributes($attributes)
     {
         $attr = [];

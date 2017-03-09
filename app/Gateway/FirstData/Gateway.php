@@ -154,11 +154,6 @@ class Gateway extends Base\Gateway
         return $response['content'];
     }
 
-    protected function getCacheKey($input)
-    {
-        return 'migs_' . $input['payment']['id'];
-    }
-
     public function capture(array $input)
     {
         parent::capture($input);
