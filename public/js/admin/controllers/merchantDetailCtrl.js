@@ -118,9 +118,6 @@ app.controller('MerchantDetailCtrl', [
         return {};
       }
 
-      delete methods.banks;
-      delete methods.merchant_id;
-
       // Wallets are given a weight of 1 by default
       // and we sort in descending order
       var weights = {
@@ -135,7 +132,12 @@ app.controller('MerchantDetailCtrl', [
         'paytm': -10
       };
 
-      return Object.keys(methods).sort(function(m1, m2) {
+      // First drop any extra non-boolean fields
+      // like merchant_id and banks
+      return Object.keys(methods).filter(function(m) {
+        return (typeof methods[m] === 'boolean');
+      }).sort(function(m1, m2) {
+        // Then sort it by the weights table above
         var w1 = weights[m1] ? weights[m1] : 1;
         var w2 = weights[m2] ? weights[m2] : 1;
 

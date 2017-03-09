@@ -386,9 +386,8 @@
           Methods
         </div>
         <div ng-init="isMethodsCollapsed = true" collapse="isMethodsCollapsed" class="panel-body">
-          <!-- TODO: Convert this to a ng-repeat. Make sure you maintain the labels and order -->
           <div class="list-group-item" ng-repeat="methodKey in sortMethods(merchant.details.methods)">
-            <span class="pull-right" tooltip="{{merchant.details.methods[methodKey] == true ? 'Enabled' : 'Not Enabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods[methodKey] == true, 'fa-times text-danger':merchant.details.methods[methodKey] == false}"></i></span>
+            <span class="pull-right" tooltip="{{merchant.details.methods[methodKey] == true ? 'Enabled' : 'Disabled'}}"><i class="fa" ng-class="{'fa-check text-success': merchant.details.methods[methodKey] == true, 'fa-times text-danger':merchant.details.methods[methodKey] == false}"></i></span>
             <i aria-hidden="true" class="fa {{getMethodIconClass(methodKey)}}"></i>
             {{getMethodLabel(methodKey)}}
           </div>
