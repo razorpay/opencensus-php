@@ -1786,11 +1786,12 @@ UPDATE payment_analytics
     SET browser_version = platform_version
     WHERE browser is not NULL
     AND platform_version is not NULL
-    AND platform = 'browser';
+    AND platform = 1
+    AND browser_version is NULL;
 
 UPDATE payment_analytics
     SET platform_version = NULL
-    WHERE platform = 'browser'
+    WHERE platform = 1
     AND platform_version is not NULL
     AND browser is not NULL
     AND browser_version is not NULL;
