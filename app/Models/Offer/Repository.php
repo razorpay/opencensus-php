@@ -15,10 +15,11 @@ class Repository extends Base\Repository
     protected $entity = 'offer';
 
     protected $appFetchParamRules = [
-        Entity::PAYMENT_METHOD            => 'sometimes|alpha',
-        Entity::PAYMENT_METHOD_TYPE       => 'sometimes|alpha',
-        Entity::PAYMENT_NETWORK           => 'sometimes|alpha',
-        Entity::ISSUER                    => 'sometimes|alpha',
+        Entity::MERCHANT_ID         => 'sometimes|alpha_num',
+        Entity::PAYMENT_METHOD      => 'sometimes|alpha',
+        Entity::PAYMENT_METHOD_TYPE => 'sometimes|alpha',
+        Entity::PAYMENT_NETWORK     => 'sometimes|alpha',
+        Entity::ISSUER              => 'sometimes|alpha',
     ];
 
     /**
@@ -34,22 +35,6 @@ class Repository extends Base\Repository
         Entity::MAX_CASHBACK,
         Entity::FLAT_CASHBACK,
     ];
-
-    public function fetchForOrder(Order\Entity $order)
-    {
-        if ($order->hasRelation('offer'))
-        {
-            return $order->offer;
-        }
-
-        $offerId = $order->getOfferId();
-
-        $offer = $this->findOrFail($offerId);
-
-        $order->offer()->associate($offer);
-
-        return $offer;
-    }
 
     public function fetchExistingOffers(Entity $newOffer, string $merchantId)
     {

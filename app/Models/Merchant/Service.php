@@ -80,9 +80,9 @@ class Service extends Base\Service
 
             // Update merchant org
             $merchant->org()->associate($org);
-
-            $this->repo->saveOrFail($merchant);
         }
+
+        $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
     }
