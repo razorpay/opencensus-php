@@ -47,19 +47,25 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // Ideally, we could have returned the request array from
-        // here only.
-        //
-        // However, we prevent one network call on client side by
-        // doing it on the server side here.
-
-        $request = $this->makeRequestAndGetFormData($request);
-
-        if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
+        // Enabling optimized flow only for test merchant
+        // We'll enable it for all the merchants once we
+        // test this flow properly
+        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
         {
-            $input['gateway'] = $request['content'];
+            // Ideally, we could have returned the request array from
+            // here only.
+            //
+            // However, we prevent one network call on client side by
+            // doing it on the server side here.
 
-            return $this->callback($input);
+            $request = $this->makeRequestAndGetFormData($request);
+
+            if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
+            {
+                $input['gateway'] = $request['content'];
+
+                return $this->callback($input);
+            }
         }
 
         return $request;
