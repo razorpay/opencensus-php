@@ -277,7 +277,7 @@ class Reconciler3
 
         $status = $class::FAILED;
 
-        if ($statusCode === 'P')
+        if ($statusCode === Status::PROCESSED)
         {
             $utr = trim($row['UTR number']);
 
