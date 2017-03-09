@@ -94,10 +94,17 @@ app.controller('PaymentDetailCtrl', [
     };
 
     $scope.fetchAndShowCardDetails = function() {
-      var request = $http({
-        method: 'get',
-        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/card',
+      var params = {};
+      params.route_name = 'payment_fetch_card_details';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': $scope.entity.id
+      };
+
+      var request = $http.get('/generic', {
+        params: params
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.card = data.data;
@@ -150,12 +157,21 @@ app.controller('PaymentDetailCtrl', [
         amount: captureAmount,
         currency: currency
       };
+
+      var params = {};
+      params.route_name = 'payment_capture';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': $scope.entity.id
+      };
+      params.body = data;
+
       var request = $http({
+        url: '/generic',
         method: 'post',
-        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/capture',
-        transformRequest: transformRequestAsFormPost,
-        data: data
+        data: params
       });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Payment Captured', true);
@@ -179,10 +195,18 @@ app.controller('PaymentDetailCtrl', [
         return;
       }
 
+      var params = {};
+      params.route_name = 'payment_refund';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': $scope.entity.id
+      };
+      params.body = data;
+
       var request = $http({
+        url: '/generic',
         method: 'post',
-        url: '/' + $scope.mode + '/payments/' + $scope.entity.id + '/refund',
-        data: data
+        data: params
       });
 
       request.success(function (data) {
@@ -208,11 +232,22 @@ app.controller('PaymentDetailCtrl', [
         $scope.isRefundsCollapsed = true;
         return;
       }
-      var request = $http.get('/' + $scope.mode + '/payments/' + $scope.entity.id + '/refunds');
+
+      var params = {};
+      params.route_name = 'payment_fetch_refunds';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': $scope.entity.id
+      };
+
+      var request = $http.get('/generic', {
+        params: params
+      });
+
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          $scope.entity.refunds = data.data;
+          $scope.entity.refunds = data.data.items;
           $scope.isRefundsCollapsed = false;
         } else {
           angular.forEach(data.errors, function (error) {

@@ -5,6 +5,7 @@ namespace App\Generic;
 use App\Base;
 use App\Admin;
 use App\Trace\TraceCode;
+use Input;
 
 class Service extends Base\Service
 {
@@ -15,18 +16,18 @@ class Service extends Base\Service
         $this->trace = $app['trace'];
     }
 
-    public function call(array $input, $route)
+    public function call(array $input, $route, $auth)
     {
-        list($error, $response) = $this->makeRawApiCall($input, $route);
+        list($error, $response) = $this->makeRawApiCall($input, $route, $auth);
 
         return [$error, $response];
     }
 
-    public function makeRawApiCall($input, $path)
+    public function makeRawApiCall($input, $path, $auth)
     {
-        $input['mode'] = 'live';
+        $input['mode'] = Input::get('mode') ?? 'live';
 
-        $input['auth'] = 'admin'; // admin auth
+        $input['auth'] = $auth;
 
         $input['token'] = session('api_admin.token'); // admin auth token
 
@@ -41,7 +42,7 @@ class Service extends Base\Service
 
     public function makeRawApiCallInternal($input, $path)
     {
-        $input['mode'] = 'live';
+        $input['mode'] = Input::get('mode') ?? 'live';
 
         $input['auth'] = 'internal'; // app auth
 

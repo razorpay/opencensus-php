@@ -7,7 +7,7 @@ app.controller('AddOrgCtrl', [
   function ($scope, $http, alertsFactory, $stateParams, $upload) {
     $scope.fetchOrg = function(id) {
       var request = $http({
-        url: '/admin/generic',
+        url: '/generic',
         params: {
           route_name: 'org_get',
           url_params: {
@@ -38,7 +38,7 @@ app.controller('AddOrgCtrl', [
       } else {
         data.body.allow_sign_up = "1";
       }
-      var request = $http.put('/admin/generic', data, {
+      var request = $http.put('/generic', data, {
         params: {
           route_name: 'org_edit',
           url_params: {
@@ -115,7 +115,7 @@ app.controller('AddOrgCtrl', [
 
       var request = $http({
         method: 'post',
-        url: '/admin/generic',
+        url: '/generic',
         data: data
       });
 
