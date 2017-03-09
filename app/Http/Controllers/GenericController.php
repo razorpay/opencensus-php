@@ -90,7 +90,7 @@ class GenericController extends Controller
 
                 if (\Gate::has($routeName) and \Gate::denies($routeName))
                 {
-                    abort(401, 'Unauthorized');
+                    abort(403, 'Forbidden');
                 }
             }
         }
