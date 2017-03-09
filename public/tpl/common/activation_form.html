@@ -654,52 +654,72 @@
       </div>
       <div class="form-group">
         <label for="business_proof" class="col-sm-3 control-label">Business Registration Proof <a href ng-click="isBusinessRegistrationHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
-        <div class="col-sm-8">
-          <span class="help-block" ng-show="isBusinessRegistrationHelpOpen">
-              Upload scan of following:
-            <li>Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)</li>
-            <li>Certificate of Incorporation (Mandatory if private limited)</li>
-            <li>Trust/Society/NGO etc. registration proof</li>
-          </span>
+        <div class="row">
+          <div class="col-sm-{{admin?7:8}}">
+            <span class="help-block" ng-show="isBusinessRegistrationHelpOpen">
+                Upload scan of following:
+              <li>Sales Tax/Service Tax or Shop Act Registration (Mandatory, if Partnership/Proprietership firm)</li>
+              <li>Certificate of Incorporation (Mandatory if private limited)</li>
+              <li>Trust/Society/NGO etc. registration proof</li>
+            </span>
             <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_proof" ng-file-select="onFileSelect($files, 'business_proof')">
             <div class="text-center m-t m-b alerts">
               <alert ng-repeat="alert in fileAlerts.business_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_proof.closeAlert($index)">{{alert.msg}}</alert>
             </div>
+          </div>
+          <div class="col-sm-1" ng-show="admin">
+            <a class="btn btn-primary" ng-disabled="!files.business_proof" href="{{files.business_proof}}" tooltip="{{files.business_proof ? 'Opens in a new tab' : 'Not yet uploaded'}}" target="_blank">Download</a>
+          </div>
         </div>
       </div>
       <div class="form-group">
         <label for="business_pan_proof" class="col-sm-3 control-label">Business PAN <a href ng-click="isPANHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
-        <div class="col-sm-8">
-          <span class="help-block" ng-show="isPANHelpOpen">Company/Partnership/LLP PAN Card (Sole Proprietor can use personal PAN)</span>
-          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_pan_proof" ng-file-select="onFileSelect($files, 'business_pan_proof')">
-          <div class="text-center m-t m-b alerts">
-            <alert ng-repeat="alert in fileAlerts.business_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row">
+          <div class="col-sm-{{admin?7:8}}">
+            <span class="help-block" ng-show="isPANHelpOpen">Company/Partnership/LLP PAN Card (Sole Proprietor can use personal PAN)</span>
+            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="business_pan_proof" ng-file-select="onFileSelect($files, 'business_pan_proof')">
+            <div class="text-center m-t m-b alerts">
+              <alert ng-repeat="alert in fileAlerts.business_pan_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.business_pan_proof.closeAlert($index)">{{alert.msg}}</alert>
+            </div>
+          </div>
+          <div class="col-sm-1" ng-show="admin">
+            <a class="btn btn-primary" ng-disabled="!files.business_pan_proof" href="{{files.business_pan_proof}}" tooltip="{{files.business_pan_proof ? 'Opens in a new tab' : 'Not yet uploaded'}}" target="_blank">Download</a>
           </div>
         </div>
       </div>
       <div class="form-group">
         <label for="address_proof" class="col-sm-3 control-label">Company's Bank Account Statement with Address</label>
-        <div class="col-sm-8">
-          <span class="help-block">
-          Upload following:
-          <li>Bank Account Statement (of last three months or since opening of account, whichever is earlier)</li>
-          </span>
-          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="address_proof" ng-file-select="onFileSelect($files, 'address_proof')">
-          <div class="text-center m-t m-b alerts">
-            <alert ng-repeat="alert in fileAlerts.address_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.address_proof.closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row">
+          <div class="col-sm-{{admin?7:8}}">
+            <span class="help-block">
+            Upload following:
+            <li>Bank Account Statement (of last three months or since opening of account, whichever is earlier)</li>
+            </span>
+            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="address_proof" ng-file-select="onFileSelect($files, 'address_proof')">
+            <div class="text-center m-t m-b alerts">
+              <alert ng-repeat="alert in fileAlerts.address_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.address_proof.closeAlert($index)">{{alert.msg}}</alert>
+            </div>
+          </div>
+          <div class="col-sm-1" ng-show="admin">
+            <a class="btn btn-primary" ng-disabled="!files.address_proof" href="{{files.address_proof}}" tooltip="{{files.address_proof ? 'Opens in a new tab' : 'Not yet uploaded'}}" target="_blank">Download</a>
           </div>
         </div>
       </div>
       <div class="form-group">
         <label for="promoter_address_proof" class="col-sm-3 control-label">Authorised Signatory Address Proof <a href ng-click="isPromoterAddressHelpOpen = true"><i class="fa fa-question-circle"></i></a></label>
-        <div class="col-sm-8">
-          <span class="help-block" ng-show="isPromoterAddressHelpOpen">
-          Upload address proof (preferably scanned copy of passport) of at least one authorised signatory.
-          In case of sole proprietership, upload your personal address proof.
-          </span>
-          <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_address_proof" ng-file-select="onFileSelect($files, 'promoter_address_proof')">
-          <div class="text-center m-t m-b alerts">
-            <alert ng-repeat="alert in fileAlerts.promoter_address_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_address_proof.closeAlert($index)">{{alert.msg}}</alert>
+        <div class="row">
+          <div class="col-sm-{{admin?7:8}}">
+            <span class="help-block" ng-show="isPromoterAddressHelpOpen">
+            Upload address proof (preferably scanned copy of passport) of at least one authorised signatory.
+            In case of sole proprietership, upload your personal address proof.
+            </span>
+            <input ui-jq="filestyle" type="file" data-icon="false" data-classButton="btn btn-default" data-classInput="form-control inline v-middle input-s" name="promoter_address_proof" ng-file-select="onFileSelect($files, 'promoter_address_proof')">
+            <div class="text-center m-t m-b alerts">
+              <alert ng-repeat="alert in fileAlerts.promoter_address_proof.getAlerts()" type="{{alert.type}}" close="fileAlerts.promoter_address_proof.closeAlert($index)">{{alert.msg}}</alert>
+            </div>
+          </div>
+          <div class="col-sm-1" ng-show="admin">
+            <a class="btn btn-primary" ng-disabled="!files.address_proof" href="{{files.address_proof}}" tooltip="{{files.address_proof ? 'Opens in a new tab' : 'Not yet uploaded'}}" target="_blank">Download</a>
           </div>
         </div>
       </div>

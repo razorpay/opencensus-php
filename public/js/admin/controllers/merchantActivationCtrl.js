@@ -74,11 +74,17 @@ app.controller('MerchantActivationCtrl', [
       }
     };
 
+    /**
+     * This fetches details like merchant Name, email
+     * to show in the top section. Also includes
+     * the activation form details
+     */
     var fetchMerchantDetails = function() {
       var request = $http.get($scope.getUrl('fetch_merchant_details'));
       request.success(function (data) {
         if (data.success) {
           $scope.merchant = data.data.merchant;
+          $scope.files = data.data.activation.files;
         } else {
           $scope.alerts.addAlert('danger', 'Merchant Info could not be fetched');
         }
