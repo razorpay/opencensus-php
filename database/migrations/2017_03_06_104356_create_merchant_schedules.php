@@ -21,11 +21,18 @@ class CreateMerchantSchedules extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(MerchantSchedule::MERCHANT_ID, MerchantSchedule::ID_LENGTH);
+            $table->increments(MerchantSchedule::ID);
 
-            $table->char(MerchantSchedule::METHOD, 20);
+            $table->char(MerchantSchedule::MERCHANT_ID, Merchant::ID_LENGTH);
 
-            $table->char(MerchantSchedule::SCHEDULE_ID, MerchantSchedule::ID_LENGTH);
+            $table->char(MerchantSchedule::METHOD, 20)
+                  ->nullable();
+
+            $table->char(MerchantSchedule::SCHEDULE_ID, Schedule::ID_LENGTH);
+
+            $table->integer(MerchantSchedule::CREATED_AT);
+
+            $table->integer(MerchantSchedule::UPDATED_AT);
 
             $table->foreign(MerchantSchedule::MERCHANT_ID)
                   ->references(Merchant::ID)

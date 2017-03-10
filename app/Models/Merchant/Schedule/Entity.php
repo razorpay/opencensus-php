@@ -10,9 +10,9 @@ class Entity extends Base\PublicEntity
     const METHOD            = 'method';
     const SCHEDULE_ID       = 'schedule_id';
 
-    protected $primaryKey = self::MERCHANT_ID;
-
     protected $entity = 'merchant_schedule';
+
+    public $incrementing = true;
 
     protected $fillable = [
         self::METHOD,
