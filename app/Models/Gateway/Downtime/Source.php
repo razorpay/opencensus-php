@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Webhook;
+namespace RZP\Models\Gateway\Downtime;
 
 class Source
 {

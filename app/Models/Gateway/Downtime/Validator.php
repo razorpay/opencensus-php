@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Webhook;
+namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Base;
 use RZP\Exception;
@@ -16,8 +16,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::DOWNTIME_FROM   => 'required|integer',
-        Entity::DOWNTIME_TO     => 'sometimes|integer',
+        Entity::DOWNTIME_FROM   => 'required|integer|after:now',
+        Entity::DOWNTIME_TO     => 'sometimes|integer|after:now',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -31,6 +31,21 @@ class Validator extends Base\Validator
     ];
 
     protected static $editRules = [
+        Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
+        Entity::DOWNTIME_FROM   => 'sometimes|integer',
+        Entity::SOURCE          => 'required|string|max:30|custom',
+        Entity::ISSUER          => 'sometimes|string|max:50',
+        Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
+        Entity::CARD_TYPE       => 'sometimes|string|max:10',
+        Entity::NETWORK         => 'sometimes|string|max:10',
+        Entity::COMMENT         => 'sometimes|string|max:500',
+        Entity::DOWNTIME_TO     => 'sometimes|integer',
+        Entity::SCHEDULED       => 'sometimes|bool',
+        Entity::PARTIAL         => 'sometimes|bool',
+        Entity::PUBLIC          => 'sometimes|bool',
+    ];
+
+    protected static $editDuplicateRules = [
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
         Entity::DOWNTIME_FROM   => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',
@@ -240,7 +255,7 @@ class Validator extends Base\Validator
         if (Gateway::isMethodSupported($method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Method: ' . $method . ' is not supported for gateway: '. $gateway);
+                'Gateway ' . $gateway . ' does not support ' . $method . ' method');
         }
     }
 }
