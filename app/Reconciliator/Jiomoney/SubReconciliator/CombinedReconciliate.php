@@ -12,16 +12,13 @@ class CombinedReconciliate extends Base\CombinedReconciliate
      *******************/
     const COLUMN_TRANSACTION_TYPE = 'tran_type_identifier';
 
-    const TXN_TYPE_JIOMONEY = 'Jio Money';
-
-    const TXN_TYPE_JIOMONEY_WALLET = 'Jio Money Wallet';
+    const TXN_TYPE_PAYMENT = 'Jiomoney';
 
     const TXN_TYPE_REFUND = 'Refund';
 
     const TRANSACTION_TYPE_TO_RECONCILIATION_TYPE_MAP = [
-        self::TXN_TYPE_JIOMONEY        => BaseReconciliate::PAYMENT,
-        self::TXN_TYPE_JIOMONEY_WALLET => BaseReconciliate::PAYMENT,
-        self::TXN_TYPE_REFUND          => BaseReconciliate::REFUND
+        self::TXN_TYPE_PAYMENT => BaseReconciliate::PAYMENT,
+        self::TXN_TYPE_REFUND  => BaseReconciliate::REFUND
     ];
 
     protected function getReconciliationTypeForRow($row)

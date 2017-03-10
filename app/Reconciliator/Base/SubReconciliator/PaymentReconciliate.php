@@ -355,6 +355,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $referenceNumber = $this->getReferenceNumber($row);
 
+        $gatewwayPaymentDate = $this->getGatewayPaymentDate($row);
+
         $this->setPaymentAndTransaction($row, $paymentId);
 
         $cardDetails = $this->getCardDetails($row);
@@ -368,11 +370,12 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         $customerDetails = $this->getNbCustomerDetails($row);
 
         $rowDetails = [
-            BaseReconciliate::PAYMENT_ID          => $paymentId,
-            BaseReconciliate::GATEWAY_SERVICE_TAX => $serviceTax,
-            BaseReconciliate::GATEWAY_FEE         => $fee,
-            BaseReconciliate::GATEWAY_SETTLED_AT  => $gatewaySettledAt,
-            BaseReconciliate::REFERENCE_NUMBER    => $referenceNumber,
+            BaseReconciliate::PAYMENT_ID           => $paymentId,
+            BaseReconciliate::GATEWAY_SERVICE_TAX  => $serviceTax,
+            BaseReconciliate::GATEWAY_FEE          => $fee,
+            BaseReconciliate::GATEWAY_SETTLED_AT   => $gatewaySettledAt,
+            BaseReconciliate::REFERENCE_NUMBER     => $referenceNumber,
+            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewwayPaymentDate
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -413,6 +416,11 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      * @return null
      */
     protected function getReferenceNumber($row)
+    {
+        return null;
+    }
+
+    protected function getGatewayPaymentDate($row)
     {
         return null;
     }
@@ -557,6 +565,8 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $this->persistReferenceNumber($rowDetails, $gatewayPayment);
 
+        $this->persistGatewayPaymentDate($rowDetails, $gatewayPayment);
+
         $this->persistNbCustomerDetails($rowDetails, $gatewayPayment);
 
         $gatewayPayment->saveOrFail();
@@ -582,6 +592,28 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     }
 
     /**
+     * Updates the gateway payment entity with payment date from recon file
+     * if not already present
+     *
+     * @param array        $rowDetails
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function persistGatewayPaymentDate(array $rowDetails, PublicEntity $gatewayPayment)
+    {
+        if (isset($rowDetails[BaseReconciliate::GATEWAY_PAYMENT_DATE]) === false)
+        {
+            return;
+        }
+
+        $gatewayPaymentDate = $rowDetails[BaseReconciliate::GATEWAY_PAYMENT_DATE];
+
+        if ($gatewayPayment->getDate() === null)
+        {
+            $this->setGatewayPaymentDateInGateway($gatewayPaymentDate, $gatewayPayment);
+        }
+    }
+
+    /**
      * Saving customer information into the DB
      *
      * @param array        $rowDetails
@@ -589,7 +621,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
      */
     protected function persistNbCustomerDetails(array $rowDetails, PublicEntity $gatewayPayment)
     {
-        $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS];
+        $customerDetails = $rowDetails[BaseReconciliate::CUSTOMER_DETAILS] ?? [];
 
         if (empty(array_filter($customerDetails)) === true)
         {
@@ -1113,5 +1145,17 @@ class PaymentReconciliate extends Foundation\SubReconciliate
     protected function setReferenceNumberInGateway(string $referenceNumber, PublicEntity $gatewayPayment)
     {
         $gatewayPayment->setBankPaymentId($referenceNumber);
+    }
+
+    /**
+     * Sets the given gateway paymenrt date in gateway entity. Gateways storing this value
+     * as a different attribute can override this function accordingly.
+     *
+     * @param string       $referenceNumber
+     * @param PublicEntity $gatewayPayment
+     */
+    protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
+    {
+        $gatewayPayment->setDate($gatewayPaymentDate);
     }
 }

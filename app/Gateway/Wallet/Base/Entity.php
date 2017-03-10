@@ -81,6 +81,11 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::STATUS_CODE);
     }
 
+    public function setStatusCode($statusCode)
+    {
+        $this->setAttribute(self::STATUS_CODE, $statusCode);
+    }
+
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);
@@ -94,5 +99,20 @@ class Entity extends Base\Entity
     public function getAmountAttribute()
     {
         return (int) $this->attributes[self::AMOUNT];
+    }
+
+    public function getDate()
+    {
+        return $this->getAttribute(self::DATE);
+    }
+
+    public function setDate(string $date)
+    {
+        $this->setAttribute(self::DATE, $date);
+    }
+
+    public function getGatewayPaymentId()
+    {
+        return $this->getAttribute(self::GATEWAY_MERCHANT_ID);
     }
 }

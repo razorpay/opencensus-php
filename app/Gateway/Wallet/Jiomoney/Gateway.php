@@ -191,6 +191,37 @@ class Gateway extends Base\Gateway
         return true;
     }
 
+    public function forceAuthorizeFailed($input)
+    {
+        $gatewayPayment = $this->repo->wallet_jiomoney->findByPaymentIdAndAction(
+                                                            $input['payment']['id'],
+                                                            Action::AUTHORIZE);
+
+        // Return true if already authorized on gateway
+        if (($gatewayPayment->getGatewayPaymentId() !== null) and
+            ($gatewayPayment->getReceived() === true) and
+            ($gatewayPayment->getStatusCode() === StatusCode::SUCCESS))
+        {
+            return true;
+        }
+
+        if ((isset($input['gateway']['gateway_payment_id']) === false) or
+            (isset($input['gateway']['gateway_payment_date']) === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Correct field not present for the required operation');
+        }
+
+        $gatewayPayment->setGatewayPaymentId($input['gateway']['gateway_payment_id']);
+        $gatewayPayment->setDate($input['gateway']['gateway_payment_date']);
+        $gatewayPayment->setStatusCode(StatusCode::SUCCESS);
+        // TODO: Shouldn't we set received to true here?
+
+        $this->repo->wallet_jiomoney->saveOrFail($gatewayPayment);
+
+        return true;
+    }
+
     //------------------Authorize helper methods begin--------------------------
 
     protected function getPurchaseRequestArray(array $input)

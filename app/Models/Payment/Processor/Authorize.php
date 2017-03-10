@@ -314,10 +314,10 @@ trait Authorize
     }
 
     /**
-     * This is a hack authorize function specially for authorizing
-     * migs pg payments. The limit there is that, migs provides
-     * reconciliation only for three days. If we miss any failed payment
-     * reconciliation there then we need to do it manually later.
+     * This is a hack authorize function specially for authorizing paymnents
+     * from gateways who provide payment information through their verify api's
+     * for a limited time frame (e.g axis_migs, jiomoney). If we miss any failed
+     *  payment econciliation there then we need to do it manually later.
      *
      * @param Payment\Entity $payment
      * @param array $input
@@ -326,6 +326,8 @@ trait Authorize
      */
     public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = []): array
     {
+        $forceAuthorizeGateways = [Payment\Gateway::AXIS_MIGS, Payment\Gateway::WALLET_JIOMONEY];
+
         $this->setPayment($payment);
 
         if ($payment->isFailed() === false)
@@ -334,7 +336,7 @@ trait Authorize
                 'Non failed payment given for authorization');
         }
 
-        if ($payment->getGateway() !== Payment\Gateway::AXIS_MIGS)
+        if (in_array($payment->getGateway(), $forceAuthorizeGateways, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Can force authorize only on axis migs gateway');

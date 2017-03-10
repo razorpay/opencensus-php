@@ -12,7 +12,7 @@ class RefundReconciliate extends Base\RefundReconciliate
      * Row Header Names
      *******************/
     const COLUMN_REFUND_ID = 'external_reference_number';
-    const COLUMN_REFUND_AMOUNT = 'ntwk_recon_amt';
+    const COLUMN_REFUND_AMOUNT = 'transaction_amount';
 
     protected function getRefundId(array $row)
     {
