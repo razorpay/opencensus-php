@@ -12,6 +12,8 @@ use Illuminate\Database\Seeder;
 class DatabaseSeeder extends Seeder
 {
 
+    const RAZORPAY_ORG_ID = '100000razorpay';
+
     /**
      * Run the database seeds.
      *
@@ -44,7 +46,7 @@ class DatabaseSeeder extends Seeder
 
             DB::table(Table::ORG)->insert(
                 [
-                    'id'               => '100000razorpay',
+                    'id'               => self::RAZORPAY_ORG_ID,
                     'auth_type'        => 'google_auth',
                     'business_name'    => 'Razorpay',
                     'display_name'     => 'Razorpay Software Private Ltd',
@@ -78,7 +80,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
                     'id'                => '70I3fMI9AGKROX',
-                    'org_id'            => '100000razorpay',
+                    'org_id'            => self::RAZORPAY_ORG_ID,
                     'hostname'          => 'dashboard.razorpay.com',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
@@ -88,7 +90,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
                     'id'                => '70I47LP6lyPYJR',
-                    'org_id'            => '100000razorpay',
+                    'org_id'            => self::RAZORPAY_ORG_ID,
                     'hostname'          => 'beta-dashboard.razorpay.com',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
@@ -98,7 +100,7 @@ class DatabaseSeeder extends Seeder
             DB::table(Table::ORG_HOSTNAME)->insert(
                 [
                     'id'                => '70I6GMmOpMJp40',
-                    'org_id'            => '100000razorpay',
+                    'org_id'            => self::RAZORPAY_ORG_ID,
                     'hostname'          => 'dashboard.razorpay.dev',
                     'created_at'        => $currentTime,
                     'updated_at'        => $currentTime,
@@ -159,7 +161,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
 
@@ -193,9 +195,8 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
-                    )
-                );
+                    'org_id'        => self::RAZORPAY_ORG_ID,
+                ));
 
             DB::table(Table::MERCHANT_DETAIL)->insert(
                 array(
@@ -227,7 +228,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
 
@@ -262,7 +263,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
 
@@ -300,7 +301,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
 
@@ -335,7 +336,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     )
                 );
 
@@ -451,7 +452,7 @@ class DatabaseSeeder extends Seeder
                     'email'               => 'rishabh.pugalia@razorpay.com',
                     'name'                => 'Rishabh Pugalia',
                     'username'            => 'rishabhp',
-                    'org_id'              => '100000razorpay',
+                    'org_id'              => self::RAZORPAY_ORG_ID,
                     'employee_code'       => '001',
                     'branch_code'         => 'RZP001',
                     'department_code'     => 'ADMIN',
@@ -470,7 +471,7 @@ class DatabaseSeeder extends Seeder
                     'id'            => '6dLbNSpv5XbC5E',
                     'name'          => 'SuperAdmin',
                     'description'   => 'Super Administrator',
-                    'org_id'        => '100000razorpay',
+                    'org_id'        => self::RAZORPAY_ORG_ID,
                     'created_at'    => $currentTime,
                     'updated_at'    => $currentTime,
                 ],
