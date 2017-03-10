@@ -8,6 +8,7 @@ use RZP\Gateway\Billdesk;
 use RZP\Models\Base;
 use RZP\Models\Payment;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Schedule as MerchantSchedule;
 use RZP\Models\Settlement;
 use RZP\Models\Schedule;
 use RZP\Models\Transaction;
@@ -77,9 +78,15 @@ class Repository extends Base\Repository
     public function fetchUnsettledTxnsForDueSchedules($timestamp)
     {
         $merchantId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::ID);
-        $merchantScheduleId = $this->manager->merchant->getAttributeWithTableName(Merchant\Entity::SETTLEMENT_SCHEDULE_ID);
-
         $scheduleId = $this->manager->schedule->getAttributeWithTableName(Schedule\Entity::ID);
+
+        $merScheduleMerchantId = $this->manager
+                                      ->merchant_schedule
+                                      ->getAttributeWithTableName(MerchantSchedule\Entity::MERCHANT_ID);
+
+        $merScheduleScheduleId = $this->manager
+                                      ->merchant_schedule
+                                      ->getAttributeWithTableName(MerchantSchedule\Entity::SCHEDULE_ID);
 
         $transactionMerchantId = $this->getAttributeWithTableName(Transaction\Entity::MERCHANT_ID);
         $transactionId = $this->getAttributeWithTableName(Transaction\Entity::ID);
@@ -88,8 +95,9 @@ class Repository extends Base\Repository
 
         return $this->newQuery()
                     ->select($transactionData)
-                    ->join(Table::MERCHANT, $merchantId, '=', $transactionMerchantId)
-                    ->join(Table::SCHEDULE, $scheduleId, '=', $merchantScheduleId)
+                    ->join(TABLE::MERCHANT, $merchantId, '=', $transactionMerchantId)
+                    ->join(TABLE::MERCHANT_SCHEDULE, $merchantId, '=', $merScheduleMerchantId)
+                    ->join(Table::SCHEDULE, $scheduleId, '=', $merScheduleScheduleId)
                     ->where(Entity::ON_HOLD, 0)
                     ->where(Entity::SETTLED_AT, '<', $timestamp)
                     ->where(Entity::SETTLED, '=', 0)
