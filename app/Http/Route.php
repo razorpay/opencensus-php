@@ -449,7 +449,8 @@ final class Route
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
 
-        'action_maker'                            => ['post',     'actions/{entity}/{entityId}',                     'ActionController@createAction'                                    ],
+        'action_create'                           => ['post',     'actions/{entity}/{entityId}',                    'ActionController@createAction'                                     ],
+        'action_fetch_by_id'                      => ['get',      'actions/{id}',                                   'ActionController@fetchDiffById'                                    ],
     );
 
     public static $public = array(
@@ -594,7 +595,8 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
-        'action_maker'
+        'action_create',
+        'action_fetch_by_id',
     );
 
     public static $internal = array(

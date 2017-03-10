@@ -376,4 +376,5 @@ class PublicErrorDescription
 
     const BAD_REQUEST_ACTION_INVALID_TYPE                                       = 'The given action type is not valid';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                     = 'The given action method is not valid';
+    const BAD_REQUEST_ACTION_NOT_FOUND                                          = 'The given action id does not exists';
 }

@@ -4,6 +4,7 @@ namespace RZP\Models\Action;
 
 use Config;
 use RZP\Error;
+use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
 USE RZP\Trace\TraceCode;
@@ -52,6 +53,20 @@ class Service extends Base\Service
         $E = $this->$function($action);
 
         return $E->toArrayPublic();
+    }
+
+    public function fetchDiffById(string $id)
+    {
+        $esResponse = $this->esDao->searchAction(strtolower($this->baseIndex), self::ES_TYPE, $id);
+
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+        }
+
+        $diff = $esResponse[0]['_source'][Entity::DIFF];
+
+        return $diff;
     }
 
     protected function createMakerAction(Entity $action)

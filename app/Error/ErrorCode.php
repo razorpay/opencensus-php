@@ -496,4 +496,6 @@ class ErrorCode
 
     const BAD_REQUEST_ACTION_INVALID_TYPE                                           = 'BAD_REQUEST_ACTION_INVALID_TYPE';
     const BAD_REQUEST_ACTION_INVALID_METHOD                                         = 'BAD_REQUEST_ACTION_INVALID_METHOD';
+    const BAD_REQUEST_ACTION_NOT_FOUND                                              = 'BAD_REQUEST_ACTION_NOT_FOUND';
+
 }

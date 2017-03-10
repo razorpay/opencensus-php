@@ -320,6 +320,27 @@ class EsDao
         }
     }
 
+    public function searchAction($indexName, $typeName, $id)
+    {
+        $params = [
+            'index' => $indexName,
+            'type'  => $typeName,
+            'body'  => [
+                'query' => [
+                    'bool' => [
+                        'must' => [
+                            'term' => [
+                                'id.keyword' => $id
+                            ]
+                        ]
+                    ]
+                ]
+            ]
+        ];
+
+        return $this->es->searchHeimdall($params);
+    }
+
     public function searchAuditLogs($orgId, $options = [])
     {
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];

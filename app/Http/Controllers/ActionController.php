@@ -25,4 +25,11 @@ class ActionController extends Controller
 
         return ApiResponse::json($result);
     }
+
+    public function fetchDiffById(string $id)
+    {
+        $result = $this->actionService->fetchDiffById($id);
+
+        return ApiResponse::json($result);
+    }
 }
