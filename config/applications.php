@@ -95,7 +95,7 @@ return array(
     ],
 
     'drip' => [
-        'mock'      => env('DRIP_MOCK', false),
+        'mock'      => env('DRIP_MOCK', true),
         'url'       => 'https://api.getdrip.com/v2/',
         'accountId' => env('DRIP_ACCOUNT_ID'),
         'token'     => env('DRIP_TOKEN')
