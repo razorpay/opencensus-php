@@ -21,6 +21,7 @@ class Entity extends Base\PublicEntity
     const CHANNEL               = 'channel';
     const UTR                   = 'utr';
     const FAILURE_REASON        = 'failure_reason';
+    const REMARKS               = 'remarks';
     const RETURN_UTR            = 'return_utr';
 
     protected static $sign = 'setl';
@@ -46,6 +47,7 @@ class Entity extends Base\PublicEntity
         self::STATUS,
         self::TRANSACTION_ID,
         self::FAILURE_REASON,
+        self::REMARKS,
         self::CHANNEL,
         self::UTR,
         self::CREATED_AT,
@@ -211,6 +213,11 @@ class Entity extends Base\PublicEntity
     public function setServiceTax($serviceTax)
     {
         $this->setAttribute(self::SERVICE_TAX, $serviceTax);
+    }
+
+    public function setRemarks($remarks)
+    {
+        $this->setAttribute(self::REMARKS, $remarks);
     }
 
     public function setVersion($version)
