@@ -134,7 +134,11 @@ class Gateway extends Base\Gateway
             else
             {
                 $this->trace->info(
-                    FIRST_DATA_PARES_MISSING, ['gateway' => $input['gateway']]);
+                    FIRST_DATA_PARES_MISSING,
+                    [
+                        'payment_id' => $input['payment_id'],
+                        'gateway' => $input['gateway']
+                    ]);
             }
         }
 
@@ -200,6 +204,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
+                'payment_id' => $input['payment']['id'],
                 'response' => $response
             ]
         );
@@ -1288,6 +1293,10 @@ class Gateway extends Base\Gateway
             $response->body
         );
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$responseBody]);
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'payment_id' => $this->input['payment']['id'],
+                'response' => $responseBody
+            ]);
     }
 }
