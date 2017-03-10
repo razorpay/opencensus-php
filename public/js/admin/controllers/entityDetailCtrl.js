@@ -42,8 +42,8 @@ app.controller('EntityDetailCtrl', [
             $scope.alerts.addAlert('danger', error);
           });
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     }
 
