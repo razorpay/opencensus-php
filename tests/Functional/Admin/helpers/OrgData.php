@@ -103,7 +103,7 @@ return [
         ],
     ],
 
-    'testfetchMultipleOrg' => [
+    'testFetchMultipleOrg' => [
         'request' => [
             'url' => '/orgs',
             'method' => 'get',
@@ -114,13 +114,12 @@ return [
                 'count' => 2,
                 'items' => [
                     [
-                        'id' => 'org_RazorpayOrgnId',
+                        'id' => 'org_HDFCbankOrgnId',
                         'display_name' => 'Razorpay',
                         'business_name' => 'Razorpay Software Pvt Ltd',
-                        'email' => 'admin@razorpay.com',
+                        'email' => 'test@hdfcbank.com',
                         'email_domains' => [
-                            'razorpay.com',
-                            'rzp.io',
+                            'hdfcbank.com',
                         ],
                         'allow_sign_up' => false,
                         'login_logo_url' => null,
@@ -128,12 +127,13 @@ return [
                         'auth_type' => 'password',
                     ],
                     [
-                        'id' => 'org_HDFCbankOrgnId',
+                        'id' => 'org_100000razorpay',
                         'display_name' => 'Razorpay',
                         'business_name' => 'Razorpay Software Pvt Ltd',
-                        'email' => 'test@hdfcbank.com',
+                        'email' => 'admin@razorpay.com',
                         'email_domains' => [
-                            'hdfcbank.com',
+                            'razorpay.com',
+                            'rzp.io',
                         ],
                         'allow_sign_up' => false,
                         'login_logo_url' => null,
@@ -209,7 +209,7 @@ return [
         ],
         'response' => [
             'content' => [
-                'id' => 'org_RazorpayOrgnId',
+                'id' => 'org_100000razorpay',
                 'display_name' => 'Razorpay',
                 'business_name' => 'Razorpay Software Pvt Ltd',
                 'hostname' => 'dashboard.razorpay.com',

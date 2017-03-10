@@ -82,7 +82,7 @@ class OrgTest extends TestCase
         });
     }
 
-    public function testfetchMultipleOrg()
+    public function testFetchMultipleOrg()
     {
         $this->startTest();
     }

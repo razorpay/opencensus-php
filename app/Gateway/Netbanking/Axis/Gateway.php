@@ -93,15 +93,15 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
+        $this->trace->info(
+            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
+            ['gateway_response' => $response->body]);
+
         $verify->verifyResponseContent = $this->parseResponseXml($response->body);
     }
 
     public function verifyPayment(Verify $verify)
     {
-        $this->trace->info(
-            TraceCode::GATEWAY_PAYMENT_VERIFY_RESPONSE,
-            $verify->verifyResponseContent);
-
         $this->setVerifyStatus($verify);
 
         $verify->payment = $this->saveVerifyResponseIfNeeded($verify);
