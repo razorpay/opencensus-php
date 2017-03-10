@@ -7,8 +7,6 @@ use RZP\Models\Merchant\Schedule as MerchantSchedule;
 
 class Repository extends Base\Repository
 {
-    use Base\RepositoryUpdateTestAndLive;
-
     protected $entity = 'merchant_schedule';
 
     protected $appFetchParamRules = array(
