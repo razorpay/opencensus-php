@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
@@ -9,13 +9,6 @@ use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
 {
-    protected $uniqueCheckerKeys = [
-        Entity::GATEWAY,
-        Entity::ISSUER,
-        Entity::METHOD,
-        Entity::DOWNTIME_FROM,
-    ];
-
     protected $editableForDuplicate = [
         Entity::DOWNTIME_FROM,
         Entity::DOWNTIME_TO,
@@ -47,32 +40,32 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
-        $alreadyAvailable = $this->verifyIfExists($input);
+        $gatewayAbsence = $this->repo->gateway_absence->fetchUnique($input);
 
-        if (empty($alreadyAvailable) === false)
+        if ($gatewayAbsence !== null)
         {
-            list($needsUpdate, $fieldsToBeUpdated) = $this->verifyIfNeedsUpdate($alreadyAvailable, $input);
+            list($needsUpdate, $fieldsToBeUpdated) = $this->verifyIfNeedsUpdate($gatewayAbsence, $input);
 
             if ($needsUpdate === true)
             {
                 $editInput = $this->buildEditInput(
                     $input,
-                    $alreadyAvailable,
+                    $gatewayAbsence,
                     $fieldsToBeUpdated);
 
-                return $this->edit($alreadyAvailable, $editInput);
+                return $this->edit($gatewayAbsence, $editInput);
             }
 
-            return $alreadyAvailable;
+            return $gatewayAbsence;
         }
 
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
-        $downWindow = (new Entity)->build($input);
+        $gatewayAbsence = (new Entity)->build($input);
 
-        $this->repo->saveOrFail($downWindow);
+        $this->repo->saveOrFail($gatewayAbsence);
 
-        return $downWindow;
+        return $gatewayAbsence;
     }
 
     public function edit(Entity $downWindow, array $input)
@@ -140,23 +133,6 @@ class Core extends Base\Core
         return $activeAbsentees->first();
     }
 
-    protected function verifyIfExists(array $input)
-    {
-        $queryParams = [];
-
-        foreach ($this->uniqueCheckerKeys as $key)
-        {
-            if (isset($input[$key]) === true)
-            {
-                $queryParams[$key] = $input[$key];
-            }
-        }
-
-        $absentees = $this->repo->gateway_absence->fetch($queryParams);
-
-        return $absentees->first();
-    }
-
     protected function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)
     {
         $scheduled = 0;
@@ -183,24 +159,21 @@ class Core extends Base\Core
 
             $issuer = $alreadyScheduled->getIssuer();
 
-            if ((in_array($network, [Entity::UNKNOWN, Entity::ALL], true) === true) and
-                (empty($input[Entity::NETWORK]) === false))
+            if ($this->isUnknownOrAll($network) === true)
             {
                 $fieldsToBeUpdated[] = Entity::NETWORK;
 
                 $returnStatus = true;
             }
 
-            if ((in_array($cardType, [Entity::UNKNOWN, Entity::ALL], true) === true) and
-                (empty($input[Entity::CARD_TYPE]) === false))
+            if ($this->isUnknownOrAll($cardType) === true)
             {
                 $fieldsToBeUpdated[] = Entity::CARD_TYPE;
 
                 $returnStatus = true;
             }
 
-            if ((in_array($issuer, [Entity::UNKNOWN, Entity::ALL], true) === true) and
-                (empty($input[Entity::ISSUER]) === false))
+            if ($this->isUnknownOrAll($issuer) === true)
             {
                 $fieldsToBeUpdated[] = Entity::ISSUER;
 
@@ -217,6 +190,11 @@ class Core extends Base\Core
         }
 
         return [$returnStatus, $fieldsToBeUpdated];
+    }
+
+    protected function isUnknownOrAll($value)
+    {
+        return in_array($value, [Entity::UNKNOWN, Entity::ALL], true);
     }
 
     protected function buildEditInput(array $input, Entity $alreadyAvailable, array $fieldsToBeUpdated)

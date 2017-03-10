@@ -51,7 +51,7 @@ class Entity
     const BANK_ACCOUNT          = 'bank_account';
     const FILE_HANDLER          = 'file_handler';
     const TERMINAL_ACTION       = 'terminal_action';
-    const GATEWAY_ABSENCE       = 'gateway_absence';
+    const GATEWAY_DOWNTIME      = 'gateway_downtime';
     const MERCHANT_DETAIL       = 'merchant_detail';
     const BATCH_SETTLEMENT      = 'batch_settlement';
     const PAYMENT_ANALYTICS     = 'payment_analytics';
@@ -148,7 +148,7 @@ class Entity
         self::BANK_ACCOUNT          => \RZP\Models\BankAccount::class,
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
-        self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
+        self::GATEWAY_DOWNTIME      => \RZP\Models\Gateway\Downtime::class,
         self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
