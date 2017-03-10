@@ -1,1 +1,53 @@
-yo dawg
+<div class="" ng-controller="FeedCtrl">
+  <div class="bg-light lter b-b wrapper-md">
+    <h1 class="m-n font-thin h3">
+      Workflow Feed 
+      <spinner class="inline"></spinner>
+    </h1>
+  </div>
+  <div class="wrapper-md">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        {{feed.actionName}}
+      </div>
+      <div class="list-group">
+        <div class="list-group-item">
+          Maker and Checker info here
+        </div>
+        <div class="list-group-item">
+          <div class="feed-items-list" >
+            <div class="feed-item" ng-repeat="item in feed.feed">
+              {{item}}
+              <div class="feed-icon-container">
+                
+              </div>
+              <div class="feed-detail-container">
+                <div class="feed-detail">{{item.text}}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="panel-footer">
+        <form role="form">
+          <div class="form-group">
+            <label for="name">Add a comment</label>
+            <textarea class="form-control" rows = "3"></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="col-xs-4 pull-right">
+               <button type="button" class="btn btn-primary btn-block">Comment</button>
+            </div>
+            <div class="col-xs-2">
+              <button type="button" class="btn btn-success btn-block">Approve</button>
+            </div>
+            <div class="col-xs-2">
+              <button type="button" class="btn btn-danger btn-block">Reject</button>
+            </div>
+          </div>
+        </form>
+      </footer>
+    </div>
+</div>
+</div>
