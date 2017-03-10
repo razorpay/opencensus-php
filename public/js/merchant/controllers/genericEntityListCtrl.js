@@ -126,17 +126,22 @@ app.controller('GenericEntityListCtrl', [
       params.mode = $scope.mode;
 
       if ($scope.entity.id === '') {
-        if ($scope.entity.type === 'payment') {
-          params.route_name = 'payment_fetch_multiple';
-        }
-        else if ($scope.entity.type === 'refund') {
-          params.route_name = 'refund_fetch_multiple';
-        }
-        else if ($scope.entity.type === 'order') {
-          params.route_name = 'order_fetch';
-        }
-        else if ($scope.entity.type === 'settlement') {
-          params.route_name = 'setl_fetch_multiple';
+        switch ($scope.entity.type) {
+          case 'payment':
+            params.route_name = 'payment_fetch_multiple';
+            break;
+
+          case 'refund':
+            params.route_name = 'refund_fetch_multiple';
+            break;
+
+          case 'order':
+            params.route_name = 'order_fetch';
+            break;
+
+          case 'settlement':
+            params.route_name = 'setl_fetch_multiple';
+            break;
         }
 
         request = $http.get('/generic', {
@@ -145,17 +150,9 @@ app.controller('GenericEntityListCtrl', [
       }
       else {
         var url = '';
-        if ($scope.entity.type === 'payment') {
-          var url = location.origin + '/#/app/payments/' + $scope.entity.id;
-        }
-        else if ($scope.entity.type === 'refund') {
-          var url = location.origin + '/#/app/refunds/' + $scope.entity.id;
-        }
-        else if ($scope.entity.type === 'order') {
-          var url = location.origin + '/#/app/orders/' + $scope.entity.id;
-        }
-        else if ($scope.entity.type === 'settlement') {
-          var url = location.origin + '/#/app/settlements/' + $scope.entity.id;
+        var entities = ['payment', 'refund', 'order', 'settlement'];
+        if (entities.indexOf($scope.entity.type) !== -1) {
+          url = location.origin + '/#/app/' + $scope.entity.type + 's/' + $scope.entity.id;
         }
 
         window.open(url, '_blank');
