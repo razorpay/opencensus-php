@@ -49,10 +49,10 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // Enabling optimized flow only for 5% of merchants
+        // Enabling optimized flow only for 30% of merchants
         // We'll enable it for all the merchants once we
         // test this flow properly
-        if ($this->getChance() < 5)
+        if ($this->getChance() < 30)
         {
             // Ideally, we could have returned the request array from
             // here only.
@@ -94,7 +94,7 @@ class Gateway extends Base\Gateway
 
         $response = $this->sendGatewayRequest($request);
 
-        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
+        $this->traceS2sCallResponse($response);
 
         $crawler = new Crawler($response->body, $request['url']);
 
@@ -134,7 +134,11 @@ class Gateway extends Base\Gateway
             else
             {
                 $this->trace->info(
-                    FIRST_DATA_PARES_MISSING, ['gateway' => $input['gateway']]);
+                    FIRST_DATA_PARES_MISSING,
+                    [
+                        'payment_id' => $input['payment_id'],
+                        'gateway' => $input['gateway']
+                    ]);
             }
         }
 
@@ -200,6 +204,7 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_CAPTURE_RESPONSE,
             [
+                'payment_id' => $input['payment']['id'],
                 'response' => $response
             ]
         );
@@ -1273,5 +1278,25 @@ class Gateway extends Base\Gateway
     public static function setTestChance($chance = null)
     {
         self::$testChance = $chance;
+    }
+
+    protected function traceS2sCallResponse($response)
+    {
+        $patternReplacementPairs = [
+            '/(\<cardnum&gt;(\d{6})(.*)<\/cardnum)/' => '<cardnum&gt;${2}...****<\/cardnum',
+            '/(\<cvv2&gt;(.*)<\/cvv2)/' => '(\<cvv2&gt;***<\/cvv2)'
+        ];
+
+        $responseBody = preg_replace(
+            array_keys($patternReplacementPairs),
+            array_values($patternReplacementPairs),
+            $response->body
+        );
+
+        $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE,
+            [
+                'payment_id' => $this->input['payment']['id'],
+                'response' => $responseBody
+            ]);
     }
 }
