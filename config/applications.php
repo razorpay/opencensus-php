@@ -93,4 +93,11 @@ return array(
         'url'       => env('EXCHANGE_URL'),
         'appId'     => env('EXCHANGE_APP_ID')
     ],
+
+    'drip' => [
+        'mock'      => env('DRIP_MOCK', false),
+        'url'       => 'https://api.getdrip.com/v2/',
+        'accountId' => env('DRIP_ACCOUNT_ID'),
+        'token'     => env('DRIP_TOKEN')
+    ],
 );

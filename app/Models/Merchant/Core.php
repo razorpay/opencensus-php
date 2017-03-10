@@ -39,6 +39,8 @@ class Core extends Base\Core
             $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
+        $this->app['drip']->sendDripMerchantInfo(Merchant\Action::CREATED, $merchant);
+
         return $merchant;
     }
 
