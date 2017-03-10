@@ -53,9 +53,9 @@ class Merchant
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
 
-        $this->repo->fund_transfer_attempt->saveOrFail($this->bankTransferAtpt);
+        $this->setl->setStatus(Settlement\Status::CREATED);
 
-        return $this->bankTransferAtpt;
+        return [$this->setl, $this->bankTransferAtpt];
     }
 
     public function settle(

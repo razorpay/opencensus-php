@@ -92,8 +92,6 @@ class Processor extends Base\Core
             list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($schedule);
 
             $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
-
-            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         catch (\Exception $e)
         {
@@ -107,18 +105,20 @@ class Processor extends Base\Core
     {
         try
         {
-            $setlIds = $input['settlement_ids'];
-
-            Entity::verifyIdAndStripSignMultiple($setlIds);
-
-            if (count($setlIds) == 0)
+            if (isset($input['settlement_ids']) === false)
             {
                 throw new Exception\LogicException('No settlement IDs provided for retry.');
             }
 
-            $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($setlIds);
+            $setlIds = $input['settlement_ids'];
+
+            Entity::verifyIdAndStripSignMultiple($setlIds);
+
+            $settlements = $this->repo->settlement->getFailedSettlementsForRetry($setlIds);
 
             $setlAttempts = new Base\PublicCollection;
+
+            $totalTxns = 0;
 
             foreach ($settlements as $setl)
             {
@@ -131,17 +131,17 @@ class Processor extends Base\Core
                 list($setl, $bankTransferAtpt) = $this->repo->transaction(
                     function() use ($merchantSettler, $setl, $setlTxns, $setlTxnsCount)
                 {
-                    $bankTransferAtpt = $merchantSettler->retryFailedSettlement($setl);
+                    list($setl, $bankTransferAtpt) = $merchantSettler->retryFailedSettlement($setl);
 
                     return $this->createAndupdateBatchEntities($setl, $setlTxnsCount, $bankTransferAtpt);
                 });
 
                 $setlAttempts->push($bankTransferAtpt);
+
+                $totalTxns += $setlTxnsCount;
             }
 
-            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $setlTxnsCount);
-
-            $this->successNotification($response, $settlements, TraceCode::SETTLEMENT_RETRY_SUCCEEDED);
+            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $totalTxns);
         }
         catch (\Exception $e)
         {
@@ -172,6 +172,8 @@ class Processor extends Base\Core
 
             $data['settlement_text_file']  = $urlText;
             $data['settlement_excel_file'] = $urlExcel;
+
+            $this->successNotification($data, $settlements, TraceCode::SETTLEMENT_INITIATED);
         }
         else
         {

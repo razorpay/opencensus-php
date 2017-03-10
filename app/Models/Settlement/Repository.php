@@ -2,9 +2,11 @@
 
 namespace RZP\Models\Settlement;
 
+use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Merchant as M;
 use RZP\Models\Settlement;
-use RZP\Models\Transaction as Transaction;
+use RZP\Models\Transaction;
 use RZP\Models\BankAccount;
 
 class Repository extends Base\Repository
@@ -25,16 +27,20 @@ class Repository extends Base\Repository
         Entity::UTR                 => 'sometimes|alpha_num',
     ];
 
-    public function getFailedSettlementsWithRelations(array $setlIds)
+    public function getFailedSettlementsForRetry(array $setlIds)
     {
+        $merchantId = $this->manager->merchant->getAttributeWithTableName(M\Entity::ID);
+
+        $settlementMerchantId = $this->getAttributeWithTableName(Settlement\Entity::MERCHANT_ID);
+
+        $cols = $this->getAttributeWithTableName('*');
+
         return $this->newQuery()
-                    ->whereIn(Entity::ID, $setlIds)
+                    ->select($cols)
+                    ->join(Table::MERCHANT, $merchantId, '=', $settlementMerchantId)
                     ->where(Entity::STATUS, '=', Status::FAILED)
-                    ->with('merchant', 'bankAccount')
-                    ->with(['setlTransactions' => function($query)
-                    {
-                        $query->where(Transaction\Entity::TYPE, '!=', Transaction\Type::SETTLEMENT);
-                    }])
+                    ->where(M\Entity::HOLD_FUNDS, '=', 0)
+                    ->with('merchant', 'merchant.bankAccount', 'setlTransactions')
                     ->get();
     }
 
@@ -45,7 +51,6 @@ class Repository extends Base\Repository
                     ->orWhereNull(Entity::FEES)
                     ->get();
     }
-
 
     public function getSettlementWithServiceTaxNullOrZero()
     {

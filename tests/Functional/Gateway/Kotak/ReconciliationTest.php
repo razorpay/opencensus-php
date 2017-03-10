@@ -10,6 +10,7 @@ use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Account;
 
 class ReconciliationTest extends TestCase
 {
@@ -110,6 +111,19 @@ class ReconciliationTest extends TestCase
         return $settlement;
     }
 
+    public function testRetryReconForHoldedFunds()
+    {
+        $settlement = $this->testReconciliationFailure();
+
+        $this->fixtures->merchant->holdFunds();
+
+        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
+
+        $this->assertEquals('No settlements found!', $content['message']);
+
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
+    }
+
     public function testRetryRecon()
     {
         $settlement = $this->testReconciliationFailure();
@@ -119,6 +133,8 @@ class ReconciliationTest extends TestCase
         // Check settlement entities
         $setlAttempts = $this->getEntities('fund_transfer_attempt', [], true);
         $this->assertEquals(2, $setlAttempts['count']);
+
+        $this->assertNotNull($content['settlement_text_file']);
 
         // Check reconciliation
         $setlFile = $content['settlement_text_file'];
@@ -153,9 +169,19 @@ class ReconciliationTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function()
+        $request = [
+            'url' => '/settlements/retry/kotak',
+            'method' => 'POST',
+            'content' => []
+        ];
+
+        $this->ba->appAuthMode();
+
+        $this->runRequestResponseFlow($data, function() use ($request)
         {
-            $this->retryIntiateSettlements([], 'kotak');
+
+
+            $content = $this->makeRequestAndGetContent($request);
         });
     }
 
