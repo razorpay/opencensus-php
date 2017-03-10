@@ -15,6 +15,7 @@ use RZP\Models\Base;
 use RZP\Models\Emi;
 use RZP\Models\Key;
 use RZP\Models\Merchant;
+use RZP\Models\Merchant\Schedule as MerchantSchedule;
 use RZP\Models\Merchant\Webhook;
 use RZP\Models\Offer;
 use RZP\Models\Payment;
@@ -342,26 +343,9 @@ class Service extends Base\Service
 
         $merchant = $this->repo->merchant->findOrFailPublic($id);
 
-        $merchant->getValidator()->validateInput('assign_schedule', $input);
+        $merchantSchedule = (new MerchantSchedule\Core)->createOrUpdate($merchant, $input);
 
-        $this->repo->transaction(function() use ($merchant, $input)
-        {
-            $method = $input[Merchant\Schedule::METHOD] ?? null;
-
-            $currentSchedule = $merchant->schedules()
-                                      ->where(Merchant\Schedule::METHOD, $method)
-                                      ->first();
-
-            $scheduleId = $input[Merchant\Schedule::SCHEDULE_ID];
-
-            $schedule = $this->repo->schedule->findByIdAndMerchant($scheduleId, Merchant\Account::SHARED_ACCOUNT);
-
-            $merchant->schedules()->detach($existingSchedule);
-
-            $merchant->schedules()->attach($existingSchedule, [Merchant\Schedule::METHOD => $method]);
-        });
-
-        return $merchant->toArrayPublic();
+        return $merchantSchedule->toArrayPublic();
     }
 
     protected function setSettlementScheduleIfNeeded($merchant, $schedule)

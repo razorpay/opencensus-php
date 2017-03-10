@@ -32,13 +32,14 @@ class Service extends Base\Service
     {
         $this->trace->info(TraceCode::SCHEDULE_DELETE_REQUEST, ['schedule_id' => $id]);
 
-        $merchantsUsingSchedule = $this->repo->merchant->fetchBySettlementScheduleId($id);
+        $count = $this->repo->merchant_schedule->fetchScheduleCountById($id);
 
-        if (count($merchantsUsingSchedule) > 0)
+        if ($count > 0)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_SCHEDULE_IN_USE,
-                $id);
+                Entity::ID,
+                [$id]);
         }
 
         $schedule = $this->repo->schedule->findOrFailPublic($id);
