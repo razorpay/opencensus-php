@@ -160,6 +160,11 @@ return array(
         'test' => env('ES_AUDIT_TEST_INDEX')
     ],
 
+    'es_action' => [
+        'live' => env('ES_ACTION_LIVE_INDEX'),
+        'test' => env('ES_ACTION_TEST_INDEX')
+    ],
+
     'es_host'  => env('ES_HOST'),
 
     'es_audit_host' => env('ES_AUDIT_HOST'),
@@ -168,5 +173,5 @@ return array(
 
     'es_audit_mock' => env('ES_AUDIT_MOCK'),
 
-
+    'es_action_mock' => env('ES_ACTION_MOCK'),
 );

@@ -448,6 +448,8 @@ final class Route
         'transfer_edit'                           => ['patch',    'transfers/{id}',                                 'TransferController@patchTransfer'                                  ],
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
+
+        'action_maker'                            => ['post',     'actions/{entity}/{entityId}',                     'ActionController@createAction'                                    ],
     );
 
     public static $public = array(
@@ -592,6 +594,7 @@ final class Route
         'transfer_edit',
         'transfer_create',
         'transfer_create_reversal',
+        'action_maker'
     );
 
     public static $internal = array(

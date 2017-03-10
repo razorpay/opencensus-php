@@ -549,6 +549,7 @@ class TraceCode
     const HEIMDALL_AUDIT_LOG                        = 'HEIMDALL_AUDIT_LOG';
     const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
+    const HEIMDALL_ACTION_LOG_FAIL                  = 'HEIMDALL_ACTION_LOG_FAIL';
 
     // Trace for Payment/Transfers
     const PAYMENT_TRANSFER_REQUEST                  = 'PAYMENT_TRANSFER_REQUEST';
