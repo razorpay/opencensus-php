@@ -179,11 +179,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::RECEIPT);
     }
 
-    public function getOfferId()
-    {
-        return $this->getAttribute(self::OFFER_ID);
-    }
-
     public function getMaskedAccountNumber()
     {
         $accountNumber = $this->getAccountNumber();
@@ -215,6 +210,21 @@ class Entity extends Base\PublicEntity
     public function isPaid()
     {
         return ($this->getAttribute(self::STATUS) === Status::PAID);
+    }
+
+    public function hasOffer()
+    {
+        return $this->isAttributeNotNull(self::OFFER_ID);
+    }
+
+    public function getOfferIfExists()
+    {
+        if ($this->hasOffer() === true)
+        {
+            return $this->offer;
+        }
+
+        return null;
     }
 
     protected function setPublicOfferIdAttribute(array & $array)

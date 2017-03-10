@@ -26,6 +26,7 @@ class Gateway
     const MOBIKWIK           = 'mobikwik';
     const NETBANKING_HDFC    = 'netbanking_hdfc';
     const NETBANKING_KOTAK   = 'netbanking_kotak';
+    const NETBANKING_ICICI   = 'netbanking_icici';
     const NETBANKING_AIRTEL  = 'netbanking_airtel';
     const NETBANKING_AXIS    = 'netbanking_axis';
     const PAYTM              = 'paytm';
@@ -88,6 +89,7 @@ class Gateway
         self::SHARP              => Settlement\Channel::KOTAK,
         self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
         self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
+        self::NETBANKING_ICICI   => Settlement\Channel::KOTAK,
         self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
         self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
         self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
@@ -124,6 +126,7 @@ class Gateway
             self::PAYTM,
             self::BILLDESK,
             self::EBS,
+            self::NETBANKING_ICICI,
             self::NETBANKING_HDFC,
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
@@ -279,6 +282,7 @@ class Gateway
         self::AMEX,
         self::NETBANKING_HDFC,
         self::NETBANKING_KOTAK,
+        self::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
         self::WALLET_PAYZAPP,
@@ -373,6 +377,7 @@ class Gateway
      * @var array
      */
     public static $netbankingToGatewayMap = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
@@ -385,6 +390,7 @@ class Gateway
      * @var array
      */
     public static $refundFileNetbankingGateways = array(
+        IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::UTIB => Gateway::NETBANKING_AXIS);

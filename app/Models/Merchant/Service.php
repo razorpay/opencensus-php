@@ -38,7 +38,7 @@ class Service extends Base\Service
      */
     public function create(array $input)
     {
-        if (isset($input['admin_id']))
+        if (empty($input['admin_id']) === false)
         {
             $adminId = $input['admin_id'];
 
@@ -47,7 +47,20 @@ class Service extends Base\Service
             unset($input['admin_id']);
         }
 
-        if (isset($input['org_id']))
+        if (empty($input['org_id']) === true)
+        {
+            // If the organization ID is not present,
+            // assume the organization is razorpay
+            $orgId = Admin\Org\Entity::RAZORPAY_ORG_ID;
+
+            $this->trace->info(
+                TraceCode::MERCHANT_ORG_NOT_GIVEN,
+                [
+                    'merchant_email' => $input[Entity::EMAIL],
+                    'merchant_name'  => $input[Entity::NAME],
+                ]);
+        }
+        else
         {
             $orgId = $input['org_id'];
 
@@ -60,29 +73,29 @@ class Service extends Base\Service
 
         $this->assignDefaultSettlementSchedule($merchant);
 
-        // Once the merchant is created we must tag him to
-        // the admin referral
-        if (isset($adminId) === true)
+        //
+        // Once the merchant is created we must
+        // tag him to the admin referral
+        //
+        if (empty($adminId) === false)
         {
-            // Check if $adminId is valid
+            //
+            // This step is important to ensure that we are
+            // attaching a valid admin in merchant_map table.
+            // This will throw an exception if adminId doesn't exist.
+            //
             $admin = $this->repo->admin->findOrFailPublic($adminId);
 
-            if ($admin)
-            {
-                // Attach merchant to admin
-                $this->attachAdmin($merchant->getKey(), $adminId);
-            }
+            // Attach merchant to admin
+            $this->attachAdmin($merchant->getKey(), $adminId);
         }
 
-        if (isset($orgId) === true)
-        {
-            $org = $this->repo->org->findOrFailPublic($orgId);
+        $org = $this->repo->org->findOrFailPublic($orgId);
 
-            // Update merchant org
-            $merchant->org()->associate($org);
+        // Update merchant org
+        $merchant->org()->associate($org);
 
-            $this->repo->saveOrFail($merchant);
-        }
+        $this->repo->saveOrFail($merchant);
 
         return $merchant->toArrayPublic();
     }
@@ -993,8 +1006,10 @@ class Service extends Base\Service
 
         foreach ($featureNames as $featureName)
         {
-            $feature = $this->repo->feature->findByEntityIdAndNameOrFail($merchant->getId(),
-                            $featureName);
+            $feature = $this->repo->feature->findByEntityIdAndNameOrFail(
+                $merchant->getId(),
+                $featureName);
+
             if ($feature !== null)
             {
                 $this->repo->feature->delete($feature);

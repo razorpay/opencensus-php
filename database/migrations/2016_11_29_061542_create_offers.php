@@ -102,14 +102,13 @@ class CreateOffers extends Migration
                   ->on_delete('restrict');
         });
 
-        // TODO: Uncomment this later: Adding foreign key in queries.txt
-        // Schema::table(Table::ORDER, function ($table)
-        // {
-        //     $table->foreign(Order::OFFER_ID)
-        //           ->references(Offer::ID)
-        //           ->on(Table::OFFER)
-        //           ->on_delete('restrict');
-        // });
+        Schema::table(Table::ORDER, function ($table)
+        {
+            $table->foreign(Order::OFFER_ID)
+                  ->references(Offer::ID)
+                  ->on(Table::OFFER)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -119,12 +118,11 @@ class CreateOffers extends Migration
      */
     public function down()
     {
-        // TODO: Uncomment this later: Adding foreign key in queries.txt
-        // Schema::table(Table::ORDER, function ($table)
-        // {
-        //     $table->dropForeign(
-        //         Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
-        // });
+        Schema::table(Table::ORDER, function ($table)
+        {
+            $table->dropForeign(
+                Table::ORDER . '_' . Order::OFFER_ID . '_foreign');
+        });
 
         Schema::table(Table::OFFER, function ($table)
         {

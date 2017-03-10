@@ -76,7 +76,7 @@ class Core extends Base\Core
         $order = $this->repo->order->fetchForPayment($payment);
 
         if (($order === null) or
-            ($order->getOfferId() === null))
+            ($order->hasOffer() === false))
         {
             return;
         }
@@ -113,12 +113,7 @@ class Core extends Base\Core
     {
         $order = $this->repo->order->findByPublicIdAndMerchant($orderId, $merchant);
 
-        if ($order->getOfferId() === null)
-        {
-            return null;
-        }
-
-        $offer = $this->repo->offer->fetchForOrder($order);
+        $offer = $order->getOfferIfExists();
 
         return $offer;
     }
