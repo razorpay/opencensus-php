@@ -16,7 +16,7 @@ return [
                 'source' => 'statuscake'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -38,7 +38,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -47,7 +47,7 @@ return [
             ]
         ]
     ],
-    'testCreateAbsenceNBEmptyIssuer' =>[
+    'testCreateAbsenceNBEmptyIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -56,7 +56,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -81,7 +81,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -107,7 +107,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -134,7 +134,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -160,7 +160,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -176,7 +176,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testGatewayInvalidTo' =>[
+    'testGatewayInvalidTo' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -186,7 +186,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -201,7 +201,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testGatewayInvalidReasonCode' =>[
+    'testGatewayInvalidReasonCode' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -211,7 +211,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -238,7 +238,7 @@ return [
                 'source' => 'DUMMY'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -265,7 +265,7 @@ return [
                 'source' => 'statuscake'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -292,7 +292,7 @@ return [
                 'source' => 'statuscake'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -330,7 +330,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -348,7 +348,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -366,7 +366,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -384,7 +384,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -409,7 +409,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -435,7 +435,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -463,7 +463,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -483,7 +483,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -501,7 +501,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [
@@ -526,7 +526,7 @@ return [
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ],
         'response' => [
             'content' => [

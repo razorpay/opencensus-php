@@ -338,7 +338,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     protected function formatInput(array $input, int $status)
     {
         $formatted = [
-            Entity::SOURCE      => Source::SOURCE_STATUSCAKE,
+            Entity::SOURCE      => Source::STATUSCAKE,
             Entity::REASON_CODE => ReasonCode::ISSUER_DOWN,
             Entity::PARTIAL     => false,
         ];
