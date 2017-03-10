@@ -61,11 +61,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/activation/details', 'MerchantController@getActivationDetails')->name('get_activation_details');
         Route::get('/activation/details/{merchantId}', 'MerchantController@getActivationDetails')->name('get_activation_details');
 
-        // Order Routes
-        Route::get('/{mode}/orders', 'TransactionController@getOrders')->name('get_orders');
-        Route::get('/{mode}/orders/{id}', 'TransactionController@getOrder')->name('get_order');
-        Route::get('/{mode}/orders/{id}/payments', 'TransactionController@getOrderPayments')->name('get_order_payments');
-
         // Batch Refund Routes
         Route::group(['prefix' => '{mode}/batches'], function () {
             Route::get('/', 'MerchantController@fetchMultipleBatches')->name('batch_fetch_multiple');
@@ -79,13 +74,7 @@ Route::group(['middleware' => ['web']], function () {
         // Account Routes
         Route::get('/{mode}/accounts', 'MerchantController@getAccounts')->name('get_accounts');
 
-        Route::get('/{mode}/refunds', 'TransactionController@getRefunds')->name('refunds_fetch_multiple');
-        Route::get('/{mode}/refunds/{id}', 'TransactionController@getRefund')->name('refunds_fetch_single');
-
         // Support role does not have access to this
-        Route::get('/{mode}/settlements', 'TransactionController@getSettlements')->name('settlements_fetch_all');
-        Route::get('/{mode}/settlements/{id}', 'TransactionController@getSettlement')->name('settlements_fetch_one');
-        Route::get('/{mode}/settlements/{id}/details', 'TransactionController@getSettlementDetails')->name('settlements_get_detail');
 
         Route::get('/{mode}/transactions', 'TransactionController@getTransactions');
         Route::get('/{mode}/transactions/{id}', 'TransactionController@getTransaction');
