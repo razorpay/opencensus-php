@@ -48,6 +48,9 @@ app.controller('AccountListCtrl', [
             return scope;
         }(),
       });
+
+      // regenerate account list when this modal is closed.
+      modalInstance.result.finally($scope.regenerate, $.noop);
     }
   }
 ])
