@@ -283,4 +283,40 @@ return [
             'status_code' => 400,
         ],
     ],
+
+    'testPrivateAuthKeyNotExpired' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'entity' => 'collection',
+                'items' => [
+                ],
+            ]
+        ],
+    ],
+
+    'testPrivateAuthKeyExpired' => [
+        'request' => [
+            'method' => 'GET',
+            'url' => '/payments',
+            'content' => [
+                'count' => 1
+            ]
+        ],
+        'response' => [
+            'content' => [
+                'error' => [
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
+                    'description' => PublicErrorDescription::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED
+                ],
+            ],
+            'status_code' => 401,
+        ],
+    ],
 ];

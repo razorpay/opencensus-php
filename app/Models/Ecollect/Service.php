@@ -25,16 +25,18 @@ class Service extends Base\Service
         $this->validator->validateInput('validate', $input);
 
         $data = [
-            'valid'   => true,
-            'message' => null,
+            'valid'          => true,
+            'message'        => null,
+            'transaction_id' => $input['transaction_id'],
         ];
 
         if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
             (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
         {
             $data = [
-                'valid'   => false,
-                'message' => 'Invalid account number',
+                'valid'          => false,
+                'message'        => 'Invalid account number',
+                'transaction_id' => $input['transaction_id'],
             ];
         }
 
@@ -50,6 +52,8 @@ class Service extends Base\Service
 
         $this->validator->validateInput('pay', $input);
 
-        return [];
+        return [
+            'success' => true,
+        ];
     }
 }

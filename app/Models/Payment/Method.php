@@ -22,6 +22,10 @@ class Method
         self::TRANSFER   => 'Marketplace Transfer',
     ];
 
+    protected static $asynchronous = [
+        self::UPI,
+    ];
+
     public static function formatted($method)
     {
         return self::$methods[$method];
@@ -44,5 +48,10 @@ class Method
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payment method: ' . $method);
         }
+    }
+
+    public static function supportsAsync($method)
+    {
+        return in_array($method, self::$asynchronous, true);
     }
 }

@@ -242,8 +242,15 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        if ($this->isKeyExisting() === true)
         {
+            $response = $this->verifyKeyNotExpired();
+
+            if ($response !== true)
+            {
+                return $response;
+            }
+
             $response = $this->verifySecret();
 
             if ($response === true)
@@ -323,9 +330,11 @@ class BasicAuth
                 return $res;
         }
 
-        if ($this->verifyKeyExistence() !== true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            return $this->invalidApiKey();
+            return $response;
         }
 
         if (($this->getSecret() !== '') and
@@ -421,21 +430,23 @@ class BasicAuth
             return $res;
         }
 
-        if ($this->verifyKeyExistence() === true)
+        $response = $this->verifyKeyExistence();
+
+        if ($response !== true)
         {
-            $this->fetchMerchantOfKey($this->key);
-
-            $response = $this->verifyDeviceToken();
-
-            if ($response === true)
-            {
-                return;
-            }
-
             return $response;
         }
 
-        return $this->invalidApiKey();
+        $this->fetchMerchantOfKey($this->key);
+
+        $response = $this->verifyDeviceToken();
+
+        if ($response === true)
+        {
+            return;
+        }
+
+        return $response;
     }
 
     /**
@@ -468,6 +479,13 @@ class BasicAuth
         if ($this->verifyKeyExistence() !== true)
         {
             return $this->invalidApiKey();
+        }
+
+        $response = $this->verifyKeyNotExpired();
+
+        if ($response !== true)
+        {
+            return $response;
         }
 
         if (($this->getSecret() !== '') and
@@ -568,10 +586,22 @@ class BasicAuth
      */
     protected function verifyKeyExistence()
     {
+        if ($this->isKeyExisting() === false)
+        {
+            return $this->invalidApiKey();
+        }
+
+        return $this->verifyKeyNotExpired();
+    }
+
+    protected function isKeyExisting()
+    {
         $keyId = $this->getKey();
 
         if ($keyId === '')
+        {
             return;
+        }
 
         //
         // For keys sent by merchants, make sure they exist in db.
@@ -615,6 +645,17 @@ class BasicAuth
         }
 
         $this->fetchMerchantOfKey($keyEntity);
+
+        return true;
+    }
+
+    protected function verifyKeyNotExpired()
+    {
+        if ($this->key->isExpired() === true)
+        {
+            return ApiResponse::unauthorized(
+                ErrorCode::BAD_REQUEST_UNAUTHORIZED_API_KEY_EXPIRED);
+        }
 
         return true;
     }
@@ -984,7 +1025,7 @@ class BasicAuth
 
     protected function fetchKey($keyId)
     {
-        $this->key = $this->repo->key->findNotExpired($keyId);
+        $this->key = $this->repo->key->find($keyId);
 
         return $this->key;
     }

@@ -42,7 +42,7 @@ class MigrateNotesToEs extends Command
         $this->databaseMode = $this->option('mode');
         $this->entityType = $this->option('entity');
 
-        assertTrue(in_array($this->entityType, ['payments', 'refunds']));
+        assertTrue(in_array($this->entityType, ['orders', 'payments', 'refunds']));
         assertTrue(in_array($this->databaseMode, [Mode::LIVE, Mode::TEST]));
         assertTrue(!empty($this->databaseMode));
         assertTrue(!empty($this->entityType));
@@ -117,10 +117,25 @@ class MigrateNotesToEs extends Command
         try
         {
             $updateResponse = $this->client->bulk($params);
-            $this->info("<info>".json_encode($updateResponse)."</info>");
+
+            // Outputs whole response if any failures else just time taken
+            $errors = $updateResponse['errors'];
+
+            if ($errors === true)
+            {
+                $this->info("<error>".json_encode($updateResponse)."</error>");
+            }
+            else
+            {
+                $this->info('<info>Took: ' . $updateResponse['took'] . 'ms </info>');
+            }
         }
         catch(\Exception $ex)
         {
+            // Logs the stack trace
+            $this->error($ex);
+
+            // Logs the context data for above error
             $this->error("<error>Type Name : $this->entityType \n Index Name : $this->indexName \n Entity : ". json_encode($params). "</error>");
         }
     }

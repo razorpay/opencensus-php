@@ -6,6 +6,8 @@ use Crypt;
 use RZP\Exception;
 use RZP\Gateway\Base;
 use RZP\Trace\TraceCode;
+use RZP\Gateway\Upi\Base\Vpa;
+use RZP\Models\Payment;
 
 class Server extends Base\Mock\Server
 {
@@ -114,5 +116,20 @@ class Server extends Base\Mock\Server
         }
 
         return true;
+    }
+
+    public function s2sRequestContent(array $payment)
+    {
+        $response = [
+            'status' => 'authorized',
+        ];
+
+        if (($payment['method'] === Payment\Method::UPI) and
+            ($payment['vpa'] === Vpa::FAILURE))
+        {
+            $response['status'] = 'failed';
+        }
+
+        return $response;
     }
 }

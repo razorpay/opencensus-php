@@ -218,6 +218,11 @@ function gen_uuid($format = '%04x%04x%04x%04x%04x%04x%04x%04x')
     return $uuid;
 }
 
+function is_associative_array(array $input)
+{
+    return array_keys($input) !== range(0, count($input) - 1);
+}
+
 function upi_uuid($prefix = true)
 {
     $uuid = strtoupper(gen_uuid());
