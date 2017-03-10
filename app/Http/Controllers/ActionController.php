@@ -8,27 +8,34 @@ use RZP\Models\Action;
 
 class ActionController extends Controller
 {
-    protected $actionService;
+    protected $action;
 
     public function __construct()
     {
         parent::__construct();
 
-        $this->actionService = new Action\Service;
+        $this->action = new Action\Service;
     }
 
-    public function createAction(string $entity, string $entityId)
+    public function postCreateAction(string $entity, string $entityId)
     {
         $input = Request::all();
 
-        $result = $this->actionService->createAction($entity, $entityId, $input);
+        $result = $this->action->createAction($entity, $entityId, $input);
 
         return ApiResponse::json($result);
     }
 
     public function fetchDiffById(string $id)
     {
-        $result = $this->actionService->fetchDiffById($id);
+        $result = $this->action->fetchDiffById($id);
+
+        return ApiResponse::json($result);
+    }
+
+    public function postExecuteAction(string $id)
+    {
+        $result = $this->action->execute($id);
 
         return ApiResponse::json($result);
     }
