@@ -48,7 +48,7 @@ class Core extends Base\Core
 
     public function getMerchantSchedule(Merchant\Entity $merchant, $method)
     {
-        $merchantSchedules = $this->repo->merchant_schedule->fetch([], $merchant->getId());
+        $merchantSchedules = $this->repo->merchant_schedule->fetchByMerchant($merchant);
 
         if ($merchantSchedules->count() > 0)
         {

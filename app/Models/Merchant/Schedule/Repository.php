@@ -53,6 +53,14 @@ class Repository extends Base\Repository
                      ->first();
     }
 
+    public function fetchByMerchant(Merchant\Entity $merchant)
+    {
+        return $query = $this->newQuery()
+                             ->merchantId($merchant->getId())
+                             ->with('schedule')
+                             ->get();
+    }
+
     public function fetchScheduleCountById(string $scheduleId)
     {
         return $this->newQuery()
