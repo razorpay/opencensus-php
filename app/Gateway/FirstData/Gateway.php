@@ -1264,7 +1264,7 @@ class Gateway extends Base\Gateway
     {
         if (self::$testChance === null)
         {
-            return random(0, 99);
+            return rand(0, 99);
         }
 
         return self::$testChance;
