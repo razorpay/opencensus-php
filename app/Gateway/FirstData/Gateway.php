@@ -31,6 +31,8 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
 
+    protected static $testChance = null;
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
@@ -47,17 +49,29 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // Ideally, we could have returned the request array from
-        // here only.
-        // However, we prevent three network calls on client side
-        // by doing it on the server side here.
-        $request = $this->makeRequestAndGetFormData($request);
-
-        if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
+        // Enabling optimized flow only for 5% of merchants
+        // We'll enable it for all the merchants once we
+        // test this flow properly
+        if ($this->getChance() < 5)
         {
-            $input['gateway'] = $request['content'];
+            // Ideally, we could have returned the request array from
+            // here only.
+            //
+            // However, we prevent three network call on client side by
+            // doing it on the server side here.
 
-            return $this->callback($input);
+            $request = $this->makeRequestAndGetFormData($request);
+
+            // Adding this check to remove one extra redirect to Razorpay
+            // We internally handle the redirect as we know that the
+            // redirection will come to us. This can happen in case of
+            // not enrolled cards
+            if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
+            {
+                $input['gateway'] = $request['content'];
+
+                return $this->callback($input, false);
+            }
         }
 
         // Caching original termUrl for 15 mins
@@ -72,6 +86,10 @@ class Gateway extends Base\Gateway
 
     protected function makeRequestAndGetFormData($request)
     {
+        $request['headers']['User-Agent'] = $this->app['request']->header('User-Agent');
+        $request['headers']['X-Forwarded-For'] = $this->app['request']->getRealClientIp();
+        $request['headers']['X-Real-IP'] = $this->app['request']->getRealClientIp();
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
@@ -98,14 +116,15 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input)
+    public function callback(array $input, $acs = true)
     {
         parent::callback($input);
 
-        // Enabling optimized flow only for test merchant
-        // We'll enable it for all the merchants once we
-        // test this flow properly
-        if (isset($input['gateway']['PaRes']) === true)
+        // Ideally, one check should be enough but adding additional check to
+        // ensure robustness
+        if (($this->app['cache']->get($this->getCacheKey($input)) !== null) and
+            (isset($input['gateway']['PaRes']) === true) and
+            ($acs === true))
         {
             $input['gateway'] = $this->getCallbackGatewayContent($input);
         }
@@ -133,7 +152,7 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackGatewayContent(array $input)
     {
-        $originalTermUrl =  $this->app['cache']->get($this->getCacheKey($input));
+        $originalTermUrl = $this->app['cache']->get($this->getCacheKey($input));
 
         $request = [
             'url' => $originalTermUrl,
@@ -1230,5 +1249,20 @@ class Gateway extends Base\Gateway
         // have a merchantId2 value of their own.
 
         return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+    }
+
+    protected function getChance()
+    {
+        if (self::$testChance === null)
+        {
+            return random(0, 99);
+        }
+
+        return self::$testChance;
+    }
+
+    public static function setTestChance($chance = null)
+    {
+        self::$testChance = $chance;
     }
 }
