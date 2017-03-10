@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
 
@@ -20,15 +20,16 @@ class Entity extends Base\PublicEntity
     const COMMENT                       = 'comment';
     const PARTIAL                       = 'partial';
     const SCHEDULED                     = 'scheduled';
+    const PUBLIC                        = 'public';
     const CREATED_AT                    = 'created_at';
     const UPDATED_AT                    = 'updated_at';
 
     // the following 3 are for network, issuer and card_type
     // for the appropriate default values instead of storing
     // null
-    const NA = 'NA';
+    const NA      = 'NA';
     const UNKNOWN = 'UNKNOWN';
-    const ALL = 'ALL';
+    const ALL     = 'ALL';
 
 
     protected $fillable = [
@@ -50,10 +51,10 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ID,
         self::GATEWAY,
-        self::ISSUER,
-        self::CARD_TYPE,
-        self::NETWORK,
         self::METHOD,
+        self::ISSUER,
+        self::NETWORK,
+        self::CARD_TYPE,
         self::DOWNTIME_FROM,
         self::DOWNTIME_TO,
         self::TERMINAL_ID,
@@ -68,8 +69,8 @@ class Entity extends Base\PublicEntity
     protected $casts = [
         self::DOWNTIME_FROM => 'int',
         self::DOWNTIME_TO   => 'int',
-        self::SCHEDULED => 'bool',
-        self::PARTIAL   => 'bool'
+        self::SCHEDULED     => 'bool',
+        self::PARTIAL       => 'bool'
     ];
 
     protected $defaults = [
@@ -79,8 +80,9 @@ class Entity extends Base\PublicEntity
         self::NETWORK       => self::UNKNOWN,
         self::DOWNTIME_TO   => null,
         self::COMMENT       => null,
-        self::SCHEDULED     => 0,
-        self::PARTIAL       => 0,
+        self::SCHEDULED     => false,
+        self::PUBLIC        => true,
+        self::PARTIAL       => false,
     ];
 
     protected $visible = [
@@ -98,13 +100,12 @@ class Entity extends Base\PublicEntity
         self::COMMENT,
         self::PARTIAL,
         self::SCHEDULED,
+        self::PUBLIC,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
-
     const END_OF_TIME = 2147483647;
-
 
     protected $entity = 'gateway_absence';
 
@@ -150,6 +151,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SCHEDULED);
     }
 
+    public function isPublic()
+    {
+        return $this->getAttribute(self::PUBLIC);
+    }
+
     public function getDowntimeFrom()
     {
         return $this->getAttribute(self::DOWNTIME_FROM);
@@ -174,5 +180,4 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
-
 }

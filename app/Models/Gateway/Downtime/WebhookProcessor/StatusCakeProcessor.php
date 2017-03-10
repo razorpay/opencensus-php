@@ -1,23 +1,21 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence\CallbackProcessor;
+namespace RZP\Models\Gateway\Downtime\WebhookProcessor;
 
 use App;
 use RZP\Exception;
-use RZP\Models\GatewayStatus\Absence\InputFormatter;
+use RZP\Models\Gateway\Downtime\InputFormatter;
 use RZP\Models\Payment\Gateway;
 use RZP\Trace\TraceCode;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
-use RZP\Models\GatewayStatus\Absence\Entity;
-use RZP\Models\GatewayStatus\Absence\ReasonCode;
-use RZP\Models\GatewayStatus\Absence\Source;
-use RZP\Models\GatewayStatus\Absence\Core as AbsenceCore;
+use RZP\Models\Gateway\Downtime;
+use RZP\Models\Gateway\Downtime\Entity;
+use RZP\Models\Gateway\Downtime\ReasonCode;
+use RZP\Models\Gateway\Downtime\Source;
 
 class StatusCakeProcessor implements AbstractProcessorInterface
 {
-    protected $processor;
-
     const STATUS_UP = 'UP';
 
     const STATUS_DOWN = 'DOWN';
@@ -34,7 +32,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         $this->trace = $this->app['trace'];
 
-        $this->core = new AbsenceCore();
+        $this->core = new Downtime\Core();
     }
 
     protected function fetchStatusCakeCredentials()

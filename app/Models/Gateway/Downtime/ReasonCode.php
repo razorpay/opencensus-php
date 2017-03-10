@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Downtime;
 
 class ReasonCode
 {

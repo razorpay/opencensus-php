@@ -1,26 +1,19 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
-use RZP\Models\GatewayStatus\Absence\CallbackProcessor;
+use RZP\Models\Gateway\Downtime\WebhookProcessor;
 
 class Service extends Base\Service
 {
     protected $processor;
 
-    public function __construct()
-    {
-        parent::__construct();
-
-        $this->core = new Core;
-    }
-
     public function create(array $input)
     {
         $input = InputFormatter::format($input);
 
-        $downWindow = $this->core->create($input);
+        $downWindow = $this->core()->create($input);
 
         return $downWindow->toArrayPublic();
     }
@@ -29,7 +22,7 @@ class Service extends Base\Service
     {
         $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
 
-        $downWindow = $this->core->edit($downWindow, $input);
+        $downWindow = $this->core()->edit($downWindow, $input);
 
         return $downWindow->toArrayPublic();
     }
@@ -38,12 +31,12 @@ class Service extends Base\Service
     {
         $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
 
-        $downWindow = $this->core->delete($downWindow);
+        $downWindow = $this->core()->delete($downWindow);
 
         return $downWindow->toArrayDeleted();
     }
 
-    public function findAbsentGateways(array $input)
+    public function fetchMultiple(array $input)
     {
         $absentGateways = $this->repo->gateway_absence->fetch($input);
 
@@ -52,7 +45,7 @@ class Service extends Base\Service
 
     public function processStatusCakeCallback(array $input)
     {
-        $data = (new CallbackProcessor\StatusCakeProcessor)->process($input);
+        $data = (new WebhookProcessor\StatusCakeProcessor)->process($input);
 
         return $data;
     }

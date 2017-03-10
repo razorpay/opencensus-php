@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Exception\LogicException;
 use RZP\Models\Payment\Method;
@@ -9,7 +9,9 @@ class InputFormatter
 {
     public static function format(array $input)
     {
-        switch($input[Entity::METHOD])
+        $method = $input[Entity::METHOD] ?? null;
+
+        switch ($method)
         {
             // for netbanking, the issuer needs to be
             // available. This is part of the validation rule
@@ -18,21 +20,18 @@ class InputFormatter
             // are concerned
             case Method::NETBANKING:
             case Method::WALLET:
-                if ((isset($input[Entity::NETWORK]) === false) or
-                    (empty($input[Entity::NETWORK]) === true))
+                if (empty($input[Entity::NETWORK]) === true)
                 {
                     $input[Entity::NETWORK] = Entity::NA;
                 }
 
-                if ((isset($input[Entity::CARD_TYPE]) === false) or
-                    (empty($input[Entity::CARD_TYPE]) === true))
+                if (empty($input[Entity::CARD_TYPE]) === true)
                 {
                     $input[Entity::CARD_TYPE] = Entity::NA;
                 }
 
                 // for all wallets, the issuer is the gateway itself
-                if (($input[Entity::METHOD] == Method::WALLET) and
-                    (empty($input[Entity::ISSUER]) === true))
+                if (empty($input[Entity::ISSUER]) === true)
                 {
                     $input[Entity::ISSUER] = strtolower($input[Entity::GATEWAY]);
                 }
@@ -44,25 +43,26 @@ class InputFormatter
                 // aware of the affected networks, cards or issuers
                 // we could also assume all. But we are playing
                 // safe here
-                if ((isset($input[Entity::NETWORK]) === false) or
-                    (empty($input[Entity::NETWORK]) === true))
+                if (empty($input[Entity::NETWORK]) === true)
                 {
                     $input[Entity::NETWORK] = Entity::UNKNOWN;
                 }
-                if ((isset($input[Entity::CARD_TYPE]) === false) or
-                    (empty($input[Entity::CARD_TYPE]) === true))
+
+                if (empty($input[Entity::CARD_TYPE]) === true)
                 {
                     $input[Entity::CARD_TYPE] = Entity::UNKNOWN;
                 }
-                if ((isset($input[Entity::ISSUER]) === false) or
-                    (empty($input[Entity::ISSUER]) === true))
+
+                if (empty($input[Entity::ISSUER]) === true)
                 {
                     $input[Entity::ISSUER] = Entity::UNKNOWN;
                 }
+
                 break;
 
             default:
-                throw new LogicalException("Unknown Method:". $input[Entity::METHOD]);
+                throw new LogicException(
+                    'Unknown Method: ' . $input[Entity::METHOD]);
         }
 
         return $input;

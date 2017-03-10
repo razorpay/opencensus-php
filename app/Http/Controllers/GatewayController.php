@@ -2,16 +2,16 @@
 
 namespace RZP\Http\Controllers;
 
-use ApiResponse;
-use Redirect;
 use Request;
+use Redirect;
+use ApiResponse;
 use RZP\Exception;
-use RZP\Models\GatewayStatus\Absence;
 use RZP\Models\Payment;
-use RZP\Models\Gateway\Priority as GatewayPriority;
-use RZP\Gateway\Upi\Base\ProviderCode;
-use RZP\Base\RuntimeManager;
 use RZP\Trace\TraceCode;
+use RZP\Base\RuntimeManager;
+use RZP\Models\Gateway\Downtime;
+use RZP\Gateway\Upi\Base\ProviderCode;
+use RZP\Models\Gateway\Priority as GatewayPriority;
 
 class GatewayController extends Controller
 {
@@ -195,13 +195,13 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to create a gateway absence entity
+     * Method to create a gateway downtime entity
      *
-     * @param Absence\Service $service
+     * @param Downtime\Service $service
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function postGatewayAbsence(Absence\Service $service)
+    public function postGatewayDowntime(Downtime\Service $service)
     {
         $input = Request::all();
 
@@ -211,14 +211,14 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to update gateway absence entity
+     * Method to update gateway downtime entity
      *
-     * @param Absence\Service $service
+     * @param Downtime\Service $service
      * @param string $id
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function putGatewayAbsence(Absence\Service $service, string $id)
+    public function putGatewayDowntime(Downtime\Service $service, string $id)
     {
         $input = Request::all();
 
@@ -228,12 +228,12 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to delete gateway absence entity
-     * @param Absence\Service $service
+     * Method to delete gateway downtime entity
+     * @param Downtime\Service $service
      * @param string $id
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function deleteGatewayAbsence(Absence\Service $service, string $id)
+    public function deleteGatewayDowntime(Downtime\Service $service, string $id)
     {
         $data = $service->delete($id);
 
@@ -245,11 +245,11 @@ class GatewayController extends Controller
      * Method to get absent gateways across multiple search params
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function getAbsentGateways(Absence\Service $service)
+    public function getAbsentGateways(Downtime\Service $service)
     {
         $input = Request::all();
 
-        $data = $service->findAbsentGateways($input);
+        $data = $service->fetchMultiple($input);
 
         return ApiResponse::json($data);
     }
@@ -258,7 +258,7 @@ class GatewayController extends Controller
      * Method to handle webhook callbacks from statuscake
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function postStatusCakeCallback(Absence\Service $service)
+    public function postStatusCakeCallback(Downtime\Service $service)
     {
         $input = Request::all();
 

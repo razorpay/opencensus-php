@@ -1,13 +1,15 @@
 <?php
 
-namespace RZP\Models\GatewayStatus\Absence;
+namespace RZP\Models\Gateway\Webhook;
 
 use RZP\Base;
-use RZP\Models\Payment\Gateway;
 use RZP\Exception;
-use RZP\Models\Payment\Method;
+use RZP\Models\Card;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
+use RZP\Models\Payment\Method;
+use RZP\Models\Payment\Wallet;
+use RZP\Models\Payment\Gateway;
 
 class Validator extends Base\Validator
 {
@@ -15,6 +17,7 @@ class Validator extends Base\Validator
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
         Entity::DOWNTIME_FROM   => 'required|integer',
+        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -22,9 +25,9 @@ class Validator extends Base\Validator
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
+        Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $editRules = [
@@ -39,6 +42,7 @@ class Validator extends Base\Validator
         Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
+        Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $createValidators = [
@@ -65,13 +69,7 @@ class Validator extends Base\Validator
 
     public function validateGateway(string $attribute, string $gateway)
     {
-        $valid = Gateway::isValidGateway($gateway);
-
-        if ($valid === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Gateway [' . $gateway . '] does not exist');
-        }
+        Gateway::validateGateway($gateway);
     }
 
     public function validateReasonCode(string $attribute, string $reasonCode)
@@ -108,22 +106,19 @@ class Validator extends Base\Validator
         if ($to < $from)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'From : ' . $from . ' less than To :' . $to
-            );
+                'From : ' . $from . ' less than To :' . $to);
         }
 
         if ($from > Entity::END_OF_TIME)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'From: '. $from. ' is greater than End of Time:' .Entity::END_OF_TIME
-            );
+                'From: '. $from. ' is greater than End of Time:' . Entity::END_OF_TIME);
         }
 
         if ($to > Entity::END_OF_TIME)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'To: '. $to. ' is greater than End of Time:' .Entity::END_OF_TIME
-            );
+                'To: '. $to. ' is greater than End of Time:' .Entity::END_OF_TIME);
         }
     }
 
@@ -135,18 +130,13 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
-        $this->validateIssuerNetbanking($gateway, $method, $issuer);
+        $this->validateNetbankingIssuer($gateway, $method, $issuer);
 
-        if (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
-        {
-            return;
-        }
-
-        $this->validateIssuerWallet($method, $issuer);
+        $this->validateWalletIssuer($method, $issuer);
 
     }
 
-    protected function validateIssuerNetbanking(string $gateway, string $method, string $issuer = null)
+    protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
     {
         // we need the name of the bank for netbanking and it cannot be empty
         if ($method === Method::NETBANKING)
@@ -154,7 +144,7 @@ class Validator extends Base\Validator
             if (empty($issuer) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Issuer: '. $issuer .' cannot be empty for method: '.$method);
+                    'Issuer cannot be empty for method ' . $method);
             }
 
             $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
@@ -162,28 +152,29 @@ class Validator extends Base\Validator
             if (in_array($gateway, $gateways, true) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Issuer: '. $issuer .' is not supported for gateway: '.$gateway
-                );
+                    'Issuer '. $issuer .' is not supported for gateway: ' . $gateway);
+            }
+
+            if (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
+            {
+                return;
+            }
+
+            if (IFSC::exists(strtoupper($issuer)) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Issuer: '. $issuer. ' is not a valid Bank Name');
             }
         }
     }
 
-    protected function validateIssuerWallet(string $method, string $issuer = null)
+    protected function validateWalletIssuer(string $method, string $issuer = null)
     {
-        if (($method !== Method::WALLET) and
-            (IFSC::exists(strtoupper($issuer)) === false))
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Issuer: '. $issuer. ' is not a valid Bank Name'
-            );
-        }
-
         if (($method === Method::WALLET) and
-            (in_array($issuer, Gateway::$methodMap[Method::WALLET], true) === false))
+            (Wallet::exists($issuer) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Issuer: '. $issuer. ' is not a valid Wallet'
-            );
+                $issuer . ' is not a valid Wallet');
         }
     }
 
@@ -200,11 +191,10 @@ class Validator extends Base\Validator
 
         // card type is not applicable for netbanking
         if ((strtolower($method) === Method::CARD) and
-            (in_array(strtolower($cardType), ['debit', 'credit'], true) === false))
+            (Card\Type::isValidType($cardType) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Card Type: '.$cardType. ' is not supported'
-            );
+                'Card Type: ' . $cardType . ' is not supported');
         }
     }
 
@@ -222,8 +212,7 @@ class Validator extends Base\Validator
         if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Network: '. $network . ' is not a valid network'
-            );
+                'Network: '. $network . ' is not a valid network');
         }
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
@@ -232,35 +221,26 @@ class Validator extends Base\Validator
 
         $cardNetWork = Gateway::$cardNetworkMap[$gateway];
 
-        if ((strtolower($method) === Method::CARD)
-            and (in_array($network, $cardNetWork, true) === false))
+        if ((strtolower($method) === Method::CARD) and
+            (in_array($network, $cardNetWork, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                  'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: '.$gateway
-            );
+                'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: ' . $gateway);
         }
     }
 
     public function validateMethod(array $input)
     {
-        $methods = Method::getAllPaymentMethods();
+        $method = $input[Entity::METHOD];
 
-        $method = strtolower($input[Entity::METHOD]);
-
-        if (in_array($method, $methods, true) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Method: '. $method . ' is not valid'
-            );
-        }
+        Method::validateMethod($method);
 
         $gateway = strtolower($input[Entity::GATEWAY]);
 
         if (Gateway::isMethodSupported($method, $gateway) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Method: '.$input['method'] .' is not supported for gateway: '. $gateway
-            );
+                'Method: ' . $method . ' is not supported for gateway: '. $gateway);
         }
     }
 }
