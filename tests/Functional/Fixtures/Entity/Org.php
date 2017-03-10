@@ -7,7 +7,7 @@ use Carbon\Carbon;
 class Org extends Base
 {
     const HDFC_ORG     = 'HDFCbankOrgnId';
-    const RZP_ORG      = 'RazorpayOrgnId';
+    const RZP_ORG      = '100000razorpay';
     const DEFAULT_GRP  = '1RazorpayGrpId';
     const ADMIN_ROLE   = 'RzpAdminRoleId';
     const MANAGER_ROLE = 'RzpMngerRoleId';

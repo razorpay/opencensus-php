@@ -291,8 +291,6 @@ class Checkout
     {
         $offerCore = new Offer\Core;
 
-        $offers = new Base\PublicCollection;
-
         // Temporaily commenting fetching shared offers
         // $sharedOffers = $offerCore->fetchSharedOffers();
 

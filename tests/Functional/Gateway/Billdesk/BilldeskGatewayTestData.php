@@ -17,7 +17,7 @@ return [
         'refund_status' => null,
         'currency' => 'INR',
         'description' => 'random description',
-        'bank' => 'ICIC',
+        'bank' => 'IDIB',
         'error_code' => null,
         'error_description' => null,
         'email' => 'a@b.com',
@@ -81,7 +81,7 @@ return [
     'testPaymentBilldeskEntity' => [
         'action' => 'authorize',
         'received' => true,
-        'BankID'=> 'ICI',
+        'BankID'=> 'INB',
         'CurrencyType'=> 'INR',
         'ItemCode'=> 'DIRECT',
         'TypeField1'=> 'R',

@@ -456,8 +456,6 @@ class Gateway extends Base\Gateway
                 'payment_id' => $input['payment']['id'],
             ]);
 
-        $this->handleRequestFailed($response);
-
         $wallet = $this->repo->findByRefundId($input['refund']['id']);
 
         $data = [
