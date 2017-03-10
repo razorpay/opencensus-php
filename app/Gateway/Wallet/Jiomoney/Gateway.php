@@ -7,17 +7,18 @@ use Carbon\Carbon;
 use RZP\Constants\HashAlgo;
 use RZP\Constants\Mode;
 use RZP\Error;
-use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
-use RZP\Gateway\Wallet\Base;
-use RZP\Gateway\Base\Verify;
-use RZP\Models\Payment\Entity as Payment;
-use RZP\Models\Payment\Status;
-use RZP\Models\Currency\Currency;
-use RZP\Gateway\Base\VerifyResult;
+use RZP\Exception;
 use RZP\Gateway\Base\AuthorizeFailed;
+use RZP\Gateway\Base\Verify;
+use RZP\Gateway\Base\VerifyResult;
+use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
+use RZP\Models\Currency\Currency;
+use RZP\Models\Payment\Entity as Payment;
+use RZP\Models\Payment\Processor\Wallet;
+use RZP\Models\Payment\Status;
+use RZP\Trace\TraceCode;
 
 class Gateway extends Base\Gateway
 {
@@ -148,6 +149,46 @@ class Gateway extends Base\Gateway
         {
             $this->handleRefundFailure($content);
         }
+    }
+
+    public function alreadyRefunded(array $input)
+    {
+        $paymentId = $input['payment_id'];
+        $refundAmount = $input['refund_amount'];
+        $refundId = $input['refund_id'];
+
+        $gatewayRefundEntities = $this->repo->findSuccessfulRefundByRefundId($refundId, Wallet::JIOMONEY);
+
+        if ($gatewayRefundEntities->count() === 0)
+        {
+            return false;
+        }
+
+        $gatewayRefundEntity = $gatewayRefundEntities->first();
+
+        $gatewayRefundEntityPaymentId = $gatewayRefundEntity->getPaymentId();
+        $gatewayRefundEntityRefundAmount = $gatewayRefundEntity->getAmount();
+        $gatewayRefundEntityStatusCode = $gatewayRefundEntity->getStatusCode();
+
+        $this->trace->info(
+            TraceCode::GATEWAY_ALREADY_REFUNDED_INPUT,
+            [
+                'input'                 => $input,
+                'refund_payment_id'     => $gatewayRefundEntityPaymentId,
+                'gateway_refund_amount' => $gatewayRefundEntityRefundAmount,
+                'status_code'           => $gatewayRefundEntityStatusCode,
+            ]);
+
+        $gatewayRefundSuccess = ($gatewayRefundEntityStatusCode === StatusCode::SUCCESS);
+
+        if (($gatewayRefundEntityPaymentId !== $paymentId) or
+            ($gatewayRefundEntityRefundAmount !== $refundAmount) or
+            ($gatewayRefundSuccess === false))
+        {
+            return false;
+        }
+
+        return true;
     }
 
     //------------------Authorize helper methods begin--------------------------
