@@ -6,30 +6,31 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                            = 'id';
-    const GATEWAY                       = 'gateway';
-    const ISSUER                        = 'issuer';
-    const CARD_TYPE                     = 'card_type';
-    const NETWORK                       = 'network';
-    const METHOD                        = 'method';
-    const DOWNTIME_FROM                 = 'downtime_from';
-    const DOWNTIME_TO                   = 'downtime_to';
-    const TERMINAL_ID                   = 'terminal_id';
-    const REASON_CODE                   = 'reason_code';
-    const SOURCE                        = 'source';
-    const COMMENT                       = 'comment';
-    const PARTIAL                       = 'partial';
-    const SCHEDULED                     = 'scheduled';
-    const PUBLIC                        = 'public';
-    const CREATED_AT                    = 'created_at';
-    const UPDATED_AT                    = 'updated_at';
+    const ID            = 'id';
+    const GATEWAY       = 'gateway';
+    const ISSUER        = 'issuer';
+    const CARD_TYPE     = 'card_type';
+    const NETWORK       = 'network';
+    const METHOD        = 'method';
+    // @todo Need to discuss the names of downtime_from & downtime_to
+    const DOWNTIME_FROM = 'downtime_from';
+    const DOWNTIME_TO   = 'downtime_to';
+    const TERMINAL_ID   = 'terminal_id';
+    const REASON_CODE   = 'reason_code';
+    const SOURCE        = 'source';
+    const COMMENT       = 'comment';
+    const PARTIAL       = 'partial';
+    const SCHEDULED     = 'scheduled';
+    const PUBLIC        = 'public';
+    const CREATED_AT    = 'created_at';
+    const UPDATED_AT    = 'updated_at';
 
     // the following 3 are for network, issuer and card_type
     // for the appropriate default values instead of storing
     // null
-    const NA      = 'NA';
-    const UNKNOWN = 'UNKNOWN';
-    const ALL     = 'ALL';
+    const NA            = 'NA';
+    const UNKNOWN       = 'UNKNOWN';
+    const ALL           = 'ALL';
 
 
     protected $fillable = [
@@ -41,11 +42,32 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::SCHEDULED,
         self::PARTIAL,
+        self::PUBLIC,
         self::CARD_TYPE,
         self::NETWORK,
         self::METHOD,
         self::TERMINAL_ID,
         self::SOURCE
+    ];
+
+    protected $visible = [
+        self::ID,
+        self::GATEWAY,
+        self::ISSUER,
+        self::CARD_TYPE,
+        self::NETWORK,
+        self::METHOD,
+        self::SOURCE,
+        self::DOWNTIME_FROM,
+        self::DOWNTIME_TO,
+        self::TERMINAL_ID,
+        self::REASON_CODE,
+        self::COMMENT,
+        self::PARTIAL,
+        self::SCHEDULED,
+        self::PUBLIC,
+        self::CREATED_AT,
+        self::UPDATED_AT,
     ];
 
     protected $public = [
@@ -85,31 +107,16 @@ class Entity extends Base\PublicEntity
         self::PARTIAL       => false,
     ];
 
-    protected $visible = [
-        self::ID,
-        self::GATEWAY,
-        self::ISSUER,
-        self::CARD_TYPE,
-        self::NETWORK,
-        self::METHOD,
-        self::SOURCE,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
-        self::TERMINAL_ID,
-        self::REASON_CODE,
-        self::COMMENT,
-        self::PARTIAL,
-        self::SCHEDULED,
-        self::PUBLIC,
-        self::CREATED_AT,
-        self::UPDATED_AT,
-    ];
-
     const END_OF_TIME = 2147483647;
 
-    protected $entity = 'gateway_absence';
+    protected $entity = 'gateway_downtime';
 
     protected $generateIdOnCreate = true;
+
+    public function terminal()
+    {
+        return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
+    }
 
     public function getTerminalId()
     {
@@ -174,10 +181,5 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
-    }
-
-    public function terminal()
-    {
-        return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
 }
