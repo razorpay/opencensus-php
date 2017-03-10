@@ -159,7 +159,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
@@ -193,7 +193,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
@@ -227,7 +227,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
@@ -262,7 +262,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
@@ -300,7 +300,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
@@ -335,7 +335,7 @@ class DatabaseSeeder extends Seeder
                     'settlement_schedule' => 3,
                     'risk_rating'   => 3,
                     'fee_bearer'    => 0,
-                    'org_id'        => '6dLbNSpv5XbCOG',
+                    'org_id'        => '100000razorpay',
                     )
                 );
 
