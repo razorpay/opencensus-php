@@ -38,7 +38,9 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('merchant:bank_account');
 
-        $this->fixtures->create('merchant:merchant_schedule');
+        $schedule = $this->fixtures->create('schedule');
+
+        $this->fixtures->create('merchant:merchant_schedule', ['schedule_id' => $schedule['id']]);
 
         $this->fixtures->merchant->enableInternational();
     }
@@ -164,9 +166,9 @@ class Merchant extends Base
         $this->fixtures->create('methods', $attributes);
     }
 
-    public function createMerchantSchedule()
+    public function createMerchantSchedule(array $attributes = array())
     {
-        $this->fixtures->create('merchant_schedule');
+        $this->fixtures->create('merchant_schedule', $attributes);
     }
 
     public function activate($id = '10000000000000')

@@ -580,7 +580,7 @@ final class FactoryData
             'id'                => $faker->randomNumber(6),
             'merchant_id'       => '10000000000000',
             'method'            => null,
-            'schedule_id'       => 'factory:RZP\Models\Schedule\Entity',
+            'schedule_id'       => 'factory:\RZP\Models\Schedule\Entity',
         ]);
     }
 }
