@@ -208,6 +208,7 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::SCHEDULE,
+        self::MERCHANT_SCHEDULE,
     ];
 
     public static function getEntityNamespace(string $entity)
