@@ -79,11 +79,6 @@ class Validator extends Base\Validator
         'optout_reason'     => 'sometimes|string|max:200'
     ];
 
-    protected static $assignScheduleRules = [
-        MerchantSchedule::METHOD            => 'sometimes|filled|string|max:20|custom',
-        MerchantSchedule::SCHEDULE_ID       => 'required|alpha_dash|max:20'
-    ];
-
     protected static $editConfigValidators = [
         'csv_email',
     ];
@@ -348,15 +343,6 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_MERCHANT_NOT_SUSPENDED);
-        }
-    }
-
-    protected function validateMethod($attribute, $method)
-    {
-        if (Method::isValid($method) === false)
-        {
-            throw new Exception\BadRequestValidationFailureException(
-                'Invalid payment method given: ' . $method);
         }
     }
 }
