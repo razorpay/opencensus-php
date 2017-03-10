@@ -3,9 +3,10 @@
 namespace RZP\Services;
 
 use Requests;
+use RZP\Exception;
+use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
-use RZP\Exception;
 use RZP\Trace\TraceCode;
 
 class Drip
@@ -49,11 +50,13 @@ class Drip
     {
         switch ($action)
         {
-            case self::CREATED:
-                $this->sendDripMerchantCreated($merchant);
-
             case self::ACTIVATED:
                 $this->sendDripMerchantActivated($merchant);
+                break;
+
+            default:
+                $this->sendDripMerchantCreated($merchant);
+                break;
         }
     }
 
@@ -105,7 +108,7 @@ class Drip
         }
         catch(\Requests_Exception $e)
         {
-            throw $e;
+            $this->trace->traceException($e, Trace::ERROR);
         }
 
         $this->trace->info(TraceCode::DRIP_RESPONSE, ['response' => $response->body]);
@@ -127,20 +130,5 @@ class Drip
         ];
 
         return $data;
-    }
-
-    protected function getRequestArray($content, $relativeUrl)
-    {
-        $request = [
-            'url'     => $this->getUrl($relativeUrl),
-            'content' => $content
-        ];
-
-        return $request;
-    }
-
-    protected function getUrl($relativeUrl)
-    {
-        return $this->baseUrl . '/' . $this->accountId . '/' . $relativeUrl;
     }
 }

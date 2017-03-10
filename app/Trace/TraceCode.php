@@ -139,7 +139,7 @@ class TraceCode
     const MISSING_BILLDESK_CANCELLED_REFUNDS        = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
 
     const DRIP_REQUEST                              = 'DRIP_REQUEST';
-    const DRIP_RESPONSE                             = 'DRIP_REQUEST';
+    const DRIP_RESPONSE                             = 'DRIP_RESPONSE';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
