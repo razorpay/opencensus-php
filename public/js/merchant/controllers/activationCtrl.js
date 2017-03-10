@@ -94,7 +94,7 @@ app.controller('ActivationCtrl', [
         });
         if (data.data.submitted === 1) {
           $scope.data.activated = data.data.activated;
-          if (data.data.activated === true) {
+          if (data.data.activated === 1) {
             $scope.formAlerts.addAlert('info', 'Your account is already activated');
           } else {
             $scope.formAlerts.addAlert('info', 'Form has been submitted for activation and is pending admin response');

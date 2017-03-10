@@ -178,6 +178,8 @@ class Service extends Base\Service
 
         $merchantDetails['locked'] = (int) ($merchantDetails['locked'] ?? 0);
 
+        $merchantDetails['activated'] = (int) ($merchantDetails['activated'] ?? 0);
+
         $merchantDetails['files'] = $this->getFileDetails($merchantDetails);
 
         return $merchantDetails;
