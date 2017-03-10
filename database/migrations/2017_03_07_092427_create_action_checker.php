@@ -7,6 +7,7 @@ use RZP\Constants\Table;
 use RZP\Models\Admin\Admin\Entity as Admin;
 use RZP\Models\Workflow\Action\Entity as Action;
 use RZP\Models\Workflow\Action\Checker\Entity as Checker;
+use RZP\Models\Workflow\Step\Entity as Step;
 
 class CreateActionChecker extends Migration
 {
@@ -26,16 +27,23 @@ class CreateActionChecker extends Migration
 
             $table->char(Checker::ADMIN_ID, Checker::ID_LENGTH);
             $table->char(Checker::ACTION_ID, Checker::ID_LENGTH);
+            $table->char(Checker::STEP_ID, Checker::ID_LENGTH)
+                  ->nullable();
 
             $table->tinyInteger(Checker::STEP)
                   ->default(0);
 
             $table->tinyInteger(Checker::APPROVED)
-                  ->default(0);
+                  ->nullable();
 
             $table->foreign(Checker::ACTION_ID)
                   ->references(Action::ID)
                   ->on(Table::WORKFLOW_ACTION)
+                  ->on_delete('restrict');
+
+            $table->foreign(Checker::STEP_ID)
+                  ->references(Step::ID)
+                  ->on(Table::WORKFLOW_STEP)
                   ->on_delete('restrict');
 
             $table->foreign(Checker::ADMIN_ID)
@@ -60,6 +68,8 @@ class CreateActionChecker extends Migration
             $table->dropForeign(Table::ACTION_CHECKER . '_' . Checker::ACTION_ID . '_foreign');
 
             $table->dropForeign(Table::ACTION_CHECKER . '_' . Checker::ADMIN_ID . '_foreign');
+
+            $table->dropForeign(Table::ACTION_CHECKER . '_' . Checker::STEP_ID . '_foreign');
         });
 
         Schema::drop(Table::ACTION_CHECKER);

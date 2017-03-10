@@ -5,6 +5,8 @@ namespace RZP\Models\Workflow\Action\Checker;
 use RZP\Constants\Table;
 use RZP\Models\Base;
 
+use RZP\Models\Workflow\Action\State;
+
 class Entity extends Base\PublicEntity
 {
     const ID             = 'id';
@@ -49,5 +51,33 @@ class Entity extends Base\PublicEntity
     public function action()
     {
         return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
+    }
+
+    /*
+     * Getters
+     */
+    public function getActionId()
+    {
+        return $this->getAttribute(self::ACTION_ID);
+    }
+
+    public function isApproved()
+    {
+        return $this->getAttribute(self::APPROVED);
+    }
+
+    public function getCheckerStatusOnAction()
+    {
+        if (empty($this->isApproved()) === true)
+        {
+            return State::UNDER_REVIEW;
+        }
+
+        if ($this->isApproved() === true)
+        {
+            return State::APPROVED;
+        }
+
+        return State::REJECTED;
     }
 }
