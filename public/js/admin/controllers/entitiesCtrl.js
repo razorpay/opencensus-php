@@ -635,8 +635,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', value);
           });
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
     if ($stateParams.type && $stateParams.id) {
@@ -731,8 +731,8 @@ app.controller('EntitiesCtrl', [
             $scope.alerts.addAlert('danger', null, true);
           }
         }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      }).error(function (res) {
+        $scope.alerts.addAlert('danger', res ? res : null, true);
       });
     };
   }
