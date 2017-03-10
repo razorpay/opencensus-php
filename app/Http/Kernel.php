@@ -45,6 +45,7 @@ class Kernel extends HttpKernel {
         'admin'         => 'App\Http\Middleware\AuthenticateAdmin',
         'superadmin'    => 'App\Http\Middleware\AuthenticateSuperAdmin',
         'slack'         => 'App\Http\Middleware\Slack',
+        'admin_access'  => 'App\Http\Middleware\AdminAccess',
     ];
 
 }
