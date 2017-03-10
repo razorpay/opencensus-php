@@ -122,4 +122,9 @@ class Service extends Base\Service
 
         return $diff;
     }
+
+    public function execute(string $id)
+    {
+        $esResponse = $this->esDao->searchAction(strtolower($this->baseIndex), self::ES_TYPE, $id);
+    }
 }
