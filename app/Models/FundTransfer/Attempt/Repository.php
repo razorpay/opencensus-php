@@ -19,7 +19,7 @@ class Repository extends Base\Repository
         Entity::STATUS              => 'sometimes|string|size:1',
         Entity::UTR                 => 'sometimes|alpha_num',
         Entity::BATCH_TRANSFER_ID   => 'sometimes|alpha_num|size:14',
-        Entity::VERSION             => 'sometimes|string|in:v1,v2',
+        Entity::VERSION             => 'sometimes|string|in:V1,V2',
     ];
 
     public function getFundTransferAttemptsByBatchIdWithRelations(

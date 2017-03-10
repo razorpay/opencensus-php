@@ -50,7 +50,7 @@ class Service extends Base\Service
 
         $batch = $this->repo->batch_settlement->findOrFailPublic($batchId);
 
-        $versionV2RolloutTimestamp = 1488326400; // Date 1st March 2017
+        $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
 
         $currentTimestamp = Carbon::now('Asia/Kolkata')->timestamp;
 

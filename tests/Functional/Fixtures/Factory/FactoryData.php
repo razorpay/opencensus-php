@@ -182,7 +182,7 @@ final class FactoryData
             'entity_id' => 'factory:\RZP\Models\Settlement\Entity',
             'entity_type' => 'settlement',
             'channel' => 'kotak',
-            'version' => 'v2',
+            'version' => 'V2',
         ]);
 
         $factory(\RZP\Models\Adjustment\Entity::class, [
