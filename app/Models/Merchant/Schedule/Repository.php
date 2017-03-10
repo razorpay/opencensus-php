@@ -3,6 +3,7 @@
 namespace RZP\Models\Merchant\Schedule;
 
 use RZP\Models\Base;
+use RZP\Models\Merchant;
 use RZP\Models\Merchant\Schedule as MerchantSchedule;
 
 class Repository extends Base\Repository
@@ -32,6 +33,24 @@ class Repository extends Base\Repository
         }
 
         return $query->first();
+    }
+
+    public function findByMerchantAndMethod(Merchant\Entity $merchant, $method)
+    {
+        $query = $this->newQuery()
+                      ->merchantId($merchant->getId());
+
+        if ($method === null)
+        {
+            $query->whereNull(MerchantSchedule\Entity::METHOD);
+        }
+        else
+        {
+            $query->where(MerchantSchedule\Entity::METHOD, $method);
+        }
+
+        return $query->with('schedule')
+                     ->first();
     }
 
     public function fetchScheduleCountById(string $scheduleId)

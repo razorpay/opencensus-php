@@ -45,4 +45,43 @@ class Core extends Base\Core
 
         return $merchantSchedule;
     }
+
+    public function getMerchantSchedule(Merchant\Entity $merchant, $method)
+    {
+        $merchantSchedules = $this->repo->merchant_schedule->fetch([], $merchant->getId());
+
+        if ($merchantSchedules->count() > 0)
+        {
+            $schedule = $this->filterAndGetScheduleByMethodOrDefault($merchantSchedules, $method);
+        }
+        else
+        {
+            $schedule = $merchant->schedule;
+        }
+
+        return $schedule;
+    }
+
+    protected function filterAndGetScheduleByMethodOrDefault($merchantSchedules, $method)
+    {
+        $schedule = null;
+
+        foreach ($merchantSchedules as $merchantSchedule)
+        {
+            $scheduleMethod = $merchantSchedule->getMethod();
+
+            if ($scheduleMethod === $method)
+            {
+                $schedule = $merchantSchedule->schedule;
+
+                break;
+            }
+            else if ($scheduleMethod === null)
+            {
+                $schedule = $merchantSchedule->schedule;
+            }
+        }
+
+        return $schedule;
+    }
 }

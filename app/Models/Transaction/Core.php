@@ -905,7 +905,7 @@ class Core extends Base\Core
 
         $returnTime = null;
 
-        $schedule = $this->getApplicableSettlementSchedule($payment, $merchant);
+        $schedule = (new Merchant\Schedule\Core)->getMerchantSchedule($merchant, $payment->getMethod());
 
         if ($schedule !== null)
         {
@@ -924,47 +924,6 @@ class Core extends Base\Core
         // return max($returnTime, $onHoldUntilTime);
 
         return $returnTime;
-    }
-
-    protected function getApplicableSettlementSchedule(Payment\Entity $payment, Merchant\Entity $merchant)
-    {
-        $schedules = $merchant->schedules();
-
-        $schedule = null;
-
-        if ($schedules->count() > 0)
-        {
-            $method = $payment->getMethod();
-
-            $schedule = $this->getApplicableScheduleForMethodOrDefault($schedules, $method);
-        }
-        else
-        {
-            $schedule = $merchant->schedule;
-        }
-
-        return $schedule;
-    }
-
-    protected function getApplicableScheduleForMethodOrDefault($schedules, $method)
-    {
-        $defaultSchedule  = null;
-
-        foreach ($schedules as $schedule)
-        {
-            $value = $schedule->getMethod();
-
-            if ($value === $method)
-            {
-                return $schedule;
-            }
-            else if ($value === null)
-            {
-                $defaultSchedule = $schedule;
-            }
-        }
-
-        return $defaultSchedule;
     }
 
     public function calculateSettledAtTimestamp($timestamp, $addDays, $ignoreBankHolidays = false)
