@@ -18,7 +18,7 @@ class ScheduleTest extends TestCase
 
         $this->ba->appAuth();
 
-        $this->testScheduleBody = $request = $this->testData['testScheduleBody'];
+        $this->testScheduleBody = $this->testData['testScheduleBody'];
     }
 
     public function testCreateSchedule()
@@ -39,51 +39,52 @@ class ScheduleTest extends TestCase
 
     public function testScheduleDefaultAnchor()
     {
-        $request = $this->getValidScheduleBody();
+        $input = $this->getDefaultScheduleArray();
 
-        unset($request['content']['anchor']);
+        unset($input['anchor']);
 
-        $response = $this->makeRequestAndGetContent($request);
+        $response = $this->createSchedule($input);
 
         $this->assertEquals(Carbon::MONDAY, $response['anchor']);
     }
 
     public function testScheduleInvalidPeriod()
     {
-        $request = $this->getValidScheduleBody();
+        $input = $this->getDefaultScheduleArray();
 
-        $request['content']['period'] = 'invalidPeriod';
+        $input['period'] = 'invalidPeriod';
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($request) {
-            $this->makeRequestAndGetContent($request);
+        $this->runRequestResponseFlow($data, function() use ($input)
+        {
+            $this->createSchedule($input);
         });
     }
 
     public function testScheduleInvalidWeeklyAnchor()
     {
-        $request = $this->getValidScheduleBody();
+        $input = $this->getDefaultScheduleArray();
 
-        $request['content']['anchor'] = Carbon::SATURDAY;
+        $input['anchor'] = Carbon::SATURDAY;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($request) {
-            $this->makeRequestAndGetContent($request);
+        $this->runRequestResponseFlow($data, function() use ($input) {
+            $this->createSchedule($input);
         });
     }
 
     public function testScheduleInvalidType()
     {
-        $request = $this->getValidScheduleBody();
+        $input = $this->getDefaultScheduleArray();
 
-        $request['content']['type'] = 'not_settlement';
+        $input['type'] = 'not_settlement';
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($request) {
-            $this->makeRequestAndGetContent($request);
+        $this->runRequestResponseFlow($data, function() use ($input) {
+            $this->createSchedule($input);
         });
     }
 
@@ -105,34 +106,14 @@ class ScheduleTest extends TestCase
 
     public function testSettledAtTimestampForTimedMerchant()
     {
-        $request = $this->testData['testAssignSchedule'];
+        $input = $this->testData['timedScheduleBody'];
 
-        $request['content'] = $this->testData['timedScheduleBody'];
+        // Create and assing timed schedule having hour set to 5
+        $response = $this->createAndAssignSchedule($input);
 
-        // Assigned a timed schedule having hour set to 5
-        $response = $this->makeRequestAndGetContent($request);
+        $data = ['amount' => 100];
 
-        $this->assertNotNull($response['settlement_schedule_id']);
-
-        $this->fixtures->create('pricing:zero_pricing_plan');
-
-        $data = [
-            'amount' => 100,
-        ];
-
-        $payment = $this->fixtures->create(
-                            'payment:authorized',
-                            $data);
-
-        $this->ba->privateAuth();
-
-        $request = $this->testData['capturePayment'];
-
-        $request['content'] = $data;
-        $request['url'] .= $payment->getPublicId() . '/capture';
-
-        // Capturing this payment should result in settled_at still set to midnight
-        $response = $this->makeRequestAndGetContent($request);
+        $payment = $this->fixtures->create('payment:captured', $data);
 
         $txn = $this->getLastTransaction(true);
 
@@ -164,7 +145,8 @@ class ScheduleTest extends TestCase
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($schedule) {
+        $this->runRequestResponseFlow($data, function() use ($schedule)
+        {
             $this->deleteSchedule($schedule['id']);
         });
 
@@ -179,43 +161,17 @@ class ScheduleTest extends TestCase
         $this->createAndAssignSchedule();
     }
 
-    public function testAssignSchedule()
+    private function createAndAssignSchedule($input = null)
     {
-        $request = $this->testData[__FUNCTION__];
-
-        $request['content'] = $this->testScheduleBody;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertNotNull($response['settlement_schedule_id']);
-
-        $response = $this->fetchSchedule($response['settlement_schedule_id']);
-
-        $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
-    }
-
-    public function testMerchantSettlementScheduleSync()
-    {
-        $request = $this->testData[__FUNCTION__];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $scheduleDelay = $request['content']['delay'];
-
-        $this->assertEquals($response['settlement_schedule'], $scheduleDelay);
-    }
-
-    private function createAndAssignSchedule()
-    {
-        $schedule = $this->createSchedule();
+        $schedule = $this->createSchedule($input);
 
         $request = $this->testData['testAssignScheduleById'];
 
-        $request['content']['settlement_schedule_id'] = $schedule['id'];
+        $request['content']['schedule_id'] = $schedule['id'];
 
         $response = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($schedule['id'], $response['settlement_schedule_id']);
+        $this->assertEquals($schedule['id'], $response['schedule_id']);
 
         return $schedule;
     }
@@ -241,9 +197,16 @@ class ScheduleTest extends TestCase
         }
     }
 
-    private function createSchedule()
+    private function createSchedule($input = null)
     {
-        $request = $this->getValidScheduleBody();
+        if ($input === null)
+        {
+           $input = $this->getDefaultScheduleArray();
+        }
+
+        $request = $this->testData['createSchedule'];
+
+        $request['content'] = $input;
 
         $response = $this->makeRequestAndGetContent($request);
 
@@ -261,12 +224,8 @@ class ScheduleTest extends TestCase
         return $response;
     }
 
-    private function getValidScheduleBody()
+    private function getDefaultScheduleArray()
     {
-        $request = $this->testData['createSchedule'];
-
-        $request['content'] = $this->testScheduleBody;
-
-        return $request;
+        return $this->testData['testScheduleBody'];
     }
 }

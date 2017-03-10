@@ -15,7 +15,7 @@ return [
         'method'  => 'POST',
         'url'     => '/merchants/10000000000000/schedules',
         'content' => [
-            'settlement_schedule_id' => null,
+            'schedule_id' => null,
         ],
     ],
 
@@ -48,18 +48,6 @@ return [
         'url'     => '/schedules/',
         'content' => [
             "next_run" => 1451586600,
-        ],
-    ],
-
-    'testMerchantSettlementScheduleSync' => [
-        'method'  => 'POST',
-        'url'     => '/merchants/10000000000000/schedules',
-        'content' => [
-            'name'       => 'Basic T5',
-            'type'       => 'settlement',
-            'period'     => 'daily',
-            'interval'   => 1,
-            'delay'      => 5,
         ],
     ],
 
