@@ -360,6 +360,11 @@ class Reconciler3
                            ->payout
                            ->findOrFailPublicWithRelations($entityId, ['merchant', 'transaction']);
         }
+        else
+        {
+            throw new Exception\LogicException(
+                'Invalid payment_ref_no for settlement-version V1: ' . $entityId);
+        }
 
         return $entity;
     }
@@ -381,9 +386,17 @@ class Reconciler3
 
         FundTransferAttempt\Entity::verifyIdAndStripSign($entityId);
 
+        $entity = null;
+
         $entity = $this->repo
                        ->fund_transfer_attempt
                        ->findOrFailPublicWithRelations($entityId, ['source', 'source.transaction', 'source.merchant']);
+
+        if ($entity === null)
+        {
+            throw new Exception\LogicException(
+                'Invalid payment_ref_no for settlement-version V2: ' . $entityId);
+        }
 
         return $entity;
     }
@@ -449,7 +462,13 @@ class Reconciler3
     {
         $count = count($values);
 
-        assert(($count === 54) or ($count === 55));
+        $this->trace->info(TraceCode::MISC_TRACE_CODE, ['count' => $count]);
+
+        if (($count < 54) or ($count > 55))
+        {
+            throw new Exception\LogicException(
+                'Invalid count: ' . $count . ' Should be either 54 or 55.');
+        }
 
         $headings = array_slice($headings, 0, $count);
 

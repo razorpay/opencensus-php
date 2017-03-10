@@ -177,7 +177,7 @@ class Entity extends Base\PublicEntity
 
     public function isStatusCreated()
     {
-        return $this->getStatus() === Status::CREATED;
+        return ($this->getStatus() === Status::CREATED);
     }
 
     public function isPendingReconciliation()
