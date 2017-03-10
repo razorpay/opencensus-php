@@ -38,9 +38,7 @@ class Merchant extends Base
 
         $this->fixtures->on('test')->create('merchant:bank_account');
 
-        $schedule = $this->fixtures->create('schedule');
-
-        $this->fixtures->create('merchant:merchant_schedule', ['schedule_id' => $schedule['id']]);
+        $this->fixtures->create('merchant:merchant_schedule');
 
         $this->fixtures->merchant->enableInternational();
     }
