@@ -693,10 +693,10 @@ class Service extends Base\Service
 
     protected function uploadFileToAPI(string $merchantId, array $data)
     {
-        $this->setApiCredentials($merchantId);
+        $this->setApiCredentials();
 
         return $this->api
-                    ->merchantDetail
+                    ->admin
                     ->uploadActivationFile($merchantId, $data);
     }
 
