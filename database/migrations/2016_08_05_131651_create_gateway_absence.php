@@ -1,10 +1,10 @@
 <?php
 
-use Illuminate\Database\Schema\Blueprint;
-use Illuminate\Database\Migrations\Migration;
 use RZP\Constants\Table;
-use RZP\Models\GatewayStatus\Absence\Entity as AbsenceEntity;
-use RZP\Models\Terminal\Entity as TerminalEntity;
+use Illuminate\Database\Schema\Blueprint;
+use RZP\Models\Terminal\Entity as Terminal;
+use Illuminate\Database\Migrations\Migration;
+use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
 
 class CreateGatewayAbsence extends Migration
 {
@@ -15,71 +15,71 @@ class CreateGatewayAbsence extends Migration
      */
     public function up()
     {
-        Schema::create(Table::GATEWAY_ABSENCE, function(Blueprint $table)
+        Schema::create(Table::GATEWAY_DOWNTIME, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
-            $table->char(AbsenceEntity::ID, AbsenceEntity::ID_LENGTH);
+            $table->char(GatewayDowntime::ID, GatewayDowntime::ID_LENGTH);
 
-            $table->string(AbsenceEntity::GATEWAY, 255);
+            $table->string(GatewayDowntime::GATEWAY, 255);
 
-            $table->string(AbsenceEntity::ISSUER, 50)
-                  ->default(AbsenceEntity::UNKNOWN);
+            $table->string(GatewayDowntime::ISSUER, 50)
+                  ->default(GatewayDowntime::UNKNOWN);
 
-            $table->string(AbsenceEntity::REASON_CODE, 30);
+            $table->string(GatewayDowntime::REASON_CODE, 30);
 
-            $table->string(AbsenceEntity::SOURCE, 30);
+            $table->string(GatewayDowntime::SOURCE, 30);
 
-            $table->char(AbsenceEntity::TERMINAL_ID, TerminalEntity::ID_LENGTH)
+            $table->char(GatewayDowntime::TERMINAL_ID, Terminal::ID_LENGTH)
                   ->nullable();
 
-            $table->string(AbsenceEntity::CARD_TYPE, 10)
-                ->default(AbsenceEntity::UNKNOWN);
+            $table->string(GatewayDowntime::CARD_TYPE, 10)
+                ->default(GatewayDowntime::UNKNOWN);
 
-            $table->string(AbsenceEntity::NETWORK, 10)
-                ->default(AbsenceEntity::UNKNOWN);
+            $table->string(GatewayDowntime::NETWORK, 10)
+                ->default(GatewayDowntime::UNKNOWN);
 
-            $table->string(AbsenceEntity::METHOD, 30);
+            $table->string(GatewayDowntime::METHOD, 30);
 
-            $table->text(AbsenceEntity::COMMENT)
+            $table->text(GatewayDowntime::COMMENT)
                   ->nullable();
 
-            $table->integer(AbsenceEntity::DOWNTIME_FROM);
+            $table->integer(GatewayDowntime::DOWNTIME_FROM);
 
             // TO is optional
-            $table->integer(AbsenceEntity::DOWNTIME_TO)
+            $table->integer(GatewayDowntime::DOWNTIME_TO)
                   ->nullable();
 
-            $table->tinyInteger(AbsenceEntity::SCHEDULED)
+            $table->tinyInteger(GatewayDowntime::SCHEDULED)
                   ->default(0);
 
-            $table->tinyInteger(AbsenceEntity::PARTIAL)
+            $table->tinyInteger(GatewayDowntime::PARTIAL)
                   ->default(0);
 
-            $table->integer(AbsenceEntity::CREATED_AT);
+            $table->integer(GatewayDowntime::CREATED_AT);
 
-            $table->integer(AbsenceEntity::UPDATED_AT);
+            $table->integer(GatewayDowntime::UPDATED_AT);
 
-            $table->foreign(AbsenceEntity::TERMINAL_ID)
-                  ->references(TerminalEntity::ID)
+            $table->foreign(GatewayDowntime::TERMINAL_ID)
+                  ->references(Terminal::ID)
                   ->on(Table::TERMINAL)
-                  ->on_delete('restrict');
+                  ->onDelete('restrict');
 
-            $table->index(AbsenceEntity::ISSUER);
+            $table->index(GatewayDowntime::ISSUER);
 
-            $table->index(AbsenceEntity::GATEWAY);
+            $table->index(GatewayDowntime::GATEWAY);
 
-            $table->index(AbsenceEntity::DOWNTIME_FROM);
+            $table->index(GatewayDowntime::DOWNTIME_FROM);
 
-            $table->index(AbsenceEntity::DOWNTIME_TO);
+            $table->index(GatewayDowntime::DOWNTIME_TO);
 
-            $table->index(AbsenceEntity::METHOD);
+            $table->index(GatewayDowntime::METHOD);
 
-            $table->index(AbsenceEntity::CREATED_AT);
+            $table->index(GatewayDowntime::CREATED_AT);
 
-            $table->index(AbsenceEntity::REASON_CODE);
+            $table->index(GatewayDowntime::REASON_CODE);
 
-            $table->index(AbsenceEntity::SOURCE);
+            $table->index(GatewayDowntime::SOURCE);
         });
     }
 
@@ -90,12 +90,12 @@ class CreateGatewayAbsence extends Migration
      */
     public function down()
     {
-        Schema::table(Table::GATEWAY_ABSENCE, function($table)
+        Schema::table(Table::GATEWAY_DOWNTIME, function($table)
         {
             $table->dropForeign(
-                Table::GATEWAY_ABSENCE . '_' . AbsenceEntity::TERMINAL_ID . '_foreign');
+                Table::GATEWAY_DOWNTIME . '_' . GatewayDowntime::TERMINAL_ID . '_foreign');
         });
 
-        Schema::drop(Table::GATEWAY_ABSENCE);
+        Schema::drop(Table::GATEWAY_DOWNTIME);
     }
 }
