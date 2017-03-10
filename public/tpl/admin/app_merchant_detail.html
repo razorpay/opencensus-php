@@ -526,6 +526,7 @@
                     <th>Mode</th>
                     <th>Gateway</th>
                     <th>Deleted</th>
+                    <th>Enabled</th>
                     <th>Category</th>
                     <th>Network Category</th>
                     <th>Merchant Id</th>
@@ -539,8 +540,8 @@
                     <th>Tpv</th>
                     <th>Created At</th>
                   </thead>
-                  <tbody>
-                  <tr ng-repeat="terminal in merchant.terminals.items">
+                  <tbody ng-repeat="filteredKey in ['undeleted_enabled', 'undeleted_disabled', 'deleted']">
+                  <tr ng-repeat="terminal in terminals[filteredKey]">
                     <td>
                       <a target="_blank" ui-sref="app.entitiesdetail({type:'terminal', id: terminal.id, mode: terminal.mode})">
                         <code>{{terminal.id}}</code>
@@ -549,6 +550,7 @@
                     <td>{{terminal.mode}}</td>
                     <td>{{terminal.gateway}}</td>
                     <td>{{!!terminal.deleted_at}}</td>
+                    <td>{{terminal.enabled}}</td>
                     <td>{{terminal.category}}</td>
                     <td>{{terminal.network_category}}</td>
                     <td>{{terminal.gateway_merchant_id}}</td>
@@ -557,10 +559,14 @@
                     <td>{{terminal.card}}</td>
                     <td>{{terminal.netbanking}}</td>
                     <td>{{terminal.emi}}</td>
-                    <th>{{terminal.emi_duration}}</th>
-                    <th>{{terminal.shared}}</th>
-                    <th>{{terminal.tpv}}</th>
+                    <td>{{terminal.emi_duration}}</td>
+                    <td>{{terminal.shared}}</td>
+                    <td>{{terminal.tpv}}</td>
                     <td>{{terminal.created_at*1000 | date:'short'}}</td>
+                  </tr>
+                  <tr>
+                    <!-- Showing a break between non-deleted and deleted terminals -->
+                    <td colspan="17"></td>
                   </tr>
                 </tbody>
                 </table>

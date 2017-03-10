@@ -12,7 +12,7 @@ app.controller('OrgsAddUsersCtrl', [
 
     $scope.fetchUser = function(id) {
       var request = $http({
-        url: '/admin/generic',
+        url: '/generic',
         params: {
           route_name: 'admin_get',
 
@@ -87,7 +87,7 @@ app.controller('OrgsAddUsersCtrl', [
         allow_all_merchants: user.allow_all_merchants ? "1" : "0"
       };
 
-      var request = $http.put('/admin/generic', data, {
+      var request = $http.put('/generic', data, {
         params: {
           route_name: 'admin_edit',
 
@@ -141,7 +141,7 @@ app.controller('OrgsAddUsersCtrl', [
       body.roles = getSelectedRoles();
 
       var request = $http({
-        url: '/admin/generic',
+        url: '/generic',
         method: 'POST',
         params: {
           route_name: 'admin_create',

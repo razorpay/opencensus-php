@@ -6,6 +6,7 @@ use Input;
 use Config;
 use App;
 use App\Generic;
+use Request;
 
 use App\Http\AppResponse;
 
@@ -22,46 +23,15 @@ class GenericController extends Controller
     |
     */
 
-    public function postGeneric()
+    public function handle()
     {
-        $input = ['method' => 'post'];
+        $method = Request::method();
 
-        $route = $this->resolveRoute();
+        $input = ['method' => $method];
 
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($auth, $route) = $this->resolveRoute();
 
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getGeneric()
-    {
-        $input = ['method' => 'get'];
-
-        $route = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function putGeneric()
-    {
-        $input = ['method' => 'put'];
-
-        $route = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function deleteGeneric()
-    {
-        $input = ['method' => 'delete'];
-
-        $route = $this->resolveRoute();
-
-        list($error, $data) = (new Generic\Service)->call($input, $route);
+        list($error, $data) = (new Generic\Service)->call($input, $route, $auth);
 
         return AppResponse::jsonResponse($error, $data);
     }
@@ -79,7 +49,17 @@ class GenericController extends Controller
             );
         }
 
-        $route = Config::get('api-route-map.'.$routeName);
+        $routeMap = Config::get('api-route-map');
+
+        foreach ($routeMap as $auth => $routes)
+        {
+            if (isset($routes[$routeName]))
+            {
+                $route = $routes[$routeName];
+
+                break;
+            }
+        }
 
         if (! isset($route))
         {
@@ -90,9 +70,38 @@ class GenericController extends Controller
             );
         }
 
-        $route = $this->parseUrlParams($route);
+        /**
+         * 2 different formats:
+         * 'payment_fetch_multiple' => 'payments'
+         *
+         * 'payment_fetch_multiple' => [
+         *      'url'       => 'payments',
+         *      'routeName' => 'get_payments'
+         * ],
+         */
+        if (is_array($route))
+        {
+            $endpointUrl = $route['url'];
 
-        return $route;
+            // Permission checker
+            if ( isset($route['routeName']) )
+            {
+                $routeName = $route['routeName'];
+
+                if (\Gate::has($routeName) and \Gate::denies($routeName))
+                {
+                    abort(403, 'Forbidden');
+                }
+            }
+        }
+        else
+        {
+            $endpointUrl = $route;
+        }
+
+        $route = $this->parseUrlParams($endpointUrl);
+
+        return [ $auth, $route ];
     }
 
     private function parseUrlParams($route)
@@ -101,8 +110,13 @@ class GenericController extends Controller
         // Logic to parse URL Params
         // Eg: /orgs/{id} becomes /orgs/6dLbNSpv5XbCOG (actual ID passed in `url_params`)
 
-        // Will be JSON string
-        $urlParams = json_decode(Input::get('url_params'), true) ?: [];
+        // Will be JSON string / array
+        $urlParams = Input::get('url_params') ?? [];
+
+        if (! is_array($urlParams))
+        {
+            $urlParams = json_decode($urlParams, true) ?: [];
+        }
 
         // Check if the route is for an orgs/... related API call
         $pos = strpos($route, 'orgs');

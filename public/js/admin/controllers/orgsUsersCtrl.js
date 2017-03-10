@@ -57,7 +57,7 @@ app.controller('OrgsUsersCtrl', [
     **/
 
     $scope.listUsers = function() {
-      var request = $http.get('/admin/generic', {
+      var request = $http.get('/generic', {
         params: {
           route_name: 'admin_get_multiple',
         }
@@ -73,7 +73,7 @@ app.controller('OrgsUsersCtrl', [
     $scope.listUsers();
 
     $scope.deleteOrgUser = function(id) {
-      var request = $http.delete('/admin/generic', {
+      var request = $http.delete('/generic', {
         params: {
           route_name: 'admin_delete',
 
