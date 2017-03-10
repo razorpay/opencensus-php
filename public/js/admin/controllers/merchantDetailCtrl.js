@@ -955,7 +955,7 @@ app.controller('MerchantDetailCtrl', [
         if (data.success) {
           $scope.merchant = data.data;
           sortTerminals();
-          $scope.scheduleKeys = Object.keys($scope.merchant.schedule);
+          $scope.scheduleKeys = $scope.merchant.schedule ? Object.keys($scope.merchant.schedule) : [];
           $scope.merchant.id = data.data.details.id;
           $scope.merchant.details.activation_progress = data.data.details.merchant_details.activation_progress;
           $scope.referer = getReferer($scope.merchant.details.tags);
