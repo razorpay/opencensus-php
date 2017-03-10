@@ -10,19 +10,25 @@ use RZP\Trace\TraceCode;
 
 class Drip
 {
+    // Drip Actions
     const CREATED   = 'created';
     const ACTIVATED = 'activated';
 
-    const ACTION_MAP = [
+    // Drip Urls
+    const SUBSCRIBERS = 'subscribers';
+
+    const CONTENT_TYPE = 'application/vnd.api+json';
+
+    // Drip action to bool map
+    const ACTIVATED_ACTION_MAP = [
         self::CREATED   => false,
         self::ACTIVATED => true,
     ];
 
-    const DRIP_URLS = [
-        'subscribers' => '/subscribers',
+    // drip url maps
+    const DRIP_URL_MAP = [
+        self::SUBSCRIBERS => '/subscribers',
     ];
-
-    const CONTENT_TYPE = 'application/vnd.api+json';
 
     public function __construct($app)
     {
@@ -53,20 +59,20 @@ class Drip
 
     public function sendDripMerchantCreated($merchant)
     {
-        $action = self::ACTION_MAP[self::CREATED];
+        $action = self::ACTIVATED_ACTION_MAP[self::CREATED];
 
         $data = $this->createDripSubscribersArray($action, $merchant);
 
-        $response = $this->sendRequest(self::DRIP_URLS['subscribers'], $data, 'post');
+        $response = $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
 
     public function sendDripMerchantActivated($merchant)
     {
-        $action = self::ACTION_MAP[self::ACTIVATED];
+        $action = self::ACTIVATED_ACTION_MAP[self::ACTIVATED];
 
         $data = $this->createDripSubscribersArray($action, $merchant);
 
-        $response = $this->sendRequest(self::DRIP_URLS['subscribers'], $data, 'post');
+        $response = $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
 
     protected function sendRequest($url, $data, $method)
