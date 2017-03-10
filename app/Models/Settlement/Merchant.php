@@ -45,7 +45,7 @@ class Merchant
         $this->attachMerchantBankAccount();
     }
 
-    public function retryFailedSettlement($setl)
+    public function retryFailedSettlement(Settlement\Entity $setl)
     {
         $this->setl = $setl;
         $this->txns = $this->setl->setlTransactions;
@@ -53,7 +53,7 @@ class Merchant
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
 
-        $this->repo->saveOrFail($this->bankTransferAtpt);
+        $this->repo->fund_transfer_attempt->saveOrFail($this->bankTransferAtpt);
 
         return $this->bankTransferAtpt;
     }
@@ -184,6 +184,8 @@ class Merchant
                     $details[$componentType]['amount'] += $txn->getCredit();
                     $details[$componentType]['amount'] -= $txn->getDebit();
                     break;
+                default:
+                    throw new Exception\LogicException('Invalid Settlement-component-type:' . $componentType);
             }
 
             $details[SetlComponent::SERVICE_TAX]['amount'] += $txn->getServiceTax();

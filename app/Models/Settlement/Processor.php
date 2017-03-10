@@ -111,7 +111,10 @@ class Processor extends Base\Core
 
             Entity::verifyIdAndStripSignMultiple($setlIds);
 
-            assert(count($setlIds) > 0);
+            if (count($setlIds) == 0)
+            {
+                throw new Exception\LogicException('No settlement IDs provided for retry.');
+            }
 
             $settlements = $this->repo->settlement->getFailedSettlementsWithRelations($setlIds);
 

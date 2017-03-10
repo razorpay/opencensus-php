@@ -147,6 +147,18 @@ class ReconciliationTest extends TestCase
         $this->assertNotNull($txn['reconciled_at']);
     }
 
+    public function testRetryReconWithoutSettlementIds()
+    {
+        $this->testReconciliationFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->runRequestResponseFlow($data, function()
+        {
+            $this->retryIntiateSettlements([], 'kotak');
+        });
+    }
+
     public function testAsjustmentCreationAgainstSettlement()
     {
         // Create payments and refunds with timestamps two days back

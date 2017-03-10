@@ -56,6 +56,9 @@ class CreateSettlements extends Migration
             $table->string(Settlement::FAILURE_REASON)
                   ->nullable();
 
+            $table->string(Settlement::REMARKS)
+                  ->nullable();
+
             $table->string(Settlement::RETURN_UTR)
                   ->nullable()
                   ->unique();
