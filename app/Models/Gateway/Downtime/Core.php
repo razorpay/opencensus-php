@@ -40,7 +40,7 @@ class Core extends Base\Core
     {
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
 
-        $gatewayAbsence = $this->repo->gateway_absence->fetchUnique($input);
+        $gatewayAbsence = $this->repo->gateway_downtime->fetchUnique($input);
 
         if ($gatewayAbsence !== null)
         {
@@ -83,7 +83,7 @@ class Core extends Base\Core
     {
         $id = $downWindow->getId();
 
-        $this->repo->gateway_absence->deleteOrFail($downWindow);
+        $this->repo->gateway_downtime->deleteOrFail($downWindow);
 
         $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
 
@@ -97,7 +97,7 @@ class Core extends Base\Core
         // purposes, this is usually not set by input.
         $input = [Entity::DOWNTIME_FROM => time()];
 
-        $absentees = $this->repo->gateway_absence->fetch($input);
+        $absentees = $this->repo->gateway_downtime->fetch($input);
 
         $formatted = [];
 
@@ -128,7 +128,7 @@ class Core extends Base\Core
             }
         }
 
-        $activeAbsentees = $this->repo->gateway_absence->fetchMostRecentActive($queryParams);
+        $activeAbsentees = $this->repo->gateway_downtime->fetchMostRecentActive($queryParams);
 
         return $activeAbsentees->first();
     }

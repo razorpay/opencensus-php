@@ -20,7 +20,7 @@ class Service extends Base\Service
 
     public function edit($id, array $input)
     {
-        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+        $downWindow = $this->repo->gateway_downtime->findOrFailPublic($id);
 
         $downWindow = $this->core()->edit($downWindow, $input);
 
@@ -29,7 +29,7 @@ class Service extends Base\Service
 
     public function delete($id)
     {
-        $downWindow = $this->repo->gateway_absence->findOrFailPublic($id);
+        $downWindow = $this->repo->gateway_downtime->findOrFailPublic($id);
 
         $downWindow = $this->core()->delete($downWindow);
 
@@ -38,7 +38,7 @@ class Service extends Base\Service
 
     public function fetchMultiple(array $input)
     {
-        $absentGateways = $this->repo->gateway_absence->fetch($input);
+        $absentGateways = $this->repo->gateway_downtime->fetch($input);
 
         return $absentGateways->toArrayPublic();
     }
