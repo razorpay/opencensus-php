@@ -8,7 +8,7 @@ use RZP\Models\Card;
 use RZP\Models\Card\Network;
 use RZP\Models\Bank\IFSC;
 use RZP\Models\Payment\Method;
-use RZP\Models\Payment\Wallet;
+use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Gateway;
 
 class Validator extends Base\Validator
@@ -16,8 +16,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::DOWNTIME_FROM   => 'required|integer|after:now',
-        Entity::DOWNTIME_TO     => 'sometimes|integer|after:now',
+        Entity::DOWNTIME_FROM   => 'required|integer',
+        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',

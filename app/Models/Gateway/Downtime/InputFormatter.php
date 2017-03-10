@@ -19,7 +19,6 @@ class InputFormatter
             // applicability as far as network and card_type
             // are concerned
             case Method::NETBANKING:
-            case Method::WALLET:
                 if (empty($input[Entity::NETWORK]) === true)
                 {
                     $input[Entity::NETWORK] = Entity::NA;
@@ -34,6 +33,28 @@ class InputFormatter
                 if (empty($input[Entity::ISSUER]) === true)
                 {
                     $input[Entity::ISSUER] = strtolower($input[Entity::GATEWAY]);
+                }
+
+                break;
+
+            case Method::WALLET:
+
+                if (empty($input[Entity::NETWORK]) === true)
+                {
+                    $input[Entity::NETWORK] = Entity::NA;
+                }
+
+                if (empty($input[Entity::CARD_TYPE]) === true)
+                {
+                    $input[Entity::CARD_TYPE] = Entity::NA;
+                }
+                // for all wallets, the issuer is the gateway itself
+                if (empty($input[Entity::ISSUER]) === true)
+                {
+                    $gateway = strtolower($input[Entity::GATEWAY]);
+
+                    $input[Entity::ISSUER] = (strpos($gateway, 'wallet_') === 0) ?
+                        str_replace("wallet_","",$gateway) : $gateway;
                 }
 
                 break;

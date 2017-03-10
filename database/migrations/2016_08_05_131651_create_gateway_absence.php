@@ -56,6 +56,9 @@ class CreateGatewayAbsence extends Migration
             $table->tinyInteger(GatewayDowntime::PARTIAL)
                   ->default(0);
 
+            $table->tinyInteger(GatewayDowntime::PUBLIC)
+                   ->default(1);
+
             $table->integer(GatewayDowntime::CREATED_AT);
 
             $table->integer(GatewayDowntime::UPDATED_AT);

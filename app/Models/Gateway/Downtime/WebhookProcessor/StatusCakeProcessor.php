@@ -37,9 +37,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
     protected function fetchStatusCakeCredentials()
     {
-        $uname = $this->app['config']->get('applications.gateway_absence.statuscake.username');
+        $uname = $this->app['config']->get('applications.gateway_downtime.statuscake.username');
 
-        $apiKey = $this->app['config']->get('applications.gateway_absence.statuscake.api_key');
+        $apiKey = $this->app['config']->get('applications.gateway_downtime.statuscake.api_key');
 
         return [$uname, $apiKey];
     }
@@ -194,7 +194,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
         catch(\Exception $e)
         {
-            $this->trace-warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
                 [
                     'tags' => $tags,
                     'input' => $input,
@@ -209,7 +209,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         if ($jsonError !== 0)
         {
-            $this->trace-warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
                 [
                     'tags' => $tags,
                     'input' => $input,
@@ -246,7 +246,11 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                         ['data' => $fmtTags]
                     );
 
-                    throw new Exception\BadRequestValidationFailureException('StatusCake invalid Netbanking data', $method, $fmtTags);
+                    throw new Exception\BadRequestValidationFailureException(
+                        'StatusCake invalid Netbanking data',
+                        $method,
+                        $fmtTags
+                    );
                 }
 
                 if (isset($gateway) === false)

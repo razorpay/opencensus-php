@@ -29,9 +29,9 @@ class GatewayAbsenceTest extends TestCase
 
         parent::setUp();
 
-        $statusCakeUserName = $this->app['config']->get('applications.gateway_absence.statuscake.username');
+        $statusCakeUserName = $this->app['config']->get('applications.gateway_downtime.statuscake.username');
 
-        $statusCakeApiKey = $this->app['config']->get('applications.gateway_absence.statuscake.api_key');
+        $statusCakeApiKey = $this->app['config']->get('applications.gateway_downtime.statuscake.api_key');
 
         $this->statusCakeToken = md5($statusCakeUserName . $statusCakeApiKey);
 
@@ -60,7 +60,7 @@ class GatewayAbsenceTest extends TestCase
                 'downtime_from' => Carbon::now()->subMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -87,7 +87,7 @@ class GatewayAbsenceTest extends TestCase
                 'downtime_from' => Carbon::now()->subMinutes(60)->timestamp,
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -110,7 +110,7 @@ class GatewayAbsenceTest extends TestCase
 
         $this->assertEquals($response2['scheduled'], true);
 
-        $absenceEntity = $this->getLastEntity('gateway_absence', true);
+        $absenceEntity = $this->getLastEntity('gateway_downtime', true);
 
         $this->assertEquals($absenceEntity['source'], 'other');
 
@@ -131,7 +131,7 @@ class GatewayAbsenceTest extends TestCase
                 'downtime_to'  => Carbon::now()->addMinutes(60)->timestamp
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -148,7 +148,7 @@ class GatewayAbsenceTest extends TestCase
 
         $this->assertEquals($response2['scheduled'], true);
 
-        $absenceEntity = $this->getLastEntity('gateway_absence', true);
+        $absenceEntity = $this->getLastEntity('gateway_downtime', true);
 
         $this->assertEquals($absenceEntity['source'], 'statuscake');
 
@@ -168,7 +168,7 @@ class GatewayAbsenceTest extends TestCase
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $response = $this->makeRequestAndGetContent($request);
@@ -379,7 +379,7 @@ class GatewayAbsenceTest extends TestCase
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -402,7 +402,7 @@ class GatewayAbsenceTest extends TestCase
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         try
@@ -421,13 +421,13 @@ class GatewayAbsenceTest extends TestCase
     {
         $content = $this->createGatewayAbsence();
 
-        $url = '/gateway/absence/'. $content['id'];
+        $url = '/gateway/downtimes/'. $content['id'];
 
         $now = Carbon::now()->timestamp;
 
         $to = Carbon::now()->addMinutes(100)->timestamp;
 
-        $lastEntity = $this->getLastEntity('gateway_absence', true);
+        $lastEntity = $this->getLastEntity('gateway_downtime', true);
         $request = [
             'content' => [
                 'downtime_from' => $now,
@@ -454,7 +454,7 @@ class GatewayAbsenceTest extends TestCase
     {
         $content = $this->createGatewayAbsence();
 
-        $url = '/gateway/absence/'. $content['id'];
+        $url = '/gateway/downtimes/'. $content['id'];
 
         $this->testData[__FUNCTION__]['request']['url'] = $url;
 
@@ -474,7 +474,7 @@ class GatewayAbsenceTest extends TestCase
 
         $request = [
             'content' => ['downtime_from' => $from],
-            'url' => '/gateway/absence',
+            'url' => '/gateway/downtimes',
             'method' => 'GET'
         ];
 
@@ -507,7 +507,7 @@ class GatewayAbsenceTest extends TestCase
 
         $request = [
             'content' => ['downtime_from' => $from, 'downtime_to' => $to],
-            'url' => '/gateway/absence',
+            'url' => '/gateway/downtimes',
             'method' => 'GET'
         ];
 
@@ -535,7 +535,7 @@ class GatewayAbsenceTest extends TestCase
 
         $request = [
             'content' => ['downtime_from' => $from],
-            'url' => '/gateway/absence',
+            'url' => '/gateway/downtimes',
             'method' => 'GET'
         ];
 
@@ -709,7 +709,7 @@ class GatewayAbsenceTest extends TestCase
         $request = [
             'content' => $content,
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         if ($to === null)
@@ -740,7 +740,7 @@ class GatewayAbsenceTest extends TestCase
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -765,7 +765,7 @@ class GatewayAbsenceTest extends TestCase
                 'source' => 'other'
             ],
             'method' => 'POST',
-            'url' => '/gateway/absence'
+            'url' => '/gateway/downtimes'
         ];
 
         $content = $this->makeRequestAndGetContent($request);

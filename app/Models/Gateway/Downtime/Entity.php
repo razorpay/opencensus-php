@@ -92,7 +92,8 @@ class Entity extends Base\PublicEntity
         self::DOWNTIME_FROM => 'int',
         self::DOWNTIME_TO   => 'int',
         self::SCHEDULED     => 'bool',
-        self::PARTIAL       => 'bool'
+        self::PARTIAL       => 'bool',
+        self::PUBLIC        => 'bool',
     ];
 
     protected $defaults = [
@@ -105,6 +106,7 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED     => false,
         self::PUBLIC        => true,
         self::PARTIAL       => false,
+        self::PUBLIC        => true,
     ];
 
     const END_OF_TIME = 2147483647;
@@ -181,5 +183,10 @@ class Entity extends Base\PublicEntity
     public function getGateway()
     {
         return $this->getAttribute(self::GATEWAY);
+    }
+
+    public function getPublic()
+    {
+        return $this->getAttribute(self::PUBLIC);
     }
 }
