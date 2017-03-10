@@ -136,7 +136,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
     }
 
-    protected function getNetbankingData(string $issuer, array $input)
+    protected function getNetbankingGateway(string $issuer, array $input)
     {
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
         {
@@ -148,20 +148,24 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             {
                 $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
 
-                throw new Exception\BadRequestValidationFailureException('StatusCake Gateway Unavailable for issuer', $issuer, $input);
+                throw new Exception\BadRequestValidationFailureException(
+                    'StatusCake Gateway Unavailable for issuer',
+                    $issuer, $input
+                );
             }
 
             // gateway here is just for reference. What we care about is actually the bank. Gateway is a required
             // entity and hence required
             $gateway = $gateways[0];
 
-            return [$gateway, $issuer];
+            return $gateway;
         }
         else
         {
             $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
 
-            throw new Exception\BadRequestValidationFailureException('StatusCake Invalid Issuer from StatusCake:' . $issuer);
+            throw new Exception\BadRequestValidationFailureException(
+                'StatusCake Invalid Issuer from StatusCake:' . $issuer);
         }
     }
 
@@ -182,12 +186,50 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     {
         $tags = $input['Tags'];
 
-        if (strpos($tags, '_') === false)
+        $fmtTags = [];
+
+        try
         {
-            throw new Exception\BadRequestValidationFailureException('StatusCake invalid Tag Value', $tags, $input);
+            $fmtTags = json_decode($tags);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace-warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+                [
+                    'tags' => $tags,
+                    'input' => $input,
+                    'exception' => $e->getMessage()
+                ]
+            );
+
+            throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
         }
 
-        list($method, $issuer) = explode('_', $tags);
+        $jsonError = json_last_error();
+
+        if ($jsonError !== 0)
+        {
+            $this->trace-warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+                [
+                    'tags' => $tags,
+                    'input' => $input,
+                    'json_error' => $jsonError
+                ]
+            );
+            throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
+        }
+
+        $formatted = [];
+
+        $method = isset($fmtTags[Entity::METHOD]) ?? strtolower($fmtTags[Entity::METHOD]);
+
+        $gateway = isset($fmtTags[Entity::GATEWAY]) ?? strtolower($fmtTags[Entity::GATEWAY]);
+
+        $issuer = isset($fmtTags[Entity::ISSUER]) ?? strtolower($fmtTags[Entity::ISSUER]);
+
+        $network = isset($fmtTags[Entity::NETWORK]) ?? strtolower($fmtTags[Entity::NETWORK]);
+
+        $cardType = isset($fmtTags[Entity::CARD_TYPE]) ?? strtolower($fmtTags[Entity::CARD_TYPE]);
 
         $method = strtolower($method);
 
@@ -197,7 +239,20 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         {
             case Method::NETBANKING:
 
-                list($gateway, $issuer) = $this->getNetbankingData($issuer, $input);
+                if (isset($issuer) === false)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_NBDATA,
+                        ['data' => $fmtTags]
+                    );
+
+                    throw new Exception\BadRequestValidationFailureException('StatusCake invalid Netbanking data', $method, $fmtTags);
+                }
+
+                if (isset($gateway) === false)
+                {
+                    $gateway = $this->getNetbankingGateway($issuer);
+                }
 
                 $formatted[Entity::GATEWAY] = $gateway;
 
@@ -207,7 +262,36 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             case Method::CARD:
 
-                $formatted[Entity::GATEWAY] = $issuer;
+                if (isset($gateway) === false)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_CDATA,
+                        ['data' => $fmtTags]
+                    );
+
+                    throw new Exception\BadRequestValidationFailureException(
+                        'StatusCake invalid Card data',
+                        $method,
+                        $fmtTags
+                    );
+                }
+
+                $formatted[Entity::GATEWAY] = $gateway;
+
+                if (isset($issuer) === true)
+                {
+                    $formatted[Entity::ISSUER] = $issuer;
+                }
+
+                if (isset($network) === true)
+                {
+                    $formatted[Entity::NETWORK] = $network;
+                }
+
+                if (isset($cardType) === true)
+                {
+                    $formatted[Entity::CARD_TYPE] = $cardType;
+                }
 
                 break;
 
@@ -216,9 +300,19 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 // wallets begin he gateway name with WALLET_. So, check if the gateway name actually
                 // contains WALLET_. Else, append it here so validation can succeed.
 
-                $issuer = strtoupper($issuer);
+                if (isset($gateway) === false)
+                {
+                    $this->trace->warning(
+                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_WDATA,
+                        ['data' => $fmtTags]
+                    );
 
-                $gateway = (strpos($issuer, 'WALLET_') === 0) ? $issuer : 'WALLET_'.$issuer;
+                    throw new Exception\BadRequestValidationFailureException(
+                        'StatusCake invalid Wallet data',
+                        $method,
+                        $fmtTags
+                    );
+                }
 
                 $formatted[Entity::GATEWAY] = $gateway;
 
@@ -226,9 +320,16 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             default:
 
-                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_DATA, ['data' => $input]);
+                $this->trace->warning(
+                    TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_DATA,
+                    ['data' => $input]
+                );
 
-                throw new Exception\BadRequestValidationFailureException('StatusCake invalid data', $method, $input);
+                throw new Exception\BadRequestValidationFailureException(
+                    'StatusCake invalid data',
+                    $method,
+                    $input
+                );
         }
 
         $formatted = InputFormatter::format($formatted);
