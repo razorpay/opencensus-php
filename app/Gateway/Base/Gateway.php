@@ -243,6 +243,13 @@ class Gateway
         return $this->topup;
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        $this->setMode($mode);
+
+        $this->setTerminal($terminal);
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
@@ -806,6 +813,11 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function getCacheKey($input)
+    {
+        return $this->gateway . '_' . $input['payment']['id'];
     }
 
     protected function getMappedAttributes($attributes)

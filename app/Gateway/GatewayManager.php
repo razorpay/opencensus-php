@@ -32,9 +32,7 @@ class GatewayManager extends \Illuminate\Support\Manager
     {
         $gateway = $this->gateway($gateway);
 
-        $gateway->setTerminal($terminal);
-
-        $gateway->setMode($mode);
+        $gateway->setGatewayParams($input, $mode, $terminal);
 
         // Laravel helper function converts snake case to camel case
         $action = camel_case($action);
