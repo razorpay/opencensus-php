@@ -18,6 +18,7 @@ class Terminal extends Base
         $this->createSharedMobikwikTerminal();
         $this->createSharedNetbankingHdfcTerminal();
         $this->createSharedNetbankingKotakTerminal();
+        $this->createSharedNetbankingIciciTerminal();
         $this->createSharedNetbankingAirtelTerminal();
         $this->createSharedNetbankingAxisTerminal();
         $this->createSharedCybersourceHdfcTerminal();
@@ -695,6 +696,36 @@ class Terminal extends Base
         $attributes = array_merge($defaultValues, $attributes);
 
         return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingIciciTerminal(array $attributes = [])
+    {
+        $merchantId = \RZP\Models\Merchant\Account::SHARED_ACCOUNT;
+
+        $defaultValues = [
+            'id'                        => Shared::NETBANKING_ICICI_TERMINAL,
+            'merchant_id'               => $merchantId,
+            'gateway'                   => 'netbanking_icici',
+            'gateway_merchant_id'       => 'razorpay_icici',
+            'gateway_merchant_id2'      => 'razorpay_submerchant',
+            'gateway_secure_secret'     => 'razorpay_password',
+            'netbanking'                => 1,
+            'shared'                    => 1
+        ];
+
+        $attributes = array_merge($defaultValues, $attributes);
+
+        return parent::create($attributes);
+    }
+
+    public function createSharedNetbankingIciciTpvTerminal()
+    {
+        $attributes = [
+            'id'                => Shared::NETBANKING_ICICI_TPV_TERMINAL,
+            'network_category'  => 'securities',
+        ];
+
+        return $this->createSharedNetbankingIciciTerminal($attributes);
     }
 
     public function createSharedNetbankingAirtelTerminal(array $attributes = [])
