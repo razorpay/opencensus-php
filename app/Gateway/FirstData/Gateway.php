@@ -31,6 +31,8 @@ class Gateway extends Base\Gateway
 
     const CHECKSUM_ATTRIBUTE = ConnectResponseFields::RESPONSE_HASH;
 
+    protected static $testChance = null;
+
     protected $gateway = Constants\Entity::FIRST_DATA;
 
     public function authorize(array $input)
@@ -47,32 +49,38 @@ class Gateway extends Base\Gateway
 
         $this->traceGatewayPaymentRequest($request, $input);
 
-        // Enabling optimized flow only for test merchant
+        // Enabling optimized flow only for 5% of merchants
         // We'll enable it for all the merchants once we
         // test this flow properly
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        if ($this->getChance() < 5)
         {
             // Ideally, we could have returned the request array from
             // here only.
             //
-            // However, we prevent one network call on client side by
+            // However, we prevent three network call on client side by
             // doing it on the server side here.
 
             $request = $this->makeRequestAndGetFormData($request);
 
+            // Adding this check to remove one extra redirect to Razorpay
+            // We internally handle the redirect as we know that the
+            // redirection will come to us. This can happen in case of
+            // not enrolled cards
             if (strpos($request['url'], 'https://api.razorpay.com/v1/') === 0)
             {
                 $input['gateway'] = $request['content'];
 
-                return $this->callback($input);
+                return $this->callback($input, false);
             }
+            else if (isset($request['content']['PaReq']) === true)
+            {
+                // Caching original termUrl for 15 mins
+                $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
 
-            // Caching original termUrl for 15 mins
-            $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
-
-            // Setting Razorpay callback as TermUrl to receive ACS response on
-            // Razorpay and send it to IPG via s2s call
-            $request['content']['TermUrl'] = $input['callbackUrl'];
+                // Setting Razorpay callback as TermUrl to receive ACS response on
+                // Razorpay and send it to IPG via s2s call
+                $request['content']['TermUrl'] = $input['callbackUrl'];
+            }
         }
 
         return $request;
@@ -80,6 +88,10 @@ class Gateway extends Base\Gateway
 
     protected function makeRequestAndGetFormData($request)
     {
+        $request['headers']['User-Agent'] = $this->app['request']->header('User-Agent');
+        $request['headers']['X-Forwarded-For'] = $this->app['request']->getRealClientIp();
+        $request['headers']['X-Real-IP'] = $this->app['request']->getRealClientIp();
+
         $response = $this->sendGatewayRequest($request);
 
         $this->trace->info(TraceCode::GATEWAY_PAYMENT_RESPONSE, [$response->body]);
@@ -106,16 +118,24 @@ class Gateway extends Base\Gateway
         return $request;
     }
 
-    public function callback(array $input)
+    public function callback(array $input, $acs = true)
     {
         parent::callback($input);
 
-        // Enabling optimized flow only for test merchant
-        // We'll enable it for all the merchants once we
-        // test this flow properly
-        if ($input['merchant']['id'] === '6ZJzxyLFWrGs74')
+        // Ideally, one check should be enough but adding additional check to
+        // ensure robustness
+        if ($this->app['cache']->get($this->getCacheKey($input)) !== null)
         {
-            $input['gateway'] = $this->getCallbackGatewayContent($input);
+            if ((isset($input['gateway']['PaRes']) === true) and
+                ($acs === true))
+            {
+                $input['gateway'] = $this->getCallbackGatewayContent($input);
+            }
+            else
+            {
+                $this->trace->info(
+                    FIRST_DATA_PARES_MISSING, ['gateway' => $input['gateway']]);
+            }
         }
 
         $this->traceGatewayCallback($input['gateway']);
@@ -141,7 +161,7 @@ class Gateway extends Base\Gateway
 
     protected function getCallbackGatewayContent(array $input)
     {
-        $originalTermUrl =  $this->app['cache']->get($this->getCacheKey($input));
+        $originalTermUrl = $this->app['cache']->get($this->getCacheKey($input));
 
         $request = [
             'url' => $originalTermUrl,
@@ -252,7 +272,7 @@ class Gateway extends Base\Gateway
     // In these cases, we mock the code and handle it appropriately.
     protected function mockApprovalCodeIfNeeded(& $gatewayCallback)
     {
-        if (isset($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === true)
+        if (empty($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]) === false)
         {
             $this->setApproval($gatewayCallback[ConnectResponseFields::APPROVAL_CODE]);
 
@@ -1238,5 +1258,20 @@ class Gateway extends Base\Gateway
         // have a merchantId2 value of their own.
 
         return ($this->terminal[Terminal\Entity::GATEWAY_MERCHANT_ID2] === null);
+    }
+
+    protected function getChance()
+    {
+        if (self::$testChance === null)
+        {
+            return random(0, 99);
+        }
+
+        return self::$testChance;
+    }
+
+    public static function setTestChance($chance = null)
+    {
+        self::$testChance = $chance;
     }
 }

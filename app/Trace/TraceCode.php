@@ -596,6 +596,9 @@ class TraceCode
     const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
 
+    // Trace codes for gateway
+    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
+
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
         self::PAYMENT_CREATED                           => 'New payment created',
