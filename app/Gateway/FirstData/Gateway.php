@@ -72,14 +72,16 @@ class Gateway extends Base\Gateway
 
                 return $this->callback($input, false);
             }
+            else if (isset($request['content']['PaReq']) === true)
+            {
+                // Caching original termUrl for 15 mins
+                $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
+
+                // Setting Razorpay callback as TermUrl to receive ACS response on
+                // Razorpay and send it to IPG via s2s call
+                $request['content']['TermUrl'] = $input['callbackUrl'];
+            }
         }
-
-        // Caching original termUrl for 15 mins
-        $this->app['cache']->put($this->getCacheKey($input), $request['content']['TermUrl'], 15);
-
-        // Setting Razorpay callback as TermUrl to receive ACS response on
-        // Razorpay and send it to IPG via s2s call
-        $request['content']['TermUrl'] = $input['callbackUrl'];
 
         return $request;
     }
@@ -122,11 +124,18 @@ class Gateway extends Base\Gateway
 
         // Ideally, one check should be enough but adding additional check to
         // ensure robustness
-        if (($this->app['cache']->get($this->getCacheKey($input)) !== null) and
-            (isset($input['gateway']['PaRes']) === true) and
-            ($acs === true))
+        if ($this->app['cache']->get($this->getCacheKey($input)) !== null)
         {
-            $input['gateway'] = $this->getCallbackGatewayContent($input);
+            if ((isset($input['gateway']['PaRes']) === true) and
+                ($acs === true))
+            {
+                $input['gateway'] = $this->getCallbackGatewayContent($input);
+            }
+            else
+            {
+                $this->trace->info(
+                    FIRST_DATA_PARES_MISSING, ['gateway' => $input['gateway']]);
+            }
         }
 
         $this->traceGatewayCallback($input['gateway']);
