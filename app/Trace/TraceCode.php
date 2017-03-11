@@ -140,6 +140,7 @@ class TraceCode
 
     const DRIP_REQUEST                              = 'DRIP_REQUEST';
     const DRIP_RESPONSE                             = 'DRIP_RESPONSE';
+    const DRIP_JOB_ERROR                            = 'DRIP_JOB_ERROR';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';

@@ -7,10 +7,14 @@ use RZP\Exception;
 use RZP\Trace\Trace;
 use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
+use RZP\Jobs\DripAction;
 use RZP\Trace\TraceCode;
+use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Drip
 {
+    use DispatchesJobs;
+
     // Drip Actions
     const CREATED   = 'created';
     const ACTIVATED = 'activated';
@@ -66,7 +70,7 @@ class Drip
 
         $data = $this->createDripSubscribersArray($action, $merchant);
 
-        $response = $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
+        $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
 
     public function sendDripMerchantActivated($merchant)
@@ -75,7 +79,7 @@ class Drip
 
         $data = $this->createDripSubscribersArray($action, $merchant);
 
-        $response = $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
+        $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
 
     protected function sendRequest($url, $data, $method)
@@ -96,24 +100,12 @@ class Drip
             'content' => $content
         ];
 
-        $this->trace->info(TraceCode::DRIP_REQUEST, ['request' => $request]);
+        //
+        // Dispatching the job into the queue
+        //
+        $job = new DripAction($request);
 
-        try
-        {
-            $response = Requests::$method(
-                $request['url'],
-                $request['headers'],
-                $request['content'],
-                $request['options']);
-        }
-        catch(\Requests_Exception $e)
-        {
-            $this->trace->traceException($e, Trace::ERROR);
-        }
-
-        $this->trace->info(TraceCode::DRIP_RESPONSE, ['response' => $response->body]);
-
-        return json_decode($response->body, true);
+        $this->dispatch($job);
     }
 
     protected function createDripSubscribersArray($action, $merchant)
