@@ -52,7 +52,10 @@ class Gateway extends Base\Gateway
         // Enabling optimized flow only for 30% of merchants
         // We'll enable it for all the merchants once we
         // test this flow properly
-        if ($this->getChance() < 30)
+        // This flow won't work for RuPay as RuPay doesn't have a TermUrl
+        // Any change in the data results in integrity failure.
+        if (($input['card']['network_code'] !== Card\Network::RUPAY) and
+            ($this->getChance() < 30))
         {
             // Ideally, we could have returned the request array from
             // here only.
