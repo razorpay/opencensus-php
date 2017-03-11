@@ -30,7 +30,7 @@ class Drip
         self::ACTIVATED => true,
     ];
 
-    // drip url maps
+    // Drip Url maps
     const DRIP_URL_MAP = [
         self::SUBSCRIBERS => '/subscribers',
     ];
@@ -55,27 +55,18 @@ class Drip
         switch ($action)
         {
             case self::ACTIVATED:
-                $this->sendDripMerchantActivated($merchant);
+                $this->sendDripMerchantActivatedOrNot(self::ACTIVATED, $merchant);
                 break;
 
             default:
-                $this->sendDripMerchantCreated($merchant);
+                $this->sendDripMerchantActivatedOrNot(self::CREATED, $merchant);
                 break;
         }
     }
 
-    public function sendDripMerchantCreated($merchant)
+    public function sendDripMerchantActivatedOrNot($activated, $merchant)
     {
-        $action = self::ACTIVATED_ACTION_MAP[self::CREATED];
-
-        $data = $this->createDripSubscribersArray($action, $merchant);
-
-        $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
-    }
-
-    public function sendDripMerchantActivated($merchant)
-    {
-        $action = self::ACTIVATED_ACTION_MAP[self::ACTIVATED];
+        $action = self::ACTIVATED_ACTION_MAP[$activated];
 
         $data = $this->createDripSubscribersArray($action, $merchant);
 

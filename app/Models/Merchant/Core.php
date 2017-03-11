@@ -39,6 +39,7 @@ class Core extends Base\Core
             $this->repo->sync($merchant, 'groups', $input['groups']);
         }
 
+        // Updating the existing customer info and setting activated to false
         $this->app['drip']->sendDripMerchantInfo(Merchant\Action::CREATED, $merchant);
 
         return $merchant;

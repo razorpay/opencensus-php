@@ -3,7 +3,6 @@
 namespace RZP\Jobs;
 
 use RZP\Jobs\Job;
-use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 
@@ -15,7 +14,7 @@ use RZP\Trace\TraceCode;
 
 class DripAction extends Job implements ShouldQueue
 {
-    use InteractsWithQueue, SerializesModels;
+    use InteractsWithQueue;
 
     const MAX_ALLOWED_ATTEMPTS = 10;
     const RELEASE_WAIT_SECS    = 60;
