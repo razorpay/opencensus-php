@@ -138,6 +138,8 @@ class Gateway extends Base\Gateway
             if ((isset($input['gateway']['PaRes']) === true) and
                 ($acs === true))
             {
+                $this->validateParesStatus($input);
+
                 $input['gateway'] = $this->getCallbackGatewayContent($input);
             }
             else
@@ -1307,5 +1309,32 @@ class Gateway extends Base\Gateway
                 'payment_id' => $this->input['payment']['id'],
                 'response' => $responseBody
             ]);
+    }
+
+    protected function validateParesStatus(array $input)
+    {
+        $PaRes = $input['gateway']['PaRes'];
+
+        try
+        {
+            $PaRes = base64_decode($PaRes);
+            $PaRes = gzinflate(substr($PaRes, 2));
+
+            $PaResObject = simplexml_load_string($PaRes);
+            $PaRes = json_decode(json_encode($PaResObject), true);
+
+            if (isset($PaRes['Message']['PARes']['TX']['status']) === true)
+            {
+                $this->trace->info(TraceCode::GATEWAY_CALLBACK_PARES,
+                    [
+                        'gateway' => $this->gateway,
+                        'PaResStatus' => $PaRes['Message']['PARes']['TX']['status']
+                    ]);
+            }
+        }
+        catch (\Throwable $e)
+        {
+            $this->trace->traceException($e);
+        }
     }
 }
