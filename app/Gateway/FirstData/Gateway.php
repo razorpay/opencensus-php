@@ -1280,7 +1280,12 @@ class Gateway extends Base\Gateway
     {
         if (self::$testChance === null)
         {
+            return 99;
+
+            //TODO : Fix this, Disable optimization
+            /*
             return rand(0, 99);
+             */
         }
 
         return self::$testChance;
