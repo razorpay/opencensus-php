@@ -108,11 +108,17 @@ class Gateway extends Base\Gateway
         $form = $formCrawler->form();
 
         $method = $form->getMethod();
+        $content = $form->getValues();
+
+        array_walk($content, function(&$value, $key)
+        {
+            $value = htmlentities($value);
+        });
 
         $request = [
             'url'     => trim($form->getUri()),
             'method'  => strtolower($method),
-            'content' => $form->getValues(),
+            'content' => $content,
         ];
 
         return $request;
