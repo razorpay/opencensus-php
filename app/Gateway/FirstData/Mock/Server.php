@@ -43,7 +43,7 @@ class Server extends Base\Mock\Server
     public function authenticate($input)
     {
         $rawInput = $input;
-        $input = json_decode($input['MD'], true);
+        $input = json_decode(html_entity_decode($input['MD']), true);
 
         $dateTime = Carbon::now('Asia/Kolkata');
 
