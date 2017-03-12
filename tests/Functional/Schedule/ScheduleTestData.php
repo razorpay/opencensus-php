@@ -19,46 +19,12 @@ return [
         ],
     ],
 
-    'createSchedule' => [
-        'method'  => 'POST',
-        'url'     => '/schedules',
-        'content' => [],
-    ],
-
-    'fetchSchedule' => [
-        'method'  => 'GET',
-        'url'     => '/schedules/',
-        'content' => [],
-    ],
-
-    'deleteSchedule' => [
-        'method'  => 'DELETE',
-        'url'     => '/schedules/',
-        'content' => [],
-    ],
-
-    'capturePayment' => [
-        'method'  => 'POST',
-        'url'     => '/payments/',
-        'content' => [],
-    ],
-
     'testEditSchedule' => [
         'method'  => 'PUT',
         'url'     => '/schedules/',
         'content' => [
             "next_run" => 1451586600,
         ],
-    ],
-
-    'testScheduleBody' => [
-        'name'       => 'Every Wednesday',
-        'type'       => 'settlement',
-        'period'     => 'weekly',
-        'interval'   => 1,
-        'anchor'     => 3,
-        'delay'      => 1,
-        'next_run'   => 1452105000,
     ],
 
     'timedScheduleBody' => [

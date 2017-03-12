@@ -5,9 +5,11 @@ namespace RZP\Tests\Functional\Schedule;
 use Carbon\Carbon;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 
 class ScheduleTest extends TestCase
 {
+    use ScheduleTrait;
     use RequestResponseFlowTrait;
 
     public function setUp()
@@ -17,8 +19,6 @@ class ScheduleTest extends TestCase
         parent::setUp();
 
         $this->ba->appAuth();
-
-        $this->testScheduleBody = $this->testData['testScheduleBody'];
     }
 
     public function testCreateSchedule()
@@ -90,17 +90,16 @@ class ScheduleTest extends TestCase
 
     public function testScheduleInvalidHour()
     {
-        $request = $this->testData['createSchedule'];
+        $input = $this->testData['timedScheduleBody'];
 
-        $request['content'] = $this->testData['timedScheduleBody'];
-
-        $request['content']['period'] = 'hourly';
-        $request['content']['delay'] = 0;
+        $input['period'] = 'hourly';
+        $input['delay'] = 0;
 
         $data = $this->testData[__FUNCTION__];
 
-        $this->runRequestResponseFlow($data, function() use ($request) {
-            $this->makeRequestAndGetContent($request);
+        $this->runRequestResponseFlow($data, function() use ($input)
+        {
+            $this->createSchedule($input);
         });
     }
 
@@ -129,7 +128,7 @@ class ScheduleTest extends TestCase
 
         $response = $this->fetchSchedule($schedule['id']);
 
-        $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
+        $this->assertArraySelectiveEquals($schedule, $response);
     }
 
     public function testDeleteSchedule()
@@ -159,73 +158,5 @@ class ScheduleTest extends TestCase
     public function testAssignScheduleById()
     {
         $this->createAndAssignSchedule();
-    }
-
-    private function createAndAssignSchedule($input = null)
-    {
-        $schedule = $this->createSchedule($input);
-
-        $request = $this->testData['testAssignScheduleById'];
-
-        $request['content']['schedule_id'] = $schedule['id'];
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertEquals($schedule['id'], $response['schedule_id']);
-
-        return $schedule;
-    }
-
-    private function deleteSchedule($id)
-    {
-        $request = $this->testData[__FUNCTION__];
-
-        $request['url'] = $request['url'] . $id;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        $this->assertArraySelectiveEquals($this->testScheduleBody, $response);
-
-        $schedules = $this->getEntities('schedule', ['deleted' => '1'], true);
-
-        foreach ($schedules['items'] as $schedule)
-        {
-            if ($schedule['id'] === $id)
-            {
-                $this->assertNotNull($schedule['deleted_at']);
-            }
-        }
-    }
-
-    private function createSchedule($input = null)
-    {
-        if ($input === null)
-        {
-           $input = $this->getDefaultScheduleArray();
-        }
-
-        $request = $this->testData['createSchedule'];
-
-        $request['content'] = $input;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
-    private function fetchSchedule($id)
-    {
-        $request = $this->testData[__FUNCTION__];
-
-        $request['url'] = $request['url'] . $id;
-
-        $response = $this->makeRequestAndGetContent($request);
-
-        return $response;
-    }
-
-    private function getDefaultScheduleArray()
-    {
-        return $this->testData['testScheduleBody'];
     }
 }
