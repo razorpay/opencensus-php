@@ -403,7 +403,7 @@ class Service extends Base\Service
         }
         else
         {
-            $merchants = $this->repo->merchant->fetchMerchantsWithSettlementScheduleIdNull();
+            $merchants = $this->repo->merchant->getFewMerchantsWithNoCorrespondingMerchantSchedules();
         }
 
         $migrationSummary = [
@@ -413,15 +413,14 @@ class Service extends Base\Service
 
         foreach ($merchants as $merchant)
         {
-            $requiredDelay = $merchant->getSettlementSchedule();
-
             try
             {
-                $schedule = $this->getOrCreateDailySettlementSchedule($requiredDelay);
+                $input = [
+                    'method'      => null,
+                    'schedule_id' => $merchant->getSettlementScheduleId()
+                ];
 
-                $merchant->schedule()->associate($schedule);
-
-                $this->repo->saveOrFail($merchant);
+                $merchantSchedule = (new Merchant\Schedule\Core)->createOrUpdate($merchant, $input);
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }
@@ -429,12 +428,13 @@ class Service extends Base\Service
             {
                 $merchantId = $merchant->getId();
 
-                $this->trace->info(TraceCode::SCHEDULE_MIGRATION_FAILED,
-                                    [
-                                        'merchant_id' => $merchantId,
-                                        'delay'       => $requiredDelay,
-                                        'error'       => $ex->getMessage(),
-                                    ]);
+                $this->trace->info(
+                    TraceCode::SCHEDULE_MIGRATION_FAILED,
+                    [
+                        'merchant_id' => $merchantId,
+                        'schedule_id' => $merchant->getSettlementScheduleId(),
+                        'error'       => $ex->getMessage(),
+                    ]);
 
                 $migrationSummary['failed_ids'][] = $merchantId;
             }

@@ -99,13 +99,28 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function fetchMerchantsWithSettlementScheduleIdNull()
+    public function getFewMerchantsWithNoCorrespondingMerchantSchedules()
     {
+        $mercIds = $this->db->select(
+            'SELECT DISTINCT id
+             FROM merchants
+                WHERE merchants.id NOT IN
+                    (SELECT DISTINCT merchant_schedules.merchant_id
+                     FROM merchants_schedules)
+                LIMIT 1000');
+
+        $mercIds = json_decode(json_encode($mercIds), true);
+
+        $mercIds2  = [];
+        foreach ($mercIds as $setlId)
+        {
+            $mercIds2[] = $setlId['id'];
+        }
+
         return $this->newQuery()
-                    ->whereNull(Entity::SETTLEMENT_SCHEDULE_ID)
+                    ->whereIn(Entity::ID, $mercIds2)
                     ->get();
     }
-
     public function getCountOfMerchantsActivatedBetween($from, $to)
     {
         return $this->newQuery()
