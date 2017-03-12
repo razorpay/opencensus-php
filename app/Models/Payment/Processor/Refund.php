@@ -113,10 +113,9 @@ trait Refund
 
         $this->setPaymentAndRefundInfo($refund, $payment);
 
-        // Currently doing it for only HDFC and Billdesk. In case when other gateways start
-        // getting similar issues, we will start supporting for them too.
-        assert (($payment->getGateway() === Payment\Gateway::HDFC) or
-                ($payment->getGateway() === Payment\Gateway::BILLDESK));
+        $gateway = $payment->getGateway();
+
+        Payment\Refund\Validator::validateManualGatewayRefundAllowed($gateway);
 
         // The refund should have already been successful and everything on the api side.
         assert ($refund->getTransactionId() !== null);
@@ -583,13 +582,6 @@ trait Refund
 
     protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_REQUEST,
-            [
-                'payment_id' => $payment->getId(),
-                'input'      => $input
-            ]);
-
         $this->setPayment($payment);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);

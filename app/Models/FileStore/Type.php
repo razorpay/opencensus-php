@@ -14,6 +14,8 @@ class Type
 
     const HDFC_NETBANKING_REFUND            = 'hdfc_netbanking_refund';
 
+    const ICICI_NETBANKING_REFUND           = 'icici_netbanking_refund';
+
     const AXIS_NETBANKING_REFUND            = 'axis_netbanking_refund';
 
     const AIRTELMONEY_WALLET_REFUND         = 'airtelmoney_wallet_refund';
@@ -32,6 +34,20 @@ class Type
 
     const INVOICE_PDF                       = 'invoice_pdf';
 
+    const MERCHANT_BUSINESS_PROOF_URL           = 'business_proof_url';
+    const MERCHANT_BUSINESS_OPERATION_PROOF_URL = 'business_operation_proof_url';
+    const MERCHANT_BUSINESS_PAN_URL             = 'business_pan_url';
+    const MERCHANT_ADDRESS_PROOF_URL            = 'address_proof_url';
+    const MERCHANT_PROMOTER_PROOF_URL           = 'promoter_proof_url';
+    const MERCHANT_PROMOTER_PAN_URL             = 'promoter_pan_url';
+    const MERCHANT_PROMOTER_ADDRESS_URL         = 'promoter_address_url';
+
+    const SETTLEMENT_BUCKET_CONFIG              = 'settlement_bucket_config';
+    const TEST_BUCKET_CONFIG                    = 'test_bucket_config';
+    const BATCH_BUCKET_CONFIG                   = 'batch_bucket_config';
+    const INVOICE_BUCKET_CONFIG                 = 'invoice_bucket_config';
+    const ACTIVATION_BUCKET_CONFIG              = 'activation_bucket_config';
+
     /**
      * Map of types allowed for each entity.
      */
@@ -41,6 +57,7 @@ class Type
             self::KOTAK_NETBANKING_CLAIM,
             self::KOTAK_NETBANKING_REFUND,
             self::HDFC_NETBANKING_REFUND,
+            self::ICICI_NETBANKING_REFUND,
             self::AXIS_NETBANKING_REFUND,
             self::AIRTELMONEY_WALLET_REFUND,
             self::PAYUMONEY_WALLET_REFUND,
@@ -54,13 +71,13 @@ class Type
         ],
 
         Constants\Entity::MERCHANT_DETAIL => [
-            MerchantDetail::BUSINESS_PROOF_URL,
-            MerchantDetail::BUSINESS_OPERATION_PROOF_URL,
-            MerchantDetail::BUSINESS_PAN_URL,
-            MerchantDetail::ADDRESS_PROOF_URL,
-            MerchantDetail::PROMOTER_PROOF_URL,
-            MerchantDetail::PROMOTER_PAN_URL,
-            MerchantDetail::PROMOTER_ADDRESS_URL,
+            self::MERCHANT_BUSINESS_PROOF_URL,
+            self::MERCHANT_BUSINESS_OPERATION_PROOF_URL,
+            self::MERCHANT_BUSINESS_PAN_URL,
+            self::MERCHANT_ADDRESS_PROOF_URL,
+            self::MERCHANT_PROMOTER_PROOF_URL,
+            self::MERCHANT_PROMOTER_PAN_URL,
+            self::MERCHANT_PROMOTER_ADDRESS_URL,
         ],
 
         Constants\Entity::INVOICE => [
@@ -75,11 +92,45 @@ class Type
         self::KOTAK_NETBANKING_CLAIM,
         self::KOTAK_NETBANKING_REFUND,
         self::HDFC_NETBANKING_REFUND,
+        self::ICICI_NETBANKING_REFUND,
         self::AXIS_NETBANKING_REFUND,
         self::AIRTELMONEY_WALLET_REFUND,
         self::PAYUMONEY_WALLET_REFUND,
         self::ICICI_UPI_REFUND,
         self::ICICI_NODAL_TRANSFER,
+    ];
+
+    /**
+     * Bucket Config Mapping for file types
+     */
+    const BUCKET_CONFIG_TYPE_MAPPING = [
+        self::SETTLEMENT_BUCKET_CONFIG => [
+            self::KOTAK_NETBANKING_REFUND,
+            self::HDFC_NETBANKING_REFUND,
+            self::AXIS_NETBANKING_REFUND,
+            self::AIRTELMONEY_WALLET_REFUND,
+            self::PAYUMONEY_WALLET_REFUND,
+            self::ICICI_UPI_REFUND,
+        ],
+
+        self::BATCH_BUCKET_CONFIG => [
+            self::BATCH_INPUT,
+            self::BATCH_OUTPUT,
+        ],
+
+        self::INVOICE_BUCKET_CONFIG => [
+            self::INVOICE_PDF
+        ],
+
+        self::ACTIVATION_BUCKET_CONFIG => [
+            self::MERCHANT_BUSINESS_PROOF_URL,
+            self::MERCHANT_BUSINESS_OPERATION_PROOF_URL,
+            self::MERCHANT_BUSINESS_PAN_URL,
+            self::MERCHANT_ADDRESS_PROOF_URL,
+            self::MERCHANT_PROMOTER_PROOF_URL,
+            self::MERCHANT_PROMOTER_PAN_URL,
+            self::MERCHANT_PROMOTER_ADDRESS_URL,
+        ],
     ];
 
     /**

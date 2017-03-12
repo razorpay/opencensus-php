@@ -135,7 +135,9 @@ class MerchantTest extends TestCase
     {
         $this->createMerchant();
 
-        $this->startTest();
+        $result = $this->startTest();
+
+        $this->assertArrayNotHasKey('groups', $result);
     }
 
     public function testEditMerchantEditGroups()

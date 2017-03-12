@@ -352,7 +352,7 @@ class SettlementTest extends TestCase
 
     public function testMerchantSettlementV2()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $payments = $this->createPaymentEntities();
 

@@ -128,6 +128,13 @@ class Service extends Base\Service
      */
     public function refund($id, array $input)
     {
+        $this->trace->info(
+            TraceCode::PAYMENT_REFUND_REQUEST,
+            [
+                'payment_id' => $id,
+                'input'      => $input
+            ]);
+
         $refund = $this->getNewProcessor()->refundPaymentViaMerchant($id, $input);
 
         return $refund->toArrayPublic();

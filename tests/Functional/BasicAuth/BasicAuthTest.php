@@ -133,6 +133,26 @@ class BasicAuthTest extends TestCase
         $this->startTest();
     }
 
+    public function testPrivateAuthKeyNotExpired()
+    {
+        $this->ba->privateAuth();
+
+        // Key expires 2 minutes from now
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() + 120]);
+
+        $this->startTest();
+    }
+
+    public function testPrivateAuthKeyExpired()
+    {
+        $this->ba->privateAuth();
+
+        // Key expired 20 seconds ago
+        $this->fixtures->edit('key', 'TheTestAuthKey', ['expired_at' => time() - 20]);
+
+        $this->startTest();
+    }
+
     public function testBasicAuthRealm()
     {
         ;

@@ -18,7 +18,7 @@ class ScheduleTest extends TestCase
 
         parent::setUp();
 
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
     }
 
     public function testCreateSchedule()
@@ -126,7 +126,11 @@ class ScheduleTest extends TestCase
     {
         $schedule = $this->createSchedule();
 
+        $this->ba->appAuth();
+
         $response = $this->fetchSchedule($schedule['id']);
+
+        $this->ba->adminAuth();
 
         $this->assertArraySelectiveEquals($schedule, $response);
     }

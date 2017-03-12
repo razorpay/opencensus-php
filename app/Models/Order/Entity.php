@@ -4,6 +4,7 @@ namespace RZP\Models\Order;
 
 use RZP\Models\Base;
 use RZP\Models\Base\Traits\NotesTrait;
+use RZP\Models\Offer;
 
 class Entity extends Base\PublicEntity
 {
@@ -11,6 +12,7 @@ class Entity extends Base\PublicEntity
 
     const ID            = 'id';
     const MERCHANT_ID   = 'merchant_id';
+    const OFFER_ID      = 'offer_id';
     const AMOUNT        = 'amount';
     const CURRENCY      = 'currency';
     const ATTEMPTS      = 'attempts';
@@ -65,6 +67,7 @@ class Entity extends Base\PublicEntity
         self::AMOUNT,
         self::CURRENCY,
         self::RECEIPT,
+        self::OFFER_ID,
         self::STATUS,
         self::ATTEMPTS,
         self::NOTES,
@@ -80,6 +83,12 @@ class Entity extends Base\PublicEntity
 
     protected $amounts = [
         self::AMOUNT
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::OFFER_ID
     ];
 
     protected static $sign = 'order';
@@ -100,6 +109,11 @@ class Entity extends Base\PublicEntity
     public function invoice()
     {
         return $this->hasOne('RZP\Models\Invoice\Entity');
+    }
+
+    public function offer()
+    {
+        return $this->belongsTo('RZP\Models\Offer\Entity');
     }
 
     /** End Related Models */
@@ -196,5 +210,27 @@ class Entity extends Base\PublicEntity
     public function isPaid()
     {
         return ($this->getAttribute(self::STATUS) === Status::PAID);
+    }
+
+    public function hasOffer()
+    {
+        return $this->isAttributeNotNull(self::OFFER_ID);
+    }
+
+    public function getOfferIfExists()
+    {
+        if ($this->hasOffer() === true)
+        {
+            return $this->offer;
+        }
+
+        return null;
+    }
+
+    protected function setPublicOfferIdAttribute(array & $array)
+    {
+        $offerId = $this->getAttribute(self::OFFER_ID);
+
+        $array[self::OFFER_ID] = Offer\Entity::getSignedIdOrNull($offerId);
     }
 }

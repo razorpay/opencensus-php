@@ -117,11 +117,13 @@ class TraceCode
     const TRANSACTION_CREATED                       = 'TRANSACTION_CREATED';
     const INVOICE_RAVEN_REQUEST_FAILED              = 'INVOICE_RAVEN_REQUEST_FAILED';
     const INVOICE_NOTIFICATION_FAILED               = 'INVOICE_NOTIFICATION_FAILED';
-    const FILE_STORE_MKDIR_FAILED                   = 'FILE_STORE_MKDIR_FAILED';
+    const FILE_OPERATION_FAILED                     = 'FILE_OPERATION_FAILED';
     const FILE_PERMISSION_CHANGE_FAILED             = 'FILE_PERMISSION_CHANGE_FAILED';
     const GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS     = 'GATEWAY_REFUND_STATUS_UNKNOWN_SUCCESS';
     const GATEWAY_ABSENT_REFUND_RETRY_FAILED        = 'GATEWAY_ABSENT_REFUND_RETRY_FAILED';
     const RECON_FILE_LINK_NOT_FOUND                 = 'RECON_FILE_LINK_NOT_FOUND';
+    const GATEWAY_ENTITIES_COUNT_UNEXPECTED         = 'GATEWAY_ENTITIES_COUNT_UNEXPECTED';
+    const GATEWAY_ENTITY_UNEXPECTED_ACTION          = 'GATEWAY_ENTITY_UNEXPECTED_ACTION';
 
     const ORDER_MULTIPLE_CAPTURED_PAYMENTS          = 'ORDER_MULTIPLE_CAPTURED_PAYMENTS';
     const GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT   = 'GATEWAY_PAYMENT_VERIFY_RESPONSE_CONTENT';
@@ -132,6 +134,7 @@ class TraceCode
     const MULTIPLE_GATEWAY_ENTITIES_FOUND           = 'MULTIPLE_GATEWAY_ENTITIES_FOUND';
     const BILLDESK_REFUND_UNEXPECTED_STATE          = 'BILLDESK_REFUND_UNEXPECTED_STATE';
     const BILLDESK_CAN_MANUAL_REFUND                = 'BILLDESK_CAN_MANUAL_REFUND';
+    const MIGS_CAN_MANUAL_REFUND                    = 'MIGS_CAN_MANUAL_REFUND';
     const LATE_AUTHORIZE_AUTO_CAPTURE               = 'LATE_AUTHORIZE_AUTO_CAPTURE';
     const MISSING_BILLDESK_CANCELLED_REFUNDS        = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
 
@@ -404,6 +407,7 @@ class TraceCode
     const MERCHANT_ACCOUNT_ACTIVATED                = 'MERCHANT_ACCOUNT_ACTIVATED';
     const MERCHANT_TERMINALS                        = 'MERCHANT_TERMINALS';
     const MERCHANT_EDIT                             = 'MERCHANT_EDIT';
+    const MERCHANT_ORG_NOT_GIVEN                    = 'MERCHANT_ORG_NOT_GIVEN';
 
     const MERCHANT_BALANCE_DEBIT_FAILURE            = 'MERCHANT_BALANCE_DEBIT_FAILURE';
 
@@ -568,8 +572,22 @@ class TraceCode
 
     // Trace codes for offers
     const OFFER_CREATE_REQUEST                      = 'OFFER_CREATE_REQUEST';
+    const OFFER_IIN_DOES_NOT_EXISTS                 = 'OFFER_IIN_DOES_NOT_EXISTS';
     const OFFER_UPDATE_REQUEST                      = 'OFFER_UPDATE_REQUEST';
+    const OFFER_DEACTIVATE                          = 'OFFER_DEACTIVATE';
     const OFFER_MERCHANT_UPDATE_REQ                 = 'OFFER_MERCHANT_UPDATE_REQ';
+    const OFFER_APPLIED_ON_PAYMENT                  = 'OFFER_APPLIED_ON_PAYMENT';
+    const OFFER_NOT_APPLIED_ON_PAYMENT              = 'OFFER_NOT_APPLIED_ON_PAYMENT';
+    const OFFER_APPLIED_ON_ORDER                    = 'OFFER_APPLIED_ON_ORDER';
+    const OFFER_ORDER_AMOUNT_CHECK                  = 'OFFER_ORDER_AMOUNT_CHECK';
+    const OFFER_PAYMENT_AMOUNT_CHECK                = 'OFFER_PAYMENT_AMOUNT_CHECK';
+    const OFFER_PERIOD_CHECK                        = 'OFFER_PERIOD_CHECK';
+    const OFFER_WALLET_CHECK                        = 'OFFER_WALLET_CHECK';
+    const OFFER_NETBANKING_CHECK                    = 'OFFER_NETBANKING_CHECK';
+    const OFFER_CARD_IIN_CHECK                      = 'OFFER_CARD_IIN_CHECK';
+    const OFFER_CARD_TYPE_CHECK                     = 'OFFER_CARD_TYPE_CHECK';
+    const OFFER_CARD_NETWORK_CHECK                  = 'OFFER_CARD_NETWORK_CHECK';
+    const OFFER_CARD_ISSUER_CHECK                   = 'OFFER_CARD_ISSUER_CHECK';
 
     // Trace codes for Gateway Priorities
     const ADD_GATEWAY_PRIORITY_REQUEST              = 'ADD_GATEWAY_PRIORITY_REQUEST';
@@ -577,6 +595,9 @@ class TraceCode
     const UPDATE_GATEWAY_PRIORITY_REQUEST           = 'UPDATE_GATEWAY_PRIORITY_REQUEST';
     const REMOVE_GATEWAY_PRIORITY_REQUEST           = 'REMOVE_GATEWAY_PRIORITY_REQUEST';
     const REDIS_DATA_FETCHED                        = 'REDIS_DATA_FETCHED';
+
+    // Trace codes for gateway
+    const FIRST_DATA_PARES_MISSING                  = 'FIRST_DATA_PARES_MISSING';
 
     protected static $messages = array(
         self::PAYMENT_NEW_REQUEST                       => 'Request for new payment received',
@@ -705,6 +726,11 @@ class TraceCode
         self::CREATE_MERCHANT_DETAIL_FAILED             => 'Merchant Detail creation failed',
 
         self::MERCHANT_DETAIL_MIGRATE_FAILED            => 'Failed to migrate Merchant Detail',
+
+        self::MERCHANT_ORG_NOT_GIVEN                    => 'Merchant Org Id is not passed to API on creation',
+
+        self::OFFER_IIN_DOES_NOT_EXISTS                 => 'IIN does not exists for the offer create request',
+        self::OFFER_DEACTIVATE                          => 'Deactivating the expired offer',
     );
 
     /**
