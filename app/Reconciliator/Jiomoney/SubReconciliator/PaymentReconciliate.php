@@ -6,7 +6,8 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Jiomoney\Gateway as JiomoneyGateway;
-use RZP\Models\Payment\Service;
+use RZP\Models\Payment;
+use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
 
@@ -99,7 +100,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         $paymentId = $this->payment->getPublicId();
 
         $input = [
-            'gateway_payment_id'   => $row[self::COLUMN_GATEWAY_PAYMENT_ID],
+            'gateway_payment_id'   => (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID],
             'gateway_payment_date' => $this->getGatewayPaymentDate($row)
         ];
 

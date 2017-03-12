@@ -317,7 +317,7 @@ trait Authorize
      * This is a hack authorize function specially for authorizing paymnents
      * from gateways who provide payment information through their verify api's
      * for a limited time frame (e.g axis_migs, jiomoney). If we miss any failed
-     *  payment econciliation there then we need to do it manually later.
+     * payment reconciliation there then we need to do it manually later.
      *
      * @param Payment\Entity $payment
      * @param array $input
@@ -339,7 +339,7 @@ trait Authorize
         if (in_array($payment->getGateway(), $forceAuthorizeGateways, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Can force authorize only on axis migs gateway');
+                'Cannot force authorize on this gateway');
         }
 
         if ($payment->hasCard())
@@ -1847,13 +1847,16 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
-                // Also sets the transaction association with the payment.
+                if ($payment->getTransactionId() === null)
+                {
+                    // Also sets the transaction association with the payment.
 
-                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                    list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
-                $this->repo->saveOrFail($txn);
+                    $this->repo->saveOrFail($txn);
 
-                $this->saveFeeDetails($txn, $feesSplit);
+                    $this->saveFeeDetails($txn, $feesSplit);
+                }
             }
 
             $this->repo->saveOrFail($payment);

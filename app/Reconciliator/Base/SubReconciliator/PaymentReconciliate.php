@@ -355,7 +355,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $referenceNumber = $this->getReferenceNumber($row);
 
-        $gatewwayPaymentDate = $this->getGatewayPaymentDate($row);
+        $gatewayPaymentDate = $this->getGatewayPaymentDate($row);
 
         $this->setPaymentAndTransaction($row, $paymentId);
 
@@ -375,7 +375,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
             BaseReconciliate::GATEWAY_FEE          => $fee,
             BaseReconciliate::GATEWAY_SETTLED_AT   => $gatewaySettledAt,
             BaseReconciliate::REFERENCE_NUMBER     => $referenceNumber,
-            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewwayPaymentDate
+            BaseReconciliate::GATEWAY_PAYMENT_DATE => $gatewayPaymentDate
         ];
 
         // For wallets and netbanking, $cardDetails would be empty.
@@ -593,7 +593,6 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
     /**
      * Updates the gateway payment entity with payment date from recon file
-     * if not already present
      *
      * @param array        $rowDetails
      * @param PublicEntity $gatewayPayment
@@ -607,10 +606,7 @@ class PaymentReconciliate extends Foundation\SubReconciliate
 
         $gatewayPaymentDate = $rowDetails[BaseReconciliate::GATEWAY_PAYMENT_DATE];
 
-        if ($gatewayPayment->getDate() === null)
-        {
-            $this->setGatewayPaymentDateInGateway($gatewayPaymentDate, $gatewayPayment);
-        }
+        $this->setGatewayPaymentDateInGateway($gatewayPaymentDate, $gatewayPayment);
     }
 
     /**

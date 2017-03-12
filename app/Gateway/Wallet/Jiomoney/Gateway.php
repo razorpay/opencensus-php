@@ -193,7 +193,7 @@ class Gateway extends Base\Gateway
 
     public function forceAuthorizeFailed($input)
     {
-        $gatewayPayment = $this->repo->wallet_jiomoney->findByPaymentIdAndAction(
+        $gatewayPayment = $this->repo->findByPaymentIdAndAction(
                                                             $input['payment']['id'],
                                                             Action::AUTHORIZE);
 
@@ -215,9 +215,8 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setGatewayPaymentId($input['gateway']['gateway_payment_id']);
         $gatewayPayment->setDate($input['gateway']['gateway_payment_date']);
         $gatewayPayment->setStatusCode(StatusCode::SUCCESS);
-        // TODO: Shouldn't we set received to true here?
 
-        $this->repo->wallet_jiomoney->saveOrFail($gatewayPayment);
+        $this->repo->saveOrFail($gatewayPayment);
 
         return true;
     }
