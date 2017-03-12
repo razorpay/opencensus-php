@@ -112,9 +112,9 @@ class Repository extends Base\Repository
         $mercIds = json_decode(json_encode($mercIds), true);
 
         $mercIds2  = [];
-        foreach ($mercIds as $setlId)
+        foreach ($mercIds as $mercId)
         {
-            $mercIds2[] = $setlId['id'];
+            $mercIds2[] = $mercId['id'];
         }
 
         return $this->newQuery()
