@@ -42,11 +42,6 @@ class CreateActionChecker extends Migration
                   ->on(Table::WORKFLOW_ACTION)
                   ->on_delete('restrict');
 
-            $table->foreign(Checker::STEP_ID)
-                  ->references(Step::ID)
-                  ->on(Table::WORKFLOW_STEP)
-                  ->on_delete('restrict');
-
             $table->foreign(Checker::ADMIN_ID)
                   ->references(Admin::ID)
                   ->on(Table::ADMIN)
