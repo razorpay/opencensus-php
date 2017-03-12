@@ -73,6 +73,16 @@ class Entity
     const PAYOUT                = 'payout';
 
     //
+    // Workflow Entities
+    //
+    const WORKFLOW              = 'workflow';
+    const WORKFLOW_STEP         = 'workflow_step';
+    const WORKFLOW_ACTION       = 'workflow_action';
+    const ACTION_CHECKER        = 'action_checker';
+    const ACTION_TIMELINE       = 'action_timeline';
+    const ACTION_COMMENT        = 'action_comment';
+
+    //
     // Gateway entities
     //
 
@@ -94,13 +104,14 @@ class Entity
     const CYBERSOURCE           = 'cybersource';
     const UPI_ICICI             = 'upi_icici';
     const UPI_IDFC              = 'upi_idfc';
+    const NETBANKING_HDFC       = 'netbanking_hdfc';
+    const NETBANKING_KOTAK      = 'netbanking_kotak';
+    const NETBANKING_ICICI      = 'netbanking_icici';
+    const NETBANKING_AXIS       = 'netbanking_axis';
+    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
-    const NETBANKING_HDFC       = 'netbanking_hdfc';
-    const NETBANKING_AIRTEL     = 'netbanking_airtel';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
-    const NETBANKING_KOTAK      = 'netbanking_kotak';
-    const NETBANKING_AXIS       = 'netbanking_axis';
     const WALLET_AIRTELMONEY    = 'wallet_airtelmoney';
     const WALLET_FREECHARGE     = 'wallet_freecharge';
     const WALLET_JIOMONEY       = 'wallet_jiomoney';
@@ -149,12 +160,13 @@ class Entity
         self::WALLET_PAYZAPP        => \RZP\Gateway\Wallet\Payzapp::class,
         self::TERMINAL_ACTION       => \RZP\Models\Terminal\Action::class,
         self::GATEWAY_ABSENCE       => \RZP\Models\GatewayStatus\Absence::class,
-        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::WALLET_OLAMONEY       => \RZP\Gateway\Wallet\Olamoney::class,
         self::CUSTOMER_BALANCE      => \RZP\Models\Customer\Balance::class,
         self::CUSTOMER_TRANSACTION  => \RZP\Models\Customer\Transaction::class,
         self::BATCH_SETTLEMENT      => \RZP\Models\Settlement\Batch::class,
+        self::NETBANKING_HDFC       => \RZP\Gateway\Netbanking\Hdfc::class,
         self::NETBANKING_KOTAK      => \RZP\Gateway\Netbanking\Kotak::class,
+        self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
@@ -173,12 +185,19 @@ class Entity
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::WORKFLOW              => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_TIMELINE       => \RZP\Models\Workflow\Action\Timeline::class,
+        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
     ];
 
     protected static $repository = [
         self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
         self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ICICI   => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
         self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
         self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
@@ -206,6 +225,13 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::SCHEDULE,
+
+        self::WORKFLOW,
+        self::WORKFLOW_STEP,
+        self::WORKFLOW_ACTION,
+        self::ACTION_CHECKER,
+        self::ACTION_TIMELINE,
+        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

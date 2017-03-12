@@ -12,8 +12,10 @@ class Entity extends Base\PublicEntity
     const ID             = 'id';
     const ACTION_ID      = 'action_id';
     const ADMIN_ID       = 'admin_id';
-    const STEP           = 'step';
+    const STEP_ID        = 'step_id';
     const APPROVED       = 'approved';
+
+    protected static $sign = 'a_checker';
 
     protected $entity = 'action_checker';
 
@@ -22,13 +24,14 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::ADMIN_ID,
         self::ACTION_ID,
-        self::STEP,
+        self::STEP_ID,
+        self::APPROVED,
     ];
 
     protected $visible = [
         self::ADMIN_ID,
         self::ACTION_ID,
-        self::STEP,
+        self::STEP_ID,
         self::CREATED_AT,
         self::APPROVED,
         self::UPDATED_AT,
@@ -37,15 +40,24 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::ADMIN_ID,
         self::ACTION_ID,
-        self::STEP,
+        self::STEP_ID,
         self::APPROVED,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
 
+    protected $casts = [
+        self::APPROVED => 'boolean',
+    ];
+
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function step()
+    {
+        return $this->belongsTo('RZP\Models\Workflow\Step\Entity');
     }
 
     public function action()

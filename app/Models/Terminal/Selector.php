@@ -209,6 +209,5 @@ class Selector
         }
 
         return $terminalsSelected;
-
     }
 }

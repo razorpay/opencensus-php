@@ -29,6 +29,9 @@ class CreateWorkflowSteps extends Migration
             $table->char(Step::WORKFLOW_ID, Step::ID_LENGTH);
             $table->char(Step::PERMISSION_ID, Step::ID_LENGTH);
 
+            $table->tinyInteger(Step::LEVEL)
+                  ->default(0);
+
             $table->foreign(Step::ROLE_ID)
                   ->references(Role::ID)
                   ->on(Table::ROLE)

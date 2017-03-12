@@ -494,7 +494,7 @@ class Entity extends Base\PublicEntity
 
     public function offers()
     {
-        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
+        return $this->hasMany('RZP\Models\Offer\Entity');
     }
 
     protected function getMaxPaymentAmountAttribute()
@@ -926,16 +926,5 @@ class Entity extends Base\PublicEntity
     public function admins()
     {
         return $this->morphedByMany('\RZP\Models\Admin\Admin\Entity', 'entity', Table::MERCHANT_MAP);
-    }
-
-    public function toArrayPublic()
-    {
-         $merchant = parent::toArrayPublic();
-
-         $groups = $this->groups;
-
-         $merchant['groups'] = $groups->toArrayPublicEmbedded();
-
-         return $merchant;
     }
 }

@@ -69,6 +69,14 @@ class CreateTransfers extends Migration
                   ->on(Table::TRANSACTION)
                   ->on_delete('restrict');
         });
+
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->foreign(Payment\Entity::TRANSFER_ID)
+                  ->references(Entity::ID)
+                  ->on(Table::TRANSFER)
+                  ->on_delete('restrict');
+        });
     }
 
     /**
@@ -78,6 +86,11 @@ class CreateTransfers extends Migration
      */
     public function down()
     {
+        Schema::table(Table::PAYMENT, function($table)
+        {
+            $table->dropForeign(Table::PAYMENT . '_' . Payment\Entity::TRANSFER_ID . '_foreign');
+        });
+
         Schema::table(Table::TRANSFER, function($table)
         {
             $table->dropForeign

@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const ADMIN_ID       = 'admin_id';
     const PAYLOAD_ID     = 'payload_id';
 
+    protected static $sign = 'w_action';
+
     protected $entity = 'workflow_action';
 
     protected $generateIdOnCreate = false;
