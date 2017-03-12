@@ -6,6 +6,7 @@ use Carbon\Carbon;
 use RZP\Models\Transaction;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
+use RZP\Tests\Functional\Helpers\Schedule\ScheduleTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
 use RZP\Models\Merchant;
 use Illuminate\Http\UploadedFile;
@@ -14,6 +15,7 @@ use Illuminate\Foundation\Testing\Concerns\InteractsWithSession;
 class MerchantTest extends TestCase
 {
     use PaymentTrait;
+    use ScheduleTrait;
     use SettlementTrait;
     use InteractsWithSession;
 
@@ -1032,4 +1034,23 @@ class MerchantTest extends TestCase
         $this->startTest();
     }
 
+    public function testMerchantScheduleMigration()
+    {
+        $this->ba->appAuth();
+
+        $merchant = $this->createMerchant();
+
+        $schedule = $this->createSchedule();
+
+        $this->fixtures->on('live')->create('schedule', $schedule);
+
+        $this->fixtures->merchant->edit($merchant['id'], ['settlement_schedule_id' => $schedule['id']]);
+
+        $this->startTest();
+
+        $merchantSchedule = $this->getLastEntity('merchant_schedule', true);
+
+        $this->assertEquals($schedule['id'], $merchantSchedule['schedule_id']);
+        $this->assertEquals(NULL , $merchantSchedule['method']);
+    }
 }

@@ -1439,4 +1439,21 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_MERCHANT_ACTION_NOT_SUPPORTED,
         ],
     ],
+
+    'testMerchantScheduleMigration' => [
+        'request' => [
+            'url' => '/merchants/schedules/migrate',
+            'method' => 'POST',
+            'content' => [
+                'merchant_ids' => [
+                    '1X4hRFHFx4UiXt'
+                ]
+            ]
+        ],
+        'response' => [
+            'content' => [
+            ],
+            'status_code' => 200,
+        ],
+    ]
 ];
