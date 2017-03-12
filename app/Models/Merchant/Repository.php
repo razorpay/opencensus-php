@@ -105,8 +105,8 @@ class Repository extends Base\Repository
             'SELECT DISTINCT id
              FROM merchants
                 WHERE merchants.id NOT IN
-                    (SELECT DISTINCT merchant_schedules.merchant_id
-                     FROM merchants_schedules)
+                    (SELECT DISTINCT merchant_id
+                     FROM merchant_schedules)
                 LIMIT 1000');
 
         $mercIds = json_decode(json_encode($mercIds), true);
