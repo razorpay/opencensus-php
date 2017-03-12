@@ -73,6 +73,16 @@ class Entity
     const PAYOUT                = 'payout';
 
     //
+    // Workflow Entities
+    //
+    const WORKFLOW              = 'workflow';
+    const WORKFLOW_STEP         = 'workflow_step';
+    const WORKFLOW_ACTION       = 'workflow_action';
+    const ACTION_CHECKER        = 'action_checker';
+    const ACTION_TIMELINE       = 'action_timeline';
+    const ACTION_COMMENT        = 'action_comment';
+
+    //
     // Gateway entities
     //
 
@@ -175,6 +185,12 @@ class Entity
         self::ADMIN                 => \RZP\Models\Admin\Admin::class,
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
+        self::WORKFLOW              => \RZP\Models\Workflow::class,
+        self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
+        self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
+        self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
+        self::ACTION_TIMELINE       => \RZP\Models\Workflow\Action\Timeline::class,
+        self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
     ];
 
     protected static $repository = [
@@ -209,6 +225,13 @@ class Entity
         self::EMI_PLAN,
         self::MERCHANT,
         self::SCHEDULE,
+
+        self::WORKFLOW,
+        self::WORKFLOW_STEP,
+        self::WORKFLOW_ACTION,
+        self::ACTION_CHECKER,
+        self::ACTION_TIMELINE,
+        self::ACTION_COMMENT,
     ];
 
     public static function getEntityNamespace(string $entity)

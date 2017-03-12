@@ -12,6 +12,8 @@ class Entity extends Base\PublicEntity
     const ACTION_ID      = 'action_id';
     const STATE          = 'state';
 
+    protected static $sign = 'a_time';
+
     protected $entity = 'action_timeline';
 
     protected $generateIdOnCreate = false;

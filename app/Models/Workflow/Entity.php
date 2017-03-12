@@ -14,18 +14,26 @@ class Entity extends Base\PublicEntity
     // enable revisioning on this entity
     use RevisionableTrait;
 
-    const ID = 'id';
-    const NAME = 'name';
+    const ID     = 'id';
+    const NAME   = 'name';
+    const ORG_ID = 'org_id';
 
-    protected static $sign = 'wrkflw';
+    protected static $sign = 'workflow';
 
-    protected $entity = 'admin';
+    protected $entity = 'workflow';
 
     protected $generateIdOnCreate = false;
+
+    protected $fillable = [
+        self::ID,
+        self::NAME,
+        self::ORG_ID,
+    ];
 
     protected $visible = [
         self::ID,
         self::NAME,
+        self::ORG_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -37,13 +45,13 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
-
-    protected $fillable = [
-        self::NAME,
-    ];
-
     public function getName()
     {
         return $this->getAttribute(self::NAME);
+    }
+
+    public function org()
+    {
+        return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
 }

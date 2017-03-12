@@ -21,13 +21,18 @@ class Entity extends Base\PublicEntity
     const ROLE_ID        = 'role_id';
     const REVIEWER_COUNT = 'reviewer_count';
 
-    protected $entity = 'step';
+    protected static $sign = 'w_step';
+
+    protected $entity = 'workflow_step';
 
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::LEVEL,
         self::REVIEWER_COUNT,
+        self::ROLE_ID,
+        self::PERMISSION_ID,
+        self::WORKFLOW_ID,
     ];
 
     protected $visible = [
@@ -36,6 +41,22 @@ class Entity extends Base\PublicEntity
         self::ROLE_ID,
         self::PERMISSION_ID,
         self::WORKFLOW_ID,
+    ];
+
+    protected $public = [
+        self::LEVEL,
+        self::REVIEWER_COUNT,
+        self::ROLE_ID,
+        self::PERMISSION_ID,
+        self::WORKFLOW_ID,
+    ];
+
+    protected $casts = [
+        self::LEVEL => 'integer',
+    ];
+
+    protected $defaults = [
+        self::LEVEL => 0,
     ];
 
     public function workflow()
