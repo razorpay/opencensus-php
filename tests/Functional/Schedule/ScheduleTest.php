@@ -23,7 +23,11 @@ class ScheduleTest extends TestCase
 
     public function testCreateSchedule()
     {
-        $this->createSchedule();
+        $schedule = $this->createSchedule();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $this->assertArraySelectiveEquals($data, $schedule);
     }
 
     public function testEditSchedule()

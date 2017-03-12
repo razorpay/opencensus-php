@@ -107,7 +107,7 @@ class Service extends Base\Service
 
         $schedule = $this->getOrCreateDailySettlementSchedule($defaultDelay);
 
-        $merchant->schedule()->associate($schedule);
+        (new Merchant\Schedule\Core)->createMerchantSchedule($merchant, $schedule);
     }
 
     protected function attachAdmin($merchantId, $adminId)
@@ -428,12 +428,9 @@ class Service extends Base\Service
         {
             try
             {
-                $input = [
-                    'method'      => null,
-                    'schedule_id' => $merchant->getSettlementScheduleId()
-                ];
+                $schedule = $merchant->schedule;
 
-                $merchantSchedule = (new Merchant\Schedule\Core)->createOrUpdate($merchant, $input);
+                (new Merchant\Schedule\Core)->createMerchantSchedule($merchant, $schedule);
 
                 $migrationSummary['migrated_ids_count'] += 1;
             }

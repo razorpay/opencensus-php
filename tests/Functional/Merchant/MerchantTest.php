@@ -1038,11 +1038,13 @@ class MerchantTest extends TestCase
 
     public function testMerchantScheduleMigration()
     {
+        $this->ba->adminAuth();
+
+        $schedule = $this->createSchedule();
+
         $this->ba->appAuth();
 
         $merchant = $this->createMerchant();
-
-        $schedule = $this->createSchedule();
 
         $this->fixtures->on('live')->create('schedule', $schedule);
 

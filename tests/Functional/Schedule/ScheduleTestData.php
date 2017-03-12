@@ -5,6 +5,16 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
+    'testCreateSchedule' => [
+        'name'       => 'Every Wednesday',
+        'type'       => 'settlement',
+        'period'     => 'weekly',
+        'interval'   => 1,
+        'anchor'     => 3,
+        'delay'      => 1,
+        'next_run'   => 1452105000
+    ],
+
     'testAssignSchedule' => [
         'method'  => 'POST',
         'url'     => '/merchants/10000000000000/schedules',
