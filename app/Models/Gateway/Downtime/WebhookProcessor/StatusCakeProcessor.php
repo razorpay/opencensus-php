@@ -136,7 +136,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
     }
 
-    protected function getNetbankingGateway(string $issuer, array $input)
+    protected function getNetbankingGateway(string $issuer)
     {
         if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
         {
@@ -146,11 +146,11 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             if (empty($gateways) === true)
             {
-                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
+                // $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
 
                 throw new Exception\BadRequestValidationFailureException(
                     'StatusCake Gateway Unavailable for issuer',
-                    $issuer, $input
+                    $issuer
                 );
             }
 
@@ -162,7 +162,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
         else
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, $input);
+            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, ['issuer' => $issuer]);
 
             throw new Exception\BadRequestValidationFailureException(
                 'StatusCake Invalid Issuer from StatusCake:' . $issuer);
@@ -190,7 +190,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         try
         {
-            $fmtTags = json_decode($tags);
+            $fmtTags = json_decode($tags, true);
         }
         catch(\Exception $e)
         {
@@ -216,20 +216,21 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                     'json_error' => $jsonError
                 ]
             );
+
             throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
         }
 
         $formatted = [];
 
-        $method = isset($fmtTags[Entity::METHOD]) ?? strtolower($fmtTags[Entity::METHOD]);
+        $method = isset($fmtTags[Entity::METHOD]) ? strtolower($fmtTags[Entity::METHOD]) : null;
 
-        $gateway = isset($fmtTags[Entity::GATEWAY]) ?? strtolower($fmtTags[Entity::GATEWAY]);
+        $gateway = isset($fmtTags[Entity::GATEWAY]) ? strtolower($fmtTags[Entity::GATEWAY]) : null;
 
-        $issuer = isset($fmtTags[Entity::ISSUER]) ?? strtolower($fmtTags[Entity::ISSUER]);
+        $issuer = isset($fmtTags[Entity::ISSUER]) ? strtolower($fmtTags[Entity::ISSUER]) : null;
 
-        $network = isset($fmtTags[Entity::NETWORK]) ?? strtolower($fmtTags[Entity::NETWORK]);
+        $network = isset($fmtTags[Entity::NETWORK]) ? strtolower($fmtTags[Entity::NETWORK]) : null;
 
-        $cardType = isset($fmtTags[Entity::CARD_TYPE]) ?? strtolower($fmtTags[Entity::CARD_TYPE]);
+        $cardType = isset($fmtTags[Entity::CARD_TYPE]) ? strtolower($fmtTags[Entity::CARD_TYPE]) : null;
 
         $method = strtolower($method);
 
@@ -336,7 +337,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 );
         }
 
-        $formatted = InputFormatter::format($formatted);
+        // $formatted = InputFormatter::format($formatted);
     }
 
     protected function formatInput(array $input, int $status)

@@ -550,7 +550,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'NETBANKING_HDFC'
+                'Tags' => '{"method": "netbanking", "issuer":"hdfc"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'

@@ -6,7 +6,7 @@ use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
 use Carbon\Carbon;
 
-class GatewayAbsenceTest extends TestCase
+class GatewayDowntimeTest extends TestCase
 {
     use PaymentTrait;
 
@@ -25,7 +25,7 @@ class GatewayAbsenceTest extends TestCase
 
     public function setUp()
     {
-        $this->testDataFilePath = __DIR__.'/helpers/GatewayAbsenceTestData.php';
+        $this->testDataFilePath = __DIR__.'/helpers/GatewayDowntimeTestData.php';
 
         parent::setUp();
 
@@ -64,13 +64,13 @@ class GatewayAbsenceTest extends TestCase
         ];
 
         $response = $this->makeRequestAndGetContent($request);
-        
+
         $request['content']['reason_code'] = 'ISSUER_DOWN';
-        
+
         $response2 = $this->makeRequestAndGetContent($request);
-        
+
         $this->assertEquals($response['id'], $response2['id']);
-        
+
         $this->assertEquals($response['reason_code'], $response2['reason_code']);
     }
 
@@ -365,7 +365,7 @@ class GatewayAbsenceTest extends TestCase
     public function testGatewayAbsenceWithTerminal()
     {
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
-        
+
         $tid = $terminal['id'];
 
         $request = [
@@ -383,7 +383,7 @@ class GatewayAbsenceTest extends TestCase
         ];
 
         $content = $this->makeRequestAndGetContent($request);
-        
+
         $this->assertEquals($content['terminal_id'], $tid);
     }
 

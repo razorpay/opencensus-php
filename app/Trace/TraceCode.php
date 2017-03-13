@@ -344,10 +344,10 @@ class TraceCode
     const GATEWAY_CALLBACK_PARES                        = 'GATEWAY_CALLBACK_PARES';
     const GATEWAY_UNSUPPORTED_CARD_NETWORK              = 'GATEWAY_UNSUPPORTED_CARD_NETWORK';
     const GATEWAY_PAYMENT_VERIFY_UNEXPECTED             = 'GATEWAY_PAYMENT_VERIFY_UNEXPECTED';
-    const GATEWAY_ABSENCE_CREATE                        = 'GATEWAY_ABSENCE_CREATE';
-    const GATEWAY_ABSENCE_EDIT                          = 'GATEWAY_ABSENCE_EDIT';
+    const GATEWAY_DOWNTIME_CREATE                       = 'GATEWAY_DOWNTIME_CREATE';
+    const GATEWAY_DOWNTIME_EDIT                         = 'GATEWAY_DOWNTIME_EDIT';
     const GATEWAY_VERIFY_INVALID_HEADER                 = 'GATEWAY_VERIFY_INVALID_HEADER';
-    const GATEWAY_ABSENCE_DELETE                        = 'GATEWAY_ABSENCE_DELETE';
+    const GATEWAY_DOWNTIME_DELETE                       = 'GATEWAY_DOWNTIME_DELETE';
     const GATEWAY_ALREADY_REFUNDED                      = 'GATEWAY_ALREADY_REFUNDED';
     const GATEWAY_TERMINAL_TPV                          = 'GATEWAY_TERMINAL_TPV';
     const GATEWAY_HDFC_CAPTURED                         = 'GATEWAY_HDFC_CAPTURED';

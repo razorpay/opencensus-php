@@ -46,6 +46,8 @@ class Validator extends Base\Validator
     ];
 
     protected static $editDuplicateRules = [
+        Entity::GATEWAY         => 'sometimes|string|max:255',
+        Entity::METHOD          => 'sometimes|string|max:30',
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
         Entity::DOWNTIME_FROM   => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',

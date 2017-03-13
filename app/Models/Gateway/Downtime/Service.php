@@ -11,29 +11,23 @@ class Service extends Base\Service
 
     public function create(array $input)
     {
-        $input = InputFormatter::format($input);
+        $downtime = $this->core()->create($input);
 
-        $downWindow = $this->core()->create($input);
-
-        return $downWindow->toArrayPublic();
+        return $downtime->toArrayPublic();
     }
 
     public function edit($id, array $input)
     {
-        $downWindow = $this->repo->gateway_downtime->findOrFailPublic($id);
+        $downtime = $this->core()->edit($id, $input);
 
-        $downWindow = $this->core()->edit($downWindow, $input);
-
-        return $downWindow->toArrayPublic();
+        return $downtime->toArrayPublic();
     }
 
     public function delete($id)
     {
-        $downWindow = $this->repo->gateway_downtime->findOrFailPublic($id);
+        $downtime = $this->core()->delete($id);
 
-        $downWindow = $this->core()->delete($downWindow);
-
-        return $downWindow->toArrayDeleted();
+        return $downtime->toArrayDeleted();
     }
 
     public function fetchMultiple(array $input)

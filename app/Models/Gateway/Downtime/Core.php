@@ -38,74 +38,72 @@ class Core extends Base\Core
      */
     public function create(array $input)
     {
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_CREATE, $input);
 
-        $gatewayAbsence = $this->repo->gateway_downtime->fetchUnique($input);
+        $downtime = $this->repo->gateway_downtime->fetchUnique($input);
 
-        if ($gatewayAbsence !== null)
+        if ($downtime !== null)
         {
-            list($needsUpdate, $fieldsToBeUpdated) = $this->verifyIfNeedsUpdate($gatewayAbsence, $input);
+            // Confirm te logic of verifyIfNeedsUpdate()
+            $needsUpdate = $this->verifyIfNeedsUpdate($downtime, $input);
 
             if ($needsUpdate === true)
             {
-                $editInput = $this->buildEditInput(
-                    $input,
-                    $gatewayAbsence,
-                    $fieldsToBeUpdated);
-
-                return $this->edit($gatewayAbsence, $editInput);
+                $downtime->edit($input, 'edit_duplicate');
             }
-
-            return $gatewayAbsence;
+        }
+        else
+        {
+            $downtime = (new Entity)->build($input);
         }
 
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_CREATE, $input);
+        $this->repo->saveOrFail($downtime);
 
-        $gatewayAbsence = (new Entity)->build($input);
-
-        $this->repo->saveOrFail($gatewayAbsence);
-
-        return $gatewayAbsence;
+        return $downtime;
     }
 
-    public function edit(Entity $downWindow, array $input)
+    public function edit(string $id, array $input)
     {
-        $downWindow->edit($input);
+        $downtime = $this->repo->gateway_downtime->findOrFailPublic($id);
 
-        $this->repo->saveOrFail($downWindow);
+        $this->trace->info(TraceCode::GATEWAY_DOWNTIME_EDIT, $input);
 
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_EDIT, $input);
+        $downtime->edit($input);
 
-        return $downWindow;
+        $this->repo->saveOrFail($downtime);
+
+        return $downtime;
     }
 
-    public function delete(Entity $downWindow)
+    public function delete(string $id)
     {
-        $id = $downWindow->getId();
+        $downtime = $this->repo->gateway_downtime->findOrFailPublic($id);
 
-        $this->repo->gateway_downtime->deleteOrFail($downWindow);
+        $this->repo->gateway_downtime->deleteOrFail($downtime);
 
-        $this->trace->info(TraceCode::GATEWAY_ABSENCE_DELETE, ['id' => $id]);
+        $this->trace->info(
+            TraceCode::GATEWAY_DOWNTIME_DELETE, ['id' => $downtime->getId()]);
 
-        return $downWindow;
-
+        return $downtime;
     }
 
-    public function getFormattedGatewayAbsenceCheckoutData(Merchant\Entity $merchant)
+    // TODO: Need to relook at the format of the data sent to checkout
+    public function getFormattedGatewayDowntimeCheckoutData(Merchant\Entity $merchant)
     {
         // set the from time to current time. For all practical
         // purposes, this is usually not set by input.
         $input = [Entity::DOWNTIME_FROM => time()];
 
-        $absentees = $this->repo->gateway_downtime->fetch($input);
+        $downtimes = $this->repo->gateway_downtime->fetch($input);
 
         $formatted = [];
 
-        foreach ($absentees as $absent)
+        foreach ($downtimes as $downtime)
         {
-            $method = $absent->getMethod();
+            $method = $downtime->getMethod();
 
-            $data = $this->getFormattedCheckoutDataRecord($merchant, $absent);
+            // Shouldn't this be in collection class?
+            $data = $this->getFormattedCheckoutDataRecord($merchant, $downtime);
 
             if (empty($data) === false)
             {
@@ -114,6 +112,35 @@ class Core extends Base\Core
         }
 
         return $formatted;
+    }
+
+    protected function getFormattedCheckoutDataRecord(Merchant\Entity $merchant, Entity $downtime)
+    {
+        // in case we have a terminal id, we need to ensure the corresponding merchant
+        // alone receives this data. Else, nothing to send here
+        $terminalId = $downtime->getTerminalId();
+
+        if ($terminalId !== null)
+        {
+            // Should we eager load this?
+            $terminal = $downtime->terminal;
+
+            if ($terminal->getMerchantId() !== $merchant->getId())
+            {
+                return [];
+            }
+        }
+
+        $data = [
+            Entity::ISSUER      => $downtime->getIssuer(),
+            Entity::CARD_TYPE   => $downtime->getCardType(),
+            Entity::NETWORK     => $downtime->getNetwork(),
+            Entity::REASON_CODE => $downtime->getReasonCode(),
+            Entity::PARTIAL     => $downtime->isPartial(),
+            Entity::SCHEDULED   => $downtime->isScheduled(),
+        ];
+
+        return array_filter($data);
     }
 
     public function fetchMostRecentActive(array $input)
@@ -145,8 +172,6 @@ class Core extends Base\Core
 
         $returnStatus = false;
 
-        $fieldsToBeUpdated = [];
-
         // check for card methods. create a new one if needed right away
         // for netbanking and wallet, issuer is already taken care of by validator. Others
         // are irrelevant
@@ -159,24 +184,10 @@ class Core extends Base\Core
 
             $issuer = $alreadyScheduled->getIssuer();
 
-            if ($this->isUnknownOrAll($network) === true)
+            if (($this->isUnknownAllOrNull($network) === true) or
+                ($this->isUnknownAllOrNull($cardType) === true) or
+                ($this->isUnknownAllOrNull($issuer) === true))
             {
-                $fieldsToBeUpdated[] = Entity::NETWORK;
-
-                $returnStatus = true;
-            }
-
-            if ($this->isUnknownOrAll($cardType) === true)
-            {
-                $fieldsToBeUpdated[] = Entity::CARD_TYPE;
-
-                $returnStatus = true;
-            }
-
-            if ($this->isUnknownOrAll($issuer) === true)
-            {
-                $fieldsToBeUpdated[] = Entity::ISSUER;
-
                 $returnStatus = true;
             }
         }
@@ -189,81 +200,11 @@ class Core extends Base\Core
             $returnStatus = true;
         }
 
-        return [$returnStatus, $fieldsToBeUpdated];
+        return $returnStatus;
     }
 
-    protected function isUnknownOrAll($value)
+    protected function isUnknownAllOrNull($value)
     {
-        return in_array($value, [Entity::UNKNOWN, Entity::ALL], true);
-    }
-
-    protected function buildEditInput(array $input, Entity $alreadyAvailable, array $fieldsToBeUpdated)
-    {
-        $editInput = $alreadyAvailable->toArray();
-
-        foreach ($this->editableForDuplicate as $key)
-        {
-            $editInput[$key] = $input[$key];
-        }
-
-        foreach ($fieldsToBeUpdated as $key)
-        {
-            $editInput[$key] = $input[$key];
-        }
-
-        if (isset($input[Entity::COMMENT]))
-        {
-            $editInput[Entity::COMMENT] = $input[Entity::COMMENT];
-        }
-
-        if (isset($input[Entity::PARTIAL]))
-        {
-            $editInput[Entity::PARTIAL] = $input[Entity::PARTIAL];
-        }
-
-        if (isset($input[Entity::TERMINAL_ID]))
-        {
-            $editInput[Entity::TERMINAL_ID] = $input[Entity::TERMINAL_ID];
-        }
-
-        if ($alreadyAvailable->getReasonCode() !== $input[Entity::REASON_CODE])
-        {
-            $editInput[Entity::REASON_CODE] = $input[Entity::REASON_CODE];
-        }
-
-        foreach($this->unsetForDuplicate as $key)
-        {
-            unset($editInput[$key]);
-        }
-
-        return $editInput;
-    }
-
-    protected function getFormattedCheckoutDataRecord(Merchant\Entity $merchant, Entity $absent)
-    {
-        // in case we have a terminal id, we need to ensure the corresponding merchant
-        // alone receives this data. Else, nothing to send here
-        $terminalId = $absent->getTerminalId();
-
-        if ($terminalId !== null)
-        {
-            $terminal = $absent->terminal;
-
-            if ($terminal->getMerchantId() !== $merchant->getId())
-            {
-                return [];
-            }
-        }
-
-        $data = [
-            Entity::ISSUER      => $absent->getIssuer(),
-            Entity::CARD_TYPE   => $absent->getCardType(),
-            Entity::NETWORK     => $absent->getNetwork(),
-            Entity::REASON_CODE => $absent->getReasonCode(),
-            Entity::PARTIAL     => $absent->isPartial(),
-            Entity::SCHEDULED   => $absent->isScheduled(),
-        ];
-
-        return array_filter($data);
+        return in_array($value, [Entity::UNKNOWN, Entity::ALL, null], true);
     }
 }
