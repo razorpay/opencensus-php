@@ -1782,3 +1782,14 @@ ALTER TABLE payment_analytics
 ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
     ADD INDEX terminals_network_category_index (network_category);
+
+# batch fund transfers
+ALTER TABLE settlements
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
+    ADD CONSTRAINT settlements_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+
+ALTER TABLE settlements
+    ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
+    ADD CONSTRAINT payouts_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
+    REFERENCES daily_settlements(id) ON DELETE RESTRICT;
