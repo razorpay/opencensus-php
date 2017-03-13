@@ -76,9 +76,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (empty($absent) === false)
                 {
                     $editData = [
-                        Entity::DOWNTIME_FROM   => $absent->getDowntimeFrom(),
-                        Entity::DOWNTIME_TO     => time(),
-                        Entity::SOURCE          => $absent->getSource()
+                        Entity::FROM   => $absent->getDowntimeFrom(),
+                        Entity::TO     => time(),
+                        Entity::SOURCE => $absent->getSource()
                     ];
 
                     $downWindow = $this->core->edit($absent, $editData);
@@ -350,13 +350,13 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         if ($status === 1)
         {
-            $formatted[Entity::DOWNTIME_TO] = time();
+            $formatted[Entity::TO] = time();
         }
         else
         {
-            $formatted[Entity::DOWNTIME_FROM] = time();
+            $formatted[Entity::FROM] = time();
 
-            $formatted[Entity::DOWNTIME_TO] = null;
+            $formatted[Entity::TO] = null;
         }
 
         try

@@ -13,9 +13,8 @@ class Entity extends Base\PublicEntity
     const CARD_TYPE     = 'card_type';
     const NETWORK       = 'network';
     const METHOD        = 'method';
-    // @todo Need to discuss the names of downtime_from & downtime_to
-    const DOWNTIME_FROM = 'downtime_from';
-    const DOWNTIME_TO   = 'downtime_to';
+    const FROM          = 'from';
+    const TO            = 'to';
     const TERMINAL_ID   = 'terminal_id';
     const REASON_CODE   = 'reason_code';
     const SOURCE        = 'source';
@@ -36,8 +35,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::GATEWAY,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
+        self::FROM,
+        self::TO,
         self::COMMENT,
         self::REASON_CODE,
         self::ISSUER,
@@ -59,8 +58,8 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::METHOD,
         self::SOURCE,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
+        self::FROM,
+        self::TO,
         self::TERMINAL_ID,
         self::REASON_CODE,
         self::COMMENT,
@@ -78,8 +77,8 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::NETWORK,
         self::CARD_TYPE,
-        self::DOWNTIME_FROM,
-        self::DOWNTIME_TO,
+        self::FROM,
+        self::TO,
         self::TERMINAL_ID,
         self::REASON_CODE,
         self::COMMENT,
@@ -90,11 +89,11 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::DOWNTIME_FROM => 'int',
-        self::DOWNTIME_TO   => 'int',
-        self::SCHEDULED     => 'bool',
-        self::PARTIAL       => 'bool',
-        self::PUBLIC        => 'bool',
+        self::FROM      => 'int',
+        self::TO        => 'int',
+        self::SCHEDULED => 'bool',
+        self::PARTIAL   => 'bool',
+        self::PUBLIC    => 'bool',
     ];
 
     protected $defaults = [
@@ -102,7 +101,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
         self::NETWORK       => self::UNKNOWN,
-        self::DOWNTIME_TO   => null,
+        self::TO            => null,
         self::COMMENT       => null,
         self::SCHEDULED     => false,
         self::PUBLIC        => true,
@@ -308,12 +307,12 @@ class Entity extends Base\PublicEntity
 
     public function getDowntimeFrom()
     {
-        return $this->getAttribute(self::DOWNTIME_FROM);
+        return $this->getAttribute(self::FROM);
     }
 
     public function getDowntimeTo()
     {
-        return $this->getAttribute(self::DOWNTIME_TO);
+        return $this->getAttribute(self::TO);
     }
 
     public function getSource()

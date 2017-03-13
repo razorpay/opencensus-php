@@ -16,8 +16,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::DOWNTIME_FROM   => 'required|integer',
-        Entity::DOWNTIME_TO     => 'sometimes|integer',
+        Entity::FROM            => 'required|integer',
+        Entity::TO              => 'sometimes|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -32,14 +32,14 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::DOWNTIME_FROM   => 'sometimes|integer',
+        Entity::FROM            => 'sometimes|integer',
+        Entity::TO              => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
         Entity::PUBLIC          => 'sometimes|bool',
@@ -49,21 +49,21 @@ class Validator extends Base\Validator
         Entity::GATEWAY         => 'sometimes|string|max:255',
         Entity::METHOD          => 'sometimes|string|max:30',
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::DOWNTIME_FROM   => 'sometimes|integer',
+        Entity::FROM            => 'sometimes|integer',
+        Entity::TO              => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
         Entity::NETWORK         => 'sometimes|string|max:10',
         Entity::COMMENT         => 'sometimes|string|max:500',
-        Entity::DOWNTIME_TO     => 'sometimes|integer',
         Entity::SCHEDULED       => 'sometimes|bool',
         Entity::PARTIAL         => 'sometimes|bool',
         Entity::PUBLIC          => 'sometimes|bool',
     ];
 
     protected static $createValidators = [
-        Entity::DOWNTIME_TO,
+        Entity::TO,
         Entity::METHOD,
         Entity::ISSUER,
         Entity::CARD_TYPE,
@@ -71,7 +71,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        Entity::DOWNTIME_TO,
+        Entity::TO,
         Entity::ISSUER,
         Entity::CARD_TYPE,
         Entity::NETWORK
@@ -109,16 +109,16 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateDowntimeTo(array $input)
+    public function validateTo(array $input)
     {
-        if (empty($input[Entity::DOWNTIME_TO]) === true)
+        if (empty($input[Entity::TO]) === true)
         {
             return;
         }
 
-        $to = $input[Entity::DOWNTIME_TO];
+        $to = $input[Entity::TO];
 
-        $from = $input[Entity::DOWNTIME_FROM];
+        $from = $input[Entity::FROM];
 
         if ($to < $from)
         {

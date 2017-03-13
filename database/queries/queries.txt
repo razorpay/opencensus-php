@@ -1794,3 +1794,7 @@ ALTER TABLE payment_analytics
 ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
     ADD INDEX terminals_network_category_index (network_category);
+
+ALTER TABLE gateway_status_absence
+    CHANGE downtime_from from INT,
+    CHANGE downtime_to to INT;

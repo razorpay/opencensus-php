@@ -10,10 +10,10 @@ class Source
     const OTHER       = 'OTHER';
 
     protected static $sources = [
-        self::STATUSCAKE,
-        self::BILLDESK,
-        self::BANK,
-        self::OTHER
+        Source::STATUSCAKE,
+        Source::BILLDESK,
+        Source::BANK,
+        Source::OTHER
     ];
 
     public static function isValidSource($source)

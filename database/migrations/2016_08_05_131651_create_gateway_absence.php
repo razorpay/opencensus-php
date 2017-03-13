@@ -4,7 +4,7 @@ use RZP\Constants\Table;
 use Illuminate\Database\Schema\Blueprint;
 use RZP\Models\Terminal\Entity as Terminal;
 use Illuminate\Database\Migrations\Migration;
-use RZP\Models\Gateway\Downtime\Entity as GatewayDowntime;
+use RZP\Models\Gateway\Downtime\Entity as Downtime;
 
 class CreateGatewayAbsence extends Migration
 {
@@ -19,70 +19,70 @@ class CreateGatewayAbsence extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(GatewayDowntime::ID, GatewayDowntime::ID_LENGTH);
+            $table->char(Downtime::ID, Downtime::ID_LENGTH);
 
-            $table->string(GatewayDowntime::GATEWAY, 255);
+            $table->string(Downtime::GATEWAY, 255);
 
-            $table->string(GatewayDowntime::ISSUER, 50)
-                  ->default(GatewayDowntime::UNKNOWN);
+            $table->string(Downtime::ISSUER, 50)
+                  ->default(Downtime::UNKNOWN);
 
-            $table->string(GatewayDowntime::REASON_CODE, 30);
+            $table->string(Downtime::REASON_CODE, 30);
 
-            $table->string(GatewayDowntime::SOURCE, 30);
+            $table->string(Downtime::SOURCE, 30);
 
-            $table->char(GatewayDowntime::TERMINAL_ID, Terminal::ID_LENGTH)
+            $table->char(Downtime::TERMINAL_ID, Terminal::ID_LENGTH)
                   ->nullable();
 
-            $table->string(GatewayDowntime::CARD_TYPE, 10)
-                ->default(GatewayDowntime::UNKNOWN);
+            $table->string(Downtime::CARD_TYPE, 10)
+                ->default(Downtime::UNKNOWN);
 
-            $table->string(GatewayDowntime::NETWORK, 10)
-                ->default(GatewayDowntime::UNKNOWN);
+            $table->string(Downtime::NETWORK, 10)
+                ->default(Downtime::UNKNOWN);
 
-            $table->string(GatewayDowntime::METHOD, 30);
+            $table->string(Downtime::METHOD, 30);
 
-            $table->text(GatewayDowntime::COMMENT)
+            $table->text(Downtime::COMMENT)
                   ->nullable();
 
-            $table->integer(GatewayDowntime::DOWNTIME_FROM);
+            $table->integer(Downtime::FROM);
 
             // TO is optional
-            $table->integer(GatewayDowntime::DOWNTIME_TO)
+            $table->integer(Downtime::TO)
                   ->nullable();
 
-            $table->tinyInteger(GatewayDowntime::SCHEDULED)
+            $table->tinyInteger(Downtime::SCHEDULED)
                   ->default(0);
 
-            $table->tinyInteger(GatewayDowntime::PARTIAL)
+            $table->tinyInteger(Downtime::PARTIAL)
                   ->default(0);
 
-            $table->tinyInteger(GatewayDowntime::PUBLIC)
+            $table->tinyInteger(Downtime::PUBLIC)
                    ->default(1);
 
-            $table->integer(GatewayDowntime::CREATED_AT);
+            $table->integer(Downtime::CREATED_AT);
 
-            $table->integer(GatewayDowntime::UPDATED_AT);
+            $table->integer(Downtime::UPDATED_AT);
 
-            $table->foreign(GatewayDowntime::TERMINAL_ID)
+            $table->foreign(Downtime::TERMINAL_ID)
                   ->references(Terminal::ID)
                   ->on(Table::TERMINAL)
                   ->onDelete('restrict');
 
-            $table->index(GatewayDowntime::ISSUER);
+            $table->index(Downtime::ISSUER);
 
-            $table->index(GatewayDowntime::GATEWAY);
+            $table->index(Downtime::GATEWAY);
 
-            $table->index(GatewayDowntime::DOWNTIME_FROM);
+            $table->index(Downtime::FROM);
 
-            $table->index(GatewayDowntime::DOWNTIME_TO);
+            $table->index(Downtime::TO);
 
-            $table->index(GatewayDowntime::METHOD);
+            $table->index(Downtime::METHOD);
 
-            $table->index(GatewayDowntime::CREATED_AT);
+            $table->index(Downtime::CREATED_AT);
 
-            $table->index(GatewayDowntime::REASON_CODE);
+            $table->index(Downtime::REASON_CODE);
 
-            $table->index(GatewayDowntime::SOURCE);
+            $table->index(Downtime::SOURCE);
         });
     }
 
@@ -96,7 +96,7 @@ class CreateGatewayAbsence extends Migration
         Schema::table(Table::GATEWAY_DOWNTIME, function($table)
         {
             $table->dropForeign(
-                Table::GATEWAY_DOWNTIME . '_' . GatewayDowntime::TERMINAL_ID . '_foreign');
+                Table::GATEWAY_DOWNTIME . '_' . Downtime::TERMINAL_ID . '_foreign');
         });
 
         Schema::drop(Table::GATEWAY_DOWNTIME);
