@@ -3,10 +3,11 @@
 namespace RZP\Models\Workflow\Action\Differ;
 
 use RZP\Error;
-use RZP\Error\ErrorCode;
 use RZP\Exception;
+use Carbon\Carbon;
 use RZP\Models\Base;
-USE RZP\Trace\TraceCode;
+use RZP\Error\ErrorCode;
+use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
 
 class Service extends Base\Service
@@ -47,6 +48,8 @@ class Service extends Base\Service
         $action = (new Entity)->generateId();
 
         $action->build($input);
+
+        $action[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp);
 
         $function = 'create' .$input['type'] .'Action';
         $E = $this->$function($action);

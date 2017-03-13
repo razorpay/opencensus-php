@@ -4,10 +4,11 @@ namespace RZP\Http\Middleware;
 
 use Request;
 use Closure;
+use RZP\Http\Route;
 use RZP\Models\Base\UniqueIdEntity;
 use Illuminate\Foundation\Application;
 
-class Action
+class Workflow
 {
     const AUTH_HEADER = 'authorization';
 
@@ -26,9 +27,21 @@ class Action
 
     public function handle($request, Closure $next)
     {
-        $this->modifyInput($request);
+        $routeName = $this->router->currentRouteName();
+
+        if ($this->isWorkflowRoute($routeName))
+        {
+            $this->modifyInput($request);
+
+            sd($request->input());
+        }
 
         return $next($request);
+    }
+
+    private function isWorkflowRoute($routeName)
+    {
+        return (in_array($routeName, Route::$workflowRoutes, true) === true);
     }
 
     private function modifyInput($request)
@@ -47,25 +60,18 @@ class Action
     {
         $input = $request->input();
 
-        $makerRequest = [];
-
-        $makerRequest['type'] = 'maker';
-
-        $makerRequest['uri'] = $request->getPathInfo();
-
-        $makerRequest['method'] = $request->getMethod();
-
-        $makerRequest['payload'] = $input;
-
-        $makerRequest['headers'] = [self:: AUTH_HEADER => $request->header(self::AUTH_HEADER)];
-
-        $makerRequest['actor'] = $request->header(self::USER_HEADER);
-
         list($entity, $entityId) = $this->getEntity($request->getPathInfo());
 
-        $makerRequest['entity'] = $entity;
-
-        $makerRequest['entityId'] = $entityId;
+        $makerRequest = [
+            'type'     => 'maker',
+            'uri'      => $request->getPathInfo(),
+            'method'   => $request->getMethod(),
+            'payload'  => $input,
+            'headers'  => [ self:: AUTH_HEADER => $request->header(self::AUTH_HEADER) ],
+            'actor'    => $request->header(self::USER_HEADER),
+            'entity'   => $entity,
+            'entityId' => $entityId
+        ];
 
         $request->replace($makerRequest);
     }

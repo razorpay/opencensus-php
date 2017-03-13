@@ -449,9 +449,9 @@ final class Route
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
 
-        'action_create'                           => ['post',     'actions/{entity}/{entityId}',                    'ActionController@postCreateAction'                                     ],
-        'action_fetch_by_id'                      => ['get',      'actions/{id}',                                   'ActionController@fetchDiffById'                                    ],
-        'action_execute'                          => ['post',     'actions/{id}',                                   'ActionController@postExecuteAction'                                    ],
+        'action_create'                           => ['post',     'workflows/actions/{entity}/{entityId}',          'ActionController@postCreateAction'                                 ],
+        'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'ActionController@fetchDiffById'                                    ],
+        'action_execute'                          => ['post',     'workflows/actions/{id}',                         'ActionController@postExecuteAction'                                ],
     );
 
     public static $public = array(
@@ -1060,6 +1060,13 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+    ];
+
+    /**
+     * Routes for all maker & checker actions.
+     */
+    public static $workflowRoutes = [
+        'merchant_edit_email',
     ];
 
     const RAZORPAYJS_ROUTES = array(

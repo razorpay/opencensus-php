@@ -44,6 +44,6 @@ class Kernel extends HttpKernel
     protected $routeMiddleware = [
         'auth'         => \RZP\Http\Middleware\Authenticate::class,
         'admin_access' => \RZP\Http\Middleware\AdminAccess::class,
-        'action'       => \RZP\Http\Middleware\Action::class,
+        'workflow'     => \RZP\Http\Middleware\Workflow::class,
     ];
 }
