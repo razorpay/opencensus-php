@@ -79,7 +79,7 @@ class Entity
     const WORKFLOW_STEP         = 'workflow_step';
     const WORKFLOW_ACTION       = 'workflow_action';
     const ACTION_CHECKER        = 'action_checker';
-    const ACTION_TIMELINE       = 'action_timeline';
+    const ACTION_STATE          = 'action_state';
     const ACTION_COMMENT        = 'action_comment';
 
     //
@@ -189,7 +189,7 @@ class Entity
         self::WORKFLOW_STEP         => \RZP\Models\Workflow\Step::class,
         self::WORKFLOW_ACTION       => \RZP\Models\Workflow\Action::class,
         self::ACTION_CHECKER        => \RZP\Models\Workflow\Action\Checker::class,
-        self::ACTION_TIMELINE       => \RZP\Models\Workflow\Action\Timeline::class,
+        self::ACTION_STATE          => \RZP\Models\Workflow\Action\State::class,
         self::ACTION_COMMENT        => \RZP\Models\Workflow\Action\Comment::class,
     ];
 
@@ -230,7 +230,7 @@ class Entity
         self::WORKFLOW_STEP,
         self::WORKFLOW_ACTION,
         self::ACTION_CHECKER,
-        self::ACTION_TIMELINE,
+        self::ACTION_STATE,
         self::ACTION_COMMENT,
     ];
 

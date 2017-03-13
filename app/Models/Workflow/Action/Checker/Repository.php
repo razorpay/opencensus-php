@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Admin\Admin;
+namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
@@ -19,11 +19,11 @@ class Repository extends Base\Repository
         Entity::ACTION_ID => 'sometimes|string|max:14',
     ];
 
-    public function findByStepIdAndActionId(string $stepId, string $actionId)
+    public function fetchByActionId(string $actionId)
     {
         return $this->newQuery()
-                    ->where(Entity::STEP_ID, '=', $stepId)
                     ->where(Entity::ACTION_ID, '=', $actionId)
-                    ->firstOrFail();
+                    ->whereNotNull(Entity::APPROVED)
+                    ->get();
     }
 }

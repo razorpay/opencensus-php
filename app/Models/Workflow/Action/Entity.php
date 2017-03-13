@@ -10,7 +10,6 @@ class Entity extends Base\PublicEntity
     const ID             = 'id';
     const WORKFLOW_ID    = 'workflow_id';
     const ADMIN_ID       = 'admin_id';
-    const PAYLOAD_ID     = 'payload_id';
 
     protected static $sign = 'w_action';
 
@@ -21,13 +20,11 @@ class Entity extends Base\PublicEntity
     protected $fillable = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
     ];
 
     protected $visible = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
@@ -35,10 +32,14 @@ class Entity extends Base\PublicEntity
     protected $public = [
         self::WORKFLOW_ID,
         self::ADMIN_ID,
-        self::PAYLOAD_ID,
         self::CREATED_AT,
         self::UPDATED_AT,
     ];
+
+    public function getWorkflowId()
+    {
+        return $this->getAttribute(self::WORKFLOW_ID);
+    }
 
     public function workflow()
     {

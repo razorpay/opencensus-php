@@ -4,6 +4,7 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
+use RZP\Models\Workflow\Action\State;
 
 class Entity extends Base\PublicEntity
 {
@@ -13,7 +14,7 @@ class Entity extends Base\PublicEntity
     const STEP_ID        = 'step_id';
     const APPROVED       = 'approved';
 
-    protected static $sign = 'a_checker';
+    protected static $sign = 'a_check';
 
     protected $entity = 'action_checker';
 
@@ -61,5 +62,45 @@ class Entity extends Base\PublicEntity
     public function action()
     {
         return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
+    }
+
+    /*
+     * Getters
+     */
+    public function getActionId() : string
+    {
+        return $this->getAttribute(self::ACTION_ID);
+    }
+
+    public function getAdminId() : string
+    {
+        return $this->getAttribute(self::ADMIN_ID);
+    }
+
+    public function getStepId() : string
+    {
+        return $this->getAttribute(self::STEP_ID);
+    }
+
+    public function isApproved() : boolean
+    {
+        return $this->getAttribute(self::APPROVED);
+    }
+
+    public function getStatus() : string
+    {
+        if (empty($this->isApproved()) === true)
+        {
+            return;
+        }
+
+        if ($this->isApproved() === true)
+        {
+            return State\Entity::APPROVED;
+        }
+        else if ($this->isApproved() === false)
+        {
+            return State\Entity::REJECTED;
+        }
     }
 }

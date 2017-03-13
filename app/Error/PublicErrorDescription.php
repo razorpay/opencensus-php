@@ -373,4 +373,7 @@ class PublicErrorDescription
     const BAD_REQUEST_INVALID_GATEWAY_FOR_METHOD                                = 'Gateway not valid for payment method';
 
     const BAD_REQUEST_ES_DEBUG_METHOD_NOT_VALID                                 = 'Es debug method is not valid';
+
+    // Workflow Related Errors
+    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                           = 'Action State is not valid';
 }

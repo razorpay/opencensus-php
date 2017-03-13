@@ -30,7 +30,7 @@ class CreateActionChecker extends Migration
             $table->char(Checker::STEP_ID, Checker::ID_LENGTH);
 
             $table->tinyInteger(Checker::APPROVED)
-                  ->default(0);
+                  ->nullable();
 
             $table->foreign(Checker::STEP_ID)
                   ->references(Step::ID)
