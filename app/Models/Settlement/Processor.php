@@ -38,7 +38,7 @@ class Processor extends Base\Core
         $this->mutex = $this->app['api.mutex'];
     }
 
-    public function process(array $input, $channel, $schedule = true)
+    public function process(array $input, $channel)
     {
         $this->increaseAllowedSystemLimits();
 
@@ -55,7 +55,7 @@ class Processor extends Base\Core
             self::MUTEX_RESOURCE,
             function () use ($input, $channel, $schedule)
             {
-                return $this->processSettlements($input, $channel, $schedule);
+                return $this->processSettlements($input, $channel);
             },
             self::MUTEX_LOCK_TIMEOUT,
             ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -121,11 +121,11 @@ class Processor extends Base\Core
         return false;
     }
 
-    protected function processSettlements($input, $channel, $schedule)
+    protected function processSettlements($input, $channel)
     {
         try
         {
-            list($settlements, $txnCount) = $this->createSettlements($channel, $schedule);
+            list($settlements, $txnCount) = $this->createSettlements($channel);
 
             $data = [
                 'channel'               => $channel,
@@ -162,28 +162,19 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function createSettlements($channel, $schedule)
+    protected function createSettlements($channel)
     {
-        if ($schedule === false)
-        {
-            $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
+        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
 
-            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
-        }
-        else
-        {
-            $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
+        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
 
-            $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
+        list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
 
-            list($settlements, $settledTxnsCount) = $this->processUnsettledTransactions($txns, $channel);
+        $schedules->callOnEveryItem('updateNextRun');
 
-            $schedules->callOnEveryItem('updateNextRun');
+        $this->repo->saveOrFailCollection($schedules);
 
-            $this->repo->saveOrFailCollection($schedules);
-
-            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
-        }
+        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
 
         return [$settlements, $settledTxnsCount];
     }
