@@ -40,7 +40,7 @@ class Checkout
 
         $data['methods'] = (new Methods\Core)->getFormattedMethods($merchant);
 
-        $data['gateway_status'] = (new Downtime\Core)->getFormattedGatewayAbsenceCheckoutData($merchant);
+        $data['gateway_status'] = (new Downtime\Core)->getFormattedGatewayDowntimeCheckoutData($merchant);
 
         $this->checkAndFillSavedTokens($input, $merchant, $data);
 
