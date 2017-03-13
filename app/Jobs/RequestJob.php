@@ -23,6 +23,11 @@ class RequestJob extends Job implements ShouldQueue
     const JOB_RELEASED         = 'job_released';
 
     protected $trace;
+    protected $url;
+    protected $method;
+    protected $contentType;
+    protected $token;
+    protected $content;
     protected $request;
 
     /**
@@ -30,13 +35,17 @@ class RequestJob extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(array $request)
+    public function __construct(string $url,
+                                string $method,
+                                string $contentType,
+                                string $token,
+                                string $content)
     {
-        $this->request = $request;
-
-        $app = App::getFacadeRoot();
-
-        $this->trace = $app['trace'];
+        $this->url = $url;
+        $this->method = $method;
+        $this->contentType = $contentType;
+        $this->token = $token;
+        $this->content = $content;
     }
 
     /**
@@ -48,7 +57,9 @@ class RequestJob extends Job implements ShouldQueue
     {
         try
         {
-            $this->handleRequest($this->request);
+            $this->init();
+
+            $this->handleRequest();
 
             $this->delete();
         }
@@ -58,19 +69,38 @@ class RequestJob extends Job implements ShouldQueue
         }
     }
 
-    private function handleRequest($request)
+    protected function init()
     {
-        $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $request]);
+        $app = App::getFacadeRoot();
+
+        $this->trace = $app['trace'];
+
+        $headers['Content-Type'] = $this->contentType;
+
+        $options['auth'] = [$this->token, ""];
+
+        $this->request = [
+            'url'     => $this->url,
+            'method'  => $this->method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $this->content
+        ];
+    }
+
+    private function handleRequest()
+    {
+        $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $this->request]);
 
         $timeStarted = microtime(true);
 
-        $method = $request['method'];
+        $method = $this->request['method'];
 
         $response = Requests::$method(
-            $request['url'],
-            $request['headers'],
-            $request['content'],
-            $request['options']);
+            $this->request['url'],
+            $this->request['headers'],
+            $this->request['content'],
+            $this->request['options']);
 
         $timeTaken = microtime(true) - $timeStarted;
 
