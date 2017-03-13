@@ -12,10 +12,13 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::AMOUNT      => 'required|integer|min:100',
         Entity::CURRENCY    => 'required|string|size:3|in:INR',
+        Entity::NOTES       => 'sometimes|notes',
     ];
 
     protected static $reversalRules = [
-        Entity::AMOUNT      => 'sometimes|integer|min:100',
+        Entity::AMOUNT      => 'required|integer|min:100',
+        Entity::CURRENCY    => 'required|string|size:3|in:INR',
+        Entity::NOTES       => 'sometimes|notes',
     ];
 
     public function validateReversalAmount(Transfer\Entity $transfer, array $input)

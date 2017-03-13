@@ -17,6 +17,7 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer|min:100',
         Entity::CURRENCY       => 'required|size:3|in:INR',
+        Entity::NOTES          => 'sometimes|notes',
         Entity::ON_HOLD        => 'sometimes|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];
@@ -26,6 +27,7 @@ class Validator extends Base\Validator
         ToType::CUSTOMER       => 'required_without:account|string|size:19',
         Entity::AMOUNT         => 'required|integer|min:100',
         Entity::CURRENCY       => 'required|size:3|in:INR',
+        Entity::NOTES          => 'sometimes|notes',
         Entity::ON_HOLD        => 'sometimes|boolean',
         // Entity::ON_HOLD_UNTIL  => 'sometimes|integer',
     ];

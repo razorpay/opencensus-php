@@ -1810,3 +1810,9 @@ ALTER TABLE payouts
     ADD COLUMN batch_fund_transfer_id CHAR(14) AFTER batch_settlement_id,
     ADD CONSTRAINT payouts_batch_fund_transfer_id_foreign FOREIGN KEY(batch_fund_transfer_id)
     REFERENCES daily_settlements(id) ON DELETE RESTRICT;
+    
+ALTER TABLE transfers
+    ADD COLUMN notes TEXT AFTER amount_reversed;
+
+ALTER TABLE reversals
+    ADD COLUMN notes TEXT AFTER currency;
