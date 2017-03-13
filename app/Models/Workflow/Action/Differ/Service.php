@@ -127,7 +127,7 @@ class Service extends Base\Service
 
         $esResponse[Entity::PAYLOAD]['action_id'] = $id;
 
-        $response = $this->makeRequest($esResponse['method'],
+        $response = $this->makeRequest($esResponse[Entity::METHOD],
                                        $esResponse[Entity::URL],
                                        $esResponse[Entity::HEADERS],
                                        $esResponse[Entity::PAYLOAD]);
