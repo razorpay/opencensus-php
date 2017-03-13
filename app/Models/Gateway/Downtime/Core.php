@@ -131,19 +131,19 @@ class Core extends Base\Core
 
     public function fetchMostRecentActive(array $input)
     {
-        $queryParams = [];
+        // $queryParams = [];
 
-        foreach ($this->uniqueCheckerKeys as $key)
-        {
-            if (isset($input[$key]) === true)
-            {
-                $queryParams[$key] = $input[$key];
-            }
-        }
+        // foreach ($this->uniqueCheckerKeys as $key)
+        // {
+        //     if (isset($input[$key]) === true)
+        //     {
+        //         $queryParams[$key] = $input[$key];
+        //     }
+        // }
 
-        $activeAbsentees = $this->repo->gateway_downtime->fetchMostRecentActive($queryParams);
+        $downtimes = $this->repo->gateway_downtime->fetchMostRecentActive($input);
 
-        return $activeAbsentees->first();
+        return $downtimes->first();
     }
 
     protected function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)

@@ -70,6 +70,16 @@ class Repository extends Base\Repository
 
     public function fetchMostRecentActive(array $input)
     {
+        $params = [];
+
+        foreach (self::UNIQUE_KEYS as $key)
+        {
+            if (isset($input[$key]) === true)
+            {
+                $params[$key] = $input[$key];
+            }
+        }
+
         $query = $this->newQuery();
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);

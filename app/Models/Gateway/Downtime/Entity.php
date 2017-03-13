@@ -306,12 +306,12 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PUBLIC);
     }
 
-    public function getDowntimeFrom()
+    public function getFrom()
     {
         return $this->getAttribute(self::FROM);
     }
 
-    public function getDowntimeTo()
+    public function getTo()
     {
         return $this->getAttribute(self::TO);
     }

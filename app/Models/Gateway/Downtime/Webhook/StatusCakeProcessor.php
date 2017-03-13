@@ -143,7 +143,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
     protected function getNetbankingGateway(string $issuer)
     {
-        if ((empty($issuer) !== true) and (IFSC::exists(strtoupper($issuer)) === true))
+        if ((empty($issuer) !== true) and
+            (IFSC::exists(strtoupper($issuer)) === true))
         {
             $issuer = strtoupper($issuer);
 
@@ -165,13 +166,11 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             return $gateway;
         }
-        else
-        {
-            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER, ['issuer' => $issuer]);
 
-            throw new Exception\BadRequestValidationFailureException(
-                'StatusCake Invalid Issuer from StatusCake:' . $issuer);
-        }
+        $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER, ['issuer' => $issuer]);
+
+        throw new Exception\BadRequestValidationFailureException(
+            'StatusCake Invalid Issuer from StatusCake:' . $issuer);
     }
 
     /*

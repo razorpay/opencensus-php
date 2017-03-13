@@ -581,7 +581,7 @@ return [
             'content' => [
                 'method' => 'card',
                 'reason_code' => 'ISSUER_DOWN',
-                'gateway' => 'HDFC'
+                'gateway' => 'hdfc'
             ]
         ]
     ],
@@ -594,7 +594,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "wallet", "gateway": "WALLET_AIRTELMONEY"}'
+                'Tags' => '{"method": "wallet", "gateway": "wallet_airtelmoney"}'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/status_cake/webhook'
@@ -603,7 +603,7 @@ return [
             'content' => [
                 'method' => 'wallet',
                 'reason_code' => 'ISSUER_DOWN',
-                'gateway' => 'WALLET_AIRTELMONEY'
+                'gateway' => 'wallet_airtelmoney'
             ]
         ]
     ],
@@ -616,7 +616,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "netbanking", "gateway": "xyz"}'
+                'Tags' => '{"method": "netbanking", "issuer": "xyz"}'
             ],
             'method' => 'POST',
             'url' => '/gateway/downtimes/status_cake/webhook'

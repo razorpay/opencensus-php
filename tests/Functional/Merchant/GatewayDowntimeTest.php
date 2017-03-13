@@ -618,12 +618,12 @@ class GatewayDowntimeTest extends TestCase
             'Name' => 'Test',
             'StatusCode' => 400,
             'Status' => 'Down',
-            'Tags' => 'NETBANKING_HDFC'
+            'Tags' => '{"method": "netbanking", "issuer": "hdfc"}'
         ];
 
         $request = [
             'content' => $content,
-            'url' => '/statuscake/callback',
+            'url' => '/gateway/downtimes/status_cake/webhook',
             'method' => 'POST'
         ];
 

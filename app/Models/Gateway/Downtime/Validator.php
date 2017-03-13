@@ -118,7 +118,7 @@ class Validator extends Base\Validator
 
         $to = $input[Entity::TO];
 
-        $from = $input[Entity::FROM];
+        $from = $input[Entity::FROM] ?? $this->entity->getFrom();
 
         if ($to < $from)
         {
