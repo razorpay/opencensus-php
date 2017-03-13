@@ -88,7 +88,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getStatusOnAction() : string
+    public function getStatus() : string
     {
         if (empty($this->isApproved()) === true)
         {
