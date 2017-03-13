@@ -47,12 +47,17 @@ class Drip
     {
         switch ($action)
         {
+            case self::CREATED:
+                $this->sendDripMerchantActivatedOrNot(self::CREATED, $merchant);
+                break;
+
             case self::ACTIVATED:
                 $this->sendDripMerchantActivatedOrNot(self::ACTIVATED, $merchant);
                 break;
 
             default:
-                $this->sendDripMerchantActivatedOrNot(self::CREATED, $merchant);
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_INVALID_DRIP_ACTION);
                 break;
         }
     }

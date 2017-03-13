@@ -77,6 +77,7 @@ class RequestJob extends Job implements ShouldQueue
         $this->trace->info(
             TraceCode::REQUESTS_JOB_RESPONSE,
             ['time_taken' => $timeTaken,
+             'attempts'   => $this->attempts(),
              'response'   => $response->body]);
     }
 

@@ -138,9 +138,9 @@ class TraceCode
     const LATE_AUTHORIZE_AUTO_CAPTURE               = 'LATE_AUTHORIZE_AUTO_CAPTURE';
     const MISSING_BILLDESK_CANCELLED_REFUNDS        = 'MISSING_BILLDESK_CANCELLED_REFUNDS';
 
-    const REQUESTS_JOB_REQUEST                      = 'DRIP_REQUEST';
-    const REQUESTS_JOB_RESPONSE                     = 'DRIP_RESPONSE';
-    const REQUESTS_JOB_ERROR                        = 'DRIP_JOB_ERROR';
+    const REQUESTS_JOB_REQUEST                      = 'REQUESTS_JOB_REQUEST';
+    const REQUESTS_JOB_RESPONSE                     = 'REQUESTS_JOB_RESPONSE';
+    const REQUESTS_JOB_ERROR                        = 'REQUESTS_JOB_ERROR';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
