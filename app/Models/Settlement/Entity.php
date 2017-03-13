@@ -83,10 +83,7 @@ class Entity extends Base\PublicEntity
 
     public function bankAccount()
     {
-        return $this->belongsTo(
-                    'RZP\Models\BankAccount\Entity',
-                    self::BANK_ACCOUNT_ID,
-                    BankAccount\Entity::ID);
+        return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
     // Fetches the transaction of type Settlement

@@ -48,12 +48,14 @@ class Merchant
     public function retryFailedSettlement(Settlement\Entity $setl)
     {
         $this->setl = $setl;
+
         $this->txns = $this->setl->setlTransactions;
+
+        // Update Settlement Entity
+        $this->updateSettlementEntity();
 
         // Create Settlement attempt entity
         $this->createSettlementAttemptEntity();
-
-        $this->setl->setStatus(Settlement\Status::CREATED);
 
         return [$this->setl, $this->bankTransferAtpt];
     }
@@ -320,6 +322,23 @@ class Merchant
         $this->setl = $setl;
     }
 
+    protected function updateSettlementEntity()
+    {
+        $setl = $this->setl;
+
+        // try the settlment with current merchant bank account as that might
+        // have been the reason for settlement failure
+        $setl->bankAccount()->associate($this->bankAccount);
+
+        // set the settlement status back to created, and other fields to null
+        $setl->setStatus(Status::CREATED);
+        $setl->setFailureReason(null);
+        $setl->setUtr(null);
+        $setl->setRemarks(null);
+
+        $this->setl = $setl;
+    }
+
     protected function createSettlementAttemptEntity()
     {
         $fundTransferAttempt = new FundTransferAttempt\Entity;
@@ -334,7 +353,7 @@ class Merchant
 
         $fundTransferAttempt->source()->associate($this->setl);
 
-        $fundTransferAttempt->bankAccount()->associate($this->setl->bankAccount);
+        $fundTransferAttempt->bankAccount()->associate($this->bankAccount);
 
         $this->bankTransferAtpt = $fundTransferAttempt;
     }
