@@ -2,12 +2,9 @@
 
 namespace RZP\Services;
 
-use Requests;
 use RZP\Exception;
-use RZP\Trace\Trace;
-use RZP\Constants\Mode;
+use RZP\Jobs\RequestJob;
 use RZP\Error\ErrorCode;
-use RZP\Jobs\DripAction;
 use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
@@ -41,13 +38,9 @@ class Drip
 
         $this->baseUrl = $this->config['url'];
 
-        $this->mode = $app['rzp.mode'];
-
         $this->token = $this->config['token'];
 
         $this->accountId = $this->config['accountId'];
-
-        $this->trace = $app['trace'];
     }
 
     public function sendDripMerchantInfo($action, $merchant)
@@ -94,7 +87,7 @@ class Drip
         //
         // Dispatching the job into the queue
         //
-        $job = new DripAction($request);
+        $job = new RequestJob($request);
 
         $this->dispatch($job);
     }

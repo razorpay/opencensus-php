@@ -12,11 +12,11 @@ use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 
-class DripAction extends Job implements ShouldQueue
+class RequestJob extends Job implements ShouldQueue
 {
     use InteractsWithQueue;
 
-    const MAX_ALLOWED_ATTEMPTS = 10;
+    const MAX_ALLOWED_ATTEMPTS = 5;
     const RELEASE_WAIT_SECS    = 60;
 
     const JOB_DELETED          = 'job_deleted';
@@ -60,7 +60,7 @@ class DripAction extends Job implements ShouldQueue
 
     private function handleRequest($request)
     {
-        $this->trace->info(TraceCode::DRIP_REQUEST, ['request' => $request]);
+        $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $request]);
 
         $timeStarted = microtime(true);
 
@@ -75,7 +75,7 @@ class DripAction extends Job implements ShouldQueue
         $timeTaken = microtime(true) - $timeStarted;
 
         $this->trace->info(
-            TraceCode::DRIP_RESPONSE,
+            TraceCode::REQUESTS_JOB_RESPONSE,
             ['time_taken' => $timeTaken,
              'response'   => $response->body]);
     }
@@ -105,7 +105,7 @@ class DripAction extends Job implements ShouldQueue
         $this->trace->traceException(
             $e,
             Trace::ERROR,
-            TraceCode::DRIP_JOB_ERROR,
+            TraceCode::REQUESTS_JOB_ERROR,
             ['job_action' => $jobAction]);
     }
 }
