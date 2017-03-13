@@ -65,7 +65,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\BankAccount\Entity');
     }
 
-    public function batchTransfer()
+    public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }
