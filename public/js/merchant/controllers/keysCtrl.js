@@ -18,38 +18,35 @@ app.controller('KeysCtrl', [
       var params = {};
       params.route_name = 'merchant_create_key';
       params.mode = $scope.mode;
-      var merchantId = '';
       user.identity().then(function (data) {
-        merchantId = data.current;
-      });
+        params.url_params = {
+          '{id}': data.current
+        };
 
-      params.url_params = {
-        '{id}': merchantId
-      };
+        var request = $http({
+          url: '/generic',
+          method: 'POST',
+          data: params
+        });
 
-      var request = $http({
-        url: '/generic',
-        method: 'POST',
-        data: params
-      });
-
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Key Generated', true);
-          $scope.keys.items.push(data.data);
-          $scope.keys.count = parseInt($scope.keys.count) + 1;
-          $scope.openNewKey({
-            id: data.data.id,
-            secret: data.data.secret
-          });
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Key Generated', true);
+            $scope.keys.items.push(data.data);
+            $scope.keys.count = parseInt($scope.keys.count) + 1;
+            $scope.openNewKey({
+              id: data.data.id,
+              secret: data.data.secret
+            });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', null, true);
+        });
       });
     };
     $scope.rollKey = function (data) {
@@ -67,40 +64,38 @@ app.controller('KeysCtrl', [
       var params = {};
       params.route_name = 'merchant_replace_key';
       params.mode = $scope.mode;
-      var merchantId = '';
       user.identity().then(function (data) {
-        merchantId = data.current;
-      });
-      params.url_params = {
-        '{merchantId}': merchantId,
-        '{keyId}': key_id
-      };
-      params.body = data;
+        params.url_params = {
+          '{merchantId}': data.current,
+          '{keyId}': key_id
+        };
+        params.body = data;
 
-      var request = $http({
-        url: '/generic',
-        method: 'PUT',
-        data: params
-      });
+        var request = $http({
+          url: '/generic',
+          method: 'PUT',
+          data: params
+        });
 
-      request.success(function (data) {
-        if (data.success) {
-          $scope.alerts.addAlert('success', 'Key Rolled', true);
-          $scope.keys.items.push(data.data.new);
-          $scope.keys.count = parseInt($scope.keys.count) + 1;
-          $scope.openNewKey({
-            id: data.data.new.id,
-            secret: data.data.new.secret
-          });
-        } else {
+        request.success(function (data) {
+          if (data.success) {
+            $scope.alerts.addAlert('success', 'Key Rolled', true);
+            $scope.keys.items.push(data.data.new);
+            $scope.keys.count = parseInt($scope.keys.count) + 1;
+            $scope.openNewKey({
+              id: data.data.new.id,
+              secret: data.data.new.secret
+            });
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function () {
           $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.resetAlerts();
-        $scope.alerts.addAlert('danger', null, true);
+          $scope.alerts.addAlert('danger', null, true);
+        });
       });
     };
     $scope.openRollKey = function (key_id) {
@@ -137,30 +132,28 @@ app.controller('KeysCtrl', [
       var params = {};
       params.route_name = 'merchant_fetch_keys';
       params.mode = $scope.mode;
-      var merchantId = '';
       user.identity().then(function (data) {
-        merchantId = data.current;
-      });
-      params.url_params = {
-        '{id}': merchantId
-      };
+        params.url_params = {
+          '{id}': data.current
+        };
 
-      var request = $http.get('/generic', {
-        params: params
-      });
+        var request = $http.get('/generic', {
+          params: params
+        });
 
-      request.success(function (data) {
-        $scope.alerts.resetAlerts();
-        if (data.success) {
-          $scope.keys.count = data.data.count;
-          $scope.keys.items = data.data.items;
-        } else {
-          angular.forEach(data.errors, function (value, key) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+        request.success(function (data) {
+          $scope.alerts.resetAlerts();
+          if (data.success) {
+            $scope.keys.count = data.data.count;
+            $scope.keys.items = data.data.items;
+          } else {
+            angular.forEach(data.errors, function (value, key) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', null, true);
+        });
       });
     }
   }

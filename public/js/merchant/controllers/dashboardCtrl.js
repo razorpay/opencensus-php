@@ -28,7 +28,14 @@ app.controller('DashboardAggregationsCtrl', [
     });
 
     var fetchBalance = function() {
-      var request = $http.get('/' + $scope.mode + '/balance');
+      var params = {};
+      params.route_name = 'balance_fetch';
+      params.mode = $scope.mode;
+
+      var request = $http.get('/generic', {
+        params: params
+      });
+
       request.success(function (result) {
         if(result.success) {
           $scope.balance = result.data.balance;
