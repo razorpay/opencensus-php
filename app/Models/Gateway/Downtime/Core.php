@@ -9,20 +9,6 @@ use RZP\Models\Payment\Method;
 
 class Core extends Base\Core
 {
-    protected $editableForDuplicate = [
-        Entity::DOWNTIME_FROM,
-        Entity::DOWNTIME_TO,
-        Entity::SOURCE
-    ];
-
-    protected $unsetForDuplicate = [
-        Entity::ID,
-        Entity::CREATED_AT,
-        Entity::UPDATED_AT,
-        Entity::GATEWAY,
-        Entity::METHOD
-    ];
-
     /**
      * Prevent duplicate creation of the same error model.
      * Basically, since we pass an empty 'to', it means, this is for an unscheduled
