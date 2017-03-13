@@ -72,7 +72,7 @@ class Repository extends \Razorpay\Spine\Repository
 
     public function findOrFailPublicWithRelations(
         string $id,
-        array $relations,
+        array $relations = [],
         array $columns = array('*'))
     {
         $query = $this->newQuery();
