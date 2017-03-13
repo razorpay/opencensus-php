@@ -21,7 +21,7 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        $result = $this->action->createAction($entity, $entityId, $input);
+        $result = $this->action->create($entity, $entityId, $input);
 
         return ApiResponse::json($result);
     }

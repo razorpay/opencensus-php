@@ -320,7 +320,7 @@ class EsDao
         }
     }
 
-    public function searchAction($indexName, $typeName, $id)
+    public function search($indexName, $typeName, $id)
     {
         $params = [
             'index' => $indexName,

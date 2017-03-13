@@ -33,7 +33,7 @@ class Service extends Base\Service
         $this->baseIndex = $this->config->get('database.es_action')[$mode];
     }
 
-    public function createAction(string $entity, string $entityId, array $input)
+    public function create(string $entity, string $entityId, array $input)
     {
         $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
 
@@ -49,9 +49,10 @@ class Service extends Base\Service
 
         $action->build($input);
 
-        $action[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp);
+        $action[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
 
         $function = 'create' .$input['type'] .'Action';
+
         $E = $this->$function($action);
 
         return $E->toArrayPublic();
@@ -59,7 +60,7 @@ class Service extends Base\Service
 
     public function fetchDiffById(string $id)
     {
-        $esResponse = $this->esDao->searchAction(strtolower($this->baseIndex), self::ES_TYPE, $id);
+        $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
 
         if ($esResponse === null)
         {
@@ -125,6 +126,21 @@ class Service extends Base\Service
 
     public function execute(string $id)
     {
-        $esResponse = $this->esDao->searchAction(strtolower($this->baseIndex), self::ES_TYPE, $id);
+        $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
+
+        $factory = app()->make('httplug.message_factory.default');
+
+        $esResponse['payload']['action_id'] = $id;
+
+        $req = $factory->createRequest($esResponse['method'],
+                                       $esResponse['url'],
+                                       $esResponse['headers'],
+                                       $esResponse['payload']);
+
+        $httpClient = $this->createHttpClient();
+
+        $response = $httpClient->sendRequest($req);
+
+        return $response;
     }
 }
