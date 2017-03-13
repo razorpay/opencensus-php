@@ -137,9 +137,9 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postBatchSettlementCalculatePreviousFees()
+    public function postBatchFundTransferCalculatePreviousFees()
     {
-        $data = (new FundTransfer\Batch\Service)->calculatePreviousBatchSettlementFees();
+        $data = (new FundTransfer\Batch\Service)->calculatePreviousBatchFundTransferFees();
 
         return ApiResponse::json($data);
     }
@@ -151,9 +151,9 @@ class SettlementController extends Controller
         return ApiResponse::json($data);
     }
 
-    public function postComputeBatchSettlementServiceTax()
+    public function postComputeBatchFundTransferServiceTax()
     {
-        $data = (new FundTransfer\Batch\Service)->computeBatchSettlementServiceTax();
+        $data = (new FundTransfer\Batch\Service)->computeBatchFundTransferServiceTax();
 
         return ApiResponse::json($data);
     }

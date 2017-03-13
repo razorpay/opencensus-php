@@ -8,7 +8,7 @@ use RZP\Models\Customer;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
 use RZP\Models\Payout\Entity as Payout;
-use RZP\Models\FundTransfer\Batch as BatchSettlement;
+use RZP\Models\FundTransfer\Batch as BatchFundTransfer;
 use RZP\Models\Transaction;
 
 class CreatePayoutsTable extends Migration
@@ -115,7 +115,7 @@ class CreatePayoutsTable extends Migration
                   ->on_delete('restrict');
 
             $table->foreign(Payout::BATCH_FUND_TRANSFER_ID)
-                  ->references(BatchSettlement\Entity::ID)
+                  ->references(BatchFundTransfer\Entity::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
         });

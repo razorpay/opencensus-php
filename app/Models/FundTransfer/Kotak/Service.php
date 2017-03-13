@@ -8,14 +8,7 @@ class Service extends Base\Service
 {
     public function reconcileSettlements($input)
     {
-        //
-        // We have incorporated the new format we are receiving for reconciliation
-        // in Reconciler2 class, while also keeping the old one around in Reconciler.
-        // On testing, we use Reconciler, which let the tests pass basically.
-        // @todo: Write tests for the newer format
-        //
-
-        $collection = (new Reconciler2)->process($input);
+        $collection = (new Reconciler)->process($input);
 
         return $collection->toArray();
     }

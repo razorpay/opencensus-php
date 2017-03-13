@@ -294,14 +294,14 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $batchSetl = $this->getLastEntity('batch_fund_transfer', true);
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
 
-        $this->assertEquals($setl['batch_fund_transfer_id'], $batchSetl['id']);
+        $this->assertEquals($setl['batch_fund_transfer_id'], $batchFundTransfer['id']);
 
         $request = [
             'url' => '/settlements/file/generate',
             'method' => 'post',
-            'content' => ['batch_fund_transfer_id' => $batchSetl['id']]
+            'content' => ['batch_fund_transfer_id' => $batchFundTransfer['id']]
         ];
 
         $content = $this->makeRequestAndGetContent($request);

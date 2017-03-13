@@ -60,7 +60,7 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getSettlementsByBatchSettlementId($batchFundTransferId)
+    public function getSettlementsByBatchFundTransferId($batchFundTransferId)
     {
         return $this->newQuery()
                     ->where(Entity::BATCH_FUND_TRANSFER_ID, '=', $batchFundTransferId)

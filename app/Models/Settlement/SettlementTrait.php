@@ -167,7 +167,7 @@ trait SettlementTrait
 
     protected function createAndupdateBatchEntities($setl, int $setlTxnsCount, $bankTransferAtpt): array
     {
-        $this->createOrUpdateBatchSettlementForEntity($setl, $setlTxnsCount);
+        $this->createOrUpdateBatchFundTransferForEntity($setl, $setlTxnsCount);
 
         $setl->batchFundTransfer()->associate($this->batchFundTransfer);
 

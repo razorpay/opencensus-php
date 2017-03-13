@@ -5,7 +5,7 @@ use Illuminate\Database\Migrations\Migration;
 
 use RZP\Constants\Table;
 use RZP\Models\Settlement\Entity as Settlement;
-use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
+use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
 
 class CreateDailySettlements extends Migration
 {
@@ -21,48 +21,48 @@ class CreateDailySettlements extends Migration
         {
             $table->engine = 'InnoDB';
 
-            $table->char(BatchSettlement::ID, BatchSettlement::ID_LENGTH)
+            $table->char(BatchFundTransfer::ID, BatchFundTransfer::ID_LENGTH)
                   ->primary();
 
-            $table->char(BatchSettlement::TYPE, 50)
+            $table->char(BatchFundTransfer::TYPE, 50)
                   ->nullable();
 
-            $table->integer(BatchSettlement::DATE);
+            $table->integer(BatchFundTransfer::DATE);
 
-            $table->string(BatchSettlement::CHANNEL, 8);
+            $table->string(BatchFundTransfer::CHANNEL, 8);
 
-            $table->bigInteger(BatchSettlement::AMOUNT)
+            $table->bigInteger(BatchFundTransfer::AMOUNT)
                   ->unsigned();
 
-            $table->integer(BatchSettlement::FEES);
+            $table->integer(BatchFundTransfer::FEES);
 
-            $table->integer(BatchSettlement::SERVICE_TAX)
+            $table->integer(BatchFundTransfer::SERVICE_TAX)
                   ->unsigned()
                   ->nullable();
 
-            $table->integer(BatchSettlement::API_FEE);
+            $table->integer(BatchFundTransfer::API_FEE);
 
-            $table->integer(BatchSettlement::GATEWAY_FEE);
+            $table->integer(BatchFundTransfer::GATEWAY_FEE);
 
-            $table->integer(BatchSettlement::TOTAL_COUNT);
+            $table->integer(BatchFundTransfer::TOTAL_COUNT);
 
-            $table->integer(BatchSettlement::TRANSACTION_COUNT);
+            $table->integer(BatchFundTransfer::TRANSACTION_COUNT);
 
-            $table->text(BatchSettlement::URLS);
+            $table->text(BatchFundTransfer::URLS);
 
-            $table->integer(BatchSettlement::INITIATED_AT);
+            $table->integer(BatchFundTransfer::INITIATED_AT);
 
-            $table->integer(BatchSettlement::RECONCILED_AT)
+            $table->integer(BatchFundTransfer::RECONCILED_AT)
                   ->nullable();
 
-            $table->integer(BatchSettlement::RETURNED_AT)
+            $table->integer(BatchFundTransfer::RETURNED_AT)
                   ->nullable();
 
-            $table->integer(BatchSettlement::CREATED_AT);
-            $table->integer(BatchSettlement::UPDATED_AT);
+            $table->integer(BatchFundTransfer::CREATED_AT);
+            $table->integer(BatchFundTransfer::UPDATED_AT);
 
-            $table->index(BatchSettlement::CREATED_AT);
-            $table->index(BatchSettlement::DATE);
+            $table->index(BatchFundTransfer::CREATED_AT);
+            $table->index(BatchFundTransfer::DATE);
         });
 
         Schema::table(Table::SETTLEMENT, function($table)
@@ -71,7 +71,7 @@ class CreateDailySettlements extends Migration
                   ->nullable();
 
             $table->foreign(Settlement::BATCH_FUND_TRANSFER_ID)
-                  ->references(BatchSettlement::ID)
+                  ->references(BatchFundTransfer::ID)
                   ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
         });

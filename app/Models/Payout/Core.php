@@ -134,7 +134,7 @@ class Core extends Base\Core
 
         foreach ($payouts as $payout)
         {
-            $this->createOrUpdateBatchSettlementForEntity($payout, 1);
+            $this->createOrUpdateBatchFundTransferForEntity($payout, 1);
 
             $payout->batchFundTransfer()->associate($this->batchFundTransfer);
         }
@@ -145,7 +145,7 @@ class Core extends Base\Core
             'kotak_payout_txt'   => $urlText,
         ];
 
-        $this->updateBatchSettlementEntityUrls($urls);
+        $this->updateBatchFundTransferEntityUrls($urls);
 
         $data['payout_text_file'] = $urlText;
 

@@ -8,17 +8,17 @@ use Carbon\Carbon;
 
 class Service extends Base\Service
 {
-    public function calculatePreviousBatchSettlementFees()
+    public function calculatePreviousBatchFundTransferFees()
     {
         $result = $this->repo->transaction(function()
         {
-            return $this->calculatePreviousBatchSettlementFeesCore();
+            return $this->calculatePreviousBatchFundTransferFeesCore();
         });
 
         return $result;
     }
 
-    protected function calculatePreviousBatchSettlementFeesCore()
+    protected function calculatePreviousBatchFundTransferFeesCore()
     {
         $batchFundTransfers = $this->repo->batch_fund_transfer->getIfFeesIsNull();
 
@@ -60,7 +60,7 @@ class Service extends Base\Service
         return ['total_fees' => $totalFees, 'total_setl_count' => $totalSetlCount];
     }
 
-    public function computeBatchSettlementServiceTax()
+    public function computeBatchFundTransferServiceTax()
     {
         return $this->repo->transaction(function ()
         {

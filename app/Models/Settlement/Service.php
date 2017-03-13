@@ -56,7 +56,7 @@ class Service extends Base\Service
 
         if ($batch->getCreatedAt() < $versionV2RolloutTimestamp)
         {
-            $entities = $this->repo->settlement->getSettlementsByBatchSettlementId($batchId);
+            $entities = $this->repo->settlement->getSettlementsByBatchFundTransferId($batchId);
         }
         else
         {

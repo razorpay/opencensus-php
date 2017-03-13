@@ -8,11 +8,11 @@ trait BatchFundTransferTrait
 {
     protected $batchFundTransfer = null;
 
-    protected function createOrUpdateBatchSettlementForEntity($entity, int $txnsCount)
+    protected function createOrUpdateBatchFundTransferForEntity($entity, int $txnsCount)
     {
         if ($this->batchFundTransfer === null)
         {
-            $this->batchFundTransfer = $this->createBatchSettlementEntity($entity, $txnsCount);
+            $this->batchFundTransfer = $this->createBatchFundTransferEntity($entity, $txnsCount);
         }
         else
         {
@@ -26,7 +26,7 @@ trait BatchFundTransferTrait
         $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
-    protected function updateBatchSettlementEntityUrls(array $urls)
+    protected function updateBatchFundTransferEntityUrls(array $urls)
     {
         if ($this->batchFundTransfer === null)
         {
@@ -43,7 +43,7 @@ trait BatchFundTransferTrait
         $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
-    protected function createBatchSettlementEntity($entity, $txnsCount) : Entity
+    protected function createBatchFundTransferEntity($entity, $txnsCount) : Entity
     {
         $batchFundTransfer = new Entity;
 

@@ -8,7 +8,7 @@ use RZP\Constants\Mode;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\FundTransfer\Batch\Entity as BatchSettlement;
+use RZP\Models\FundTransfer\Batch\Entity as BatchFundTransfer;
 use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 use RZP\Models\FundTransfer\Kotak;
 use RZP\Trace\TraceCode;
@@ -168,7 +168,7 @@ class Processor extends Base\Core
                 'kotak_settlement_excel' => $urlExcel
             ];
 
-            $this->updateBatchSettlementEntityUrls($urls);
+            $this->updateBatchFundTransferEntityUrls($urls);
 
             $data['settlement_text_file']  = $urlText;
             $data['settlement_excel_file'] = $urlExcel;
