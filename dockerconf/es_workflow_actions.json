@@ -14,10 +14,16 @@
         "type": {
             "type": "string"
         },
-        "uri": {
+        "url": {
             "type": "string"
         },
         "method": {
+            "type": "string"
+        },
+        "entity_name": {
+            "type": "string"
+        },
+        "entity_id": {
             "type": "string"
         },
         "payload": {
@@ -26,11 +32,8 @@
         "actor": {
             "type": "string"
         },
-        "entity_name": {
-            "type": "string"
-        },
-        "entity_id": {
-            "type": "string"
+        "headers": {
+            "type": "object"
         },
         "diff": {
             "type": "object",
