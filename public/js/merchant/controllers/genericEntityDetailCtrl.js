@@ -28,17 +28,15 @@ app.controller('GenericEntityDetailCtrl', [
     function fetchEntity() {
       var params = {};
 
-      if ($scope.entity.type === 'payment') {
-        params.route_name = 'payment_fetch_by_id';
-      }
-      else if ($scope.entity.type === 'refund') {
-        params.route_name = 'refund_fetch_by_id';
-      }
-      else if ($scope.entity.type === 'order') {
-        params.route_name = 'order_fetch_by_id';
-      }
-      else if ($scope.entity.type === 'settlement') {
-        params.route_name = 'setl_fetch_by_id';
+      var route_names = {
+        'payment'     : 'payment_fetch_by_id',
+        'refund'      : 'refund_fetch_by_id',
+        'order'       : 'order_fetch_by_id',
+        'settlement'  : 'setl_fetch_by_id'
+      };
+
+      if (route_names.hasOwnProperty($scope.entity.type)) {
+        params.route_name = route_names[$scope.entity.type];
       }
 
       params.mode = $scope.mode;

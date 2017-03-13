@@ -126,22 +126,15 @@ app.controller('GenericEntityListCtrl', [
       params.mode = $scope.mode;
 
       if ($scope.entity.id === '') {
-        switch ($scope.entity.type) {
-          case 'payment':
-            params.route_name = 'payment_fetch_multiple';
-            break;
+        var route_names = {
+          'payment'     : 'payment_fetch_multiple',
+          'refund'      : 'refund_fetch_multiple',
+          'order'       : 'order_fetch',
+          'settlement'  : 'setl_fetch_multiple'
+        };
 
-          case 'refund':
-            params.route_name = 'refund_fetch_multiple';
-            break;
-
-          case 'order':
-            params.route_name = 'order_fetch';
-            break;
-
-          case 'settlement':
-            params.route_name = 'setl_fetch_multiple';
-            break;
+        if (route_names.hasOwnProperty($scope.entity.type)) {
+          params.route_name = route_names[$scope.entity.type];
         }
 
         request = $http.get('/generic', {
