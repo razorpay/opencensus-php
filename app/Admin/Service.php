@@ -542,7 +542,8 @@ class Service extends Base\Service
 
         $pricingPlan = $this->fetchMerchantPricing($id);
 
-        $schedule = $this->fetchMerchantScheduleById($details['settlement_schedule_id']);
+        $schedule = !empty($details['settlement_schedule_id']) ?
+                    $this->fetchMerchantScheduleById($details['settlement_schedule_id']) : null;
 
         $data = array(
                     'details' => $details,
