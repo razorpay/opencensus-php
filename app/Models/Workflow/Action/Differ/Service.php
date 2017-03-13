@@ -9,6 +9,13 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
+use Http\Client\Common\PluginClient;
+use Http\Discovery\HttpClientDiscovery;
+use Http\Client\Exception\HttpException;
+use Http\Client\Common\Plugin\ErrorPlugin;
+use Http\Client\Common\Exception\ClientErrorException;
+use Http\Client\Common\Exception\ServerErrorException;
+
 
 class Service extends Base\Service
 {
@@ -118,19 +125,84 @@ class Service extends Base\Service
     {
         $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
 
-        $factory = app()->make('httplug.message_factory.default');
-
         $esResponse['payload']['action_id'] = $id;
 
-        $req = $factory->createRequest($esResponse['method'],
+        $response = $this->makeRequest($esResponse['method'],
                                        $esResponse['url'],
                                        $esResponse['headers'],
                                        $esResponse['payload']);
 
-        $httpClient = $this->createHttpClient();
+        return $response;
+    }
 
-        $response = $httpClient->sendRequest($req);
+    public function makeRequest($method, $url, $headers, $content)
+    {
+        $factory = $this->app->make('httplug.message_factory.default');
+
+        $req = $factory->createRequest($method, $url, $headers, $content);
+
+        $response = false;
+
+        try
+        {
+            $response = $this->createHttpClient()->sendRequest($req);
+        }
+        catch (ClientErrorException $e)
+        {
+            $errorMessage = 'Client error: '. $e->getResponse()->getReasonPhrase();
+
+            $this->trace->info(
+                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
+                [
+                    'action_id' => $content['action_id'],
+                    'exception' => $errorMessage,
+                ]);
+
+            return false;
+        }
+        catch (ServerErrorException $e)
+        {
+            $errorMessage = 'Server error: '. $e->getResponse()->getReasonPhrase();
+
+            $this->trace->info(
+                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
+                [
+                    'action_id' => $content['action_id'],
+                    'exception' => $errorMessage,
+                ]);
+
+            return false;
+        }
+        catch (HttpException $e)
+        {
+            $errorMessage = 'Some error occurred: '. $e->getResponse()->getReasonPhrase();
+
+            $this->trace->info(
+                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
+                [
+                    'action_id' => $content['action_id'],
+                    'exception' => $errorMessage,
+                ]);
+
+            return false;
+        }
 
         return $response;
+    }
+
+    protected function createHttpClient()
+    {
+        // Plugin to get error-exceptions from responses of httpClient
+        $errorPlugin = new ErrorPlugin();
+
+        // PluginClient is the decorator around the httpClient that manages plugins
+        // HttpClientDiscovery finds a suitable installed client that -
+        // extends HttpClient (in this case Guzzle6 client)
+        $pluginClient = new PluginClient(
+            HttpClientDiscovery::find(),
+            [$errorPlugin]
+        );
+
+        return $pluginClient;
     }
 }

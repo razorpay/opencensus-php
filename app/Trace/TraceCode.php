@@ -255,6 +255,7 @@ class TraceCode
 
     const PAYMENT_UPDATE_AMOUNT_PAIDOUT             = 'PAYMENT_UPDATE_AMOUNT_PAIDOUT';
 
+
     /*
      * Gateway component error messages
      */
@@ -550,6 +551,7 @@ class TraceCode
     const HEIMDALL_AUDIT_LOG_FAIL                   = 'HEIMDALL_AUDIT_LOG_FAIL';
     const HEIMDALL_AUDIT_LOG_SEARCH_FAIL            = 'HEIMDALL_AUDIT_LOG_SEARCH_FAIL';
     const HEIMDALL_ACTION_LOG_FAIL                  = 'HEIMDALL_ACTION_LOG_FAIL';
+    const HEIMDALL_REQUEST_FOWARD_FAIL              = 'HEIMDALL_REQUEST_FOWARD_FAIL';
 
     // Trace for Payment/Transfers
     const PAYMENT_TRANSFER_REQUEST                  = 'PAYMENT_TRANSFER_REQUEST';
