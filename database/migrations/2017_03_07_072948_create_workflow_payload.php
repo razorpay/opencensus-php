@@ -31,14 +31,6 @@ class CreateWorkflowPayload extends Migration
             $table->integer(Payload::CREATED_AT);
             $table->integer(Payload::UPDATED_AT);
         });
-
-        Schema::table(Table::WORKFLOW_ACTION, function(Blueprint $table)
-        {
-            $table->foreign(Action::PAYLOAD_ID)
-                  ->references(Payload::ID)
-                  ->on(Table::ACTION_PAYLOAD)
-                  ->on_delete('restrict');
-        });
     }
 
     /**

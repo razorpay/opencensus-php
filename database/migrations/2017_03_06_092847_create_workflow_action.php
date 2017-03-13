@@ -27,7 +27,6 @@ class CreateWorkflowAction extends Migration
 
             $table->char(Action::WORKFLOW_ID, Action::ID_LENGTH);
             $table->char(Action::ADMIN_ID, Action::ID_LENGTH);
-            $table->char(Action::PAYLOAD_ID, Action::ID_LENGTH);
 
             $table->foreign(Action::WORKFLOW_ID)
                   ->references(Workflow::ID)
