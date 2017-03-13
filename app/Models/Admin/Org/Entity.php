@@ -29,6 +29,8 @@ class Entity extends Base\Entity
     const ADMIN            = 'admin';
     const CROSS_ORG_ACCESS = 'cross_org_access';
 
+    const RAZORPAY_ORG_ID = '100000razorpay';
+
     protected static $sign = 'org';
 
     protected $entity = 'org';

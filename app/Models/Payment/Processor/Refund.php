@@ -582,13 +582,6 @@ trait Refund
 
     protected function buildRefundEntity(Payment\Entity $payment, array $input, Batch\Entity $batch = null)
     {
-        $this->trace->info(
-            TraceCode::PAYMENT_REFUND_REQUEST,
-            [
-                'payment_id' => $payment->getId(),
-                'input'      => $input
-            ]);
-
         $this->setPayment($payment);
 
         $refund = (new Payment\Refund\Entity)->build($input, $payment);

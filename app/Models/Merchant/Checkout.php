@@ -120,7 +120,7 @@ class Checkout
             $this->trace->traceException($ex);
         }
 
-        return $orderData ;
+        return $orderData;
     }
 
     protected function fetchCustomerData(array $input, Entity $merchant)
@@ -252,7 +252,7 @@ class Checkout
         {
             $this->trace->traceException($ex);
         }
-     }
+    }
 
     protected function getMerchantPreferencesData(Entity $merchant, $mode, array $input)
     {
@@ -287,8 +287,6 @@ class Checkout
     public function checkAndFillOfferDetails(Merchant\Entity $merchant, array $input, array & $data)
     {
         $offerCore = new Offer\Core;
-
-        $offers = new Base\PublicCollection;
 
         // Temporaily commenting fetching shared offers
         // $sharedOffers = $offerCore->fetchSharedOffers();

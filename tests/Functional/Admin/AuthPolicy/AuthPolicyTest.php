@@ -221,7 +221,7 @@ class AuthPolicyTest extends TestCase
 
         $admin = $this->fixtures->create('admin', [
             'email'               => 'randomemail2@rzp.com',
-            'org_id'              => 'RazorpayOrgnId',
+            'org_id'              => '100000razorpay',
             'password_changed_at' => $passwordChangedAt
         ]);
 

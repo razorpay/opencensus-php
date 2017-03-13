@@ -14,7 +14,7 @@ final class FactoryData
     {
         $factory(\RZP\Models\Merchant\Entity::class, [
             'id' => $faker->uniqueid,
-            'org_id' => 'RazorpayOrgnId',
+            'org_id' => '100000razorpay',
             'parent_id' => null,
             'name' => $faker->word,
             'email' => $faker->email,
