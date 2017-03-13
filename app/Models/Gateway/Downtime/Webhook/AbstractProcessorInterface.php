@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Downtime\WebhookProcessor;
+namespace RZP\Models\Gateway\Downtime\Webhook;
 
 interface AbstractProcessorInterface
 {

@@ -3,7 +3,7 @@
 namespace RZP\Models\Gateway\Downtime;
 
 use RZP\Models\Base;
-use RZP\Models\Gateway\Downtime\WebhookProcessor;
+use RZP\Models\Gateway\Downtime\Webhook;
 
 class Service extends Base\Service
 {
@@ -37,9 +37,13 @@ class Service extends Base\Service
         return $absentGateways->toArrayPublic();
     }
 
-    public function processStatusCakeCallback(array $input)
+    public function processGatewayDowntimeWebhook(string $source, array $input)
     {
-        $data = (new WebhookProcessor\StatusCakeProcessor)->process($input);
+        $processor = new Webhook\Processor($source);
+
+        $processor->validate($input);
+
+        $data = $processor->process($input);
 
         return $data;
     }

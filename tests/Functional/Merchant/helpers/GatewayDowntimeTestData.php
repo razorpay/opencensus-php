@@ -553,7 +553,7 @@ return [
                 'Tags' => '{"method": "netbanking", "issuer":"hdfc"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -572,10 +572,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "card", "issuer":"hdfc"}'
+                'Tags' => '{"method": "card", "gateway":"HDFC"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -594,10 +594,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "wallet", "issuer": "airtelmoney"}'
+                'Tags' => '{"method": "wallet", "gateway": "WALLET_AIRTELMONEY"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -616,10 +616,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => '{"method": "netbanking", "issue": "xyz"}'
+                'Tags' => '{"method": "netbanking", "gateway": "xyz"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -646,7 +646,7 @@ return [
                 'Tags' => '{"method": "card", "issuer": "xyz"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -673,7 +673,7 @@ return [
                 'Tags' => '{"method": "wallet", "issuer": "xyz"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -698,10 +698,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'HDFC'
+                'Tags' => '{"issuer": "HDFC"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -725,10 +725,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'HDFC'
+                'Tags' => '{"issuer": "HDFC"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [
@@ -752,10 +752,10 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'HDFC'
+                'Tags' => '{"issuer": "HDFC"}'
             ],
             'method' => 'POST',
-            'url' => '/statuscake/callback'
+            'url' => '/gateway/downtimes/status_cake/webhook'
         ],
         'response' => [
             'content' => [

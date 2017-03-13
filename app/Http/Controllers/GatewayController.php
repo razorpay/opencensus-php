@@ -255,14 +255,15 @@ class GatewayController extends Controller
     }
 
     /**
-     * Method to handle webhook callbacks from statuscake
+     * Method to handle webhook from statuscake
+     *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function postStatusCakeCallback(Downtime\Service $service)
+    public function postGatewayDowntimeWebhook(Downtime\Service $service, $source)
     {
         $input = Request::all();
 
-        $data = $service->processStatusCakeCallback($input);
+        $data = $service->processGatewayDowntimeWebhook($source, $input);
 
         return ApiResponse::json($data);
     }

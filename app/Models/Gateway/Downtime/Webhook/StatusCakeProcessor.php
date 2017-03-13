@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Gateway\Downtime\WebhookProcessor;
+namespace RZP\Models\Gateway\Downtime\Webhook;
 
 use App;
 use RZP\Exception;
@@ -50,19 +50,18 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     {
         try
         {
-            $this->validateRequest($input);
-
             $scStatus = strtoupper($input['Status']);
 
             $status = null;
 
             if (in_array($scStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
             {
-                $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS,
-                                    ['input' => $input]);
+                $this->trace->warning(
+                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_STATUS,
+                    ['input' => $input]);
 
                 throw new Exception\BadRequestValidationFailureException(
-                    'Invalid Status : '. $scStatus);
+                    'Invalid StatusCake status provided: ' . $scStatus);
             }
 
             $status = ($scStatus === self::STATUS_UP);
@@ -71,7 +70,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             if ($status === true)
             {
-                $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_EDIT, ['data' => $data]);
+                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_EDIT, ['data' => $data]);
 
                 $downtime = $this->core->fetchMostRecentActive($data);
 
@@ -93,7 +92,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             }
             else
             {
-                $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_CREATE, ['data' => $data]);
+                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_CREATE, ['data' => $data]);
 
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
                 // events for the same url.
@@ -108,16 +107,16 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
     }
 
-    protected function validateRequest(array $input)
+    public function validate(array $input)
     {
         if (isset($input['Token']) === false)
         {
             $this->trace->critical(
-                TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN,
-                ['data' => $input]);
+                TraceCode::GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN,
+                ['input' => $input]);
 
             throw new Exception\BadRequestValidationFailureException(
-                'StatusCake Token Missing');
+                'StatusCake token missing');
         }
 
         $this->validateToken($input);
@@ -133,11 +132,12 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         if (hash_equals(md5($key), $token) === false)
         {
-            $msg = ['token' => $token, 'computed' => md5($key)];
+            $this->trace->warning(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN,
+                ['token' => $token, 'computed' => md5($key)]);
 
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TOKEN, $msg);
-
-            throw new Exception\BadRequestValidationFailureException('StatusCake Token Validation Failure');
+            throw new Exception\BadRequestValidationFailureException(
+                'StatusCake token validation failure.');
         }
     }
 
@@ -151,7 +151,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
             if (empty($gateways) === true)
             {
-                // $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
+                // $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_GW_UNAVAILABLE, ['data' => $input]);
 
                 throw new Exception\BadRequestValidationFailureException(
                     'StatusCake Gateway Unavailable for issuer',
@@ -167,7 +167,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
         else
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_ISSUER, ['issuer' => $issuer]);
+            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_ISSUER, ['issuer' => $issuer]);
 
             throw new Exception\BadRequestValidationFailureException(
                 'StatusCake Invalid Issuer from StatusCake:' . $issuer);
@@ -191,49 +191,49 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     {
         $tags = $input['Tags'];
 
-        $fmtTags = [];
+        $decodedTags = [];
 
         try
         {
-            $fmtTags = json_decode($tags, true);
+            $decodedTags = json_decode($tags, true);
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TAGS,
                 [
                     'tags' => $tags,
                     'input' => $input,
                     'exception' => $e->getMessage()
-                ]
-            );
+                ]);
 
-            throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
+            throw new Exception\LogicException(
+                'StatusCake invalid tag value', $tags, $input);
         }
 
         $jsonError = json_last_error();
 
         if ($jsonError !== 0)
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_TAGS,
+            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TAGS,
                 [
                     'tags' => $tags,
                     'input' => $input,
                     'json_error' => $jsonError
-                ]
-            );
+                ]);
 
-            throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
+            throw new Exception\LogicException(
+                'StatusCake invalid tag value', $tags, $input);
         }
 
-        $method = isset($fmtTags[Entity::METHOD]) ? strtolower($fmtTags[Entity::METHOD]) : null;
+        $method = isset($decodedTags[Entity::METHOD]) ? strtolower($decodedTags[Entity::METHOD]) : null;
 
-        $gateway = isset($fmtTags[Entity::GATEWAY]) ? strtolower($fmtTags[Entity::GATEWAY]) : null;
+        $gateway = isset($decodedTags[Entity::GATEWAY]) ? strtolower($decodedTags[Entity::GATEWAY]) : null;
 
-        $issuer = isset($fmtTags[Entity::ISSUER]) ? strtoupper($fmtTags[Entity::ISSUER]) : null;
+        $issuer = isset($decodedTags[Entity::ISSUER]) ? strtoupper($decodedTags[Entity::ISSUER]) : null;
 
-        $network = isset($fmtTags[Entity::NETWORK]) ? strtolower($fmtTags[Entity::NETWORK]) : null;
+        $network = isset($decodedTags[Entity::NETWORK]) ? strtolower($decodedTags[Entity::NETWORK]) : null;
 
-        $cardType = isset($fmtTags[Entity::CARD_TYPE]) ? strtolower($fmtTags[Entity::CARD_TYPE]) : null;
+        $cardType = isset($decodedTags[Entity::CARD_TYPE]) ? strtolower($decodedTags[Entity::CARD_TYPE]) : null;
 
         $method = strtolower($method);
 
@@ -246,14 +246,14 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (isset($issuer) === false)
                 {
                     $this->trace->warning(
-                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_NBDATA,
-                        ['data' => $fmtTags]
+                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_NBDATA,
+                        ['data' => $decodedTags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid Netbanking data',
                         $method,
-                        $fmtTags
+                        $decodedTags
                     );
                 }
 
@@ -273,14 +273,14 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (isset($gateway) === false)
                 {
                     $this->trace->warning(
-                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_CDATA,
-                        ['data' => $fmtTags]
+                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_CDATA,
+                        ['data' => $decodedTags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
                         'StatusCake invalid Card data',
                         $method,
-                        $fmtTags
+                        $decodedTags
                     );
                 }
 
@@ -311,14 +311,14 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (isset($gateway) === false)
                 {
                     $this->trace->warning(
-                        TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_WDATA,
-                        ['data' => $fmtTags]
+                        TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_WDATA,
+                        ['data' => $decodedTags]
                     );
 
                     throw new Exception\BadRequestValidationFailureException(
-                        'StatusCake invalid Wallet data',
+                        'StatusCake invalid wallet data',
                         $method,
-                        $fmtTags
+                        $decodedTags
                     );
                 }
 
@@ -329,7 +329,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             default:
 
                 $this->trace->warning(
-                    TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_DATA,
+                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_DATA,
                     ['data' => $input]
                 );
 
@@ -343,7 +343,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         // $formatted = InputFormatter::format($formatted);
     }
 
-    protected function formatInput(array $input, int $status)
+    protected function formatInput(array $input, bool $status)
     {
         $formatted = [
             Entity::SOURCE      => Source::STATUSCAKE,
@@ -351,15 +351,13 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             Entity::PARTIAL     => false,
         ];
 
-        if ($status === 1)
+        if ($status === true)
         {
             $formatted[Entity::TO] = time();
         }
         else
         {
             $formatted[Entity::FROM] = time();
-
-            $formatted[Entity::TO] = null;
         }
 
         try
@@ -368,7 +366,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         }
         catch(\Exception $e)
         {
-            $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_PARSE_ERROR, ['input' => $input]);
+            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR, ['input' => $input]);
 
             throw $e;
         }
