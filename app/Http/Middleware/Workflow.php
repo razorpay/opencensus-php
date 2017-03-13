@@ -67,7 +67,7 @@ class Workflow
             'actor'       => $request->header(self::USER_HEADER),
             'headers'     => [ self:: AUTH_HEADER => $request->header(self::AUTH_HEADER) ],
             'type'        => Differ\Type::MAKER,
-            'url'         => $request->getPathInfo(),
+            'url'         => $request->getUri(),
             'method'      => $request->getMethod(),
             'payload'     => $input,
         ];
