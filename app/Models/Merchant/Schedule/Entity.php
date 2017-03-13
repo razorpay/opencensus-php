@@ -50,4 +50,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::METHOD);
     }
+
+    public function getScheduleId()
+    {
+        return $this->getAttribute(self::SCHEDULE_ID);
+    }
 }

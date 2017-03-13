@@ -109,13 +109,7 @@ class Repository extends Base\Repository
                      FROM merchant_schedules)
                 LIMIT 1000');
 
-        $mercIds = json_decode(json_encode($mercIds), true);
-
-        $mercIds2  = [];
-        foreach ($mercIds as $mercId)
-        {
-            $mercIds2[] = $mercId['id'];
-        }
+        $mercIds2 = array_column($mercIds, 'id');
 
         return $this->newQuery()
                     ->whereIn(Entity::ID, $mercIds2)

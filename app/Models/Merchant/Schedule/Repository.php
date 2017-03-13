@@ -16,6 +16,10 @@ class Repository extends Base\Repository
         Entity::SCHEDULE_ID             => 'sometimes|alpha_dash|max:20',
     );
 
+    /**
+     * Returns merchant schedule if it matches the one passed in the argument.
+     * Method and merchant_id has to be same for it to be duplicate
+     */
     public function fetchDuplicate(MerchantSchedule\Entity $merchantSchedule)
     {
         $query = $this->newQuery()

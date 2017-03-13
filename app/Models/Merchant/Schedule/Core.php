@@ -15,7 +15,8 @@ class Core extends Base\Core
         {
             $merchantSchedule = $this->create($merchant, $input);
 
-            $currentSchedule = $this->repo->merchant_schedule->fetchDuplicate($merchantSchedule);
+            $currentSchedule = $this->repo->merchant_schedule
+                                    ->fetchDuplicate($merchantSchedule);
 
             if ($currentSchedule !== null)
             {
@@ -29,6 +30,9 @@ class Core extends Base\Core
 
     }
 
+    /**
+     * Creates merchant schedule entity
+     */
     public function create(Merchant\Entity $merchant, $input)
     {
         $merchantSchedule = (new MerchantSchedule\Entity)->build($input);
@@ -46,7 +50,9 @@ class Core extends Base\Core
         return $merchantSchedule;
     }
 
-    public function createMerchantSchedule(Merchant\Entity $merchant, Schedule\Entity $schedule)
+    public function createMerchantSchedule(
+        Merchant\Entity $merchant,
+        Schedule\Entity $schedule)
     {
         $merchantSchedule = new MerchantSchedule\Entity;
 
@@ -61,11 +67,13 @@ class Core extends Base\Core
 
     public function getMerchantSchedule(Merchant\Entity $merchant, $method)
     {
-        $merchantSchedules = $this->repo->merchant_schedule->fetchByMerchant($merchant);
+        $merchantSchedules = $this->repo->merchant_schedule
+                                  ->fetchByMerchant($merchant);
 
         if ($merchantSchedules->count() > 0)
         {
-            $schedule = $this->filterAndGetScheduleByMethodOrDefault($merchantSchedules, $method);
+            $schedule = $this->filterAndGetScheduleByMethodOrDefault(
+                                    $merchantSchedules, $method);
         }
         else
         {
@@ -75,7 +83,9 @@ class Core extends Base\Core
         return $schedule;
     }
 
-    protected function filterAndGetScheduleByMethodOrDefault($merchantSchedules, $method)
+    protected function filterAndGetScheduleByMethodOrDefault(
+        $merchantSchedules,
+        $method)
     {
         $schedule = null;
 
