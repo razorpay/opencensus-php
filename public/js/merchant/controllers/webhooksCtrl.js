@@ -9,7 +9,8 @@ app.controller('WebhooksCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'user',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user) {
+  'utils',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user, utils) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -30,11 +31,16 @@ app.controller('WebhooksCtrl', [
 
     $scope.createWebhook = function(webhook) {
 
+      var params = {};
+      params.route_name = 'webhook_create';
+      params.mode = $scope.mode;
+      webhook.events = utils.convertBoolToString(webhook.events);
+      params.body = webhook;
+
       var request = $http({
-        method: 'post',
-        url: '/' + $scope.mode + '/webhooks',
-        //transformRequest: transformRequestAsFormPost,
-        data: webhook
+        url: '/generic',
+        method: 'POST',
+        data: params
       });
 
       request.success(function (data) {
@@ -60,8 +66,8 @@ app.controller('WebhooksCtrl', [
       // can edit in a webhook
 
       var payload = {
-        events: webhook.events,
-        active: webhook.active,
+        events: utils.convertBoolToString(webhook.events),
+        active: utils.convertBoolToString(webhook.active),
         url: webhook.url
       };
 
@@ -69,10 +75,18 @@ app.controller('WebhooksCtrl', [
         payload.secret = webhook.secret;
       }
 
+      var params = {};
+      params.route_name = 'webhook_edit';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': webhook.id
+      };
+      params.body = payload;
+
       var request = $http({
-        method: 'put',
-        url: '/' + $scope.mode + '/webhooks/' + webhook.id,
-        data: payload
+        url: '/generic',
+        method: 'PUT',
+        data: params
       });
 
       request.success(function (data) {
@@ -118,9 +132,12 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.fetchWebhooks = function() {
-      var request = $http({
-        method: 'get',
-        url: '/' + $scope.mode + '/webhooks'
+      var params = {};
+      params.route_name = 'webhook_fetch_multiple';
+      params.mode = $scope.mode;
+
+      var request = $http.get('/generic', {
+        params: params
       });
 
       request.success(function (data) {

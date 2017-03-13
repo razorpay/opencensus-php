@@ -110,5 +110,46 @@ return [
             'url'       => 'settlements/{id}/details',
             'routeName' => 'settlements_get_detail'
         ],
+
+        // Credits
+        'credits_fetch_multiple'            => 'credits',
+
+        // Balance
+        'balance_fetch'                     => [
+            'url'       => 'balance',
+            'routeName' => 'balance_get'
+        ],
+
+        // Webhooks
+        'webhook_fetch_multiple'            => [
+            'url'       => 'webhooks',
+            'routeName' => 'get_webhooks'
+        ],
+        'webhook_create'                    => [
+            'url'       => 'webhooks',
+            'routeName' => 'post_webhooks'
+        ],
+        'webhook_edit'                      => [
+            'url'       => 'webhooks/{id}',
+            'routeName' => 'edit_webhooks'
+        ],
+    ],
+
+    'internal' => [
+        // Keys
+        'merchant_fetch_keys'               => [
+            'url'       => 'merchants/{id}/keys',
+            'routeName' => 'get_keys'
+        ],
+
+        'merchant_create_key'               => [
+            'url'       => 'merchants/{id}/keys',
+            'routeName' => 'keys_setup'
+        ],
+
+        'merchant_replace_key'              => [
+            'url'       => 'merchants/{merchantId}/keys/{keyId}',
+            'routeName' => 'post_keys'
+        ],
     ],
 ];

@@ -1,14 +1,19 @@
-app.controller('ProfileCtrl', [
+app.controller('CreditCtrl', [
   '$scope',
   '$http',
 
   function ($scope, $http) {
 
-    var getCreditsData = function() {
+    var getCreditsData = function () {
 
       $scope.creditsData = '';
-      var url = '/' + $scope.mode + '/credits';
-      var request = $http.get(url);
+      var params = {};
+      params.route_name = 'credits_fetch_multiple';
+      params.mode = $scope.mode;
+
+      var request = $http.get('/generic', {
+        params: params
+      });
 
       request.success(function (result) {
         if (result.success) {
@@ -19,9 +24,16 @@ app.controller('ProfileCtrl', [
 
     getCreditsData();
 
-    var fetchBalance = function() {
+    var fetchBalance = function () {
 
-      var request = $http.get('/' + $scope.mode + '/balance');
+      var params = {};
+      params.route_name = 'balance_fetch';
+      params.mode = $scope.mode;
+
+      var request = $http.get('/generic', {
+        params: params
+      });
+
       request.success(function (result) {
         if(result.success) {
           $scope.balance = result.data.balance;

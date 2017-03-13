@@ -5,7 +5,8 @@ app.controller('KeysCtrl', [
   'alertsFactory',
   'transformRequestAsFormPost',
   '$modal',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal) {
+  'user',
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
     $scope.keys = {
@@ -14,11 +15,24 @@ app.controller('KeysCtrl', [
     };
     fetchKeys();
     $scope.generateKey = function () {
-      var request = $http({
-        method: 'post',
-        url: '/' + $scope.mode + '/key/new',
-        transformRequest: transformRequestAsFormPost
+      var params = {};
+      params.route_name = 'merchant_create_key';
+      params.mode = $scope.mode;
+      var merchantId = '';
+      user.identity().then(function (data) {
+        merchantId = data.current;
       });
+
+      params.url_params = {
+        '{id}': merchantId
+      };
+
+      var request = $http({
+        url: '/generic',
+        method: 'POST',
+        data: params
+      });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Key Generated', true);
@@ -49,12 +63,26 @@ app.controller('KeysCtrl', [
         id: key_id,
         delay_roll: delay_roll
       };
-      var request = $http({
-        method: 'post',
-        url: '/' + $scope.mode + '/keys',
-        transformRequest: transformRequestAsFormPost,
-        data: data
+
+      var params = {};
+      params.route_name = 'merchant_replace_key';
+      params.mode = $scope.mode;
+      var merchantId = '';
+      user.identity().then(function (data) {
+        merchantId = data.current;
       });
+      params.url_params = {
+        '{merchantId}': merchantId,
+        '{keyId}': key_id
+      };
+      params.body = data;
+
+      var request = $http({
+        url: '/generic',
+        method: 'PUT',
+        data: params
+      });
+
       request.success(function (data) {
         if (data.success) {
           $scope.alerts.addAlert('success', 'Key Rolled', true);
@@ -106,7 +134,21 @@ app.controller('KeysCtrl', [
       });
     };
     function fetchKeys() {
-      var request = $http.get('/' + $scope.mode + '/keys');
+      var params = {};
+      params.route_name = 'merchant_fetch_keys';
+      params.mode = $scope.mode;
+      var merchantId = '';
+      user.identity().then(function (data) {
+        merchantId = data.current;
+      });
+      params.url_params = {
+        '{id}': merchantId
+      };
+
+      var request = $http.get('/generic', {
+        params: params
+      });
+
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {

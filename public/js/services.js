@@ -895,6 +895,28 @@ angular.module('app.services', [])
       }
 
       return frags.join(' ');
+    },
+
+    convertBoolToString: function (obj) {
+      var argType = typeof obj;
+
+      switch (argType) {
+        case 'object':
+          for (var key in obj) {
+            if (obj.hasOwnProperty(key)) {
+              obj[key] = obj[key] ? '1' : '0';
+            }
+          }
+
+          break;
+
+        case 'boolean':
+          obj = obj ? '1' : '0';
+
+          break;
+      }
+
+      return obj;
     }
   };
 });
