@@ -14,7 +14,7 @@ class WorkflowController extends Controller
     {
         parent::__construct();
 
-        $this->action = new Service;
+        $this->action = new Differ\Service;
     }
 
     public function postCreateAction(string $entity, string $entityId)

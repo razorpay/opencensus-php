@@ -30,7 +30,7 @@ class Service extends Base\Service
 
         $mode = empty($this->app['rzp.mode']) ? Mode::TEST : $this->app['rzp.mode'];
 
-        $this->baseIndex = $this->config->get('database.es_action')[$mode];
+        $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
     }
 
     public function create(string $entity, string $entityId, array $input)
@@ -90,7 +90,7 @@ class Service extends Base\Service
 
         try
         {
-            if ($this->config->get('database.es_action_mock') === false)
+            if ($this->config->get('database.es_workflow_action_mock') === false)
             {
                 $this->esDao->storeAdminEvent(
                     strtolower($this->baseIndex), self::ES_TYPE, $action->toArray()

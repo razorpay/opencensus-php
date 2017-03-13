@@ -327,14 +327,11 @@ class EsDao
             'type'  => $typeName,
             'body'  => [
                 'query' => [
-                    'bool' => [
-                        'must' => [
-                            'term' => [
-                                'id.keyword' => $id
-                            ]
-                        ]
+                   'match' => [
+                        'id' => $id
                     ]
                 ]
+
             ]
         ];
 
