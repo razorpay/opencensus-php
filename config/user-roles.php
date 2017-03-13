@@ -48,7 +48,6 @@ return [
     'reports_invoice'           => $readers,
     'settlements_fetch_all'     => $readers,
     'settlements_fetch_one'     => $readers,
-    'settlements_fetch_one'     => $readers,
     'referred_merchants_list'   => ['owner', 'manager', 'admin'],
     'keys_setup'                => ['owner', 'admin'],
     // Might wanna drop support from here later

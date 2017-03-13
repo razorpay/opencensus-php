@@ -72,5 +72,43 @@ return [
             'url'       => 'payments/{id}/refund',
             'routeName' => 'post_refund'
         ],
+
+        // Refunds
+        'refund_fetch_multiple'             => [
+            'url'       => 'refunds',
+            'routeName' => 'refunds_fetch_multiple'
+        ],
+        'refund_fetch_by_id'                => [
+            'url'       => 'refunds/{id}',
+            'routeName' => 'refunds_fetch_single'
+        ],
+
+        // Orders
+        'order_fetch'                       => [
+            'url'       => 'orders',
+            'routeName' => 'get_orders'
+        ],
+        'order_fetch_by_id'                 => [
+            'url'       => 'orders/{id}',
+            'routeName' => 'get_order'
+        ],
+        'order_payments'                    => [
+            'url'       => 'orders/{id}/payments',
+            'routeName' => 'get_order_payments'
+        ],
+
+        // Settlements
+        'setl_fetch_multiple'               => [
+            'url'       => 'settlements',
+            'routeName' => 'settlements_fetch_all'
+        ],
+        'setl_fetch_by_id'                  => [
+            'url'       => 'settlements/{id}',
+            'routeName' => 'settlements_fetch_one'
+        ],
+        'setl_get_details'                  => [
+            'url'       => 'settlements/{id}/details',
+            'routeName' => 'settlements_get_detail'
+        ],
     ],
 ];

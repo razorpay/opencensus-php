@@ -18,11 +18,22 @@ app.controller('OrderDetailCtrl', [
         $scope.isCollapsed = true;
         return;
       }
-      var request = $http.get('/' + $scope.mode + '/orders/' + $scope.entity.id + '/payments');
+
+      var params = {};
+      params.route_name = 'order_payments';
+      params.mode = $scope.mode;
+      params.url_params = {
+        '{id}': $scope.entity.id
+      };
+
+      var request = $http.get('/generic', {
+        params: params
+      });
+
       request.success(function (data) {
         $scope.alerts.resetAlerts();
         if (data.success) {
-          $scope.payments = data.data;
+          $scope.payments = data.data.items;
           $scope.isCollapsed = false;
         } else {
           angular.forEach(data.errors, function (error, key) {
@@ -33,7 +44,5 @@ app.controller('OrderDetailCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     };
-
-
   }
 ]);
