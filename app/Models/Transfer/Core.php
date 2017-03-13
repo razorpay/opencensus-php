@@ -12,6 +12,7 @@ use RZP\Models\Transaction;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Feature;
+use RZP\Constants;
 
 class Core extends Base\Core
 {
@@ -37,6 +38,8 @@ class Core extends Base\Core
             TraceCode::TRANSFER_CREATE_REQUEST,
             ['input' => $input]);
 
+        $this->validateMerchantForTransfer($merchant);
+
         return $this->repo->transaction(function () use ($input, $merchant)
         {
             $transfer = $this->makeTransfer($input, $merchant, $merchant);
@@ -60,6 +63,8 @@ class Core extends Base\Core
     public function createForPayment(Payment\Entity $payment, array $input, Merchant\Entity $merchant)
     {
         $transfers = new Base\PublicCollection;
+
+        $this->validateMerchantForTransfer($merchant);
 
         $merchantBalance = $this->repo->balance->getMerchantBalance($merchant);
 
@@ -373,6 +378,18 @@ class Core extends Base\Core
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_MULTIPLE_TRANSFERS_TO_SAME_ACCOUNT);
+        }
+    }
+
+    protected function validateMerchantForTransfer(Merchant\Entity $merchant)
+    {
+        $isOnHold = $merchant->holdFunds();
+
+        if (($this->mode === Constants\Mode::LIVE) and
+            ($isOnHold === true))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
     }
 }

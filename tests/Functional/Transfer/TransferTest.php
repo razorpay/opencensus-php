@@ -94,10 +94,7 @@ class TransferTest extends TestCase
 
         unset($body['on_hold']);
 
-        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($body)
-        {
-            $this->createTransfer('account', $body);
-        });
+        $transfer = $this->createTransfer('account');
     }
 
     public function testTransferOnHoldUntilOnHoldFalse()
@@ -226,6 +223,21 @@ class TransferTest extends TestCase
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transfer)
         {
             $this->createReversal($transfer['id'], 800);
+        });
+    }
+
+    public function testLiveTransferFundsOnHold()
+    {
+        $this->fixtures->merchant->holdFunds();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $body = $this->getTransferRequestBody('account')['content'];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($body)
+        {
+            $this->createTransfer('account', $body, 'live');
         });
     }
 
