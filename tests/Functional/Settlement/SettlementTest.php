@@ -295,8 +295,10 @@ class SettlementTest extends TestCase
         $setl = $this->getLastEntity('settlement', true);
 
         $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($setl['batch_fund_transfer_id'], $batchFundTransfer['id']);
+        $this->assertEquals($setlAttempt['batch_fund_transfer_id'], $batchFundTransfer['id']);
+        $this->assertEquals($setlAttempt['source'], $setl['id']);
 
         $request = [
             'url' => '/settlements/file/generate',
@@ -482,12 +484,13 @@ class SettlementTest extends TestCase
         $this->testMerchantSettlementV2();
 
         $setl = $this->getLastEntity('settlement', true);
+        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $request = array(
             'url' => '/settlements/file/generate',
             'method' => 'POST',
             'content' => [
-                'batch_fund_transfer_id' => $setl['batch_fund_transfer_id']
+                'batch_fund_transfer_id' => $setlAttempt['batch_fund_transfer_id']
             ]
         );
 

@@ -169,13 +169,11 @@ trait SettlementTrait
     {
         $this->createOrUpdateBatchFundTransferForEntity($setl, $setlTxnsCount);
 
-        $setl->batchFundTransfer()->associate($this->batchFundTransfer);
-
-        $this->repo->settlement->saveOrFail($setl);
-
         $bankTransferAtpt->batchFundTransfer()->associate($this->batchFundTransfer);
 
-        $this->repo->fund_transfer_attempt->saveOrFail($bankTransferAtpt);
+        $this->repo->saveOrFail($setl);
+
+        $this->repo->saveOrFail($bankTransferAtpt);
 
         return [$setl, $bankTransferAtpt];
     }
