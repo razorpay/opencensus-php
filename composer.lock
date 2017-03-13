@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "content-hash": "6e03c99fd0f7ef5ca085de2e29dd07d7",
+    "content-hash": "f746af450f714d758c6eab4084c2eeac",
     "packages": [
         {
             "name": "aws/aws-sdk-php",
@@ -4416,7 +4416,7 @@
                 "php",
                 "razorpay"
             ],
-            "time": "2017-01-04 14:23:02"
+            "time": "2017-01-04T14:23:02+00:00"
         },
         {
             "name": "razorpay/spine",
@@ -4463,7 +4463,7 @@
                 "source": "https://github.com/razorpay/spine/tree/master",
                 "issues": "https://github.com/razorpay/spine/issues"
             },
-            "time": "2016-11-22 08:12:12"
+            "time": "2016-11-22T08:12:12+00:00"
         },
         {
             "name": "razorpay/upi-clients",
@@ -7610,6 +7610,8 @@
     },
     "prefer-stable": false,
     "prefer-lowest": false,
-    "platform": [],
+    "platform": {
+        "ext-gmp": "*"
+    },
     "platform-dev": []
 }

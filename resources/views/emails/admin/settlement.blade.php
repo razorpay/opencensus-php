@@ -32,6 +32,11 @@
                         <td style="border: 1px solid grey">{{{$count['neft']}}}</td>
                     </tr>
                     <tr style="border: 1px solid grey">
+                        <td style="border: 1px solid grey">RTGS</td>
+                        <td style="border: 1px solid grey">{{{$amounts['rtgs']}}}</td>
+                        <td style="border: 1px solid grey">{{{$count['rtgs']}}}</td>
+                    </tr>
+                    <tr style="border: 1px solid grey">
                         <td style="border: 1px solid grey">IFT</td>
                         <td style="border: 1px solid grey">{{{$amounts['ift']}}}</td>
                         <td style="border: 1px solid grey">{{{$count['ift']}}}</td>

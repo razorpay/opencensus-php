@@ -1785,11 +1785,28 @@ ALTER TABLE gateway_status_absence
     ALTER COLUMN scheduled SET DEFAULT 0,
     ALTER COLUMN issuer SET DEFAULT 'UNKNOWN',
     ALTER COLUMN card_type SET DEFAULT 'UNKNOWN',
-	ADD COLUMN public tinyint(4) NOT NULL DEFAULT '1',
+    ADD COLUMN public tinyint(4) NOT NULL DEFAULT '1',
     ALTER COLUMN network SET DEFAULT 'UNKNOWN';
 
+# The below query was executed on 8th Sept 2016. Refer https://github.com/razorpay/brahma/issues/433
+ALTER TABLE payment_analytics MODIFY referer text;
+
 ALTER TABLE payment_analytics
-    MODIFY COLUMN referer VARCHAR(2083) NULL;
+    ADD COLUMN browser_version VARCHAR(50) AFTER `browser`;
+
+UPDATE payment_analytics
+    SET browser_version = platform_version
+    WHERE browser is not NULL
+    AND platform_version is not NULL
+    AND platform = 1
+    AND browser_version is NULL;
+
+UPDATE payment_analytics
+    SET platform_version = NULL
+    WHERE platform = 1
+    AND platform_version is not NULL
+    AND browser is not NULL
+    AND browser_version is not NULL;
 
 ALTER TABLE terminals
     ADD INDEX terminals_gateway_merchant_id_index (gateway_merchant_id),
