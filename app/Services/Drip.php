@@ -5,7 +5,6 @@ namespace RZP\Services;
 use RZP\Exception;
 use RZP\Jobs\RequestJob;
 use RZP\Error\ErrorCode;
-use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Drip

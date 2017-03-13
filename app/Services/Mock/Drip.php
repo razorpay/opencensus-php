@@ -2,15 +2,27 @@
 
 namespace RZP\Services\Mock;
 
+use App;
+use RZP\Trace\TraceCode;
 use RZP\Services\Drip as BaseDrip;
 
 class Drip extends BaseDrip
 {
     /**
-     * Returning null as mocked drip response
+     * Tracing request when mock = true
      */
     protected function sendRequest($url, $data, $method)
     {
-        return null;
+        $app = App::getFacadeRoot();
+
+        $url = $this->baseUrl . $this->accountId . $url;
+
+        $content = json_encode($data);
+
+        $app['trace']->info(
+            TraceCode::REQUESTS_JOB_REQUEST,
+            ['url'     => $url,
+             'content' => $content,
+             'method'  => $method]);
     }
 }
