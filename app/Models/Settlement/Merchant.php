@@ -143,6 +143,7 @@ class Merchant
         $this->setlDetails = new Base\PublicCollection;
 
         $this->setlDetailAmounts = $this->calculateSettlementDetailAmounts($this->txns);
+
         $this->createSettlementDetailsEntities();
 
         $this->repo->saveOrFailCollection($this->setlDetails);
@@ -324,7 +325,6 @@ class Merchant
         $fundTransferAttempt = new FundTransferAttempt\Entity;
 
         $values = [
-            FundTransferAttempt\Entity::SOURCE_ID       => $this->setl->getId(),
             FundTransferAttempt\Entity::CHANNEL         => $this->channel,
             FundTransferAttempt\Entity::VERSION         => FundTransferAttempt\Version::V2,
             FundTransferAttempt\Entity::STATUS          => FundTransferAttempt\Status::CREATED,
@@ -379,6 +379,7 @@ class Merchant
         }
 
         $this->bankAccount = $ba;
+
         return $ba;
     }
 
@@ -403,9 +404,11 @@ class Merchant
 
         $ba->associateMerchant($merchant);
 
+        $ba->generateBeneficiaryCode();
+
         $merchant->setRelation('bankAccount', $ba);
 
-        $this->repo->bank_account->save($ba);
+        $this->repo->saveOrFail($ba);
 
         return $ba;
     }
