@@ -11,15 +11,12 @@ app.controller('FeedCtrl', [
   function ($scope, $http, alertsFactory, $state, $modal, $stateParams, admin) {
     $scope.feed = {
       actionName: 'edit_merchant_name',
+      action_state: 'Pending',
+      action_text: 'Edited merchant name from M1 to M2',
       makers: ['maker@bank.org'],
+      timestamp: Date(),
       checkers: ['checker1@bank.org', 'checker2@bank.org'],
-      feed: [
-      {
-        type: 'action',
-        text: 'maker@bank.org changed the value of merchant_name from Big Bank to Bigger Bank',
-        user: 'maker@bank.org',
-        timestamp: Date.now()
-      },
+      comments: [
       {
         type: 'comment',
         text: 'I think we should wait to implement this change.',
