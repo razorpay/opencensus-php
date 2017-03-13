@@ -11,6 +11,7 @@ class Entity extends Base\PublicEntity
     const ENTITY_NAME = 'entity_name';
     const ENTITY_ID   = 'entity_id';
     const ACTOR       = 'actor';
+    const HEADER      = 'header';
     const TYPE        = 'type';
     const URI         = 'uri';
     const METHOD      = 'method';
