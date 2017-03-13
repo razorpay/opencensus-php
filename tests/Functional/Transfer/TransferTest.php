@@ -94,7 +94,10 @@ class TransferTest extends TestCase
 
         unset($body['on_hold']);
 
-        $transfer = $this->createTransfer('account');
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($body)
+        {
+            $this->createTransfer('account', $body);
+        });
     }
 
     public function testTransferOnHoldUntilOnHoldFalse()

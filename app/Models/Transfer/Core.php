@@ -385,11 +385,17 @@ class Core extends Base\Core
     {
         $isOnHold = $merchant->holdFunds();
 
+        //
+        // Don't allow a transfer operation on live mode
+        // if merchant funds are on hold
+        //
         if (($this->mode === Constants\Mode::LIVE) and
             ($isOnHold === true))
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD,
+                null,
+                ['merchant_id' => $merchant->getId()]);
         }
     }
 }
