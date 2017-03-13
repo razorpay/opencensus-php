@@ -33,6 +33,12 @@ class Workflow
         if ($this->isWorkflowRoute($routeName))
         {
             $this->modifyInput($request);
+
+            $params = $request->input();
+
+            $response = (new Differ\Service)->makeRequest('POST', 'http://localhost:8081/v1/workflows/actions', $request->header(), $params);
+
+            return $response;
         }
 
         return $next($request);

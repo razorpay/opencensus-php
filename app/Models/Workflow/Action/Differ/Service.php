@@ -139,7 +139,7 @@ class Service extends Base\Service
     {
         $factory = $this->app->make('httplug.message_factory.default');
 
-        $req = $factory->createRequest($method, $url, $headers, $content);
+        $req = $factory->createRequest($method, $url, $headers, json_encode($content));
 
         $response = false;
 
@@ -154,7 +154,8 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
                 [
-                    'action_id' => $content['action_id'],
+                    'content'   => $content,
+                    'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
 
@@ -167,7 +168,8 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
                 [
-                    'action_id' => $content['action_id'],
+                    'content'   => $content,
+                    'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
 
@@ -180,7 +182,8 @@ class Service extends Base\Service
             $this->trace->info(
                 TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
                 [
-                    'action_id' => $content['action_id'],
+                    'content'   => $content,
+                    'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
 
