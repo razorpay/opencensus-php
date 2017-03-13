@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Action;
+namespace RZP\Models\Workflow\Action\Differ;
 
 use Carbon\Carbon;
 use RZP\Models\Base;

@@ -2,15 +2,10 @@
 
 namespace RZP\Http\Middleware;
 
-use Closure;
-use ApiResponse;
-use Illuminate\Foundation\Application;
 use Request;
-use RZP\Http\Route;
-use RZP\Models\Admin;
-use RZP\Exception;
+use Closure;
 use RZP\Models\Base\UniqueIdEntity;
-use RZP\Error\ErrorCode;
+use Illuminate\Foundation\Application;
 
 class Action
 {

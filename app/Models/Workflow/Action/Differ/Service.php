@@ -1,8 +1,7 @@
 <?php
 
-namespace RZP\Models\Action;
+namespace RZP\Models\Workflow\Action\Differ;
 
-use Config;
 use RZP\Error;
 use RZP\Error\ErrorCode;
 use RZP\Exception;
