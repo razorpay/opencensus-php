@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Models\Workflow\Action\Timeline;
+namespace RZP\Models\Workflow\Action\State;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
@@ -10,18 +10,25 @@ class Entity extends Base\PublicEntity
     const ID             = 'id';
     const ADMIN_ID       = 'admin_id';
     const ACTION_ID      = 'action_id';
-    const STATE          = 'state';
+    const NAME           = 'name';
 
-    protected static $sign = 'a_time';
+    // States of the action
+    const APPROVED     = 'approved';
+    const REJECTED     = 'rejected';
+    const EXECUTED     = 'executed';
+    const OPEN         = 'open';
+    const CLOSED       = 'closed';
 
-    protected $entity = 'action_timeline';
+    protected static $sign = 'a_state';
+
+    protected $entity = 'action_state';
 
     protected $generateIdOnCreate = false;
 
     protected $fillable = [
         self::ADMIN_ID,
         self::ACTION_ID,
-        self::STATE,
+        self::NAME,
     ];
 
     protected $visible = [
@@ -40,21 +47,21 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
-    public function setStateAttribute(string $state)
+    public function setNameAttribute(string $state)
     {
         $this->getValidator()->validateState($state);
 
-        $this->attributes[self::STATE] = $state;
+        $this->attributes[self::NAME] = $state;
     }
 
-    public function setState(string $state)
+    public function setName(string $state)
     {
-        $this->setAttribute(self::STATE, $state);
+        $this->setAttribute(self::NAME, $state);
     }
 
-    public function getState() : string
+    public function getName() : string
     {
-        return $this->getAttribute(self::STATE);
+        return $this->getAttribute(self::NAME);
     }
 
     public function action()

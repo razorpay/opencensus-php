@@ -5,7 +5,6 @@ namespace RZP\Models\Workflow\Action;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Timeline;
 use RZP\Models\Workflow\Action\State;
 
 class Validator extends Base\Validator

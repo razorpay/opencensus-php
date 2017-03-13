@@ -1,17 +1,19 @@
 <?php
 
-namespace RZP\Models\Workflow\Action\Timeline;
+namespace RZP\Models\Workflow\Action\State;
 
 use RZP\Base;
 use RZP\Exception;
 use RZP\Error\ErrorCode;
-use RZP\Models\Workflow\Action\State;
 
 class Validator extends Base\Validator
 {
-    const VALID_TIMELINE_STATES = [
-        State::APPROVED,
-        State::REJECTED,
+    const VALID_ACTION_STATES = [
+        Entity::APPROVED,
+        Entity::REJECTED,
+        Entity::EXECUTED,
+        Entity::OPEN,
+        Entity::CLOSED,
     ];
 
     protected static $createRules = [
@@ -22,10 +24,10 @@ class Validator extends Base\Validator
 
     public function validateState(string $state)
     {
-        if (in_array($value, self::VALID_TIMELINE_STATES, true) === false)
+        if (in_array($value, self::VALID_ACTION_STATES, true) === false)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_WORKFLOW_TIMELINE_INVALID_STATE,
+                ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_INVALID_STATE,
                 ['state' => $value]);
         }
     }

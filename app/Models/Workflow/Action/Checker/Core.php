@@ -5,7 +5,6 @@ namespace RZP\Models\Workflow\Action\Checker;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Timeline;
 use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
@@ -30,18 +29,17 @@ class Core extends Base\Core
         {
             $this->repo->saveOrFail($checker);
 
-            $this->createTimelineEventForChecker($checker);
+            $this->createStateTransitionForChecker($checker);
         });
 
         (new Action\Core)->checkIfActionApproved();
     }
 
-    public function createTimelineEventForChecker(Checker\Entity $checker)
+    public function createStateTransitionForChecker(Checker\Entity $checker)
     {
         $state = $checker->getStatusOnAction();
 
-        // Checker has not yet approved or rejected the request
-        if ($state === State::UNDER_REVIEW)
+        if ($state === null)
         {
             return;
         }

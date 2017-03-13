@@ -4,7 +4,6 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Constants\Table;
 use RZP\Models\Base;
-
 use RZP\Models\Workflow\Action\State;
 
 class Entity extends Base\PublicEntity
@@ -92,12 +91,16 @@ class Entity extends Base\PublicEntity
     {
         if (empty($this->isApproved()) === true)
         {
-            return State::UNDER_REVIEW;
+            return;
         }
 
         if ($this->isApproved() === true)
         {
-            return State::APPROVED;
+            return State\Entity::APPROVED;
+        }
+        else if ($this->isApproved() === false)
+        {
+            return State\Entity::REJECTED;
         }
     }
 }

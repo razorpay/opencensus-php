@@ -5,7 +5,6 @@ namespace RZP\Models\Workflow\Action\Checker;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
-use RZP\Models\Workflow\Action\Timeline;
 use RZP\Models\Workflow\Action\State;
 
 class Validator extends Base\Validator
@@ -14,7 +13,7 @@ class Validator extends Base\Validator
         Entity::ADMIN_ID  => 'required|string|max:14',
         Entity::ACTION_ID => 'required|string|max:14',
         Entity::STEP_ID   => 'required|string|max:14',
-        Entity::APPROVED  => 'required|in:0,1',
+        Entity::APPROVED  => 'required|boolean',
     ];
 }
 

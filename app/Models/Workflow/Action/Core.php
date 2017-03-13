@@ -6,7 +6,6 @@ use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
 use RZP\Models\Workflow\Action\Checker;
-use RZP\Models\Workflow\Action\Timeline;
 use RZP\Models\Workflow\Action\State;
 
 class Core extends Base\Core
@@ -40,7 +39,7 @@ class Core extends Base\Core
         // approve the action for execution
         foreach ($checkers as $checker)
         {
-            if ($checker->getStatus() !== State::APPROVED)
+            if ($checker->getStatus() !== State\Entity::APPROVED)
             {
                 $actionApproved = false;
 
