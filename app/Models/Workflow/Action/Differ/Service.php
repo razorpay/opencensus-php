@@ -33,18 +33,8 @@ class Service extends Base\Service
         $this->baseIndex = $this->config->get('database.es_workflow_action')[$mode];
     }
 
-    public function create(string $entity, string $entityId, array $input)
+    public function create(array $input)
     {
-        $dashboardInfo = $this->app['basicauth']->getDashboardHeaders();
-
-        $user = $dashboardInfo['admin_user'] ?: $dashboardInfo['merchant'];
-
-        $input[Entity::ACTOR] = $user;
-
-        $input[Entity::ENTITY_NAME] = $entity;
-
-        $input[Entity::ENTITY_ID] = $entityId;
-
         $action = (new Entity)->generateId();
 
         $action->build($input);

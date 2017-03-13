@@ -449,7 +449,7 @@ final class Route
         'transfer_create'                         => ['post',     'transfers',                                      'TransferController@postTransfer'                                   ],
         'transfer_create_reversal'                => ['post',     'transfers/{id}/reversals',                       'TransferController@postTransferReversal'                           ],
 
-        'action_create'                           => ['post',     'workflows/actions/{entity}/{entityId}',          'WorkflowController@postCreateAction'                               ],
+        'action_create'                           => ['post',     'workflows/actions',                              'WorkflowController@postCreateAction'                               ],
         'action_fetch_by_id'                      => ['get',      'workflows/actions/{id}',                         'WorkflowController@fetchDiffById'                                  ],
         'action_execute'                          => ['post',     'workflows/actions/{id}',                         'WorkflowController@postExecuteAction'                              ],
     );

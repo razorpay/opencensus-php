@@ -10,9 +10,9 @@ class Entity extends Base\PublicEntity
     const ENTITY_NAME = 'entity_name';
     const ENTITY_ID   = 'entity_id';
     const ACTOR       = 'actor';
-    const HEADER      = 'header';
+    const HEADERS     = 'headers';
     const TYPE        = 'type';
-    const URI         = 'uri';
+    const URL         = 'url';
     const METHOD      = 'method';
     const PAYLOAD     = 'payload';
     const DIFF        = 'diff';
@@ -25,9 +25,9 @@ class Entity extends Base\PublicEntity
         self::ENTITY_NAME,
         self::ENTITY_ID,
         self::ACTOR ,
-        self::HEADER,
+        self::HEADERS,
         self::TYPE,
-        self::URI,
+        self::URL,
         self::METHOD,
         self::PAYLOAD,
         self::CREATED_AT
@@ -39,8 +39,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ACTOR ,
         self::TYPE,
-        self::HEADER,
-        self::URI,
+        self::HEADERS,
+        self::URL,
         self::DIFF,
         self::METHOD,
         self::PAYLOAD,
@@ -53,8 +53,8 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ACTOR ,
         self::TYPE,
-        self::HEADER,
-        self::URI,
+        self::HEADERS,
+        self::URL,
         self::METHOD,
         self::PAYLOAD,
     ];

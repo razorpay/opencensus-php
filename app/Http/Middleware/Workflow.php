@@ -6,6 +6,7 @@ use Request;
 use Closure;
 use RZP\Http\Route;
 use RZP\Models\Base\UniqueIdEntity;
+use RZP\Models\Workflow\Action\Differ;
 use Illuminate\Foundation\Application;
 
 class Workflow
@@ -61,14 +62,14 @@ class Workflow
         list($entity, $entityId) = $this->getEntity($request->getPathInfo());
 
         $makerRequest = [
-            'type'     => 'maker',
-            'uri'      => $request->getPathInfo(),
-            'method'   => $request->getMethod(),
-            'payload'  => $input,
-            'headers'  => [ self:: AUTH_HEADER => $request->header(self::AUTH_HEADER) ],
-            'actor'    => $request->header(self::USER_HEADER),
-            'entity'   => $entity,
-            'entityId' => $entityId
+            'entity_name' => $entity,
+            'entity_id'   => $entityId,
+            'actor'       => $request->header(self::USER_HEADER),
+            'headers'     => [ self:: AUTH_HEADER => $request->header(self::AUTH_HEADER) ],
+            'type'        => Differ\Type::MAKER,
+            'url'         => $request->getPathInfo(),
+            'method'      => $request->getMethod(),
+            'payload'     => $input,
         ];
 
         $request->replace($makerRequest);

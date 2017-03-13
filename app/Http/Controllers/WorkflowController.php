@@ -14,28 +14,28 @@ class WorkflowController extends Controller
     {
         parent::__construct();
 
-        $this->action = new Differ\Service;
+        $this->differService = new Differ\Service;
     }
 
-    public function postCreateAction(string $entity, string $entityId)
+    public function postCreateAction()
     {
         $input = Request::all();
 
-        $result = $this->action->create($entity, $entityId, $input);
+        $result = $this->differService->create($input);
 
         return ApiResponse::json($result);
     }
 
     public function fetchDiffById(string $id)
     {
-        $result = $this->action->fetchDiffById($id);
+        $result = $this->differService->fetchDiffById($id);
 
         return ApiResponse::json($result);
     }
 
     public function postExecuteAction(string $id)
     {
-        $result = $this->action->execute($id);
+        $result = $this->differService->execute($id);
 
         return ApiResponse::json($result);
     }
