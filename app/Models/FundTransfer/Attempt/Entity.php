@@ -7,26 +7,24 @@ use RZP\Models\BankAccount;
 
 class Entity extends Base\PublicEntity
 {
-    const SOURCE_TYPE           = 'source_type';
-    const SOURCE_ID             = 'source_id';
-    const BANK_ACCOUNT_ID       = 'bank_account_id';
-    const CHANNEL               = 'channel';
-    const VERSION               = 'version';
-    const BANK_STATUS_CODE      = 'bank_status_code';
-    const STATUS                = 'status';
-    const UTR                   = 'utr';
-    const REMARKS               = 'remarks';
-    const DATE_TIME             = 'date_time';
-    const CMS_REF_NO            = 'cms_ref_no';
-    const FAILURE_REASON        = 'failure_reason';
-    const BATCH_TRANSFER_ID     = 'batch_transfer_id';
-
-    protected static $sign = 'fta';
+    const SOURCE                 = 'source';
+    const SOURCE_TYPE            = 'source_type';
+    const SOURCE_ID              = 'source_id';
+    const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const CHANNEL                = 'channel';
+    const VERSION                = 'version';
+    const BANK_STATUS_CODE       = 'bank_status_code';
+    const STATUS                 = 'status';
+    const UTR                    = 'utr';
+    const REMARKS                = 'remarks';
+    const DATE_TIME              = 'date_time';
+    const CMS_REF_NO             = 'cms_ref_no';
+    const FAILURE_REASON         = 'failure_reason';
 
     protected $entity = 'fund_transfer_attempt';
 
     protected $fillable = [
-        self::SOURCE_ID,
         self::CHANNEL,
         self::VERSION,
         self::STATUS,
@@ -34,9 +32,9 @@ class Entity extends Base\PublicEntity
 
     protected $visible = [
         self::ID,
-        self::SOURCE_TYPE,
-        self::SOURCE_ID,
+        self::SOURCE,
         self::BANK_ACCOUNT_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::CHANNEL,
         self::VERSION,
         self::BANK_STATUS_CODE,
@@ -46,15 +44,13 @@ class Entity extends Base\PublicEntity
         self::DATE_TIME,
         self::CMS_REF_NO,
         self::FAILURE_REASON,
-        self::BATCH_TRANSFER_ID,
         self::CREATED_AT,
         self::UPDATED_AT
     ];
 
     protected $public = [
         self::ID,
-        self::SOURCE_TYPE,
-        self::SOURCE_ID,
+        self::SOURCE,
         self::STATUS,
         self::UTR,
     ];
@@ -185,5 +181,17 @@ class Entity extends Base\PublicEntity
     public function isStatusFailed()
     {
         return $this->getStatus() === Status::FAILED;
+    }
+
+    // ---------------------------- public setters -----------------------------
+    public function setPublicSourceAttribute(array & $attributes)
+    {
+        $sourceId = $this->getAttribute(self::SOURCE_ID);
+
+        $sourceType = $this->getAttribute(self::SOURCE_TYPE);
+
+        $entity = E::getEntityClass($sourceType);
+
+        $attributes[self::SOURCE] = $entity::getSignedId($sourceId);
     }
 }
