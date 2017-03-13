@@ -5,6 +5,7 @@ namespace RZP\Models\Workflow\Checker;
 use RZP\Exception;
 use RZP\Models\Base;
 use RZP\Models\Workflow\Action;
+use RZP\Models\Workflow\Action\Checker;
 use RZP\Models\Workflow\Action\Timeline;
 use RZP\Models\Workflow\Action\State;
 
@@ -12,27 +13,12 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
-        $admin = $this->app['basicauth']->getAdmin();
+        $timeline = new Entity;
 
-        $checker = new Entity;
+        $timeline->generateId();
 
-        $checker->generateId();
+        $timeline->build($input);
 
-        $validator = $checker->getValidator();
-
-        $validator->validateCheckerIsNotMaker(
-            $admin->getId(),
-            $input[Entity::ADMIN_ID]);
-
-        $checker->build($input);
-
-        $this->repo->transactionOnLiveAndTest(function() use($checker)
-        {
-            $this->repo->saveOrFail($checker);
-
-            (new Timeline\Core)->createTimelineEventForChecker($checker);
-        });
-
-        (new Action\Core)->checkIfActionApproved();
+        $this->repo->saveOrFail($input);
     }
 }

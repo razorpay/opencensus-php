@@ -15,7 +15,7 @@ class Entity extends Base\PublicEntity
     const STEP_ID        = 'step_id';
     const APPROVED       = 'approved';
 
-    protected static $sign = 'a_checker';
+    protected static $sign = 'a_check';
 
     protected $entity = 'action_checker';
 
@@ -68,17 +68,27 @@ class Entity extends Base\PublicEntity
     /*
      * Getters
      */
-    public function getActionId()
+    public function getActionId() : string
     {
         return $this->getAttribute(self::ACTION_ID);
     }
 
-    public function isApproved()
+    public function getAdminId() : string
+    {
+        return $this->getAttribute(self::ADMIN_ID);
+    }
+
+    public function getStepId() : string
+    {
+        return $this->getAttribute(self::STEP_ID);
+    }
+
+    public function isApproved() : boolean
     {
         return $this->getAttribute(self::APPROVED);
     }
 
-    public function getCheckerStatusOnAction()
+    public function getStatusOnAction() : string
     {
         if (empty($this->isApproved()) === true)
         {
@@ -89,7 +99,5 @@ class Entity extends Base\PublicEntity
         {
             return State::APPROVED;
         }
-
-        return State::REJECTED;
     }
 }

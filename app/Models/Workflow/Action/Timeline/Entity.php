@@ -40,6 +40,23 @@ class Entity extends Base\PublicEntity
         self::UPDATED_AT,
     ];
 
+    public function setStateAttribute(string $state)
+    {
+        $this->getValidator()->validateState($state);
+
+        $this->attributes[self::STATE] = $state;
+    }
+
+    public function setState(string $state)
+    {
+        $this->setAttribute(self::STATE, $state);
+    }
+
+    public function getState() : string
+    {
+        return $this->getAttribute(self::STATE);
+    }
+
     public function action()
     {
         return $this->belongsTo('RZP\Models\Workflow\Action\Entity');
