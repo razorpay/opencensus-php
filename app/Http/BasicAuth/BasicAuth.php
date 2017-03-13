@@ -270,7 +270,7 @@ class BasicAuth
 
         if ($this->verifyAccountId($accountId) === false)
         {
-            return $this->invalidAccountId();
+            return $this->invalidAccountId($accountId);
         }
 
         $this->creds['account_id'] = $accountId;
@@ -1134,7 +1134,7 @@ class BasicAuth
         if (($account === null) or
             ($this->validateAccountForCurrentAuthType($account) === false))
         {
-            return $this->invalidAccountId();
+            return $this->invalidAccountId($this->getAccountId());
         }
 
         $this->merchant = $account;
@@ -1165,14 +1165,14 @@ class BasicAuth
             ErrorCode::BAD_REQUEST_UNAUTHORIZED_INVALID_API_KEY);
     }
 
-    protected function invalidAccountId()
+    protected function invalidAccountId(string $accountId)
     {
         $this->trace->info(
             TraceCode::BAD_REQUEST_INVALID_ACCOUNT_HEADER,
             [
                 'auth_type'     => $this->getAuthType(),
                 'key_id'        => $this->getKey(),
-                'account_id'    => $this->getAccountId(),
+                'account_id'    => $accountId,
             ]);
 
         return ApiResponse::unauthorized(

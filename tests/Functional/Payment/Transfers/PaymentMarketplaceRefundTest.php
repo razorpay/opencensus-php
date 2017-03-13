@@ -49,9 +49,10 @@ class PaymentMarketplaceRefundTest extends TestCase
 
         $this->transferPayment($this->payment['id'], $transfers);
 
+        // Fetch last payment entity (transfer payment to merchant - 10000000000002)
         $transferPayment = $this->getLastEntity('payment', true);
 
-        $this->ba->addAccountAuth('acc_1000000000000');
+        $this->ba->addAccountAuth('acc_10000000000002');
 
         $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($transferPayment)
         {
