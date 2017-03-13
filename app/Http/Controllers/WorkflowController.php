@@ -4,9 +4,9 @@ namespace RZP\Http\Controllers;
 
 use Request;
 use ApiResponse;
-use RZP\Models\Action;
+use RZP\Models\Workflow\Action\Differ;
 
-class ActionController extends Controller
+class WorkflowController extends Controller
 {
     protected $action;
 
@@ -14,7 +14,7 @@ class ActionController extends Controller
     {
         parent::__construct();
 
-        $this->action = new Action\Service;
+        $this->action = new Service;
     }
 
     public function postCreateAction(string $entity, string $entityId)

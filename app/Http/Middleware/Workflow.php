@@ -32,8 +32,6 @@ class Workflow
         if ($this->isWorkflowRoute($routeName))
         {
             $this->modifyInput($request);
-
-            sd($request->input());
         }
 
         return $next($request);
