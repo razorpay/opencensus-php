@@ -83,7 +83,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/{mode}/analytics/aggregations', 'TransactionController@getAggregations');
         Route::get('/{mode}/analytics/payment/aggregations', 'TransactionController@getPaymentAggregations');
 
-        Route::get('/{mode}/keys', 'MerchantController@getKeys')->name('get_keys');
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
 
@@ -92,13 +91,9 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo')->name('post_config_logo');
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
-        Route::get('/{mode}/webhooks', 'MerchantController@getWebhooks')->name('get_webhooks');
 
         // This also returns credits
-        Route::get('/{mode}/balance', 'MerchantController@getBalance')->name('balance_get');
         Route::get('/bank_account', 'MerchantController@getBankAccount')->name('bank_account_fetch');
-
-        Route::get('/{mode}/credits', 'MerchantController@getCreditsLog');
 
         // Invitation and Team Support
         Route::get('settings/merchants/owned', 'MerchantController@getUsersListWithInvites')->name('team_users_list');
@@ -135,8 +130,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/activation/save/step/{id}/{merchantId}', 'MerchantController@postSaveActivationStep')->name('post_activation_save_step');
         Route::post('/activation/save/file', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
         Route::post('/activation/save/file/{merchantId}', 'MerchantController@postSaveActivationFile')->name('post_activation_save_file');
-        Route::post('/{mode}/keys', 'MerchantController@postKeys')->name('post_keys');
-        Route::post('/{mode}/key/new', 'MerchantController@postNewKey')->name('keys_setup');
         Route::post('/{mode}/addfunds', 'TransactionController@postAddfunds');
         Route::get('/{mode}/invoices', 'MerchantController@getInvoices')->name('invoice_fetch_all');
         Route::get('/{mode}/invoices/{id}', 'MerchantController@getInvoice')->name('invoice_fetch_single');
@@ -158,10 +151,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/{mode}/items', 'MerchantController@postItem')->name('item_create');
         Route::patch('/{mode}/items/{id}', 'MerchantController@patchItem')->name('item_edit');
         Route::delete('/{mode}/items/{id}', 'MerchantController@deleteItem')->name('item_delete');
-
-
-        Route::post('/{mode}/webhooks', 'MerchantController@postAddWebhook')->name('post_webhooks');
-        Route::put('/{mode}/webhooks/{id}', 'MerchantController@putEditWebhook')->name('edit_webhooks');
 
         // Upgrades a standard invited user to a merchant
         Route::post('/merchants/register', 'UserController@postUpgradeUserToMerchant');

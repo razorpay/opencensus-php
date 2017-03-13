@@ -465,69 +465,6 @@ class Service extends Base\Service
         return [$error, $response];
     }
 
-    public function createKey($merchant_id, $mode)
-    {
-        $errors = array();
-        $data = array();
-
-        $this->setApiCredentials(null, $mode);
-
-        try
-        {
-            $data = $this->api->merchant
-                                ->fetch($merchant_id)
-                                ->keys()
-                                ->create()
-                                ->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return array($errors, $data);
-    }
-
-    public function rollKeys(array $input, $mode)
-    {
-        if ($this->currentMerchant->isTestAccount()) {
-            return [[static::ROLL_KEY_FORBIDDEN], null];
-        }
-
-        $error = (new Merchant\Validator)->validateInput('key', $input)->messages();
-
-        if (empty($error) === false)
-        {
-            return [$error, null];
-        }
-
-        $this->setApiCredentials(null, $mode);
-
-        $key_data = array();
-
-        try
-        {
-            $response = $this->api->merchant
-                                ->fetch($input['merchant_id'])
-                                ->keys()
-                                ->fetch($input['id'])
-                                ->roll($input['delay_roll'])
-                                ->toArray();
-
-            $key_data = array(
-                'old_id'        => $input['id'],
-                'merchant_id'   => $input['merchant_id'],
-                'new'           => $response['new']
-            );
-        }
-        catch(BadRequestError $e)
-        {
-            $error[] = $e->getMessage();
-        }
-
-        return array($error, $key_data);
-    }
-
     public function getUsersListWithInvites()
     {
         $merchantId = $this->currentUser
@@ -564,76 +501,6 @@ class Service extends Base\Service
         }
 
         return $merchant;
-    }
-
-    /**
-     * Returns all the webhooks
-     * @param  string $mode live|test
-     */
-    public function getWebhooks($mode)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook->all()->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function editWebhook($mode, $webhookId, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = $data = null;
-
-        try
-        {
-            $data = $this->api->webhook
-                ->fetch($webhookId)
-                ->edit($input)
-                ->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
-    }
-
-    public function createWebhook($mode, $input)
-    {
-        $merchantId = $this->currentUser->getCurrentMerchantId();
-
-        $this->setApiCredentials($merchantId, $mode);
-
-        $errors = [];
-        $data = null;
-
-        try
-        {
-            // This is just semantics
-            // completely equivalent to all() for now
-            $data = $this->api->webhook->create($input)->toArray();
-        }
-        catch(\Razorpay\Api\Errors\BadRequestError $e)
-        {
-            $errors[] = $e->getMessage();
-        }
-
-        return [$errors, $data];
     }
 
     public function getInvoices($mode)
@@ -1029,31 +896,6 @@ class Service extends Base\Service
         }
 
         return [$error, $lead];
-    }
-
-    /**
-     * Fetches merchant credits
-     * Uses Proxy Auth on the API
-     *
-     * @param  string $mode live|test
-     * @return array contains all credits of merchant
-     */
-    public function getCreditsLog($mode)
-    {
-        $this->setApiCredentials($this->currentMerchant->id, $mode);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->getMerchantCreditLogs();
-        }
-
-        catch (BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
     }
 
     public function fetchMerchantFeatures($merchantId)

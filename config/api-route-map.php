@@ -135,18 +135,17 @@ return [
         ],
     ],
 
+    // auth
     'internal' => [
         // Keys
         'merchant_fetch_keys'               => [
             'url'       => 'merchants/{id}/keys',
             'routeName' => 'get_keys'
         ],
-
         'merchant_create_key'               => [
             'url'       => 'merchants/{id}/keys',
             'routeName' => 'keys_setup'
         ],
-
         'merchant_replace_key'              => [
             'url'       => 'merchants/{merchantId}/keys/{keyId}',
             'routeName' => 'post_keys'

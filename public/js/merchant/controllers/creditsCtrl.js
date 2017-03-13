@@ -1,4 +1,4 @@
-app.controller('CreditCtrl', [
+app.controller('CreditsCtrl', [
   '$scope',
   '$http',
 
