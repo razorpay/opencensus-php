@@ -572,7 +572,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'CARD_HDFC'
+                'Tags' => '{"method": "card", "issuer":"hdfc"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'
@@ -594,7 +594,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'WALLET_AIRTELMONEY'
+                'Tags' => '{"method": "wallet", "issuer": "airtelmoney"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'
@@ -616,7 +616,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'NETBANKING_XYZ'
+                'Tags' => '{"method": "netbanking", "issue": "xyz"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'
@@ -643,7 +643,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'CARD_XYZ'
+                'Tags' => '{"method": "card", "issuer": "xyz"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'
@@ -670,7 +670,7 @@ return [
                 'Name' => 'Test',
                 'StatusCode' => 400,
                 'Status' => 'Down',
-                'Tags' => 'WALLET_XYZ'
+                'Tags' => '{"method": "wallet", "issuer": "xyz"}'
             ],
             'method' => 'POST',
             'url' => '/statuscake/callback'

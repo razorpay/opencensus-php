@@ -32,6 +32,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         $this->trace = $this->app['trace'];
 
+        $this->repo = $this->app['repo'];
+
         $this->core = new Downtime\Core();
     }
 
@@ -59,8 +61,8 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 $this->trace->warning(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_INVALID_STATUS,
                                     ['input' => $input]);
 
-                throw new Exception\BadRequestValidationFailureException('Invalid Status : '. $scStatus);
-
+                throw new Exception\BadRequestValidationFailureException(
+                    'Invalid Status : '. $scStatus);
             }
 
             $status = ($scStatus === self::STATUS_UP);
@@ -71,19 +73,20 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             {
                 $this->trace->info(TraceCode::GATEWAY_ABSENCE_STATUSCAKE_EDIT, ['data' => $data]);
 
-                $absent = $this->core->fetchMostRecentActive($data);
+                $downtime = $this->core->fetchMostRecentActive($data);
 
-                if (empty($absent) === false)
+                if (empty($downtime) === false)
                 {
                     $editData = [
-                        Entity::FROM   => $absent->getDowntimeFrom(),
                         Entity::TO     => time(),
-                        Entity::SOURCE => $absent->getSource()
+                        Entity::SOURCE => $downtime->getSource()
                     ];
 
-                    $downWindow = $this->core->edit($absent, $editData);
+                    $downtime->edit($editData);
 
-                    return $downWindow->toArrayPublic();
+                    $this->repo->saveOrFail($downtime);
+
+                    return $downtime->toArrayPublic();
                 }
 
                 return [];
@@ -94,9 +97,9 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 // this is a down, create a new entry. Unlikely that status cake might send duplicate down
                 // events for the same url.
-                $downWindow = $this->core->create($data);
+                $downtime = $this->core->create($data);
 
-                return $downWindow;
+                return $downtime->toArrayPublic();
             }
         }
         catch(\Exception $e)
@@ -109,10 +112,12 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     {
         if (isset($input['Token']) === false)
         {
-            $this->trace->critical(TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN,
-                                    ['data' => $input]);
+            $this->trace->critical(
+                TraceCode::GATEWAY_ABSENCE_STATUSCODE_MISSING_TOKEN,
+                ['data' => $input]);
 
-            throw new Exception\BadRequestValidationFailureException('StatusCake Token Missing');
+            throw new Exception\BadRequestValidationFailureException(
+                'StatusCake Token Missing');
         }
 
         $this->validateToken($input);
@@ -220,13 +225,11 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             throw new Exception\LogicException('StatusCake invalid Tag Value', $tags, $input);
         }
 
-        $formatted = [];
-
         $method = isset($fmtTags[Entity::METHOD]) ? strtolower($fmtTags[Entity::METHOD]) : null;
 
         $gateway = isset($fmtTags[Entity::GATEWAY]) ? strtolower($fmtTags[Entity::GATEWAY]) : null;
 
-        $issuer = isset($fmtTags[Entity::ISSUER]) ? strtolower($fmtTags[Entity::ISSUER]) : null;
+        $issuer = isset($fmtTags[Entity::ISSUER]) ? strtoupper($fmtTags[Entity::ISSUER]) : null;
 
         $network = isset($fmtTags[Entity::NETWORK]) ? strtolower($fmtTags[Entity::NETWORK]) : null;
 

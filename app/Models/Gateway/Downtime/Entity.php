@@ -13,6 +13,7 @@ class Entity extends Base\PublicEntity
     const CARD_TYPE     = 'card_type';
     const NETWORK       = 'network';
     const METHOD        = 'method';
+    // todo: candidate for from/to are start/end, begin/end
     const FROM          = 'from';
     const TO            = 'to';
     const TERMINAL_ID   = 'terminal_id';

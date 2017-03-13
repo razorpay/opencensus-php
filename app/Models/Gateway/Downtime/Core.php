@@ -181,8 +181,6 @@ class Core extends Base\Core
         if (($alreadyScheduled->isScheduled() === false) and
             ($scheduled === 1))
         {
-            $fieldsToBeUpdated [] = Entity::SCHEDULED;
-
             $returnStatus = true;
         }
 
