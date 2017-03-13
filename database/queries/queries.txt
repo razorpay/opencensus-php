@@ -1776,18 +1776,6 @@ ALTER TABLE transactions
     ADD COLUMN on_hold TINYINT DEFAULT 0 AFTER credit_type,
     ADD INDEX transactions_on_hold_index (on_hold);
 
-ALTER TABLE gateway_status_absence
-    CHANGE `from` `downtime_from` int(11) NOT NULL,
-    CHANGE `to` `downtime_to` int(11) DEFAULT NULL,
-    ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
-    ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
-    ADD KEY `gateway_status_absence_source` (`source`),
-    ALTER COLUMN scheduled SET DEFAULT 0,
-    ALTER COLUMN issuer SET DEFAULT 'UNKNOWN',
-    ALTER COLUMN card_type SET DEFAULT 'UNKNOWN',
-    ADD COLUMN public tinyint(4) NOT NULL DEFAULT '1',
-    ALTER COLUMN network SET DEFAULT 'UNKNOWN';
-
 # The below query was executed on 8th Sept 2016. Refer https://github.com/razorpay/brahma/issues/433
 ALTER TABLE payment_analytics MODIFY referer text;
 
@@ -1813,5 +1801,11 @@ ALTER TABLE terminals
     ADD INDEX terminals_network_category_index (network_category);
 
 ALTER TABLE gateway_status_absence
-    CHANGE downtime_from from INT,
-    CHANGE downtime_to to INT;
+    ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
+    ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
+    ADD KEY `gateway_status_absence_source` (`source`),
+    ALTER COLUMN scheduled SET DEFAULT 0,
+    ALTER COLUMN issuer SET DEFAULT 'UNKNOWN',
+    ALTER COLUMN card_type SET DEFAULT 'UNKNOWN',
+    ADD COLUMN public tinyint(4) NOT NULL DEFAULT '1',
+    ALTER COLUMN network SET DEFAULT 'UNKNOWN';
