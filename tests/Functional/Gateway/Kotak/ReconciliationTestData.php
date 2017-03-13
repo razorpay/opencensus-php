@@ -49,7 +49,6 @@ return [
     ],
 
     'matchSettlementAttemptForReconSuccess' => [
-        'source_type'       => 'settlement',
         'channel'           => 'kotak',
         'version'           => 'V2',
         'bank_status_code'  => 'P',
@@ -59,13 +58,12 @@ return [
     ],
 
     'matchSettlementAttemptForReconFailure' => [
-        'source_type' => 'settlement',
-        'channel' => 'kotak',
-        'version' => 'V2',
+        'channel'          => 'kotak',
+        'version'          => 'V2',
         'bank_status_code' => 'P',
-        'status' => 'failed',
-        'remarks' => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
-        'failure_reason' => 'Reconciliation',
+        'status'           => 'failed',
+        'remarks'          => 'This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count limit. This is a string which test characters count li',
+        'failure_reason'   => 'Reconciliation',
     ],
 
     'testRetryRecon' => [

@@ -2,6 +2,7 @@
 
 namespace RZP\Models\FundTransfer\Attempt;
 
+use RZP\Constants\Entity as E;
 use RZP\Models\Base;
 use RZP\Models\BankAccount;
 
@@ -50,9 +51,16 @@ class Entity extends Base\PublicEntity
 
     protected $public = [
         self::ID,
+        self::ENTITY,
         self::SOURCE,
         self::STATUS,
         self::UTR,
+    ];
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+        self::SOURCE,
     ];
 
     public function source()
