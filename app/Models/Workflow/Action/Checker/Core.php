@@ -19,9 +19,12 @@ class Core extends Base\Core
 
         $validator = $checker->getValidator();
 
+        $action = $this->repo->workflow_action->findByPublicId(
+            $input[Entity::ACTION_ID]);
+
         $validator->validateCheckerIsNotMaker(
             $admin->getId(),
-            $input[Entity::ADMIN_ID]);
+            $action->getAdminId());
 
         $checker->build($input);
 

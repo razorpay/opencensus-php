@@ -418,4 +418,13 @@ class Repository extends \Razorpay\Spine\Repository
                 'Unique id not generated for the entity');
         }
     }
+
+    public function findByPublicId(string $id)
+    {
+        $entity = $this->getEntityClass();
+
+        $entity::verifyIdAndSilentlyStripSign($id);
+
+        return $this->findOrFailPublic($id);
+    }
 }

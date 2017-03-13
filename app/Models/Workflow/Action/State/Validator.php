@@ -24,11 +24,11 @@ class Validator extends Base\Validator
 
     public function validateState(string $state)
     {
-        if (in_array($value, self::VALID_ACTION_STATES, true) === false)
+        if (in_array($state, self::VALID_ACTION_STATES, true) === false)
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_WORKFLOW_ACTION_INVALID_STATE,
-                ['state' => $value]);
+                ['state' => $state]);
         }
     }
 }
