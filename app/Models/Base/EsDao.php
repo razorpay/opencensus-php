@@ -331,7 +331,6 @@ class EsDao
                         'id' => $id
                     ]
                 ]
-
             ]
         ];
 
