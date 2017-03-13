@@ -8,7 +8,7 @@ use RZP\Models\Base;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'batch_settlement';
+    protected $entity = 'batch_fund_transfer';
 
     protected static $fetchExtraParamRules = array(
         'date' => 'integer|digits:8');

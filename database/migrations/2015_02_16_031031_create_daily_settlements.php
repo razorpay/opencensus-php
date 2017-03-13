@@ -17,7 +17,7 @@ class CreateDailySettlements extends Migration
      */
     public function up()
     {
-        Schema::create(Table::BATCH_SETTLEMENT, function(Blueprint $table)
+        Schema::create(Table::BATCH_FUND_TRANSFER, function(Blueprint $table)
         {
             $table->engine = 'InnoDB';
 
@@ -67,12 +67,12 @@ class CreateDailySettlements extends Migration
 
         Schema::table(Table::SETTLEMENT, function($table)
         {
-            $table->string(Settlement::BATCH_SETTLEMENT_ID)
+            $table->string(Settlement::BATCH_FUND_TRANSFER_ID)
                   ->nullable();
 
-            $table->foreign(Settlement::BATCH_SETTLEMENT_ID)
+            $table->foreign(Settlement::BATCH_FUND_TRANSFER_ID)
                   ->references(BatchSettlement::ID)
-                  ->on(Table::BATCH_SETTLEMENT)
+                  ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
         });
     }
@@ -87,9 +87,9 @@ class CreateDailySettlements extends Migration
         Schema::table(Table::SETTLEMENT, function($table)
         {
             $table->dropForeign(
-                Table::SETTLEMENT . '_' . SETTLEMENT::BATCH_SETTLEMENT_ID . '_foreign');
+                Table::SETTLEMENT . '_' . SETTLEMENT::BATCH_FUND_TRANSFER_ID . '_foreign');
         });
 
-        Schema::drop(Table::BATCH_SETTLEMENT);
+        Schema::drop(Table::BATCH_FUND_TRANSFER);
     }
 }

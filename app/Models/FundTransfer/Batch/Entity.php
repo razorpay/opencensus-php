@@ -30,7 +30,7 @@ class Entity extends Base\PublicEntity
     const RECONCILED_AT     = 'reconciled_at';
     const RETURNED_AT       = 'returned_at';
 
-    protected $entity = 'batch_settlement';
+    protected $entity = 'batch_fund_transfer';
 
     protected $generateIdOnCreate = true;
 

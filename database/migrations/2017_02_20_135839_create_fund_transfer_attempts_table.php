@@ -73,7 +73,7 @@ class CreateFundTransferAttemptsTable extends Migration
 
             $table->foreign(FundTransferAttempt::BATCH_TRANSFER_ID)
                   ->references(BatchTransfer::ID)
-                  ->on(Table::BATCH_SETTLEMENT)
+                  ->on(Table::BATCH_FUND_TRANSFER)
                   ->on_delete('restrict');
         });
     }

@@ -50,17 +50,17 @@ class Reconciler
             return new Base\PublicCollection;
         }
 
-        $this->batchSettlement = $this->batchSetlRepo->getSettlementForTodayOrFail('kotak');
+        $this->batchFundTransfer = $this->batchSetlRepo->getSettlementForTodayOrFail('kotak');
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 
-        $this->batchSettlement->addUrl('kotak_reconcile_txt', $url);
+        $this->batchFundTransfer->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseTextFile($reconcileFile);
 
         $urlExcel = $this->writeToExcelFile($data, $this->getFileToReadNameWithoutExt());
 
-        $this->batchSettlement->addUrl('kotak_reconcile_excel', $url);
+        $this->batchFundTransfer->addUrl('kotak_reconcile_excel', $url);
 
         $data = $this->reconcile($data);
 
@@ -84,8 +84,8 @@ class Reconciler
                 $collection->push($setl);
             }
 
-            $this->batchSettlement->reconciled_at = $this->reconciledAt;
-            $this->batchSettlement->saveOrFail();
+            $this->batchFundTransfer->reconciled_at = $this->reconciledAt;
+            $this->batchFundTransfer->saveOrFail();
 
             $this->setlRepo->commit();
         }

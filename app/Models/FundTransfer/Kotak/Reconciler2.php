@@ -69,15 +69,15 @@ class Reconciler2
             return new Base\PublicCollection;
         }
 
-//        $this->batchSettlement = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
+//        $this->batchFundTransfer = $this->dailySetlRepo->getSettlementForTodayOrFail('kotak');
 
         $url = $this->saveUploadedFileToAws($reconcileFile);
 
-//        $this->batchSettlement->addUrl('kotak_reconcile_txt', $url);
+//        $this->batchFundTransfer->addUrl('kotak_reconcile_txt', $url);
 
         $data = $this->parseReturnFile($reconcileFile);
 
-//        $this->batchSettlement->addUrl('kotak_reconcile_excel', $url);
+//        $this->batchFundTransfer->addUrl('kotak_reconcile_excel', $url);
 
         //
         // In excel, dates are displayed properly, but in reality, are stored as
@@ -158,8 +158,8 @@ class Reconciler2
                 }
             }
 
-//            $this->batchSettlement->reconciled_at = $this->reconciledAt;
-//            $this->batchSettlement->saveOrFail();
+//            $this->batchFundTransfer->reconciled_at = $this->reconciledAt;
+//            $this->batchFundTransfer->saveOrFail();
 
             $this->setlRepo->commit();
         }

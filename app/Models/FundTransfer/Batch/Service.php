@@ -20,12 +20,12 @@ class Service extends Base\Service
 
     protected function calculatePreviousBatchSettlementFeesCore()
     {
-        $batchSettlements = $this->repo->batch_settlement->getIfFeesIsNull();
+        $batchFundTransfers = $this->repo->batch_fund_transfer->getIfFeesIsNull();
 
         $totalFees = 0;
         $totalSetlCount = 0;
 
-        foreach ($batchSettlements as $batch)
+        foreach ($batchFundTransfers as $batch)
         {
             $timestamp = $batch->getCreatedAt();
 
@@ -64,14 +64,14 @@ class Service extends Base\Service
     {
         return $this->repo->transaction(function ()
         {
-            $batchSettlements = $this->repo->batch_settlement->getIfServiceTaxIsNullOrZero();
+            $batchFundTransfers = $this->repo->batch_fund_transfer->getIfServiceTaxIsNullOrZero();
 
             $setlRepo = $this->repo->settlement;
 
             $totalServiceTax = 0;
             $totalSetlCount = 0;
 
-            foreach ($batchSettlements as $batch)
+            foreach ($batchFundTransfers as $batch)
             {
                 $timestamp = $batch->getCreatedAt();
 
@@ -102,9 +102,9 @@ class Service extends Base\Service
             }
 
             return [
-                'total_service_tax'         => $totalServiceTax,
-                'total_batch_setl_count'    => $totalSetlCount,
-                'total_batch_settlements'   => $batchSettlements->count(),
+                'total_service_tax'          => $totalServiceTax,
+                'total_batch_setl_count'     => $totalSetlCount,
+                'total_batch_fund_transfers' => $batchFundTransfers->count(),
             ];
         });
     }

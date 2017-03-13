@@ -9,20 +9,20 @@ use RZP\Exception;
 
 class Entity extends Base\PublicEntity
 {
-    const ID                    = 'id';
-    const MERCHANT_ID           = 'merchant_id';
-    const BANK_ACCOUNT_ID       = 'bank_account_id';
-    const BATCH_SETTLEMENT_ID   = 'batch_settlement_id';
-    const AMOUNT                = 'amount';
-    const FEES                  = 'fees';
-    const SERVICE_TAX           = 'service_tax';
-    const STATUS                = 'status';
-    const TRANSACTION_ID        = 'transaction_id';
-    const CHANNEL               = 'channel';
-    const UTR                   = 'utr';
-    const FAILURE_REASON        = 'failure_reason';
-    const REMARKS               = 'remarks';
-    const RETURN_UTR            = 'return_utr';
+    const ID                     = 'id';
+    const MERCHANT_ID            = 'merchant_id';
+    const BANK_ACCOUNT_ID        = 'bank_account_id';
+    const BATCH_FUND_TRANSFER_ID = 'batch_fund_transfer_id';
+    const AMOUNT                 = 'amount';
+    const FEES                   = 'fees';
+    const SERVICE_TAX            = 'service_tax';
+    const STATUS                 = 'status';
+    const TRANSACTION_ID         = 'transaction_id';
+    const CHANNEL                = 'channel';
+    const UTR                    = 'utr';
+    const FAILURE_REASON         = 'failure_reason';
+    const REMARKS                = 'remarks';
+    const RETURN_UTR             = 'return_utr';
 
     protected static $sign = 'setl';
 
@@ -40,7 +40,7 @@ class Entity extends Base\PublicEntity
         self::ID,
         self::MERCHANT_ID,
         self::BANK_ACCOUNT_ID,
-        self::BATCH_SETTLEMENT_ID,
+        self::BATCH_FUND_TRANSFER_ID,
         self::AMOUNT,
         self::FEES,
         self::SERVICE_TAX,
@@ -95,7 +95,7 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Transaction\Entity');
     }
 
-    public function batchSettlement()
+    public function batchFundTransfer()
     {
         return $this->belongsTo('RZP\Models\FundTransfer\Batch\Entity');
     }

@@ -35,7 +35,7 @@ class Service extends Base\Service
         return $data;
     }
 
-    /** Generates settlement file for a given batch_settlement_id
+    /** Generates settlement file for a given batch_fund_transfer_id
       * Uses settlement entities / fund_transfer_attempt entities to generate
       * file depending on the created_at timestamp of the batch.
       * If the batch was created before the timestamp (i.e. before rolling out
@@ -46,9 +46,9 @@ class Service extends Base\Service
     {
         (new Settlement\Validator)->validateInput('batch_fetch', $input);
 
-        $batchId = $input['batch_settlement_id'];
+        $batchId = $input['batch_fund_transfer_id'];
 
-        $batch = $this->repo->batch_settlement->findOrFailPublic($batchId);
+        $batch = $this->repo->batch_fund_transfer->findOrFailPublic($batchId);
 
         $versionV2RolloutTimestamp = 1489170600; // Date 1st March 2017 IST
 

@@ -294,14 +294,14 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $batchSetl = $this->getLastEntity('batch_settlement', true);
+        $batchSetl = $this->getLastEntity('batch_fund_transfer', true);
 
-        $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
+        $this->assertEquals($setl['batch_fund_transfer_id'], $batchSetl['id']);
 
         $request = [
             'url' => '/settlements/file/generate',
             'method' => 'post',
-            'content' => ['batch_settlement_id' => $batchSetl['id']]
+            'content' => ['batch_fund_transfer_id' => $batchSetl['id']]
         ];
 
         $content = $this->makeRequestAndGetContent($request);
@@ -417,17 +417,17 @@ class SettlementTest extends TestCase
         $this->assertSame($totalAmount, $setl['amount']);
 
         // Validate batch settlement entity
-        $batchSettlement = $this->getLastEntity('batch_settlement', true);
-        $this->assertNotNull($batchSettlement['urls']['kotak_settlement_txt']);
-        $this->assertNotNull($batchSettlement['urls']['kotak_settlement_excel']);
-        $this->assertTestResponse($batchSettlement, 'fetchAndMatchBatchDataSettlement');
-        $this->assertGreaterThanOrEqual($batchSettlement['initiated_at'], time());
-        $this->assertNull($batchSettlement['reconciled_at']);
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertNotNull($batchFundTransfer['urls']['kotak_settlement_txt']);
+        $this->assertNotNull($batchFundTransfer['urls']['kotak_settlement_excel']);
+        $this->assertTestResponse($batchFundTransfer, 'fetchAndMatchBatchDataSettlement');
+        $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], time());
+        $this->assertNull($batchFundTransfer['reconciled_at']);
 
         // Validate fund_transfer_attempt entity
         $bta = $this->getLastEntity('fund_transfer_attempt', true);
         $this->assertTestResponse($bta, 'matchSettlementAttempt');
-        $this->assertEquals($batchSettlement['id'], $bta['batch_transfer_id']);
+        $this->assertEquals($batchFundTransfer['id'], $bta['batch_transfer_id']);
         $this->assertEquals(SettlementEntity::verifyIdAndStripSign($setl['id']), $bta['source_id']);
     }
 
@@ -487,7 +487,7 @@ class SettlementTest extends TestCase
             'url' => '/settlements/file/generate',
             'method' => 'POST',
             'content' => [
-                'batch_settlement_id' => $setl['batch_settlement_id']
+                'batch_fund_transfer_id' => $setl['batch_fund_transfer_id']
             ]
         );
 
@@ -527,16 +527,16 @@ class SettlementTest extends TestCase
         $this->makeRequestAndGetContent($request);
 
         // Modify created_at of batch so that the old settlement file generation can kick in
-        $batch = $this->getLastEntity('batch_settlement', true);
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
 
-        $this->fixtures->edit('batch_settlement', $batch['id'], ['created_at' => $capturedAt + 50]);
+        $this->fixtures->edit('batch_fund_transfer', $batch['id'], ['created_at' => $capturedAt + 50]);
 
         // Generate settlement-file generation
         $request = array(
             'url' => '/settlements/file/generate',
             'method' => 'POST',
             'content' => [
-                'batch_settlement_id' => $batch['id']
+                'batch_fund_transfer_id' => $batch['id']
             ]
         );
 

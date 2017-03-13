@@ -19,12 +19,12 @@ class Repository extends Base\Repository
     ];
 
     protected $appFetchParamRules = [
-        Entity::MERCHANT_ID         => 'sometimes|alpha_num|size:14',
-        Entity::BANK_ACCOUNT_ID     => 'sometimes|alpha_dash|min:14|max:17',
-        Entity::BATCH_SETTLEMENT_ID => 'sometimes|alpha_num|max:14',
-        Entity::TRANSACTION_ID      => 'sometimes|alpha_dash|min:14|max:18',
-        Entity::STATUS              => 'sometimes|in:created,processed,failed',
-        Entity::UTR                 => 'sometimes|alpha_num',
+        Entity::MERCHANT_ID            => 'sometimes|alpha_num|size:14',
+        Entity::BANK_ACCOUNT_ID        => 'sometimes|alpha_dash|min:14|max:17',
+        Entity::BATCH_FUND_TRANSFER_ID => 'sometimes|alpha_num|max:14',
+        Entity::TRANSACTION_ID         => 'sometimes|alpha_dash|min:14|max:18',
+        Entity::STATUS                 => 'sometimes|in:created,processed,failed',
+        Entity::UTR                    => 'sometimes|alpha_num',
     ];
 
     public function getFailedSettlementsForRetry(array $setlIds)
@@ -60,10 +60,10 @@ class Repository extends Base\Repository
                     ->get();
     }
 
-    public function getSettlementsByBatchSettlementId($batchSettlementId)
+    public function getSettlementsByBatchSettlementId($batchFundTransferId)
     {
         return $this->newQuery()
-                    ->where(Entity::BATCH_SETTLEMENT_ID, '=', $batchSettlementId)
+                    ->where(Entity::BATCH_FUND_TRANSFER_ID, '=', $batchFundTransferId)
                     ->get();
     }
 

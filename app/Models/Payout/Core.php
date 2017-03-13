@@ -136,7 +136,7 @@ class Core extends Base\Core
         {
             $this->createOrUpdateBatchSettlementForEntity($payout, 1);
 
-            $payout->batchSettlement()->associate($this->batchSettlement);
+            $payout->batchFundTransfer()->associate($this->batchFundTransfer);
         }
 
         $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);

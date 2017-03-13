@@ -125,19 +125,19 @@ trait ReconciliationTrait
     // Fetches and matches batch data for given entity
     protected function fetchAndMatchBatchData(string $entityName)
     {
-        $batchSettlement = $this->getLastEntity('batch_settlement', true);
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
 
         $expectedData = 'fetchAndMatchBatchData' . ucfirst($entityName);
 
-        $this->assertTestResponse($batchSettlement, $expectedData);
+        $this->assertTestResponse($batchFundTransfer, $expectedData);
 
         $time = time();
 
-        $this->assertGreaterThanOrEqual($batchSettlement['initiated_at'], $time);
-        $this->assertGreaterThanOrEqual($batchSettlement['reconciled_at'], $time);
-        $this->assertGreaterThanOrEqual($batchSettlement['returned_at'], $time);
+        $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], $time);
+        $this->assertGreaterThanOrEqual($batchFundTransfer['reconciled_at'], $time);
+        $this->assertGreaterThanOrEqual($batchFundTransfer['returned_at'], $time);
 
-        return $batchSettlement;
+        return $batchFundTransfer;
     }
 
     protected function checkAdjustmentCreated()

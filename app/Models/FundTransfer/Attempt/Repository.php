@@ -23,11 +23,11 @@ class Repository extends Base\Repository
     ];
 
     public function getFundTransferAttemptsByBatchIdWithRelations(
-        string $batchSettlementId,
+        string $batchFundTransferId,
         array $relations = [])
     {
         $query = $this->newQuery()
-                      ->where(Entity::BATCH_TRANSFER_ID, '=', $batchSettlementId);
+                      ->where(Entity::BATCH_TRANSFER_ID, '=', $batchFundTransferId);
 
         if (count($relations) > 0)
         {

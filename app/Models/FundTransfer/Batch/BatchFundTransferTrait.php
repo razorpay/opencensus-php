@@ -6,29 +6,29 @@ use RZP\Exception;
 
 trait BatchFundTransferTrait
 {
-    protected $batchSettlement = null;
+    protected $batchFundTransfer = null;
 
     protected function createOrUpdateBatchSettlementForEntity($entity, int $txnsCount)
     {
-        if ($this->batchSettlement === null)
+        if ($this->batchFundTransfer === null)
         {
-            $this->batchSettlement = $this->createBatchSettlementEntity($entity, $txnsCount);
+            $this->batchFundTransfer = $this->createBatchSettlementEntity($entity, $txnsCount);
         }
         else
         {
-            $this->batchSettlement->incrementAmount($entity->getAmount());
-            $this->batchSettlement->incrementFees($entity->getFees());
-            $this->batchSettlement->incrementServiceTax($entity->getServiceTax());
-            $this->batchSettlement->incrementTotalCount();
-            $this->batchSettlement->incrementTransactionCount($txnsCount);
+            $this->batchFundTransfer->incrementAmount($entity->getAmount());
+            $this->batchFundTransfer->incrementFees($entity->getFees());
+            $this->batchFundTransfer->incrementServiceTax($entity->getServiceTax());
+            $this->batchFundTransfer->incrementTotalCount();
+            $this->batchFundTransfer->incrementTransactionCount($txnsCount);
         }
 
-        $this->repo->saveOrFail($this->batchSettlement);
+        $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
     protected function updateBatchSettlementEntityUrls(array $urls)
     {
-        if ($this->batchSettlement === null)
+        if ($this->batchFundTransfer === null)
         {
             throw new Exception\LogicException(
                 'Update URLs for Batch Settlement attempted before entity creation',
@@ -38,14 +38,14 @@ trait BatchFundTransferTrait
                 ]);
         }
 
-        $this->batchSettlement->setUrls($urls);
+        $this->batchFundTransfer->setUrls($urls);
 
-        $this->repo->saveOrFail($this->batchSettlement);
+        $this->repo->saveOrFail($this->batchFundTransfer);
     }
 
     protected function createBatchSettlementEntity($entity, $txnsCount) : Entity
     {
-        $batchSettlement = new Entity;
+        $batchFundTransfer = new Entity;
 
         $input = [
             Entity::TYPE              => $entity->getEntity(),
@@ -61,8 +61,8 @@ trait BatchFundTransferTrait
             Entity::URLS              => null,
         ];
 
-        $batchSettlement->build($input);
+        $batchFundTransfer->build($input);
 
-        return $batchSettlement;
+        return $batchFundTransfer;
     }
 }
