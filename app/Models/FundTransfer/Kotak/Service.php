@@ -22,7 +22,7 @@ class Service extends Base\Service
 
     public function reconcileH2HSettlements($input)
     {
-        $data = (new Reconciler3)->process($input);
+        $data = (new Reconciler)->process($input);
 
         return $data;
     }

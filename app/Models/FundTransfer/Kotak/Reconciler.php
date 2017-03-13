@@ -21,7 +21,7 @@ use RZP\Models\Settlement\SlackNotification;
 
 use Illuminate\Support\Facades\App;
 
-class Reconciler3
+class Reconciler
 {
     use FileHandlerTrait;
 
