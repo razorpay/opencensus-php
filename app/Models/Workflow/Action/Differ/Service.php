@@ -125,12 +125,12 @@ class Service extends Base\Service
     {
         $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
 
-        $esResponse['payload']['action_id'] = $id;
+        $esResponse[Entity::PAYLOAD]['action_id'] = $id;
 
         $response = $this->makeRequest($esResponse['method'],
-                                       $esResponse['url'],
-                                       $esResponse['headers'],
-                                       $esResponse['payload']);
+                                       $esResponse[Entity::URL],
+                                       $esResponse[Entity::HEADERS],
+                                       $esResponse[Entity::PAYLOAD]);
 
         return $response;
     }

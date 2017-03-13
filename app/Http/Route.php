@@ -1066,7 +1066,7 @@ final class Route
      * Routes for all maker & checker actions.
      */
     public static $workflowRoutes = [
-        'merchant_edit_email',
+
     ];
 
     const RAZORPAYJS_ROUTES = array(
