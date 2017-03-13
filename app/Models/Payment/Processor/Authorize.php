@@ -314,7 +314,7 @@ trait Authorize
     }
 
     /**
-     * This is a hack authorize function specially for authorizing paymnents
+     * This is a hack authorize function specially for authorizing payments
      * from gateways who provide payment information through their verify api's
      * for a limited time frame (e.g axis_migs, jiomoney). If we miss any failed
      * payment reconciliation there then we need to do it manually later.
@@ -1847,16 +1847,13 @@ trait Authorize
             {
                 $payment->setGatewayCaptured(true);
 
-                if ($payment->getTransactionId() === null)
-                {
-                    // Also sets the transaction association with the payment.
+                // Also sets the transaction association with the payment.
 
-                    list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
+                list($txn, $feesSplit) = (new Transaction\Core)->createFromPaymentAuthorized($payment);
 
-                    $this->repo->saveOrFail($txn);
+                $this->repo->saveOrFail($txn);
 
-                    $this->saveFeeDetails($txn, $feesSplit);
-                }
+                $this->saveFeeDetails($txn, $feesSplit);
             }
 
             $this->repo->saveOrFail($payment);

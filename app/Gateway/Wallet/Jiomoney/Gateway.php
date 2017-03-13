@@ -14,7 +14,6 @@ use RZP\Gateway\Base\Verify;
 use RZP\Gateway\Base\VerifyResult;
 use RZP\Gateway\Wallet\Base;
 use RZP\Gateway\Wallet\Base\Entity;
-use RZP\Models\Currency\Currency;
 use RZP\Models\Payment\Entity as Payment;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Models\Payment\Status;
