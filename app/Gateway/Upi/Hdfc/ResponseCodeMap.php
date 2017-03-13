@@ -8,11 +8,6 @@ class ResponseCodeMap
 {
     const CODES = [];
 
-    public static function getResponseMessage($code)
-    {
-        return self::CODES[$code] ?? ErrorCode::BAD_REQUEST_PAYMENT_FAILED;
-    }
-
     public static function getApiErrorCode($code)
     {
         if ((empty($code) === true) or

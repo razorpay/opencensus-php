@@ -39,6 +39,8 @@ class Gateway extends Base\Gateway
     const P2P = 'P2P';
     const P2M = 'P2M';
 
+    const PAY = 'PAY';
+
     // Expiry timeout in minutes
     const EXPIRY_TIMEOUT = 5;
 
@@ -503,7 +505,7 @@ class Gateway extends Base\Gateway
             self::P2P,
             // Type of Payment (Pay or Collect)
             // Refunds are considered "Pay" transactions
-            'PAY',
+            self::PAY,
         ];
 
         $content = $this->transformRequestArrayToContent($data);
@@ -594,8 +596,6 @@ class Gateway extends Base\Gateway
         $verify->match = ($status === VerifyResult::STATUS_MATCH) ? true : false;
 
         $verify->verifyResponseContent = $this->getMappedAttributes($content);
-
-        return $status;
     }
 
     /**

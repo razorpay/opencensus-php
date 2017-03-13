@@ -73,13 +73,22 @@ class Server extends Base\Mock\Server
         return $this->makeResponse($content);
     }
 
+    /**
+     * See docs link in README.md for response formatting
+     */
     protected function makeResponse($data)
     {
         $action = $this->action;
 
+        // There are lots of empty "additional fields" in the response
+        // that are currently expected to be filled with NA
+        // The number of such fields depends on the request (auth|refund|etc)
+        // We calculate the number of such fields and add it as a padding
+        // with array_merge
+
         $paddingCount = self::RESPONSE_FIELD_COUNT[$action] - count($data);
 
-        $data = $padding = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
+        $data = array_merge($data, array_fill(count($data), $paddingCount, 'NA'));
 
         $content = implode('|', $data);
 
