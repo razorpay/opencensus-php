@@ -97,7 +97,7 @@ trait Capture
                                                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                                                 $customProperties);
 
-            return false;
+            throw $e;
         }
 
         return true;

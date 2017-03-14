@@ -912,12 +912,16 @@ class Service extends Base\Service
         {
             $this->merchant = $payment->merchant;
 
-            $res = $this->getNewProcessor()->autoCapturePayment($payment);
-
-            if ($res)
+            try
             {
-                $count++;
+                $this->getNewProcessor()->autoCapturePayment($payment);
             }
+            catch (Exception\RecoverableException $e)
+            {
+                continue;
+            }
+
+            $count++;
         }
 
         return ['count' => $count];
