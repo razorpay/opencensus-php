@@ -273,7 +273,9 @@ Route::group(['middleware' => ['web']], function () {
         // These use proxy auth so needs merchantId
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund_authorized', 'AdminController@postRefundAuthorizedPayment');
         Route::post('/admin/{mode}/{merchantId}/payments/{id}/refund', 'AdminController@postRefund');
-        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture');
+        Route::post('/admin/{mode}/{merchantId}/payments/{id}/capture', 'AdminController@postCapture')
+                ->name('admin_payment_capture')
+                ->middleware('admin_access');
         Route::post('/admin/users/confirm', 'AdminController@postConfirmUser');
 
         // Admin Main Actions, mostly initiated from the Actions screen
