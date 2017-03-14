@@ -43,25 +43,30 @@ class RefundFile extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $urlCsv = $this->writeToCsvFile($data, $fileName);
-
+        // TODO FIX CSV
         $creator = $this->createFile(
             FileStore\Format::CSV,
             $data,
             $fileName,
             FileStore\Type::ICICI_UPI_REFUND);
 
-        $this->sendRefundEmail();
+        $file = $creator->get();
 
-        return $urlCsv;
+        $fileData = [
+            'file_path' => $file['local_file_path']
+        ];
+
+        $this->sendRefundEmail($fileData);
+
+        return $fileData['file_path'];
     }
 
     protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $this->getCsvFullFilePath();
-
-        $data['file'] = $fullpath;
-        $data['body'] = 'Please find attached refunds information for UPI';
+        $data = [
+            'file' => $fileData['file_path'],
+            'body' => 'Please find attached refunds information for UPI'
+        ];
 
         $this->mail->queue('emails.message', $data, function ($message) use ($data)
         {
@@ -85,7 +90,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $fileName = $this->getCsvFileToWriteName();
+        $fileName = $this->getFileToWriteName('.csv');
 
         foreach ($input['data'] as $row)
         {
