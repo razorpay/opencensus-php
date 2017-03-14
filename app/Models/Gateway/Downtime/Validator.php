@@ -78,14 +78,41 @@ class Validator extends Base\Validator
     ];
 
     // Validation Notes:
-    // CARD_TYPE and Network only become applicable when the the method is card. For all other
-    // methods, these are not applicable. Some possible scenarios for these include:
-    // Netbanking is down for a particular bank
-    // debit/credit card of a particular bank is down(typically when the ACS page is down for the issuer bank)
-    // visa card of a particular bank is down - not commonly observed, but still keeping it here.
+    // Gateway going down happens in a few cases. For instance, if HDFC netbanking is down,
+    // this is applicable for all gateways
+    // The following table summarizes all the use cases:
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Method     | Gateway   | Issuer   | Card Type | Network | Notes                             |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Netbanking | ALL       | HDFC     | NA        | NA      | HDFC Netbanking is down           |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Netbanking | Billdesk  | ALL      | NA        | NA      | Billdesk is down                  |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Netbanking | billdesk  | Yes Bank | NA        | NA      | Billdesk Yes bank is down         |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Card       | ALL       | SBI      | DEBIT     | ALL     | All SBI Debit Cards are down      |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Card       | ALL       | SBI      | ALL       | ALL     | All SBI Cards are down            |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Card       | ALL       | SBI      | ALL       | Visa    | ALL SBI Visa Cards are down       |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Card       | ALL       | SBI      | Debit     | Visa    | ALL SBI Visa Debit Cards are down |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Card       | Axis Migs | ALL      | ALL       | ALL     | Axis Migs is down                 |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down                 |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down                 |
+    //+------------+-----------+----------+-----------+---------+-----------------------------------+
+
 
     public function validateGateway(string $attribute, string $gateway)
     {
+        if ($gateway === Entity::ALL)
+        {
+            return;
+        }
+
         Gateway::validateGateway($gateway);
     }
 
