@@ -1,15 +1,14 @@
 <?php
 
-namespace RZP\Models\Settlement\Batch;
+namespace RZP\Models\FundTransfer\Batch;
 
 use Carbon\Carbon;
 use RZP\Exception;
 use RZP\Models\Base;
-use RZP\Models\Settlement\Batch;
 
 class Repository extends Base\Repository
 {
-    protected $entity = 'batch_settlement';
+    protected $entity = 'batch_fund_transfer';
 
     protected static $fetchExtraParamRules = array(
         'date' => 'integer|digits:8');

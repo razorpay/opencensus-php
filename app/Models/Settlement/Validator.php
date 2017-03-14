@@ -7,7 +7,7 @@ use RZP\Base;
 class Validator extends Base\Validator
 {
     protected static $batchFetchRules = [
-        Entity::BATCH_SETTLEMENT_ID => 'required|alpha_num|size:14',
+        Entity::BATCH_FUND_TRANSFER_ID => 'required|alpha_num|size:14',
     ];
 
     protected static $nodalTransferRules = [
