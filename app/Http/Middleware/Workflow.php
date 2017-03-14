@@ -5,13 +5,16 @@ namespace RZP\Http\Middleware;
 use Request;
 use Closure;
 use RZP\Http\Route;
-use RZP\Models\Base\UniqueIdEntity;
+use RZP\Trace\TraceCode;
+use RZP\Events\DifferEvent;
 use RZP\Models\Workflow\Action\Differ;
 use Illuminate\Foundation\Application;
 
 class Workflow
 {
     const AUTH_HEADER = 'authorization';
+
+    const CONTENT_TYPE = 'Content-Type';
 
     const USER_HEADER = 'x-dashboard-username';
 
@@ -21,88 +24,95 @@ class Workflow
     {
         $this->app = $app;
 
+        $this->trace = $this->app['trace'];
+
         $this->ba = $app['basicauth'];
 
         $this->router = $app['router'];
+
+        $this->repo = $app['repo'];
     }
 
     public function handle($request, Closure $next)
     {
         $routeName = $this->router->currentRouteName();
 
-        if ($this->isWorkflowRoute($routeName))
+        $entity = $this->getEntityName($routeName);
+
+        $entityId = $this->router->current()->getParameter('id');
+
+        $input = $request->input();
+
+        // In case of checker call, we have to unsset the action_id.
+        // Also also verify whether its the correct action_id
+        if (isset($input['action_id']) === true)
         {
-            $this->modifyInput($request);
+            unset($input['action_id']);
 
-            $params = $request->input();
+            $request->replace($input);
 
-            $response = (new Differ\Service)->makeRequest('POST', 'http://localhost:8081/v1/workflows/actions', $request->header(), $params);
-
-            return $response;
+            return $next($request);
         }
 
-        return $next($request);
-    }
-
-    private function isWorkflowRoute($routeName)
-    {
-        return (in_array($routeName, Route::$workflowRoutes, true) === true);
-    }
-
-    private function modifyInput($request)
-    {
-        if (isset($input['action_id']) === false)
+        if ($entity !== null)
         {
-            $this->modifyMakerRequest($request);
+            $response = $this->repo->transactionDryRunOnLiveAndTest(function() use ($request, $next, $entity, $entityId)
+            {
+                $oldE = $this->repo->$entity->findByPublicId($entityId);
+
+                $response = $next($request);
+
+                $newE = $this->repo->$entity->findByPublicId($entityId);
+
+                $diff = (new Differ\Service)->createDiff($oldE->toArray(), $newE->toArray());
+
+                $event = $this->createDifferEvent($request, $diff, $entity, $entityId);
+
+                // s($response->getStatusCode());
+                event(new DifferEvent($event));
+
+                return $response;
+            });
         }
         else
         {
-            $this->modifyCheckerRequest($request);
+            $response =  $next($request);
         }
+
+        return $response;
     }
 
-    private function modifyMakerRequest($request)
+    private function getEntityName($routeName)
+    {
+        $entity = null;
+
+        if (isset(Route::$workflowRoutes[$routeName]) === true)
+        {
+            $entity = Route::$workflowRoutes[$routeName];
+        }
+
+        return $entity;
+    }
+
+    private function createDifferEvent($request, $diff, $entity, $entityId)
     {
         $input = $request->input();
 
-        list($entity, $entityId) = $this->getEntity($request->getPathInfo());
-
-        $makerRequest = [
+        $differEvent = [
             'entity_name' => $entity,
             'entity_id'   => $entityId,
             'actor'       => $request->header(self::USER_HEADER),
-            'headers'     => [ self:: AUTH_HEADER => $request->header(self::AUTH_HEADER) ],
+            'headers'     => [
+                                self::AUTH_HEADER  => $request->header(self::AUTH_HEADER),
+                                self::CONTENT_TYPE => $request->header(self::CONTENT_TYPE)
+                            ],
             'type'        => Differ\Type::MAKER,
             'url'         => $request->getUri(),
             'method'      => $request->getMethod(),
             'payload'     => $input,
+            'diff'        => $diff,
         ];
 
-        $request->replace($makerRequest);
-    }
-
-    private function getEntity(string $uri)
-    {
-        $uriParams = explode('/', $uri);
-
-        $entity = $uriParams[2];
-
-        $entityId = $uriParams[3];
-
-        if (UniqueIdEntity::verifyUniqueId($entityId, false) === 0)
-        {
-            $entityId = '';
-        }
-
-        return [$entity, $entityId];
-    }
-
-    private function modifyActionRequest($request)
-    {
-        $input = $request->input();
-
-        unset($input['action_id']);
-
-        $request->replace($input);
+        return $differEvent;
     }
 }

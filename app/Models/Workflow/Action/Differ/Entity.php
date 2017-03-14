@@ -30,6 +30,7 @@ class Entity extends Base\PublicEntity
         self::URL,
         self::METHOD,
         self::PAYLOAD,
+        self::DIFF,
         self::CREATED_AT
     ];
 
@@ -44,6 +45,7 @@ class Entity extends Base\PublicEntity
         self::DIFF,
         self::METHOD,
         self::PAYLOAD,
+        self::DIFF,
         self::CREATED_AT
     ];
 
@@ -56,11 +58,7 @@ class Entity extends Base\PublicEntity
         self::HEADERS,
         self::URL,
         self::METHOD,
+        self::DIFF,
         self::PAYLOAD,
     ];
-
-    public function setDiff($diff)
-    {
-        return $this->setAttribute(self::DIFF, $diff);
-    }
 }

@@ -18,6 +18,7 @@ class Validator extends Base\Validator
         Entity::URL         => 'required|string',
         Entity::METHOD      => 'required|string|custom',
         Entity::PAYLOAD     => 'required|array',
+        Entity::DIFF        => 'required|array',
     ];
 
     protected function validateType($attribute, $type)

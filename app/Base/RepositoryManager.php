@@ -219,6 +219,41 @@ class RepositoryManager extends \Illuminate\Support\Manager
         return $result;
     }
 
+    public function transactionDryRunOnLiveAndTest(callable $callback)
+    {
+        // We need to grab and assign the default connection here
+        // because in the callback code, the functions try to change
+        // the default connection. This is again required because of
+        // lack of eloquent's support for taking specific connection
+        // instance on relationship based queries.
+        //
+        $currentConnection = $this->getDefaultDbConn();
+
+        $this->db->connection(Mode::TEST)->beginTransaction();
+        $this->db->connection(Mode::LIVE)->beginTransaction();
+
+        // We'll simply execute the given callback within a try / catch block
+        // and we can rollback the transaction
+        // so that none of the changes are persisted to the database.
+        try
+        {
+            $result = $callback($this);
+        }
+        catch (\Exception $e)
+        {
+            throw $e;
+        }
+        finally
+        {
+            $this->db->connection(Mode::LIVE)->rollBack();
+            $this->db->connection(Mode::TEST)->rollBack();
+
+            $this->setDefaultDbConn($currentConnection);
+        }
+
+        return $result;
+    }
+
     protected function getDefaultDbConn()
     {
         return $this->app['config']->get('database.default');

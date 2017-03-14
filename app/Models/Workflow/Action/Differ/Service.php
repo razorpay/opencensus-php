@@ -27,6 +27,11 @@ class Service extends Base\Service
 
     const ES_TYPE = 'action';
 
+    const SKIP_DIFF_FIELDS = [
+        'created_at',
+        'updated_at',
+    ];
+
     public function __construct()
     {
         parent::__construct();
@@ -48,11 +53,9 @@ class Service extends Base\Service
 
         $action[Entity::CREATED_AT] = Carbon::now('Asia/Kolkata')->timestamp;
 
-        $function = 'create' .$input['type'] .'Action';
+        $function = $input['type'] .'Action';
 
-        $E = $this->$function($action);
-
-        return $E->toArrayPublic();
+        $this->$function($action);
     }
 
     public function fetchDiffById(string $id)
@@ -69,22 +72,8 @@ class Service extends Base\Service
         return $diff;
     }
 
-    protected function createMakerAction(Entity $action)
+    protected function makerAction(Entity $action)
     {
-        $entity = $action[Entity::ENTITY_NAME];
-
-        $entityId = $action[Entity::ENTITY_ID];
-
-        $oldE = $this->repo->$entity->findByPublicId($entityId);
-
-        $newE = clone $oldE;
-
-        $newE->edit($action[Entity::PAYLOAD]);
-
-        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
-
-        $action->setDiff($diff);
-
         try
         {
             if ($this->config->get('database.es_workflow_action_mock') === false)
@@ -98,17 +87,17 @@ class Service extends Base\Service
         {
             $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
         }
-
-        return $newE;
     }
 
-    protected function createDiff(array $oldE, array $newE)
+    public function createDiff(array $oldE, array $newE)
     {
         $diff = [];
 
         $keys = array_keys($oldE);
 
-        foreach ($keys as $key)
+        $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
+
+        foreach ($diffKeys as $key)
         {
             if ($oldE[$key] !== $newE[$key])
             {
@@ -125,17 +114,19 @@ class Service extends Base\Service
     {
         $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
 
-        $esResponse[Entity::PAYLOAD]['action_id'] = $id;
+        $esObject = $esResponse[0]['_source'];
 
-        $response = $this->makeRequest($esResponse[Entity::METHOD],
-                                       $esResponse[Entity::URL],
-                                       $esResponse[Entity::HEADERS],
-                                       $esResponse[Entity::PAYLOAD]);
+        $esObject[Entity::PAYLOAD]['action_id'] = $id;
+
+        $response = $this->makeRequest($esObject[Entity::METHOD],
+                                       $esObject[Entity::URL],
+                                       $esObject[Entity::HEADERS],
+                                       $esObject[Entity::PAYLOAD]);
 
         return $response;
     }
 
-    public function makeRequest($method, $url, $headers, $content)
+    protected function makeRequest($method, $url, $headers, $content)
     {
         $factory = $this->app->make('httplug.message_factory.default');
 
@@ -158,8 +149,6 @@ class Service extends Base\Service
                     'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
-
-            return false;
         }
         catch (ServerErrorException $e)
         {
@@ -172,8 +161,6 @@ class Service extends Base\Service
                     'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
-
-            return false;
         }
         catch (HttpException $e)
         {
@@ -186,8 +173,6 @@ class Service extends Base\Service
                     'url'       => $url,
                     'exception' => $errorMessage,
                 ]);
-
-            return false;
         }
 
         return $response;
