@@ -624,14 +624,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
@@ -651,14 +651,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
@@ -678,14 +678,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
@@ -706,14 +706,14 @@ return [
         'response' => [
             'content' => [
                 'error' => [
-                    'code' => PublicErrorCode::SERVER_ERROR,
+                    'code' => PublicErrorCode::BAD_REQUEST_ERROR,
                 ]
             ],
-            'status_code'   => 500,
+            'status_code'   => 400,
         ],
         'exception' => [
-            'class' => 'RZP\Exception\LogicException',
-            'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
+            'class' => 'RZP\Exception\BadRequestValidationFailureException',
+            'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
 
