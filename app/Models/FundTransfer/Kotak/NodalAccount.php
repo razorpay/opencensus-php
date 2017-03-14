@@ -8,6 +8,7 @@ use Mail;
 use RZP\Exception;
 use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Base;
+use RZP\Models\BankAccount;
 use RZP\Models\FundTransfer;
 use RZP\Models\Merchant;
 use RZP\Models\Settlement;
@@ -69,9 +70,9 @@ class NodalAccount
 
         foreach ($entities as $entity)
         {
-            list($version, $paymentRefNo) = $this->getPaymentRefNoAndVersion($entity);
+            list($version, $paymentRefNo, $source) = $this->getPaymentRefNoAndVersion($entity);
 
-            $merchant = $settlement->merchant;
+            $merchant = $source->merchant;
 
             $ba = $merchant->bankAccount;
 
@@ -82,7 +83,7 @@ class NodalAccount
             //        mathematical operations directly
             //
 
-            $amount = $settlement->getAmount() / 100;
+            $amount = $source->getAmount() / 100;
 
             $type = $this->getPaymenType($ba, $amount);
 
@@ -97,13 +98,13 @@ class NodalAccount
                 Headings::DR_AC_NO                => static::$nodalAccountNumber,
                 Headings::AMOUNT                  => $amount,
                 Headings::BANK_CODE_INDICATOR     => 'M',
-                Headings::BENEFICIARY_CODE        => $ba->getKotakBeneficaryCode(),
+                Headings::BENEFICIARY_CODE        => $ba->getBeneficiaryCode(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYMENT',
                 Headings::MERCHANT_ID             => $merchant->getPublicId(),
                 Headings::BANK_ACCOUNT_ID         => $ba->getId(),
-                Headings::BATCH_FUND_TRANSFER_ID  => $settlement->getBatchFundTransferId(),
-                Headings::SOURCE_ID               => $settlement->getPublicId(),
+                Headings::BATCH_FUND_TRANSFER_ID  => $entity->getBatchFundTransferId(),
+                Headings::SOURCE_ID               => $source->getPublicId(),
                 Headings::VERSION                 => $version,
             ];
 
@@ -208,15 +209,15 @@ class NodalAccount
         {
             $version = Attempt\Version::V2;
 
-            $settlement = $entity->source;
+            $source = $entity->source;
 
             $paymentRefNo = $entity->getPublicId();
         }
         else if ($entity instanceof Settlement\Entity)
         {
-            $settlement = $entity;
+            $source = $entity;
 
-            $paymentRefNo = $settlement->getPublicId();
+            $paymentRefNo = $source->getPublicId();
         }
         else
         {
@@ -224,7 +225,7 @@ class NodalAccount
                 'Not a valid entity for Settlement-file generation: ' . get_class($entity));
         }
 
-        return [$version, $paymentRefNo];
+        return [$version, $paymentRefNo, $source];
     }
 
     protected function getPaymenType(BankAccount\Entity $ba, $amount)

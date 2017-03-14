@@ -220,7 +220,7 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::TYPE);
     }
 
-    public function getBeneficaryCode()
+    public function getBeneficiaryCode()
     {
         return $this->getAttribute(self::BENEFICIARY_CODE);
     }

@@ -110,6 +110,11 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::SOURCE_TYPE);
     }
 
+    public function getBatchFundTransferId()
+    {
+        return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
+    }
+
     // ------------------------------- setters ---------------------------------
 
     public function setRemarks($remarks)

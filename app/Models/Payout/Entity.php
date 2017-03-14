@@ -196,7 +196,6 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::BATCH_FUND_TRANSFER_ID);
     }
 
-
     public function isStatusCreated()
     {
         return ($this->getStatus() === Status::CREATED);
