@@ -10,7 +10,7 @@ use RZP\Models\Base;
 use RZP\Models\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class Service extends Base\Service
 {

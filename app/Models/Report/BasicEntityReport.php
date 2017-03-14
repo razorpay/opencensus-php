@@ -8,7 +8,7 @@ use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
 use RZP\Exception;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 use RZP\Trace\TraceCode;
 
 class BasicEntityReport extends Base

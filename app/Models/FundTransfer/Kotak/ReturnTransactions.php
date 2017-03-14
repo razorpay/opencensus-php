@@ -1,19 +1,19 @@
 <?php
 
-namespace RZP\Models\Settlement\Kotak;
+namespace RZP\Models\FundTransfer\Kotak;
 
 use RZP\Exception;
 use Excel;
 use RZP\Models\Base;
+use RZP\Models\FundTransfer\Batch;
 use RZP\Models\Merchant;
 use RZP\Models\Transaction;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
 use RZP\Models\Settlement\SlackNotification;
 
 class ReturnTransactions
 {
-    use Kotak\FileHandlerTrait;
+    use FileHandlerTrait;
 
     protected static $fileToReadName = 'Kotak_Return_Transaction';
 
@@ -41,7 +41,7 @@ class ReturnTransactions
         $this->merchantRepo = new Merchant\Repository;
         $this->setlRepo = new Settlement\Repository;
         $this->txnRepo = new Transaction\Repository;
-        $this->batchSetlRepo = new Settlement\Batch\Repository;
+        $this->batchFundTransferRepo = new Batch\Repository;
     }
 
     public function process($input)
@@ -53,7 +53,7 @@ class ReturnTransactions
 
         $url = $this->saveUploadedFileToAws($returnFile);
 
-        $this->batchSetttlement = $this->batchSetlRepo->getSettlementForTodayOrFail();
+        $this->batchSetttlement = $this->batchFundTransferRepo->getSettlementForTodayOrFail();
 
         $this->batchSetttlement->addUrl('kotak_return_txt', $url);
 
