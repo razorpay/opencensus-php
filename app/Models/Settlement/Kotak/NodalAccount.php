@@ -78,6 +78,8 @@ class NodalAccount
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
 
+        $this->hour = Carbon::now('Asia/Kolkata')->hour;
+
         $this->queue = \Queue::getFacadeRoot();
 
         $this->mail = \Mail::getFacadeRoot();
@@ -123,7 +125,7 @@ class NodalAccount
                 $iftCount++;
             }
             else if (($amount >= self::RTGS_AMOUNT) and
-                     ($this->date->hour <= 14))
+                     ($this->hour <= 14))
             {
                 $type = 'RTGS';
                 $rtgsAmount += $amount;
