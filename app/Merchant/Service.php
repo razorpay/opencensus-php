@@ -1122,7 +1122,7 @@ class Service extends Base\Service
 
                 $zapierData = (new User\Service)->getZapierData($merchant, $input);
 
-                if (config('slack.enable'))
+                if (!config('razorpay.zapier.mock'))
                 {
                     Queue::push('App\User\Service@postToZapier', $zapierData);
                 }
