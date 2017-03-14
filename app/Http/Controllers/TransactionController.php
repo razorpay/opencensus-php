@@ -89,35 +89,6 @@ class TransactionController extends Controller
         return AppResponse::jsonResponse($error, $data);
     }
 
-    public function getOrders($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'order');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getOrderPayments($mode, $id)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchOrderPayments($id, $mode);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getOrder($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'order');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postAddfunds($mode)
     {
         $this->checkMode($mode);
@@ -144,54 +115,6 @@ class TransactionController extends Controller
         }
 
         $file->download('xlsx');
-    }
-
-    public function getRefunds($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'refund');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getRefund($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'refund');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getSettlements($mode)
-    {
-        $this->checkMode($mode);
-
-        $input = Input::all();
-
-        list($error, $data) = (new Api\Service)->fetchCollection($input, $mode, 'settlement');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getSettlement($mode, $id = null)
-    {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->fetchEntity($id, $mode, 'settlement');
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function getSettlementDetails($mode, $id) {
-        $this->checkMode($mode);
-
-        list($error, $data) = (new Api\Service)->getEntity($mode, 'settlement')->getDetails($id);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function getResourceReport($mode, $resource)

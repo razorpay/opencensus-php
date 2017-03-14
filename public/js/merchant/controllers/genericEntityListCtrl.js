@@ -1,6 +1,6 @@
 "use strict";
 /**
- * Generic Entities Listing Controller [Currently handling Payments]
+ * Generic Entities Listing Controller [Currently handling Payments, Orders, Refunds, Settlements]
  */
 app.controller('GenericEntityListCtrl', [
   '$scope',
@@ -62,6 +62,21 @@ app.controller('GenericEntityListCtrl', [
       generateTable();
     };
 
+    $scope.showSettlementBreakup = function (settlement_id) {
+      $modal.open({
+        templateUrl: 'settlementBreakupModalContent.html',
+        controller: 'settlementBreakupModalCtrl',
+        resolve: {
+          settlement_id: function () {
+            return settlement_id;
+          },
+          mode: function () {
+            return $scope.mode;
+          }
+        }
+      });
+    };
+
     function clear(field) {
       if (field === 'id') {
         $scope.entity.id = '';
@@ -110,21 +125,29 @@ app.controller('GenericEntityListCtrl', [
       params.query_params = q;
       params.mode = $scope.mode;
 
-      if ($scope.entity.type === 'payment') {
-        if ($scope.entity.id === '') {
-          params.route_name = 'payment_fetch_multiple';
-        } else {
-          params.route_name = 'payment_fetch_by_id';
-        }
-      }
-
       if ($scope.entity.id === '') {
+        var route_names = {
+          'payment'     : 'payment_fetch_multiple',
+          'refund'      : 'refund_fetch_multiple',
+          'order'       : 'order_fetch',
+          'settlement'  : 'setl_fetch_multiple'
+        };
+
+        if (route_names.hasOwnProperty($scope.entity.type)) {
+          params.route_name = route_names[$scope.entity.type];
+        }
+
         request = $http.get('/generic', {
           params: params
         });
       }
       else {
-        var url = location.origin + '/#/app/payments/' + $scope.entity.id;
+        var url = '';
+        var entities = ['payment', 'refund', 'order', 'settlement'];
+        if (entities.indexOf($scope.entity.type) !== -1) {
+          url = location.origin + '/#/app/' + $scope.entity.type + 's/' + $scope.entity.id;
+        }
+
         window.open(url, '_blank');
 
         return;
@@ -156,5 +179,38 @@ app.controller('GenericEntityListCtrl', [
         $scope.alerts.addAlert('danger', null, true);
       });
     }
+  }
+])
+.controller('settlementBreakupModalCtrl', [
+  '$scope',
+  '$modalInstance',
+  '$http',
+  'settlement_id',
+  'mode',
+  function($scope, $modalInstance, $http, settlement_id, mode) {
+    $scope.cancel = function () {
+      $modalInstance.dismiss('cancel');
+    };
+
+    $scope.settlement_id = settlement_id;
+
+    var params = {};
+    params.route_name = 'setl_get_details';
+    params.mode = mode;
+    params.url_params = {
+      '{id}': $scope.settlement_id
+    };
+
+    var request = $http.get('/generic', {
+      params: params
+    });
+
+    request.success(function (data) {
+      if (data.success) {
+        $scope.breakupDetails = data.data.items;
+      }
+    }).error(function () {
+      $scope.alerts.addAlert('danger', null, true);
+    });
   }
 ]);
