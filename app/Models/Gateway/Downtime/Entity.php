@@ -13,9 +13,8 @@ class Entity extends Base\PublicEntity
     const CARD_TYPE     = 'card_type';
     const NETWORK       = 'network';
     const METHOD        = 'method';
-    // todo: candidate for from/to are start/end, begin/end
-    const FROM          = 'from';
-    const TO            = 'to';
+    const BEGIN         = 'begin';
+    const END           = 'end';
     const TERMINAL_ID   = 'terminal_id';
     const REASON_CODE   = 'reason_code';
     const SOURCE        = 'source';
@@ -36,8 +35,8 @@ class Entity extends Base\PublicEntity
 
     protected $fillable = [
         self::GATEWAY,
-        self::FROM,
-        self::TO,
+        self::BEGIN,
+        self::END,
         self::COMMENT,
         self::REASON_CODE,
         self::ISSUER,
@@ -59,8 +58,8 @@ class Entity extends Base\PublicEntity
         self::NETWORK,
         self::METHOD,
         self::SOURCE,
-        self::FROM,
-        self::TO,
+        self::BEGIN,
+        self::END,
         self::TERMINAL_ID,
         self::REASON_CODE,
         self::COMMENT,
@@ -78,8 +77,8 @@ class Entity extends Base\PublicEntity
         self::ISSUER,
         self::NETWORK,
         self::CARD_TYPE,
-        self::FROM,
-        self::TO,
+        self::BEGIN,
+        self::END,
         self::TERMINAL_ID,
         self::REASON_CODE,
         self::COMMENT,
@@ -90,8 +89,8 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $casts = [
-        self::FROM      => 'int',
-        self::TO        => 'int',
+        self::BEGIN     => 'int',
+        self::END       => 'int',
         self::SCHEDULED => 'bool',
         self::PARTIAL   => 'bool',
         self::PUBLIC    => 'bool',
@@ -102,7 +101,7 @@ class Entity extends Base\PublicEntity
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
         self::NETWORK       => self::UNKNOWN,
-        self::TO            => null,
+        self::END           => null,
         self::COMMENT       => null,
         self::SCHEDULED     => false,
         self::PUBLIC        => true,
@@ -306,14 +305,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::PUBLIC);
     }
 
-    public function getFrom()
+    public function getBegin()
     {
-        return $this->getAttribute(self::FROM);
+        return $this->getAttribute(self::BEGIN);
     }
 
-    public function getTo()
+    public function getEnd()
     {
-        return $this->getAttribute(self::TO);
+        return $this->getAttribute(self::END);
     }
 
     public function getSource()

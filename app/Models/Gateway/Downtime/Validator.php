@@ -16,8 +16,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::FROM            => 'required|integer',
-        Entity::TO              => 'sometimes|integer',
+        Entity::BEGIN           => 'required|integer',
+        Entity::END             => 'sometimes|integer',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -32,8 +32,8 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::FROM            => 'sometimes|integer',
-        Entity::TO              => 'sometimes|integer',
+        Entity::BEGIN           => 'sometimes|integer',
+        Entity::END             => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
@@ -49,8 +49,8 @@ class Validator extends Base\Validator
         Entity::GATEWAY         => 'sometimes|string|max:255',
         Entity::METHOD          => 'sometimes|string|max:30',
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::FROM            => 'sometimes|integer',
-        Entity::TO              => 'sometimes|integer',
+        Entity::BEGIN           => 'sometimes|integer',
+        Entity::END             => 'sometimes|integer',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
@@ -63,7 +63,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $createValidators = [
-        Entity::TO,
+        Entity::END,
         Entity::METHOD,
         Entity::ISSUER,
         Entity::CARD_TYPE,
@@ -71,7 +71,7 @@ class Validator extends Base\Validator
     ];
 
     protected static $editValidators = [
-        Entity::TO,
+        Entity::END,
         Entity::ISSUER,
         Entity::CARD_TYPE,
         Entity::NETWORK
@@ -109,33 +109,33 @@ class Validator extends Base\Validator
         }
     }
 
-    public function validateTo(array $input)
+    public function validateEnd(array $input)
     {
-        if (empty($input[Entity::TO]) === true)
+        if (empty($input[Entity::END]) === true)
         {
             return;
         }
 
-        $to = $input[Entity::TO];
+        $end = $input[Entity::END];
 
-        $from = $input[Entity::FROM] ?? $this->entity->getFrom();
+        $begin = $input[Entity::BEGIN] ?? $this->entity->getBegin();
 
-        if ($to < $from)
+        if ($end < $begin)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'From : ' . $from . ' less than To :' . $to);
+                'Begin : ' . $begin . ' less than end :' . $end);
         }
 
-        if ($from > Entity::END_OF_TIME)
+        if ($begin > Entity::END_OF_TIME)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'From: '. $from. ' is greater than End of Time:' . Entity::END_OF_TIME);
+                'Begin: '. $begin. ' is greater than End of Time:' . Entity::END_OF_TIME);
         }
 
-        if ($to > Entity::END_OF_TIME)
+        if ($end > Entity::END_OF_TIME)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'To: '. $to. ' is greater than End of Time:' .Entity::END_OF_TIME);
+                'End: '. $end . ' is greater than End of Time:' . Entity::END_OF_TIME);
         }
     }
 

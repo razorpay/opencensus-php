@@ -1801,6 +1801,8 @@ ALTER TABLE terminals
     ADD INDEX terminals_network_category_index (network_category);
 
 ALTER TABLE gateway_status_absence
+    CHANGE COLUMN `from` `begin` INT(11),
+    CHANGE COLUMN `to` `end` INT(11) DEFAULT NULL,
     ADD KEY `gateway_status_absence_issuer_created_at` (`created_at`),
     ADD KEY `gateway_status_absence_reason_code` (`reason_code`),
     ADD KEY `gateway_status_absence_source` (`source`),

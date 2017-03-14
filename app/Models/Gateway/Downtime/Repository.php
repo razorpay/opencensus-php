@@ -12,8 +12,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
         Entity::METHOD      => 'sometimes|string|max:30',
-        Entity::FROM        => 'sometimes|integer',
-        Entity::TO          => 'sometimes|integer',
+        Entity::BEGIN       => 'sometimes|integer',
+        Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30'
     );
@@ -23,8 +23,8 @@ class Repository extends Base\Repository
         Entity::GATEWAY     => 'sometimes|string|max:255',
         Entity::ISSUER      => 'sometimes|string|max:50',
         Entity::METHOD      => 'sometimes|string|max:30',
-        Entity::FROM        => 'sometimes|integer',
-        Entity::TO          => 'sometimes|integer',
+        Entity::BEGIN       => 'sometimes|integer',
+        Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
         Entity::SOURCE      => 'sometimes|string|max:30'
     );
@@ -34,14 +34,14 @@ class Repository extends Base\Repository
         Entity::ISSUER  => '=',
         Entity::METHOD  => '=',
         Entity::SOURCE  => '=',
-        Entity::FROM    => '<='
+        Entity::BEGIN   => '<='
     ];
 
     const UNIQUE_KEYS = [
         Entity::GATEWAY,
         Entity::ISSUER,
         Entity::METHOD,
-        Entity::FROM,
+        Entity::BEGIN,
     ];
 
     public function isMerchantIdRequiredForFetch()
@@ -84,7 +84,7 @@ class Repository extends Base\Repository
 
         $this->buildQuery(self::KEY_OPERATOR_MAP, $input, $query);
 
-        $query->whereNull(Entity::TO);
+        $query->whereNull(Entity::END);
 
         return $query->latest();
     }
@@ -100,31 +100,31 @@ class Repository extends Base\Repository
         }
     }
 
-    protected function addQueryParamFrom($query, $params)
+    protected function addQueryParamBegin($query, $params)
     {
-        $query->where(Entity::FROM, '<=', $params[Entity::FROM]);
+        $query->where(Entity::BEGIN, '<=', $params[Entity::BEGIN]);
     }
 
-    protected function addQueryParamTo($query, $params)
+    protected function addQueryParamEnd($query, $params)
     {
-        // The default value for Entity::TO is null. This is because we do not necessarily know
+        // The default value for Entity::END is null. This is because we do not necessarily know
         // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
         // setting the $to value to $input['to'] if available or $input['from']. The essential
         // idea is to fetch the list of gateways/issuers at the current point in time.
-        $to = $params[Entity::TO] ?? null;
+        $to = $params[Entity::END] ?? null;
 
         if ((empty($to) === true) and
-            (isset($params[Entity::FROM])))
+            (isset($params[Entity::BEGIN])))
         {
-            $to = $params[Entity::FROM];
+            $to = $params[Entity::BEGIN];
         }
 
         if (empty($to) === false)
         {
             $query->where(function ($query) use ($to)
             {
-                $query->whereNull(Entity::TO);
-                $query->orWhere(Entity::TO, '>=', $to);
+                $query->whereNull(Entity::END);
+                $query->orWhere(Entity::END, '>=', $to);
             });
         }
     }

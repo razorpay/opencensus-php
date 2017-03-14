@@ -77,7 +77,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
                 if (empty($downtime) === false)
                 {
                     $editData = [
-                        Entity::TO     => time(),
+                        Entity::END    => time(),
                         Entity::SOURCE => $downtime->getSource()
                     ];
 
@@ -352,11 +352,11 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         if ($status === true)
         {
-            $formatted[Entity::TO] = time();
+            $formatted[Entity::END] = time();
         }
         else
         {
-            $formatted[Entity::FROM] = time();
+            $formatted[Entity::BEGIN] = time();
         }
 
         try

@@ -44,10 +44,9 @@ class CreateGatewayAbsence extends Migration
             $table->text(Downtime::COMMENT)
                   ->nullable();
 
-            $table->integer(Downtime::FROM);
+            $table->integer(Downtime::BEGIN);
 
-            // TO is optional
-            $table->integer(Downtime::TO)
+            $table->integer(Downtime::END)
                   ->nullable();
 
             $table->tinyInteger(Downtime::SCHEDULED)
@@ -72,9 +71,9 @@ class CreateGatewayAbsence extends Migration
 
             $table->index(Downtime::GATEWAY);
 
-            $table->index(Downtime::FROM);
+            $table->index(Downtime::BEGIN);
 
-            $table->index(Downtime::TO);
+            $table->index(Downtime::END);
 
             $table->index(Downtime::METHOD);
 
