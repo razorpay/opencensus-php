@@ -82,21 +82,21 @@ export default (props) => {
                     label='Payments'
                     onToggleClick={() => props.onTogglePayments(order)}
                   >
-                    <table class='table table-hover'>
+                    <table class='table table-hover table-striped'>
                       <TableBody
                         colSpan={2}
                         isLoading={payments.loading}
                         rows={payments.items}
                       >
                         {
-                          payments.items.map((payment) => <PaymentList key={payment.id} />)
+                          payments.items.map((payment) => <PaymentList key={payment.id} payment={payment} />)
                         }
                       </TableBody>
                     </table>
                   </ListGroupToggler> :
                   <div class='list-group-item'>
                     <span>Payments</span>
-                    <span>No Payments </span>
+                    <span>No Payments</span>
                   </div>
                 }
 

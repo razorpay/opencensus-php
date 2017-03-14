@@ -28,7 +28,7 @@ const OrdersListItem = ({ order }) => {
 export default ({ orders, isLoading }) => {
   return (
     <div class='table-responsive'>
-      <table class='table table-hover'>
+      <table class='table table-hover table-striped'>
         <thead>
           <tr>
             <th>Order Id</th>

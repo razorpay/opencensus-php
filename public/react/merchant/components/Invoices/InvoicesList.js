@@ -64,7 +64,7 @@ export default (props) => {
 
   return (
     <div class='table-responsive'>
-      <table class='table table-hover'>
+      <table class='table table-hover table-striped'>
         <thead>
           <tr>
             <th>Invoice Id</th>
