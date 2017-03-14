@@ -64,9 +64,6 @@ trait Capture
             $amount -= $payment->getFee();
         }
 
-        // set auto-capture 1
-        $payment->setAutoCapturedTrue();
-
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
@@ -77,6 +74,9 @@ trait Capture
         try
         {
             $payment = $this->capturePayment($payment, $amount, $currency);
+
+            // set auto-capture 1
+            $payment->setAutoCapturedTrue();
         }
         catch (Exception\RecoverableException $e)
         {
@@ -97,7 +97,12 @@ trait Capture
                                                 TraceCode::PAYMENT_AUTO_CAPTURE_FAILED,
                                                 $customProperties);
 
-            throw $e;
+            $this->repo->saveOrFail($payment);
+
+            // We are not re-throwing $e because we don't want the
+            // customer to know that it was a capture error.
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
 
         return true;
