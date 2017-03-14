@@ -2,6 +2,8 @@
 
 namespace RZP\Reconciliator\Jiomoney;
 
+use RZP\Exception\ReconciliationException;
+use RZP\Gateway\Base\Action;
 use RZP\Models\Payment\Processor\Wallet;
 use RZP\Reconciliator\Base;
 use RZP\Trace\TraceCode;
@@ -11,8 +13,9 @@ class RefundReconciliate extends Base\RefundReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_REFUND_ID = 'external_reference_number';
-    const COLUMN_REFUND_AMOUNT = 'transaction_amount';
+    const COLUMN_REFUND_ID          = 'external_reference_number';
+    const COLUMN_REFUND_AMOUNT      = 'transaction_amount';
+    const COLUMN_GATEWAY_PAYMENT_ID = 'retrieval_ref_number';
 
     protected function getRefundId(array $row)
     {
@@ -23,13 +26,14 @@ class RefundReconciliate extends Base\RefundReconciliate
 
     protected function getPaymentId(array $row)
     {
-        $refundId = $this->getRefundId($row);
+        $gatewayPaymentId = (string) $row[self::COLUMN_GATEWAY_PAYMENT_ID];
 
-        $gatewayEntities = $this->repo->wallet_jiomoney->findSuccessfulRefundByRefundId(
-                                                            $refundId,
+        $gatewayEntity = $this->repo->wallet_jiomoney->findByGatewayPaymentIdAncAction(
+                                                            $gatewayPaymentId,
+                                                            Action::AUTHORIZE,
                                                             Wallet::JIOMONEY);
 
-        if ($gatewayEntities->count() === 0)
+        if ($gatewayEntity === null)
         {
             return null;
         }
@@ -45,10 +49,13 @@ class RefundReconciliate extends Base\RefundReconciliate
 
         $refundAmount = intval(number_format($refundAmount, 2, '.', ''));
 
-        // Jiomoney returns refund amount as a negative value in the report file.
-        // This step handles that by converting it to a positive number. In case
-        // we get positive refund amount we use it as is
-        $refundAmount = ($refundAmount < 0) ? ($refundAmount * -1) : $refundAmount;
+        if ($refundAmount > 0)
+        {
+            throw new ReconciliationException("Positive amount given in Jiomoney refund", $row);
+        }
+
+        // Jiomoney gives negative value for refund amount so we take the absolute value here
+        $refundAmount = abs($refundAmount);
 
         return $refundAmount;
     }

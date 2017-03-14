@@ -106,16 +106,6 @@ class Entity extends Base\Entity
         return $this->getAttribute(self::DATE);
     }
 
-    public function setStatusCode($statusCode)
-    {
-        $this->setAttribute(self::STATUS_CODE, $statusCode);
-    }
-
-    public function setResponseCode(string $responseCode)
-    {
-        $this->setAttribute(self::RESPONSE_CODE, $responseCode);
-    }
-
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);
@@ -124,10 +114,5 @@ class Entity extends Base\Entity
     public function setDate(string $date)
     {
         $this->setAttribute(self::DATE, $date);
-    }
-
-    public function setGatewayPaymentId(string $gatewayPaymentId)
-    {
-        $this->setAttribute(self::GATEWAY_PAYMENT_ID, $gatewayPaymentId);
     }
 }

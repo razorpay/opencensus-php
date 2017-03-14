@@ -206,16 +206,18 @@ class Gateway extends Base\Gateway
         if ((empty($input['gateway']['gateway_payment_id']) === true) or
             (empty($input['gateway']['gateway_payment_date']) === true))
         {
-            throw new Exception\BadRequestValidationFailureException(
-                'Correct field not present for the required operation');
+            throw new Exception\BadRequestException(
+                        ErrorCode::BAD_REQUEST_ERROR);
         }
 
-        $gatewayPayment->setGatewayPaymentId($input['gateway']['gateway_payment_id']);
-        $gatewayPayment->setDate($input['gateway']['gateway_payment_date']);
+        $contentToSave = [
+            Entity::GATEWAY_PAYMENT_ID => $input['gateway']['gateway_payment_id'],
+            Entity::DATE               => $input['gateway']['gateway_payment_date'],
+            Entity::STATUS_CODE        => StatusCode::SUCCESS,
+            Entity::RESPONSE_CODE      => ResponseCode::SUCCESS
+        ];
 
-        // Since we are force authorizing we set both StatusCode and ResponseCode as success
-        $gatewayPayment->setStatusCode(StatusCode::SUCCESS);
-        $gatewayPayment->setResponseCode(ResponseCode::SUCCESS);
+        $gatewayPayment->fill($contentToSave);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -596,9 +598,11 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
+        //
         // We always update wallet entity with verify response content as we need
         // the gateway payment date during refund. So if that is not present in
         // wallet entity we get it from verify
+        //
         $verify->content = $this->getVerifyWalletAttributes($verify);
 
         $gatewayPayment->fill($verify->content);
@@ -608,6 +612,8 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyWalletAttributes($verify)
     {
+        $gatewayPayment = $verify->payment;
+
         $content = $verify->verifyResponseContent;
 
         $gatewayResponseCode = $this->getGatewayResponseCode($content);
@@ -615,11 +621,15 @@ class Gateway extends Base\Gateway
         $gatewayStatusCode = $this->getGatewayStatusCodeFromResponseCode($gatewayResponseCode);
 
         $contentToSave = [
-            Entity::STATUS_CODE        => $gatewayStatusCode,
             Entity::RESPONSE_CODE      => $gatewayResponseCode,
             Entity::DATE               => $this->getGatewayPaymentDate($content),
             Entity::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content)
         ];
+
+        if ($gatewayPayment->getStatusCode() === null)
+        {
+            $contentToSave[Entity::STATUS_CODE] = $gatewayStatusCode;
+        }
 
         return $contentToSave;
     }

@@ -17,9 +17,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
     /*******************
      * Row Header Names
      *******************/
-    const COLUMN_PAYMENT_ID      = 'external_reference_number';
-    const COLUMN_PAYMENT_AMOUNT  = 'transaction_amount';
-    const COLUMN_PAYMENT_DATE    = 'tran_datetime';
+    const COLUMN_PAYMENT_ID         = 'external_reference_number';
+    const COLUMN_PAYMENT_AMOUNT     = 'transaction_amount';
+    const COLUMN_PAYMENT_DATE       = 'tran_datetime';
     const COLUMN_GATEWAY_PAYMENT_ID = 'retrieval_ref_number';
 
     const GATEWAY_PAYMENT_DATE_FORMAT = 'm/d/Y H:i:s';
