@@ -4,17 +4,23 @@ namespace RZP\Tests\Functional\Settlement;
 
 use Carbon\Carbon;
 
+use RZP\Models\FundTransfer\Attempt;
 use RZP\Models\Merchant\Account;
+use RZP\Models\Settlement\Entity as SettlementEntity;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
+use RZP\Tests\Functional\Helpers\EntityActionTrait;
 
 class SettlementTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use EntityActionTrait;
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/SettlementTestData.php';
+
         parent::setUp();
 
         $this->ba->publicAuth();
@@ -107,14 +113,12 @@ class SettlementTest extends TestCase
         $this->assertEquals(0, $content['kotak']['transaction_count']);
     }
 
-    public function createPaymentEntities()
+    protected function createPaymentEntities(int $count = 5)
     {
-        $prEntities = array();
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 5;
+        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(50)->timestamp + 10;
 
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 10;
-
-        $payments = $this->fixtures->times(5)->create(
+        $payments = $this->fixtures->times($count)->create(
             'payment:captured',
             [
                 'captured_at' => $capturedAt,
@@ -130,7 +134,6 @@ class SettlementTest extends TestCase
     // Random settlement holiday - Test for live mode
     public function testSettlementOnHolidayInLiveMode()
     {
-
         $this->ba->publicLiveAuth();
 
         $days = $this->getDaysForSettlementHolidayTests();
@@ -235,6 +238,29 @@ class SettlementTest extends TestCase
         Carbon::setTestNow();
     }
 
+    public function testSettlementWithPayout()
+    {
+        // Create payments and refunds with timestamps two days back
+        $payments = $this->createPaymentEntities();
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $payout = $this->fixtures->create(
+            'payout',
+            [
+                'amount'     => '1000',
+                'currency'   => 'INR',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
+
+        // Generate settlements for above transactions
+        $content = $this->initiateSettlements();
+
+        // (5 payments txn + 1 payout txn)
+        $this->assertEquals(6, $content['kotak']['transaction_count']);
+    }
+
     public function testMerchantSettlement()
     {
         $this->ba->appAuth();
@@ -268,11 +294,18 @@ class SettlementTest extends TestCase
 
         $setl = $this->getLastEntity('settlement', true);
 
-        $batchSetl = $this->getLastEntity('batch_settlement', true);
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
-        $this->assertEquals($setl['batch_settlement_id'], $batchSetl['id']);
+        $this->assertEquals($setlAttempt['batch_fund_transfer_id'], $batchFundTransfer['id']);
+        $this->assertEquals($setlAttempt['source'], $setl['id']);
 
-        $request = array('url' => '/settlements/file/generate', 'method' => 'post', 'content' => ['batch_settlement_id' => $batchSetl['id']]);
+        $request = [
+            'url' => '/settlements/file/generate',
+            'method' => 'post',
+            'content' => ['batch_fund_transfer_id' => $batchFundTransfer['id']]
+        ];
+
         $content = $this->makeRequestAndGetContent($request);
 
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
@@ -312,13 +345,26 @@ class SettlementTest extends TestCase
         $this->assertEquals($totalTxnFeeCredits, $totalFeeCredits);
 
         $this->assertSame($totalAmount, $setl['amount']);
+
+        // check settlement report
+        $dt = Carbon::today('Asia/Kolkata');
+
+        $input = array(
+            'year' => $dt->year,
+            'month' => $dt->month,
+            'day' => $dt->day);
+
+        $settlementReport = $this->fetchReport('settlement', $input);
+        assert(count($settlementReport) === 1);
     }
 
     public function testMerchantSettlementV2()
     {
-        $this->ba->appAuth();
+        $this->ba->adminAuth();
 
         $schedule = $this->createAndAssignSchedule();
+
+        $this->ba->appAuth();
 
         $payments = $this->createPaymentEntities();
 
@@ -330,18 +376,26 @@ class SettlementTest extends TestCase
             $refunds[] = $refund;
         }
 
-        $input = array('count' => 10);
+        $input = ['count' => 10];
         $txns = $this->getEntities('transaction', $input, true);
 
-        $request = array(
+        $request = [
             'url' => '/settlements/initiate2/kotak',
             'method' => 'POST'
-        );
+        ];
 
         $content = $this->makeRequestAndGetContent($request);
 
         $setl = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementForV2');
 
+        // Validate settlement txn entity
+        $setlTxn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $setlTxn['type']);
+        $this->assertEquals($setl['id'], $setlTxn['entity_id']);
+        $this->assertNull($setlTxn['reconciled_at']);
+
+        // Validate settlement details entity
         $content = $this->getEntities('settlement_details', ['settlement_id' => $setl['id']], true);
 
         $this->assertArrayHasKey('entity', $content);
@@ -363,6 +417,20 @@ class SettlementTest extends TestCase
         }
 
         $this->assertSame($totalAmount, $setl['amount']);
+
+        // Validate batch settlement entity
+        $batchFundTransfer = $this->getLastEntity('batch_fund_transfer', true);
+        $this->assertNotNull($batchFundTransfer['urls']['kotak_settlement_txt']);
+        $this->assertNotNull($batchFundTransfer['urls']['kotak_settlement_excel']);
+        $this->assertTestResponse($batchFundTransfer, 'fetchAndMatchBatchDataSettlement');
+        $this->assertGreaterThanOrEqual($batchFundTransfer['initiated_at'], time());
+        $this->assertNull($batchFundTransfer['reconciled_at']);
+
+        // Validate fund_transfer_attempt entity
+        $bta = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($bta, 'matchSettlementAttempt');
+        $this->assertEquals($batchFundTransfer['id'], $bta['batch_fund_transfer_id']);
+        $this->assertEquals($setl['id'], $bta['source']);
     }
 
     public function testSettlementIgnoredTxns()
@@ -413,15 +481,65 @@ class SettlementTest extends TestCase
 
     public function testSettlementFileGeneration()
     {
-        $this->testMerchantSettlement();
+        $this->testMerchantSettlementV2();
 
         $setl = $this->getLastEntity('settlement', true);
+        $setlAttempt = $this->getLastEntity('fund_transfer_attempt', true);
 
         $request = array(
             'url' => '/settlements/file/generate',
             'method' => 'POST',
             'content' => [
-                'batch_settlement_id' => $setl['batch_settlement_id']
+                'batch_fund_transfer_id' => $setlAttempt['batch_fund_transfer_id']
+            ]
+        );
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        $this->assertNotEquals($content, null);
+    }
+
+    public function testSettlementFileGenerationV1()
+    {
+        $this->ba->adminAuth();
+
+        $schedule = $this->createAndAssignSchedule();
+
+        $this->ba->appAuth();
+
+        // Create payments for old date
+        $createdAt = 1481500800; // 12th Dec 2016
+        $capturedAt = $createdAt + 10;
+
+        $this->fixtures->times(2)->create(
+            'payment:captured',
+            [
+                'captured_at' => $capturedAt,
+                'method'      => 'card',
+                'created_at'  => $createdAt,
+                'updated_at'  => $createdAt + 10
+            ]
+        );
+
+        // Generate settlements for above transactions
+        $request = array(
+            'url' => '/settlements/initiate2/kotak',
+            'method' => 'POST'
+        );
+
+        $this->makeRequestAndGetContent($request);
+
+        // Modify created_at of batch so that the old settlement file generation can kick in
+        $batch = $this->getLastEntity('batch_fund_transfer', true);
+
+        $this->fixtures->edit('batch_fund_transfer', $batch['id'], ['created_at' => $capturedAt + 50]);
+
+        // Generate settlement-file generation
+        $request = array(
+            'url' => '/settlements/file/generate',
+            'method' => 'POST',
+            'content' => [
+                'batch_fund_transfer_id' => $batch['id']
             ]
         );
 
@@ -447,10 +565,123 @@ class SettlementTest extends TestCase
         $this->assertNotEquals(null, $content['file']);
     }
 
+    public function testSettlementWithAccountTransfer()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'source_id'  => $payment->getId(),
+                'source_type'=> 'payment',
+                'amount'     => 5000,
+                'currency'   => 'INR',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
+
+        // Generate settlements
+        $content = $this->initiateSettlements();
+
+        $lastSetl = $this->getLastEntity('settlement', true);
+
+        // Assert linked account settlement
+        $this->assertEquals($transfer['to_id'], $lastSetl['merchant_id']);
+        $this->assertEquals(5000, $lastSetl['amount']);
+
+        // (1 payment txn + 1 transfer txn + 1 transfer payment txn)
+        $this->assertEquals(3, $content['kotak']['transaction_count']);
+    }
+
+    public function testSettlementAccountTransferOnHold()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $transfer = $this->fixtures->create(
+            'transfer:to_account',
+            [
+                'source_id'  => $payment->getId(),
+                'source_type'=> 'payment',
+                'amount'     => 5000,
+                'currency'   => 'INR',
+                'on_hold'    => '1',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
+
+        // Generate settlements
+        $content = $this->initiateSettlements();
+
+        // 1 payment txn + 1 transfer txn
+        $this->assertEquals(2, $content['kotak']['transaction_count']);
+
+        // The txn for the transfer payment to the merchant should not settled
+        $trfPayment = $this->getEntities('payment', ['transfer_id' => $transfer->getId()], true)['items'][0];
+        $txn = $this->getEntityById('transaction', $trfPayment['transaction_id'], true);
+        $this->assertEquals('payment', $txn['type']);
+        $this->assertEquals($transfer->toArrayAdmin()['recipient'], 'acc_' . $txn['merchant_id']);
+        $this->assertFalse($txn['settled']);
+    }
+
+    public function testSettletmentForTransferReversal()
+    {
+        $payment = $this->createPaymentEntities(1);
+
+        $createdAt = Carbon::today('Asia/Kolkata')->subDays(10)->timestamp + 5;
+
+        $account = $this->fixtures->create('merchant:marketplace_account', ['balance' => 250000]);
+
+        $transfer = $this->fixtures->times(2)->create(
+            'transfer:to_account',
+            [
+                'account'    => $account,
+                'source_id'  => $payment->getId(),
+                'source_type'=> 'payment',
+                'amount'     => 1000,
+                'currency'   => 'INR',
+                'created_at' => $createdAt,
+                'updated_at' => $createdAt + 10
+            ]);
+
+        $reversal = $this->fixtures->create(
+            'reversal',
+            [
+                'transfer_id'   => $transfer[1]->getId(),
+                'amount'        => 90,
+                'created_at'    => $createdAt + 10,
+                'updated_at'    => $createdAt + 20
+            ]);
+
+        $content = $this->initiateSettlements();
+
+        $lastSetl = $this->getLastEntity('settlement', true);
+
+        // Assert linked account settlement
+        $this->assertEquals($transfer[1]['to_id'], $lastSetl['merchant_id']);
+
+        //
+        // transfer 1 -> credit 1000 + transfer 2 -> credit 1000
+        // reverse transfer 1 -> debit 1000
+        // total => 1000
+        //
+        $this->assertEquals(1000, $lastSetl['amount']);
+
+        //
+        // (1 payment txn +
+        //  2 transfer txn + 2 transfer payment txn +
+        //  1 transfer payment refund txn + 1 reversal txn)
+        //
+        $this->assertEquals(7, $content['kotak']['transaction_count']);
+    }
+
     protected function createAndAssignSchedule()
     {
         $request = array(
-            'url' => '/merchants/'.Account::TEST_ACCOUNT.'/schedules',
+            'url' => '/merchants/'. Account::TEST_ACCOUNT . '/schedules',
             'method' => 'POST',
             'content' => array(
                 'name'        => 'Basic T3',

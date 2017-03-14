@@ -34,6 +34,7 @@ class Notifier extends Base\Core
     protected $slack;
     protected $slackTechLogsChannel;
     protected $mailSubjectTemplates;
+    protected $dashboardUrl;
 
     public function __construct($invoice = null, string $issuedPdfPath = null)
     {
@@ -55,6 +56,8 @@ class Notifier extends Base\Core
         $this->slack = $this->app['slack'];
 
         $this->slackTechLogsChannel = Config::get('slack.channels.tech_logs');
+
+        $this->dashboardUrl = Config::get('applications.dashboard.url');
 
         $this->setMailSubjectTemplates();
     }
@@ -148,7 +151,7 @@ class Notifier extends Base\Core
         $data = $this->getInvoiceIssuedMailPayload();
 
         $this->dispatchMail(
-            'emails.invoice.customer.generated',
+            'emails.invoice.customer.notification',
             $data,
             function($message)
             {
@@ -185,7 +188,7 @@ class Notifier extends Base\Core
 
         $data = $this->getInvoiceExpiredMailPayload();
 
-        $this->dispatchMail('emails.invoice.customer.expired', $data);
+        $this->dispatchMail('emails.invoice.customer.notification', $data);
 
         return true;
     }
@@ -291,34 +294,51 @@ class Notifier extends Base\Core
         return $this->getInvoiceMailPayload(__FUNCTION__);
     }
 
-    protected function getInvoiceMailPayload(string $callee)
+    public function getInvoicePaidMailPayload()
     {
-        $merchant     = $this->invoice->merchant;
-        $merchantName = $merchant->getBillingLabelElseName();
+        return $this->getInvoiceMailPayload();
+    }
 
-        $subject = $this->getInvoiceMailSubject($callee, $merchantName);
+    /**
+     * Gets invoice payload common to all above events: issued, expired, paid etc.
+     *
+     * @param string|null $callee - Callee method name, used to construct subject of the mail.
+     *
+     * @return array
+     */
+    protected function getInvoiceMailPayload(string $callee = null)
+    {
+        $id = $this->invoice->getPublicId();
 
-        $invoicePayload = $this->invoice->toArrayPublic();
+        $viewPayload = (new ViewDataSerializer($this->invoice))->get();
+
+        $invoiceDashboardPath = $this->invoice->getDashboardPath();
 
         $extraInvoicePayload = [
-            'formatted_amount' => $this->invoice->getFormattedAmount(),
-            'type_label'       => ucwords($this->invoice->getTypeLabel()),
+            'type_label'    => ucwords($this->invoice->getTypeLabel()),
+            'pdf_url'       => url("v1/invoices/$id/pdf"),
+            'dashboard_url' => $this->dashboardUrl . $invoiceDashboardPath,
         ];
 
-        $invoicePayload += $extraInvoicePayload;
-
-        $merchantPayload = [
-            'name' => $merchantName,
-        ];
+        $viewPayload['invoice'] += $extraInvoicePayload;
 
         $label = $this->getLabel($this->invoice->getType());
+        $viewPayload['label'] = $label;
 
-        return [
-            'invoice'  => $invoicePayload,
-            'merchant' => $merchantPayload,
-            'subject'  => $subject,
-            'label'    => $label,
-        ];
+        //
+        // In one of the case callee is null - getInvoicePaidMailPayload.
+        // That method is used from Notify.php's flow. And subject construction
+        // is done there in this particular flow. We might(later) consider
+        // moving invoice's payment notifications here too.
+        //
+        if ($callee !== null)
+        {
+            $subject = $this->getInvoiceMailSubject($callee, $viewPayload['merchant']['name']);
+
+            $viewPayload['subject'] = $subject;
+        }
+
+        return $viewPayload;
     }
 
     protected function getInvoiceMailSubject(string $callee, string $merchantName)
@@ -430,7 +450,7 @@ class Notifier extends Base\Core
 
             if ($sent === true)
             {
-                ++$totalSent;
+                $totalSent++;
             }
         }
 
@@ -466,19 +486,19 @@ class Notifier extends Base\Core
     {
         $this->mailSubjectTemplates = [
             'getInvoiceIssuedMailPayload' => [
-                Type::LINK    => ' Razorpay | Payment requested by %s',
-                Type::ECOD    => ' Razorpay | Payment requested by %s',
-                Type::INVOICE => ' Razorpay | Invoice from %s',
+                Type::LINK    => ' Payment requested by %s',
+                Type::ECOD    => ' Payment requested by %s',
+                Type::INVOICE => ' Invoice from %s',
             ],
             'getInvoiceExpiredMailPayload' => [
-                Type::LINK    => ' Razorpay | Payment requested from %s has expired',
-                Type::ECOD    => ' Razorpay | Payment requested from %s has expired',
-                Type::INVOICE => ' Razorpay | Invoice from %s has expired',
+                Type::LINK    => ' Payment requested from %s has expired',
+                Type::ECOD    => ' Payment requested from %s has expired',
+                Type::INVOICE => ' Invoice from %s has expired',
             ],
             'getInvoiceExpiringMailPayload' => [
-                Type::LINK    => ' Razorpay | Payment request from %s is expiring',
-                Type::ECOD    => ' Razorpay | Payment request from %s is expiring',
-                Type::INVOICE => ' Razorpay | Invoice from %s is expiring',
+                Type::LINK    => ' Payment request from %s is expiring',
+                Type::ECOD    => ' Payment request from %s is expiring',
+                Type::INVOICE => ' Invoice from %s is expiring',
             ],
         ];
     }

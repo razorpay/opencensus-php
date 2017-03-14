@@ -1,0 +1,188 @@
+<?php
+
+namespace RZP\Models\FundTransfer\Batch;
+
+use RZP\Models\Base;
+use Carbon\Carbon;
+
+/**
+ * This entity contains aggregated settlement/payout data.
+ * It is updated during settlement/payout creation.
+ * If the update fails and the creation
+ * goes through successfully, this will not get updated.
+ * We will need to update it manually via a route.
+ */
+class Entity extends Base\PublicEntity
+{
+    const ID                = 'id';
+    const DATE              = 'date';
+    const TYPE              = 'type';
+    const CHANNEL           = 'channel';
+    const AMOUNT            = 'amount';
+    const FEES              = 'fees';
+    const API_FEE           = 'api_fee';
+    const GATEWAY_FEE       = 'gateway_fee';
+    const TOTAL_COUNT       = 'total_count';
+    const TRANSACTION_COUNT = 'transaction_count';
+    const SERVICE_TAX       = 'service_tax';
+    const URLS              = 'urls';
+    const INITIATED_AT      = 'initiated_at';
+    const RECONCILED_AT     = 'reconciled_at';
+    const RETURNED_AT       = 'returned_at';
+
+    protected $entity = 'batch_fund_transfer';
+
+    protected $generateIdOnCreate = true;
+
+    protected static $delimiter = '';
+
+    protected $fillable = array(
+        self::TYPE,
+        self::CHANNEL,
+        self::AMOUNT,
+        self::FEES,
+        self::TOTAL_COUNT,
+        self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
+        self::INITIATED_AT,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::URLS,
+    );
+
+    protected $public = array(
+        self::ID,
+        self::ENTITY,
+        self::TYPE,
+        self::DATE,
+        self::CHANNEL,
+        self::AMOUNT,
+        self::FEES,
+        self::API_FEE,
+        self::GATEWAY_FEE,
+        self::TOTAL_COUNT,
+        self::TRANSACTION_COUNT,
+        self::SERVICE_TAX,
+        self::URLS,
+        self::INITIATED_AT,
+        self::RECONCILED_AT,
+        self::RETURNED_AT,
+        self::CREATED_AT,
+        self::UPDATED_AT,
+    );
+
+    protected $publicSetters = [
+        self::ID,
+        self::ENTITY,
+    ];
+
+    protected static $generators = array(
+        self::DATE
+    );
+
+    protected $dates = [
+        self::DATE,
+        self::INITIATED_AT,
+        self::RECONCILED_AT,
+        self::RETURNED_AT
+    ];
+
+    protected $casts = [
+        self::AMOUNT            => 'int',
+        self::FEES              => 'int',
+        self::DATE              => 'int',
+        self::SERVICE_TAX       => 'int',
+        self::API_FEE           => 'int',
+        self::GATEWAY_FEE       => 'int',
+        self::INITIATED_AT      => 'int',
+        self::TOTAL_COUNT       => 'int',
+        self::TRANSACTION_COUNT => 'int',
+    ];
+
+    protected function generateDate($input)
+    {
+        $timestamp = Carbon::today('Asia/Kolkata')->timestamp;
+
+        $this->setAttribute(self::DATE, $timestamp);
+    }
+
+    public function getTotalCount()
+    {
+        return $this->getAttribute(self::TOTAL_COUNT);
+    }
+
+    public function getUrls()
+    {
+        return $this->getAttribute(self::URLS);
+    }
+
+    public function addUrl($key, $url)
+    {
+        $urls = $this->getUrls();
+
+        $urls[$key] = $url;
+
+        $this->setAttribute(self::URLS, $urls);
+
+        return $urls;
+    }
+
+    public function incrementAmount($value)
+    {
+        $this->increment(self::AMOUNT, $value);
+    }
+
+    public function incrementFees($value)
+    {
+        $this->increment(self::FEES, $value);
+    }
+
+    public function incrementServiceTax($value)
+    {
+        $this->increment(self::SERVICE_TAX, $value);
+    }
+
+    public function incrementTotalCount()
+    {
+        $this->increment(self::TOTAL_COUNT);
+    }
+
+    public function incrementTransactionCount($value)
+    {
+        $this->increment(self::TRANSACTION_COUNT, $value);
+    }
+
+    public function setType($type)
+    {
+        $this->setAttribute(self::TYPE, $type);
+    }
+
+    public function setUrls($urls)
+    {
+        return $this->setAttribute('urls', $urls);
+    }
+
+    public function setFees($fees)
+    {
+        $this->setAttribute(self::FEES, $fees);
+    }
+
+    public function setServiceTax($servicetax)
+    {
+        assertTrue($servicetax >= 0);
+
+        $this->setAttribute(self::SERVICE_TAX, $servicetax);
+    }
+
+    protected function getUrlsAttribute()
+    {
+        return json_decode($this->attributes[self::URLS], true);
+    }
+
+    protected function setUrlsAttribute($urls)
+    {
+        $urls = json_encode($urls);
+
+        $this->attributes[self::URLS] = $urls;
+    }
+}

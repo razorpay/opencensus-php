@@ -50,4 +50,15 @@ class ValidationFields
             Entity::WEBSITE_REFUND,
             Entity::WEBSITE_TERMS,
     ];
+
+    const MARKETPLACE_ACCOUNT_FIELDS = [
+            Entity::BANK_ACCOUNT_NAME,
+            Entity::BANK_ACCOUNT_NUMBER,
+            Entity::BANK_ACCOUNT_TYPE,
+            Entity::BANK_BRANCH_IFSC,
+            Entity::BUSINESS_NAME,
+            Entity::BUSINESS_TYPE,
+            Entity::PROMOTER_PAN,
+            Entity::ADDRESS_PROOF_URL,
+    ];
 }

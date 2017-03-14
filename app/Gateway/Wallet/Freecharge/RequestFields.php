@@ -30,4 +30,5 @@ class RequestFields
     const MESSAGE                 = 'message';
     const RECEIVED                = 'received';
     const MERCHANT_TXN_ID         = 'merchantTxnId';
+    const DEALER_ID               = 'dealerId';
 }

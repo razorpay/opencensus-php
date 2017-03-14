@@ -11,14 +11,20 @@ class Method
     const WALLET        = 'wallet';
     const EMI           = 'emi';
     const UPI           = 'upi';
+    const TRANSFER      = 'transfer';
 
-    protected static $methods = array(
+    protected static $methods = [
         self::CARD       => 'Card',
         self::NETBANKING => 'Net Banking',
         self::WALLET     => 'Wallet',
         self::UPI        => 'UPI',
         self::EMI        => 'EMI',
-    );
+        self::TRANSFER   => 'Marketplace Transfer',
+    ];
+
+    protected static $asynchronous = [
+        self::UPI,
+    ];
 
     public static function formatted($method)
     {
@@ -42,5 +48,10 @@ class Method
             throw new Exception\InvalidArgumentException(
                 'Not a valid Payment method: ' . $method);
         }
+    }
+
+    public static function supportsAsync($method)
+    {
+        return in_array($method, self::$asynchronous, true);
     }
 }

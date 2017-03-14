@@ -22,10 +22,6 @@
         </script>
       @endif
     @endif
-    <script type="text/javascript">
-      var data = {!!utf8_json_encode($data)!!};
-      console.log(data);
-    </script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
       body {

@@ -249,6 +249,24 @@ class Entity extends Base\PublicEntity
         return Card\Network::getCode($this->getNetwork());
     }
 
+    public function getFirstName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[0];
+    }
+
+    public function getLastName()
+    {
+        $name = $this->getAttribute(self::NAME);
+
+        $names = explode(' ', $name, 2);
+
+        return $names[1] ?? '';
+    }
+
     public function getType()
     {
         $type = $this->getAttribute(self::TYPE);
@@ -479,18 +497,12 @@ class Entity extends Base\PublicEntity
 
     protected function getTokenRelevantAttributes()
     {
-        $emi = $this->getAttribute(self::EMI);
-
         $attributes = array(
-            self::EXPIRY_MONTH => $this->getAttribute(self::EXPIRY_MONTH),
-            self::EXPIRY_YEAR  => $this->getAttribute(self::EXPIRY_YEAR),
-            self::EMI          => $emi
+            self::EXPIRY_MONTH => $this->getExpiryMonth(),
+            self::EXPIRY_YEAR  => $this->getExpiryYear(),
+            self::EMI          => $this->getEmi(),
+            self::ISSUER       => $this->getIssuer()
         );
-
-        if ($emi === true)
-        {
-            $attributes[self::ISSUER] = $this->getIssuer();
-        }
 
         return $attributes;
     }

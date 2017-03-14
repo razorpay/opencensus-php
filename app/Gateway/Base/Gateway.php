@@ -243,6 +243,13 @@ class Gateway
         return $this->topup;
     }
 
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        $this->setMode($mode);
+
+        $this->setTerminal($terminal);
+    }
+
     public function setTerminal($terminal)
     {
         $this->terminal = $terminal;
@@ -718,6 +725,16 @@ class Gateway
         return $this->input['terminal']['gateway_merchant_id'];
     }
 
+    protected function getTestMerchantId2()
+    {
+        return $this->config['test_merchant_id2'];
+    }
+
+    protected function getLiveMerchantId2()
+    {
+        return $this->input['terminal']['gateway_merchant_id2'];
+    }
+
     protected function getDataWithFieldsInOrder($content, $orderedFields)
     {
         $orderedData = [];
@@ -796,6 +813,11 @@ class Gateway
         $gateway = $this->gateway;
 
         return $this->app['repo']->$gateway;
+    }
+
+    protected function getCacheKey($input)
+    {
+        return $this->gateway . '_' . $input['payment']['id'];
     }
 
     protected function getMappedAttributes($attributes)

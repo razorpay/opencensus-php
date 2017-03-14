@@ -4,12 +4,14 @@ namespace RZP\Models\Transaction;
 
 use Carbon\Carbon;
 use RZP\Exception;
+use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Models\Card;
+use RZP\Models\Reversal;
 use RZP\Models\Currency;
-use RZP\Models\Feature\Constants as Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Payment;
+use RZP\Models\Payout;
 use RZP\Models\Payment\Refund;
 use RZP\Models\Pricing;
 use RZP\Models\Terminal;
@@ -18,7 +20,8 @@ use RZP\Models\Adjustment;
 use RZP\Models\Settlement\Holidays;
 use RZP\Models\Schedule\Library as Schedule;
 use RZP\Trace\TraceCode;
-use RZP\Error\ErrorCode;
+use RZP\Models\Customer;
+use RZP\Models\Transfer;
 
 class Core extends Base\Core
 {
@@ -78,6 +81,42 @@ class Core extends Base\Core
         return $txn;
     }
 
+    /**
+     * Update the corresponding transaction when
+     * hold attributes of a Payment are updated
+     *
+     * @param  Payment\Entity       $payment
+     * @return Transaction\Entity
+     */
+    public function updateOnHoldToggle(Payment\Entity $payment)
+    {
+        $txn = $payment->transaction;
+
+        if ($txn->isSettled() === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_UPDATE_ON_HOLD_ALREADY_SETTLED);
+        }
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
+        // $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Entity::ON_HOLD, $payment->getOnHold());
+
+        $this->trace->info(
+            TraceCode::PAYMENT_HOLD_TOGGLE_UPDATE_TRANSACTION,
+            [
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId(),
+                'on_hold'        => $payment->getOnHold(),
+                'settled_at'     => $settledAt,
+            ]
+        );
+
+        return $txn;
+    }
+
     public function createFromPaymentCaptured(Payment\Entity $payment)
     {
         list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
@@ -96,6 +135,40 @@ class Core extends Base\Core
         $this->updateCredits($txn, $payment);
 
         $this->updateBalances($txn);
+
+        return [$txn, $feesSplit];
+    }
+
+    /**
+     * Creates a Transaction record for a Payment transfer credit to account
+     * Updates Marketplace balance
+     *
+     * @param  Payment\Entity $payment
+     * @return array
+     */
+    public function createFromPaymentTransferred(Payment\Entity $payment) : array
+    {
+        list($txn, $feesSplit) = $this->txnCreationFromPaymentOperation($payment);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
+            [
+                'type'          => 'linked_account_credit',
+                'payment_id'     => $payment->getId(),
+                'transaction_id' => $txn->getId()
+            ]);
+
+        $settledAt = $this->getSettledAtTimestamp($payment);
+
+        $onHold = $payment->getOnHold() ?? false;
+
+        $txn->setAttribute(Entity::SETTLED_AT, $settledAt);
+
+        $txn->setAttribute(Entity::ON_HOLD, $onHold);
+
+        $this->updateCredits($txn, $payment);
+
+        $this->updateBalances($txn, false);
 
         return [$txn, $feesSplit];
     }
@@ -536,6 +609,135 @@ class Core extends Base\Core
         return $txn;
     }
 
+    /**
+     * Record and associate a transaction for a payment transfer.
+     *
+     * @param  Transfer\Entity      $transfer Transfer entity
+     * @return Transaction\Entity
+     */
+    public function createFromTransfer(Transfer\Entity $transfer)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $transfer->getAmount();
+
+        $settledAt = time();
+
+        $values = [
+            Transaction\Entity::DEBIT         => $amount,
+            Transaction\Entity::CREDIT        => 0,
+            Transaction\Entity::CURRENCY      => $transfer->getCurrency(),
+            Transaction\Entity::GATEWAY_FEE   => 0,
+            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::RECONCILED_AT => time(),
+            Transaction\Entity::SETTLED       => 0,
+            Transaction\Entity::SETTLED_AT    => $settledAt,
+            Transaction\Entity::FEE           => 0,
+            Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::AMOUNT        => $amount,
+            Transaction\Entity::TYPE          => Transaction\Type::TRANSFER,
+            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($values);
+
+        $this->trace->info(
+            TraceCode::PAYMENT_TRANSFER_CREATE_TRANSACTION,
+            [
+                'type'           => 'merchant_debit',
+                'transaction_id' => $txn->getId()
+            ]);
+
+        $txn->merchant()->associate($transfer->merchant);
+
+        $txn->sourceAssociate($transfer);
+
+        $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    /**
+     * Create transaction and update balances for a reverse transfer
+     * on a Marketplace payment refund
+     *
+     * @param  Reversal\Entity   $reversal
+     * @return Entity
+     */
+    public function createFromReversal($reversal)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $reversal->getAmount();
+
+        $nowTimestamp = time();
+
+        $data = [
+            Transaction\Entity::DEBIT         => 0,
+            Transaction\Entity::CREDIT        => $amount,
+            Transaction\Entity::CURRENCY      => Currency\Currency::INR,
+            Transaction\Entity::GATEWAY_FEE   => 0,
+            Transaction\Entity::API_FEE       => 0,
+            Transaction\Entity::RECONCILED_AT => $nowTimestamp,
+            Transaction\Entity::SETTLED       => 0,
+            Transaction\Entity::SETTLED_AT    => $nowTimestamp,
+            Transaction\Entity::FEE           => 0,
+            Transaction\Entity::SERVICE_TAX   => 0,
+            Transaction\Entity::AMOUNT        => $amount,
+            Transaction\Entity::TYPE          => Transaction\Type::REVERSAL,
+            Transaction\Entity::CHANNEL       => Transaction\Channel::KOTAK,
+        ];
+
+        $txn->fillAndGenerateId($data);
+
+        $txn->merchant()->associate($reversal->merchant);
+
+        $txn->sourceAssociate($reversal);
+
+        $this->updateBalances($txn, false);
+
+        return $txn;
+    }
+
+    public function createFromPayout(Payout\Entity $payout)
+    {
+        $txn = new Transaction\Entity;
+
+        $amount = $payout->getAmount();
+
+        list($fee, $serviceTax, $feesSplit) =
+            (new Pricing\Fee)->calculateMerchantFees($payout, false);
+
+        $settledAt = time();
+
+        $payoutAmount = abs($amount + $fee);
+
+        $values = array(
+            Transaction\Entity::DEBIT               => $payoutAmount,
+            Transaction\Entity::CREDIT              => 0,
+            Transaction\Entity::CURRENCY            => 'INR',
+            Transaction\Entity::GATEWAY_FEE         => 0,
+            Transaction\Entity::GATEWAY_SERVICE_TAX => 0,
+            Transaction\Entity::API_FEE             => $fee,
+            Transaction\Entity::RECONCILED_AT       => time(),
+            Transaction\Entity::SETTLED             => 0,
+            Transaction\Entity::SETTLED_AT          => $settledAt,
+            Transaction\Entity::FEE                 => $fee,
+            Transaction\Entity::SERVICE_TAX         => $serviceTax,
+            Transaction\Entity::AMOUNT              => $payoutAmount,
+            Transaction\Entity::TYPE                => Transaction\Type::PAYOUT,
+            Transaction\Entity::CHANNEL             => Transaction\Channel::KOTAK,
+        );
+
+        $txn->fillAndGenerateId($values);
+
+        $txn->merchant()->associate($payout->merchant);
+
+        $txn->sourceAssociate($payout);
+
+        return $txn;
+    }
+
     protected function calculateMerchantFees(Payment\Entity $payment)
     {
         return (new Pricing\Fee)->calculateMerchantFees($payment);
@@ -713,6 +915,11 @@ class Core extends Base\Core
         {
             $returnTime = Schedule::getNextApplicableTime($capturedAt, $merchant->schedule);
         }
+
+        // Implements delayed settlements, commented temporarily
+        // $onHoldUntilTime = $payment->getOnHoldUntil();
+
+        // return max($returnTime, $onHoldUntilTime);
 
         return $returnTime;
     }

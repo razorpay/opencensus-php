@@ -5,6 +5,7 @@ namespace RZP\Models\Terminal\Filters;
 use RZP\Constants\Mode;
 use RZP\Exception;
 use RZP\Models\Card\Network;
+use RZP\Models\Card\Issuer;
 use RZP\Models\Payment\Gateway;
 use RZP\Models\Payment\Method;
 use RZP\Models\Currency\Currency;
@@ -15,12 +16,22 @@ use RZP\Models\Payment\Processor\Netbanking;
 
 class TransactionFilter extends Terminal\Filter
 {
+    const DISALLOW_EDUCATION_IFSC = [
+        IFSC::ICIC,
+        IFSC::ALLA,
+        IFSC::DBSS,
+        IFSC::IDFB,
+        IFSC::SVCB,
+        IFSC::UTIB,
+    ];
+
     protected $properties = [
         'method',
         'network',
         'currency',
         'international',
         'bank',
+        'education_bank',
         'amount',
         'maestro',
         'recurring',
@@ -135,6 +146,34 @@ class TransactionFilter extends Terminal\Filter
             $gateways = Gateway::getGatewaysForNetbankingBank($bank, $isTPV);
 
             return in_array($terminalGateway, $gateways);
+        }
+        else if ($input['payment']->isCard())
+        {
+            $issuer = $input['payment']->card->getIssuer();
+
+            if (($issuer === Issuer::ICIC) and
+                ($terminal->getGateway() === Gateway::FIRST_DATA))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    public function educationBankFilter($terminal, $input)
+    {
+        if (($input['payment']->isNetbanking() === true) and
+            ($terminal->getGateway() === Gateway::BILLDESK))
+        {
+            $bank = $input['payment']->getBank();
+
+            // 7KORSqVp2oR0GH is shared billdesk PVT education terminal
+            if (($terminal->getId() === '7KORSqVp2oR0GH') and
+                (in_array($bank, self::DISALLOW_EDUCATION_IFSC, true) === true))
+            {
+                return false;
+            }
         }
 
         return true;

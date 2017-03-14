@@ -53,6 +53,7 @@ class Parser extends Base\Core
         Entity::LIBRARY               => 'library',
         Entity::LIBRARY_VERSION       => 'library_version',
         Entity::BROWSER               => 'browser',
+        Entity::BROWSER_VERSION       => 'browser_version',
         Entity::OS                    => 'os',
         Entity::OS_VERSION            => 'os_version',
         Entity::DEVICE                => 'device',
@@ -63,13 +64,13 @@ class Parser extends Base\Core
         Entity::REFERER               => 'referer'
     ];
 
-    public function __construct()
+    protected function init()
     {
-        parent::__construct();
-
         $this->request = $this->app['request'];
 
         $this->uAgent = $this->app['agent'];
+
+        $this->ba = $this->app['basicauth'];
     }
 
     public function recordPaymentRequestData(Entity $pa, Payment\Entity $payment)
@@ -140,32 +141,38 @@ class Parser extends Base\Core
      */
     protected function setHttpRequestData(Entity $pa)
     {
-        $pa->setBrowser($this->getBrowser());
+        $ua = null;
+
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            $ua = $pa->payment->getMetadata('user_agent');
+        }
+
+        $pa->setBrowser($this->getBrowser($ua));
 
         if ($pa->getBrowser() !== null)
         {
-            $pa->setPlatformVersion($this->uAgent->version($this->uAgent->browser()));
+            $pa->setBrowserVersion($this->uAgent->version($this->uAgent->browser($ua)));
         }
 
-        $pa->setOs($this->getOs());
+        $pa->setOs($this->getOs($ua));
 
-        $pa->setOsVersion($this->uAgent->version($this->uAgent->platform()));
+        $pa->setOsVersion($this->uAgent->version($this->uAgent->platform($ua)));
 
-        $pa->setDevice($this->getDeviceValue());
+        $pa->setDevice($this->getDeviceValue($ua));
 
-        $pa->setIp($this->request->getRealClientIp());
+        $pa->setIp($this->getIp($pa));
 
         $pa->setReferer($this->getRefererUrl());
 
-        if ($this->request->header(RequestHeader::USER_AGENT) !== null)
-        {
-            $pa->setUserAgent($this->request->header(RequestHeader::USER_AGENT));
-        }
+        $ua = $ua ?: $this->request->header(RequestHeader::USER_AGENT);
+
+        $pa->setUserAgent($ua);
     }
 
-    protected function getBrowser()
+    protected function getBrowser($ua)
     {
-        $browserFromUa = $this->uAgent->browser();
+        $browserFromUa = $this->uAgent->browser($ua);
 
         if ($browserFromUa === false)
         {
@@ -189,9 +196,9 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getOs()
+    protected function getOs($ua)
     {
-        $osFromUa = $this->uAgent->platform();
+        $osFromUa = $this->uAgent->platform($ua);
 
         if ($osFromUa === false)
         {
@@ -249,6 +256,18 @@ class Parser extends Base\Core
         }
 
         return ((strtolower($domain) !== 'razorpay.com') ? $reqReferer : null);
+    }
+
+    protected function getIp(Entity $pa)
+    {
+        $ip = $this->request->getRealClientIp();
+
+        if ($this->ba->isPrivateAuth() === true)
+        {
+            return $pa->payment->getMetadata('ip', $ip);
+        }
+
+        return $ip;
     }
 
     /**
@@ -414,19 +433,19 @@ class Parser extends Base\Core
         }
     }
 
-    protected function getDeviceValue()
+    protected function getDeviceValue($ua)
     {
         $device = null;
 
-        if ($this->uAgent->isMobile())
+        if ($this->uAgent->isMobile($ua))
         {
             $device = Metadata::MOBILE;
         }
-        else if($this->uAgent->isDesktop())
+        else if($this->uAgent->isDesktop($ua))
         {
             $device = Metadata::DESKTOP;
         }
-        else if ($this->uAgent->isTablet())
+        else if ($this->uAgent->isTablet($ua))
         {
             $device = Metadata::TABLET;
         }

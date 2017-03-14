@@ -7,6 +7,7 @@ use RZP\Exception;
 use RZP\Error\ErrorCode;
 use RZP\Models\Base;
 use RZP\Trace\TraceCode;
+use RZP\Trace\Trace;
 
 class EsRepository extends \Razorpay\Spine\Repository
 {
@@ -98,9 +99,7 @@ class EsRepository extends \Razorpay\Spine\Repository
 
         try
         {
-            $this->trace->info(
-                TraceCode::ES_SAVE_REQUEST,
-                $data);
+            $this->trace->info(TraceCode::ES_SAVE_REQUEST, $data);
 
             // Creating a new EsDao object because,
             // in the queue flow, the mode needs to be passed
@@ -115,14 +114,14 @@ class EsRepository extends \Razorpay\Spine\Repository
         {
             $data['job_attempts'] = $job->attempts();
 
-            $this->trace->error(
+            $this->trace->traceException(
+                $ex,
+                Trace::ERROR,
                 TraceCode::ES_SAVE_FAILED,
                 [
                     $data
                 ]
             );
-
-            $this->trace->traceException($ex);
 
             if ($job->attempts() > self::MAX_JOB_ATTEMPTS)
             {

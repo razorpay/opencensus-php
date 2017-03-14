@@ -3,8 +3,9 @@
 namespace RZP\Tests\Functional\Gateway\FirstData;
 
 use RZP\Exception;
-use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Gateway\FirstData\Gateway;
+use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
 class FirstDataGatewayTest extends TestCase
 {
@@ -23,6 +24,8 @@ class FirstDataGatewayTest extends TestCase
         $this->gateway = 'first_data';
 
         $this->payment = $this->getDefaultPaymentArray();
+
+        Gateway::setTestChance(4);
     }
 
     public function testPaymentAuthAndCapture()
@@ -51,6 +54,29 @@ class FirstDataGatewayTest extends TestCase
         $paymentRes = $this->getLastPayment(true);
 
         $this->assertEquals($paymentRes['gateway'], 'first_data');
+    }
+
+    public function testIciciCardIsFiltered()
+    {
+        $this->fixtures->create('terminal:shared_sharp_terminal');
+
+        $payment = $this->payment;
+
+        $payment['card']['number'] = '6074667022059103';
+
+        $this->fixtures->create('iin',
+            [
+                'iin'    => '607466',
+                'issuer' => 'ICIC',
+            ]);
+
+        $this->doAuthPayment($payment);
+
+        $paymentRes = $this->getLastPayment(true);
+
+        // FirstData is preferred over Sharp, but does not get selected
+        // as ICICI cards are disabled on FirstData
+        $this->assertNotEquals($paymentRes['gateway'], 'first_data');
     }
 
     public function testPaymentVerify()

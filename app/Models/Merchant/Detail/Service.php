@@ -172,7 +172,7 @@ class Service extends Base\Service
     {
         return (($response['can_submit'] === true) and
                 (isset($input[Detail\Entity::SUBMIT]) === true) and
-                    ($input[Detail\Entity::SUBMIT] === '1'));
+                ($input[Detail\Entity::SUBMIT] === '1'));
     }
 
     protected function markSubmitted($merchantDetails)
@@ -221,9 +221,16 @@ class Service extends Base\Service
 
         $requiredFields = [];
 
-        $totalFields = count(ValidationFields::DASHBOARD_FIELDS);
+        $validationFields = ValidationFields::DASHBOARD_FIELDS;
 
-        foreach (ValidationFields::DASHBOARD_FIELDS as $key)
+        if ($merchantDetails->merchant->isLinkedAccount() === true)
+        {
+            $validationFields = ValidationFields::MARKETPLACE_ACCOUNT_FIELDS;
+        }
+
+        $totalFields = count($validationFields);
+
+        foreach ($validationFields as $key)
         {
             if ((array_key_exists($key, $merchantDetailsArr) === false) or
                (is_null($merchantDetailsArr[$key]) === true) or
@@ -256,6 +263,8 @@ class Service extends Base\Service
 
             $response['can_submit'] = true;
         }
+
+        $response['activated'] = (int) $merchantDetails->merchant->isActivated();
 
         return $response;
     }

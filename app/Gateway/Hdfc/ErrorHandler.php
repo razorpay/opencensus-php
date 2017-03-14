@@ -87,6 +87,14 @@ class ErrorHandler
         $response['error'] = self::getErrorDetails($code);
     }
 
+    public static function setRequestError(array & $response, $curlMessage = null)
+    {
+        $code = Hdfc\ErrorCode::RP00014;
+
+        $response['error'] = self::getErrorDetails($code);
+        $response['text'] = $curlMessage;
+    }
+
     public static function setGatewayWrongStatusCode(array & $response, $status_code)
     {
         $code = Hdfc\ErrorCode::RP00008;

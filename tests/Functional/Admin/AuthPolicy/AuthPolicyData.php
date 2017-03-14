@@ -7,7 +7,7 @@ use RZP\Error\PublicErrorDescription;
 return [
     'testAdminLogin' => [
         'request' => [
-            'url' => '/orgs/org_RazorpayOrgnId/admin/authenticate',
+            'url' => '/orgs/org_100000razorpay/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'superadmin@razorpay.com',
@@ -224,7 +224,7 @@ return [
 
     'testPasswordChangedAtPolicy' => [
         'request' => [
-            'url' => '/orgs/org_RazorpayOrgnId/admin/authenticate',
+            'url' => '/orgs/org_100000razorpay/admin/authenticate',
             'method' => 'post',
             'content' => [
                 'username' => 'randomemail2@rzp.com',

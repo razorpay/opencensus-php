@@ -78,6 +78,19 @@ class ScheduleLibraryTest extends TestCase
         $this->runCaseWiseScheduleTest($lastWeekSchedule, $data['cases']);
     }
 
+    public function testTimedSchedule()
+    {
+        $data = $this->testData[__FUNCTION__];
+
+        $timedSchedule = new Schedule\Entity($data['schedule']);
+
+        $timedSchedule->updateNextRun();
+
+        $calculatedNextRun = $this->getTimeObject($timedSchedule->getNextRun());
+
+        $this->assertEquals($data['schedule']['hour'], $calculatedNextRun->hour);
+    }
+
     private function runCaseWiseScheduleTest($schedule, $cases)
     {
         foreach ($cases as $case)
@@ -101,7 +114,11 @@ class ScheduleLibraryTest extends TestCase
 
     private function getFormattedTime($timestamp)
     {
-        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata')
-                                            ->format('Y-m-d H:i:s');
+        return $this->getTimeObject($timestamp)->format('Y-m-d H:i:s');
+    }
+
+    private function getTimeObject($timestamp)
+    {
+        return Carbon::createFromTimestamp($timestamp, 'Asia/Kolkata');
     }
 }

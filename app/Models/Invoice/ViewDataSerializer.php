@@ -11,7 +11,17 @@ use RZP\Exception;
 
 class ViewDataSerializer extends Base\Core
 {
+    const DEFAULT_MERCHANT_BRAND_COLOR = '#6A5DD1';
+
+    protected static $appendEpochsFormatted = [
+        Entity::ISSUED_AT,
+        Entity::DATE,
+        Entity::EXPIRE_BY,
+        Entity::EXPIRED_AT
+    ];
+
     protected $invoice;
+    protected $merchant;
 
     public function __construct(Entity $invoice)
     {
@@ -64,10 +74,19 @@ class ViewDataSerializer extends Base\Core
         $invoiceData['is_paid'] = ($this->invoice->isPaid());
         $invoiceData['amount_formatted'] = number_format($invoiceData['amount']/100, 2);
 
-        foreach ([Entity::ISSUED_AT, Entity::DATE] as $k)
+        foreach (self::$appendEpochsFormatted as $key)
         {
-            $invoiceData[$k . '_formatted'] = Carbon::createFromTimestamp($invoiceData[$k], 'Asia/Kolkata')
-                                                    ->format('j M Y');
+            $epoch = $invoiceData[$key];
+
+            if ($epoch === null)
+            {
+                $invoiceData[$key . '_formatted'] = null;
+            }
+            else
+            {
+                $invoiceData[$key . '_formatted'] = Carbon::createFromTimestamp($epoch, 'Asia/Kolkata')
+                                                          ->format('j M Y');
+            }
         }
 
         array_walk(
@@ -83,11 +102,23 @@ class ViewDataSerializer extends Base\Core
 
     protected function getFormattedMerchantDataForView()
     {
+        $merchantBrandColor = $this->merchant->getBrandColor();
+
+        //
+        // If brand_color is not set, use a default value.
+        // Same value is used in invoice.js (hosted page, pdf etc)
+        //
+        if ($merchantBrandColor === null)
+        {
+            $merchantBrandColor = self::DEFAULT_MERCHANT_BRAND_COLOR;
+        }
+
         $merchantData = [
-            'color' => $this->merchant->getBrandColor(),
-            'image' => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
-            'name'  => $this->merchant->getBillingLabelElseName(),
-            'id'    => $this->merchant->getId(),
+            'brand_color'      => get_rgb_value($merchantBrandColor),
+            'brand_text_color' => get_brand_text_color($merchantBrandColor),
+            'image'            => $this->merchant->getFullLogoUrlWithSize(Checkout::CHECKOUT_LOGO_SIZE),
+            'name'             => $this->merchant->getBillingLabelElseName(),
+            'id'               => $this->merchant->getId(),
         ];
 
         if ($this->merchant->getOrgId() !== null)

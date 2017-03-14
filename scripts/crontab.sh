@@ -82,6 +82,7 @@ add_cron "0 19 * * *"      "merch_holiday_notify_hol"  POST "$BASE_URL/merchants
 
 # Migration
 add_cron "*/10 * * * *"    "prod_merchant_details_mig" POST "$BASE_URL/merchant/activation/migrate"      "count=400"                     $LIVE_AUTH
+add_cron "0 2 * * *"       "prod_merchant_schdule_mig" POST "$BASE_URL/merchants/schedules/migrate"                                      $LIVE_AUTH
 
 # Refund
 add_cron "0 3 * * *"        "refund_excel_generate"          POST "$BASE_URL/refunds/netbanking/excel"                   ""                              $LIVE_AUTH

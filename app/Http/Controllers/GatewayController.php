@@ -253,7 +253,7 @@ class GatewayController extends Controller
      *
      * @return \Symfony\Component\HttpFoundation\Response
      */
-    public function fillUpiProviderCode()
+    public function fillUpiBank()
     {
         RuntimeManager::setMaxExecTime(1800);
 
@@ -267,7 +267,7 @@ class GatewayController extends Controller
 
         while (true)
         {
-            $recordsToUpdate = $this->repo->upi->fetchAllForProviderUpdate($batchSize, $lastId);
+            $recordsToUpdate = $this->repo->upi->fetchAllForBankUpdate($batchSize, $lastId);
 
             $currentBatchCount = count($recordsToUpdate);
 
@@ -282,11 +282,20 @@ class GatewayController extends Controller
             {
                 $provider = $upiRecord->extractProviderFromVpa();
 
-                $upiRecord->setProvider($provider);
+                $bankCode = ProviderCode::getBankCode($provider);
 
-                $upiRecord->setBank(ProviderCode::getBankCode($provider));
+                if ($bankCode === null)
+                {
+                    $failedCount++;
 
-                $upiRecord->setAcquirer('icici');
+                    $failedIds[] = $upiRecord->getId();
+
+                    $lastId = $upiRecord->getId();
+
+                    continue;
+                }
+
+                $upiRecord->setBank($bankCode);
 
                 try
                 {

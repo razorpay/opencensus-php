@@ -28,7 +28,7 @@ class Server extends Base\Mock\Server
             'RESPCODE'      => '01',
             'TXNDATE'       => $this->getTxnDate(),
             'RESPMSG'       => 'Txn Successful.',
-            'GATEWAYNAME'   => 'ICICI',
+            'GATEWAYNAME'   => 'INDB',
             'BANKNAME'      => 'Axis Bank',
         );
 
@@ -122,7 +122,7 @@ class Server extends Base\Mock\Server
             'RESPCODE'      => '01',
             'TXNDATE'       => $this->getTxnDate(),
             'RESPMSG'       => 'Txn Successful.',
-            'GATEWAYNAME'   => 'ICICI',
+            'GATEWAYNAME'   => 'INDB',
             'BANKNAME'      => 'Axis Bank',
         );
 

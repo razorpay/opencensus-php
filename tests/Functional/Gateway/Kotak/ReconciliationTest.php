@@ -8,19 +8,25 @@ use Mockery;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 use RZP\Tests\Functional\Settlement\SettlementTrait;
+use RZP\Tests\Functional\Payout\PayoutTrait;
 use RZP\Tests\Functional\TestCase;
+use RZP\Models\Merchant\Account;
 
 class ReconciliationTest extends TestCase
 {
     use RequestResponseFlowTrait;
     use SettlementTrait;
+    use PayoutTrait;
+    use ReconciliationTrait;
 
     public function setUp()
     {
+        $this->testDataFilePath = __DIR__ . '/ReconciliationTestData.php';
+
         parent::setUp();
     }
 
-    public function testReconciliation()
+    public function testSettlementReconciliation()
     {
         // Create payments and refunds with timestamps two days back
         $prEntities = $this->createPaymentAndRefundEntities();
@@ -40,11 +46,20 @@ class ReconciliationTest extends TestCase
         // Reconcile settlements
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
-        // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
+        $this->assertNotNull($settlementAttempt['utr']);
 
-        //Validate settlement entity
-        $this->fetchAndMatchSettlements();
+        // Validate settlement entity
+        $setl = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($setl, 'fetchAndMatchSettlementsForReconSuccess');
+        $this->assertNotNull($setl['utr']);
+
+        // Validate settlement-transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $txn['type']);
+        $this->assertNotNull($txn['reconciled_at']);
     }
 
     public function testReconciliationFailure()
@@ -74,13 +89,100 @@ class ReconciliationTest extends TestCase
         $data = $this->reconcileSettlements($setlReconciliationFile);
 
         // Validate batch settlement entity
-        $this->fetchAndMatchBatchSettlement();
+        $this->fetchAndMatchBatchData('settlement');
 
         //Validate settlement entity
-        $this->fetchAndMatchSettlements(true);
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconFailure');
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconFailure');
+        $this->assertNotNull($settlementAttempt['utr']);
+
+        // Validate settlement-transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $txn['type']);
+        $this->assertNotNull($txn['reconciled_at']);
 
         // Resetting time
         Carbon::setTestNow();
+
+        return $settlement;
+    }
+
+    public function testRetryReconForHoldedFunds()
+    {
+        $settlement = $this->testReconciliationFailure();
+
+        $this->fixtures->merchant->holdFunds();
+
+        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
+
+        $this->assertEquals('No settlements found!', $content['message']);
+
+        $this->fixtures->merchant->holdFunds(Account::TEST_ACCOUNT, false);
+    }
+
+    public function testRetryRecon()
+    {
+        $settlement = $this->testReconciliationFailure();
+
+        $content = $this->retryIntiateSettlements([$settlement['id']], 'kotak');
+
+        // Check settlement entities
+        $setlAttempts = $this->getEntities('fund_transfer_attempt', [], true);
+        $this->assertEquals(2, $setlAttempts['count']);
+
+        $this->assertNotNull($content['settlement_text_file']);
+
+        // Check reconciliation
+        $setlFile = $content['settlement_text_file'];
+
+        $generateFailedReconciliations = true;
+        $setlReconciliationFile = $this->generateSetlReconciliationFile($setlFile);
+
+        // Reconcile settlements
+        $data = $this->reconcileSettlements($setlReconciliationFile);
+
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchData('settlement');
+
+        //Validate settlement entity
+        $settlement = $this->getLastEntity('settlement', true);
+        $this->assertTestResponse($settlement, 'fetchAndMatchSettlementsForReconSuccess');
+
+        // Validate settlement attempt entity
+        $settlementAttempt = $this->getLastEntity('fund_transfer_attempt', true);
+        $this->assertTestResponse($settlementAttempt, 'matchSettlementAttemptForReconSuccess');
+        $this->assertNotNull($settlementAttempt['utr']);
+
+        // Validate settlement-transaction entity
+        $txn = $this->getLastEntity('transaction', true);
+        $this->assertEquals('settlement', $txn['type']);
+        $this->assertNotNull($txn['reconciled_at']);
+    }
+
+    public function testRetryReconWithoutSettlementIds()
+    {
+        $this->testReconciliationFailure();
+
+        $data = $this->testData[__FUNCTION__];
+
+        $request = [
+            'url' => '/settlements/retry/kotak',
+            'method' => 'POST',
+            'content' => []
+        ];
+
+        $this->ba->appAuthMode();
+
+        $this->runRequestResponseFlow($data, function() use ($request)
+        {
+
+
+            $content = $this->makeRequestAndGetContent($request);
+        });
     }
 
     public function testAsjustmentCreationAgainstSettlement()
@@ -123,176 +225,24 @@ class ReconciliationTest extends TestCase
         $this->assertArraySelectiveEquals($content, $data);
     }
 
-    protected function initiateSettlementsAndAssertSuccess()
+    public function testPayoutReconciliation()
     {
-        $content = $this->initiateSettlements();
+        // Create payments and refunds with timestamps two days back
+        $payoutEntities = $this->createPayoutEntities();
 
-        $this->assertArrayHasKey('kotak', $content);
-        $this->assertArrayHasKey('settlement_text_file', $content['kotak']);
-        $this->assertArrayHasKey('settlement_excel_file', $content['kotak']);
+        // reconciliation
+        $txns = $this->matchTransactions($payoutEntities);
 
-        return $content['kotak']['settlement_text_file'];
-    }
+        // Generate settlements for above transactions
+        $payoutFiles = $this->initiatePayoutsAndAssertSuccess();
 
-    protected function matchTransactions($prEntities)
-    {
-        $count = count($prEntities);
+        // Generate reconciliation file, settlement and payout have common implementation
+        $payoutReconciliationFile = $this->generateSetlReconciliationFile($payoutFiles);
 
-        $testData = [
-            'request' => [
-                'url' => '/transactions',
-                'method' => 'GET',
-            ],
-            'response' => [
-                'content' => [
-                    'entity' => 'collection',
-                    'count' => $count,
-                    'items' => [],
-                ]
-            ]
-        ];
+        // Reconcile settlements, same route is being used as both are h2h
+        $data = $this->reconcileSettlements($payoutReconciliationFile);
 
-        $txns = array();
-        foreach ($prEntities as $prEntity)
-        {
-            $txn = array(
-                'entity' => 'transaction',
-                'amount' => $prEntity->getAmount(),
-                'currency' => 'INR',
-                'debit' => 0,
-                'entity_id' => $prEntity->getPublicId(),
-                'type' => $prEntity->getEntity());
-
-            array_push($txns, $txn);
-        }
-
-        $testData['response']['items'] = $txns;
-
-        $this->ba->proxyAuth();
-
-        $content = $this->runRequestResponseFlow($testData);
-
-        return $content;
-    }
-
-    protected function createPaymentAndRefundEntities()
-    {
-        $prEntities = array();
-
-        $r = range(1,5);
-
-        $createdAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 5;
-        $capturedAt = Carbon::today('Asia/Kolkata')->subDays(20)->timestamp + 10;
-
-        foreach ($r as $i)
-        {
-            $payment = $this->fixtures->create('payment:captured',
-                ['captured_at' => $capturedAt,
-                 'created_at' => $createdAt,
-                 'updated_at' => $createdAt + 10]);
-
-            $attrs = [
-                'payment' => $payment,
-                'amount' => '100000',
-                 'created_at' => $createdAt + 20,
-                 'updated_at' => $createdAt + 20];
-
-            $refund = $this->fixtures->create('refund:from_payment', $attrs);
-
-            array_push($prEntities, $payment);
-            array_push($prEntities, $refund);
-        }
-
-        return $prEntities;
-    }
-
-    protected function fetchAndMatchBatchSettlement()
-    {
-        $content = $this->getEntities('batch_settlement', [], true);
-
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
-                    'entity' => 'batch_settlement',
-                    'date' => Carbon::today('Asia/Kolkata')->timestamp,
-                    'channel' => 'kotak',
-                    'amount' => 4385000,
-                    'fees' => 115000,
-                    'service_tax' => 15000,
-                    'api_fee' => 0,
-                    'gateway_fee' => 0,
-                    'settlement_count' => 1,
-                    'transaction_count' => 10,
-                ],
-            ]
-        );
-
-        $this->assertArraySelectiveEquals($data, $content);
-
-        $time = time();
-        $item = $content['items'][0];
-        $this->assertGreaterThanOrEqual($item['initiated_at'], $time);
-        $this->assertGreaterThanOrEqual($item['reconciled_at'], $time);
-        $this->assertGreaterThanOrEqual($item['returned_at'], $time);
-    }
-
-    protected function fetchAndMatchSettlements($failed = false)
-    {
-        $content = $this->getEntities('settlement', array(), true);
-
-        $data = array(
-            'entity' => 'collection',
-            'count' => 1,
-            'items' => [
-                [
-                    'merchant_id' => '10000000000000',
-                    'channel' => 'kotak',
-                    'amount' => 4385000,
-                    'fees' => 115000,
-                    'service_tax' => 15000,
-                    'channel'     => 'kotak',
-                ],
-            ]
-        );
-
-        if ($failed == true)
-        {
-            $data['items'][0]['failure_reason'] = 'Reconciliation';
-            $data['items'][0]['remarks'] =
-                'This is a string which test characters count limit.' .
-                ' This is a string which test characters count limit. This is a string which' .
-                ' test characters count limit. This is a string which test characters count limit.' .
-                ' This is a string which test characters count li';
-            $data['items'][0]['status'] = 'failed';
-        }
-        else
-        {
-            $data['items'][0]['failure_reason'] = null;
-            $data['items'][0]['remarks'] = '';
-        }
-
-        $this->assertArraySelectiveEquals($data, $content);
-    }
-
-    protected function checkAdjustmentCreated()
-    {
-        $setl = $this->getLastEntity('settlement', true);
-        $settlementSign = 'setl_';
-        $setlId = substr($setl['id'], strlen($settlementSign));
-
-        $data = [
-            'merchant_id' => "10000000000000",
-            'amount' => 4385000,
-            'currency' => "INR",
-            'channel' => "kotak",
-            'description' => "Adjustment for failed settlement",
-            'settlement_id' => $setlId
-        ];
-
-        $content = $this->getLastEntity('adjustment', true);
-
-        $this->assertArraySelectiveEquals($data, $content);
+        // Validate batch settlement entity
+        $this->fetchAndMatchBatchData('payout');
     }
 }

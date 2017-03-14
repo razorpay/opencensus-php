@@ -25,6 +25,7 @@ class Validator extends Base\Validator
         'currency'              => 'required|string',
         'merchantTxnId'         => 'required|string',
         'channel'               => 'required|string|custom',
+        'dealerId'              => 'sometimes|string',
         'checksum'              => 'required|regex:"^[a-f0-9]+$"'
     );
 

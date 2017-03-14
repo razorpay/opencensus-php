@@ -57,11 +57,11 @@ class Metadata
     const RAZORPAYJS    = 'razorpayjs';
     const DIRECT        = 'direct';
 
-    const LIBRARY_VALUES = array(
+    const LIBRARY_VALUES = [
         self::CHECKOUTJS    => 1,
         self::RAZORPAYJS    => 2,
         self::DIRECT        => 3,
-    );
+    ];
 
     // Browser values
     const CHROME        = 'chrome';

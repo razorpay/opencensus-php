@@ -22,6 +22,7 @@ use RZP\Models\Currency;
 use RZP\Models\Feature;
 use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods;
+use RZP\Models\Offer;
 use RZP\Models\Order;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Action;
@@ -56,6 +57,8 @@ trait Authorize
         $this->runPaymentMethodRelatedPreProcessing($payment, $input, $gatewayInput);
 
         $this->runPaymentInputValidations($payment, $input);
+
+        $this->validateOfferIfApplicable($payment);
 
         $this->selectedTerminals = (new TerminalProcessor)->getTerminalsForPayment($payment);
 
@@ -385,7 +388,26 @@ trait Authorize
 
         $this->verifyPaymentMethodEnabled($payment);
 
+        $this->validatePaymentNetworkSupported($payment);
+
         $this->runInternationalChecks($payment);
+    }
+
+    protected function validatePaymentNetworkSupported(Payment\Entity $payment)
+    {
+        $merchant = $payment->merchant;
+
+        if (($payment->isMethodCardOrEmi() === true) and
+            ($merchant->getCategory2() === Terminal\Category::PHARMA))
+        {
+            $card = $payment->card;
+
+            if ($card->getNetworkCode() === Card\Network::DICL)
+            {
+                throw new Exception\BadRequestException(
+                    ErrorCode::BAD_REQUEST_PAYMENT_CARD_NETWORK_NOT_SUPPORTED);
+            }
+        }
     }
 
     // @codingStandardsIgnoreStart
@@ -470,6 +492,11 @@ trait Authorize
         }
     }
 
+    protected function validateOfferIfApplicable(Payment\Entity $payment)
+    {
+        (new Offer\Core)->validateOfferApplicableOnPayment($payment);
+    }
+
     protected function runPostGatewaySelectionPreProcessing($payment, array & $gatewayInput)
     {
         // Fees validation can only happen after international validation has gone through
@@ -528,7 +555,7 @@ trait Authorize
         return $phoneBook;
     }
 
-    protected function runInternationalChecks(Payment\Entity$payment)
+    protected function runInternationalChecks(Payment\Entity $payment)
     {
         // return if method is not card or card is not international
         if (($payment->getMethod() !== Method::CARD) or
@@ -1100,7 +1127,8 @@ trait Authorize
 
     protected function getPaymentGatewayRequestData($request, Payment\Entity $payment): array
     {
-        if (Payment\Gateway::supportsAsync($payment->getGateway()))
+        if ((Payment\Method::supportsAsync($payment->getMethod()) === true) and
+            (Payment\Gateway::supportsAsync($payment->getGateway()) === true))
         {
             return $this->getAsyncPaymentCreatedResponse($request, $payment);
         }
@@ -1827,6 +1855,7 @@ trait Authorize
             }
 
             $this->repo->saveOrFail($payment);
+
             $this->repo->saveOrFail($payment->terminal);
 
             $this->updateTokenOnAuthorized();

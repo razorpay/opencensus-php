@@ -2,9 +2,13 @@
 
 namespace RZP\Models\Customer;
 
+use Lib\PhoneBook;
+use libphonenumber\PhoneNumberFormat;
+
 use App;
 use RZP\Base;
-use libphonenumber\PhoneNumberFormat;
+use RZP\Exception;
+use RZP\Error\ErrorCode;
 
 class Validator extends Base\Validator
 {
@@ -40,6 +44,13 @@ class Validator extends Base\Validator
         'skip'                  => 'sometimes|integer'
     );
 
+    protected static $walletAppCreateRules = [
+        Entity::CONTACT         => 'required|contact_syntax',
+        Entity::EMAIL           => 'sometimes|email',
+        Entity::NAME            => 'sometimes|string|max:50',
+        'otp'                   => 'required|string|regex:"^\d{4,8}$"',
+    ];
+
     public static function validateAndParseContact($contact)
     {
         (new static)->validateInput('contact', ['contact' => $contact]);
@@ -56,6 +67,34 @@ class Validator extends Base\Validator
         return $contact;
     }
 
+    /**
+     * Wallets can only be created for customers having
+     * Indian mobile numbers
+     */
+    public function validateIndianContact($number = null)
+    {
+        if ($number === null)
+        {
+            $number = $this->entity->getContact();
+        }
+
+        if (empty($number) === true)
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_CUSTOMER_CONTACT_REQUIRED);
+        }
+
+        $number = new PhoneBook($number, true);
+
+        $country = $number->getRegionCodeForNumber();
+
+        if ($country !== 'IN')
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_CONTACT_ONLY_INDIAN_ALLOWED);
+        }
+    }
+
     public static function validateFetchCustomerPaymentsInput($input)
     {
         (new static)->validateInput('payment', $input);
@@ -64,5 +103,10 @@ class Validator extends Base\Validator
     public static function validateGlobalCustomerCreateInput($input)
     {
         (new static)->validateInput('global_create', $input);
+    }
+
+    public static function validateWalletAppCustomerCreateInput($input)
+    {
+        (new static)->validateInput('wallet_app_create', $input);
     }
 }

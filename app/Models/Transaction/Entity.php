@@ -37,6 +37,7 @@ class Entity extends Base\PublicEntity
     const FEE_MODEL           = 'fee_model';
     const FEE_BEARER          = 'fee_bearer';
     const CREDIT_TYPE         = 'credit_type';
+    const ON_HOLD             = 'on_hold';
     const SETTLED             = 'settled';
     const SETTLED_AT          = 'settled_at';
     const SETTLEMENT_ID       = 'settlement_id';
@@ -73,6 +74,7 @@ class Entity extends Base\PublicEntity
         self::FEE_MODEL,
         self::FEE_BEARER,
         self::CREDIT_TYPE,
+        self::ON_HOLD,
         self::SETTLED_AT,
         self::SERVICE_TAX);
 
@@ -87,6 +89,7 @@ class Entity extends Base\PublicEntity
         self::CURRENCY,
         self::FEE,
         self::SERVICE_TAX,
+        self::ON_HOLD,
         self::SETTLED,
         self::CREATED_AT,
         self::SETTLED_AT,
@@ -115,6 +118,7 @@ class Entity extends Base\PublicEntity
         self::SETTLED_AT            => null,
         self::SETTLEMENT_ID         => null,
         self::RECONCILED_AT         => null,
+        self::ON_HOLD               => 0,
         self::SETTLED               => 0,
         self::PRICING_RULE_ID       => null,
         self::SERVICE_TAX           => null,
@@ -159,6 +163,7 @@ class Entity extends Base\PublicEntity
         self::FEE_CREDITS         => 'int',
         self::FEE_MODEL           => 'int',
         self::FEE_BEARER          => 'int',
+        self::ON_HOLD             => 'bool',
     ];
 
     public function merchant()
@@ -222,6 +227,11 @@ class Entity extends Base\PublicEntity
     public function getBalance()
     {
         return (int) $this->getAttribute(self::BALANCE);
+    }
+
+    public function getOnHold()
+    {
+        return $this->getAttribute(self::ON_HOLD);
     }
 
     public function getSettledAt()
@@ -550,6 +560,11 @@ class Entity extends Base\PublicEntity
         return ($this->getType() === Type::ADJUSTMENT);
     }
 
+    public function isTypeTransfer()
+    {
+        return ($this->getType() === Type::TRANSFER);
+    }
+
     public function isGratis()
     {
         return $this->getAttribute(self::GRATIS);
@@ -558,6 +573,11 @@ class Entity extends Base\PublicEntity
     public function isFeeCredits()
     {
         return $this->getAttribute(self::FEE_CREDITS);
+    }
+
+    public function isOnHold()
+    {
+        return $this->getOnHold();
     }
 
     public function isSettled()
@@ -613,6 +633,7 @@ class Entity extends Base\PublicEntity
         else if ($this->isTypeRefund())
         {
             $refund = $this->source;
+
             $payment = $refund->payment;
 
             // Skip if the payment was not captured.

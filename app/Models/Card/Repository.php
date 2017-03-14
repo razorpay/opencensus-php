@@ -2,6 +2,7 @@
 
 namespace RZP\Models\Card;
 
+use DB;
 use RZP\Models\Base;
 use RZP\Models\Card;
 use RZP\Models\Payment;
@@ -76,6 +77,46 @@ class Repository extends Base\Repository
         $token->setRelation('card', $card);
 
         return $card;
+    }
+
+    public function updateSavedCardsWithIins()
+    {
+        $count = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
+                      ->where(function ($q)
+                      {
+                         $q->where('cards.issuer', '!=', 'iins.issuer')
+                           ->orWhere('cards.network', '!=', 'iins.network');
+                      })
+                      ->update([
+                         'cards.issuer'  => DB::raw('iins.issuer'),
+                         'cards.network' => DB::raw('iins.network'),
+                      ]);
+
+        $countryCount = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
+                      ->where('cards.network', '!=', NetworkName::AMEX)
+                      ->where(function ($q)
+                      {
+                         $q->where('cards.country', '!=', 'iins.country')
+                           ->orWhereNull('cards.country');
+                      })
+                      ->update([
+                         'cards.country' => DB::raw('iins.country'),
+                      ]);
+
+        $typeCount = $this->newQueryWithoutTimestamps()
+                      ->join('iins', 'iins.iin', '=', 'cards.iin')
+                      ->whereNotNull('cards.vault')
+                      ->where('cards.type', '!=', 'iins.type')
+                      ->whereNotNull('iins.type')
+                      ->update([
+                         'cards.type'    => DB::raw('iins.type'),
+                      ]);
+
+        return compact('count', 'countryCount', 'typeCount');
     }
 
     protected function addQueryParamInternational($query, $params)

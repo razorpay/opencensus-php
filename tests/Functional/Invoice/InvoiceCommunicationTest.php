@@ -15,7 +15,13 @@ class InvoiceCommunicationTest extends TestCase
 
         parent::setUp();
 
-        $this->fixtures->merchant->addFeatures(['invoice']);
+        // Merchant detail entity for default test merchant
+        $this->fixtures->create(
+            'merchant_detail',
+            [
+                'merchant_id'                 => '10000000000000',
+                'business_registered_address' => '#1205, Rzp, Outer Ring Road, Bangalore',
+            ]);
 
         $this->ba->proxyAuth();
     }

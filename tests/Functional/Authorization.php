@@ -14,12 +14,15 @@ class Authorization
 
     protected $key = null;
     protected $secret = null;
+    protected $account = null;
 
     protected $defaultKey = 'rzp_test_TheTestAuthKey';
     protected $defaultSecret = 'TheKeySecretForTests';
     protected $defaultDeviceToken = 'authentication_token';
 
     protected $defaultToken = 'SecretTokenForRazorpayAdminAuthentication';
+
+    protected $defaultAccountId = 'acc_10000000000001';
 
     public function __construct($test)
     {
@@ -209,6 +212,29 @@ class Authorization
         $this->basicAuth(null, null);
     }
 
+    /**
+     * Adds account auth to a request
+     */
+    public function addAccountAuth($accountId = null, $user = null, $pwd = null)
+    {
+        if ($accountId === null)
+        {
+            $accountId = $this->defaultAccountId;
+        }
+
+        $this->account = $accountId;
+
+        $this->privateAuth($user, $pwd);
+    }
+
+    /**
+     * Remove account auth
+     */
+    public function deleteAccountAuth()
+    {
+        $this->account = null;
+    }
+
     public function getCreds()
     {
         return $this->auth;
@@ -227,6 +253,25 @@ class Authorization
     public function isPrivateAuth()
     {
         return ($this->type === 'private');
+    }
+
+    public function isAccountAuth()
+    {
+        return (empty($this->getAccountHeader()) === false);
+    }
+
+    public function getAccountHeader()
+    {
+        $headers = [];
+
+        if ($this->account !== null)
+        {
+            $headers = [
+                'X-Razorpay-Account'    => $this->account
+            ];
+        }
+
+        return $headers;
     }
 
     public function getKey()
