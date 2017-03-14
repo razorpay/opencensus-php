@@ -31,11 +31,13 @@ app.controller('WebhooksCtrl', [
 
     $scope.createWebhook = function(webhook) {
 
-      var params = {};
-      params.route_name = 'webhook_create';
-      params.mode = $scope.mode;
       webhook.events = utils.convertBoolToString(webhook.events);
-      params.body = webhook;
+
+      var params = {
+        route_name: 'webhook_create',
+        mode: $scope.mode,
+        body: webhook
+      };
 
       var request = $http({
         url: '/generic',
@@ -75,13 +77,14 @@ app.controller('WebhooksCtrl', [
         payload.secret = webhook.secret;
       }
 
-      var params = {};
-      params.route_name = 'webhook_edit';
-      params.mode = $scope.mode;
-      params.url_params = {
-        '{id}': webhook.id
+      var params = {
+        route_name: 'webhook_edit',
+        mode: $scope.mode,
+        url_params: {
+          '{id}': webhook.id
+        },
+        body: payload
       };
-      params.body = payload;
 
       var request = $http({
         url: '/generic',
@@ -132,9 +135,10 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.fetchWebhooks = function() {
-      var params = {};
-      params.route_name = 'webhook_fetch_multiple';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'webhook_fetch_multiple',
+        mode: $scope.mode
+      };
 
       var request = $http.get('/generic', {
         params: params

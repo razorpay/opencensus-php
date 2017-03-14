@@ -27,9 +27,10 @@ app.controller('FeaturesCtrl', [
 
     function fetchFeatures() {
 
-      var params = {};
-      params.route_name = 'merchant_get_features';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'merchant_get_features',
+        mode: $scope.mode
+      };
       user.identity().then(function (data) {
         params.url_params = {
           '{id}': data.current
@@ -64,9 +65,10 @@ app.controller('FeaturesCtrl', [
         }
       };
 
-      var params = {};
-      params.route_name = 'merchant_update_features';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'merchant_update_features',
+        mode: $scope.mode
+      };
       user.identity().then(function (data) {
         params.url_params = {
           '{id}': data.current

@@ -15,9 +15,10 @@ app.controller('KeysCtrl', [
     };
     fetchKeys();
     $scope.generateKey = function () {
-      var params = {};
-      params.route_name = 'merchant_create_key';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'merchant_create_key',
+        mode: $scope.mode
+      };
       user.identity().then(function (data) {
         params.url_params = {
           '{id}': data.current
@@ -61,10 +62,11 @@ app.controller('KeysCtrl', [
         delay_roll: delay_roll
       };
 
-      var params = {};
-      params.route_name = 'merchant_replace_key';
-      params.mode = $scope.mode;
-      params.body = data;
+      var params = {
+        route_name: 'merchant_replace_key',
+        mode: $scope.mode,
+        body: data
+      };
       user.identity().then(function (data) {
         params.url_params = {
           '{merchantId}': data.current,
@@ -129,9 +131,10 @@ app.controller('KeysCtrl', [
       });
     };
     function fetchKeys() {
-      var params = {};
-      params.route_name = 'merchant_fetch_keys';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'merchant_fetch_keys',
+        mode: $scope.mode
+      };
       user.identity().then(function (data) {
         params.url_params = {
           '{id}': data.current

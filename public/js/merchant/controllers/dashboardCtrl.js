@@ -28,9 +28,10 @@ app.controller('DashboardAggregationsCtrl', [
     });
 
     var fetchBalance = function() {
-      var params = {};
-      params.route_name = 'balance_fetch';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'balance_fetch',
+        mode: $scope.mode
+      };
 
       var request = $http.get('/generic', {
         params: params

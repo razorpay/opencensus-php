@@ -7,9 +7,10 @@ app.controller('CreditsCtrl', [
     var getCreditsData = function () {
 
       $scope.creditsData = '';
-      var params = {};
-      params.route_name = 'credits_fetch_multiple';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'credits_fetch_multiple',
+        mode: $scope.mode
+      };
 
       var request = $http.get('/generic', {
         params: params
@@ -26,9 +27,10 @@ app.controller('CreditsCtrl', [
 
     var fetchBalance = function () {
 
-      var params = {};
-      params.route_name = 'balance_fetch';
-      params.mode = $scope.mode;
+      var params = {
+        route_name: 'balance_fetch',
+        mode: $scope.mode
+      };
 
       var request = $http.get('/generic', {
         params: params
