@@ -5,6 +5,7 @@ namespace RZP\Services;
 use RZP\Exception;
 use RZP\Jobs\RequestJob;
 use RZP\Error\ErrorCode;
+use RZP\Models\Merchant;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Drip
@@ -42,7 +43,7 @@ class Drip
         $this->accountId = $this->config['accountId'];
     }
 
-    public function sendDripMerchantInfo($action, $merchant)
+    public function sendDripMerchantInfo(string $action, Merchant\Entity $merchant)
     {
         switch ($action)
         {
@@ -55,13 +56,12 @@ class Drip
                 break;
 
             default:
-                throw new Exception\BadRequestException(
-                    ErrorCode::BAD_REQUEST_INVALID_DRIP_ACTION);
-                break;
+                throw new Exception\LogicException(
+                    'BAD_REQUEST_INVALID_DRIP_ACTION');
         }
     }
 
-    public function sendDripMerchantActivatedOrNot($activated, $merchant)
+    public function sendDripMerchantActivatedOrNot(string $activated, Merchant\Entity $merchant)
     {
         $action = self::ACTIVATED_ACTION_MAP[$activated];
 
@@ -70,7 +70,7 @@ class Drip
         $this->sendRequest(self::DRIP_URL_MAP[self::SUBSCRIBERS], $data, 'post');
     }
 
-    protected function sendRequest($url, $data, $method)
+    protected function sendRequest(string $url, array $data, string $method)
     {
         $url = $this->baseUrl . $this->accountId . $url;
 
@@ -79,12 +79,12 @@ class Drip
         //
         // Dispatching the job into the queue
         //
-        $job = new RequestJob($url, $method, self::CONTENT_TYPE, $this->token, $content);
+        $job = (new RequestJob($url, $method, self::CONTENT_TYPE, $this->token, "", $content));
 
         $this->dispatch($job);
     }
 
-    protected function createDripSubscribersArray($action, $merchant)
+    protected function createDripSubscribersArray(bool $action, Merchant\Entity $merchant)
     {
         $data = [
             'subscribers' => [

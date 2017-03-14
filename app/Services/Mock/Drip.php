@@ -20,7 +20,7 @@ class Drip extends BaseDrip
         $content = json_encode($data);
 
         $app['trace']->info(
-            TraceCode::REQUESTS_JOB_REQUEST,
+            TraceCode::MOCK_DRIP_REQUEST,
             ['url'     => $url,
              'content' => $content,
              'method'  => $method]);

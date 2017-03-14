@@ -27,6 +27,7 @@ class RequestJob extends Job implements ShouldQueue
     protected $method;
     protected $contentType;
     protected $token;
+    protected $secret;
     protected $content;
     protected $request;
 
@@ -39,12 +40,14 @@ class RequestJob extends Job implements ShouldQueue
                                 string $method,
                                 string $contentType,
                                 string $token,
+                                string $secret,
                                 string $content)
     {
         $this->url = $url;
         $this->method = $method;
         $this->contentType = $contentType;
         $this->token = $token;
+        $this->secret = $secret;
         $this->content = $content;
     }
 
@@ -77,7 +80,7 @@ class RequestJob extends Job implements ShouldQueue
 
         $headers['Content-Type'] = $this->contentType;
 
-        $options['auth'] = [$this->token, ""];
+        $options['auth'] = [$this->token, $this->secret];
 
         $this->request = [
             'url'     => $this->url,
