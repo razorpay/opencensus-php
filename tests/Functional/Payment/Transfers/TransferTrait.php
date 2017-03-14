@@ -29,7 +29,7 @@ trait TransferTrait
         $testData['request']['content']['transfers'][0] = $transferData;
     }
 
-    public function startTest($id = null, $amount = null)
+    public function startTest($id = null, $amount = null, $mode = 'test')
     {
         $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS, 2);
 
@@ -38,6 +38,11 @@ trait TransferTrait
         $testData = $this->testData[$name];
 
         $this->ba->privateAuth();
+
+        if ($mode === 'live')
+        {
+            $this->ba->privateAuth('rzp_live_TheLiveAuthKey');
+        }
 
         $this->setRequestData($testData['request'], $id, $amount);
 

@@ -229,6 +229,21 @@ class TransferTest extends TestCase
         });
     }
 
+    public function testLiveTransferFundsOnHold()
+    {
+        $this->fixtures->merchant->holdFunds();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $body = $this->getTransferRequestBody('account')['content'];
+
+        $this->runRequestResponseFlow($this->testData[__FUNCTION__], function() use ($body)
+        {
+            $this->createTransfer('account', $body, 'live');
+        });
+    }
+
     // ---- Helpers -----
 
     protected function createTransfer($type, $data = [], $mode = 'test')
@@ -326,7 +341,7 @@ class TransferTest extends TestCase
     protected function getReversalRequestBody(string $id)
     {
         $request = [
-            'url'       => '/transfers/' . $id . '/reversal',
+            'url'       => '/transfers/' . $id . '/reversals',
             'method'    => 'POST',
             'content'   => []
         ];

@@ -35,6 +35,8 @@ class Gateway extends Base\Gateway
 
     protected $sortRequestContent = true;
 
+    protected $referer = '';
+
     public function authorize(array $input)
     {
         parent::authorize($input);
@@ -61,6 +63,27 @@ class Gateway extends Base\Gateway
         }
 
         return $request;
+    }
+
+    public function setGatewayParams($input, $mode, $terminal)
+    {
+        parent::setGatewayParams($input, $mode, $terminal);
+
+        $this->setReferer($terminal, $input);
+    }
+
+    protected function setReferer($terminal, array $input)
+    {
+        $referer = $this->app['config']->get('app.url');
+
+        if ($terminal->isShared() === false)
+        {
+            $merchant = $input['merchant'];
+
+            $referer = $merchant->getWebsite();
+        }
+
+        $this->referer = $referer;
     }
 
     public function capture(array $input)
@@ -238,7 +261,7 @@ class Gateway extends Base\Gateway
     {
         $request['options']['follow_redirects'] = false;
 
-        $request['headers']['Referer'] = $this->app['config']->get('app.url');
+        $request['headers']['Referer'] = $this->referer;
     }
 
     protected function sendFirstGatewayRequestForEbsAuthorize($request)

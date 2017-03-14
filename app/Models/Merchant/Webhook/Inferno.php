@@ -30,6 +30,8 @@ class Inferno
 
     protected $event;
 
+    protected $client = null;
+
     const HASH_ALGO = 'sha256';
 
     const WEBHOOK_FAILURE_HOURS = 24;
@@ -231,11 +233,21 @@ class Inferno
         // HttpClientDiscovery finds a suitable installed client that -
         // extends HttpClient (in this case Guzzle6 client)
         $pluginClient = new PluginClient(
-            HttpClientDiscovery::find(),
+            $this->getClient(),
             [$errorPlugin]
         );
 
         return $pluginClient;
+    }
+
+    public function getClient()
+    {
+        if ($this->client === null)
+        {
+            $this->client = HttpClientDiscovery::find();
+        }
+
+        return $this->client;
     }
 
     public function sendRequest($request, $webhook)

@@ -494,7 +494,7 @@ class Entity extends Base\PublicEntity
 
     public function offers()
     {
-        return $this->belongsToMany('RZP\Models\Offer\Entity', Table::MERCHANT_OFFER);
+        return $this->hasMany('RZP\Models\Offer\Entity');
     }
 
     protected function getMaxPaymentAmountAttribute()

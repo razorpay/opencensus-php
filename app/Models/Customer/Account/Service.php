@@ -166,6 +166,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    /**
+     * Used by the Open Wallet demo app
+     */
+    public function verifyOtpApp($input)
+    {
+        $data = $this->core->verifyOtpApp($input, $this->merchant);
+
+        return $data->toArrayPublic();
+    }
+
     public function fetchBankAccountsByContact($contact)
     {
         $contact = Customer\Validator::validateAndParseContact($contact);
@@ -551,11 +561,17 @@ class Service extends Base\Service
     {
         Entity::verifyIdAndStripSign($customerId);
 
-        $balance = $this->repo
-                        ->customer_balance
-                        ->findByIdAndMerchant($customerId, $this->merchant);
+        $customerBalance = $this->repo
+                                ->customer_balance
+                                ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
-        return $balance->toArrayPublic();
+        // If no customer balance entity exists, return a default empty entity
+        if ($customerBalance === null)
+        {
+            $customerBalance = (new Customer\Balance\Entity)->build();
+        }
+
+        return $customerBalance->toArrayPublic();
     }
 
     public function getCustomerBalanceStatement(string $customerId, array $input = []) : array
@@ -564,9 +580,17 @@ class Service extends Base\Service
 
         $customerBalance = $this->repo
                                 ->customer_balance
-                                ->findByIdAndMerchant($customerId, $this->merchant);
+                                ->findByCustomerIdAndMerchantSilent($customerId, $this->merchant);
 
-        $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
+        if ($customerBalance !== null)
+        {
+            $records = (new Customer\Transaction\Core)->getStatement($customerBalance, $this->merchant, $input);
+        }
+        else
+        {
+            // If no customer balance entity exists, return an empty collection
+            $records = new Base\PublicCollection;
+        }
 
         return $records->toArrayPublic();
     }

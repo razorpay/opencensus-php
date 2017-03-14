@@ -19,6 +19,9 @@ class NodalAccount
 
     protected static $nodalAccountNumber = '7911547334';
 
+    // RTGS if amount is more that 10L
+    const RTGS_AMOUNT = 1000000.00;
+
     public static $headings = array(
         'Client_Code',
         'Product_Code',
@@ -75,6 +78,8 @@ class NodalAccount
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
 
+        $this->hour = Carbon::now('Asia/Kolkata')->hour;
+
         $this->queue = \Queue::getFacadeRoot();
 
         $this->mail = \Mail::getFacadeRoot();
@@ -87,8 +92,8 @@ class NodalAccount
 
         $row = 2; // row number
 
-        $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = 0;
+        $totalAmount = $neftAmount = $iftAmount = $rtgsAmount = 0;
+        $neftCount   = $iftCount   = $rtgsCount = 0;
 
         foreach ($settlements as $settlement)
         {
@@ -119,6 +124,13 @@ class NodalAccount
                 $iftAmount += $amount;
                 $iftCount++;
             }
+            else if (($amount >= self::RTGS_AMOUNT) and
+                     ($this->hour <= 14))
+            {
+                $type = 'RTGS';
+                $rtgsAmount += $amount;
+                $rtgsCount++;
+            }
             else
             {
                 $neftAmount += $amount;
@@ -134,7 +146,7 @@ class NodalAccount
                 'Dr_Ac_No'              => static::$nodalAccountNumber,
                 'Amount'                => $amount,
                 'Bank_Code_Indicator'   => 'M',
-                'Beneficiary_Code'      => $ba->getKotakBeneficaryCode(),
+                'Beneficiary_Code'      => $ba->getBeneficaryCode(),
                 'Credit_Narration'      => 'RAZORPAY SETTLEMENT',
                 'Payment Details 1'     => 'RAZORPAY PAYMENT',
                 'Payment Details 2'     => $merchant->getPublicId(),
@@ -156,10 +168,12 @@ class NodalAccount
         $amounts['total'] = $totalAmount;
         $amounts['neft'] = $neftAmount;
         $amounts['ift'] = $iftAmount;
+        $amounts['rtgs'] = $rtgsAmount;
 
         $count['total'] = $settlements->count();
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
+        $count['rtgs']   = $rtgsCount;
 
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 

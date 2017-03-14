@@ -10,12 +10,20 @@ class Repository extends Base\Repository
 {
     protected $entity = 'customer_balance';
 
-    public function findByCustomerAndMerchantSilent(Customer\Entity $customer, Merchant\Entity $merchant)
+    public function findByCustomerIdAndMerchantSilent(
+        string $customerId,
+        Merchant\Entity $merchant,
+        bool $lock = false)
     {
-        return $this->newQuery()
-                    ->lockForUpdate()
-                    ->merchantId($merchant->getId())
-                    ->find($customer->getId());
+        $query = $this->newQuery()
+                      ->merchantId($merchant->getId());
+
+        if ($lock === true)
+        {
+            $query->lockForUpdate();
+        }
+
+        return $query->find($customerId);
     }
 
     protected function addQueryOrder($query)

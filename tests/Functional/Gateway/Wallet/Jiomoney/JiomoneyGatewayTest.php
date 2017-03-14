@@ -151,17 +151,18 @@ class JiomoneyGatewayTest extends TestCase
     }
 
     /**
-     * Tests the case when transaction data is not found using STATUSQUERY API"
+     * Tests the case when transaction data is not found using CHECKPAYMENTSTATUS API
+     * and we fallback to STATUSQUERY API for validation"
      */
-    public function testCheckPaymentStatusApiVerifyPayment()
+    public function testStatusQueryApiVerifyPayment()
     {
         $payment = $this->getDefaultWalletPaymentArray('jiomoney');
 
         $this->mockServerContentFunction(function (& $content, $action = null)
         {
-            if ($action === 'status_query')
+            if ($action === 'check_payment_status')
             {
-                $content['response_header']['api_status'] = '0';
+                $content['RESPONSE']['CHECKPAYMENTSTATUS'] = null;
             }
         });
 
