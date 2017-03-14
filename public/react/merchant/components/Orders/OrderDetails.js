@@ -72,26 +72,23 @@ export default (props) => {
 
                 {
                   order.attempts > 0 ?
-                  <ListGroupToggler
-                    label='Payments'
-                    onToggleClick={() => props.onTogglePayments(order)}
-                  >
-                    <table class='table table-hover table-striped'>
-                      <TableBody
-                        colSpan={2}
-                        isLoading={payments.loading}
-                        rows={payments.items}
-                      >
-                        {
-                          payments.items.map((payment) => <PaymentList key={payment.id} payment={payment} />)
-                        }
-                      </TableBody>
-                    </table>
-                  </ListGroupToggler> :
-                  <div class='list-group-item'>
-                    <span>Payments</span>
-                    <span>No Payments</span>
-                  </div>
+                    <ListGroupToggler
+                      label='Payments'
+                      onToggleClick={() => props.onTogglePayments(order)}
+                    >
+                      <table class='table table-hover table-striped'>
+                        <TableBody
+                          colSpan={2}
+                          isLoading={payments.loading}
+                          rows={payments.items}
+                        >
+                          {
+                            payments.items.map((payment) => <PaymentList key={payment.id} payment={payment} />)
+                          }
+                        </TableBody>
+                      </table>
+                    </ListGroupToggler> :
+                    <DetailRow label='Payments' value='No Payments' />
                 }
 
                 <DetailRow
