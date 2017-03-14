@@ -22,10 +22,15 @@ class NodalAccount
 
     protected static $nodalAccountNumber = '7911547334';
 
+    // RTGS if amount is more that 10L
+    const RTGS_AMOUNT = 1000000.00;
+
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
         $this->date = Carbon::today('Asia/Kolkata')->format('d/m/Y');
+
+        $this->hour = Carbon::now('Asia/Kolkata')->hour;
 
         $this->queue = \Queue::getFacadeRoot();
 
@@ -43,8 +48,8 @@ class NodalAccount
 
         $row = 2; // row number
 
-        $totalAmount = $neftAmount = $iftAmount = 0;
-        $neftCount   = $iftCount   = $totalCount = 0;
+        $totalAmount = $neftAmount = $iftAmount = $rtgsAmount = 0;
+        $neftCount   = $iftCount   = $rtgsCount = 0;
 
         foreach ($entities as $entity)
         {
@@ -98,6 +103,13 @@ class NodalAccount
                 $iftAmount += $amount;
                 $iftCount++;
             }
+            else if (($amount >= self::RTGS_AMOUNT) and
+                     ($this->hour <= 14))
+            {
+                $type = 'RTGS';
+                $rtgsAmount += $amount;
+                $rtgsCount++;
+            }
             else
             {
                 $neftAmount += $amount;
@@ -116,8 +128,9 @@ class NodalAccount
                 Headings::BENEFICIARY_CODE        => $ba->getKotakBeneficaryCode(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYMENT',
-                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $ba->getId(),
+                Headings::MERCHANT_ID             => $merchant->getPublicId(),
+                Headings::BANK_ACCOUNT_ID         => $ba->getId(),
+                Headings::BATCH_FUND_TRANSFER_ID  => $settlement->getBatchFundTransferId(),
                 Headings::SOURCE_ID               => $settlement->getPublicId(),
                 Headings::VERSION                 => $version,
             ];
@@ -137,10 +150,12 @@ class NodalAccount
         $amounts['total'] = $totalAmount;
         $amounts['neft'] = $neftAmount;
         $amounts['ift'] = $iftAmount;
+        $amounts['rtgs'] = $rtgsAmount;
 
         $count['total'] = $totalCount;
         $count['neft']  = $neftCount;
         $count['ift']   = $iftCount;
+        $count['rtgs']   = $rtgsCount;
 
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
@@ -190,8 +205,9 @@ class NodalAccount
                 Headings::BENEFICIARY_ACC_NO       => $ba->getAccountNumber(),
                 Headings::CREDIT_NARRATION        => 'RAZORPAY SETTLEMENT',
                 Headings::PAYMENT_DETAILS_1       => 'RAZORPAY PAYOUTS',
-                Headings::PAYMENT_DETAILS_2       => $merchant->getPublicId(),
-                Headings::PAYMENT_DETAILS_3       => $ba->getId()
+                Headings::MERCHANT_ID             => $merchant->getPublicId(),
+                Headings::BANK_ACCOUNT_ID         => $ba->getId(),
+                Headings::BATCH_FUND_TRANSFER_ID  => $payout->getBatchFundTransferId(),
             ];
 
             $array = $this->getAllFields($array);

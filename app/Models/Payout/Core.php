@@ -250,7 +250,7 @@ class Core extends Base\Core
         if ($onHold === true)
         {
             throw new Exception\BadRequestException(
-                ErrorCode::BAD_REQUEST_PAYOUT_MERCHANT_FUNDS_ON_HOLD);
+                ErrorCode::BAD_REQUEST_MERCHANT_FUNDS_ON_HOLD);
         }
     }
 }

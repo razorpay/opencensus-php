@@ -27,6 +27,24 @@ class Server extends Base\Mock\Server
 
         $this->validateAuthorizeInput($input);
 
+        $request = [
+            'url' => '',
+            'method' => 'post',
+            'content' => [
+                'PAReq' => $this->getPaReq($input),
+                'TermUrl' => $input['responseSuccessURL'],
+                'MD'    => json_encode($input),
+            ]
+        ];
+
+        return $this->makePostResponse($request);
+    }
+
+    public function authenticate($input)
+    {
+        $rawInput = $input;
+        $input = json_decode(html_entity_decode($input['MD']), true);
+
         $dateTime = Carbon::now('Asia/Kolkata');
 
         $tdate = $dateTime->getTimestamp() . random_integer(5);
@@ -86,11 +104,13 @@ class Server extends Base\Mock\Server
 
         $this->setResponseHash($input, $content);
 
-        $url = $input['responseSuccessURL'];
+        $request = [
+            'url' => $rawInput['TermUrl'],
+            'method' => 'post',
+            'content' => $content
+        ];
 
-        $url .= '?' . http_build_query($content);
-
-        return $url;
+        return $request;
     }
 
     public function capture($input)
@@ -333,5 +353,42 @@ class Server extends Base\Mock\Server
     protected function generateId($prefix = '')
     {
         return $prefix . random_integer(5);
+    }
+
+    protected function getPaReq($input)
+    {
+        $replacePair = [
+            ':date:'          => Carbon::now()->format('Ymd H:i:s'),
+            ':messageId:'     => $input[FirstData\ConnectRequestFields::INVOICE_NUMBER],
+            ':displayAmount:' => $input[FirstData\ConnectRequestFields::CHARGE_TOTAL],
+            ':amount:'        => (int) ($input[FirstData\ConnectRequestFields::CHARGE_TOTAL] * 100),
+            ':proxyPan:'      => $this->generateId(),
+            ':xid:'           => base64_encode($input[FirstData\ConnectRequestFields::INVOICE_NUMBER])
+        ];
+
+        $paReqTemplate = '<ThreeDSecure><Message id=":messageId:"><PAReq><version>1.0.2</version>
+            <Merchant><acqBIN>469216</acqBIN>
+            <merID>341422420000000</merID>
+            <name>RAZORPAY TECHNOLOGIES PVT</name>
+            <country>356</country>
+            <url>http://store.razorpay.com/</url>
+            </Merchant><Purchase><xid>:xid:</xid>
+            <date>:date:</date>
+            <amount>Rs:displayAmount:</amount>
+            <purchAmount>:amount:</purchAmount>
+            <currency>356</currency>
+            <exponent>2</exponent>
+            </Purchase><CH><acctID>:proxyPan:</acctID>
+            <expiry>2011</expiry>
+            </CH></PAReq></Message></ThreeDSecure>';
+
+        $xml = strtr($paReqTemplate, $replacePair);
+
+        $xml = trim($xml);
+
+        $xml = zlib_encode($xml, 15);
+        $xml = base64_encode($xml);
+
+        return $xml;
     }
 }
