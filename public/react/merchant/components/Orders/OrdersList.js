@@ -6,7 +6,12 @@ const OrdersListItem = ({ order }) => {
   return (
     <tr>
       <td>
-        <a href={`#/app/orders/${order.id}/details`}>{order.id}</a>
+        <a
+          target='_blank'
+          href={`#/app/orders/${order.id}/details`}
+        >
+          {order.id}
+        </a>
       </td>
       <td>{order.attempts}</td>
       <td>{order.currency}</td>

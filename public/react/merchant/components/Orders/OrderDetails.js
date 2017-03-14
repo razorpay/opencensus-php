@@ -6,6 +6,7 @@ import Alert from 'rzp/ui/Forms/Alert'
 import ListGroupToggler from 'rzp/ui/ListGroupToggler'
 import { OrderStatusLabel, PaymentStatusLabel } from 'merchant/components/StatusLabel'
 import TableBody from 'merchant/components/TableBody'
+import DetailRow from 'merchant/components/DetailRow'
 
 const PaymentList = ({ payment }) => {
   return (
@@ -56,25 +57,18 @@ export default (props) => {
 
             <div class='panel-body'>
               <div class='list-group'>
-                <div class='list-group-item'>
-                  <span>Amount</span>
-                  <Amount value={order.amount} />
-                </div>
+                <DetailRow
+                  label='Amount'
+                  value={ () => <Amount value={order.amount} /> }
+                />
 
-                <div class='list-group-item'>
-                  <span>Currency</span>
-                  <span>{order.currency}</span>
-                </div>
+                <DetailRow label='Currency' value={order.currency} />
+                <DetailRow label='Attempts' value={order.attempts} />
 
-                <div class='list-group-item'>
-                  <span>Attempts</span>
-                  <span>{order.attempts}</span>
-                </div>
-
-                <div class='list-group-item'>
-                  <span>Status</span>
-                  <OrderStatusLabel status={order.status} />
-                </div>
+                <DetailRow
+                  label='Status'
+                  value={ () => <OrderStatusLabel status={order.status} /> }
+                />
 
                 {
                   order.attempts > 0 ?
@@ -100,13 +94,10 @@ export default (props) => {
                   </div>
                 }
 
-                <div class='list-group-item'>
-                  <span>Created At</span>
-                  <Time
-                    value={order.created_at}
-                    format='DD MMM YYYY, hh:mm:ss a'
-                  />
-                </div>
+                <DetailRow
+                  label='Created At'
+                  value={ () => <Time value={order.created_at} format='DD MMM YYYY, hh:mm:ss a' /> }
+                />
               </div>
             </div>
           </div>

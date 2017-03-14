@@ -16,6 +16,7 @@ let initialState = {
   loading: true,
   orders: [],
   count: 0,
+  error: null,
 }
 
 export default function (state = initialState, action) {
@@ -27,13 +28,14 @@ export default function (state = initialState, action) {
       return merge(state, {
         loading: false,
         orders: action.payload.data.items,
-        count: action.payload.data.count
+        count: action.payload.data.count,
+        error: null,
       })
 
     case `${ORDERS_FETCH}::ERROR`:
       return merge(state, {
         loading: false,
-        error: action.error
+        error: action.payload.errors,
       })
 
     default:

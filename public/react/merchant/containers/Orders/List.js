@@ -17,7 +17,7 @@ export default class OrdersListContainer extends ListContainer {
   }
 
   render() {
-    let { loading, orders } = this.props
+    let { loading, orders, error } = this.props
 
     return (
       <div class='react-root'>
@@ -35,10 +35,13 @@ export default class OrdersListContainer extends ListContainer {
               />
             </div>
 
-            <Alert
-              type={status.type}
-              message={status.message}
-            />
+            {
+              error &&
+                <Alert
+                  type='error'
+                  message={error}
+                />
+            }
 
             <OrdersList
               orders={orders}

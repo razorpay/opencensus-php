@@ -1,6 +1,8 @@
 import Entity from './Entity'
 import ajax from 'merchant/utils/ajax'
 
+// `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
+
 export default class GenericEntity extends Entity {
   static resourceUrl = '/generic'
 
@@ -12,7 +14,6 @@ export default class GenericEntity extends Entity {
   }
 
   static fetchAll(params = {}) {
-    debugger
     const Klass = this
     let { id, ...queryParams } = params
     let data = {
@@ -37,7 +38,6 @@ export default class GenericEntity extends Entity {
   }
 
   static fetch(id, data = {}) {
-    debugger
     const Klass = this
     data.url_params = JSON.stringify({
       '{id}': id
@@ -48,6 +48,7 @@ export default class GenericEntity extends Entity {
     })
   }
 
+  // `makeGenericAjaxCall` is both a static & instance method
   makeGenericAjaxCall(data) {
     const Klass = this.constructor
     return Klass.makeGenericAjaxCall(data)
