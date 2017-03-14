@@ -4,7 +4,7 @@ export const fetchConfig = () => {
   return (dispatch) => {
     return ajax({
       url: '/config',
-      appendMode: false,
+      appendModeInURL: false,
     }).then((response) => {
       return response.data
     })

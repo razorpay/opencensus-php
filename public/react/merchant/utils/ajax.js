@@ -8,17 +8,14 @@ export default (url, params = {}) => {
     params.url = url
   }
 
-  let { appendModeInURL, appendModeInQueryParam, ...ajaxParams } = params
+  let { appendModeInURL = true, appendModeInQueryParam, ...ajaxParams } = params
   let mode = store.getState().session.mode
 
   if (appendModeInQueryParam) {
     ajaxParams.data.mode = mode
-  }
-
-  if (appendModeInURL) {
-    ajaxParams.url = normalizeUrl(`/${mode}/${params.url}`)
-  } else {
     ajaxParams.url = normalizeUrl(params.url)
+  } else if (appendModeInURL) {
+    ajaxParams.url = normalizeUrl(`/${mode}/${params.url}`)
   }
 
   return ajax(ajaxParams)
