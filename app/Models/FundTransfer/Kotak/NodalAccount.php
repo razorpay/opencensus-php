@@ -25,6 +25,8 @@ class NodalAccount
     // RTGS if amount is more that 10L
     const RTGS_AMOUNT = 1000000.00;
 
+    protected $summary;
+
     public function __construct()
     {
         // Date format is DD/MM/YYYY in human representation
@@ -35,6 +37,23 @@ class NodalAccount
         $this->queue = \Queue::getFacadeRoot();
 
         $this->mail = \Mail::getFacadeRoot();
+
+        $this->initSummary();
+    }
+
+    protected function initSummary()
+    {
+        $this->summary['total']['amount'] = 0;
+        $this->summary['total']['count'] = 0;
+
+        $this->summary['NEFT']['amount'] = 0;
+        $this->summary['NEFT']['count'] = 0;
+
+        $this->summary['IFT']['amount'] = 0;
+        $this->summary['IFT']['count'] = 0;
+
+        $this->summary['RTGS']['amount'] = 0;
+        $this->summary['RTGS']['count'] = 0;
     }
 
     public static function getHeadings()
@@ -48,33 +67,9 @@ class NodalAccount
 
         $row = 2; // row number
 
-        $totalAmount = $neftAmount = $iftAmount = $rtgsAmount = 0;
-        $neftCount   = $iftCount   = $rtgsCount = 0;
-
         foreach ($entities as $entity)
         {
-            $totalCount++;
-            $version = Attempt\Version::V1;
-
-            if ($entity instanceof Attempt\Entity)
-            {
-                $version = Attempt\Version::V2;
-
-                $settlement = $entity->source;
-
-                $paymentRefNo = $entity->getPublicId();
-            }
-            else if ($entity instanceof Settlement\Entity)
-            {
-                $settlement = $entity;
-
-                $paymentRefNo = $settlement->getPublicId();
-            }
-            else
-            {
-                throw new Exception\InvalidArgumentException(
-                    'Not a valid entity for Settlement-file generation: ' . get_class($entity));
-            }
+            list($version, $paymentRefNo) = $this->getPaymentRefNoAndVersion($entity);
 
             $merchant = $settlement->merchant;
 
@@ -88,33 +83,10 @@ class NodalAccount
             //
 
             $amount = $settlement->getAmount() / 100;
-            $totalAmount += $amount;
 
-            $type = 'NEFT';
+            $type = $this->getPaymenType($ba, $amount);
 
-            $ifsc = $ba->getIfscCode();
-
-            $ifscFirstFour = substr($ifsc, 0, 4);
-
-            if (($ifscFirstFour === 'KKBK') or
-                ($ifscFirstFour === 'VYSA'))
-            {
-                $type = 'IFT';
-                $iftAmount += $amount;
-                $iftCount++;
-            }
-            else if (($amount >= self::RTGS_AMOUNT) and
-                     ($this->hour <= 14))
-            {
-                $type = 'RTGS';
-                $rtgsAmount += $amount;
-                $rtgsCount++;
-            }
-            else
-            {
-                $neftAmount += $amount;
-                $neftCount++;
-            }
+            $this->updateSummary($type, $amount);
 
             $array = [
                 Headings::CLIENT_CODE             => 'RAZORNODAL',
@@ -147,16 +119,6 @@ class NodalAccount
             array_push($excelData, $array);
         }
 
-        $amounts['total'] = $totalAmount;
-        $amounts['neft'] = $neftAmount;
-        $amounts['ift'] = $iftAmount;
-        $amounts['rtgs'] = $rtgsAmount;
-
-        $count['total'] = $totalCount;
-        $count['neft']  = $neftCount;
-        $count['ift']   = $iftCount;
-        $count['rtgs']   = $rtgsCount;
-
         $urlExcel = $this->writeToExcelFile($excelData, $this->getFileToWriteNameWithoutExt());
 
         $txt = $this->generateText($textData);
@@ -170,7 +132,7 @@ class NodalAccount
 
         $urlText = $this->writeToTextFile($txt);
 
-        $this->sendKotakSettlementMail($count, $amounts);
+        $this->sendKotakSettlementMail();
 
         return [$urlText, $urlExcel];
     }
@@ -238,6 +200,66 @@ class NodalAccount
         return $urlText;
     }
 
+    protected function getPaymentRefNoAndVersion($entity)
+    {
+        $version = Attempt\Version::V1;
+
+        if ($entity instanceof Attempt\Entity)
+        {
+            $version = Attempt\Version::V2;
+
+            $settlement = $entity->source;
+
+            $paymentRefNo = $entity->getPublicId();
+        }
+        else if ($entity instanceof Settlement\Entity)
+        {
+            $settlement = $entity;
+
+            $paymentRefNo = $settlement->getPublicId();
+        }
+        else
+        {
+            throw new Exception\InvalidArgumentException(
+                'Not a valid entity for Settlement-file generation: ' . get_class($entity));
+        }
+
+        return [$version, $paymentRefNo];
+    }
+
+    protected function getPaymenType(BankAccount\Entity $ba, $amount)
+    {
+        $ifsc = $ba->getIfscCode();
+
+        $ifscFirstFour = substr($ifsc, 0, 4);
+
+        if (($ifscFirstFour === 'KKBK') or
+            ($ifscFirstFour === 'VYSA'))
+        {
+            $type = 'IFT';
+        }
+        else if (($amount >= self::RTGS_AMOUNT) and
+                 ($this->hour <= 14))
+        {
+            $type = 'RTGS';
+        }
+        else
+        {
+            $type = 'NEFT';
+        }
+
+        return $type;
+    }
+
+    protected function updateSummary($type, $amount)
+    {
+        $this->summary['total']['count']++;
+        $this->summary['total']['amount'] += $amount;
+
+        $this->summary[$type]['amount'] += $amount;
+        $this->summary[$type]['count']++;
+    }
+
     protected function getEmptyArray()
     {
         $headings = self::getHeadings();
@@ -259,16 +281,14 @@ class NodalAccount
         return $dict;
     }
 
-    protected function sendKotakSettlementMail($count, $amounts)
+    protected function sendKotakSettlementMail()
     {
-        $amounts['neft'] = sprintf('%.2f', $amounts['neft']);
-        $amounts['ift'] = sprintf('%.2f', $amounts['ift']);
-        $amounts['total'] = sprintf('%.2f', $amounts['total']);
+        $summary = $this->summary;
 
         $today = Carbon::now('Asia/Kolkata')->format('d-m-Y');
         $subject = "Kotak Settlement files for $today";
 
-        $data = compact('amounts', 'count', 'subject');
+        $data = compact('summary', 'subject');
 
         $fileName = $this->getFileToWriteNameWithoutExt();
         $path = $this->getStorageDir();
