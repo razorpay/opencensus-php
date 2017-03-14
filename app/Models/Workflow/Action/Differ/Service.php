@@ -175,6 +175,12 @@ class Service extends Base\Service
                 ]);
         }
 
+        $this->trace->info(
+            TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
+            [
+                'response'   => $response
+            ]);
+
         return $response;
     }
 
