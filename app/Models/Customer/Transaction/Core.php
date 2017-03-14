@@ -15,13 +15,14 @@ class Core extends Base\Core
      * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a openwallet payment.
      *
-     * @param array           $input
-     * @param Merchant\Entity $merchant
+     * @param array  $input
      *
      * @return Entity
      */
-    public function createForCustomerDebit(array $input, Merchant\Entity $merchant) : Entity
+    public function createForCustomerDebit(array $input) : Entity
     {
+        $merchant = $input['merchant'];
+
         $amount = $input['payment']['amount'];
 
         $customerId = $input['payment']['customer_id'];
@@ -78,13 +79,14 @@ class Core extends Base\Core
     /**
      * Create entry for a refund transaction, and credits customer wallet
      *
-     * @param array           $input
-     * @param Merchant\Entity $merchant
+     * @param array $input
      *
      * @return Entity
      */
-    public function createForCustomerRefund(array $input, Merchant\Entity $merchant) : Entity
+    public function createForCustomerRefund(array $input) : Entity
     {
+        $merchant = $input['merchant'];
+
         $amount = $input['amount'];
 
         $customerId = $input['payment']['customer_id'];

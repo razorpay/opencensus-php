@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Openwallet;
 
-use RZP\Exception;
-use RZP\Error\ErrorCode;
 use RZP\Gateway\Wallet\Base;
 use RZP\Models\Customer;
 use RZP\Trace\TraceCode;
@@ -31,15 +29,15 @@ class Gateway extends Base\Gateway
 
         parent::authorize($input);
 
-        $txnId = (new Customer\Transaction\Service)
-                    ->createForDebit($input);
+        $txnId = (new Customer\Transaction\Core)
+                    ->createForCustomerDebit($input);
 
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
             [
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
-                'ctxn_id'    => $txnId,
+                'ctxn_id'    => $txnId->getId(),
             ]);
     }
 
@@ -61,19 +59,21 @@ class Gateway extends Base\Gateway
 
         parent::refund($input);
 
-        $txnId = (new Customer\Transaction\Service)->createForRefund($input);
+        $txnId = (new Customer\Transaction\Core)
+                    ->createForCustomerRefund($input);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'gateway'       => $this->gateway,
                 'refund_id'     => $input['refund']['id'],
-                'ctxn_id'       => $txnId,
+                'ctxn_id'       => $txnId->getId(),
             ]);
     }
 
     /**
      * Reverse a customer wallet payment
+     * (called via auto-refund authorized payments)
      *
      * @param  array    $input
      * @return void
