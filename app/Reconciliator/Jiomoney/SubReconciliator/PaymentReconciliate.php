@@ -92,8 +92,9 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->repo->wallet_jiomoney->findSuccessfulPaymentsByPaymentIdAndAction($paymentId,
-                                                                      Action::AUTHORIZE);
+        return $this->repo
+                    ->wallet_jiomoney
+                    ->findSuccessfulPaymentsByPaymentIdAndAction($paymentId, Action::AUTHORIZE);
     }
 
     protected function forceAuthorizeFailed($row)

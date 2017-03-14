@@ -568,7 +568,7 @@ class Gateway extends Base\Gateway
 
         $verify->gatewaySuccess = false;
 
-        if ($this->validatePaymentVerificationSuccess($content, $input) === true)
+        if ($this->validatePaymentVerificationSuccess($content) === true)
         {
             $verify->gatewaySuccess = true;
         }
@@ -608,19 +608,17 @@ class Gateway extends Base\Gateway
 
     protected function getVerifyWalletAttributes($verify)
     {
-        $payment = $this->input['payment'];
-
         $content = $verify->verifyResponseContent;
 
-        $gatewayResponseCode = $this->getGatewayTxnStatus($content);
+        $gatewayResponseCode = $this->getGatewayResponseCode($content);
 
         $gatewayStatusCode = $this->getGatewayStatusCodeFromResponseCode($gatewayResponseCode);
 
         $contentToSave = [
             Entity::STATUS_CODE        => $gatewayStatusCode,
             Entity::RESPONSE_CODE      => $gatewayResponseCode,
-            Entity::DATE               => $this->getGatewayPaymentDate($content, $payment),
-            Entity::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content, $payment)
+            Entity::DATE               => $this->getGatewayPaymentDate($content),
+            Entity::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content)
         ];
 
         return $contentToSave;
@@ -646,14 +644,14 @@ class Gateway extends Base\Gateway
         return false;
     }
 
-    protected function validatePaymentVerificationSuccess(array $content, array $input)
+    protected function validatePaymentVerificationSuccess(array $content)
     {
-        $txnStatus = $this->getGatewayTxnStatus($content);
+        $responseCode = $this->getGatewayResponseCode($content);
 
-        return ($txnStatus === ResponseCode::SUCCESS);
+        return ($responseCode === ResponseCode::SUCCESS);
     }
 
-    protected function getGatewayTxnStatus(array $content)
+    protected function getGatewayResponseCode(array $content)
     {
         if ($this->verifiedUsingStatusQuery === true)
         {
@@ -685,10 +683,9 @@ class Gateway extends Base\Gateway
      * API we return the payment created at timestamp, else we return null
      *
      * @param  array  $content verify response content
-     * @param  array  $payment payment array
      * @return string          gateway payment timestamp
      */
-    public function getGatewayPaymentDate(array $content, array $payment)
+    public function getGatewayPaymentDate(array $content)
     {
         if ($this->verifiedUsingCheckPaymentStatus === true)
         {
@@ -701,7 +698,7 @@ class Gateway extends Base\Gateway
         return null;
     }
 
-    protected function getGatewayPaymentId(array $content, array $payment)
+    protected function getGatewayPaymentId(array $content)
     {
         if ($this->verifiedUsingStatusQuery === true)
         {

@@ -2,8 +2,6 @@
 
 namespace RZP\Gateway\Wallet\Jiomoney;
 
-use RZP\Exception;
-use RZP\Error;
 use RZP\Gateway\Wallet\Base;
 
 class Repository extends Base\Repository
@@ -13,7 +11,10 @@ class Repository extends Base\Repository
         return $this->newQuery()
                     ->where(Base\Entity::PAYMENT_ID, '=', $paymentId)
                     ->where(Base\Entity::ACTION, '=', $action)
-                    ->whereNotIn(Base\Entity::STATUS_CODE, [StatusCode::INTERNAL_ERROR, StatusCode::UNAUTHORIZED])
-                    ->first();
+                    ->whereNotIn(
+                        Base\Entity::STATUS_CODE,
+                        StatusCode::getFailureStatuses()
+                    )
+                    ->firstOrFail();
     }
 }
