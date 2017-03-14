@@ -76,6 +76,13 @@ class Gateway
         self::WALLET_FREECHARGE
     ];
 
+    // Gateways for which we may need to force authorize payments
+    // since their verify API's stop working after a certain time
+    const FORCE_AUTHORIZE_GATEWAYS = [
+        self::AXIS_MIGS,
+        self::WALLET_JIOMONEY
+    ];
+
     public static $channels = [
         self::AMEX               => Settlement\Channel::KOTAK,
         self::ATOM               => Settlement\Channel::ATOM,

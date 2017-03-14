@@ -86,6 +86,16 @@ class Entity extends Base\Entity
         $this->setAttribute(self::STATUS_CODE, $statusCode);
     }
 
+    public function getResponseCode()
+    {
+        return $this->getAttribute(self::RESPONSE_CODE);
+    }
+
+    public function setResponseCode(string $responseCode)
+    {
+        $this->setAttribute(self::RESPONSE_CODE, $responseCode);
+    }
+
     public function setWallet($wallet)
     {
         $this->setAttribute(self::WALLET, $wallet);

@@ -326,8 +326,6 @@ trait Authorize
      */
     public function forceAuthorizeFailedPayment(Payment\Entity $payment, array $input = []): array
     {
-        $forceAuthorizeGateways = [Payment\Gateway::AXIS_MIGS, Payment\Gateway::WALLET_JIOMONEY];
-
         $this->setPayment($payment);
 
         if ($payment->isFailed() === false)
@@ -336,10 +334,12 @@ trait Authorize
                 'Non failed payment given for authorization');
         }
 
-        if (in_array($payment->getGateway(), $forceAuthorizeGateways, true) === false)
+        if (in_array($payment->getGateway(), Payment\Gateway::FORCE_AUTHORIZE_GATEWAYS, true) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Cannot force authorize on this gateway');
+                                        'Cannot force authorize on this gateway',
+                                        'gateway',
+                                        $payment->getGateway());
         }
 
         if ($payment->hasCard())

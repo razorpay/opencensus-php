@@ -198,7 +198,6 @@ class Gateway extends Base\Gateway
 
         // Return true if already authorized on gateway
         if (($gatewayPayment->getGatewayPaymentId() !== null) and
-            ($gatewayPayment->getReceived() === true) and
             ($gatewayPayment->getStatusCode() === StatusCode::SUCCESS))
         {
             return true;
@@ -214,6 +213,7 @@ class Gateway extends Base\Gateway
         $gatewayPayment->setGatewayPaymentId($input['gateway']['gateway_payment_id']);
         $gatewayPayment->setDate($input['gateway']['gateway_payment_date']);
         $gatewayPayment->setStatusCode(StatusCode::SUCCESS);
+        $gatewayPayment->setResponseCode(ResponseCode::SUCCESS);
 
         $this->repo->saveOrFail($gatewayPayment);
 
@@ -607,11 +607,15 @@ class Gateway extends Base\Gateway
 
         $content = $verify->verifyResponseContent;
 
+        $gatewayResponseCode = $this->getGatewayTxnStatus($content);
+
+        $gatewayStatusCode = $this->getGatewayStatusCodeFromResponseCode($gatewayResponseCode);
+
         $contentToSave = [
-            Entity::RECEIVED             => true,
-            Entity::RESPONSE_CODE        => $this->getGatewayTxnStatus($content),
-            Entity::DATE                 => $this->getGatewayPaymentDate($content, $payment),
-            Entity::GATEWAY_PAYMENT_ID   => $this->getGatewayPaymentId($content, $payment)
+            Entity::STATUS_CODE        => $gatewayStatusCode,
+            Entity::RESPONSE_CODE      => $gatewayResponseCode,
+            Entity::DATE               => $this->getGatewayPaymentDate($content, $payment),
+            Entity::GATEWAY_PAYMENT_ID => $this->getGatewayPaymentId($content, $payment)
         ];
 
         return $contentToSave;
@@ -641,7 +645,7 @@ class Gateway extends Base\Gateway
     {
         $txnStatus = $this->getGatewayTxnStatus($content);
 
-        return ($txnStatus === StatusCode::API_SUCCESS);
+        return ($txnStatus === ResponseCode::SUCCESS);
     }
 
     protected function getGatewayTxnStatus(array $content)
@@ -654,6 +658,16 @@ class Gateway extends Base\Gateway
         {
             return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
                 [ResponseFields::TXN_STATUS];
+        }
+
+        return null;
+    }
+
+    public function getGatewayStatusCodeFromResponseCode($responseCode)
+    {
+        if ($responseCode !== null)
+        {
+            return ($responseCode === ResponseCode::SUCCESS) ? StatusCode::SUCCESS : StatusCode::INTERNAL_ERROR;
         }
 
         return null;

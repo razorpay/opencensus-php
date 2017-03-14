@@ -421,6 +421,13 @@ class PaymentReconciliate extends Foundation\SubReconciliate
         return null;
     }
 
+    /**
+     * If this is being implemented in the child class, ensure that
+     * the setter for storing the gateway payment date is present
+     * in the gateway entity.
+     * @param $row
+     * @return null
+     */
     protected function getGatewayPaymentDate($row)
     {
         return null;

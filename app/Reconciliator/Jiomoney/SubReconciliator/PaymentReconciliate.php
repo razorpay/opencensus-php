@@ -6,6 +6,7 @@ use Carbon\Carbon;
 
 use RZP\Gateway\Base\Action;
 use RZP\Gateway\Wallet\Jiomoney\Gateway as JiomoneyGateway;
+use RZP\Models\Base\PublicEntity;
 use RZP\Models\Payment;
 use RZP\Models\Payment\Status as PaymentStatus;
 use RZP\Reconciliator\Base;
@@ -91,7 +92,7 @@ class PaymentReconciliate extends Base\PaymentReconciliate
 
     protected function getGatewayPayment($paymentId)
     {
-        return $this->repo->wallet_jiomoney->findByPaymentIdAndAction($paymentId,
+        return $this->repo->wallet_jiomoney->findSuccessfulPaymentsByPaymentIdAndAction($paymentId,
                                                                       Action::AUTHORIZE);
     }
 
@@ -128,6 +129,35 @@ class PaymentReconciliate extends Base\PaymentReconciliate
             ($response['status'] === PaymentStatus::AUTHORIZED))
         {
             return true;
+        }
+
+        return false;
+    }
+
+    protected function setGatewayPaymentDateInGateway(string $gatewayPaymentDate, PublicEntity $gatewayPayment)
+    {
+        $validDate = $this->validateGatewayPaymentDate($gatewayPayment->getDate());
+
+        if ($validDate === false)
+        {
+            $gatewayPayment->setDate($gatewayPaymentDate);
+        }
+    }
+
+    protected function validateGatewayPaymentDate($date)
+    {
+        if ($date !== null)
+        {
+            try
+            {
+                $formattedDate = Carbon::createFromFormat(JiomoneyGateway::DATE_FORMAT, $date, 'Asia/Kolkata');
+
+                return ($formattedDate !== null) ? true : false;
+            }
+            catch (\Exception $e)
+            {
+                return false;
+            }
         }
 
         return false;
