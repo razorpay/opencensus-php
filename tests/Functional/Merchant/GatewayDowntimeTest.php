@@ -40,14 +40,16 @@ class GatewayDowntimeTest extends TestCase
 
     //----- Create Tests -----
 
-    public function testGatewayCreateAbsenceNetbanking()
+    // general tests
+
+    public function testGatewayCreateDowntimeNetbanking()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
         $this->startTest();
     }
 
-    public function testGatewayCreateAbsenceDuplicate()
+    public function testGatewayCreateDowntimeDuplicate()
     {
         $request = [
             'content' => [
@@ -74,7 +76,7 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($response['reason_code'], $response2['reason_code']);
     }
 
-    public function testGatewayAbsenceDuplicateWithUpdatedScheduled()
+    public function testGatewayDowntimeDuplicateWithUpdatedScheduled()
     {
         $request = [
             'content' => [
@@ -110,13 +112,13 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals($response2['scheduled'], true);
 
-        $absenceEntity = $this->getLastEntity('gateway_downtime', true);
+        $downtimeEntity = $this->getLastEntity('gateway_downtime', true);
 
-        $this->assertEquals($absenceEntity['source'], 'other');
+        $this->assertEquals($downtimeEntity['source'], 'other');
 
     }
 
-    public function testGatewayAbsenceDuplicateWithoutScheduled()
+    public function testGatewayDowntimeDuplicateWithoutScheduled()
     {
         $request = [
             'content' => [
@@ -148,16 +150,16 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals($response2['scheduled'], true);
 
-        $absenceEntity = $this->getLastEntity('gateway_downtime', true);
+        $downtimeEntity = $this->getLastEntity('gateway_downtime', true);
 
-        $this->assertEquals($absenceEntity['source'], 'statuscake');
+        $this->assertEquals($downtimeEntity['source'], 'statuscake');
 
     }
 
     // tests with 2 inputs, one having minimal input while
     // the other having max input. We need to create 2 entries
     // for this
-    public function testGatewayAbsenceDuplicateWithCreate()
+    public function testGatewayDowntimeDuplicateWithCreate()
     {
         $request = [
             'content' => [
@@ -189,43 +191,7 @@ class GatewayDowntimeTest extends TestCase
 
     }
 
-
-    public function testGatewayCreateAbsenceNetbankingPartial()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateAbsenceNBEmptyIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateAbsenceInvalidGateway()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateAbsenceNBInvalidIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateAbsenceCardInvalidIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testCreateAbsenceNBNonSupportedIssuer()
+    public function testCreateDowntimeInvalidGateway()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -243,7 +209,7 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testGatewayCreateAbsenceInvalidSource()
+    public function testGatewayCreateDowntimeInvalidSource()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -254,7 +220,7 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testGatewayCreateAbsenceInvalidFrom()
+    public function testGatewayCreateDowntimeInvalidFrom()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -268,7 +234,7 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
-    public function testGatewayCreateAbsenceInvalidTo()
+    public function testGatewayCreateDowntimeInvalidTo()
     {
         $this->fillDefaultsForTests(__FUNCTION__);
 
@@ -296,73 +262,7 @@ class GatewayDowntimeTest extends TestCase
         $this->startTest();
     }
 
-
-    public function testGatewayAbsenceForCard()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceForCardWithoutIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceForCardUnsupportedNetwork()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceForCardInvalidNetwork()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceForCardInvalidCardType()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceCardWithTypeIssuerNetwork()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceWithWallet()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceWithInvalidWallet()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-    }
-
-    public function testGatewayAbsenceWithInvalidWalletIssuer()
-    {
-        $this->fillDefaultsForTests(__FUNCTION__);
-
-        $this->startTest();
-
-    }
-
-
-    public function testGatewayAbsenceWithTerminal()
+    public function testGatewayDowntimeWithTerminal()
     {
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
 
@@ -387,7 +287,7 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['terminal_id'], $tid);
     }
 
-    public function testGatewayAbsenceWithInvalidTerminal()
+    public function testGatewayDowntimeWithInvalidTerminal()
     {
         $tid = '6fNfsofiUqP1rs';
 
@@ -415,11 +315,157 @@ class GatewayDowntimeTest extends TestCase
         }
     }
 
+    // netbanking
+    public function testGatewayCreateDowntimeNetbankingPartial()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateDowntimeNBEmptyIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateDowntimeNBInvalidIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateDowntimeNBNonSupportedIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateNBGeneral()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testCreateNBAllIssuers()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    // card
+    public function testCreateDowntimeCardInvalidIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeForCard()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeForCardWithoutIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeForCardUnsupportedNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeForCardInvalidNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeForCardInvalidCardType()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeCardWithTypeIssuerNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeCardSpecificIssuerCardType()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeCardSpecificIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeCardSpecificIssuerNetwork()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeCardCompleteGateway()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    // wallets
+
+    public function testGatewayDowntimeWithWallet()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeWithInvalidWallet()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+    }
+
+    public function testGatewayDowntimeWithInvalidWalletIssuer()
+    {
+        $this->fillDefaultsForTests(__FUNCTION__);
+
+        $this->startTest();
+
+    }
+
+
     //----- Update Tests -----
 
-    public function testGatewayAbsenceUpdate()
+    public function testGatewayDowntimeUpdate()
     {
-        $content = $this->createGatewayAbsence();
+        $content = $this->createGatewayDowntime();
 
         $url = '/gateway/downtimes/'. $content['id'];
 
@@ -450,9 +496,9 @@ class GatewayDowntimeTest extends TestCase
 
     //----- Delete Tests -----
 
-    public function testGatewayAbsenceDelete()
+    public function testGatewayDowntimeDelete()
     {
-        $content = $this->createGatewayAbsence();
+        $content = $this->createGatewayDowntime();
 
         $url = '/gateway/downtimes/'. $content['id'];
 
@@ -464,11 +510,11 @@ class GatewayDowntimeTest extends TestCase
 
     //----- Fetch Tests -----
 
-    public function testGatewayAbsenceFetchForNullTo()
+    public function testGatewayDowntimeFetchForNullTo()
     {
-        $content1 = $this->createGatewayAbsence();
+        $content1 = $this->createGatewayDowntime();
 
-        $this->createGatewayAbsenceNullTo('netbanking_kotak');
+        $this->createGatewayDowntimeNullTo('netbanking_kotak');
 
         $from = $content1['begin'];
 
@@ -491,15 +537,15 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['items'][0]['end'], null);
     }
 
-    public function testGatewayAbsenceFetch()
+    public function testGatewayDowntimeFetch()
     {
-        $content1 = $this->createGatewayAbsence();
+        $content1 = $this->createGatewayDowntime();
 
         $terminal = $this->fixtures->create('terminal:netbanking_hdfc_terminal', ['used_count' => 2]);
 
         $tid = $terminal['id'];
 
-        $content2 = $this->createGatewayAbsence('netbanking_kotak', $tid);
+        $content2 = $this->createGatewayDowntime('netbanking_kotak', $tid);
 
         $from = $content1['begin'];
 
@@ -522,13 +568,13 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
-    public function testGatewayAbsenceFetchWithEmptyTo()
+    public function testGatewayDowntimeFetchWithEmptyTo()
     {
 
-        $content1 = $this->createGatewayAbsenceWithEmptyTo('netbanking_hdfc',
+        $content1 = $this->createGatewayDowntimeWithEmptyTo('netbanking_hdfc',
             Carbon::now()->subMinutes(60)->timestamp);
 
-        $content2 = $this->createGatewayAbsenceWithEmptyTo('netbanking_kotak',
+        $content2 = $this->createGatewayDowntimeWithEmptyTo('netbanking_kotak',
             Carbon::now()->addMinutes(60)->timestamp);
 
         $from = Carbon::now()->timestamp;
@@ -544,6 +590,7 @@ class GatewayDowntimeTest extends TestCase
         $this->assertEquals($content['count'], 1);
     }
 
+    // statuscake tests
     public function testStatusCakeWebHookNB()
     {
         $this->ba->directAuth();
@@ -667,25 +714,25 @@ class GatewayDowntimeTest extends TestCase
         $this->testData[$functionName]['request']['content']['end'] = $to;
     }
 
-    protected function createGatewayAbsence($gatewayName = 'netbanking_hdfc', $terminalId = null)
+    protected function createGatewayDowntime($gatewayName = 'netbanking_hdfc', $terminalId = null)
     {
         $from = Carbon::now()->subMinutes(60)->timestamp;
 
         $to = Carbon::now()->addMinutes(60)->timestamp;
 
-        return $this->__createGatewayAbsence($gatewayName, $from, $to, $terminalId);
+        return $this->__createGatewayDowntime($gatewayName, $from, $to, $terminalId);
     }
 
-    protected function createGatewayAbsenceNullTo($gatewayName = 'netbanking_hdfc')
+    protected function createGatewayDowntimeNullTo($gatewayName = 'netbanking_hdfc')
     {
         $from = Carbon::now()->subMinutes(60)->timestamp;
 
         $to = null;
 
-        return $this->__createGatewayAbsence($gatewayName, $from, $to, null);
+        return $this->__createGatewayDowntime($gatewayName, $from, $to, null);
     }
 
-    protected function __createGatewayAbsence($gatewayName, $from, $to, $terminalId)
+    protected function __createGatewayDowntime($gatewayName, $from, $to, $terminalId)
     {
         $bank = $this->gatewayBankMap[$gatewayName];
 
@@ -724,7 +771,7 @@ class GatewayDowntimeTest extends TestCase
         return $content;
     }
 
-    protected function createGatewayAbsenceWithEmptyTo($gatewayName, $from)
+    protected function createGatewayDowntimeWithEmptyTo($gatewayName, $from)
     {
         $bank = $this->gatewayBankMap[$gatewayName];
 
@@ -750,7 +797,7 @@ class GatewayDowntimeTest extends TestCase
         return $content;
     }
 
-    protected function createGatewayAbsenceWithCard($gatewayName, $from, $cardType, $network)
+    protected function createGatewayDowntimeWithCard($gatewayName, $from, $cardType, $network)
     {
         $method = $this->gatewayMethodName[$gatewayName];
 

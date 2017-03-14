@@ -84,26 +84,27 @@ class Validator extends Base\Validator
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
     //| Method     | Gateway   | Issuer   | Card Type | Network | Notes                             |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | ALL       | HDFC     | NA        | NA      | HDFC Netbanking is down           |
+    //| Netbanking | ALL       | HDFC     | NA        | NA      | HDFC Netbanking is down - tested  |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | Billdesk  | ALL      | NA        | NA      | Billdesk is down                  |
+    //| Netbanking | Billdesk  | ALL      | NA        | NA      | Billdesk is down - tested         |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | billdesk  | Yes Bank | NA        | NA      | Billdesk Yes bank is down         |
+    //| Netbanking | billdesk  | Yes Bank | NA        | NA      | Billdesk Yes bank is down - tested|
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | DEBIT     | ALL     | All SBI Debit Cards are down      |
+    //| Card       | ALL       | SBI      | DEBIT     | ALL     | All SBI Debit Cards down - tested |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | ALL       | ALL     | All SBI Cards are down            |
+    //| Card       | ALL       | SBI      | ALL       | ALL     | All SBI Cards are down - tested   |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | ALL       | Visa    | ALL SBI Visa Cards are down       |
+    //| Card       | ALL       | SBI      | ALL       | Visa    | ALL SBI Visa Cards down - tested  |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | Debit     | Visa    | ALL SBI Visa Debit Cards are down |
+    //| Card       | ALL       | SBI      | Debit     | Visa    | SBI Visa Debit Cards down - tested|
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | Axis Migs | ALL      | ALL       | ALL     | Axis Migs is down                 |
+    //| Card       | Axis Migs | ALL      | ALL       | ALL     | Axis Migs is down - tested        |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down                 |
+    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down - tested        |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down                 |
+    //| UPI        | ICICI     | HDFC     | NA        | NA      | ICICI UPI gateway is down         |
     //+------------+-----------+----------+-----------+---------+-----------------------------------+
+    // Note: The concept of Issuer for API exists via the VPA handle.
 
 
     public function validateGateway(string $attribute, string $gateway)
@@ -191,17 +192,19 @@ class Validator extends Base\Validator
                     'Issuer cannot be empty for method ' . $method);
             }
 
+            if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
+                (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+            {
+                return;
+            }
+
             $gateways = Gateway::getGatewaysForNetbankingBank($issuer);
 
-            if (in_array($gateway, $gateways, true) === false)
+            if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
+                (in_array($gateway, $gateways, true) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
                     'Issuer '. $issuer .' is not supported for gateway: ' . $gateway);
-            }
-
-            if (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
-            {
-                return;
             }
 
             if (IFSC::exists(strtoupper($issuer)) === false)
@@ -263,6 +266,12 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
+        if ((strtolower($method) === Method::CARD) and
+            (strtolower($gateway) === strtolower(Entity::ALL)))
+        {
+            return;
+        }
+
         $cardNetWork = Gateway::$cardNetworkMap[$gateway];
 
         if ((strtolower($method) === Method::CARD) and
@@ -280,6 +289,11 @@ class Validator extends Base\Validator
         Method::validateMethod($method);
 
         $gateway = strtolower($input[Entity::GATEWAY]);
+
+        if ($gateway === strtolower(Entity::ALL))
+        {
+            return;
+        }
 
         if (Gateway::isMethodSupported($method, $gateway) === false)
         {

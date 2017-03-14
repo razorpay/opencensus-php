@@ -5,7 +5,7 @@ use RZP\Error\PublicErrorCode;
 use RZP\Error\PublicErrorDescription;
 
 return [
-    'testGatewayCreateAbsenceNetbanking' => [
+    'testGatewayCreateDowntimeNetbanking' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -27,7 +27,7 @@ return [
             ]
         ]
     ],
-    'testGatewayCreateAbsenceNetbankingPartial' => [
+    'testGatewayCreateDowntimeNetbankingPartial' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -47,7 +47,47 @@ return [
             ]
         ]
     ],
-    'testCreateAbsenceNBEmptyIssuer' => [
+    'testCreateNBGeneral' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'ALL',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'partial' => true,
+                'method' => 'netbanking',
+                'issuer' => 'HDFC',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'partial' => true,
+                'method' => 'netbanking'
+            ]
+        ]
+    ],
+    'testCreateNBAllIssuers' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'netbanking_hdfc',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'partial' => true,
+                'method' => 'netbanking',
+                'issuer' => 'ALL',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'partial' => true,
+                'method' => 'netbanking'
+            ]
+        ]
+    ],
+    'testCreateDowntimeNBEmptyIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -71,7 +111,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testCreateAbsenceInvalidGateway' => [
+    'testCreateDowntimeInvalidGateway' => [
         'request' => [
             'content' => [
                 'gateway' => 'UNKNOWN_GATEWAY',
@@ -97,7 +137,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ]
     ],
-    'testCreateAbsenceNBInvalidIssuer' => [
+    'testCreateDowntimeNBInvalidIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -124,7 +164,7 @@ return [
         ]
     ],
 
-    'testCreateAbsenceCardInvalidIssuer' => [
+    'testCreateDowntimeCardInvalidIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -150,7 +190,7 @@ return [
         ]
     ],
 
-    'testCreateAbsenceNBNonSupportedIssuer' => [
+    'testCreateDowntimeNBNonSupportedIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -227,7 +267,7 @@ return [
         ]
     ],
 
-    'testGatewayCreateAbsenceInvalidSource' => [
+    'testGatewayCreateDowntimeInvalidSource' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -254,7 +294,7 @@ return [
         ]
     ],
 
-    'testGatewayCreateAbsenceInvalidFrom' => [
+    'testGatewayCreateDowntimeInvalidFrom' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -281,7 +321,7 @@ return [
         ]
     ],
 
-    'testGatewayCreateAbsenceInvalidTo' => [
+    'testGatewayCreateDowntimeInvalidTo' => [
         'request' => [
             'content' => [
                 'gateway' => 'netbanking_hdfc',
@@ -309,7 +349,7 @@ return [
     ],
 
 
-    'testGatewayAbsenceDelete' => [
+    'testGatewayDowntimeDelete' => [
         'request' => [
             'method' => 'DELETE'
         ],
@@ -338,7 +378,7 @@ return [
             ]
         ]
     ],
-    'testGatewayAbsenceForCard' => [
+    'testGatewayDowntimeForCard' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -357,7 +397,7 @@ return [
             ]
         ]
     ],
-    'testGatewayAbsenceForCardWithoutIssuer' => [
+    'testGatewayDowntimeForCardWithoutIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -374,7 +414,7 @@ return [
             ]
         ]
     ],
-    'testGatewayAbsenceForCardUnsupportedNetwork' => [
+    'testGatewayDowntimeForCardUnsupportedNetwork' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -399,7 +439,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testGatewayAbsenceForCardInvalidNetwork' => [
+    'testGatewayDowntimeForCardInvalidNetwork' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -424,7 +464,7 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-    'testGatewayAbsenceForCardInvalidCardType' => [
+    'testGatewayDowntimeForCardInvalidCardType' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -450,8 +490,85 @@ return [
             'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
         ]
     ],
-
-    'testGatewayAbsenceCardWithTypeIssuerNetwork' => [
+    'testGatewayDowntimeCardSpecificIssuerCardType' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'ALL',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'card',
+                'issuer' => 'HDFC',
+                'card_type' => 'debit',
+                'network' => 'visa',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'issuer' => 'HDFC'
+            ]
+        ]
+    ],
+    'testGatewayDowntimeCardSpecificIssuer' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'ALL',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'card',
+                'issuer' => 'HDFC',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'issuer' => 'HDFC'
+            ]
+        ]
+    ],
+    'testGatewayDowntimeCardSpecificIssuerNetwork' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'ALL',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'card',
+                'issuer' => 'HDFC',
+                'network' => 'visa',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'issuer' => 'HDFC'
+            ]
+        ]
+    ],
+    'testGatewayDowntimeCardCompleteGateway' => [
+        'request' => [
+            'content' => [
+                'gateway' => 'ALL',
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'method' => 'card',
+                'source' => 'other'
+            ],
+            'method' => 'POST',
+            'url' => '/gateway/downtimes'
+        ],
+        'response' => [
+            'content' => [
+                'reason_code'  => 'LOW_SUCCESS_RATE',
+                'issuer' => 'UNKNOWN'
+            ]
+        ]
+    ],
+    'testGatewayDowntimeCardWithTypeIssuerNetwork' => [
         'request' => [
             'content' => [
                 'gateway' => 'axis_migs',
@@ -474,7 +591,7 @@ return [
             ]
         ]
     ],
-    'testGatewayAbsenceWithWallet' => [
+    'testGatewayDowntimeWithWallet' => [
         'request' => [
             'content' => [
                 'gateway' => 'wallet_olamoney',
@@ -492,7 +609,7 @@ return [
             ]
         ]
     ],
-    'testGatewayAbsenceWithInvalidWallet' => [
+    'testGatewayDowntimeWithInvalidWallet' => [
         'request' => [
             'content' => [
                 'gateway' => 'wallet_dummywallet',
@@ -516,7 +633,7 @@ return [
             'internal_error_code' => ErrorCode::SERVER_ERROR_LOGICAL_ERROR,
         ]
     ],
-    'testGatewayAbsenceWithInvalidWalletIssuer' => [
+    'testGatewayDowntimeWithInvalidWalletIssuer' => [
         'request' => [
             'content' => [
                 'gateway' => 'wallet_olamoney',
