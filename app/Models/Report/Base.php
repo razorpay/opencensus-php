@@ -8,7 +8,7 @@ use RZP\Models\Base\Core;
 
 class Base extends Core
 {
-    protected static q$rules = [
+    protected static $rules = [
         'year'  =>  'required|digits:4',
         'month' =>  'required|digits_between:1,2',
         'day'   =>  'sometimes|digits_between:1,2',

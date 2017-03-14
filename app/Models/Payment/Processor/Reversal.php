@@ -40,7 +40,7 @@ trait Reversal
         $this->mutex->acquireAndRelease($transferPayment->getId(), function() use ($input, $transferPayment)
         {
             (new Processor($transferPayment->merchant))
-                ->refundTransferPayment($transferPayment, $input['amount']);
+                ->refundTransferPayment($transferPayment, $input[ReversalEntity::AMOUNT]);
         });
 
         // Reverse the associated transfer - this credits the marketplace balance
