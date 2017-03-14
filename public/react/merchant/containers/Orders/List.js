@@ -2,6 +2,7 @@ import React, { Component } from 'react'
 import { connect } from 'react-redux'
 import Pager from 'rzp/ui/Pager'
 import Alert from 'rzp/ui/Forms/Alert'
+import Header from 'rzp/ui/Header'
 import OrdersList from 'merchant/components/Orders/OrdersList'
 import ListContainer from 'merchant/containers/ListContainer'
 import OrdersListFilter from 'merchant/components/Orders/OrdersListFilter'
@@ -21,6 +22,8 @@ export default class OrdersListContainer extends ListContainer {
 
     return (
       <div class='react-root'>
+        <Header title='Orders' />
+
         <div class='content-wrapper'>
           <div class='panel panel-default'>
             <div class='panel-heading'>
