@@ -38,10 +38,12 @@ app.controller('ConfigCtrl', [
     };
 
     $scope.fetchConfig = function() {
+      var params = {};
+      params.route_name = 'merchant_fetch_config';
+      params.mode = $scope.mode;
 
-      var request = $http({
-        method: 'get',
-        url: '/config'
+      var request = $http.get('/generic', {
+        params: params
       });
 
       request.success(function (data) {
@@ -71,10 +73,15 @@ app.controller('ConfigCtrl', [
         transaction_report_email: config.transaction_report_email ? config.transaction_report_email.split(',') : null
       };
 
+      var params = {};
+      params.route_name = 'merchant_edit_config';
+      params.mode = $scope.mode;
+      params.body = data;
+
       var request = $http({
-        "method": 'PUT',
-        "url": '/config',
-        "data": data,
+        url: '/generic',
+        method: 'PUT',
+        data: params
       });
 
       request.success(function (data) {

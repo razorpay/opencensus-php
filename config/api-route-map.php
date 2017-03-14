@@ -133,6 +133,20 @@ return [
             'url'       => 'webhooks/{id}',
             'routeName' => 'edit_webhooks'
         ],
+
+        // Config
+        'merchant_fetch_config'             => [
+            'url'       => 'account/config',
+            'routeName' => 'get_config'
+        ],
+        'merchant_edit_config'              => [
+            'url'       => 'account/config',
+            'routeName' => 'put_config'
+        ],
+
+        // Features
+        'merchant_get_features'             => 'merchants/{id}/features',
+        'merchant_update_features'          => 'merchants/{id}/features',
     ],
 
     // auth

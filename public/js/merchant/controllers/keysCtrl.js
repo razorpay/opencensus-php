@@ -64,12 +64,12 @@ app.controller('KeysCtrl', [
       var params = {};
       params.route_name = 'merchant_replace_key';
       params.mode = $scope.mode;
+      params.body = data;
       user.identity().then(function (data) {
         params.url_params = {
           '{merchantId}': data.current,
           '{keyId}': key_id
         };
-        params.body = data;
 
         var request = $http({
           url: '/generic',

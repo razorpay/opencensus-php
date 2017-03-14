@@ -136,6 +136,9 @@ app.controller('GenericEntityListCtrl', [
         if (route_names.hasOwnProperty($scope.entity.type)) {
           params.route_name = route_names[$scope.entity.type];
         }
+        else {
+          params.route_name = $scope.entity.type;
+        }
 
         request = $http.get('/generic', {
           params: params

@@ -5,7 +5,8 @@ app.controller('FeaturesCtrl', [
   '$http',
   'alertsFactory',
   '$modal',
-  function ($scope, $http, alertsFactory, $modal) {
+  'user',
+  function ($scope, $http, alertsFactory, $modal, user) {
     $scope.alerts = alertsFactory.getHandler();
     $scope.fcEnabled = false;
 
@@ -25,22 +26,32 @@ app.controller('FeaturesCtrl', [
     }
 
     function fetchFeatures() {
-      var request = $http({
-        method: 'get',
-        url: '/features'
-      });
-      request.success(function (data) {
-        if (data.success) {
-          var features = data.data.features;
-          parseAndSetFeatures(features);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+
+      var params = {};
+      params.route_name = 'merchant_get_features';
+      params.mode = $scope.mode;
+      user.identity().then(function (data) {
+        params.url_params = {
+          '{id}': data.current
+        };
+
+        var request = $http.get('/generic', {
+          params: params
+        });
+
+        request.success(function (data) {
+          if (data.success) {
+            var features = data.data.features;
+            parseAndSetFeatures(features);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function (value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', null, true);
+        });
       });
     }
 
@@ -53,24 +64,35 @@ app.controller('FeaturesCtrl', [
         }
       };
 
-      var request = $http({
-        url: '/features',
-        method: 'POST',
-        data: featureData
-      });
-      request.success(function (data) {
-        if (data.success) {
-          $scope.features = data.data.features;
-          $scope.alerts.resetAlerts();
-          $scope.alerts.addAlert('success', 'Your preference was saved', true);
-        } else {
-          $scope.alerts.resetAlerts();
-          angular.forEach(data.errors, function (value) {
-            $scope.alerts.addAlert('danger', value);
-          });
-        }
-      }).error(function () {
-        $scope.alerts.addAlert('danger', null, true);
+      var params = {};
+      params.route_name = 'merchant_update_features';
+      params.mode = $scope.mode;
+      user.identity().then(function (data) {
+        params.url_params = {
+          '{id}': data.current
+        };
+        params.body = featureData;
+
+        var request = $http({
+          url: '/generic',
+          method: 'POST',
+          data: params
+        });
+
+        request.success(function (data) {
+          if (data.success) {
+            $scope.features = data.data.features;
+            $scope.alerts.resetAlerts();
+            $scope.alerts.addAlert('success', 'Your preference was saved', true);
+          } else {
+            $scope.alerts.resetAlerts();
+            angular.forEach(data.errors, function (value) {
+              $scope.alerts.addAlert('danger', value);
+            });
+          }
+        }).error(function () {
+          $scope.alerts.addAlert('danger', null, true);
+        });
       });
     }
 
