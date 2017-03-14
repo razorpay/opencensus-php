@@ -203,8 +203,8 @@ class Gateway extends Base\Gateway
             return true;
         }
 
-        if ((isset($input['gateway']['gateway_payment_id']) === false) or
-            (isset($input['gateway']['gateway_payment_date']) === false))
+        if ((empty($input['gateway']['gateway_payment_id']) === true) or
+            (empty($input['gateway']['gateway_payment_date']) === true))
         {
             throw new Exception\BadRequestValidationFailureException(
                 'Correct field not present for the required operation');
@@ -212,6 +212,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment->setGatewayPaymentId($input['gateway']['gateway_payment_id']);
         $gatewayPayment->setDate($input['gateway']['gateway_payment_date']);
+
+        // Since we are force authorizing we set both StatusCode and ResponseCode as success
         $gatewayPayment->setStatusCode(StatusCode::SUCCESS);
         $gatewayPayment->setResponseCode(ResponseCode::SUCCESS);
 
@@ -594,6 +596,9 @@ class Gateway extends Base\Gateway
 
         $verify->match = ($verify->status === VerifyResult::STATUS_MATCH);
 
+        // We always update wallet entity with verify response content as we need
+        // the gateway payment date during refund. So if that is not present in
+        // wallet entity we get it from verify
         $verify->content = $this->getVerifyWalletAttributes($verify);
 
         $gatewayPayment->fill($verify->content);

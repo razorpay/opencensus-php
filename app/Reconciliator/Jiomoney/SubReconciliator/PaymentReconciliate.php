@@ -144,6 +144,13 @@ class PaymentReconciliate extends Base\PaymentReconciliate
         }
     }
 
+    /**
+     * Validates that the date in gateway entity is not null and in the format
+     * sent by Jiomoney
+     *
+     * @param  string $date gateway payment date
+     * @return bool
+     */
     protected function validateGatewayPaymentDate($date)
     {
         if ($date !== null)
