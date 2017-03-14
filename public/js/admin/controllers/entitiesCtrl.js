@@ -265,7 +265,14 @@ app.controller('EntitiesCtrl', [
         gateway_payment_id: ['Gateway Payment ID'],
         tdate: ['Tdate'],
       },
-      batch_settlement: {},
+      batch_fund_transfer: {
+        type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        date: ['Date'],
+      },
       emi_plan: {
         bank: ['Bank'],
         network: ['Network']
