@@ -771,23 +771,6 @@ class Service extends Base\Service
                               ->get();
     }
 
-    public function fetchMerchantConfig($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchConfig()->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
     /**
      * Makes sure that the hex color is in proper
      * format for the API. Just drops the first
@@ -815,25 +798,6 @@ class Service extends Base\Service
         }
 
         return $input;
-    }
-
-    public function updateMerchantConfig($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        $input = $this->fixHexColor($input);
-
-        try
-        {
-            $data = $this->api->merchant->updateConfig($input)->toArray();
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
     }
 
     public function updateMerchantLogoConfig($merchantId, $input)
@@ -896,41 +860,6 @@ class Service extends Base\Service
         }
 
         return [$error, $lead];
-    }
-
-    public function fetchMerchantFeatures($merchantId)
-    {
-        $this->setApiCredentials($merchantId);
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->fetchFeatures($merchantId);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
-    }
-
-    public function updateMerchantFeatures($merchantId, $input)
-    {
-        $this->setApiCredentials($merchantId);
-
-        $error = $data = null;
-
-        try
-        {
-            $data = $this->api->merchant->updateFeatures($merchantId, $input);
-        }
-        catch(BadRequestError $e)
-        {
-            $error = [$e->getMessage()];
-        }
-
-        return [$error, $data];
     }
 
     public function savePreSignupDetails($merchantId, $input)

@@ -271,26 +271,6 @@ class MerchantController extends Controller
         return AppResponse::jsonResponse([], $data);
     }
 
-    public function getMerchantConfig()
-    {
-        $id = Auth::user()->getCurrentMerchantId();
-
-        list($error, $data) = (new Merchant\Service)->fetchMerchantConfig($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function putMerchantConfig()
-    {
-        $id = Auth::user()->getCurrentMerchantId();
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)
-            ->updateMerchantConfig($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
     public function postMerchantConfigLogo()
     {
         $input = Input::all();
@@ -429,26 +409,6 @@ class MerchantController extends Controller
         list($error, $response) = (new Merchant\Service)->getInvitationDetails($token);
 
         return AppResponse::jsonResponse($error, $response);
-    }
-
-    public function getMerchantFeatures()
-    {
-        $id = Auth::user()->getCurrentMerchantId();
-
-        list($error, $data) = (new Merchant\Service)->fetchMerchantFeatures($id);
-
-        return AppResponse::jsonResponse($error, $data);
-    }
-
-    public function postUpdateMerchantFeatures()
-    {
-        $id = Auth::user()->getCurrentMerchantId();
-
-        $input = Input::all();
-
-        list($error, $data) = (new Merchant\Service)->updateMerchantFeatures($id, $input);
-
-        return AppResponse::jsonResponse($error, $data);
     }
 
     public function postSignup()

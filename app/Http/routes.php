@@ -86,8 +86,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::get('/keys/csv', 'MerchantController@getCsv');
         Route::get('/apihost', 'MerchantController@getApihost');
 
-        Route::get('/config', 'MerchantController@getMerchantConfig')->name('get_config');
-        Route::put('/config', 'MerchantController@putMerchantConfig')->name('put_config');
         Route::post('/config/logo', 'MerchantController@postMerchantConfigLogo')->name('post_config_logo');
 
         Route::get('/referrals', 'MerchantController@getReferredMerchants')->name('referred_merchants_list');
@@ -159,8 +157,6 @@ Route::group(['middleware' => ['web']], function () {
         Route::post('/submerchants', 'MerchantController@postRegisterSubmerchant')->name('submerchant_register');
         Route::post('/subusers', 'MerchantController@postRegisterSubUser')->name('subuser_register');
 
-        Route::get('/features', 'MerchantController@getMerchantFeatures');
-        Route::post('/features', 'MerchantController@postUpdateMerchantFeatures');
     });
 
     Route::group(['middleware'  =>  'admin'], function()
