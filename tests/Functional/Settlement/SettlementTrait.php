@@ -3,6 +3,7 @@
 namespace RZP\Tests\Functional\Settlement;
 
 use RZP\Models\FileStore\Storage\AwsS3\Handler;
+use RZP\Models\FundTransfer\Attempt;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use AWS;
 
@@ -66,6 +67,21 @@ trait SettlementTrait
             'url' => '/settlements/initiate/'.$channel,
             'method' => 'POST',
             'content' => $content,
+        ];
+
+        $this->ba->appAuthMode();
+
+        $content = $this->makeRequestAndGetContent($request);
+
+        return $content;
+    }
+
+    protected function retryIntiateSettlements(array $setlIds, string $channel = 'kotak')
+    {
+        $request = [
+            'url' => '/settlements/retry/kotak',
+            'method' => 'POST',
+            'content' => ['settlement_ids' => $setlIds]
         ];
 
         $this->ba->appAuthMode();

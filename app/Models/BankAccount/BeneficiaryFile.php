@@ -5,7 +5,7 @@ namespace RZP\Models\BankAccount;
 use RZP\Exception;
 use RZP\Constants\MailTags;
 use RZP\Models\BankAccount;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
+use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
 
 class BeneficiaryFile
 {
@@ -72,7 +72,7 @@ class BeneficiaryFile
         {
             $array = array(
                 'Client_Code'           => 'RAZORNODAL',
-                'Bene_Code'             => $ba->getBeneficaryCode(),
+                'Bene_Code'             => $ba->getBeneficiaryCode(),
                 'Bene_Name'             => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_NAME),
                 'Bene_Add_1'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS1),
                 'Bene_Add_2'            => $ba->getAttribute(BankAccount\Entity::BENEFICIARY_ADDRESS2),

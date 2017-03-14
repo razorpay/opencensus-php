@@ -146,5 +146,9 @@ return array(
         'tech_logs_verify'  => 'C3AJ9V9EY',
     ],
 
-    'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true
+    'is_slack_enabled' => env('SLACK_MOCK') === true ? false : true,
+
+    // Use non-default connection for slack,
+    // if set to null, it will use the default connection
+    'queue' => env('SECONDARY_QUEUE_DRIVER', null),
 );

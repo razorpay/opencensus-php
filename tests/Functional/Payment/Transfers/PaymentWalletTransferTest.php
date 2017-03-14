@@ -68,6 +68,20 @@ class PaymentWalletTransferTest extends TestCase
         $this->startTest();
     }
 
+    public function testTransferToWalletFundsOnHold()
+    {
+        $this->fixtures->merchant->holdFunds();
+
+        // Merchant needs to be activated to make live requests
+        $this->fixtures->merchant->edit('10000000000000', ['activated' => 1]);
+
+        $this->fixtures->merchant->addFeatures(['openwallet']);
+
+        $this->payment = $this->fixtures->on('live')->create('payment:captured')->toArrayPublic();
+
+        $this->startTest(null, null, 'live');
+    }
+
     public function testTransferToExistingCustomerWithNoExistingWallet()
     {
         $customer = $this->fixtures->create('customer');
