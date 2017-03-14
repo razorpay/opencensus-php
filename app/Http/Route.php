@@ -1162,7 +1162,7 @@ final class Route
     {
         $key = $this->ba->getPublicKey();
 
-        list($schema, $host) = $this->getSchemaAndHost();
+        list($schema, $host) = $this->getSchemaHostAndPort();
 
         $parameters['key_id'] = $key;
 
@@ -1206,7 +1206,7 @@ final class Route
 
     protected function getSchemaHostAndAuth($key = '', $secret = '')
     {
-        list($schema, $host, $port) = $this->getSchemaAndHost();
+        list($schema, $host, $port) = $this->getSchemaHostAndPort();
 
         $auth = '';
         if ($key !== '')
@@ -1222,7 +1222,8 @@ final class Route
 
         $url = $schema . $auth . $host;
 
-        if ((int)$port !== 80)
+        if (($port !== 80) and
+            ($port !== 443))
         {
             $url .= ':' . $port;
         }
@@ -1230,7 +1231,7 @@ final class Route
         return $url;
     }
 
-    protected function getSchemaAndHost()
+    protected function getSchemaHostAndPort()
     {
         $request = \Request::getFacadeRoot();
 
@@ -1238,7 +1239,7 @@ final class Route
 
         $host = $request->getHost();
 
-        $port = $request->getPort();
+        $port = (int) $request->getPort();
 
         return [$schema, $host, $port];
     }
