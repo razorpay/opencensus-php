@@ -14,7 +14,8 @@ app.controller('FeedCtrl', [
       action_state: 'Pending',
       action_text: 'Edited merchant name from M1 to M2',
       makers: ['maker@bank.org'],
-      timestamp: Date(),
+      timeago: moment().from(new Date()),
+      timestamp: (new Date()).toString(),
       checkers: ['checker1@bank.org', 'checker2@bank.org'],
       comments: [
       {
