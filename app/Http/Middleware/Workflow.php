@@ -68,8 +68,10 @@ class Workflow
 
                 $event = $this->createDifferEvent($request, $diff, $entity, $entityId);
 
-                // s($response->getStatusCode());
-                event(new DifferEvent($event));
+                if ($response->getStatusCode() === 200)
+                {
+                    event(new DifferEvent($event));
+                }
 
                 return $response;
             });

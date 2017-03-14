@@ -598,6 +598,7 @@ final class Route
         'transfer_create_reversal',
         'action_create',
         'action_fetch_by_id',
+        'action_execute',
     );
 
     public static $internal = array(
@@ -1064,9 +1065,10 @@ final class Route
 
     /**
      * Routes for all maker & checker actions.
+     * Its the map of the entity vs route name
      */
     public static $workflowRoutes = [
-
+       'merchant_edit_email' => 'merchant',
     ];
 
     const RAZORPAYJS_ROUTES = array(
