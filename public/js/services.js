@@ -799,6 +799,7 @@ angular.module('app.services', [])
           'ebs',
           'file_store',
           'first_data',
+          'fund_transfer_attempt',
           'emi_plan',
           'hdfc',
           'iin',

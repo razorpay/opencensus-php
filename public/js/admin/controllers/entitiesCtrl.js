@@ -286,6 +286,17 @@ app.controller('EntitiesCtrl', [
         entity_id: ['Entity Id'],
         type: ['Type']
       },
+      fund_transfer_attempt: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
+        source_type: [
+          'all',
+          'settlement',
+          'payout'
+        ],
+        source_id: ['Source Id'],
+        status: ['all', 'created', 'failed', 'processed'],
+        utr: ['UTR']
+      },
       hdfc: {
         auth: ['Auth Code'],
         gateway_transaction_id: ['Gateway Transaction Id'],
@@ -478,6 +489,7 @@ app.controller('EntitiesCtrl', [
         transfer_id: ['Transfer Id']
       },
       settlement: {
+        batch_fund_transfer_id: ['Batch Fund Transfer Id'],
         merchant_id: ['Merchant Id'],
         status: ['all', 'created', 'failed', 'processed'],
         transaction_id: ['Transaction Id'],
