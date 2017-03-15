@@ -130,8 +130,6 @@ trait Reversal
                         );
                     }
 
-                    unset ($reversal['transfer']);
-
                     $this->refundPaymentAndReverseTransfer($transfer, $reversal);
                 });
         }
