@@ -65,14 +65,13 @@ class Drip
                 break;
 
             default:
-                $this->trace->info(TraceCode::INVALID_DRIP_ACTION,
+                throw new Exception\LogicException(
+                    'BAD_REQUEST_INVALID_DRIP_ACTION',
+                    null,
                     [
                         'action'      => $action,
                         'merchant_id' => $merchant->getId(),
                     ]);
-
-                throw new Exception\LogicException(
-                    'BAD_REQUEST_INVALID_DRIP_ACTION');
         }
     }
 

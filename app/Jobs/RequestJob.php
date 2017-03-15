@@ -8,7 +8,6 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use App;
 use Requests;
-use Carbon\Carbon;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -68,7 +67,7 @@ class RequestJob extends Job implements ShouldQueue
     {
         $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $this->request]);
 
-        $timeStarted = Carbon::now('Asia/Kolkata')->timestamp;
+        $timeStarted = microtime(true);
 
         $method = $this->request['method'];
 
@@ -78,7 +77,7 @@ class RequestJob extends Job implements ShouldQueue
             $this->request['content'],
             $this->request['options']);
 
-        $timeTaken = Carbon::now('Asia/Kolkata')->timestamp - $timeStarted;
+        $timeTaken = microtime(true) - $timeStarted;
 
         $this->trace->info(
             TraceCode::REQUESTS_JOB_RESPONSE,

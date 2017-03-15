@@ -142,7 +142,6 @@ class TraceCode
     const REQUESTS_JOB_RESPONSE                     = 'REQUESTS_JOB_RESPONSE';
     const REQUESTS_JOB_ERROR                        = 'REQUESTS_JOB_ERROR';
     const MOCK_DRIP_REQUEST                         = 'MOCK_DRIP_REQUEST';
-    const INVALID_DRIP_ACTION                       = 'INVALID_DRIP_ACTION';
 
     const TERMINAL_SELECTION                        = 'TERMINAL_SELECTION';
     const TERMINAL_SELECTION_MISMATCH               = 'TERMINAL_SELECTION_MISMATCH';
