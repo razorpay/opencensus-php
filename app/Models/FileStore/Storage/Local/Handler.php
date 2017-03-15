@@ -29,13 +29,15 @@ class Handler extends BaseHandler
     /**
      * save file to given directory
      *
-     * @param string $directory   directory name
-     * @param array  $filedetails file details array
+     * @param string $bucketConfig Directory name and region(unused in LOCAL)
+     * @param array  $filedetails  File details array
      *
      * @return file full path
      */
-    public function save($directory, $fileDetails)
+    public function save($bucketConfig, $fileDetails)
     {
+        $directory = $bucketConfig['name'];
+
         $content = file_get_contents($fileDetails['path']);
 
         $fileName = self::STORAGE_DIRECTORY . $directory . '/' . $fileDetails['key'];
