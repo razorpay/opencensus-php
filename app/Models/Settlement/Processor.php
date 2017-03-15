@@ -62,34 +62,40 @@ class Processor extends Base\Core
         return $data;
     }
 
-    public function process(array $input, $channel, $schedule = true)
+    public function process(array $input, $channel)
     {
-        list($shouldProcess, $message) = $this->shouldProcessSettlements();
-
-        if ($shouldProcess === false)
-        {
-            return $message;
-        }
-
         $this->preSettlementProcessing($input, $channel);
 
-        $data = $this->mutex->acquireAndRelease(
-            self::MUTEX_RESOURCE,
-            function () use ($input, $schedule)
-            {
-                return $this->processSettlements($input, $schedule);
-            },
-            self::MUTEX_LOCK_TIMEOUT,
-            ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        list($shouldProcess, $data) = $this->shouldProcessSettlements();
+
+        if ($shouldProcess === true)
+        {
+            $data = $this->mutex->acquireAndRelease(
+                self::MUTEX_RESOURCE,
+                function () use ($input)
+                {
+                    return $this->processSettlements($input);
+                },
+                self::MUTEX_LOCK_TIMEOUT,
+                ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
+        }
+
+        $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
+
+        $schedules->callOnEveryItem('updateNextRun');
+
+        $this->repo->saveOrFailCollection($schedules);
+
+        $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
 
         return $data;
     }
 
-    protected function processSettlements($input, $schedule)
+    protected function processSettlements($input)
     {
         try
         {
-            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($schedule);
+            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements();
 
             $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
         }
@@ -183,30 +189,12 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function createSettlements($schedule): array
+    protected function createSettlements(): array
     {
-        if ($schedule === false)
-        {
-            $txns = $this->repo->transaction->fetchUnsettledTransactions($this->setlTime);
+        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
 
-            list($settlements, $settledTxnsCount, $setlAttempts) =
-                $this->processUnsettledTransactions($txns);
-        }
-        else
-        {
-            $schedules = $this->repo->schedule->fetchSchedulesWithDueRun($this->setlTime);
-
-            $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
-
-            list($settlements, $settledTxnsCount, $setlAttempts) =
-                $this->processUnsettledTransactions($txns);
-
-            $schedules->callOnEveryItem('updateNextRun');
-
-            $this->repo->saveOrFailCollection($schedules);
-
-            $this->trace->info(TraceCode::SCHEDULE_NEXT_RUN_UPDATED, $schedules->getIds());
-        }
+        list($settlements, $settledTxnsCount, $setlAttempts) =
+            $this->processUnsettledTransactions($txns);
 
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
