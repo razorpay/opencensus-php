@@ -2,6 +2,7 @@
 
 namespace RZP\Tests\Functional\Ecollect;
 
+use Redis;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\RequestResponseFlowTrait;
 
@@ -25,6 +26,18 @@ class EcollectTest extends TestCase
 
     public function testEcollectValidateRazorp()
     {
+        $this->startTest();
+    }
+
+    public function testEcollectValidateDuplicateUtr()
+    {
+        Redis::shouldReceive('get')
+            ->once()
+            ->andReturnUsing(function ()
+            {
+                return 'dummy_duplicate_data';
+            });
+
         $this->startTest();
     }
 

@@ -14,7 +14,7 @@ class Service extends Base\Service
 
         $this->validator = new Validator;
 
-        $this->cache = $this->app['redis'];;
+        $this->cache = $this->app['redis'];
     }
 
     public function validate(array $input)
@@ -29,7 +29,6 @@ class Service extends Base\Service
         $data = [
             'valid'          => true,
             'message'        => null,
-            'transaction_id' => $input['transaction_id'],
         ];
 
         if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
@@ -38,9 +37,10 @@ class Service extends Base\Service
             $data = [
                 'valid'          => false,
                 'message'        => 'Invalid account number',
-                'transaction_id' => $input['transaction_id'],
             ];
         }
+
+        $data['transaction_id'] = $input['transaction_id'];
 
         $this->uniqueUtrCheck($input, $data);
 
@@ -65,9 +65,7 @@ class Service extends Base\Service
     {
         if($data['valid'] === true)
         {
-            $keyArray = ['ecollect', $this->mode, $input['transaction_id']];
-
-            $key = implode(',', $keyArray);
+            $key = 'ecollect' . $this->mode . $input['transaction_id'];
 
             $cachedData = $this->cache->get($key);
 
