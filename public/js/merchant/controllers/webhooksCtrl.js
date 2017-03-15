@@ -36,7 +36,7 @@ app.controller('WebhooksCtrl', [
       };
 
       var request = $http({
-        url: '/generic',
+        url: '/user/generic',
         method: 'POST',
         data: params,
         transformRequest: transformRequestAsFormPost
@@ -84,7 +84,7 @@ app.controller('WebhooksCtrl', [
       };
 
       var request = $http({
-        url: '/generic',
+        url: '/user/generic',
         method: 'PUT',
         data: params,
         transformRequest: transformRequestAsFormPost
@@ -138,7 +138,7 @@ app.controller('WebhooksCtrl', [
         mode: $scope.mode
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 

@@ -101,7 +101,7 @@ app.controller('PaymentDetailCtrl', [
         '{id}': $scope.entity.id
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 
@@ -167,7 +167,7 @@ app.controller('PaymentDetailCtrl', [
       params.body = data;
 
       var request = $http({
-        url: '/generic',
+        url: '/user/generic',
         method: 'post',
         data: params
       });
@@ -204,7 +204,7 @@ app.controller('PaymentDetailCtrl', [
       params.body = data;
 
       var request = $http({
-        url: '/generic',
+        url: '/user/generic',
         method: 'post',
         data: params
       });
@@ -240,7 +240,7 @@ app.controller('PaymentDetailCtrl', [
         '{id}': $scope.entity.id
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 

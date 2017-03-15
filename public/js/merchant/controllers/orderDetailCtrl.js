@@ -26,7 +26,7 @@ app.controller('OrderDetailCtrl', [
         '{id}': $scope.entity.id
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 

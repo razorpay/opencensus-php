@@ -36,7 +36,7 @@ app.controller('FeaturesCtrl', [
           '{id}': data.current
         };
 
-        var request = $http.get('/generic', {
+        var request = $http.get('/user/generic', {
           params: params
         });
 
@@ -76,7 +76,7 @@ app.controller('FeaturesCtrl', [
         params.body = featureData;
 
         var request = $http({
-          url: '/generic',
+          url: '/user/generic',
           method: 'POST',
           data: params
         });

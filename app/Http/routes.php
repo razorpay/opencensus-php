@@ -20,8 +20,6 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::get('/invitation/{token}', 'MerchantController@getInvitationDetails');
 
-    Route::any('/generic', 'GenericController@handle');
-
     // Org
     Route::group(['prefix' => 'admin'], function () {
         Route::get('/auth', 'AdminController@initiateAuth');
@@ -52,6 +50,8 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  'auth:user'], function()
     {
+        Route::any('/user/generic', 'GenericController@handle');
+
         Route::get('/user/keepalive', 'UserController@getKeepAlive');
         Route::get('/user/logout', 'UserController@getLogout');
 
@@ -161,6 +161,8 @@ Route::group(['middleware' => ['web']], function () {
 
     Route::group(['middleware'  =>  'admin'], function()
     {
+        Route::any('/admin/generic', 'GenericController@handle');
+
         Route::get('/admin/user', 'AdminController@getAdmin');
         Route::get('/admin/user/logout', 'AdminController@getLogout');
         Route::get('/admin/user/keepalive', 'AdminController@getKeepAlive');

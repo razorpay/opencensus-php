@@ -53,7 +53,7 @@ app.controller('AuditlogsCtrl', [
         $scope.audit_log_cache = {};
 
         var request = $http({
-          url: '/generic',
+          url: '/admin/generic',
           params: {
             route_name: 'auditlog_search',
             query_params: {

@@ -11,7 +11,7 @@ app.controller('GroupsCtrl', [
     $scope.count = 0;
 
     $scope.getGroups = function () {
-      var request = $http.get('/generic', {
+      var request = $http.get('/admin/generic', {
         params: {
           route_name: 'group_get_multiple',
         }
@@ -50,7 +50,7 @@ app.controller('GroupsCtrl', [
 
     $scope.addGroup = function (group) {
       var request = $http({
-        url: '/generic',
+        url: '/admin/generic',
         method: 'POST',
         params: {
           route_name: 'group_create',
@@ -74,7 +74,7 @@ app.controller('GroupsCtrl', [
     };
 
     $scope.deleteGroup = function(id) {
-      var request = $http.delete('/generic', {
+      var request = $http.delete('/admin/generic', {
         params: {
           route_name: 'group_delete',
 

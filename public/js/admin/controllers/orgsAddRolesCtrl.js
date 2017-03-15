@@ -21,7 +21,7 @@ app.controller('OrgsAddRolesCtrl', [
       $scope.role_id = role_id;
 
       var request = $http({
-        url: '/generic',
+        url: '/admin/generic',
 
         method: 'GET',
 

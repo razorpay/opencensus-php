@@ -25,7 +25,7 @@ app.controller('KeysCtrl', [
         };
 
         var request = $http({
-          url: '/generic',
+          url: '/user/generic',
           method: 'POST',
           data: params
         });
@@ -74,7 +74,7 @@ app.controller('KeysCtrl', [
         };
 
         var request = $http({
-          url: '/generic',
+          url: '/user/generic',
           method: 'PUT',
           data: params
         });
@@ -140,7 +140,7 @@ app.controller('KeysCtrl', [
           '{id}': data.current
         };
 
-        var request = $http.get('/generic', {
+        var request = $http.get('/user/generic', {
           params: params
         });
 

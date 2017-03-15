@@ -12,7 +12,7 @@ app.controller('CreditsCtrl', [
         mode: $scope.mode
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 
@@ -32,7 +32,7 @@ app.controller('CreditsCtrl', [
         mode: $scope.mode
       };
 
-      var request = $http.get('/generic', {
+      var request = $http.get('/user/generic', {
         params: params
       });
 

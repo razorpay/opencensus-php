@@ -366,7 +366,7 @@ angular.module('app.services', [])
 
         // Request for creating
         var request_data = {
-          url: '/generic',
+          url: '/admin/generic',
           method: 'POST',
           params: {
             route_name: 'role_create'
@@ -413,7 +413,7 @@ angular.module('app.services', [])
         }
 
         $http
-          .get('/generic', {
+          .get('/admin/generic', {
             ignoreErrors: true,
             params: {
               route_name: 'role_get_multiple'
@@ -439,7 +439,7 @@ angular.module('app.services', [])
 
         var groups = [];
 
-        $http.get('/generic', {
+        $http.get('/admin/generic', {
           params: {
             route_name: 'group_get_multiple',
           }
@@ -471,7 +471,7 @@ angular.module('app.services', [])
 
         var allowed_groups = [];
 
-        $http.get('/generic', {
+        $http.get('/admin/generic', {
           params: {
             route_name: 'group_get_allowed_groups',
             url_params: {
@@ -509,7 +509,7 @@ angular.module('app.services', [])
         }
 
         var perms = [];
-        $http.get('/generic', {
+        $http.get('/admin/generic', {
           ignoreErrors: true,
           params: {
             route_name: 'permission_get_multiple'
@@ -536,7 +536,7 @@ angular.module('app.services', [])
         }
 
         var users = [];
-        $http.get('/generic', {
+        $http.get('/admin/generic', {
           ignoreErrors: true,
           params: {
             route_name: 'admin_get_multiple'

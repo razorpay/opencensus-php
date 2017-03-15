@@ -30,7 +30,7 @@ app.controller('OrgsListCtrl', [
     // Fetch the entire org list to show in a table
 
     $scope.fetchOrgs = function () {
-      var request = $http.get('/generic', {
+      var request = $http.get('/admin/generic', {
         params: {
           route_name: 'org_get_multiple'
         }
@@ -53,7 +53,7 @@ app.controller('OrgsListCtrl', [
     $scope.fetchOrgs();
 
     $scope.deleteOrg = function(id) {
-      var request = $http.delete('/generic', {
+      var request = $http.delete('/admin/generic', {
         params: {
           route_name: 'org_delete',
 

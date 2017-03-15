@@ -55,7 +55,7 @@ app.controller('RolesCtrl', [
     });
 
     $scope.deleteRole = function(id) {
-      var request = $http.delete('/generic', {
+      var request = $http.delete('/admin/generic', {
         params: {
           route_name: 'role_delete',
 
@@ -88,7 +88,7 @@ app.controller('RolesCtrl', [
 
       delete data.body.route_name;
 
-      var request = $http.put('/generic', data, {
+      var request = $http.put('/admin/generic', data, {
         params: {
           route_name: route_name,
 

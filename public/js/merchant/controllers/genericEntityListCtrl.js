@@ -140,7 +140,7 @@ app.controller('GenericEntityListCtrl', [
           params.route_name = $scope.entity.type;
         }
 
-        request = $http.get('/generic', {
+        request = $http.get('/user/generic', {
           params: params
         });
       }
@@ -204,7 +204,7 @@ app.controller('GenericEntityListCtrl', [
       '{id}': $scope.settlement_id
     };
 
-    var request = $http.get('/generic', {
+    var request = $http.get('/user/generic', {
       params: params
     });
 
