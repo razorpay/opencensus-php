@@ -1,6 +1,6 @@
 <?php
 
-namespace RZP\Tests\Functional\Merchant;
+namespace RZP\Tests\Functional\Payment;
 
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 use RZP\Tests\Functional\TestCase;
