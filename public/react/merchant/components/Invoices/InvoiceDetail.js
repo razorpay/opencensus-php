@@ -4,7 +4,7 @@ import Time from 'rzp/ui/Time'
 import Spinner from 'rzp/ui/Spinner'
 import Alert from 'rzp/ui/Forms/Alert'
 import LineItemReadOnlyTable from './LineItemReadOnlyTable'
-import InvoiceStatus from './InvoiceStatus'
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel'
 
 const notificationClassMap = {
   sent: 'text-success',
@@ -85,7 +85,7 @@ export default (props) => {
 
                 <dt>Status:</dt>
                 <dd>
-                  <InvoiceStatus status={status} />
+                  <InvoiceStatusLabel status={invoice.status} />
                 </dd>
 
                 <dt>Payment Id:</dt>

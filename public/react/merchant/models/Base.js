@@ -15,24 +15,22 @@ import { objectDiff, isBlank } from 'rzp/utils/rzp-utils'
 */
 
 export default class BaseModel {
-  static resourceIdField = 'id'
+  resourceIdField = 'id'
 
   constructor(props = {}) {
     Object.assign(this, props)
-    this.stashPayload(props)
+    this.deserialize(props)
   }
 
   get isNew() {
-    const Klass = this.constructor
-    return !this[Klass.resourceIdField]
+    return !this[this.resourceIdField]
   }
 
   getResourceUrl() {
-    const Klass = this.constructor
     if (this.isNew) {
-      return Klass.resourceUrl
+      return this.resourceUrl
     }
-    return `${Klass.resourceUrl}/${this[Klass.resourceIdField]}`
+    return `${this.resourceUrl}/${this[this.resourceIdField]}`
   }
 
   getResourceMethod() {

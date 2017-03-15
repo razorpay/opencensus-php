@@ -200,6 +200,18 @@ tr:hover .row-action > .btn-group {
   .text-warning {
     color: #d8b617;
   }
+
+  .list-group-item {
+    .table > tbody > tr > td.empty-table {
+      padding: 20px;
+      border-top: 0;
+    }
+
+    &:not(.no-flex) {
+      display: flex;
+      justify-content: space-between;
+    }
+  }
 }
 
 @keyframes luminate {

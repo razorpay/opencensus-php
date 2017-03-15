@@ -2,7 +2,7 @@ import ReactTooltip from 'react-tooltip'
 import TableBody from '../TableBody'
 import Time from 'rzp/ui/Time'
 import Amount from 'rzp/ui/Amount'
-import InvoiceStatus from './InvoiceStatus'
+import { InvoiceStatusLabel } from 'merchant/components/StatusLabel'
 
 const InvoiceListItem = (props) => {
   let { invoice, canHighlight } = props
@@ -32,7 +32,7 @@ const InvoiceListItem = (props) => {
         <Amount value={invoice.amount} />
       </td>
       <td class='text-right'>
-        <InvoiceStatus status={invoice.status} />
+        <InvoiceStatusLabel status={invoice.status} />
       </td>
       <td>
         <div class='row-action'>
@@ -64,7 +64,7 @@ export default (props) => {
 
   return (
     <div class='table-responsive'>
-      <table class='table table-hover'>
+      <table class='table table-hover table-striped'>
         <thead>
           <tr>
             <th>Invoice Id</th>
