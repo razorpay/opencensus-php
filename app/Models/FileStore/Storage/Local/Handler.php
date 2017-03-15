@@ -29,12 +29,12 @@ class Handler extends BaseHandler
     /**
      * save file to given directory
      *
-     * @param string $bucketConfig Directory name and region(unused in LOCAL)
-     * @param array  $filedetails  File details array
+     * @param array $bucketConfig Directory name and region(unused in LOCAL)
+     * @param array $filedetails  File details array
      *
      * @return file full path
      */
-    public function save($bucketConfig, $fileDetails)
+    public function save(array $bucketConfig, array $fileDetails)
     {
         $directory = $bucketConfig['name'];
 
