@@ -48,11 +48,12 @@ return [
         'status'            => 'failed',
     ],
 
+    // status is not matched as we keep it created till 10pm
     'matchSettlementAttemptForReconSuccess' => [
         'channel'           => 'kotak',
         'version'           => 'V2',
         'bank_status_code'  => 'P',
-        'status'            => 'created',
+        //'status'            => 'created',
         'remarks'           => '',
         'failure_reason'    => null,
     ],

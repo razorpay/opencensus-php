@@ -116,13 +116,13 @@ class Repository extends Base\Repository
                     ->orderBy($transactionId)
                     ->get();
 
-        $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
-                    $txns,
-                    'source',
-                    [
-                        E::PAYMENT => [],
-                        E::REFUND => [E::PAYMENT]
-                    ]);
+        // $txns = $this->fetchAssociatedRelationsWithLoadedEntities(
+        //             $txns,
+        //             'source',
+        //             [
+        //                 E::PAYMENT => [],
+        //                 E::REFUND => [E::PAYMENT]
+        //             ]);
 
         return $txns;
     }
