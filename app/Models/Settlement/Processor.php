@@ -20,8 +20,6 @@ class Processor extends Base\Core
 
     protected $setlTime;
 
-    protected $channel;
-
     protected $input;
 
     protected $mutex;
@@ -41,6 +39,8 @@ class Processor extends Base\Core
 
     public function processFailedSettlements(array $input, string $channel)
     {
+        $this->preSettlementProcessing($input);
+
         list($shouldProcess, $message) = $this->shouldProcessSettlements();
 
         if ($shouldProcess === false)
@@ -48,11 +48,9 @@ class Processor extends Base\Core
             return $message;
         }
 
-        $this->preSettlementProcessing($input, $channel);
-
         $data = $this->mutex->acquireAndRelease(
             self::MUTEX_RETRY_RESOURCE,
-            function () use ($input, $channel)
+            function () use ($input)
             {
                 return $this->retryProcessFailedSettlements($input);
             },
@@ -64,7 +62,7 @@ class Processor extends Base\Core
 
     public function process(array $input, $channel)
     {
-        $this->preSettlementProcessing($input, $channel);
+        $this->preSettlementProcessing($input);
 
         list($shouldProcess, $data) = $this->shouldProcessSettlements();
 
@@ -72,9 +70,9 @@ class Processor extends Base\Core
         {
             $data = $this->mutex->acquireAndRelease(
                 self::MUTEX_RESOURCE,
-                function () use ($input)
+                function () use ($channel)
                 {
-                    return $this->processSettlements($input);
+                    return $this->processSettlements($channel);
                 },
                 self::MUTEX_LOCK_TIMEOUT,
                 ErrorCode::BAD_REQUEST_SETTLEMENT_ANOTHER_OPERATION_IN_PROGRESS);
@@ -91,17 +89,24 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function processSettlements($input)
+    protected function processSettlements($channel)
     {
+        $response = [];
+
         try
         {
-            list($settlements, $txnCount, $setlAttempts) = $this->createSettlements();
+            $channels = $this->getArrayedChannels($channel);
 
-            $response = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount);
+            foreach ($channels as $channel)
+            {
+                list($settlements, $txnCount, $setlAttempts) = $this->createSettlements($channel);
+
+                $response[$channel] = $this->generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel);
+            }
         }
         catch (\Exception $e)
         {
-            $this->settlementFailure($this->channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
+            $this->settlementFailure($channel, $e, TraceCode::SETTLEMENT_INITIATE_FAILED);
         }
 
         return $response;
@@ -157,17 +162,16 @@ class Processor extends Base\Core
         return $response;
     }
 
-    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount)
+    protected function generateAndSendSettlementFile($settlements, $setlAttempts, $txnCount, $channel)
     {
         $data = [
-                    'channel'               => $this->channel,
-                    'count'                 => $settlements->count(),
-                    'transaction_count'     => $txnCount,
+            'count'             => $settlements->count(),
+            'transaction_count' => $txnCount,
         ];
 
         if ($setlAttempts->count() > 0)
         {
-            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts);
+            list($urlText, $urlExcel) = $this->generateSettlementFile($setlAttempts, $channel);
 
             $urls = [
                 'kotak_settlement_txt'   => $urlText,
@@ -189,31 +193,31 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function createSettlements(): array
+    protected function createSettlements($channel): array
     {
-        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime);
+        $txns = $this->repo->transaction->fetchUnsettledTxnsForDueSchedules($this->setlTime, $channel);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
-            $this->processUnsettledTransactions($txns);
+            $this->processUnsettledTransactions($txns, $channel);
 
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function processUnsettledTransactions($txns): array
+    protected function processUnsettledTransactions($txns, $channel): array
     {
-        $txns = $this->filterTransactionsForSettlement($txns, $this->channel);
+        $txns = $this->filterTransactionsForSettlement($txns);
 
         list($settlements, $settledTxnsCount, $setlAttempts) =
-            $this->createSettlementsFromTxns($txns, $this->channel);
+            $this->createSettlementsFromTxns($txns, $channel);
 
         return [$settlements, $settledTxnsCount, $setlAttempts];
     }
 
-    protected function generateSettlementFile($setlAttempts)
+    protected function generateSettlementFile($setlAttempts, $channel)
     {
-        $data = null;
+        $data = [null, null];
 
-        if ($this->channel === Channel::KOTAK)
+        if ($channel === Channel::KOTAK)
         {
             $data = (new Kotak\NodalAccount)->generateSettlementFile($setlAttempts);
         }
@@ -221,26 +225,18 @@ class Processor extends Base\Core
         return $data;
     }
 
-    protected function preSettlementProcessing(array $input, $channel)
+    protected function preSettlementProcessing(array $input)
     {
-        $this->inititalizeVariables($input, $channel);
+        $this->inititalizeVariables($input);
 
         $this->increaseAllowedSystemLimits();
     }
 
-    protected function inititalizeVariables(array $input, $channel)
+    protected function inititalizeVariables(array $input)
     {
         $this->setlTime = Carbon::now('Asia/Kolkata')->timestamp;
 
         $this->input = $input;
-
-        //set channel
-        $this->channel = $channel;
-
-        if ($channel === null)
-        {
-            $this->channel = Channel::KOTAK;
-        }
     }
 
     protected function shouldProcessSettlements()
