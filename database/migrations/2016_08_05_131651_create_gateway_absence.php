@@ -21,7 +21,8 @@ class CreateGatewayAbsence extends Migration
 
             $table->char(Downtime::ID, Downtime::ID_LENGTH);
 
-            $table->string(Downtime::GATEWAY, 255);
+            $table->string(Downtime::GATEWAY, 255)
+                ->default(Downtime::ALL);
 
             $table->string(Downtime::ISSUER, 50)
                   ->default(Downtime::UNKNOWN);
