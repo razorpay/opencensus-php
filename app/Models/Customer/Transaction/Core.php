@@ -15,25 +15,24 @@ class Core extends Base\Core
      * Creates a customer_transaction record and am amount debit on the wallet balance
      * Called at payment authorize, for a openwallet payment.
      *
-     * @param array  $input
+     * @param array           $payment
+     * @param Merchant\Entity $merchant
      *
      * @return Entity
      */
-    public function createForCustomerDebit(array $input) : Entity
+    public function createForCustomerDebit(array $payment, Merchant\Entity $merchant) : Entity
     {
-        $merchant = $input['merchant'];
+        $amount = $payment['amount'];
 
-        $amount = $input['payment']['amount'];
-
-        $customerId = $input['payment']['customer_id'];
+        $customerId = $payment['customer_id'];
 
         $customerTxn = $this->createEntityForType(Entity::DEBIT, $merchant, $amount, $customerId);
 
         $customerTxn->setEntityType(Constants\Entity::PAYMENT);
 
-        $customerTxn->setEntityId($input['payment']['id']);
+        $customerTxn->setEntityId($payment['id']);
 
-        $customerTxn->setDescription($input['payment']['description'] ?? 'No description');
+        $customerTxn->setDescription($payment['description'] ?? 'No description');
 
         return $this->repo->transaction(function () use ($amount, $customerId, $customerTxn)
         {
@@ -79,14 +78,13 @@ class Core extends Base\Core
     /**
      * Create entry for a refund transaction, and credits customer wallet
      *
-     * @param array $input
+     * @param array           $input
+     * @param Merchant\Entity $merchant
      *
      * @return Entity
      */
-    public function createForCustomerRefund(array $input) : Entity
+    public function createForCustomerRefund(array $input, Merchant\Entity $merchant) : Entity
     {
-        $merchant = $input['merchant'];
-
         $amount = $input['amount'];
 
         $customerId = $input['payment']['customer_id'];

@@ -23,21 +23,22 @@ class Gateway extends Base\Gateway
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_REQUEST,
             [
-                'gateway'    => $this->gateway,
-                'payment_id' => $input['payment']['id'],
+                'gateway'       => $this->gateway,
+                'payment_id'    => $input['payment']['id'],
+                'customer_id'   => $input['payment']['customer_id'] ?? null,
             ]);
 
         parent::authorize($input);
 
-        $txnId = (new Customer\Transaction\Core)
-                    ->createForCustomerDebit($input);
+        $customerTxn = (new Customer\Transaction\Core)
+                            ->createForCustomerDebit($input['payment'], $input['merchant']);
 
         $this->trace->info(
             TraceCode::GATEWAY_AUTHORIZE_RESPONSE,
             [
                 'gateway'    => $this->gateway,
                 'payment_id' => $input['payment']['id'],
-                'ctxn_id'    => $txnId->getId(),
+                'ctxn'       => $customerTxn->toArray(),
             ]);
     }
 
@@ -59,15 +60,15 @@ class Gateway extends Base\Gateway
 
         parent::refund($input);
 
-        $txnId = (new Customer\Transaction\Core)
-                    ->createForCustomerRefund($input);
+        $customerTxn = (new Customer\Transaction\Core)
+                            ->createForCustomerRefund($input, $input['merchant']);
 
         $this->trace->info(
             TraceCode::GATEWAY_REFUND_RESPONSE,
             [
                 'gateway'       => $this->gateway,
                 'refund_id'     => $input['refund']['id'],
-                'ctxn_id'       => $txnId->getId(),
+                'ctxn'          => $customerTxn->toArray(),
             ]);
     }
 
