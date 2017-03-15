@@ -43,25 +43,38 @@ class Core extends Base\Core
             {
                 $actionApproved = false;
 
-                break;
+                return false;
             }
         }
 
         if ($actionApproved === true)
         {
-            $this->approveAction($action);
+            $action = $this->approveAction($action);
         }
+
+        return true;
     }
 
     protected function approveAction(Entity $action)
     {
-        $data = [
-            Entity::APPROVED => true,
-        ];
+        // Set the action as approved and create a state change
+        $this->repo->transactionOnLiveAndTest(function() use($action)
+        {
+            $data = [
+                Entity::APPROVED => true,
+            ];
 
-        $action->edit($data);
+            $action->edit($data);
 
-        $this->repo->saveOrFail($action);
+            $this->repo->saveOrFail($action);
+
+            $stateData = [
+                State\Entity::ACTION_ID => $action->getId(),
+                State\Entity::NAME      => State\Entity::APPROVED,
+            ];
+
+            (new State\Core)->create($stateData);
+        });
 
         return $action;
     }

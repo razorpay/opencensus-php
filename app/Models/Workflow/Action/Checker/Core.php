@@ -13,6 +13,8 @@ class Core extends Base\Core
     {
         $admin = $this->app['basicauth']->getAdmin();
 
+        $input[Entity::ADMIN_ID] = $admin->getId();
+
         $checker = new Entity;
 
         $checker->generateId();
@@ -22,10 +24,6 @@ class Core extends Base\Core
         $action = $this->repo->workflow_action->findByPublicId(
             $input[Entity::ACTION_ID]);
 
-        $validator->validateCheckerIsNotMaker(
-            $admin->getId(),
-            $action->getAdminId());
-
         $checker->build($input);
 
         $this->repo->transactionOnLiveAndTest(function() use($checker)
@@ -33,12 +31,16 @@ class Core extends Base\Core
             $this->repo->saveOrFail($checker);
 
             $this->createStateTransitionForChecker($checker);
+
         });
 
-        (new Action\Core)->checkIfActionApproved();
+        // TODO can do it async using laravel events
+        (new Action\Core)->checkAndMarkActionApproved();
+
+        return $checker;
     }
 
-    public function createStateTransitionForChecker(Checker\Entity $checker)
+    protected function createStateTransitionForChecker(Checker\Entity $checker)
     {
         $state = $checker->getStatusOnAction();
 
@@ -47,12 +49,22 @@ class Core extends Base\Core
             return;
         }
 
+        if ($state === State\Entity::REJECTED)
+        {
+            $this->createStateTransitionOnRejection();
+        }
+
+        (new Action\Core)->checkIfActionApproved();
+    }
+
+    protected function createStateTransitionOnRejection()
+    {
         $input = [
-            Entity::STATE     => $state,
-            Entity::ACTION_ID => $checker->getActionId(),
-            Entity::ADMIN_ID  => $checker->getAdminId(),
+            State\Entity::NAME      => State\Entity::REJECTED,
+            State\Entity::ACTION_ID => $checker->getActionId(),
+            State\Entity::ADMIN_ID  => $checker->getAdminId(),
         ];
 
-        $this->create($input);
+        (new State\Core)->create($input);
     }
 }

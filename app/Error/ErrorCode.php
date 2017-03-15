@@ -488,7 +488,8 @@ class ErrorCode
     const BAD_REQUEST_API_CAPTURE_FAILED                                            = 'BAD_REQUEST_API_CAPTURE_FAILED';
 
     // Workflow Related ErrorCodes
-    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                               = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
+    const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                                 = 'BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE';
+    const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                      = 'BAD_REQUEST_WORKFLOW_INVLID_CHECKER';
 
     // Gateway Priority API error codes
     const BAD_REQUEST_INVALID_PAYMENT_METHOD                                        = 'BAD_REQUEST_INVALID_PAYMENT_METHOD';

@@ -403,6 +403,11 @@ final class Route
         'auditlog_search'                         => ['get',      'orgs/{orgId}/auditlog/search',                   'OrganizationController@auditLogSearch'                             ],
         'admin_logout'                            => ['post',     'orgs/{orgId}/admin/logout',                      'OrganizationController@logoutAdmin'                                ],
 
+        // Workflows API
+        'action_checker_create'                   => ['post',     'w-action/{id}/checker',                          'WorkflowController@postActionChecker'                              ],
+        'action_checker_multiple'                 => ['get',      'w-action/{id}/checkers',                         'WorkflowController@getActionCheckerMultiple'                       ],
+        'action_checker_get'                      => ['get',      'w-action/{id}/checker/{checkerId}',              'WorkflowController@getActionChecker'                               ],
+
         // UPI
         'p2p_fetch_private'                       => ['get',      'p2p/{id}',                                       'P2pController@getP2p'                                              ],
         'vpa_fetch_private'                       => ['get',      'vpa/{id}',                                       'UpiController@getVpaPrivate'                                       ],

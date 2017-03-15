@@ -14,7 +14,7 @@ class Entity extends Base\PublicEntity
     const STEP_ID        = 'step_id';
     const APPROVED       = 'approved';
 
-    protected static $sign = 'a_check';
+    protected static $sign = 'a_checker';
 
     protected $entity = 'action_checker';
 

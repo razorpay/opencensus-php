@@ -19,6 +19,13 @@ class Entity extends Base\PublicEntity
     const OPEN         = 'open';
     const CLOSED       = 'closed';
 
+    // Action States post which we do not accept any state changes
+    const CLOSED_STATES = [
+        self::REJECTED,
+        self::EXECUTED,
+        self::CLOSED,
+    ];
+
     protected static $sign = 'a_state';
 
     protected $entity = 'action_state';
@@ -72,5 +79,15 @@ class Entity extends Base\PublicEntity
     public function admin()
     {
         return $this->belongsTo('RZP\Models\Admin\Admin\Entity');
+    }
+
+    public function isClosedState()
+    {
+        if (in_array($this->getName(), self::CLOSED_STATES, true) === true)
+        {
+            return true;
+        }
+
+        return false;
     }
 }
