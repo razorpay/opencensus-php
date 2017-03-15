@@ -114,7 +114,7 @@ class Repository extends Base\Repository
         $to = $params[Entity::END] ?? null;
 
         if ((empty($to) === true) and
-            (isset($params[Entity::BEGIN])))
+            (isset($params[Entity::BEGIN]) === true))
         {
             $to = $params[Entity::BEGIN];
         }

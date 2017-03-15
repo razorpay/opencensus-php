@@ -16,8 +16,8 @@ class Validator extends Base\Validator
     protected static $createRules = [
         Entity::GATEWAY         => 'required|string|max:255|custom',
         Entity::REASON_CODE     => 'required|string|max:30|custom',
-        Entity::BEGIN           => 'required|integer',
-        Entity::END             => 'sometimes|integer',
+        Entity::BEGIN           => 'required|epoch',
+        Entity::END             => 'sometimes|epoch',
         Entity::METHOD          => 'required|string|max:30',
         Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
@@ -32,8 +32,8 @@ class Validator extends Base\Validator
 
     protected static $editRules = [
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::BEGIN           => 'sometimes|integer',
-        Entity::END             => 'sometimes|integer',
+        Entity::BEGIN           => 'sometimes|epoch',
+        Entity::END             => 'sometimes|epoch',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
@@ -48,8 +48,9 @@ class Validator extends Base\Validator
         Entity::GATEWAY         => 'sometimes|string|max:255',
         Entity::METHOD          => 'sometimes|string|max:30',
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
-        Entity::BEGIN           => 'sometimes|integer',
-        Entity::END             => 'sometimes|integer',
+        Entity::SOURCE          => 'sometimes|custom',
+        Entity::BEGIN           => 'sometimes|epoch',
+        Entity::END             => 'sometimes|epoch',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
@@ -75,35 +76,41 @@ class Validator extends Base\Validator
         Entity::NETWORK,
     ];
 
+    protected static $editDuplicateValidators = [
+        Entity::END,
+        Entity::ISSUER,
+        Entity::CARD_TYPE,
+        Entity::NETWORK,
+    ];
+
     // Validation Notes:
     // Gateway going down happens in a few cases. For instance, if HDFC netbanking is down,
     // this is applicable for all gateways
     // The following table summarizes all the use cases:
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Method     | Gateway   | Issuer   | Card Type | Network | Notes                             |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | ALL       | HDFC     | NA        | NA      | HDFC Netbanking is down - tested  |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | Billdesk  | ALL      | NA        | NA      | Billdesk is down - tested         |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Netbanking | billdesk  | Yes Bank | NA        | NA      | Billdesk Yes bank is down - tested|
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | DEBIT     | ALL     | All SBI Debit Cards down - tested |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | ALL       | ALL     | All SBI Cards are down - tested   |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | ALL       | Visa    | ALL SBI Visa Cards down - tested  |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | ALL       | SBI      | Debit     | Visa    | SBI Visa Debit Cards down - tested|
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Card       | Axis Migs | ALL      | ALL       | ALL     | Axis Migs is down - tested        |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down - tested        |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    //| UPI        | ICICI     | HDFC     | NA        | NA      | ICICI UPI gateway is down         |
-    //+------------+-----------+----------+-----------+---------+-----------------------------------+
-    // Note: The concept of Issuer for API exists via the VPA handle.
-
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Method     | Gateway   | Issuer   | Card Type | Network | Notes                             |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Netbanking | ALL       | HDFC     | NA        | NA      | HDFC Netbanking is down - tested  |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Netbanking | Billdesk  | ALL      | NA        | NA      | Billdesk is down - tested         |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Netbanking | billdesk  | Yes Bank | NA        | NA      | Billdesk Yes bank is down - tested|
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Card       | ALL       | SBI      | DEBIT     | ALL     | All SBI Debit Cards down - tested |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Card       | ALL       | SBI      | ALL       | ALL     | All SBI Cards are down - tested   |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Card       | ALL       | SBI      | ALL       | Visa    | ALL SBI Visa Cards down - tested  |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Card       | ALL       | SBI      | Debit     | Visa    | SBI Visa Debit Cards down - tested|
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Card       | Axis Migs | ALL      | ALL       | ALL     | Axis Migs is down - tested        |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | Wallet     | Ola Money | Ola Money| NA        | NA      | Ola Money is down - tested        |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // | UPI        | ICICI     | HDFC     | NA        | NA      | ICICI UPI gateway is down         |
+    // +------------+-----------+----------+-----------+---------+-----------------------------------+
+    // Note: The concept of Issuer for UPI exists via the VPA handle.
 
     public function validateGateway(string $attribute, string $gateway)
     {
@@ -120,8 +127,7 @@ class Validator extends Base\Validator
         if (ReasonCode::isValidReasonCode($reasonCode) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Reason Code: '. $reasonCode . ' is not valid'
-            );
+                $reasonCode . ' is not a valid reason code');
         }
     }
 
@@ -131,6 +137,13 @@ class Validator extends Base\Validator
         {
             throw new Exception\BadRequestValidationFailureException(
                 $source . ' is not a valid source');
+        }
+
+        if (($this->entity->getSource() !== null) and
+            ($source !== $this->entity->getSource()))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid source given');
         }
     }
 
@@ -189,7 +202,7 @@ class Validator extends Base\Validator
                     'Issuer cannot be empty for method ' . $method);
             }
 
-            if ((strtolower($gateway) !== strtolower(Entity::ALL)) and
+            if ((strtoupper($gateway) !== Entity::ALL) and
                 (in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
             {
                 return;

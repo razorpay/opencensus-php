@@ -73,7 +73,7 @@ class GatewayDowntimeTest extends TestCase
 
         $this->assertEquals($response['id'], $response2['id']);
 
-        $this->assertEquals($response['reason_code'], $response2['reason_code']);
+        $this->assertEquals('ISSUER_DOWN', $response2['reason_code']);
     }
 
     public function testGatewayDowntimeDuplicateWithUpdatedScheduled()

@@ -30,13 +30,7 @@ class Core extends Base\Core
 
         if ($downtime !== null)
         {
-            // Confirm te logic of verifyIfNeedsUpdate()
-            $needsUpdate = $this->verifyIfNeedsUpdate($downtime, $input);
-
-            if ($needsUpdate === true)
-            {
-                $downtime->edit($input, 'edit_duplicate');
-            }
+            $downtime->edit($input, 'edit_duplicate');
         }
         else
         {
@@ -88,10 +82,9 @@ class Core extends Base\Core
         {
             $method = $downtime->getMethod();
 
-            // Shouldn't this be in collection class?
             $data = $this->getFormattedCheckoutDataRecord($merchant, $downtime);
 
-            if (empty($data) === false)
+            if ($data !== null)
             {
                 $formatted[$method][] = $data;
             }
@@ -113,70 +106,15 @@ class Core extends Base\Core
 
             if ($terminal->getMerchantId() !== $merchant->getId())
             {
-                return [];
+                return null;
             }
         }
 
-        $data = [
-            Entity::ISSUER      => $downtime->getIssuer(),
-            Entity::CARD_TYPE   => $downtime->getCardType(),
-            Entity::NETWORK     => $downtime->getNetwork(),
-            Entity::REASON_CODE => $downtime->getReasonCode(),
-            Entity::PARTIAL     => $downtime->isPartial(),
-            Entity::SCHEDULED   => $downtime->isScheduled(),
-        ];
-
-        return array_filter($data);
+        return $downtime->toArrayCheckout();
     }
 
     public function fetchMostRecentActive(array $input)
     {
         return $this->repo->gateway_downtime->fetchMostRecentActive($input);
-    }
-
-    protected function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)
-    {
-        $scheduled = 0;
-
-        if ((isset($input[Entity::SCHEDULED]) === true) and
-            ($input[Entity::SCHEDULED] === '1'))
-        {
-            $scheduled = 1;
-        }
-
-        $returnStatus = false;
-
-        // check for card methods. create a new one if needed right away
-        // for netbanking and wallet, issuer is already taken care of by validator. Others
-        // are irrelevant
-
-        if ($alreadyScheduled->getMethod() === Method::CARD)
-        {
-            $network = $alreadyScheduled->getNetwork();
-
-            $cardType = $alreadyScheduled->getCardType();
-
-            $issuer = $alreadyScheduled->getIssuer();
-
-            if (($this->isUnknownAllOrNull($network) === true) or
-                ($this->isUnknownAllOrNull($cardType) === true) or
-                ($this->isUnknownAllOrNull($issuer) === true))
-            {
-                $returnStatus = true;
-            }
-        }
-
-        if (($alreadyScheduled->isScheduled() === false) and
-            ($scheduled === 1))
-        {
-            $returnStatus = true;
-        }
-
-        return $returnStatus;
-    }
-
-    protected function isUnknownAllOrNull($value)
-    {
-        return in_array($value, [Entity::UNKNOWN, Entity::ALL, null], true);
     }
 }

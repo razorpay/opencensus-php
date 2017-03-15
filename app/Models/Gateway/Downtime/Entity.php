@@ -132,6 +132,17 @@ class Entity extends Base\PublicEntity
         return $this->belongsTo('RZP\Models\Terminal\Entity')->withTrashed();
     }
 
+    // -------------------- Overridden ------------------------
+    public function edit(array $input = [], $operation = 'edit')
+    {
+        if ($this->isScheduled() === true)
+        {
+            return $this;
+        }
+
+        return parent::edit($input, $operation);
+    }
+
     // --------------------- Modifiers ------------------------
     protected function modifyNetwork(&$input)
     {
@@ -334,5 +345,19 @@ class Entity extends Base\PublicEntity
     public function setEnd()
     {
         $this->setAttribute(self::END, time());
+    }
+
+    public function toArrayCheckout()
+    {
+        $data = [
+            Entity::ISSUER      => $this->getIssuer(),
+            Entity::CARD_TYPE   => $this->getCardType(),
+            Entity::NETWORK     => $this->getNetwork(),
+            Entity::REASON_CODE => $this->getReasonCode(),
+            Entity::PARTIAL     => $this->isPartial(),
+            Entity::SCHEDULED   => $this->isScheduled(),
+        ];
+
+        return array_filter($data);
     }
 }

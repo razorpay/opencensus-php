@@ -13,7 +13,7 @@ class Processor
 
     protected function getProcessorClass($source)
     {
-        $class = '\RZP\Models\Gateway\Downtime\Webhook\\' . studly_case($source) . 'Processor';
+        $class = __NAMESPACE__ .'\\' . studly_case($source) . 'Processor';
 
         return $class;
     }
