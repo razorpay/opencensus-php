@@ -147,6 +147,84 @@ return [
         // Features
         'merchant_get_features'             => 'merchants/{id}/features',
         'merchant_update_features'          => 'merchants/{id}/features',
+
+        // Invoices
+        'invoice_fetch_multiple'            => [
+            'url'       => 'invoices',
+            'routeName' => 'invoice_fetch_all'
+        ],
+        'invoice_fetch'                     => [
+            'url'       => 'invoices/{id}',
+            'routeName' => 'invoice_fetch_single'
+        ],
+        'invoice_create'                    => [
+            'url'       => 'invoices',
+            'routeName' => 'invoice_create'
+        ],
+        'invoice_update'                    => [
+            'url'       => 'invoices/{id}',
+            'routeName' => 'invoice_edit'
+        ],
+        'invoice_delete'                    => [
+            'url'       => 'invoices/{id}',
+            'routeName' => 'invoice_delete'
+        ],
+        'invoice_send_notification'         => [
+            'url'       => 'invoices/{id}/notify/{medium}',
+            'routeName' => 'invoices_send_notification'
+        ],
+        'invoice_issue'                     => [
+            'url'       => 'invoices/{id}/issue',
+            'routeName' => 'invoice_issue'
+        ],
+        'invoice_expire'                    => [
+            'url'       => 'invoices/{id}/expire',
+            'routeName' => 'invoice_expire'
+        ],
+
+        // Customers
+        'customer_fetch_multiple'           => [
+            'url'       => 'customers',
+            'routeName' => 'customer_fetch_all'
+        ],
+        // 'customer_fetch_multiple'           => [
+        //     'url'       => 'customers',
+        //     'routeName' => 'customer_autocomplete'
+        // ],
+        'customer_create'                   => [
+            'url'       => 'customers',
+            'routeName' => 'customer_create'
+        ],
+        'customer_update'                   => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_edit'
+        ],
+        'customer_delete'                   => [
+            'url'       => 'customers/{id}',
+            'routeName' => 'customer_delete'
+        ],
+
+        // Items
+        'item_fetch_multiple'               => [
+            'url'       => 'items',
+            'routeName' => 'item_fetch_all'
+        ],
+        // 'item_fetch_multiple'               => [
+        //     'url'       => 'items',
+        //     'routeName' => 'item_autocomplete'
+        // ],
+        'item_create'                       => [
+            'url'       => 'items',
+            'routeName' => 'item_create'
+        ],
+        'item_update'                       => [
+            'url'       => 'items/{id}',
+            'routeName' => 'item_edit'
+        ],
+        'item_delete'                       => [
+            'url'       => 'items/{id}',
+            'routeName' => 'item_delete'
+        ],
     ],
 
     // auth
