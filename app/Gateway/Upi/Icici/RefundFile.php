@@ -90,7 +90,7 @@ class RefundFile extends Base\RefundFile
 
     protected function getRefundData($input)
     {
-        $fileName = $this->getFileToWriteName('.csv');
+        $fileName = $this->getFileToWriteName(FileStore\Format::CSV);
 
         foreach ($input['data'] as $row)
         {

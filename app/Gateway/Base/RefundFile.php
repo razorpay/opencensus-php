@@ -41,9 +41,9 @@ class RefundFile extends Base\Core
         return $creator;
     }
 
-    protected function getFileToWriteName($ext = '.txt')
+    protected function getFileToWriteName($ext = FileStore\Format::TXT)
     {
-        return $this->getFileToWriteNameWithoutExt() . $ext;
+        return $this->getFileToWriteNameWithoutExt() . '.' . $ext;
     }
 
     protected function getFileToWriteNameWithoutExt()
@@ -55,6 +55,7 @@ class RefundFile extends Base\Core
 
     protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
     {
+        //TODO : Move it to common place
         $txt = '';
 
         $count = count($data);
