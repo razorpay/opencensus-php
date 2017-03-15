@@ -97,6 +97,7 @@ class Entity extends Base\PublicEntity
     ];
 
     protected $defaults = [
+        self::GATEWAY       => self::ALL,
         self::ISSUER        => self::UNKNOWN,
         self::TERMINAL_ID   => null,
         self::CARD_TYPE     => self::UNKNOWN,
