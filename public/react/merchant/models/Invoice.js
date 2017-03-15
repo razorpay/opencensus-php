@@ -30,8 +30,7 @@ const editableFieldsInIssuedState = [
 ]
 
 export default class Invoice extends Entity {
-  static resourceIdField = 'id'
-  static resourceUrl = '/invoices'
+  resourceUrl = '/invoices'
   currency = 'INR'
 
   resourceFields() {

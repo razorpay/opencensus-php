@@ -4,8 +4,8 @@ import Payment from './Payment'
 import ajax from 'merchant/utils/ajax'
 
 export default class Order extends GenericEntity {
-  static listRouteName = 'order_fetch'
-  static detailsRouteName = 'order_fetch_by_id'
+  listRouteName = 'order_fetch'
+  detailsRouteName = 'order_fetch_by_id'
 
   fetchPayments() {
     let data = {
@@ -16,7 +16,7 @@ export default class Order extends GenericEntity {
     })
 
     return this.makeGenericAjaxCall(data).then((response) => {
-      response.data.items = response.data.items.map((item) => new Payment().deserialize(item))
+      response.data.items = response.data.items.map((item) => new Payment(item))
       return response
     })
   }

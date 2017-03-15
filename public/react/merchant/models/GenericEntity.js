@@ -2,26 +2,18 @@ import Entity from './Entity'
 import ajax from 'merchant/utils/ajax'
 
 // `GenericEntity will replace the `Entity` when all routes are migrated to `/generic` routes
-
 export default class GenericEntity extends Entity {
-  static resourceUrl = '/generic'
+  resourceUrl = '/generic'
 
-  static makeGenericAjaxCall(data) {
-    return ajax('/generic', {
-      data,
-      appendModeInQueryParam: true
-    })
-  }
-
-  static fetchAll(params = {}) {
-    const Klass = this
+  fetchAll(params = {}) {
+    const Klass = this.constructor
     let { id, ...queryParams } = params
     let data = {
       query_params: JSON.stringify(queryParams)
     }
 
     if (id) {
-      return Klass.fetch(id, data).then((response) => {
+      return this.fetch(id, data).then((response) => {
         return {
           data: {
             items: [response]
@@ -30,27 +22,28 @@ export default class GenericEntity extends Entity {
       })
     }
 
-    data.route_name = Klass.listRouteName
+    data.route_name = this.listRouteName
     return this.makeGenericAjaxCall(data).then((response) => {
-      response.data.items = response.data.items.map((item) => new Klass().deserialize(item))
+      response.data.items = response.data.items.map((item) => new Klass(item))
       return response
     })
   }
 
-  static fetch(id, data = {}) {
-    const Klass = this
+  fetch(id, data = {}) {
+    const Klass = this.constructor
     data.url_params = JSON.stringify({
       '{id}': id
     })
-    data.route_name = Klass.detailsRouteName
+    data.route_name = this.detailsRouteName
     return this.makeGenericAjaxCall(data).then((response) => {
-      return new Klass().deserialize(response.data)
+      return new Klass(response.data)
     })
   }
 
-  // `makeGenericAjaxCall` is both a static & instance method
   makeGenericAjaxCall(data) {
-    const Klass = this.constructor
-    return Klass.makeGenericAjaxCall(data)
+    return ajax(this.resourceUrl, {
+      data,
+      appendModeInQueryParam: true
+    })
   }
 }

@@ -6,9 +6,10 @@ const ORDER_PAYMENTS_FETCH = 'ORDER_PAYMENTS_FETCH'
 
 export const fetchOrder = (id) => {
   return (dispatch) => {
+    let order = new Order()
     return dispatch({
       type: ORDER_FETCH,
-      payload: Order.fetch(id)
+      payload: order.fetch(id)
     })
   }
 }

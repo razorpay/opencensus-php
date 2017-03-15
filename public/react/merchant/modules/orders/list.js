@@ -5,9 +5,10 @@ const ORDERS_FETCH = 'ORDERS_FETCH'
 
 export const fetchOrders = (params) => {
   return (dispatch) => {
+    let order = new Order()
     return dispatch({
       type: ORDERS_FETCH,
-      payload: Order.fetchAll(params)
+      payload: order.fetchAll(params)
     })
   }
 }
