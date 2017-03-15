@@ -11,7 +11,7 @@ class Drip extends BaseDrip
     /**
      * Tracing request when mock = true
      */
-    protected function sendRequest($url, $data, $method)
+    protected function sendRequest(string $url, array $data, string $method)
     {
         $app = App::getFacadeRoot();
 

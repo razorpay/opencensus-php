@@ -6,11 +6,18 @@ use RZP\Exception;
 use RZP\Jobs\RequestJob;
 use RZP\Error\ErrorCode;
 use RZP\Models\Merchant;
+use RZP\Trace\TraceCode;
 use Illuminate\Foundation\Bus\DispatchesJobs;
 
 class Drip
 {
     use DispatchesJobs;
+
+    protected $config;
+    protected $baseUrl;
+    protected $token;
+    protected $accountId;
+    protected $trace;
 
     // Drip Actions
     const CREATED   = 'created';
@@ -41,6 +48,8 @@ class Drip
         $this->token = $this->config['token'];
 
         $this->accountId = $this->config['accountId'];
+
+        $this->trace = $app['trace'];
     }
 
     public function sendDripMerchantInfo(string $action, Merchant\Entity $merchant)
@@ -56,6 +65,12 @@ class Drip
                 break;
 
             default:
+                $this->trace->info(TraceCode::INVALID_DRIP_ACTION,
+                    [
+                        'action'      => $action,
+                        'merchant_id' => $merchant->getId(),
+                    ]);
+
                 throw new Exception\LogicException(
                     'BAD_REQUEST_INVALID_DRIP_ACTION');
         }
