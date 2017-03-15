@@ -13,6 +13,8 @@ class Service extends Base\Service
         parent::__construct();
 
         $this->validator = new Validator;
+
+        $this->cache = $this->app['redis'];;
     }
 
     public function validate(array $input)
@@ -40,6 +42,8 @@ class Service extends Base\Service
             ];
         }
 
+        $this->uniqueUtrCheck($input, $data);
+
         return $data;
     }
 
@@ -55,5 +59,35 @@ class Service extends Base\Service
         return [
             'success' => true,
         ];
+    }
+
+    protected function uniqueUtrCheck(array $input, array & $data)
+    {
+        if($data['valid'] === true)
+        {
+            $keyArray = ['ecollect', $this->mode, $input['transaction_id']];
+
+            $key = implode(',', $keyArray);
+
+            $cachedData = $this->cache->get($key);
+
+            if (is_null($cachedData) === false)
+            {
+                $this->app['trace']->warning(
+                    TraceCode::ECOLLECT_VALIDATION_DUPLICATE_UTR,
+                    [
+                        'cached_data'   => json_decode($cachedData, true),
+                        'received_data' => $input,
+                    ]
+                );
+
+                $data['valid']   = false;
+                $data['message'] = 'Duplicate UTR received';
+            }
+            else
+            {
+                $this->cache->set($key, json_encode($input));
+            }
+        }
     }
 }
