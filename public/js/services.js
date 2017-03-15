@@ -153,6 +153,7 @@ angular.module('app.services', [])
 .factory('transformRequestAsFormPost', function () {
   // I prepare the request data for the form post.
   function transformRequest(data, getHeaders) {
+
     var headers = getHeaders();
     headers['Content-Type'] = 'application/x-www-form-urlencoded; charset=utf-8';
     return serializeData(data);
@@ -168,14 +169,47 @@ angular.module('app.services', [])
       return (data === null) ? '' : data.toString();
     }
     var buffer = [];
-    // Serialize each key in the object.
-    for (var name in data) {
-      if (!data.hasOwnProperty(name)) {
+
+    var formalizeData = function (formData, level) {
+      var flattened = {};
+      for (var key in formData) {
+        var val = formData[key];
+        var keyToSend = key;
+
+        if (level > 1) {
+          keyToSend = '[' + keyToSend + ']';
+        }
+
+        if (typeof formData[key] === 'object') {
+          var tmpFlattened = formalizeData(formData[key], level + 1);
+
+          for (var tmpKey in tmpFlattened) {
+            var tmpVal = tmpFlattened[tmpKey];
+
+            flattened[keyToSend + tmpKey] = tmpVal;
+          }
+        }
+        else {
+          flattened[keyToSend] = val;
+        }
+      }
+      return flattened;
+    };
+
+    var flattenedOb = formalizeData(data, 1);
+
+    for (var key in flattenedOb) {
+      if (typeof flattenedOb[key] === 'undefined') {
         continue;
       }
-      var value = data[name];
-      buffer.push(encodeURIComponent(name) + '=' + encodeURIComponent(value === null ? '' : value));
+
+      if (typeof flattenedOb[key] === 'boolean') {
+        flattenedOb[key] = flattenedOb[key] ? 1 : 0;
+      }
+
+      buffer.push(encodeURIComponent(key) + '=' + encodeURIComponent(flattenedOb[key]));
     }
+
     // Serialize the buffer and clean it up for transportation.
     var source = buffer.join('&').replace(/%20/g, '+');
     return source;
@@ -895,28 +929,7 @@ angular.module('app.services', [])
       }
 
       return frags.join(' ');
-    },
-
-    convertBoolToString: function (obj) {
-      var argType = typeof obj;
-
-      switch (argType) {
-        case 'object':
-          for (var key in obj) {
-            if (obj.hasOwnProperty(key)) {
-              obj[key] = obj[key] ? '1' : '0';
-            }
-          }
-
-          break;
-
-        case 'boolean':
-          obj = obj ? '1' : '0';
-
-          break;
-      }
-
-      return obj;
     }
+
   };
 });

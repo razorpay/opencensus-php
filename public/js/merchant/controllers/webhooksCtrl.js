@@ -9,8 +9,7 @@ app.controller('WebhooksCtrl', [
   'transformRequestAsFormPost',
   '$modal',
   'user',
-  'utils',
-  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user, utils) {
+  function ($scope, $http, alertsFactory, transformRequestAsFormPost, $modal, user) {
     //Intialise alerts and scope functions
     $scope.alerts = alertsFactory.getHandler();
 
@@ -30,9 +29,6 @@ app.controller('WebhooksCtrl', [
     };
 
     $scope.createWebhook = function(webhook) {
-
-      webhook.events = utils.convertBoolToString(webhook.events);
-
       var params = {
         route_name: 'webhook_create',
         mode: $scope.mode,
@@ -42,7 +38,8 @@ app.controller('WebhooksCtrl', [
       var request = $http({
         url: '/generic',
         method: 'POST',
-        data: params
+        data: params,
+        transformRequest: transformRequestAsFormPost
       });
 
       request.success(function (data) {
@@ -68,8 +65,8 @@ app.controller('WebhooksCtrl', [
       // can edit in a webhook
 
       var payload = {
-        events: utils.convertBoolToString(webhook.events),
-        active: utils.convertBoolToString(webhook.active),
+        events: webhook.events,
+        active: webhook.active,
         url: webhook.url
       };
 
@@ -80,16 +77,17 @@ app.controller('WebhooksCtrl', [
       var params = {
         route_name: 'webhook_edit',
         mode: $scope.mode,
-        url_params: {
+        url_params: JSON.stringify({
           '{id}': webhook.id
-        },
+        }),
         body: payload
       };
 
       var request = $http({
         url: '/generic',
         method: 'PUT',
-        data: params
+        data: params,
+        transformRequest: transformRequestAsFormPost
       });
 
       request.success(function (data) {
