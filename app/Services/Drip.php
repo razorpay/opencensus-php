@@ -76,10 +76,22 @@ class Drip
 
         $content = json_encode($data);
 
+        $headers['Content-Type'] = self::CONTENT_TYPE;
+
+        $options['auth'] = [$this->token, ""];
+
+        $request = [
+            'url'     => $url,
+            'method'  => $method,
+            'headers' => $headers,
+            'options' => $options,
+            'content' => $content
+        ];
+
         //
         // Dispatching the job into the queue
         //
-        $job = (new RequestJob($url, $method, self::CONTENT_TYPE, $this->token, "", $content));
+        $job = new RequestJob($request);
 
         $this->dispatch($job);
     }

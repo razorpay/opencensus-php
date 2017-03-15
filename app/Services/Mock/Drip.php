@@ -21,8 +21,10 @@ class Drip extends BaseDrip
 
         $app['trace']->info(
             TraceCode::MOCK_DRIP_REQUEST,
-            ['url'     => $url,
-             'content' => $content,
-             'method'  => $method]);
+            [
+                'url'     => $url,
+                'content' => $content,
+                'method'  => $method
+            ]);
     }
 }

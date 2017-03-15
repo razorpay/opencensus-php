@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 
 use App;
 use Requests;
+use Carbon\Carbon;
 use RZP\Trace\Trace;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
@@ -23,12 +24,6 @@ class RequestJob extends Job implements ShouldQueue
     const JOB_RELEASED         = 'job_released';
 
     protected $trace;
-    protected $url;
-    protected $method;
-    protected $contentType;
-    protected $token;
-    protected $secret;
-    protected $content;
     protected $request;
 
     /**
@@ -36,19 +31,9 @@ class RequestJob extends Job implements ShouldQueue
      *
      * @return void
      */
-    public function __construct(string $url,
-                                string $method,
-                                string $contentType,
-                                string $token,
-                                string $secret,
-                                string $content)
+    public function __construct(array $request)
     {
-        $this->url = $url;
-        $this->method = $method;
-        $this->contentType = $contentType;
-        $this->token = $token;
-        $this->secret = $secret;
-        $this->content = $content;
+        $this->request = $request;
     }
 
     /**
@@ -77,25 +62,13 @@ class RequestJob extends Job implements ShouldQueue
         $app = App::getFacadeRoot();
 
         $this->trace = $app['trace'];
-
-        $headers['Content-Type'] = $this->contentType;
-
-        $options['auth'] = [$this->token, $this->secret];
-
-        $this->request = [
-            'url'     => $this->url,
-            'method'  => $this->method,
-            'headers' => $headers,
-            'options' => $options,
-            'content' => $this->content
-        ];
     }
 
     private function handleRequest()
     {
         $this->trace->info(TraceCode::REQUESTS_JOB_REQUEST, ['request' => $this->request]);
 
-        $timeStarted = microtime(true);
+        $timeStarted = Carbon::now('Asia/Kolkata')->timestamp;
 
         $method = $this->request['method'];
 
@@ -105,13 +78,15 @@ class RequestJob extends Job implements ShouldQueue
             $this->request['content'],
             $this->request['options']);
 
-        $timeTaken = microtime(true) - $timeStarted;
+        $timeTaken = Carbon::now('Asia/Kolkata')->timestamp - $timeStarted;
 
         $this->trace->info(
             TraceCode::REQUESTS_JOB_RESPONSE,
-            ['time_taken' => $timeTaken,
-             'attempts'   => $this->attempts(),
-             'response'   => $response->body]);
+            [
+                'time_taken' => $timeTaken,
+                'attempts'   => $this->attempts(),
+                'response'   => $response->body
+            ]);
     }
 
     /**
