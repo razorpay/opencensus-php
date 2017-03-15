@@ -11,13 +11,13 @@ use RZP\Models\Merchant;
 use RZP\Models\Customer;
 use RZP\Models\Payment;
 use RZP\Models\Settlement;
-use RZP\Models\Settlement\Kotak;
+use RZP\Models\FundTransfer\Kotak;
 use RZP\Models\Transaction;
-use RZP\Models\Base\Traits\BatchSettlementTrait;
+use RZP\Models\FundTransfer\Batch\BatchFundTransferTrait;
 
 class Core extends Base\Core
 {
-    use BatchSettlementTrait;
+    use BatchFundTransferTrait;
 
     const MUTEX_RESOURCE        = 'PAYOUT_PROCESSING';
 
@@ -134,9 +134,9 @@ class Core extends Base\Core
 
         foreach ($payouts as $payout)
         {
-            $this->createOrUpdateBatchSettlementForEntity($payout, 1);
+            $this->createOrUpdateBatchFundTransferForEntity($payout, 1);
 
-            $payout->batchSettlement()->associate($this->batchSettlement);
+            $payout->batchFundTransfer()->associate($this->batchFundTransfer);
         }
 
         $urlText = (new Kotak\NodalAccount)->getPayoutsFile($payouts);
@@ -145,7 +145,7 @@ class Core extends Base\Core
             'kotak_payout_txt'   => $urlText,
         ];
 
-        $this->updateBatchSettlementEntityUrls($urls);
+        $this->updateBatchFundTransferEntityUrls($urls);
 
         $data['payout_text_file'] = $urlText;
 

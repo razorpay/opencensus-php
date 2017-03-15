@@ -669,8 +669,9 @@ class Gateway extends Base\Gateway
         }
         else if ($this->verifiedUsingCheckPaymentStatus === true)
         {
-            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                [ResponseFields::TXN_STATUS];
+            $gatewayData = $this->getGatewayDataFromVerifyResponse($content);
+
+            return $gatewayData[ResponseFields::TXN_STATUS];
         }
 
         return null;
@@ -699,10 +700,9 @@ class Gateway extends Base\Gateway
     {
         if ($this->verifiedUsingCheckPaymentStatus === true)
         {
-            $date = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                        [ResponseFields::TXN_TIME_STAMP];
+            $gatewayData = $this->getGatewayDataFromVerifyResponse($content);
 
-            return $date;
+            return $gatewayData[ResponseFields::TXN_TIME_STAMP];
         }
 
         return null;
@@ -716,11 +716,30 @@ class Gateway extends Base\Gateway
         }
         else if ($this->verifiedUsingCheckPaymentStatus === true)
         {
-            return $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS]
-                [ResponseFields::JM_TRAN_REF_NO];
+            $gatewayData = $this->getGatewayDataFromVerifyResponse($content);
+
+            return $gatewayData[ResponseFields::JM_TRAN_REF_NO];
         }
 
         return null;
+    }
+
+    /**
+     * We sometimes get an array of nested JSON objects from the Jiomoney verify API
+     * This method returns the first object from the array
+     * @param  array  $content verify response content
+     * @return array
+     */
+    protected function getGatewayDataFromVerifyResponse(array $content)
+    {
+        $checkPaymentStatusData = $content[ResponseFields::RESPONSE][ResponseFields::CHECKPAYMENTSTATUS];
+
+        if (is_associative_array($checkPaymentStatusData) === false)
+        {
+            $checkPaymentStatusData = array_shift($checkPaymentStatusData);
+        }
+
+        return $checkPaymentStatusData;
     }
 
     protected function getCheckPaymentStatusRequest(array $input)
