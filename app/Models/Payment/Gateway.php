@@ -150,6 +150,7 @@ class Gateway
             self::WALLET_PAYUMONEY,
             self::WALLET_AIRTELMONEY,
             self::WALLET_FREECHARGE,
+            self::WALLET_JIOMONEY,
             self::WALLET_OPENWALLET,
         ],
 
