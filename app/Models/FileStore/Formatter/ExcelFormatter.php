@@ -59,7 +59,7 @@ class ExcelFormatter
     {
         $excel = self::createExcelObject($content, $name, $columnFormat);
 
-        $fileMetadata = $excel->store($extension, storage_path($path), true);
+        $fileMetadata = $excel->store($extension, $path, true);
 
         return $fileMetadata;
     }

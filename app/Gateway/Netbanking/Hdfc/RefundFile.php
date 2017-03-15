@@ -29,27 +29,27 @@ class RefundFile extends Base\RefundFile
 
         $fileName = $this->getFileToWriteNameWithoutExt();
 
-        $urlExcel = $this->writeToExcelFile($data, $fileName);
-
         $creator = $this->createFile(
             FileStore\Format::XLSX,
             $data,
             $fileName,
             FileStore\Type::HDFC_NETBANKING_REFUND);
 
+        $file = $creator->get();
+
         $fileData = [
-            'file_path' => $this->getExcelFullFilePath(),
+            'file_path' => $file['local_file_path'],
             'body' => self::EMAIL_BODY,
         ];
 
         $this->sendRefundEmail($fileData);
 
-        return $urlExcel;
+        return $file['local_file_path'];
     }
 
     protected function sendRefundEmail($fileData = [])
     {
-        $fullpath = $this->getExcelFullFilePath();
+        $fullpath = $fileData['file_path'];
 
         $this->mail->queue('emails.message', $fileData, function ($message) use ($fileData)
         {
