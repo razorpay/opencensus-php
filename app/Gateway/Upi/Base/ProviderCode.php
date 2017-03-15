@@ -116,4 +116,9 @@ class ProviderCode
     {
         return self::$bankCodes[$provider] ?? null;
     }
+
+    public static function validate(string $provider)
+    {
+        return (self::getBankCode($provider) !== null);
+    }
 }
