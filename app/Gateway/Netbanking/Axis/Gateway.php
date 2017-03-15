@@ -316,7 +316,8 @@ class Gateway extends Base\Gateway
 
         $gatewayPayment = $verify->payment;
 
-        if ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS)
+        if ((isset($content[ResponseFields::PAYMENT_STATUS])) and
+            ($content[ResponseFields::PAYMENT_STATUS] === Constants::SUCCESS))
         {
             $attributes = $this->getVerifyAttributes($verify, $gatewayPayment);
 
