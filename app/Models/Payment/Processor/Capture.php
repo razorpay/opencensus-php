@@ -64,6 +64,9 @@ trait Capture
             $amount -= $payment->getFee();
         }
 
+        // set auto-capture 1
+        $payment->setAutoCapturedTrue();
+
         $this->trace->info(
             TraceCode::PAYMENT_AUTO_CAPTURE, ['payment_id' => $payment->getId()]);
 
@@ -74,9 +77,6 @@ trait Capture
         try
         {
             $payment = $this->capturePayment($payment, $amount, $currency);
-
-            // set auto-capture 1
-            $payment->setAutoCapturedTrue();
         }
         catch (Exception\RecoverableException $e)
         {
