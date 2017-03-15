@@ -330,4 +330,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->getAttribute(self::PUBLIC);
     }
+
+    public function setEnd()
+    {
+        $this->setAttribute(self::END, time());
+    }
 }

@@ -16,7 +16,7 @@ class Source
         Source::OTHER
     ];
 
-    public static function isValidSource($source)
+    public static function isValid($source)
     {
         return in_array(strtoupper($source), self::$sources, true);
     }

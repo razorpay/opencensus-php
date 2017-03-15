@@ -86,7 +86,7 @@ class Repository extends Base\Repository
 
         $query->whereNull(Entity::END);
 
-        return $query->latest();
+        return $query->latest()->first();
     }
 
     protected function buildQuery(array $keyOperatorMap, array $input, \RZP\Base\BuilderEx & $query)

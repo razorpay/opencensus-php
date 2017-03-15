@@ -131,19 +131,7 @@ class Core extends Base\Core
 
     public function fetchMostRecentActive(array $input)
     {
-        // $queryParams = [];
-
-        // foreach ($this->uniqueCheckerKeys as $key)
-        // {
-        //     if (isset($input[$key]) === true)
-        //     {
-        //         $queryParams[$key] = $input[$key];
-        //     }
-        // }
-
-        $downtimes = $this->repo->gateway_downtime->fetchMostRecentActive($input);
-
-        return $downtimes->first();
+        return $this->repo->gateway_downtime->fetchMostRecentActive($input);
     }
 
     protected function verifyIfNeedsUpdate(Entity $alreadyScheduled, array $input)

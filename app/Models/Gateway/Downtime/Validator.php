@@ -34,7 +34,6 @@ class Validator extends Base\Validator
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
         Entity::BEGIN           => 'sometimes|integer',
         Entity::END             => 'sometimes|integer',
-        Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
@@ -51,7 +50,6 @@ class Validator extends Base\Validator
         Entity::REASON_CODE     => 'sometimes|string|max:30|custom',
         Entity::BEGIN           => 'sometimes|integer',
         Entity::END             => 'sometimes|integer',
-        Entity::SOURCE          => 'required|string|max:30|custom',
         Entity::ISSUER          => 'sometimes|string|max:50',
         Entity::TERMINAL_ID     => 'sometimes|alpha_num|size:14',
         Entity::CARD_TYPE       => 'sometimes|string|max:10',
@@ -74,7 +72,7 @@ class Validator extends Base\Validator
         Entity::END,
         Entity::ISSUER,
         Entity::CARD_TYPE,
-        Entity::NETWORK
+        Entity::NETWORK,
     ];
 
     // Validation Notes:
@@ -129,11 +127,10 @@ class Validator extends Base\Validator
 
     public function validateSource(string $attribute, string $source)
     {
-        if (Source::isValidSource($source) === false)
+        if (Source::isValid($source) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Source : '. $source . ' is not valid'
-            );
+                $source . ' is not a valid source');
         }
     }
 
@@ -204,13 +201,13 @@ class Validator extends Base\Validator
                 (in_array($gateway, $gateways, true) === false))
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Issuer '. $issuer .' is not supported for gateway: ' . $gateway);
+                    $issuer .' is not a supported Bank code for gateway ' . $gateway);
             }
 
             if (IFSC::exists(strtoupper($issuer)) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
-                    'Issuer: '. $issuer. ' is not a valid Bank Name');
+                    $issuer. ' is not a valid Bank code');
             }
         }
     }
@@ -259,7 +256,7 @@ class Validator extends Base\Validator
         if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Network: '. $network . ' is not a valid network');
+                $network . ' is not a valid network');
         }
 
         $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
@@ -278,7 +275,7 @@ class Validator extends Base\Validator
             (in_array($network, $cardNetWork, true) === false))
         {
             throw new Exception\BadRequestValidationFailureException(
-                'Network: '. $input[Entity::NETWORK] . ' is not a valid network for gateway: ' . $gateway);
+                $input[Entity::NETWORK] . ' is not a valid network for gateway ' . $gateway);
         }
     }
 

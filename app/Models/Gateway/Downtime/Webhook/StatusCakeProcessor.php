@@ -34,7 +34,7 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
         $this->repo = $this->app['repo'];
 
-        $this->core = new Downtime\Core();
+        $this->core = new Downtime\Core;
     }
 
     protected function fetchStatusCakeCredentials()
@@ -50,38 +50,22 @@ class StatusCakeProcessor implements AbstractProcessorInterface
     {
         try
         {
-            $scStatus = strtoupper($input['Status']);
+            $this->validateStatus($input['Status']);
 
-            $status = null;
-
-            if (in_array($scStatus, [self::STATUS_UP, self::STATUS_DOWN]) === false)
-            {
-                $this->trace->warning(
-                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_STATUS,
-                    ['input' => $input]);
-
-                throw new Exception\BadRequestValidationFailureException(
-                    'Invalid StatusCake status provided: ' . $scStatus);
-            }
-
-            $status = ($scStatus === self::STATUS_UP);
+            $status = (strtoupper($input['Status']) === self::STATUS_UP);
 
             $data = $this->formatInput($input, $status);
 
             if ($status === true)
             {
-                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_EDIT, ['data' => $data]);
+                $this->trace->info(
+                    TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_EDIT, ['data' => $data]);
 
                 $downtime = $this->core->fetchMostRecentActive($data);
 
-                if (empty($downtime) === false)
+                if ($downtime !== null)
                 {
-                    $editData = [
-                        Entity::END    => time(),
-                        Entity::SOURCE => $downtime->getSource()
-                    ];
-
-                    $downtime->edit($editData);
+                    $downtime->setEnd();
 
                     $this->repo->saveOrFail($downtime);
 
@@ -90,54 +74,19 @@ class StatusCakeProcessor implements AbstractProcessorInterface
 
                 return [];
             }
-            else
-            {
-                $this->trace->info(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_CREATE, ['data' => $data]);
 
-                // this is a down, create a new entry. Unlikely that status cake might send duplicate down
-                // events for the same url.
-                $downtime = $this->core->create($data);
+            $this->trace->info(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_CREATE, ['data' => $data]);
 
-                return $downtime->toArrayPublic();
-            }
+            // this is a down, create a new entry. Unlikely that status cake might send duplicate down
+            // events for the same url.
+            $downtime = $this->core->create($data);
+
+            return $downtime->toArrayPublic();
         }
-        catch(\Exception $e)
+        catch (\Exception $e)
         {
             throw $e;
-        }
-    }
-
-    public function validate(array $input)
-    {
-        if (isset($input['Token']) === false)
-        {
-            $this->trace->critical(
-                TraceCode::GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN,
-                ['input' => $input]);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'StatusCake token missing');
-        }
-
-        $this->validateToken($input);
-    }
-
-    protected function validateToken(array $input)
-    {
-        $token = $input['Token'];
-
-        list($uname, $apiKey) = $this->fetchStatusCakeCredentials();
-
-        $key = $uname.$apiKey;
-
-        if (hash_equals(md5($key), $token) === false)
-        {
-            $this->trace->warning(
-                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN,
-                ['token' => $token, 'computed' => md5($key)]);
-
-            throw new Exception\BadRequestValidationFailureException(
-                'StatusCake token validation failure.');
         }
     }
 
@@ -173,7 +122,41 @@ class StatusCakeProcessor implements AbstractProcessorInterface
             'StatusCake Invalid Issuer from StatusCake:' . $issuer);
     }
 
-    /*
+    protected function formatInput(array $input, bool $status)
+    {
+        $formatted = [
+            Entity::SOURCE      => Source::STATUSCAKE,
+            Entity::REASON_CODE => ReasonCode::ISSUER_DOWN,
+            Entity::PARTIAL     => false,
+        ];
+
+        if ($status === true)
+        {
+            $formatted[Entity::END] = time();
+        }
+        else
+        {
+            $formatted[Entity::BEGIN] = time();
+        }
+
+        try
+        {
+            $this->setIssuerMetaData($input, $formatted);
+        }
+        catch(\Exception $e)
+        {
+            $this->trace->warning(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR, ['input' => $input]);
+
+            throw $e;
+        }
+
+        $formatted[Entity::COMMENT] = 'STATUSCAKE STATUSCODE : '. $input['StatusCode'];
+
+        return $formatted;
+    }
+
+    /**
      * Notes:
      * A Sample Map for gathering issuer information.
      * The Statuscake tag right now acts for issuer. The tag shall
@@ -185,7 +168,6 @@ class StatusCakeProcessor implements AbstractProcessorInterface
      * HDFC|Card|null|HDFC
      * OlaMoney|Wallet|null|OlaMoney
      */
-
     protected function setIssuerMetaData(array $input, array &$formatted)
     {
         $tags = $input['Tags'];
@@ -342,36 +324,52 @@ class StatusCakeProcessor implements AbstractProcessorInterface
         // $formatted = InputFormatter::format($formatted);
     }
 
-    protected function formatInput(array $input, bool $status)
+    protected function validateStatus($status)
     {
-        $formatted = [
-            Entity::SOURCE      => Source::STATUSCAKE,
-            Entity::REASON_CODE => ReasonCode::ISSUER_DOWN,
-            Entity::PARTIAL     => false,
-        ];
+        $validStatus = [self::STATUS_UP, self::STATUS_DOWN];
 
-        if ($status === true)
+        if (in_array(strtoupper($status), $validStatus, true) === false)
         {
-            $formatted[Entity::END] = time();
+            $this->trace->warning(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_STATUS,
+                ['input' => $input]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'Invalid StatusCake status provided: ' . $status);
         }
-        else
+    }
+
+    public function validate(array $input)
+    {
+        if (isset($input['Token']) === false)
         {
-            $formatted[Entity::BEGIN] = time();
+            $this->trace->critical(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCODE_MISSING_TOKEN,
+                ['input' => $input]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'StatusCake token missing');
         }
 
-        try
+        $this->validateToken($input);
+    }
+
+    protected function validateToken(array $input)
+    {
+        $token = $input['Token'];
+
+        list($uname, $apiKey) = $this->fetchStatusCakeCredentials();
+
+        $key = $uname.$apiKey;
+
+        if (hash_equals(md5($key), $token) === false)
         {
-            $this->setIssuerMetaData($input, $formatted);
+            $this->trace->warning(
+                TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_TOKEN,
+                ['token' => $token, 'computed' => md5($key)]);
+
+            throw new Exception\BadRequestValidationFailureException(
+                'StatusCake token validation failure.');
         }
-        catch(\Exception $e)
-        {
-            $this->trace->warning(TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_PARSE_ERROR, ['input' => $input]);
-
-            throw $e;
-        }
-
-        $formatted[Entity::COMMENT] = 'STATUSCAKE STATUSCODE : '. $input['StatusCode'];
-
-        return $formatted;
     }
 }

@@ -102,19 +102,19 @@ class GatewayDowntimeTest extends TestCase
 
         $request['content']['end'] = $downtimeTo;
 
-        $request['content']['source'] = 'other';
+        unset($request['content']['source']);
 
         $response2 = $this->makeRequestAndGetContent($request);
 
         $this->assertEquals($response['id'], $response2['id']);
 
-        $this->assertEquals($response2['end'], $downtimeTo);
+        $this->assertEquals($downtimeTo, $response2['end']);
 
-        $this->assertEquals($response2['scheduled'], true);
+        $this->assertEquals(true, $response2['scheduled']);
 
         $downtimeEntity = $this->getLastEntity('gateway_downtime', true);
 
-        $this->assertEquals($downtimeEntity['source'], 'other');
+        $this->assertEquals('statuscake', $downtimeEntity['source']);
 
     }
 
@@ -183,11 +183,13 @@ class GatewayDowntimeTest extends TestCase
 
         $request['content']['end']  = Carbon::now()->addMinutes(60)->timestamp;
 
+        unset($request['content']['source']);
+
         $response2 = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($response2['reason_code'], 'OTHER');
+        $this->assertEquals('OTHER', $response2['reason_code']);
 
-        $this->assertEquals($response2['network'], 'visa');
+        $this->assertEquals('visa', $response2['network']);
 
     }
 
@@ -478,7 +480,6 @@ class GatewayDowntimeTest extends TestCase
             'content' => [
                 'begin' => $now,
                 'end' => $to,
-                'source' => $lastEntity['source'],
                 'comment' => 'SOME_COMMENT'
             ],
             'method' => 'PUT',
@@ -526,15 +527,15 @@ class GatewayDowntimeTest extends TestCase
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['count'], 2);
+        $this->assertEquals(2, $content['count']);
 
         $request['content']['gateway'] = 'netbanking_kotak';
 
         $content = $this->makeRequestAndGetContent($request);
 
-        $this->assertEquals($content['count'], 1);
+        $this->assertEquals(1, $content['count']);
 
-        $this->assertEquals($content['items'][0]['end'], null);
+        $this->assertEquals(null, $content['items'][0]['end']);
     }
 
     public function testGatewayDowntimeFetch()
