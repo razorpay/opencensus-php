@@ -7,12 +7,9 @@ use Carbon\Carbon;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\FileStore;
-use RZP\Models\Settlement\Kotak\FileHandlerTrait;
 
 class RefundFile extends Base\Core
 {
-    use FileHandlerTrait;
-
     public function __construct()
     {
         parent::__construct();
@@ -42,5 +39,40 @@ class RefundFile extends Base\Core
                 ->save();
 
         return $creator;
+    }
+
+    protected function getFileToWriteName($ext = FileStore\Format::TXT)
+    {
+        return $this->getFileToWriteNameWithoutExt() . '.' . $ext;
+    }
+
+    protected function getFileToWriteNameWithoutExt()
+    {
+        $time = Carbon::now('Asia/Kolkata')->format('d-m-Y');
+
+        return static::$fileToWriteName . '_' . $this->mode . '_' . $time;
+    }
+
+    protected function generateText($data, $glue = '~', $ignoreLastNewline = false)
+    {
+        //TODO : Move it to common place
+        $txt = '';
+
+        $count = count($data);
+
+        foreach ($data as $row)
+        {
+            $txt .= implode($glue, array_values($row)) ;
+
+            $count--;
+
+           if (($ignoreLastNewline === false) or
+               (($ignoreLastNewline === true) and ($count > 0)))
+           {
+                $txt .= "\r\n";
+           }
+        }
+
+        return $txt;
     }
 }

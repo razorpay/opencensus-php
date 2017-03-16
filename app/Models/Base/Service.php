@@ -43,7 +43,7 @@ class Service
 
     /**
      * Slack Client instance
-     * @var Maknz\Slack\Facades\Slack
+     * @var Razorpay\Slack\Facades\Slack
      */
     protected $slack;
 
