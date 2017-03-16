@@ -100,6 +100,7 @@ class Entity
     const NETBANKING_ICICI      = 'netbanking_icici';
     const NETBANKING_AXIS       = 'netbanking_axis';
     const NETBANKING_AIRTEL     = 'netbanking_airtel';
+    const NETBANKING_INDUSIND   = 'netbanking_indusind';
     const WALLET_PAYZAPP        = 'wallet_payzapp';
     const WALLET_OLAMONEY       = 'wallet_olamoney';
     const WALLET_PAYUMONEY      = 'wallet_payumoney';
@@ -160,6 +161,7 @@ class Entity
         self::NETBANKING_ICICI      => \RZP\Gateway\Netbanking\Icici::class,
         self::NETBANKING_AIRTEL     => \RZP\Gateway\Netbanking\Airtel::class,
         self::NETBANKING_AXIS       => \RZP\Gateway\Netbanking\Axis::class,
+        self::NETBANKING_INDUSIND   => \RZP\Gateway\Netbanking\Indusind::class,
         self::WALLET_PAYUMONEY      => \RZP\Gateway\Wallet\Payumoney::class,
         self::PAYMENT_ANALYTICS     => \RZP\Models\Payment\Analytics::class,
         self::WALLET_AIRTELMONEY    => \RZP\Gateway\Wallet\Airtelmoney::class,
@@ -180,20 +182,21 @@ class Entity
     ];
 
     protected static $repository = [
-        self::UPI_NPCI           => \RZP\Gateway\Upi\Base::class,
-        self::NETBANKING_HDFC    => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_KOTAK   => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_ICICI   => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_AIRTEL  => \RZP\Gateway\Netbanking\Base::class,
-        self::NETBANKING_AXIS    => \RZP\Gateway\Netbanking\Base::class,
-        self::UPI_ICICI          => \RZP\Gateway\Upi\Base::class,
-        self::UPI_IDFC           => \RZP\Gateway\Upi\Base::class,
-        self::WALLET_AIRTELMONEY => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_OLAMONEY    => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYUMONEY   => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_PAYZAPP     => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_FREECHARGE  => \RZP\Gateway\Wallet\Base::class,
-        self::WALLET_JIOMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::UPI_NPCI            => \RZP\Gateway\Upi\Base::class,
+        self::NETBANKING_HDFC     => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_KOTAK    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_ICICI    => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AIRTEL   => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_AXIS     => \RZP\Gateway\Netbanking\Base::class,
+        self::NETBANKING_INDUSIND => \RZP\Gateway\Netbanking\Base::class,
+        self::UPI_ICICI           => \RZP\Gateway\Upi\Base::class,
+        self::UPI_IDFC            => \RZP\Gateway\Upi\Base::class,
+        self::WALLET_AIRTELMONEY  => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_OLAMONEY     => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYUMONEY    => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_PAYZAPP      => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_FREECHARGE   => \RZP\Gateway\Wallet\Base::class,
+        self::WALLET_JIOMONEY     => \RZP\Gateway\Wallet\Base::class,
     ];
 
     protected static $syncedInLiveAndTest = [

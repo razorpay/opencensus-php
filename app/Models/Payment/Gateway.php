@@ -14,39 +14,40 @@ use RZP\Models\Payment;
 
 class Gateway
 {
-    const AMEX               = 'amex';
-    const ATOM               = 'atom';
-    const AXIS_GENIUS        = 'axis_genius';
-    const AXIS_MIGS          = 'axis_migs';
-    const BILLDESK           = 'billdesk';
-    const CYBERSOURCE        = 'cybersource';
-    const EBS                = 'ebs';
-    const FIRST_DATA         = 'first_data';
-    const HDFC               = 'hdfc';
-    const MOBIKWIK           = 'mobikwik';
-    const NETBANKING_HDFC    = 'netbanking_hdfc';
-    const NETBANKING_KOTAK   = 'netbanking_kotak';
-    const NETBANKING_ICICI   = 'netbanking_icici';
-    const NETBANKING_AIRTEL  = 'netbanking_airtel';
-    const NETBANKING_AXIS    = 'netbanking_axis';
-    const PAYTM              = 'paytm';
-    const SHARP              = 'sharp';
-    const UPI_ICICI          = 'upi_icici';
-    const UPI_IDFC           = 'upi_idfc';
-    const WALLET_AIRTELMONEY = 'wallet_airtelmoney';
-    const WALLET_FREECHARGE  = 'wallet_freecharge';
-    const WALLET_JIOMONEY    = 'wallet_jiomoney';
-    const WALLET_OPENWALLET  = 'wallet_openwallet';
-    const WALLET_OLAMONEY    = 'wallet_olamoney';
-    const WALLET_PAYUMONEY   = 'wallet_payumoney';
-    const WALLET_PAYZAPP     = 'wallet_payzapp';
+    const AMEX                = 'amex';
+    const ATOM                = 'atom';
+    const AXIS_GENIUS         = 'axis_genius';
+    const AXIS_MIGS           = 'axis_migs';
+    const BILLDESK            = 'billdesk';
+    const CYBERSOURCE         = 'cybersource';
+    const EBS                 = 'ebs';
+    const FIRST_DATA          = 'first_data';
+    const HDFC                = 'hdfc';
+    const MOBIKWIK            = 'mobikwik';
+    const NETBANKING_HDFC     = 'netbanking_hdfc';
+    const NETBANKING_KOTAK    = 'netbanking_kotak';
+    const NETBANKING_ICICI    = 'netbanking_icici';
+    const NETBANKING_AIRTEL   = 'netbanking_airtel';
+    const NETBANKING_AXIS     = 'netbanking_axis';
+    const NETBANKING_INDUSIND = 'netbanking_indusind';
+    const PAYTM               = 'paytm';
+    const SHARP               = 'sharp';
+    const UPI_ICICI           = 'upi_icici';
+    const UPI_IDFC            = 'upi_idfc';
+    const WALLET_AIRTELMONEY  = 'wallet_airtelmoney';
+    const WALLET_FREECHARGE   = 'wallet_freecharge';
+    const WALLET_JIOMONEY     = 'wallet_jiomoney';
+    const WALLET_OPENWALLET   = 'wallet_openwallet';
+    const WALLET_OLAMONEY     = 'wallet_olamoney';
+    const WALLET_PAYUMONEY    = 'wallet_payumoney';
+    const WALLET_PAYZAPP      = 'wallet_payzapp';
 
-    const ACQUIRER_HDFC      = 'hdfc';
-    const ACQUIRER_ICIC      = 'icic';
-    const ACQUIRER_AXIS      = 'axis';
+    const ACQUIRER_HDFC       = 'hdfc';
+    const ACQUIRER_ICIC       = 'icic';
+    const ACQUIRER_AXIS       = 'axis';
 
-    const NOT_SUPPORTED      = 'not_supported';
-    const SUPPORTED          = 'supported';
+    const NOT_SUPPORTED       = 'not_supported';
+    const SUPPORTED           = 'supported';
 
     const POWER_WALLETS = array(
         Wallet::MOBIKWIK,
@@ -77,31 +78,32 @@ class Gateway
     ];
 
     public static $channels = [
-        self::AMEX               => Settlement\Channel::KOTAK,
-        self::ATOM               => Settlement\Channel::ATOM,
-        self::AXIS_GENIUS        => Settlement\Channel::KOTAK,
-        self::AXIS_MIGS          => Settlement\Channel::KOTAK,
-        self::BILLDESK           => Settlement\Channel::KOTAK,
-        self::EBS                => Settlement\Channel::KOTAK,
-        self::HDFC               => Settlement\Channel::KOTAK,
-        self::MOBIKWIK           => Settlement\Channel::KOTAK,
-        self::PAYTM              => Settlement\Channel::KOTAK,
-        self::SHARP              => Settlement\Channel::KOTAK,
-        self::NETBANKING_HDFC    => Settlement\Channel::KOTAK,
-        self::NETBANKING_KOTAK   => Settlement\Channel::KOTAK,
-        self::NETBANKING_ICICI   => Settlement\Channel::KOTAK,
-        self::NETBANKING_AIRTEL  => Settlement\Channel::KOTAK,
-        self::NETBANKING_AXIS    => Settlement\Channel::KOTAK,
-        self::WALLET_PAYZAPP     => Settlement\Channel::KOTAK,
-        self::WALLET_PAYUMONEY   => Settlement\Channel::KOTAK,
-        self::WALLET_OLAMONEY    => Settlement\Channel::KOTAK,
-        self::WALLET_FREECHARGE  => Settlement\Channel::KOTAK,
-        self::WALLET_AIRTELMONEY => Settlement\Channel::KOTAK,
-        self::WALLET_JIOMONEY    => Settlement\Channel::KOTAK,
-        self::WALLET_OPENWALLET  => Settlement\Channel::KOTAK,
-        self::FIRST_DATA         => Settlement\Channel::KOTAK,
-        self::UPI_ICICI          => Settlement\Channel::KOTAK,
-        self::CYBERSOURCE        => Settlement\Channel::KOTAK,
+        self::AMEX                => Settlement\Channel::KOTAK,
+        self::ATOM                => Settlement\Channel::ATOM,
+        self::AXIS_GENIUS         => Settlement\Channel::KOTAK,
+        self::AXIS_MIGS           => Settlement\Channel::KOTAK,
+        self::BILLDESK            => Settlement\Channel::KOTAK,
+        self::EBS                 => Settlement\Channel::KOTAK,
+        self::HDFC                => Settlement\Channel::KOTAK,
+        self::MOBIKWIK            => Settlement\Channel::KOTAK,
+        self::PAYTM               => Settlement\Channel::KOTAK,
+        self::SHARP               => Settlement\Channel::KOTAK,
+        self::NETBANKING_HDFC     => Settlement\Channel::KOTAK,
+        self::NETBANKING_KOTAK    => Settlement\Channel::KOTAK,
+        self::NETBANKING_ICICI    => Settlement\Channel::KOTAK,
+        self::NETBANKING_AIRTEL   => Settlement\Channel::KOTAK,
+        self::NETBANKING_AXIS     => Settlement\Channel::KOTAK,
+        self::NETBANKING_INDUSIND => Settlement\Channel::KOTAK,
+        self::WALLET_PAYZAPP      => Settlement\Channel::KOTAK,
+        self::WALLET_PAYUMONEY    => Settlement\Channel::KOTAK,
+        self::WALLET_OLAMONEY     => Settlement\Channel::KOTAK,
+        self::WALLET_FREECHARGE   => Settlement\Channel::KOTAK,
+        self::WALLET_AIRTELMONEY  => Settlement\Channel::KOTAK,
+        self::WALLET_JIOMONEY     => Settlement\Channel::KOTAK,
+        self::WALLET_OPENWALLET   => Settlement\Channel::KOTAK,
+        self::FIRST_DATA          => Settlement\Channel::KOTAK,
+        self::UPI_ICICI           => Settlement\Channel::KOTAK,
+        self::CYBERSOURCE         => Settlement\Channel::KOTAK,
     ];
 
     /**
@@ -131,6 +133,7 @@ class Gateway
             self::NETBANKING_KOTAK,
             self::NETBANKING_AIRTEL,
             self::NETBANKING_AXIS,
+            self::NETBANKING_INDUSIND,
         ],
 
         Method::WALLET => [
@@ -285,6 +288,7 @@ class Gateway
         self::NETBANKING_ICICI,
         self::NETBANKING_AIRTEL,
         self::NETBANKING_AXIS,
+        self::NETBANKING_INDUSIND,
         self::WALLET_PAYZAPP,
         self::FIRST_DATA,
         self::CYBERSOURCE,
@@ -381,7 +385,8 @@ class Gateway
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
         IFSC::AIRP => Gateway::NETBANKING_AIRTEL,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND);
 
     /**
      * For the banks that require a refundfile generated everyday,
@@ -393,7 +398,8 @@ class Gateway
         IFSC::ICIC => Gateway::NETBANKING_ICICI,
         IFSC::HDFC => Gateway::NETBANKING_HDFC,
         IFSC::KKBK => Gateway::NETBANKING_KOTAK,
-        IFSC::UTIB => Gateway::NETBANKING_AXIS);
+        IFSC::UTIB => Gateway::NETBANKING_AXIS,
+        IFSC::INDB => Gateway::NETBANKING_INDUSIND);
 
     /**
      * List of gateways which support netbanking, either in test or live mode.
