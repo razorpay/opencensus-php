@@ -96,17 +96,19 @@ class BasicEntityReport extends Base
             $append = true;
         }
 
-        $csvMimeType = 'text/csv';
+        $zipPath = $this->makeZipFileWithPath($fullpath);
+
+        $zipMimeType = 'application/zip';
 
         $key = 'report/' . $fileName . '.csv';
 
-        $url = $this->saveToAws($key, $fullpath, $csvMimeType);
+        $url = $this->saveToAws($key, $zipPath, $zipMimeType);
 
         $signedUrl = $this->getPreSignedUrlFromAws($key);
 
-        if (file_exists($fullpath))
+        if (file_exists($zipPath) === true)
         {
-            unlink($fullpath);
+            unlink($zipPath);
         }
 
         return ['url' => $signedUrl];
