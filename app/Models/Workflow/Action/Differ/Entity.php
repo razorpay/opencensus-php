@@ -10,11 +10,12 @@ class Entity extends Base\PublicEntity
     const ENTITY_NAME = 'entity_name';
     const ENTITY_ID   = 'entity_id';
     const ACTOR       = 'actor';
-    const HEADERS     = 'headers';
     const TYPE        = 'type';
     const URL         = 'url';
     const METHOD      = 'method';
     const PAYLOAD     = 'payload';
+    const CONTROLLER  = 'controller';
+    const ROUTE       = 'route';
     const DIFF        = 'diff';
 
     const CREATED_AT  = 'created_at';
@@ -25,12 +26,12 @@ class Entity extends Base\PublicEntity
         self::ENTITY_NAME,
         self::ENTITY_ID,
         self::ACTOR ,
-        self::HEADERS,
         self::TYPE,
         self::URL,
         self::METHOD,
         self::PAYLOAD,
-        self::DIFF,
+        self::CONTROLLER,
+        self::ROUTE,
         self::CREATED_AT
     ];
 
@@ -40,11 +41,11 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ACTOR ,
         self::TYPE,
-        self::HEADERS,
         self::URL,
-        self::DIFF,
         self::METHOD,
         self::PAYLOAD,
+        self::CONTROLLER,
+        self::ROUTE,
         self::DIFF,
         self::CREATED_AT
     ];
@@ -55,10 +56,37 @@ class Entity extends Base\PublicEntity
         self::ENTITY_ID,
         self::ACTOR ,
         self::TYPE,
-        self::HEADERS,
         self::URL,
         self::METHOD,
-        self::DIFF,
         self::PAYLOAD,
+        self::CONTROLLER,
+        self::ROUTE,
+        self::DIFF,
+        self::CREATED_AT
     ];
+
+    public function setDiff(array $diff)
+    {
+        $this->setAttribute(self::DIFF, $diff);
+    }
+
+    public function getEntityName()
+    {
+        return $this->getAttribute(self::ENTITY_NAME);
+    }
+
+    public function getEntityId()
+    {
+        return $this->getAttribute(self::ENTITY_ID);
+    }
+
+    public function getRoute()
+    {
+        return $this->getAttribute(self::ROUTE);
+    }
+
+    public function getPayload()
+    {
+        return $this->getAttribute(self::PAYLOAD);
+    }
 }

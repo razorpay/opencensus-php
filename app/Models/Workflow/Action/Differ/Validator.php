@@ -13,12 +13,12 @@ class Validator extends Base\Validator
         Entity::ENTITY_NAME => 'required|string',
         Entity::ENTITY_ID   => 'required|string',
         Entity::ACTOR       => 'required|string',
-        Entity::HEADERS     => 'required|array',
         Entity::TYPE        => 'required|string|custom',
         Entity::URL         => 'required|string',
         Entity::METHOD      => 'required|string|custom',
         Entity::PAYLOAD     => 'required|array',
-        Entity::DIFF        => 'required|array',
+        Entity::CONTROLLER  => 'required|string',
+        Entity::ROUTE       => 'required|string',
     ];
 
     protected function validateType($attribute, $type)

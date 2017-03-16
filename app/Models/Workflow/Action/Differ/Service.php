@@ -55,7 +55,9 @@ class Service extends Base\Service
 
         $function = $input['type'] .'Action';
 
-        $this->$function($action);
+        $action = $this->$function($action);
+
+        return $action->getId();
     }
 
     public function fetchDiffById(string $id)
@@ -74,6 +76,22 @@ class Service extends Base\Service
 
     protected function makerAction(Entity $action)
     {
+        $entity = $action->getEntityName();
+
+        $entityId = $action->getEntityId();
+
+        $oldE = $this->repo->$entity->findByPublicId($entityId);
+
+        $newE = clone $oldE;
+
+        $validator = EntityValidator::getValidator($action->getRoute());
+
+        $newE = $newE->edit($action->getPayload(), $validator);
+
+        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
+
+        $action->setDiff($diff);
+
         try
         {
             if ($this->config->get('database.es_workflow_action_mock') === false)
@@ -87,9 +105,11 @@ class Service extends Base\Service
         {
             $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
         }
+
+        return $action;
     }
 
-    public function createDiff(array $oldE, array $newE)
+    protected function createDiff(array $oldE, array $newE)
     {
         $diff = [];
 
@@ -126,7 +146,7 @@ class Service extends Base\Service
         return $response;
     }
 
-    protected function makeRequest($method, $url, $headers, $content)
+    public function makeRequest($method, $url, $headers, $content)
     {
         $factory = $this->app->make('httplug.message_factory.default');
 

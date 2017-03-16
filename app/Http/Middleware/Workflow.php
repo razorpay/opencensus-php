@@ -37,6 +37,8 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
+        // sd($this->router->currentRouteAction());
+
         $entity = $this->getEntityName($routeName);
 
         $entityId = $this->router->current()->getParameter('id');
@@ -56,25 +58,29 @@ class Workflow
 
         if ($entity !== null)
         {
-            $response = $this->repo->transactionDryRunOnLiveAndTest(function() use ($request, $next, $entity, $entityId)
-            {
-                $oldE = $this->repo->$entity->findByPublicId($entityId);
+            $params = $this->createDifferEntity($request, $entity, $entityId);
 
-                $response = $next($request);
+            $response = (new Differ\Service)->makeRequest('POST', 'http://localhost:8081/v1/workflows/actions', $request->header(), $params);
+            sd($response);
+            // $response = $this->repo->transactionDryRunOnLiveAndTest(function() use ($request, $next, $entity, $entityId)
+            // {
+            //     $oldE = $this->repo->$entity->findByPublicId($entityId);
 
-                $newE = $this->repo->$entity->findByPublicId($entityId);
+            //     $response = $next($request);
 
-                $diff = (new Differ\Service)->createDiff($oldE->toArray(), $newE->toArray());
+            //     $newE = $this->repo->$entity->findByPublicId($entityId);
 
-                $event = $this->createDifferEvent($request, $diff, $entity, $entityId);
+            //     $diff = (new Differ\Service)->createDiff($oldE->toArray(), $newE->toArray());
 
-                if ($response->getStatusCode() === 200)
-                {
-                    event(new DifferEvent($event));
-                }
+            //     $event = $this->createDifferEvent($request, $diff, $entity, $entityId);
 
-                return $response;
-            });
+            //     if ($response->getStatusCode() === 200)
+            //     {
+            //         event(new DifferEvent($event));
+            //     }
+
+            //     return $response;
+            // });
         }
         else
         {
@@ -96,25 +102,26 @@ class Workflow
         return $entity;
     }
 
-    private function createDifferEvent($request, $diff, $entity, $entityId)
+    private function createDifferEntity($request, $entity, $entityId)
     {
         $input = $request->input();
 
-        $differEvent = [
-            'entity_name' => $entity,
-            'entity_id'   => $entityId,
-            'actor'       => $request->header(self::USER_HEADER),
-            'headers'     => [
-                                self::AUTH_HEADER  => $request->header(self::AUTH_HEADER),
-                                self::CONTENT_TYPE => $request->header(self::CONTENT_TYPE)
-                            ],
-            'type'        => Differ\Type::MAKER,
-            'url'         => $request->getUri(),
-            'method'      => $request->getMethod(),
-            'payload'     => $input,
-            'diff'        => $diff,
+        $routeName = $this->router->currentRouteName();
+
+        $controller = $this->router->currentRouteAction();
+
+        $differEntity = [
+           Differ\Entity::ENTITY_NAME => $entity,
+           Differ\Entity::ENTITY_ID   => $entityId,
+           Differ\Entity::ACTOR       => $request->header(self::USER_HEADER),
+           Differ\Entity::TYPE        => Differ\Type::MAKER,
+           Differ\Entity::URL         => $request->getUri(),
+           Differ\Entity::METHOD      => $request->getMethod(),
+           Differ\Entity::PAYLOAD     => $input,
+           Differ\Entity::CONTROLLER  => $controller,
+           Differ\Entity::ROUTE       => $routeName,
         ];
 
-        return $differEvent;
+        return $differEntity;
     }
 }
