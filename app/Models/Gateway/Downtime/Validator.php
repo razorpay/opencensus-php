@@ -185,10 +185,53 @@ class Validator extends Base\Validator
 
         $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
-        $this->validateNetbankingIssuer($gateway, $method, $issuer);
+        switch($method)
+        {
+            case Method::NETBANKING:
 
-        $this->validateWalletIssuer($method, $issuer);
+                $this->validateNetbankingIssuer($gateway, $method, $issuer);
 
+                break;
+
+            case Method::CARD:
+
+                $this->validateCardIssuer($method, $issuer);
+
+                break;
+
+            case Method::WALLET:
+
+                $this->validateWalletIssuer($method, $issuer);
+
+                break;
+
+            default:
+                throw new Exception\BadRequestValidationFailureException(
+                    'Method ' . $method . ' is not supported');
+        }
+    }
+
+    protected function validateCardIssuer(string $method, string $issuer = null)
+    {
+        if ($method === Method::CARD)
+        {
+            if (empty($issuer) === true)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    'Issuer cannot be empty for method ' . $method);
+            }
+
+            if ((in_array($issuer, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true))
+            {
+                return;
+            }
+
+            if (IFSC::exists($issuer) === false)
+            {
+                throw new Exception\BadRequestValidationFailureException(
+                    $issuer. ' is not a valid Bank code');
+            }
+        }
     }
 
     protected function validateNetbankingIssuer(string $gateway, string $method, string $issuer = null)
