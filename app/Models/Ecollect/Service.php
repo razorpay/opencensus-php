@@ -43,7 +43,9 @@ class Service extends Base\Service
         $this->validator->validateInput('pay', $input);
 
         return [
-            'success' => true,
+            'success'        => true,
+            'message'        => null,
+            'transaction_id' => $input['transaction_id'],
         ];
     }
 

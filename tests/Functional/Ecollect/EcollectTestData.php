@@ -156,7 +156,9 @@ return [
         ],
         'response' => [
             'content' => [
-                'success' => true,
+                'success'        => true,
+                'message'        => null,
+                'transaction_id' => 'vba_5678',
             ],
         ],
     ],
