@@ -1813,3 +1813,6 @@ ALTER TABLE payouts
 
 ALTER TABLE first_data
     MODIFY COLUMN error_message VARCHAR(255);
+
+INSERT INTO permissions (id, name, category, description, created_at, updated_at) values
+    ('7TCwjvyRBgVElx', 'delete_merchant_features', 'features', 'Delete a merchant feature', UNIX_TIMESTAMP(), UNIX_TIMESTAMP());

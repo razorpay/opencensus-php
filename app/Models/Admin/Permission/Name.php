@@ -123,4 +123,5 @@ class Name
     const DELETE_PERMISSION               = 'delete_permission';
     const CREATE_PERMISSION               = 'create_permission';
     const EDIT_PERMISSION                 = 'edit_permission';
+    const DELETE_MERCHANT_FEATURES        = 'delete_merchant_features';
 }

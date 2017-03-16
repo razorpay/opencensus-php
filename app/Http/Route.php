@@ -734,7 +734,6 @@ final class Route
         'billdesk_reconcile_cancelled',
         'feature_get_multiple',
         'feature_add',
-        'feature_delete',
         'feature_bulk_assign',
         'feature_bulk_remove',
         'upi_fill_bank',
@@ -867,6 +866,7 @@ final class Route
         'schedule_delete',
         'schedule_update',
         'schedule_assign',
+        'feature_delete',
     ];
 
     public static $adminPermission = [
@@ -904,6 +904,7 @@ final class Route
         'permission_delete'              => [Permission::DELETE_PERMISSION],
         'auditlog_search'                => [Permission::VIEW_AUDITLOG],
         'admin_logout'                   => ['*'],
+        'feature_delete'                 => [Permission::DELETE_MERCHANT_FEATURES],
     ];
 
     public static $direct = array(

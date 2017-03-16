@@ -289,6 +289,10 @@ class BasicAuth
             return $this->invalidApiKey();
         }
 
+        $this->checkForDashboardMerchantHeader();
+
+        $this->setDashboardHeaders();
+
         $this->setAdminTrue();
 
         $token = $this->getSecret();
