@@ -21,22 +21,21 @@ class EcollectTest extends TestCase
 
     public function testEcollectValidate()
     {
+        $this->mockRedis();
+
         $this->startTest();
     }
 
     public function testEcollectValidateRazorp()
     {
+        $this->mockRedis();
+
         $this->startTest();
     }
 
     public function testEcollectValidateDuplicateUtr()
     {
-        Redis::shouldReceive('get')
-            ->once()
-            ->andReturnUsing(function ()
-            {
-                return 'dummy_duplicate_data';
-            });
+        $this->mockRedisGet('dummy_duplicate_data');
 
         $this->startTest();
     }
@@ -59,5 +58,27 @@ class EcollectTest extends TestCase
     public function testEcollectPayFailure()
     {
         $this->startTest();
+    }
+
+    protected function mockRedis()
+    {
+        $this->mockRedisSet();
+
+        $this->mockRedisGet();
+    }
+
+    protected function mockRedisSet()
+    {
+        Redis::shouldReceive('set')
+            ->once();
+    }
+
+    protected function mockRedisGet($data = null)
+    {
+        Redis::shouldReceive('get')
+            ->once()
+            ->andReturnUsing(function () use ($data) {
+                return $data;
+            });
     }
 }
