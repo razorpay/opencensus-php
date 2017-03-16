@@ -173,15 +173,14 @@ class StatusCakeProcessor implements ProcessorInterface
         ];
 
         // Lower case all the values of option
-        array_walk($options, function ($value)
+        foreach ($options as $key => $value)
         {
-                return strtolower($value);
-        });
+            $options[$key] = strtolower($value);
+        }
 
         switch ($options[Entity::METHOD])
         {
             case Method::NETBANKING:
-
                 if ($options['issuer'] === null)
                 {
                     $this->trace->warning(
@@ -193,11 +192,6 @@ class StatusCakeProcessor implements ProcessorInterface
                         'StatusCake invalid Netbanking data',
                         'tags',
                         $tags);
-                }
-
-                if ($options['gateway'] === null)
-                {
-                    $options['gateway'] = $this->getNetbankingGateway($options['issuer']);
                 }
 
                 break;
@@ -239,7 +233,6 @@ class StatusCakeProcessor implements ProcessorInterface
                 break;
 
             default:
-
                 $this->trace->warning(
                     TraceCode::GATEWAY_DOWNTIME_STATUSCAKE_INVALID_DATA,
                     ['data' => $input]
