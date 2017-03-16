@@ -4,6 +4,7 @@ namespace RZP\Http\Middleware;
 
 use Request;
 use Closure;
+use RZP\Exception;
 use RZP\Http\Route;
 use RZP\Trace\TraceCode;
 use RZP\Events\DifferEvent;
@@ -37,8 +38,6 @@ class Workflow
     {
         $routeName = $this->router->currentRouteName();
 
-        // sd($this->router->currentRouteAction());
-
         $entity = $this->getEntityName($routeName);
 
         $entityId = $this->router->current()->getParameter('id');
@@ -60,27 +59,9 @@ class Workflow
         {
             $params = $this->createDifferEntity($request, $entity, $entityId);
 
-            $response = (new Differ\Service)->makeRequest('POST', 'http://localhost:8081/v1/workflows/actions', $request->header(), $params);
-            sd($response);
-            // $response = $this->repo->transactionDryRunOnLiveAndTest(function() use ($request, $next, $entity, $entityId)
-            // {
-            //     $oldE = $this->repo->$entity->findByPublicId($entityId);
+            $response = (new Differ\Service)->makeRequest('POST', url('/v1/workflows/actions'), $request->header(), $params);
 
-            //     $response = $next($request);
-
-            //     $newE = $this->repo->$entity->findByPublicId($entityId);
-
-            //     $diff = (new Differ\Service)->createDiff($oldE->toArray(), $newE->toArray());
-
-            //     $event = $this->createDifferEvent($request, $diff, $entity, $entityId);
-
-            //     if ($response->getStatusCode() === 200)
-            //     {
-            //         event(new DifferEvent($event));
-            //     }
-
-            //     return $response;
-            // });
+            return $response->getBody()->getContents();
         }
         else
         {

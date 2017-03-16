@@ -9,6 +9,7 @@ use RZP\Models\Base;
 use RZP\Error\ErrorCode;
 use RZP\Trace\TraceCode;
 use RZP\Models\Base\EsDao;
+use RZP\Events\DifferEvent;
 use Http\Client\Common\PluginClient;
 use Http\Discovery\HttpClientDiscovery;
 use Http\Client\Exception\HttpException;
@@ -57,7 +58,7 @@ class Service extends Base\Service
 
         $action = $this->$function($action);
 
-        return $action->getId();
+        return [ 'action_id' => $action->getId()];
     }
 
     public function fetchDiffById(string $id)
@@ -92,21 +93,24 @@ class Service extends Base\Service
 
         $action->setDiff($diff);
 
+        event(new DifferEvent($action->toArray()));
+
+        return $action;
+    }
+
+    public function saveToES(array $action)
+    {
         try
         {
             if ($this->config->get('database.es_workflow_action_mock') === false)
             {
-                $this->esDao->storeAdminEvent(
-                    strtolower($this->baseIndex), self::ES_TYPE, $action->toArray()
-                );
+                $this->esDao->storeAdminEvent(strtolower($this->baseIndex), self::ES_TYPE, $action);
             }
         }
         catch(\Exception $e)
         {
             $this->trace->warning(TraceCode::HEIMDALL_ACTION_LOG_FAIL, ['msg' => $e]);
         }
-
-        return $action;
     }
 
     protected function createDiff(array $oldE, array $newE)
@@ -152,54 +156,23 @@ class Service extends Base\Service
 
         $req = $factory->createRequest($method, $url, $headers, json_encode($content));
 
-        $response = false;
-
+        $response = null;
         try
         {
             $response = $this->createHttpClient()->sendRequest($req);
         }
         catch (ClientErrorException $e)
         {
-            $errorMessage = 'Client error: '. $e->getResponse()->getReasonPhrase();
-
-            $this->trace->info(
-                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
-                [
-                    'content'   => $content,
-                    'url'       => $url,
-                    'exception' => $errorMessage,
-                ]);
+            $response = $e->getResponse();
         }
         catch (ServerErrorException $e)
         {
-            $errorMessage = 'Server error: '. $e->getResponse()->getReasonPhrase();
-
-            $this->trace->info(
-                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
-                [
-                    'content'   => $content,
-                    'url'       => $url,
-                    'exception' => $errorMessage,
-                ]);
+            $response = $e->getResponse();
         }
         catch (HttpException $e)
         {
-            $errorMessage = 'Some error occurred: '. $e->getResponse()->getReasonPhrase();
-
-            $this->trace->info(
-                TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
-                [
-                    'content'   => $content,
-                    'url'       => $url,
-                    'exception' => $errorMessage,
-                ]);
+            $response = $e->getResponse();
         }
-
-        $this->trace->info(
-            TraceCode::HEIMDALL_REQUEST_FOWARD_FAIL,
-            [
-                'response'   => $response
-            ]);
 
         return $response;
     }

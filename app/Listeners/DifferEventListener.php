@@ -18,6 +18,6 @@ class DifferEventListener
      */
     public function handle(DifferEvent $event)
     {
-        (new Differ\Service)->create($event->event);
+        (new Differ\Service)->saveToES($event->event);
     }
 }
