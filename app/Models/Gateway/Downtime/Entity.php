@@ -263,7 +263,7 @@ class Entity extends Base\PublicEntity
             }
         }
 
-        $this->attributes[Entity::ISSUER] = $issuer;
+        $this->attributes[Entity::ISSUER] = strtoupper($issuer);
     }
 
     protected function isUnknownAllOrNull($value)
@@ -336,14 +336,14 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::GATEWAY);
     }
 
-    public function getPublic()
-    {
-        return $this->getAttribute(self::PUBLIC);
-    }
-
     public function setEnd()
     {
         $this->setAttribute(self::END, time());
+    }
+
+    public function scopePublic($query)
+    {
+        return $query->where(self::PUBLIC, '=', 0);
     }
 
     public function toArrayCheckout()

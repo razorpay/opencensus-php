@@ -2,7 +2,7 @@
 
 namespace RZP\Models\Gateway\Downtime\Webhook;
 
-interface AbstractProcessorInterface
+interface ProcessorInterface
 {
     public function process(array $input);
 }

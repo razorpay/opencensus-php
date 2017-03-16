@@ -196,6 +196,8 @@ class Validator extends Base\Validator
         // we need the name of the bank for netbanking and it cannot be empty
         if ($method === Method::NETBANKING)
         {
+            $issuer = strtoupper($issuer);
+
             if (empty($issuer) === true)
             {
                 throw new Exception\BadRequestValidationFailureException(
@@ -217,7 +219,7 @@ class Validator extends Base\Validator
                     $issuer .' is not a supported Bank code for gateway ' . $gateway);
             }
 
-            if (IFSC::exists(strtoupper($issuer)) === false)
+            if (IFSC::exists($issuer) === false)
             {
                 throw new Exception\BadRequestValidationFailureException(
                     $issuer. ' is not a valid Bank code');
