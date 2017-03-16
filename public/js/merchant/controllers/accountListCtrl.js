@@ -51,7 +51,29 @@ app.controller('AccountListCtrl', [
 
       // regenerate account list when this modal is closed.
       modalInstance.result.finally($scope.regenerate, $.noop);
-    }
+    };
+
+    $scope.exportAccountsCSV = function () {
+        var data = {'year': '2017', 'month': '1'};
+        var request = $http({
+            method: 'GET',
+            url: '/' + $scope.mode + '/reports/account',
+            params: data
+         });
+
+        request.success(function (data) {
+          if (data && data.success === true) {
+             $scope.alerts.addAlert('success', 'Your file will download shortly', true);
+             location.href = data.data.url;
+          }
+          else {
+            $scope.alerts.addAlert('danger', 'An error occurred while exporting the data');
+          }
+        }).error(function (data) {
+          $scope.alerts.resetAlerts();
+          $scope.alerts.addAlert('danger', 'An error occurred while exporting the data');
+        });
+    };
   }
 ])
 
