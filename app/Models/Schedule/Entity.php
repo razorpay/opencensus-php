@@ -65,20 +65,11 @@ class Entity extends Base\PublicEntity
 
     public function updateNextRun()
     {
-        $lastRun = Carbon::now('Asia/Kolkata');
+        $lastRun = Carbon::createFromTimestamp($this->getNextRun(), 'Asia/Kolkata');
 
-        $stepType = Steps::STEP_LIST[$this->getPeriod()];
+        $currentTime = Carbon::now('Asia/Kolkata');
 
-        $step = 'add' . $stepType;
-
-        $nextRun = $lastRun->$step();
-
-        if($this->getPeriod() !== Period::HOURLY)
-        {
-            $nextRun->hour($this->getHour());
-        }
-
-        $nextRun->minute(0)->second(0);
+        $nextRun = Library::computeFutureRun($this, $currentTime);
 
         $this->setNextRun($nextRun->timestamp);
     }

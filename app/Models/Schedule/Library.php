@@ -22,22 +22,20 @@ class Library
         // schedule, then we calculate the *next* next run, and set that.
         if ($settledAt > $nextRun)
         {
-            $nextRun = self::computeFutureRun($schedule, $settledAt, $nextRun);
+            $nextRun = self::computeFutureRun($schedule, $settledAt);
         }
 
         return $nextRun->getTimestamp();
     }
 
-    // ----------------------- Protected methods -----------------------
-
-    protected static function computeFutureRun($schedule, $settledAt, $nextRun)
+    public static function computeFutureRun($schedule, $referenceTime)
     {
         if ($schedule->getAnchor() !== null)
         {
             // Anchored schedules are those that rely on a certain attribute
             // of its target days. For example, settlements that happen every
             // Thursday, or the last Friday of every month.
-            $futureRun = self::resolveAnchored($settledAt, $schedule);
+            $futureRun = self::resolveAnchored($referenceTime, $schedule);
         }
         else
         {
@@ -45,46 +43,51 @@ class Library
             // the time between payment and settlement, or after a fixed period
             // of time. For example, settlements that happen N days after their
             // corresponding payments, or settlements that happen every N hours.
-            $futureRun = self::resolveUnAnchored($settledAt, $schedule, $nextRun);
+            $futureRun = self::resolveUnAnchored($referenceTime, $schedule);
         }
+
+        $futureRun->hour($schedule->getHour());
 
         return $futureRun;
     }
 
-    protected static function resolveAnchored($settledAt, $schedule)
+    protected static function resolveAnchored($refTime, $schedule)
     {
         // Since hourly schedules can't be anchored, time no longer matters.
-        $settledAt = $settledAt->addDay()->hour(0)->minute(0)->second(0);
+        $nextRun = $refTime->addDay()->hour(0)->minute(0)->second(0);
 
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
         // Increment by step size until condition is met and we arrive
         // at an anchor date.
-        while (self::checkAnchor($settledAt, $schedule) === false)
+        while (self::checkAnchor($nextRun, $schedule) === false)
         {
-            $settledAt->$step();
+            $nextRun->$step();
         }
 
         // If anchor date is a holiday, don't wait till next anchor
         // date. Settlement on the next working day.
-        if (Holidays::isWorkingDay($settledAt) === false)
+        if (Holidays::isWorkingDay($nextRun) === false)
         {
-            $settledAt = Holidays::getNextWorkingDay($settledAt);
+            $nextRun = Holidays::getNextWorkingDay($nextRun);
         }
 
-        return $settledAt;
+        return $nextRun;
     }
 
-    protected static function resolveUnAnchored($settledAt, $schedule, $nextRun)
+    protected static function resolveUnAnchored($refTime, $schedule)
     {
+        // Since hourly schedules can't be anchored, time no longer matters.
+        $nextRun = $refTime->hour(0)->minute(0)->second(0);
+
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
 
         $interval = $schedule->getInterval();
 
         // Increment by interval until we cross minimum delay time.
-        while ($settledAt > $nextRun)
+        while ($refTime > $nextRun)
         {
             $nextRun->$step($interval);
         }
