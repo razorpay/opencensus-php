@@ -12,6 +12,33 @@ class Core extends Base\Core
 {
     public function create(array $input)
     {
+        $action = new Entity;
+
+        $action->generateId();
+
+        $action->build($input);
+
+        $this->repo->transactionOnLiveAndTest(function() use($action) {
+
+            $this->repo->saveOrFail($action);
+
+            $this->createInitialStateForAction($action);
+        });
+
+        return $action;
+    }
+
+    protected function createInitialStateForAction(Entity $action)
+    {
+        $input = [
+            State\Entity::ACTION_ID  => $action->getId(),
+            State\Entity::ADMIN_ID   => $action->getAdminId(),
+            State\Entity::NAME       => State\Entity::OPEN,
+        ];
+
+        $actionState = (new State\Core)->create($input);
+
+        return $actionState;
     }
 
     public function checkAndMarkActionApproved(Entity $action)

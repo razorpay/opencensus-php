@@ -54,4 +54,9 @@ class Entity extends Base\PublicEntity
     {
         return $this->belongsTo('RZP\Models\Admin\Org\Entity');
     }
+
+    public function getOrgId()
+    {
+        return $this->getAttribute(self::ORG_ID);
+    }
 }
