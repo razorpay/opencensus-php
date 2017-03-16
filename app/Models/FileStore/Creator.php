@@ -333,6 +333,24 @@ class Creator extends Base\Core
     }
 
     /**
+     * Returns Signed Url of File Entity
+     *
+     * @return array
+     */
+    public function getSignedUrl()
+    {
+        $bucketConfig = $this->storageHandler->getBucketConfig(
+            $this->file->getType(),
+            $this->env);
+
+        $url = $this->storageHandler($bucketConfig, $this->file->getLocation());
+
+        return [
+            $this->file->getId() => $url
+        ];
+    }
+
+    /**
      * Validates the Content before saving
      *
      * @throws Exception\LogicException
