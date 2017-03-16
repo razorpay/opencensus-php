@@ -941,7 +941,7 @@ class Entity extends Base\PublicEntity
 
         $data = array_only($data, $reportFields);
 
-        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::CREATED_AT);
+        $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
 
         return $data;
     }

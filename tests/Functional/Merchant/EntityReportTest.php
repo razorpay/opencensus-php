@@ -3,6 +3,9 @@
 namespace RZP\Tests\Functional\Merchant;
 
 use Carbon\Carbon;
+use RZP\Error\ErrorCode;
+use RZP\Error\PublicErrorCode;
+use RZP\Error\PublicErrorDescription;
 use RZP\Tests\Functional\TestCase;
 use RZP\Tests\Functional\Helpers\Payment\PaymentTrait;
 
@@ -86,6 +89,40 @@ class EntityReportTest extends TestCase
 
         $this->assertNotNull($response['url']);
     }
+
+    public function testLinkedAccountExportNonMarketplace()
+    {
+        $params = [
+            'year'  => '2017',
+            'month' => '1',
+        ];
+
+        $request = [
+            'request' => [
+                'url' => '/reports/account/file',
+                'method' => 'get',
+                'content' => $params
+            ],
+            'response'  => [
+                'content' => [
+                    'error' => [
+                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
+                        'description' => 'Exporting this data is not allowed for the merchant'
+                    ],
+                ],
+                'status_code' => 400,
+            ],
+            'exception' => [
+                'class'               => 'RZP\Exception\BadRequestValidationFailureException',
+                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
+            ],
+        ];
+
+        $this->ba->proxyAuth();
+
+        $this->runRequestResponseFlow($request);
+    }
+
 
     /**
      * Data for this test case needs to imported separately
