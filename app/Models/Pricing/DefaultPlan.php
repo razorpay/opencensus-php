@@ -88,6 +88,19 @@ class DefaultPlan
                     ),
 
                 array(
+                    'id'             => '7TGltRgCAKMM51',
+                    'plan_id'        => '1AXludj60w4pSp',
+                    'plan_name'      => 'Full Price',
+                    'feature'        => 'payment',
+                    'payment_method' => 'ecollect',
+                    'percent_rate'   => '0',
+                    'fixed_rate'     => '0',
+                    'expired_at'     => null,
+                    'created_at'     => time(),
+                    'updated_at'     => time()
+                    ),
+
+                array(
                     'id'             => '1L8dUj9MzP3Bj3',
                     'plan_id'        => '1In3Yh5Mluj605',
                     'plan_name'      => 'Promotional Price',

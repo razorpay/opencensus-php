@@ -12,7 +12,7 @@ class Method
     const EMI           = 'emi';
     const UPI           = 'upi';
     const TRANSFER      = 'transfer';
-    const BANK_TRANSFER = 'bank_transfer';
+    const ECOLLECT      = 'ecollect';
 
     protected static $methods = [
         self::CARD       => 'Card',
@@ -21,7 +21,7 @@ class Method
         self::UPI        => 'UPI',
         self::EMI        => 'EMI',
         self::TRANSFER   => 'Marketplace Transfer',
-        self::BANK_TRANSFER => 'Bank Transfer',
+        self::ECOLLECT   => 'E-Collect',
     ];
 
     protected static $asynchronous = [

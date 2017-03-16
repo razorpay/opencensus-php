@@ -407,6 +407,7 @@ class DatabaseSeeder extends Seeder
                     'card'          => '1',
                     'emi'           => '1',
                     'upi'           => '1',
+                    'ecollect'      => '1',
                     'created_at'    =>  $currentTime,
                     'updated_at'    =>  $currentTime
                 )

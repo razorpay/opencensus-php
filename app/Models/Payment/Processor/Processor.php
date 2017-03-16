@@ -170,6 +170,25 @@ class Processor
         return $this->authorize($payment, $input);
     }
 
+    public function processEcollect(array $input)
+    {
+        $this->repo->transaction(function() use ($input) {
+            $this->createPaymentEntity($input);
+        });
+
+        $this->verifyMerchantIsLiveForLiveRequest();
+
+        $this->verifyPaymentMethodEnabled($this->payment);
+
+        $this->verifyFeesLessThanAmount($this->payment);
+
+        $this->processCurrencyConversions($this->payment);
+
+        $this->repo->saveOrFail($this->payment);
+
+        return $this->payment;
+    }
+
     public function processAndReturnFees(array & $input)
     {
         if (isset($input['method']) === false)

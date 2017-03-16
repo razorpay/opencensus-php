@@ -36,6 +36,7 @@ class Entity
     const FEATURE               = 'feature';
     const WEBHOOK               = 'webhook';
     const INVOICE               = 'invoice';
+    const ECOLLECT              = 'ecollect';
     const SCHEDULE              = 'schedule';
     const EMI_PLAN              = 'emi_plan';
     const MERCHANT              = 'merchant';

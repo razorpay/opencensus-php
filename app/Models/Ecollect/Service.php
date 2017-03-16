@@ -5,35 +5,42 @@ namespace RZP\Models\Ecollect;
 use RZP\Models\Base;
 use RZP\Constants\Mode;
 use RZP\Models\Payment;
+USE RZP\Models\Currency;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
 class Service extends Base\Service
 {
+    protected $core;
+
+    protected $cache;
+
+    protected $bankAccount;
+
     public function __construct()
     {
         parent::__construct();
 
         $this->validator = new Validator;
 
+        $this->core = new Core;
+
         $this->cache = $this->app['redis'];
     }
 
-    public function validate(array $input)
+    public function validate(array $input): array
     {
         $this->trace->info(
             TraceCode::ECOLLECT_VALIDATION_REQUEST,
             $input
         );
 
-        $this->validator->validateInput('validate', $input);
-
         $data = $this->validateReceiver($input);
 
         return $data;
     }
 
-    public function pay(array $input)
+    public function pay(array $input): array
     {
         $this->app['trace']->info(
             TraceCode::ECOLLECT_PAY_REQUEST,
@@ -93,18 +100,74 @@ class Service extends Base\Service
 
     protected function validateLiveMode($input)
     {
-        $paymentInput = $this->ecollectPaymentArray($input);
+        $this->validator->validateInput('validate', $input);
 
-        // TODO: Id the merchant here using the input payee_account
-        $merchant = $this->repo->merchant->find('10000000000000');
+        $ecollect = $this->core->create($input);
 
-        $paymentProcessor = new Payment\Processor\Processor($merchant);
+        $uniqueUtr = $this->validateUniqueUtr($ecollect);
 
-        $paymentProcessor->process($paymentInput);
+        // TODO: Check sinks to see if a payment is expected
+        $expected = $this->findBankAccount();
+
+        if (($expected === true) and
+            ($uniqueUtr === true))
+        {
+            $paymentInput = $this->ecollectPaymentArray($input);
+
+            // TODO: Id the merchant here using the input payee_account
+            $merchant = $this->repo->merchant->find('10000000000000');
+
+            $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+            $payment = $paymentProcessor->processEcollect($paymentInput);
+
+            $ecollect->payment()->associate($payment);
+
+            $data = [
+                'valid'          => true,
+                'message'        => null,
+            ];
+        }
+        else
+        {
+            $data['valid'] = false;
+
+            if ($expected === false)
+            {
+                $data['message'] = 'Invalid account number';
+            }
+            else if ($uniqueUtr === false)
+            {
+                $data['message'] = 'Duplicate UTR received';
+            }
+        }
+
+        $data['transaction_id'] = $input['transaction_id'];
+
+        $this->repo->saveOrFail($ecollect);
+
+        return $data;
     }
 
-    protected function validateTestMode($input)
+    protected function validateUniqueUtr(Entity $ecollect)
     {
+        $transactionId = $ecollect->getTransactionId();
+
+        $duplicateEcollect = $this->repo->ecollect
+                                  ->findByTransactionId($transactionId);
+
+        if ($duplicateEcollect === null)
+        {
+            return true;
+        }
+
+        return false;
+    }
+
+    protected function validateTestMode(array $input)
+    {
+        $this->validator->validateInput('validate', $input);
+
         $data = [
             'valid'          => true,
             'message'        => null,
@@ -126,13 +189,16 @@ class Service extends Base\Service
         return $data;
     }
 
+    protected function findBankAccount()
+    {
+        return true;
+    }
+
     protected function ecollectPaymentArray(array $input)
     {
         $paymentArray = $this->defaultEcollectPaymentArray();
 
-        $paymentArray['amount'] = $input['amount'];
-
-        $paymentArray['bank_transfer'] = $input;
+        $paymentArray[Payment\Entity::AMOUNT] = $input['amount'];
 
         return $paymentArray;
     }
@@ -140,10 +206,10 @@ class Service extends Base\Service
     protected function defaultEcollectPaymentArray()
     {
         return [
-            'contact'  => '9999009999',
-            'currency' => 'INR',
-            'email'    => 'ecollect@razorpay.com',
-            'method'   => 'bank_transfer',
+            Payment\Entity::CONTACT  => Constants::CONTACT,
+            Payment\Entity::EMAIL    => Constants::EMAIL,
+            Payment\Entity::CURRENCY => Currency\Currency::INR,
+            Payment\Entity::METHOD   => Payment\Method::ECOLLECT,
         ];
     }
 }

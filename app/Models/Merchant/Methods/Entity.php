@@ -26,7 +26,7 @@ class Entity extends Base\PublicEntity
     const DEBIT_CARD        = 'debit_card';
     const CREDIT_CARD       = 'credit_card';
     const UPI               = 'upi';
-    const BANK_TRANSFER     = 'bank_transfer';
+    const ECOLLECT          = 'ecollect';
 
     const METHODS           = 'methods';
 
@@ -56,7 +56,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-        self::BANK_TRANSFER,
+        self::ECOLLECT,
     );
 
     protected $visible = array(
@@ -78,7 +78,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING,
         self::DEBIT_CARD,
         self::CREDIT_CARD,
-        self::BANK_TRANSFER,
+        self::ECOLLECT,
     );
 
     protected $public = array(
@@ -102,7 +102,7 @@ class Entity extends Base\PublicEntity
         self::NETBANKING    => true,
         self::CREDIT_CARD   => true,
         self::DEBIT_CARD    => true,
-        self::BANK_TRANSFER => false,
+        self::ECOLLECT      => false,
     );
 
     protected $wallets = array(
@@ -122,7 +122,7 @@ class Entity extends Base\PublicEntity
         self::EMI,
         self::AMEX,
         self::UPI,
-        self::BANK_TRANSFER,
+        self::ECOLLECT,
         self::NETBANKING,
         self::PAYTM,
         self::MOBIKWIK,
@@ -150,7 +150,7 @@ class Entity extends Base\PublicEntity
         self::OPENWALLET    => 'bool',
         self::EMI           => 'bool',
         self::UPI           => 'bool',
-        self::BANK_TRANSFER => 'bool',
+        self::ECOLLECT      => 'bool',
     ];
 
     public function setMethods(array $input = array())
@@ -189,9 +189,9 @@ class Entity extends Base\PublicEntity
         return $this->getAttribute(self::UPI);
     }
 
-    public function isBankTransferEnabled()
+    public function isEcollectEnabled()
     {
-        return $this->getAttribute(self::BANK_TRANSFER);
+        return $this->getAttribute(self::ECOLLECT);
     }
 
     public function isWalletEnabled($wallet = null)
