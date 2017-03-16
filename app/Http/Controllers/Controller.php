@@ -2,6 +2,8 @@
 
 namespace RZP\Http\Controllers;
 
+use RZP\Constants\Entity as E;
+
 use Illuminate\Foundation\Bus\DispatchesJobs;
 use Illuminate\Routing\Controller as BaseController;
 use Illuminate\Foundation\Validation\ValidatesRequests;
@@ -17,6 +19,8 @@ abstract class Controller extends BaseController
     protected $trace;
     protected $repo;
     protected $route;
+
+    protected $service;
 
     public function __construct()
     {
@@ -66,5 +70,19 @@ abstract class Controller extends BaseController
         $data['font'] = $cdnUrlMap['production'].$font;
 
         return $data;
+    }
+
+    protected function service($service = null)
+    {
+        if ($service !== null)
+        {
+            $ns = E::getEntityNamespace($service);
+            $class = $ns . '\\' . 'Service';
+            return new $class;
+        }
+
+        $class = $this->service;
+
+        return new $class;
     }
 }
