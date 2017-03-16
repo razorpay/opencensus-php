@@ -131,6 +131,8 @@ class GenericController extends Controller
             $keys = array_keys($urlParams);
             $vals = array_values($urlParams);
 
+            $vals = array_map('basename', $vals);
+
             $route = str_replace($keys, $vals, $route);
         }
 
