@@ -15,7 +15,7 @@ class AdminAccess
 {
     const WILDCARD_PERMISSION = '*';
 
-    const ORG_HEADER_KEY = 'X-Heimdall-Org';
+    const ORG_HEADER_KEY = 'X-Org-Id';
 
     protected $app;
 
