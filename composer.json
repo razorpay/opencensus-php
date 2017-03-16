@@ -4,10 +4,9 @@
     "keywords": ["api", "razorpay"],
     "require": {
         "rmccue/requests": ">=1.0",
-        "laravel/framework": "5.2.*",
+        "laravel/framework": "5.4.*",
         "razorpay/razorpay": "dev-master",
         "razorpay/spine": "dev-master",
-        "laravelcollective/bus": "^5.2",
         "maatwebsite/excel": "~2.1.0",
         "mailgun/mailgun-php": "~2.0",
         "aws/aws-sdk-php-laravel": "3.1.0",
@@ -51,8 +50,8 @@
         "laracasts/testdummy": "2.*",
         "mockery/mockery": "*",
         "codacy/coverage": "dev-master",
-        "tijsverkoyen/css-to-inline-styles": "^1.5",
-        "orchestra/testbench": "3.2.*",
+        "tijsverkoyen/css-to-inline-styles": "2.*",
+        "orchestra/testbench": "3.*",
         "php-http/mock-client": "^0.3.3"
     },
     "autoload": {
