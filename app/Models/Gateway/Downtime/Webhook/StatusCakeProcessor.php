@@ -166,10 +166,10 @@ class StatusCakeProcessor implements ProcessorInterface
 
         $options = [
             Entity::METHOD    => $tags[Entity::METHOD] ?? null,
-            Entity::GATEWAY   => $tags[Entity::GATEWAY] ?? null,
-            Entity::ISSUER    => $tags[Entity::ISSUER] ?? null,
-            Entity::NETWORK   => $tags[Entity::NETWORK] ?? null,
-            Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? null,
+            Entity::GATEWAY   => $tags[Entity::GATEWAY] ?? Entity::ALL,
+            Entity::ISSUER    => $tags[Entity::ISSUER] ?? Entity::UNKNOWN,
+            Entity::NETWORK   => $tags[Entity::NETWORK] ?? Entity::UNKNOWN,
+            Entity::CARD_TYPE => $tags[Entity::CARD_TYPE] ?? Entity::UNKNOWN,
         ];
 
         // Lower case all the values of option

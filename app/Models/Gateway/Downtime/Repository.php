@@ -15,7 +15,8 @@ class Repository extends Base\Repository
         Entity::BEGIN       => 'sometimes|integer',
         Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
-        Entity::SOURCE      => 'sometimes|string|max:30'
+        Entity::SOURCE      => 'sometimes|string|max:30',
+        Entity::PUBLIC      => 'sometimes|bool',
     );
 
     // These are admin allowed params to search on.
@@ -26,7 +27,8 @@ class Repository extends Base\Repository
         Entity::BEGIN       => 'sometimes|integer',
         Entity::END         => 'sometimes|integer',
         Entity::PARTIAL     => 'sometimes|bool',
-        Entity::SOURCE      => 'sometimes|string|max:30'
+        Entity::SOURCE      => 'sometimes|string|max:30',
+        Entity::PUBLIC      => 'sometimes|bool',
     );
 
     const KEY_OPERATOR_MAP = [
