@@ -91,7 +91,7 @@ class AdminAccess
         }
 
         // Fetch public org Id from uri
-        $orgId = $this->router->current()->getParameter('orgId');
+        $orgId = $this->router->current()->parameter('orgId');
 
         if ($orgId === null)
         {
