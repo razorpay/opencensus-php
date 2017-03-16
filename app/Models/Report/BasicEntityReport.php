@@ -3,13 +3,15 @@
 namespace RZP\Models\Report;
 
 use Carbon\Carbon;
+use Symfony\Component\HttpFoundation\File\UploadedFile;
 
+use RZP\Exception;
+use RZP\Trace\TraceCode;
+use RZP\Models\FileStore;
 use RZP\Base\JitValidator;
 use RZP\Base\RuntimeManager;
 use RZP\Constants\Entity as E;
-use RZP\Exception;
 use RZP\Models\FundTransfer\Kotak\FileHandlerTrait;
-use RZP\Trace\TraceCode;
 
 class BasicEntityReport extends Base
 {
@@ -96,19 +98,11 @@ class BasicEntityReport extends Base
             $append = true;
         }
 
-        $zipPath = $this->makeZipFileWithPath($fullpath);
+        $signedUrl = $this->createFileAndSave($fullpath, $fileName);
 
-        $zipMimeType = 'application/zip';
-
-        $key = 'report/' . $fileName . '.csv';
-
-        $url = $this->saveToAws($key, $zipPath, $zipMimeType);
-
-        $signedUrl = $this->getPreSignedUrlFromAws($key);
-
-        if (file_exists($zipPath) === true)
+        if (file_exists($fullpath) === true)
         {
-            unlink($zipPath);
+            unlink($fullpath);
         }
 
         return ['url' => $signedUrl];
@@ -231,5 +225,24 @@ class BasicEntityReport extends Base
     {
         RuntimeManager::setMemoryLimit('1024M');
         RuntimeManager::setTimeLimit(501);
+    }
+
+    protected function createFileAndSave($filePath, $fileName)
+    {
+        $entity = E::getEntityObject($this->entity);
+
+        $file = new UploadedFile($filePath, $fileName);
+
+        $creator = new FileStore\Creator;
+
+        $s3FileUrl = $creator->extension(FileStore\Format::ZIP)
+                            ->localFile($file)
+                            ->name($fileName)
+                            ->store(FileStore\Store::S3)
+                            ->type(FileStore\Type::MERCHANT_REPORT)
+                            ->save()
+                            ->getSignedUrl();
+
+        return $s3FileUrl;
     }
 }

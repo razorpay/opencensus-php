@@ -600,18 +600,6 @@ trait FileHandlerTrait
         return $zipPath;
     }
 
-    /**
-     * Makes zip file of a given file with path
-     */
-    protected function makeZipFileWithPath($filePath, $password = null)
-    {
-        $zipPath = $filePath . '.zip';
-
-        $this->addFileToZip($filePath, $zipPath, $password);
-
-        return $zipPath;
-    }
-
     private function addFileToZip($filePath, $zipPath, $password)
     {
         $zipCommand = $this->_zipCommand;

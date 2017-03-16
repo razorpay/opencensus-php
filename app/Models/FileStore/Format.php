@@ -41,8 +41,9 @@ class Format
         self::PNG   => ['image/png'],
         self::TXT   => ['text/plain'],
         self::XLSX  => ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
-        self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel', 'application/vnd.ms-office'],
-        self::ZIP   => ['application/zip'],
+        self::XLS   => ['application/excel', 'application/vnd.ms-excel', 'application/msexcel',
+                        'application/vnd.ms-office'],
+        self::ZIP   => ['application/zip', 'text/plain'],
     ];
 
     const VALID_LOCAL_EXTENSIONS = [

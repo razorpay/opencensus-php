@@ -72,6 +72,7 @@ class Entity
     const OFFER                 = 'offer';
     const COUPON                = 'coupon';
     const PAYOUT                = 'payout';
+    const REPORT                = 'report';
 
     //
     // Gateway entities
@@ -177,6 +178,7 @@ class Entity
         self::ADMIN_TOKEN           => \RZP\Models\Admin\Admin\Token::class,
         self::MERCHANT_DETAIL       => \RZP\Models\Merchant\Detail::class,
         self::FUND_TRANSFER_ATTEMPT => \RZP\Models\FundTransfer\Attempt::class,
+        self::REPORT                => \RZP\Models\Report::class
     ];
 
     protected static $repository = [
