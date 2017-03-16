@@ -107,7 +107,6 @@ class Entity extends Base\PublicEntity
         self::SCHEDULED     => false,
         self::PUBLIC        => true,
         self::PARTIAL       => false,
-        self::PUBLIC        => true,
     ];
 
     protected static $modifiers = [

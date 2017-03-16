@@ -109,7 +109,7 @@ class Repository extends Base\Repository
     {
         // The default value for Entity::END is null. This is because we do not necessarily know
         // the end time in case of an unscheduled downtime. So, for all these scenarios, we are
-        // setting the $to value to $input['to'] if available or $input['from']. The essential
+        // setting the $to value to $input['end'] if available or $input['begin']. The essential
         // idea is to fetch the list of gateways/issuers at the current point in time.
         $to = $params[Entity::END] ?? null;
 

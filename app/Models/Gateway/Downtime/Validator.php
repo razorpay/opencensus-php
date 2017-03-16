@@ -258,23 +258,22 @@ class Validator extends Base\Validator
     public function validateNetwork(array $input)
     {
         $network = $input[Entity::NETWORK] ?? $this->entity->getNetwork();
+        $network = strtoupper($network);
+
+        $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
+
+        $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
         if (in_array($network, [Entity::ALL, Entity::UNKNOWN, Entity::NA], true) === true)
         {
             return;
         }
 
-        $network = strtoupper($network);
-
         if (Network::isValidNetwork($network) === false)
         {
             throw new Exception\BadRequestValidationFailureException(
                 $network . ' is not a valid network');
         }
-
-        $method = $input[Entity::METHOD] ?? $this->entity->getMethod();
-
-        $gateway = $input[Entity::GATEWAY] ?? $this->entity->getGateway();
 
         if ((strtolower($method) === Method::CARD) and
             (strtolower($gateway) === strtolower(Entity::ALL)))
