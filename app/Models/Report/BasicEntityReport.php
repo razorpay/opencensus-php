@@ -197,6 +197,13 @@ class BasicEntityReport extends Base
             throw new Exception\BadRequestValidationFailureException(
                 'Cannot get report for the given entity');
         }
+
+        if (($this->entity === E::MERCHANT) and
+            ($this->merchant->isMarketplace() === false))
+        {
+            throw new Exception\BadRequestValidationFailureException(
+                'Exporting this data is not allowed for the merchant');
+        }
     }
 
     protected function fetchFormattedDataForReport($entities): array

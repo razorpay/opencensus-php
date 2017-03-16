@@ -71,6 +71,22 @@ class EntityReportTest extends TestCase
         assert(count($orderReport) === 1);
     }
 
+    public function testLinkedAccountExportReport()
+    {
+        $this->fixtures->merchant->addFeatures(['marketplace']);
+
+        $this->fixtures->create('merchant:marketplace_account');
+
+        $params = [
+            'year'  => '2017',
+            'month' => '1',
+        ];
+
+        $response = $this->fetchReportAsFile('account', $params);
+
+        $this->assertNotNull($response['url']);
+    }
+
     /**
      * Data for this test case needs to imported separately
      */
