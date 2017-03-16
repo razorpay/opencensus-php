@@ -51,7 +51,8 @@ trait Capture
      * Captures a payment and sets auto-capture flag true
      *
      * @param  Payment\Entity $payment The payment entity to capture
-     * @return boolean
+     *
+     * @throws Exception\BadRequestException
      */
     public function autoCapturePayment($payment)
     {
@@ -104,8 +105,6 @@ trait Capture
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_FAILED);
         }
-
-        return true;
     }
 
     /**
