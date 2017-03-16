@@ -54,6 +54,8 @@ app.controller('AccountListCtrl', [
     };
 
     $scope.exportAccountsCSV = function () {
+        $scope.alerts.addAlert('success', 'Your file will download shortly', true);
+
         var data = {'year': '2017', 'month': '1'};
         var request = $http({
             method: 'GET',
@@ -62,15 +64,14 @@ app.controller('AccountListCtrl', [
          });
 
         request.success(function (data) {
+          $scope.alerts.resetAlerts();
           if (data && data.success === true) {
-             $scope.alerts.addAlert('success', 'Your file will download shortly', true);
              location.href = data.data.url;
           }
           else {
             $scope.alerts.addAlert('danger', 'An error occurred while exporting the data');
           }
         }).error(function (data) {
-          $scope.alerts.resetAlerts();
           $scope.alerts.addAlert('danger', 'An error occurred while exporting the data');
         });
     };
