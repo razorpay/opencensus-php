@@ -17,7 +17,7 @@ trait SettlementTrait
     {
         return [
             'payment_created_at'    => '5 july 2016',
-            'payment_settlement_on' => '9 july 2016',
+            'payment_settlement_on' => '11 july 2016 7:00:00',
         ];
     }
 
@@ -29,7 +29,7 @@ trait SettlementTrait
     {
         return [
            'payment_created_at'    => '12 july 2016',
-           'payment_settlement_on' => '15 july 2016',
+           'payment_settlement_on' => '15 july 2016 7:00:00',
         ];
     }
 

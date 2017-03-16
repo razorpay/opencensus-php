@@ -12,11 +12,10 @@ class Library
         // Minimum delay before the settlement of any payment. In case of hourly
         // schedules, this is set to zero, but settlement time is pushed forward
         // by an hour anyway to avoid race conditions.
+
         $settledAt = self::getMinimumDelayedTime($currentTime, $schedule);
 
-        $nextRun = $schedule->getNextRun();
-
-        $nextRun = Carbon::createFromTimestamp($nextRun, 'Asia/Kolkata');
+        $nextRun = self::getNextRun($schedule);
 
         // If minimum delay is more than the time till next run of the settlement
         // schedule, then we calculate the *next* next run, and set that.
@@ -46,6 +45,14 @@ class Library
             $futureRun = self::resolveUnAnchored($referenceTime, $schedule);
         }
 
+        // If anchor date is a holiday, don't wait till next anchor
+        // date. Settlement on the next working day.
+        if (Holidays::isWorkingDay($futureRun) === false)
+        {
+            $futureRun = Holidays::getNextWorkingDay($futureRun);
+        }
+
+        // set the hour for future run from schedule
         $futureRun->hour($schedule->getHour());
 
         return $futureRun;
@@ -66,20 +73,12 @@ class Library
             $nextRun->$step();
         }
 
-        // If anchor date is a holiday, don't wait till next anchor
-        // date. Settlement on the next working day.
-        if (Holidays::isWorkingDay($nextRun) === false)
-        {
-            $nextRun = Holidays::getNextWorkingDay($nextRun);
-        }
-
         return $nextRun;
     }
 
     protected static function resolveUnAnchored($refTime, $schedule)
     {
-        // Since hourly schedules can't be anchored, time no longer matters.
-        $nextRun = $refTime->hour(0)->minute(0)->second(0);
+        $nextRun = self::getNextRun($schedule);
 
         // Step size may vary based on the period of the schedule
         $step = self::getStep($schedule);
@@ -90,11 +89,6 @@ class Library
         while ($refTime > $nextRun)
         {
             $nextRun->$step($interval);
-        }
-
-        if (Holidays::isWorkingDay($nextRun) === false)
-        {
-            $nextRun = Holidays::getNextWorkingDay($nextRun);
         }
 
         return $nextRun;
@@ -170,12 +164,12 @@ class Library
     }
 
     // Get Carbon object for last_run
-    protected static function getLastRun($schedule)
+    protected static function getNextRun($schedule)
     {
-        $lastRunTimestamp = $schedule->getLastRun();
+        $nextRunTimestamp = $schedule->getNextRun();
 
-        $lastRun = Carbon::createFromTimestamp($lastRunTimestamp, 'Asia/Kolkata');
+        $nextRun = Carbon::createFromTimestamp($nextRunTimestamp, 'Asia/Kolkata');
 
-        return $lastRun;
+        return $nextRun;
     }
 }

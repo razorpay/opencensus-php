@@ -131,14 +131,15 @@ class ScheduleTest extends TestCase
         $request['content'] = $data;
         $request['url'] .= $payment->getPublicId() . '/capture';
 
-        // Capturing this payment should result in settled_at still set to midnight
+        // Capturing this payment should result in settled_at set to hour value
+        // in the schedule entity
         $response = $this->makeRequestAndGetContent($request);
 
         $txn = $this->getLastTransaction(true);
 
         $time = Carbon::createFromTimestamp($txn['settled_at'], 'Asia/Kolkata');
 
-        // Check if time is midnight
+        // Check if time is set to hour value in schedule
         $this->assertEquals(12, $time->hour);
     }
 

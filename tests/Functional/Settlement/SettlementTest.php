@@ -380,7 +380,7 @@ class SettlementTest extends TestCase
         $txns = $this->getEntities('transaction', $input, true);
 
         $request = [
-            'url' => '/settlements/initiate2/kotak',
+            'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
         ];
 
@@ -465,7 +465,7 @@ class SettlementTest extends TestCase
         // Net amount to be settled is -23 paise, so will be ignored.
 
         $request = array(
-            'url' => '/settlements/initiate2/kotak',
+            'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
         );
 
@@ -523,7 +523,7 @@ class SettlementTest extends TestCase
 
         // Generate settlements for above transactions
         $request = array(
-            'url' => '/settlements/initiate2/kotak',
+            'url' => '/settlements/initiate/kotak',
             'method' => 'POST'
         );
 
