@@ -33,4 +33,14 @@ class EcollectController extends Controller
 
         return ApiResponse::json($response);
     }
+
+    public function createCustomerBankAccount()
+    {
+
+    }
+
+    public function createStandingBankAccount()
+    {
+
+    }
 }

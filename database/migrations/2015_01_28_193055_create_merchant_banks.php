@@ -8,7 +8,6 @@ use RZP\Models\Merchant;
 use RZP\Models\Merchant\Methods\Entity as Methods;
 
 class CreateMerchantBanks extends Migration {
-
     /**
      * Run the migrations.
      *
@@ -67,7 +66,11 @@ class CreateMerchantBanks extends Migration {
 
             $table->tinyInteger(Methods::DEBIT_CARD)
                   ->default(1);
+
             $table->tinyInteger(Methods::UPI)
+                  ->default(0);
+
+            $table->tinyInteger(Methods::BANK_TRANSFER)
                   ->default(0);
 
             $table->integer(Methods::CREATED_AT);

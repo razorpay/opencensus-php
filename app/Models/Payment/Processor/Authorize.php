@@ -1056,6 +1056,10 @@ trait Authorize
                 $this->verifyUpiEnabled();
                 break;
 
+            case Payment\Method::BANK_TRANSFER:
+                $this->verifyBankTransferEnabled();
+                break;
+
             default:
                 throw new Exception\LogicException(
                     'Should not reach here.',
@@ -1713,6 +1717,18 @@ trait Authorize
         {
             throw new Exception\BadRequestException(
                 ErrorCode::BAD_REQUEST_PAYMENT_UPI_NOT_ENABLED_FOR_MERCHANT);
+        }
+    }
+
+    protected function verifyBankTransferEnabled()
+    {
+        $merchantMethods = $this->methods;
+
+        if (($merchantMethods === null) or
+            ($merchantMethods->isBankTransferEnabled() === false))
+        {
+            throw new Exception\BadRequestException(
+                ErrorCode::BAD_REQUEST_PAYMENT_BANK_TRANSFER_NOT_ENABLED_FOR_MERCHANT);
         }
     }
 

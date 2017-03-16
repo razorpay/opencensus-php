@@ -3,6 +3,8 @@
 namespace RZP\Models\Ecollect;
 
 use RZP\Models\Base;
+use RZP\Constants\Mode;
+use RZP\Models\Payment;
 use RZP\Trace\TraceCode;
 use RZP\Exception\BadRequestValidationFailureException;
 
@@ -26,23 +28,7 @@ class Service extends Base\Service
 
         $this->validator->validateInput('validate', $input);
 
-        $data = [
-            'valid'          => true,
-            'message'        => null,
-        ];
-
-        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
-            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
-        {
-            $data = [
-                'valid'          => false,
-                'message'        => 'Invalid account number',
-            ];
-        }
-
-        $data['transaction_id'] = $input['transaction_id'];
-
-        $this->uniqueUtrCheck($input, $data);
+        $data = $this->validateReceiver($input);
 
         return $data;
     }
@@ -87,5 +73,75 @@ class Service extends Base\Service
                 $this->cache->set($key, json_encode($input));
             }
         }
+    }
+
+    protected function validateReceiver($input)
+    {
+        if ($this->mode === Mode::TEST)
+        {
+            $data = $this->validateTestMode($input);
+        }
+        else
+        {
+            $data = $this->validateLiveMode($input);
+        }
+
+        return $data;
+    }
+
+    protected function validateLiveMode($input)
+    {
+        $paymentInput = $this->ecollectPaymentArray($input);
+
+        // TODO: Id the merchant here using the input payee_account
+        $merchant = $this->repo->merchant->find('10000000000000');
+
+        $paymentProcessor = new Payment\Processor\Processor($merchant);
+
+        $paymentProcessor->process($paymentInput);
+    }
+
+    protected function validateTestMode($input)
+    {
+        $data = [
+            'valid'          => true,
+            'message'        => null,
+        ];
+
+        if ((substr($input['payee_account'], 0, 3) !== 'RZP') and
+            (substr($input['payee_account'], 0, 6) !== 'RAZORP'))
+        {
+            $data = [
+                'valid'          => false,
+                'message'        => 'Invalid account number',
+            ];
+        }
+
+        $data['transaction_id'] = $input['transaction_id'];
+
+        $this->uniqueUtrCheck($input, $data);
+
+        return $data;
+    }
+
+    protected function ecollectPaymentArray(array $input)
+    {
+        $paymentArray = $this->defaultEcollectPaymentArray();
+
+        $paymentArray['amount'] = $input['amount'];
+
+        $paymentArray['bank_transfer'] = $input;
+
+        return $paymentArray;
+    }
+
+    protected function defaultEcollectPaymentArray()
+    {
+        return [
+            'contact'  => '9999009999',
+            'currency' => 'INR',
+            'email'    => 'ecollect@razorpay.com',
+            'method'   => 'bank_transfer',
+        ];
     }
 }

@@ -22,6 +22,12 @@ class Service
     protected $mode;
 
     /**
+     * BasicAuth entity
+     * @var BasicAuth
+     */
+    protected $auth;
+
+    /**
      * The merchant making the request.
      * If merchant isn't making the request, then
      * it's null
@@ -66,6 +72,8 @@ class Service
         $this->trace = $this->app['trace'];
 
         $this->repo = $this->app['repo'];
+
+        $this->auth = $this->app['basicauth'];
 
         $this->slack = $this->app['slack'];
     }

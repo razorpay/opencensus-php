@@ -160,6 +160,8 @@ final class Route
         'terminal_check_encrypted_value'          => ['post',     'terminals/{id}/secret',                          'TerminalController@postCheckTerminalEncryptedValue'                ],
         'ecollect_validate'                       => ['post',     'ecollect/validate',                              'EcollectController@validateEcollect'                               ],
         'ecollect_pay'                            => ['post',     'ecollect/pay',                                   'EcollectController@payEcollect'                                    ],
+        'ecollect_create_customer_bank_account'   => ['post',     'ecollect/customers/{id}/bank_account',           'EcollectController@createCustomerBankAccount'                      ],
+        'ecollect_create_standing_bank_account'   => ['post',     'ecollect/bank_account',                          'EcollectController@createStandingBankAccount'                      ],
         'webhook_create'                          => ['post',     'webhooks',                                       'MerchantController@postWebhook'                                    ],
         'webhook_edit'                            => ['put',      'webhooks/{id}',                                  'MerchantController@putWebhook'                                     ],
         'webhook_fetch'                           => ['get',      'webhooks/{id}',                                  'MerchantController@getWebhook'                                     ],
@@ -830,6 +832,8 @@ final class Route
         'offer_update',
         'offer_fetch_multiple',
         'offer_fetch_by_id',
+        'ecollect_create_customer_bank_account',
+        'ecollect_create_standing_bank_account',
     );
 
     public static $admin = [
