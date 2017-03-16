@@ -6,21 +6,23 @@ use RZP\Models\Base;
 
 class Entity extends Base\PublicEntity
 {
-    const ID          = 'id';
-    const ENTITY_NAME = 'entity_name';
-    const ENTITY_ID   = 'entity_id';
-    const ACTOR       = 'actor';
-    const TYPE        = 'type';
-    const URL         = 'url';
-    const METHOD      = 'method';
-    const PAYLOAD     = 'payload';
-    const CONTROLLER  = 'controller';
-    const ROUTE       = 'route';
-    const DIFF        = 'diff';
+    const ID            = 'id';
+    const ENTITY_NAME   = 'entity_name';
+    const ENTITY_ID     = 'entity_id';
+    const ACTOR         = 'actor';
+    const TYPE          = 'type';
+    const URL           = 'url';
+    const METHOD        = 'method';
+    const PAYLOAD       = 'payload';
+    const CONTROLLER    = 'controller';
+    const ROUTE         = 'route';
+    const DIFF          = 'diff';
 
-    const CREATED_AT  = 'created_at';
+    const CREATED_AT    = 'created_at';
 
-    protected $entity = 'action';
+    const FUNCTION_NAME = 'function_name';
+
+    protected $entity   = 'action';
 
     protected $fillable = [
         self::ENTITY_NAME,

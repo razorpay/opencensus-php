@@ -75,27 +75,27 @@ class Service extends Base\Service
         return $diff;
     }
 
-    protected function makerAction(Entity $action)
+    public function fetchRequest(string $id)
     {
-        $entity = $action->getEntityName();
+        $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
 
-        $entityId = $action->getEntityId();
+        if ($esResponse === null)
+        {
+            throw new Exception\BadRequestException(ErrorCode::BAD_REQUEST_ACTION_NOT_FOUND);
+        }
 
-        $oldE = $this->repo->$entity->findByPublicId($entityId);
+        $esObject = $esResponse[0]['_source'];
 
-        $newE = clone $oldE;
+        $controller = $esObject[Entity::CONTROLLER];
 
-        $validator = EntityValidator::getValidator($action->getRoute());
+        $controllerSplit = explode('@', $controller);
 
-        $newE = $newE->edit($action->getPayload(), $validator);
-
-        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
-
-        $action->setDiff($diff);
-
-        event(new DifferEvent($action->toArray()));
-
-        return $action;
+        return [
+            Entity::ENTITY_ID     => $esObject[Entity::ENTITY_ID],
+            Entity::PAYLOAD       => $esObject[Entity::PAYLOAD],
+            Entity::CONTROLLER    => $controllerSplit[0],
+            Entity::FUNCTION_NAME => $controllerSplit[1],
+        ];
     }
 
     public function saveToES(array $action)
@@ -113,43 +113,6 @@ class Service extends Base\Service
         }
     }
 
-    protected function createDiff(array $oldE, array $newE)
-    {
-        $diff = [];
-
-        $keys = array_keys($oldE);
-
-        $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
-
-        foreach ($diffKeys as $key)
-        {
-            if ($oldE[$key] !== $newE[$key])
-            {
-                $diff['old'][$key] = $oldE[$key];
-
-                $diff['new'][$key] = $newE[$key];
-            }
-        }
-
-        return $diff;
-    }
-
-    public function execute(string $id)
-    {
-        $esResponse = $this->esDao->search(strtolower($this->baseIndex), self::ES_TYPE, $id);
-
-        $esObject = $esResponse[0]['_source'];
-
-        $esObject[Entity::PAYLOAD]['action_id'] = $id;
-
-        $response = $this->makeRequest($esObject[Entity::METHOD],
-                                       $esObject[Entity::URL],
-                                       $esObject[Entity::HEADERS],
-                                       $esObject[Entity::PAYLOAD]);
-
-        return $response;
-    }
-
     public function makeRequest($method, $url, $headers, $content)
     {
         $factory = $this->app->make('httplug.message_factory.default');
@@ -157,6 +120,7 @@ class Service extends Base\Service
         $req = $factory->createRequest($method, $url, $headers, json_encode($content));
 
         $response = null;
+
         try
         {
             $response = $this->createHttpClient()->sendRequest($req);
@@ -191,5 +155,49 @@ class Service extends Base\Service
         );
 
         return $pluginClient;
+    }
+
+    protected function makerAction(Entity $action)
+    {
+        $entity = $action->getEntityName();
+
+        $entityId = $action->getEntityId();
+
+        $oldE = $this->repo->$entity->findByPublicId($entityId);
+
+        $newE = clone $oldE;
+
+        $validator = EntityValidator::getValidator($action->getRoute());
+
+        $newE = $newE->edit($action->getPayload(), $validator);
+
+        $diff = $this->createDiff($oldE->toArray(), $newE->toArray());
+
+        $action->setDiff($diff);
+
+        event(new DifferEvent($action->toArray()));
+
+        return $action;
+    }
+
+    protected function createDiff(array $oldE, array $newE)
+    {
+        $diff = [];
+
+        $keys = array_keys($oldE);
+
+        $diffKeys = array_diff($keys, self::SKIP_DIFF_FIELDS);
+
+        foreach ($diffKeys as $key)
+        {
+            if ($oldE[$key] !== $newE[$key])
+            {
+                $diff['old'][$key] = $oldE[$key];
+
+                $diff['new'][$key] = $newE[$key];
+            }
+        }
+
+        return $diff;
     }
 }

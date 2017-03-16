@@ -42,19 +42,6 @@ class Workflow
 
         $entityId = $this->router->current()->getParameter('id');
 
-        $input = $request->input();
-
-        // In case of checker call, we have to unsset the action_id.
-        // Also also verify whether its the correct action_id
-        if (isset($input['action_id']) === true)
-        {
-            unset($input['action_id']);
-
-            $request->replace($input);
-
-            return $next($request);
-        }
-
         if ($entity !== null)
         {
             $params = $this->createDifferEntity($request, $entity, $entityId);

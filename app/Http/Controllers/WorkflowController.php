@@ -2,6 +2,7 @@
 
 namespace RZP\Http\Controllers;
 
+use App;
 use Request;
 use ApiResponse;
 use RZP\Models\Workflow\Action\Differ;
@@ -35,8 +36,20 @@ class WorkflowController extends Controller
 
     public function postExecuteAction(string $id)
     {
-        $result = $this->differService->execute($id);
+        $input = Request::all();
 
-        return ApiResponse::json($result);
+        $action = $this->differService->fetchRequest($id);
+
+        $entityId = $action[Differ\Entity::ENTITY_ID];
+
+        $payload = $action[Differ\Entity::PAYLOAD];
+
+        $controller = $action[Differ\Entity::CONTROLLER];
+
+        $functioName = $action[Differ\Entity::FUNCTION_NAME];
+
+        Request::replace($payload);
+
+        return App::make($controller)->$functioName($entityId);
     }
 }
