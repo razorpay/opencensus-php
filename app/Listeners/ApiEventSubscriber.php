@@ -57,9 +57,9 @@ class ApiEventSubscriber extends Base\Core
         return $this->app['rzp.mode'];
     }
 
-    public function onEvent($params)
+    public function onEvent($event, $params)
     {
-        $event = $this->getFiringEvent();
+        // $event = $this->getFiringEvent();
 
         $this->webhookEnabledForEvent = $this->isWebhookEnabledForEvent($params);
 
