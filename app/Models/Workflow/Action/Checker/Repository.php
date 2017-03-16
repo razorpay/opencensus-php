@@ -4,10 +4,8 @@ namespace RZP\Models\Workflow\Action\Checker;
 
 use RZP\Error\ErrorCode;
 use RZP\Exception;
-use RZP\Models\Admin\Base;
-use RZP\Models\Admin\Group;
-use RZP\Models\Admin\Org;
-use RZP\Models\Admin\Role;
+
+use RZP\Models\Workflow\Action;
 
 class Repository extends Base\Repository
 {
@@ -25,5 +23,15 @@ class Repository extends Base\Repository
                     ->where(Entity::ACTION_ID, '=', $actionId)
                     ->whereNotNull(Entity::APPROVED)
                     ->get();
+    }
+
+    public function findByIdAndActionId($checkerId, $actionId)
+    {
+        Action\Entity::verifyIdAndSilentlyStripSign($actionId);
+
+        return $this->newQuery()
+                    ->where(Entity::ID, '=', $checkerId)
+                    ->where(Entity::ACTION_ID, '=', $actionId)
+                    ->firstOrFail();
     }
 }

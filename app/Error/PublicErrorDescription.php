@@ -377,4 +377,5 @@ class PublicErrorDescription
     // Workflow Related Errors
     const BAD_REQUEST_WORKFLOW_INVALID_ACTION_STATE                             = 'Action State is not valid';
     const BAD_REQUEST_WORKFLOW_INVALID_CHECKER                                  = 'The checker review is invalid for this action';
+    const BAD_REQUEST_WORKFLOW_ACTION_NOT_FOUND                                 = 'The requested action is not found';
 }

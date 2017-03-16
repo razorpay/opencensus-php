@@ -13,15 +13,22 @@ class WorkflowController extends Controller
     {
         $input = Request::all();
 
-        (new Checker\Service)->create($id, $input);
+        $data = (new Checker\Service)->create($id, $input);
 
         return ApiResponse::json($data);
     }
 
     public function getActionCheckerMultiple(string $id)
     {
+        $input = Request::all();
+
+        $data = (new Checker\Service)->fetchMultiple($id, $input);
     }
 
     public function getActionChecker(string $id, string $checkerId)
-    {}
+    {
+        $data = (new Checker\Service)->get($id, $checkerId);
+
+        return ApiResponse::json($data);
+    }
 }

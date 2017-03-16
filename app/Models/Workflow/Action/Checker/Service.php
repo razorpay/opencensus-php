@@ -19,4 +19,28 @@ class Service extends Base\Service
 
         return $checker->toArrayPublic();
     }
+
+    public function fetchMultiple(string $actionId, array $input)
+    {
+        $actionId = Action\Entity::verifyIdAndStripSign($actionId);
+
+        $action = $this->repo->action_checker->findOrFailPublic($actionId);
+
+        $admin = $this->app['basicauth']->getAdmin();
+
+        (new Action\Validator)->validateActionBelongsTAdminOrg($action, $admin);
+
+        $input[Entity::ACTION_ID] = $actionId;
+
+        $checkers = $this->repo->action_checker->fetch($input);
+
+        return $checkers->toArrayPublic();
+    }
+
+    public function get(string $actionId, string $checkerId)
+    {
+        $checkerId = Entity::verifyIdAndStripSign($checkerId);
+
+        $this->repo->action_checker->findByIdAndActionId($checkerId, $actionId);
+    }
 }
