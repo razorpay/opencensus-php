@@ -941,6 +941,8 @@ class Entity extends Base\PublicEntity
 
         $data = array_only($data, $reportFields);
 
+        $data[self::ID] = AccountEntity::getSignedId($this->getAttribute(self::ID));
+
         $data[self::ACTIVATED_AT] = $this->getDateInFormatDMYHMS(self::ACTIVATED_AT);
 
         return $data;

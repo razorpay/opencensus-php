@@ -13,6 +13,13 @@ class EntityReportTest extends TestCase
 {
     use PaymentTrait;
 
+    public function __construct()
+    {
+        $this->testDataFilePath = __DIR__ . '/helpers/EntityReportTestData.php';
+
+        parent::__construct();
+    }
+
     public function testEntityReports()
     {
         $this->doAuthAndCapturePayment();
@@ -97,30 +104,13 @@ class EntityReportTest extends TestCase
             'month' => '1',
         ];
 
-        $request = [
-            'request' => [
-                'url' => '/reports/account/file',
-                'method' => 'get',
-                'content' => $params
-            ],
-            'response'  => [
-                'content' => [
-                    'error' => [
-                        'code'        => PublicErrorCode::BAD_REQUEST_ERROR,
-                        'description' => 'Exporting this data is not allowed for the merchant'
-                    ],
-                ],
-                'status_code' => 400,
-            ],
-            'exception' => [
-                'class'               => 'RZP\Exception\BadRequestValidationFailureException',
-                'internal_error_code' => ErrorCode::BAD_REQUEST_VALIDATION_FAILURE,
-            ],
-        ];
+        $data = $this->testData[__FUNCTION__];
+
+        $data['request']['content'] = $params;
 
         $this->ba->proxyAuth();
 
-        $this->runRequestResponseFlow($request);
+        $this->runRequestResponseFlow($data);
     }
 
 

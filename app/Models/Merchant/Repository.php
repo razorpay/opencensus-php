@@ -368,16 +368,24 @@ class Repository extends Base\Repository
      * @param       $merchantId
      * @param       $from       (unused)
      * @param       $to         (unused)
-     * @param       $count      (unused)
-     * @param       $skip       (unused)
-     * @param array $relations  (unused)
+     * @param       $count
+     * @param       $skip
+     * @param array $relations
      *
      * @return mixed
      */
     public function fetchEntitiesForReport($merchantId, $from, $to, $count, $skip, $relations = [])
     {
-        return $this->newQuery()
-                    ->where(Entity::PARENT_ID, $merchantId)
-                    ->get();
+        $query =  $this->newQuery()
+                       ->where(Entity::PARENT_ID, $merchantId);
+
+        if (count($relations) > 0)
+        {
+            $query->with(...$relations);
+        }
+
+        return $query->take($count)
+                     ->skip($skip)
+                     ->get();
     }
 }
