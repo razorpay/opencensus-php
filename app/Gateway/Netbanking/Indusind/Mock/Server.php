@@ -4,11 +4,11 @@ namespace RZP\Gateway\Netbanking\Indusind\Mock;
 
 use RZP\Gateway\Base;
 use phpseclib\Crypt\AES;
-use RZP\Gateway\Netbanking\Icici\Status;
-use RZP\Gateway\Netbanking\Icici\Confirmation;
+use RZP\Gateway\Netbanking\Indusind\Status;
+use RZP\Gateway\Netbanking\Indusind\Constants;
 use RZP\Gateway\Netbanking\Base as Netbanking;
-use RZP\Gateway\Netbanking\Icici\RequestFields;
-use RZP\Gateway\Netbanking\Icici\ResponseFields;
+use RZP\Gateway\Netbanking\Indusind\RequestFields;
+use RZP\Gateway\Netbanking\Indusind\ResponseFields;
 
 class Server extends Base\Mock\Server
 {
@@ -28,7 +28,7 @@ class Server extends Base\Mock\Server
 
         $content = $this->formatResponseData($postData);
 
-        $callbackUrl = $decryptedData['RU'] . '?' . http_build_query($content);
+        $callbackUrl = $decryptedData[RequestFields::RETURN_URL] . '?' . http_build_query($content);
 
         return $callbackUrl;
     }
@@ -49,16 +49,16 @@ class Server extends Base\Mock\Server
     protected function createPostData(array $input)
     {
         $response = [
-            ResponseFields::PAYMENT_ID    => $input[RequestFields::PAYMENT_ID],
-            ResponseFields::ITEM_CODE     => strtoupper($input[RequestFields::ITEM_CODE]),
-            ResponseFields::AMOUNT        => $input[RequestFields::AMOUNT],
-            ResponseFields::CURRENCY_CODE => $input[RequestFields::CURRENCY_CODE],
-            ResponseFields::PAID          => Confirmation::YES,
+            ResponseFields::MERCHANT_REFERENCE => $input[RequestFields::MERCHANT_REFERENCE],
+            ResponseFields::ITEM_CODE          => strtoupper($input[RequestFields::ITEM_CODE]),
+            ResponseFields::AMOUNT             => $input[RequestFields::AMOUNT],
+            ResponseFields::PAYEE_ID           => $input[RequestFields::PAYEE_ID],
+            ResponseFields::PAID               => Constants::YES,
         ];
 
         if ($input[RequestFields::CONFIRMATION] === Confirmation::YES)
         {
-            $response[ResponseFields::BANK_PAYMENT_ID] = 9999999999;
+            $response[ResponseFields::BANK_REFERENCE_ID] = 9999999999;
         }
 
         return $response;
@@ -72,7 +72,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $content['ES'] = base64_encode($aes->encryptString($httpQuery));
+        $content[ResponseFields::ENCRYPTED_STRING] = base64_encode($aes->encryptString($httpQuery));
 
         $this->content($content, 'hash');
 
@@ -85,7 +85,7 @@ class Server extends Base\Mock\Server
 
         $aes = new Netbanking\AESCrypto(AES::MODE_ECB, $masterKey);
 
-        $decryptedString = $aes->decryptString(base64_decode($input['ES']));
+        $decryptedString = $aes->decryptString(base64_decode($input[RequestFields::ENCRYPTED_STRING]));
 
         if ($decryptedString === false)
         {

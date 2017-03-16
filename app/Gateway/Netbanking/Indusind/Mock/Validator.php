@@ -8,20 +8,19 @@ use RZP\Gateway\Netbanking\Indusind\RequestFields;
 class Validator extends Base\Validator
 {
     protected static $authRules = [
-        RequestFields::MODE             => 'required|alpha|in:P',
-        RequestFields::PAYEE_ID         => 'required|string',
-        RequestFields::SPID             => 'required|string',
-        RequestFields::ENCRYPTED_STRING => 'required|string',
+        RequestFields::MODE       => 'required|alpha|in:P',
+        RequestFields::PAYEE_ID   => 'required|string',
+        RequestFields::SPID       => 'required|string',
+        RequestFields::USER_TYPE  => 'required|string',
     ];
 
     protected static $authDecryptedRules = [
-        RequestFields::AMOUNT        => 'required',
-        RequestFields::CONFIRMATION  => 'required|in:Y,N',
-        RequestFields::CURRENCY_CODE => 'required',
-        RequestFields::PAYMENT_ID    => 'required',
-        RequestFields::ITEM_CODE     => 'required',
-        RequestFields::RETURN_URL    => 'required',
-        RequestFields::ACCOUNT_NO    => 'sometimes',
+        RequestFields::AMOUNT              => 'required',
+        RequestFields::MERCHANT_REFERENCE  => 'required',
+        RequestFields::CURRENCY_CODE       => 'required',
+        RequestFields::RETURN_URL          => 'required',
+        RequestFields::ITEM_CODE           => 'required',
+        RequestFields::CONFIRMATION       =>  'required|in:Y,N',
     ];
 
     protected static $verifyRules = [
